@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "voxelmap",
+  "version": "${version}",
+  "name": "Voxelmap",
+  "description": "Minimap and world map",
+  "authors": ["MamiyaOtaru"],
+  "contact": {
+    "homepage": "https://minecraft.curseforge.com/projects/voxelmap"
+  },
+  "icon": "assets/voxelmap/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap"
+    ]
+  },
+  "mixins": [
+    "mixin.voxelmap.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.4.7"
+  }
+}
