@@ -609,7 +609,7 @@ public class Map implements Runnable, IMap {
             }
          }
 
-         float sunBrightness = this.world.method_23783(1.0F);
+         float sunBrightness = this.world.getStarBrightness(1.0F);
          if ((double)Math.abs(this.lastSunBrightness - sunBrightness) > 0.01
             || (double)sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness
             || (double)sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {

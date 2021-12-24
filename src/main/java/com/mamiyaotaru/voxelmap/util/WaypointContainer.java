@@ -71,7 +71,7 @@ public class WaypointContainer {
          GLShim.glEnable(3042);
          GLShim.glBlendFunc(770, 1);
          RenderSystem.setShader(GameRenderer::getPositionColorShader);
-         Matrix4f matrix4f = matrixStack.peek().getModel();
+         Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
 
          for(Waypoint pt : this.wayPts) {
             if (pt.isActive() || pt == this.highlightedWaypoint) {
@@ -274,7 +274,7 @@ public class WaypointContainer {
       matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-this.mc.getEntityRenderDispatcher().camera.getYaw()));
       matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(this.mc.getEntityRenderDispatcher().camera.getPitch()));
       matrixStack.scale(-var14, -var14, -var14);
-      Matrix4f matrix4f = matrixStack.peek().getModel();
+      Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
       Tessellator tessellator = Tessellator.getInstance();
       BufferBuilder vertexBuffer = tessellator.getBuffer();
       float fade = distance > 5.0 ? 1.0F : (float)distance / 5.0F;

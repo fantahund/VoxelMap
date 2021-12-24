@@ -71,7 +71,6 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.state.property.Property;
-import net.minecraft.world.biome.source.BiomeArray;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.util.Identifier;
@@ -248,7 +247,7 @@ public class ColorManager implements IColorManager {
     @Override
     public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, World world, float iconScale, float captureDepth) {
         try {
-            BakedModel model = this.game.getItemRenderer().getHeldItemModel(stack, world, (LivingEntity) null, 0);
+            BakedModel model = this.game.getItemRenderer().getModel(stack, world, (LivingEntity) null, 0);
             this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
             BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
             ImageIO.write(
@@ -320,7 +319,7 @@ public class ColorManager implements IColorManager {
 
         RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(this.fullbright);
-        fullbright2.transform(matrixStack.peek().getModel());
+        fullbright2.transform(matrixStack.peek().getPositionMatrix());
         Vec3f fullbright3 = new Vec3f(fullbright2);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
         MatrixStack newMatrixStack = new MatrixStack();
@@ -632,7 +631,7 @@ public class ColorManager implements IColorManager {
                     int blockStateID = BlockRepository.getStateId(blockState);
                     this.biomeTintsAvailable.add(blockStateID);
                     this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, tint);
-                    this.createTintTable(blockState, tempBlockPos);
+                    //this.createTintTable(blockState, tempBlockPos);
                 } else {
                     this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 452984832;
                 }
@@ -650,13 +649,15 @@ public class ColorManager implements IColorManager {
             return -1;
         } else {
             int tint = -1;
-
+            //TODO Update 1.18 xD
+            /*
             try {
                 int fakeX = (int) this.game.player.getX() - 32;
                 int fakeZ = (int) this.game.player.getZ() - 32;
                 Chunk chunk = world.getChunk(loopBlockPos.withXYZ(fakeX, 0, fakeZ));
                 BlockState actualBlockState = world.getBlockState(loopBlockPos);
                 chunk.setBlockState(loopBlockPos, blockState, false);
+
                 BiomeArray biomeArray = chunk.getBiomeArray();
                 Biome[] currentBiomes = (Biome[]) ReflectionUtils.getPrivateFieldValueByType(biomeArray, BiomeArray.class, Biome[].class);
                 Biome[] originalBiomes = new Biome[currentBiomes.length];
@@ -670,11 +671,13 @@ public class ColorManager implements IColorManager {
                 world.resetChunkColor(chunk.getPos());
             } catch (Exception var13) {
             }
+             */
 
             return tint;
         }
     }
-
+//TODO Update 1.18 xD
+    /*
     private void createTintTable(BlockState blockState, MutableBlockPos loopBlockPos) {
         ClientWorld world = this.game.world;
         if (world != null) {
@@ -721,6 +724,7 @@ public class ColorManager implements IColorManager {
             }
         }
     }
+     */
 
     @Override
     public int getBiomeTint(
@@ -1515,7 +1519,7 @@ public class ColorManager implements IColorManager {
                     if (grid) {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
-                        double var1 = (double) MathHelper.clamp(biome.getTemperature(new BlockPos(0, 64, 0)), 0.0F, 1.0F);
+                        double var1 = (double) MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
                         double var2 = (double) MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
                         var2 *= var1;
                         var1 = 1.0 - var1;

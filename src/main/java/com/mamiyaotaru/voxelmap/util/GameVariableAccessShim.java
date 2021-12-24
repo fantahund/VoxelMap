@@ -32,21 +32,21 @@ public class GameVariableAccessShim {
    }
 
    public static double xCoordDouble() {
-      return minecraft.currentScreen != null && minecraft.currentScreen.isPauseScreen()
+      return minecraft.currentScreen != null && minecraft.currentScreen.shouldPause()
          ? minecraft.getCameraEntity().getX()
          : minecraft.getCameraEntity().prevX
             + (minecraft.getCameraEntity().getX() - minecraft.getCameraEntity().prevX) * (double)minecraft.getTickDelta();
    }
 
    public static double zCoordDouble() {
-      return minecraft.currentScreen != null && minecraft.currentScreen.isPauseScreen()
+      return minecraft.currentScreen != null && minecraft.currentScreen.shouldPause()
          ? minecraft.getCameraEntity().getZ()
          : minecraft.getCameraEntity().prevZ
             + (minecraft.getCameraEntity().getZ() - minecraft.getCameraEntity().prevZ) * (double)minecraft.getTickDelta();
    }
 
    public static double yCoordDouble() {
-      return minecraft.currentScreen != null && minecraft.currentScreen.isPauseScreen()
+      return minecraft.currentScreen != null && minecraft.currentScreen.shouldPause()
          ? minecraft.getCameraEntity().getY()
          : minecraft.getCameraEntity().prevY
             + (minecraft.getCameraEntity().getY() - minecraft.getCameraEntity().prevY) * (double)minecraft.getTickDelta();

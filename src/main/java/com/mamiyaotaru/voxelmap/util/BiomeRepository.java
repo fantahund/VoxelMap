@@ -34,7 +34,7 @@ public class BiomeRepository {
       DEFAULT = (Biome)BuiltinRegistries.BIOME.get(BiomeKeys.OCEAN);
       FOREST = (Biome)BuiltinRegistries.BIOME.get(BiomeKeys.FOREST);
       SWAMP = (Biome)BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP);
-      SWAMP_HILLS = (Biome)BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP_HILLS);
+      SWAMP_HILLS = (Biome)BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP); //TODO :>
    }
 
    public static void loadBiomeColors() {

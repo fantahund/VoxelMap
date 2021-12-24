@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Map.Entry;
@@ -354,9 +355,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
 
          if (!this.closed && !full) {
             File directory = new File(
-               DimensionType.getSaveDirectory(
-                  this.worldServer.getRegistryKey(), this.worldServer.getServer().getSavePath(WorldSavePath.ROOT).normalize().toFile()
-               ),
+               DimensionType.getSaveDirectory(this.worldServer.getRegistryKey(), this.worldServer.getServer().getSavePath(WorldSavePath.ROOT).normalize()).toString(),
                "region"
             );
             File regionFile = new File(directory, "r." + (int)Math.floor((double)(this.x / 2)) + "." + (int)Math.floor((double)(this.z / 2)) + ".mca");
@@ -376,7 +375,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                      }
 
                      long loadTime = System.currentTimeMillis();
-                     CompletableFuture loadFuture = CompletableFuture.runAsync(
+                     CompletableFuture<?> loadFuture = CompletableFuture.runAsync(
                         () -> {
                            for(int tx = 0; tx < 16; ++tx) {
                               for(int sx = 0; sx < 16; ++sx) {
@@ -387,7 +386,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                        NbtCompound rawNbt = this.chunkLoader.getNbt(chunkPos);
                                        if (rawNbt != null) {
                                           NbtCompound nbt = this.chunkLoader
-                                             .updateChunkNbt(this.worldServer.getRegistryKey(), () -> this.worldServer.getPersistentStateManager(), rawNbt);
+                                             .updateChunkNbt(this.worldServer.getRegistryKey(), () -> this.worldServer.getPersistentStateManager(), rawNbt, Optional.empty());
                                           if (!this.closed && nbt.contains("Level", 10)) {
                                              NbtCompound level = nbt.getCompound("Level");
                                              int chunkX = level.getInt("xPos");

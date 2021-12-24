@@ -1954,7 +1954,7 @@ public class Radar implements IRadar {
 
       RenderSystem.applyModelViewMatrix();
       Vector4f fullbright2 = new Vector4f(this.fullbright);
-      fullbright2.transform(matrixStack.peek().getModel());
+      fullbright2.transform(matrixStack.peek().getPositionMatrix());
       Vec3f fullbright3 = new Vec3f(fullbright2);
       RenderSystem.setShaderLights(fullbright3, fullbright3);
 
