@@ -154,7 +154,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.parent = parent;
         this.master = master;
         this.waypointManager = master.getWaypointManager();
-        this.mapOptions = master.getMapOptions();
+        mapOptions = master.getMapOptions();
         this.persistentMap = master.getPersistentMap();
         this.options = master.getPersistentMapOptions();
         this.zoom = this.options.zoom;
@@ -211,7 +211,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     public void init() {
         this.passEvents = true;
-        this.oldNorth = this.mapOptions.oldNorth;
+        this.oldNorth = mapOptions.oldNorth;
         this.centerAt(this.options.mapX, this.options.mapZ);
         this.mc.keyboard.setRepeatEvents(true);
         if (this.getMinecraft().currentScreen == this) {
@@ -714,7 +714,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int glid = region.getGLID();
             if (glid != 0) {
                 GLUtils.disp2(glid);
-                if (this.mapOptions.filtering) {
+                if (mapOptions.filtering) {
                     GLShim.glTexParameteri(3553, 10241, 9987);
                     GLShim.glTexParameteri(3553, 10240, 9729);
                 } else {
@@ -803,7 +803,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 0.0
         );
         RenderSystem.applyModelViewMatrix();
-        if (this.mapOptions.biomeOverlay != 0) {
+        if (mapOptions.biomeOverlay != 0) {
             float biomeScaleX = this.mapPixelsX / 760.0F;
             float biomeScaleY = this.mapPixelsY / 360.0F;
             boolean still = !this.leftMouseButtonDown;
@@ -994,7 +994,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     RenderSystem.applyModelViewMatrix();
                 }
 
-                if (this.mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
+                if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
                     float fontScale = 2.0F / this.scScale;
                     int m = this.chkLen(name) / 2;
                     matrixStack.push();
