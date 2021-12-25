@@ -208,12 +208,11 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                     System.out.println("could not get chatlist");
                 } else {
                     List<?> chatList = (List) chatListObj;
-                    List<?> lastPosts = chatList.subList(chatList.size() - 40, chatList.size());
                     boolean killRadar = false;
                     boolean killCaves = false;
 
 
-                    for (int t = 0; t < lastPosts.size(); ++t) {
+                    for (int t = 0; t < chatList.size(); ++t) {
                         ChatHudLine checkMe = (ChatHudLine) chatList.get(t);
                         if (checkMe.equals(this.mostRecentLine)) {
                             break;
@@ -236,9 +235,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                         }
 
                         if (!error.equals("")) {
-                            this.checkMOTD = false;
                             this.passMessage = error;
-                            break;
                         }
                     }
 
@@ -246,7 +243,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                     radarOptions.radarPlayersAllowed = radarOptions.radarAllowed;
                     radarOptions.radarMobsAllowed = radarOptions.radarAllowed;
                     mapOptions.cavesAllowed = mapOptions.cavesAllowed && (!killCaves || this.devUUID.equals(playerUUID));
-                    this.mostRecentLine = lastPosts.size() > 0 ? (ChatHudLine) lastPosts.get(0) : null;
+                    this.mostRecentLine = chatList.size() > 0 ? (ChatHudLine) chatList.get(0) : null;
                 }
             }
         } else if (System.currentTimeMillis() - this.newServerTime >= 20000L) {

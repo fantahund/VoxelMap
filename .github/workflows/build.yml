@@ -16,7 +16,7 @@ jobs:
         run: ./gradlew
       - uses: actions/upload-artifact@v2
         with:
-          name: CubesideMod
+          name: VoxelMap
           path: build/libs/*
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
