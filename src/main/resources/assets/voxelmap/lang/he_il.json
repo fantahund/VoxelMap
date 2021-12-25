@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "הסתר הודעה זו.",
   "minimap.ui.zoomlevel": "רמת זום:",
   "minimap.ui.otheroptions": "אפשרויות אחרות",
-
   "options.minimap.title": "אפשרויות מפה",
   "options.minimap.showcoordinates": "הצג קואורדינטות",
   "options.minimap.hideminimap": "הסתר מפה",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "בטל אייקון מפלצת",
   "options.minimap.mobs.enabled": "האייקון הזה מוצג.",
   "options.minimap.mobs.disabled": "האייקון הזה לא מוצג.",
-
   "controls.minimap.title": "לחצני מפה",
   "controls.minimap.unbind1": ".'Escape' בשביל התרת מקש, יש לבחור בו וללחוץ",
   "controls.minimap.unbind2": "(חוץ ממקש התפריט - הוא בלתי-אפשרי לביטול)",
@@ -82,7 +80,6 @@
   "key.minimap.menu": "תפריט",
   "key.minimap.waypointhotkey": "מקש חם לנקודת ציון",
   "key.minimap.togglemobs": "הפעל מפלצות",
-
   "minimap.waypoints.title": "נקודות ציון",
   "minimap.waypoints.teleportto": "השתגר אל",
   "minimap.waypoints.highlight": "דגש",

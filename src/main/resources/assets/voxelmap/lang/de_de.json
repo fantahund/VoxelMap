@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Diesen Hinweis Verstecken",
   "minimap.ui.zoomlevel": "Zoomstufe:",
   "minimap.ui.otheroptions": "Weitere Optionen",
-
   "options.minimap.title": "Kartenoptionen",
   "options.minimap.showcoordinates": "Koordinaten Zeigen",
   "options.minimap.hideminimap": "Karte Verstecken",
@@ -18,7 +17,7 @@
   "options.minimap.dynamiclighting": "Beleuchtung",
   "options.minimap.terraindepth": "Gelände",
   "options.minimap.squaremap": "Rechteckige Karte",
-  "options.minimap.rotation": "Drehend",  
+  "options.minimap.rotation": "Drehend",
   "options.minimap.oldnorth": "Original Nord",
   "options.minimap.ingamewaypoints": "In-game Wegpunkte",
   "options.minimap.ingamewaypoints.beacons": "Bake",
@@ -81,7 +80,6 @@
   "options.minimap.mobs.disable": "Symbol Verbergen",
   "options.minimap.mobs.enabled": "Dieses Symbol wird gezeigt.",
   "options.minimap.mobs.disabled": "Dieses Symbol wird nicht gezeigt.",
-
   "controls.minimap.title": "Kartensteuerung",
   "controls.minimap.unbind1": "Um eine Kontrolle loszubinden, sie auswählen und 'Esc' Taste drücken.",
   "controls.minimap.unbind2": "(Außer der Menütaste - sie kann nicht losgebunden werden)",
@@ -93,7 +91,6 @@
   "key.minimap.toggleingamewaypoints": "Wegpunkte Schalten",
   "key.minimap.waypointmenu": "Wegpunktmenü",
   "key.minimap.waypointhotkey": "Wegpunkt Hotkey",
-
   "minimap.waypoints.title": "Wegpunkte",
   "minimap.waypoints.teleportto": "Teleportieren",
   "minimap.waypoints.highlight": "Ziel Setzen",
@@ -116,7 +113,6 @@
   "minimap.waypoints.sortbydistance": "Entfernung",
   "minimap.waypoints.sortbycreated": "Datum",
   "minimap.waypoints.sortbycolor": "Farbe",
-
   "minimap.waypointshare.title": "Waypoint Senden",
   "minimap.waypointshare.titlecoordinate": "Ordinate Senden",
   "minimap.waypointshare.sharemessage": "Nachricht (wahlweise) hinzufügen",
@@ -127,7 +123,6 @@
   "minimap.waypointshare.all": "Alle",
   "minimap.waypointshare.tooltip1": "Klick, Ordinate zu zielen",
   "minimap.waypointshare.tooltip2": "oder ctrl-klick, Wegpunkt zu speichern/bearbeiten",
-
   "options.minimap.worldmap": "Weltkarte...",
   "worldmap.title": "VoxelMap",
   "options.worldmap.title": "Weltkartenoptionen",
@@ -139,7 +134,6 @@
   "options.worldmap.maxzoom": "Max. Zoom",
   "options.worldmap.cachesize": "Regionpuffer Größe",
   "options.worldmap.multiworld": "Multiworld...",
-
   "worldmap.multiworld.title": "VoxelMap - Multiworld Wählen",
   "worldmap.multiworld.select": "In welcher Welt bist du?",
   "worldmap.multiworld.newname": "Neuer Name",

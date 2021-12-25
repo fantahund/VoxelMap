@@ -13,11 +13,54 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.block.AbstractSignBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
+import net.minecraft.block.FluidBlock;
+import net.minecraft.block.Material;
+import net.minecraft.block.RedstoneWireBlock;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.color.world.FoliageColors;
+import net.minecraft.client.color.world.GrassColors;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.BlockModels;
+import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.Transformation;
+import net.minecraft.client.texture.MissingSprite;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.client.texture.TextureManager;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.state.property.Property;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.InvalidIdentifierException;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.Vector4f;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.BlockRenderView;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 
-import java.awt.Graphics;
-import java.awt.Image;
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.awt.image.RasterFormatException;
@@ -41,52 +84,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
-
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.texture.MissingSprite;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.InvalidIdentifierException;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.BlockRenderView;
-import net.minecraft.client.color.world.FoliageColors;
-import net.minecraft.client.color.world.GrassColors;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.block.Block;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.RedstoneWireBlock;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.AbstractSignBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.state.property.Property;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.util.Identifier;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.block.Material;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.util.registry.BuiltinRegistries;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.client.render.block.BlockModels;
-import net.minecraft.client.render.block.BlockRenderManager;
-import net.minecraft.client.render.model.json.Transformation;
-import net.minecraft.client.render.model.json.ModelTransformation;
 
 public class ColorManager implements IColorManager {
     private IVoxelMap master;
@@ -114,20 +111,14 @@ public class ColorManager implements IColorManager {
     private Random random = new Random();
     private final Object tpLoadLock = new Object();
     private boolean loaded = false;
-    private final MutableBlockPos dummyBlockPos = new MutableBlockPos(
-            BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ()
-    );
+    private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ());
     private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getSpruceColor();
     private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getBirchColor();
-    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt(
-            (double) blockPos.getX(), (double) blockPos.getZ()
-    );
+    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt((double) blockPos.getX(), (double) blockPos.getZ());
     private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor();
     private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
-    private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedstoneWireBlock.getWireColor(
-            blockState.get(RedstoneWireBlock.POWER)
-    );
+    private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedstoneWireBlock.getWireColor(blockState.get(RedstoneWireBlock.POWER));
 
     public ColorManager(IVoxelMap master) {
         this.master = master;
@@ -250,13 +241,7 @@ public class ColorManager implements IColorManager {
             BakedModel model = this.game.getItemRenderer().getModel(stack, world, (LivingEntity) null, 0);
             this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
             BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
-            ImageIO.write(
-                    blockImage,
-                    "png",
-                    new File(
-                            MinecraftClient.getInstance().runDirectory, blockState.getBlock().getName().getString() + "-" + Block.getRawIdFromState(blockState) + ".png"
-                    )
-            );
+            ImageIO.write(blockImage, "png", new File(MinecraftClient.getInstance().runDirectory, blockState.getBlock().getName().getString() + "-" + Block.getRawIdFromState(blockState) + ".png"));
             return blockImage;
         } catch (Exception var8) {
             System.out.println("error getting block armor image for " + blockState.toString() + ": " + var8.getLocalizedMessage());
@@ -303,9 +288,7 @@ public class ColorManager implements IColorManager {
         GLShim.glClear(16640);
         GLShim.glBlendFunc(770, 771);
         matrixStack.push();
-        matrixStack.translate(
-                (double) ((float) (width / 2) - size / 2.0F + transX), (double) ((float) (height / 2) - size / 2.0F + transY), (double) (0.0F + transZ)
-        );
+        matrixStack.translate((double) ((float) (width / 2) - size / 2.0F + transX), (double) ((float) (height / 2) - size / 2.0F + transY), (double) (0.0F + transZ));
         matrixStack.scale(size, size, size);
         MinecraftClient.getInstance().getTextureManager().getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
         GLUtils.img2(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
@@ -377,10 +360,7 @@ public class ColorManager implements IColorManager {
 
     private void loadSpecialColors() {
         int blockStateID;
-        for (Iterator blockStateIterator = BlockRepository.pistonTechBlock.getStateManager().getStates().iterator();
-             blockStateIterator.hasNext();
-             this.blockColors[blockStateID] = 0
-        ) {
+        for (Iterator blockStateIterator = BlockRepository.pistonTechBlock.getStateManager().getStates().iterator(); blockStateIterator.hasNext(); this.blockColors[blockStateID] = 0) {
             BlockState blockState = (BlockState) blockStateIterator.next();
             blockStateID = BlockRepository.getStateId(blockState);
         }
@@ -597,9 +577,7 @@ public class ColorManager implements IColorManager {
             if (block == BlockRepository.water) {
                 this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, BiomeRepository.FOREST.getWaterColor() | 0xFF000000);
             } else {
-                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(
-                        color, this.game.getBlockColors().getColor(blockState, (BlockRenderView) null, (BlockPos) null, 0) | 0xFF000000
-                );
+                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, this.game.getBlockColors().getColor(blockState, (BlockRenderView) null, (BlockPos) null, 0) | 0xFF000000);
             }
         } else {
             this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, GrassColors.getColor(0.7, 0.8) | 0xFF000000);
@@ -618,9 +596,7 @@ public class ColorManager implements IColorManager {
                     tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
                 } else {
                     Chunk chunk = this.game.world.getChunk(blockPos);
-                    if (chunk != null
-                            && !((WorldChunk) chunk).isEmpty()
-                            && this.game.world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
+                    if (chunk != null && !((WorldChunk) chunk).isEmpty() && this.game.world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
                         tint = this.game.getBlockColors().getColor(blockState, this.game.world, blockPos, 1) | 0xFF000000;
                     } else {
                         tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
@@ -676,7 +652,7 @@ public class ColorManager implements IColorManager {
             return tint;
         }
     }
-//TODO Update 1.18 xD
+    //TODO Update 1.18 xD
     /*
     private void createTintTable(BlockState blockState, MutableBlockPos loopBlockPos) {
         ClientWorld world = this.game.world;
@@ -727,20 +703,9 @@ public class ColorManager implements IColorManager {
      */
 
     @Override
-    public int getBiomeTint(
-            AbstractMapData mapData,
-            World world,
-            BlockState blockState,
-            int blockStateID,
-            MutableBlockPos blockPos,
-            MutableBlockPos loopBlockPos,
-            int startX,
-            int startZ
-    ) {
+    public int getBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         Chunk chunk = world.getChunk(blockPos);
-        boolean live = chunk != null
-                && !((WorldChunk) chunk).isEmpty()
-                && this.game.world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
+        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && this.game.world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
         live = live && this.game.world.isChunkLoaded(blockPos);
         int tint = -2;
         if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
@@ -755,9 +720,7 @@ public class ColorManager implements IColorManager {
                         for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
                             int biomeID = 0;
                             if (live) {
-                                biomeID = world.getRegistryManager()
-                                        .get(Registry.BIOME_KEY)
-                                        .getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)));
+                                biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)));
                             } else {
                                 int dataX = t - startX;
                                 int dataZ = s - startZ;
@@ -793,17 +756,7 @@ public class ColorManager implements IColorManager {
         return tint;
     }
 
-    private int getBuiltInBiomeTint(
-            AbstractMapData mapData,
-            World world,
-            BlockState blockState,
-            int blockStateID,
-            MutableBlockPos blockPos,
-            MutableBlockPos loopBlockPos,
-            int startX,
-            int startZ,
-            boolean live
-    ) {
+    private int getBuiltInBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, boolean live) {
         int tint = -1;
         Block block = blockState.getBlock();
         if (BlockRepository.biomeBlocks.contains(block) || this.biomeTintsAvailable.contains(blockStateID)) {
@@ -822,16 +775,7 @@ public class ColorManager implements IColorManager {
         return tint;
     }
 
-    private int getBuiltInBiomeTintFromUnloadedChunk(
-            AbstractMapData mapData,
-            World world,
-            BlockState blockState,
-            int blockStateID,
-            MutableBlockPos blockPos,
-            MutableBlockPos loopBlockPos,
-            int startX,
-            int startZ
-    ) {
+    private int getBuiltInBiomeTintFromUnloadedChunk(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         int tint = -1;
         Block block = blockState.getBlock();
         ColorResolver colorResolver = null;
@@ -841,11 +785,7 @@ public class ColorManager implements IColorManager {
             colorResolver = this.spruceColorResolver;
         } else if (block == BlockRepository.birchLeaves) {
             colorResolver = this.birchColorResolver;
-        } else if (block != BlockRepository.oakLeaves
-                && block != BlockRepository.jungleLeaves
-                && block != BlockRepository.acaciaLeaves
-                && block != BlockRepository.darkOakLeaves
-                && block != BlockRepository.vine) {
+        } else if (block != BlockRepository.oakLeaves && block != BlockRepository.jungleLeaves && block != BlockRepository.acaciaLeaves && block != BlockRepository.darkOakLeaves && block != BlockRepository.vine) {
             if (block == BlockRepository.redstone) {
                 colorResolver = this.redstoneColorResolver;
             } else if (BlockRepository.biomeBlocks.contains(block)) {
@@ -892,9 +832,7 @@ public class ColorManager implements IColorManager {
         return tint;
     }
 
-    private int getCustomBlockBiomeTintFromUnloadedChunk(
-            AbstractMapData mapData, World world, BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ
-    ) {
+    private int getCustomBlockBiomeTintFromUnloadedChunk(AbstractMapData mapData, World world, BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         int tint = -1;
 
         try {
@@ -1062,16 +1000,7 @@ public class ColorManager implements IColorManager {
                                             float maxU = face.getMaxU();
                                             float minV = face.getMinV();
                                             float maxV = face.getMaxV();
-                                            if (this.similarEnough(
-                                                    minU,
-                                                    maxU,
-                                                    minV,
-                                                    maxV,
-                                                    compareIcon.getMinU(),
-                                                    compareIcon.getMaxU(),
-                                                    compareIcon.getMinV(),
-                                                    compareIcon.getMaxV()
-                                            )) {
+                                            if (this.similarEnough(minU, maxU, minV, maxV, compareIcon.getMinU(), compareIcon.getMaxU(), compareIcon.getMinV(), compareIcon.getMaxV())) {
                                                 tmpList.add(blockState);
                                             }
                                         }
@@ -1087,9 +1016,7 @@ public class ColorManager implements IColorManager {
             }
 
             if (blockStates.size() != 0) {
-                if (!method.equals("horizontal")
-                        && !method.startsWith("overlay")
-                        && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.length() == 0)) {
+                if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.length() == 0)) {
                     try {
                         Identifier pngResource = new Identifier(propertiesFile.getNamespace(), tilePath);
                         InputStream is = this.game.getResourceManager().getResource(pngResource).getInputStream();
@@ -1139,17 +1066,7 @@ public class ColorManager implements IColorManager {
                             }
                         }
                     } catch (IOException var40) {
-                        System.err
-                                .println(
-                                        "error getting CTM block from "
-                                                + propertiesFile.getPath()
-                                                + ": "
-                                                + filePath
-                                                + " "
-                                                + Registry.BLOCK.getId(((BlockState) blockStates.iterator().next()).getBlock()).toString()
-                                                + " "
-                                                + tilePath
-                                );
+                        System.err.println("error getting CTM block from " + propertiesFile.getPath() + ": " + filePath + " " + Registry.BLOCK.getId(((BlockState) blockStates.iterator().next()).getBlock()).toString() + " " + tilePath);
                         var40.printStackTrace();
                     }
                 }
@@ -1370,10 +1287,7 @@ public class ColorManager implements IColorManager {
             lilypadMultiplier = Integer.parseInt(lilypadMultiplierString, 16);
         }
 
-        for (UnmodifiableIterator defaultFormat = BlockRepository.lilypad.getStateManager().getStates().iterator();
-             defaultFormat.hasNext();
-             this.blockColorsWithDefaultTint[blockStateID] = this.blockColors[blockStateID]
-        ) {
+        for (UnmodifiableIterator defaultFormat = BlockRepository.lilypad.getStateManager().getStates().iterator(); defaultFormat.hasNext(); this.blockColorsWithDefaultTint[blockStateID] = this.blockColors[blockStateID]) {
             BlockState padBlockState = (BlockState) defaultFormat.next();
             blockStateID = BlockRepository.getStateId(padBlockState);
             this.blockColors[blockStateID] = ColorUtils.colorMultiplier(lilyRGB, lilypadMultiplier | 0xFF000000);
@@ -1524,10 +1438,7 @@ public class ColorManager implements IColorManager {
                         var2 *= var1;
                         var1 = 1.0 - var1;
                         var2 = 1.0 - var2;
-                        tintMult = tintColorsBuff.getRGB(
-                                (int) ((double) (tintColorsBuff.getWidth() - 1) * var1), (int) ((double) (tintColorsBuff.getHeight() - 1) * var2)
-                        )
-                                & 16777215;
+                        tintMult = tintColorsBuff.getRGB((int) ((double) (tintColorsBuff.getWidth() - 1) * var1), (int) ((double) (tintColorsBuff.getHeight() - 1) * var2)) & 16777215;
                     }
 
                     if (tintMult != 0 && (!swamp || biome == BiomeRepository.SWAMP || biome == BiomeRepository.SWAMP_HILLS)) {

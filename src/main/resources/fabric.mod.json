@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "Voxelmap",
   "description": "Minimap and world map",
-  "authors": ["MamiyaOtaru"],
+  "authors": [
+    "MamiyaOtaru"
+  ],
   "contact": {
     "homepage": "https://minecraft.curseforge.com/projects/voxelmap"
   },

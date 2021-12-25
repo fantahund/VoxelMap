@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Ascunde acest mesaj.",
   "minimap.ui.zoomlevel": "Nivelul maririi:",
   "minimap.ui.otheroptions": "Alte optiuni",
-
   "options.minimap.title": "Optiunile Minihartii",
   "options.minimap.showcoordinates": "Arata coordonatele",
   "options.minimap.hideminimap": "Ascunde Miniharta",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Cel mai Recent",
   "options.minimap.waypoints.deathpoints.all": "Toate",
   "options.minimap.waypoints.deathpoints.tooltip": "Ia efect la urmatoare moarte",
-
   "controls.minimap.title": "Controalele Minihartii",
   "controls.minimap.unbind1": "Pentru a dezlega un buton,selecteazal si apasa 'Escape'.",
   "controls.minimap.unbind2": "(Înafara de Butonul Meniului - nu poate fi dezlegat!)",
@@ -73,7 +71,6 @@
   "key.minimap.togglemobs": "Arata Monstrii",
   "key.minimap.waypointhotkey": "Buton pentru Punct de Referinta",
   "key.minimap.waypointmenu": "Meniul Punctelor de Referinta",
-
   "minimap.waypoints.title": "Punct de Referinta",
   "minimap.waypoints.teleportto": "Teleportare la",
   "minimap.waypoints.highlight": "Evidentia",

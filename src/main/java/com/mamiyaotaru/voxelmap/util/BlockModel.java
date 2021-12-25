@@ -1,7 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import net.minecraft.client.render.model.BakedQuad;
+
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -9,8 +10,6 @@ import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import net.minecraft.client.render.model.BakedQuad;
 
 public class BlockModel {
     ArrayList<BlockFace> faces;
@@ -26,7 +25,8 @@ public class BlockModel {
         BakedQuad quad = null;
         for (BakedQuad quad2 : quads) {
             face = new BlockFace(quad2.getVertexData());
-            if (!face.isClockwise || face.isVertical) continue;
+            if (!face.isClockwise || face.isVertical)
+                continue;
             this.faces.add(face);
         }
         Collections.sort(this.faces);
@@ -36,8 +36,9 @@ public class BlockModel {
         for (BlockFace face2 : this.faces) {
             float uDiff = face2.longestSide[0].u - face2.longestSide[1].u;
             float vDiff = face2.longestSide[0].v - face2.longestSide[1].v;
-            float segmentLength = (float)Math.sqrt(uDiff * uDiff + vDiff * vDiff);
-            if (!(segmentLength > greatestLength)) continue;
+            float segmentLength = (float) Math.sqrt(uDiff * uDiff + vDiff * vDiff);
+            if (!(segmentLength > greatestLength))
+                continue;
             greatestLength = segmentLength;
             this.longestSide = face2.longestSide;
         }
@@ -53,11 +54,8 @@ public class BlockModel {
 
     public BufferedImage getImage(BufferedImage terrainImage) {
         float terrainImageAspectRatio = (float) terrainImage.getWidth() / (float) terrainImage.getHeight();
-        float longestSideUV = Math.max(
-                Math.abs(this.longestSide[0].u - this.longestSide[1].u), Math.abs(this.longestSide[0].v - this.longestSide[1].v) / terrainImageAspectRatio
-        );
-        float modelImageWidthUV = longestSideUV
-                / Math.max(Math.abs(this.longestSide[0].x - this.longestSide[1].x), Math.abs(this.longestSide[0].z - this.longestSide[1].z));
+        float longestSideUV = Math.max(Math.abs(this.longestSide[0].u - this.longestSide[1].u), Math.abs(this.longestSide[0].v - this.longestSide[1].v) / terrainImageAspectRatio);
+        float modelImageWidthUV = longestSideUV / Math.max(Math.abs(this.longestSide[0].x - this.longestSide[1].x), Math.abs(this.longestSide[0].z - this.longestSide[1].z));
         int modelImageWidth = Math.round(modelImageWidthUV * (float) terrainImage.getWidth());
         BufferedImage modelImage = new BufferedImage(modelImageWidth, modelImageWidth, 6);
         Graphics2D g2 = modelImage.createGraphics();
@@ -208,8 +206,7 @@ public class BlockModel {
             float sum = 0.0F;
 
             for (int t = 0; t < this.vertices.length; ++t) {
-                sum += (this.vertices[t == this.vertices.length - 1 ? 0 : t + 1].x - this.vertices[t].x)
-                        * (this.vertices[t == this.vertices.length - 1 ? 0 : t + 1].z + this.vertices[t].z);
+                sum += (this.vertices[t == this.vertices.length - 1 ? 0 : t + 1].x - this.vertices[t].x) * (this.vertices[t == this.vertices.length - 1 ? 0 : t + 1].z + this.vertices[t].z);
             }
 
             return sum > 0.0F;

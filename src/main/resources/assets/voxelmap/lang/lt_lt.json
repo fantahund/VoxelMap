@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Slėpti šita žinutę",
   "minimap.ui.zoomlevel": "Pritraukimo Lygis:",
   "minimap.ui.otheroptions": "Kitos Parinktys",
-
   "options.minimap.title": "Žemėlapio Parinktys",
   "options.minimap.showcoordinates": "Rodyti Koordinates",
   "options.minimap.hideminimap": "Slėpti Žemėlapį",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "neleisti monstrą",
   "options.minimap.mobs.enabled": "Monstrų rodymas - leidžiama",
   "options.minimap.mobs.disabled": "Monstrų rodymas - neleidžiama",
-
   "controls.minimap.title": "Žemėlapio Kontrolė",
   "controls.minimap.unbind1": "Kad atrinktum mygtuką, Pasarink jį ir spausk'Escape'.",
   "controls.minimap.unbind2": "(To negalima padaryti su Menu Mygtuku - nes jis neatrinkamas)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Įjungti Monstrus/Gyvūnus",
   "key.minimap.waypointhotkey": "Kelio taško greitasis Mygtukas",
   "key.minimap.waypointmenu": "Kelio taško Meniu",
-
   "minimap.waypoints.title": "Kelio taškai",
   "minimap.waypoints.teleportto": "Teleportuotis į",
   "minimap.waypoints.highlight": "Paryškinti",

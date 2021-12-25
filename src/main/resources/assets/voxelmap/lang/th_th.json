@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "ซ่อนข้อความนี้ ",
   "minimap.ui.zoomlevel": "ระดับการซูม: ",
   "minimap.ui.otheroptions": "ตัวเลือกอื่นๆ ",
-
   "options.minimap.title": "ตัวเลือกแผนที่ขนาดย่อ ",
   "options.minimap.showcoordinates": "แสดงพิกัด",
   "options.minimap.hideminimap": "ซ่อนแผนที่ขนาดย่อ",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "ปิดม็อบ ",
   "options.minimap.mobs.enabled": "เปิดระบบแสดงม็อบ",
   "options.minimap.mobs.disabled": "ปิดระบบแสดงม็อบ ",
-
   "controls.minimap.title": "ควบคุมแผนที่ขนาดเล็ก ",
   "controls.minimap.unbind1": "หากต้องการนำปุ่มออก เลือกมันและกดปุ่ม 'Escape'",
   "controls.minimap.unbind2": "(ยกเว้นปุ่มเมนูเพราะมันไม่สามารถนำออกได้) ",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "สลับม็อบ ",
   "key.minimap.waypointhotkey": "ปุ่มลัดเวย์พอยต์",
   "key.minimap.waypointmenu": "เมนูเวย์พอยต์",
-
   "minimap.waypoints.title": "เวย์พอยต์ ",
   "minimap.waypoints.teleportto": "วาร์ปไป ",
   "minimap.waypoints.highlight": "จุดเด่น ",

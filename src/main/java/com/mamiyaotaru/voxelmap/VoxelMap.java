@@ -149,8 +149,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
             this.checkPermissionMessages(mc);
         }
 
-        if (GameVariableAccessShim.getWorld() != null && !GameVariableAccessShim.getWorld().equals(this.world)
-                || this.world != null && !this.world.equals(GameVariableAccessShim.getWorld())) {
+        if (GameVariableAccessShim.getWorld() != null && !GameVariableAccessShim.getWorld().equals(this.world) || this.world != null && !this.world.equals(GameVariableAccessShim.getWorld())) {
             this.world = GameVariableAccessShim.getWorld();
             this.waypointManager.newWorld(this.world);
             this.persistentMap.newWorld(this.world);
@@ -317,9 +316,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     }
 
     @Override
-    public void setPermissions(
-            boolean hasFullRadarPermission, boolean hasPlayersOnRadarPermission, boolean hasMobsOnRadarPermission, boolean hasCavemodePermission
-    ) {
+    public void setPermissions(boolean hasFullRadarPermission, boolean hasPlayersOnRadarPermission, boolean hasMobsOnRadarPermission, boolean hasCavemodePermission) {
         boolean override = false;
 
         try {

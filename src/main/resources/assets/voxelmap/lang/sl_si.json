@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Skrij to sporočilo",
   "minimap.ui.zoomlevel": "Velikost zooma:",
   "minimap.ui.otheroptions": "Ostale nastavitve",
-
   "options.minimap.title": "Nastavitve Mini-zemljevida",
   "options.minimap.showcoordinates": "Pokaži koordinate",
   "options.minimap.hideminimap": "Skrij Mini-zemljevid",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Odstrani sovražnike",
   "options.minimap.mobs.enabled": "Kazanje sovražnikov priključeno",
   "options.minimap.mobs.disabled": "Kazanje sovražnikov izključeno",
-
   "controls.minimap.title": "Kontrole mini-zemljevida",
   "controls.minimap.unbind1": "Da izbrišeš bližnjico, jo izberi in pritisni 'Escape'.",
   "controls.minimap.unbind2": "(Razen za tipko za meni - te ne moreš spremeniti)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Priključi ali izključi kazanje sovražnikov",
   "key.minimap.waypointhotkey": "Bližnjica za lokacijo",
   "key.minimap.waypointmenu": "Meni za lokacije",
-
   "minimap.waypoints.title": "Lokacija",
   "minimap.waypoints.teleportto": "Teleportiraj se do",
   "minimap.waypoints.highlight": "Izberi",

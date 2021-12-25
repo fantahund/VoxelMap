@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Fela þessi skilaboð",
   "minimap.ui.zoomlevel": "Zoom Level:",
   "minimap.ui.otheroptions": "Annað Valkostir",
-
   "options.minimap.title": "minimap Valkostir",
   "options.minimap.showcoordinates": "Display Hnit",
   "options.minimap.hideminimap": "Fela minimap",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Nýjasta",
   "options.minimap.waypoints.deathpoints.all": "All",
   "options.minimap.waypoints.deathpoints.tooltip": "Tekur gildi á næstu dauða",
-
   "controls.minimap.title": "minimap Stýrir",
   "controls.minimap.unbind1": "Til unbind lykil, velja það og ýta á 'Escape'.",
   "controls.minimap.unbind2": "(Nema fyrir á Valmynd takkann - það getur ekki verið óbundið)",
@@ -72,7 +70,6 @@
   "key.minimap.menu": "Valmynd",
   "key.minimap.waypointhotkey": "Waypoint Hotkey",
   "key.minimap.togglemobs": "Víxla lýði",
-
   "minimap.waypoints.title": "punktar",
   "minimap.waypoints.teleportto": "teleport til",
   "minimap.waypoints.highlight": "Hápunktur",

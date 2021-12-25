@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Скрий това съобщение",
   "minimap.ui.zoomlevel": "Ниво на zoom:",
   "minimap.ui.otheroptions": "Други опции",
-
   "options.minimap.title": "Опции на минимапа",
   "options.minimap.showcoordinates": "Показвай координати",
   "options.minimap.hideminimap": "Скрий минимапа",
@@ -61,7 +60,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Последна смърт",
   "options.minimap.waypoints.deathpoints.all": "Всички",
   "options.minimap.waypoints.deathpoints.tooltip": "В сила при следващо умиране",
-
   "controls.minimap.title": "Минимап контроли",
   "controls.minimap.unbind1": "За да премахнете копче, изберете го и натиснете \"Escape\".",
   "controls.minimap.unbind2": "(С изключение на клавиша за менюто - той не може да няма бутон)",
@@ -71,7 +69,6 @@
   "key.minimap.togglemobs": "Превключи чудовища",
   "key.minimap.waypointhotkey": "Бутон за нова точка",
   "key.minimap.waypointmenu": "Меню (точки)",
-
   "minimap.waypoints.title": "Точки",
   "minimap.waypoints.teleportto": "Телепортирай в ...",
   "minimap.waypoints.highlight": "Маркиране",

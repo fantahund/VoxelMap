@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Ocultar esta mensagem",
   "minimap.ui.zoomlevel": "Nível de Zoom:",
   "minimap.ui.otheroptions": "Outras Opções",
-
   "options.minimap.title": "Opções de Minimapa",
   "options.minimap.showcoordinates": "Mostrar coordenadas",
   "options.minimap.hideminimap": "Ocultar Minimapa",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Destivar Mob",
   "options.minimap.mobs.enabled": "Visualização de mobs ativada",
   "options.minimap.mobs.disabled": "Visualização de mobs desativada",
-
   "controls.minimap.title": "Controlos do Minimapa",
   "controls.minimap.unbind1": "Para desassociar uma tecla, seleciona-a e prime 'Esc'.",
   "controls.minimap.unbind2": "(Exceto a tecla de menu - Essa não pode ser desassociada)",
@@ -81,7 +79,6 @@
   "key.minimap.menu": "Menu",
   "key.minimap.waypointhotkey": "Tecla para criar Waypoints",
   "key.minimap.waypointmenu": "Menu de Waypoints",
-
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Teletransportar para",
   "minimap.waypoints.highlight": "Realçar",

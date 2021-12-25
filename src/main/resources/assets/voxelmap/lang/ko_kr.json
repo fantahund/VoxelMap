@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "이 메세지 감추기",
   "minimap.ui.zoomlevel": "줌 배율:",
   "minimap.ui.otheroptions": "기타 설정",
-
   "options.minimap.title": "미니맵 설정",
   "options.minimap.showcoordinates": "좌표 표시",
   "options.minimap.hideminimap": "미니맵 감추기",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "몹 표시 켜기",
   "options.minimap.mobs.enabled": "몹 표시 켜짐",
   "options.minimap.mobs.disabled": "몹 표시 꺼짐",
-
   "controls.minimap.title": "미니맵 키설정",
   "controls.minimap.unbind1": "키 설정을 해제 하시려면, 선택하시고 ESC 버튼을 눌러주세요.",
   "controls.minimap.unbind2": "(메뉴키 제외 - 메뉴키 설정은 해제 하실수 없습니다)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "몹 표시 ",
   "key.minimap.waypointhotkey": "경유지 핫키",
   "key.minimap.waypointmenu": "경유지 메뉴",
-
   "minimap.waypoints.title": "경유지",
   "minimap.waypoints.teleportto": "텔레포트",
   "minimap.waypoints.highlight": "강조",

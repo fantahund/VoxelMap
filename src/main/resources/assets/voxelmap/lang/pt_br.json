@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Ocultar esta mensagem",
   "minimap.ui.zoomlevel": "Nível de Zoom:",
   "minimap.ui.otheroptions": "Outras Opções",
-
   "options.minimap.title": "Opções de Minimapa",
   "options.minimap.showcoordinates": "Mostrar coordenadas",
   "options.minimap.hideminimap": "Ocultar Minimapa",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Más recente",
   "options.minimap.waypoints.deathpoints.all": "Todos",
   "options.minimap.waypoints.deathpoints.tooltip": "Tem efeito na próxima morte",
-
   "controls.minimap.title": "Controles de Minimapa",
   "controls.minimap.unbind1": "Para desassociar uma tecla, pressione 'Esc'.",
   "controls.minimap.unbind2": "(Exceto a tecla de Menu - Não é permitido desassociá-la)",
@@ -72,7 +70,6 @@
   "key.minimap.menu": "Menu",
   "key.minimap.waypointhotkey": "Atalho para Waypoints",
   "key.minimap.togglemobs": "Alternar Mobs",
-
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Teleportar para",
   "minimap.waypoints.highlight": "Escolher",

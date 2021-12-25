@@ -5,6 +5,10 @@ import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.Text;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -17,11 +21,6 @@ import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.text.Text;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.InputUtil;
 
 public class MapSettingsManager implements ISettingsManager {
     public final int SORT_DATE = 1;
@@ -78,14 +77,10 @@ public class MapSettingsManager implements ISettingsManager {
     public int sort = 1;
     protected boolean realTimeTorches = false;
     public KeyBinding keyBindZoom = new KeyBinding("key.minimap.zoom", InputUtil.fromTranslationKey("key.keyboard.z").getCode(), "controls.minimap.title");
-    public KeyBinding keyBindFullscreen = new KeyBinding(
-            "key.minimap.togglefullscreen", InputUtil.fromTranslationKey("key.keyboard.x").getCode(), "controls.minimap.title"
-    );
+    public KeyBinding keyBindFullscreen = new KeyBinding("key.minimap.togglefullscreen", InputUtil.fromTranslationKey("key.keyboard.x").getCode(), "controls.minimap.title");
     public KeyBinding keyBindMenu = new KeyBinding("key.minimap.voxelmapmenu", InputUtil.fromTranslationKey("key.keyboard.m").getCode(), "controls.minimap.title");
     public KeyBinding keyBindWaypointMenu = new KeyBinding("key.minimap.waypointmenu", -1, "controls.minimap.title");
-    public KeyBinding keyBindWaypoint = new KeyBinding(
-            "key.minimap.waypointhotkey", InputUtil.fromTranslationKey("key.keyboard.n").getCode(), "controls.minimap.title"
-    );
+    public KeyBinding keyBindWaypoint = new KeyBinding("key.minimap.waypointhotkey", InputUtil.fromTranslationKey("key.keyboard.n").getCode(), "controls.minimap.title");
     public KeyBinding keyBindMobToggle = new KeyBinding("key.minimap.togglemobs", -1, "controls.minimap.title");
     public KeyBinding keyBindWaypointToggle = new KeyBinding("key.minimap.toggleingamewaypoints", -1, "controls.minimap.title");
     public KeyBinding[] keyBindings;
@@ -97,15 +92,7 @@ public class MapSettingsManager implements ISettingsManager {
     public MapSettingsManager() {
         instance = this;
         this.game = MinecraftClient.getInstance();
-        this.keyBindings = new KeyBinding[]{
-                this.keyBindMenu,
-                this.keyBindWaypointMenu,
-                this.keyBindZoom,
-                this.keyBindFullscreen,
-                this.keyBindWaypoint,
-                this.keyBindMobToggle,
-                this.keyBindWaypointToggle
-        };
+        this.keyBindings = new KeyBinding[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle};
     }
 
     public void addSecondaryOptionsManager(ISubSettingsManager secondarySettingsManager) {
@@ -119,10 +106,7 @@ public class MapSettingsManager implements ISettingsManager {
             if (this.settingsFile.exists()) {
                 BufferedReader in;
                 String sCurrentLine;
-                for (in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), Charset.forName("UTF-8").newDecoder()));
-                     (sCurrentLine = in.readLine()) != null;
-                     KeyBinding.updateKeysByCode()
-                ) {
+                for (in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), Charset.forName("UTF-8").newDecoder())); (sCurrentLine = in.readLine()) != null; KeyBinding.updateKeysByCode()) {
                     String[] curLine = sCurrentLine.split(":");
                     if (curLine[0].equals("Zoom Level")) {
                         this.zoom = Math.max(0, Math.min(4, Integer.parseInt(curLine[1])));
@@ -224,9 +208,7 @@ public class MapSettingsManager implements ISettingsManager {
         this.settingsFile = new File(settingsFileDir, "voxelmap.properties");
 
         try {
-            PrintWriter out = new PrintWriter(
-                    new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), Charset.forName("UTF-8").newEncoder()))
-            );
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), Charset.forName("UTF-8").newEncoder())));
             out.println("Zoom Level:" + Integer.toString(this.zoom));
             out.println("Hide Minimap:" + Boolean.toString(this.hide));
             out.println("Show Coordinates:" + Boolean.toString(this.coords));
@@ -334,9 +316,7 @@ public class MapSettingsManager implements ISettingsManager {
             case SLIMECHUNKS:
                 return this.slimeChunks;
             default:
-                throw new IllegalArgumentException(
-                        "Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)"
-                );
+                throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
         }
     }
 
@@ -423,9 +403,7 @@ public class MapSettingsManager implements ISettingsManager {
                     return "error";
                 }
             default:
-                throw new IllegalArgumentException(
-                        "Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)"
-                );
+                throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
         }
     }
 
@@ -556,9 +534,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public String getKeyBindingDescription(int keybindIndex) {
-        return this.keyBindings[keybindIndex].getTranslationKey().equals("key.minimap.voxelmapmenu")
-                ? I18nUtils.getString("key.minimap.menu")
-                : I18nUtils.getString(this.keyBindings[keybindIndex].getTranslationKey());
+        return this.keyBindings[keybindIndex].getTranslationKey().equals("key.minimap.voxelmapmenu") ? I18nUtils.getString("key.minimap.menu") : I18nUtils.getString(this.keyBindings[keybindIndex].getTranslationKey());
     }
 
     public Text getKeybindDisplayString(int keybindIndex) {

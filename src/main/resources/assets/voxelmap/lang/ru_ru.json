@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Спрятать это сообщение",
   "minimap.ui.zoomlevel": "Масштаб",
   "minimap.ui.otheroptions": "Другие настройки",
-
   "options.minimap.title": "Настройки карты",
   "options.minimap.showcoordinates": "Показывать координаты",
   "options.minimap.hideminimap": "Скрыть карту",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Только последняя",
   "options.minimap.waypoints.deathpoints.all": "Все",
   "options.minimap.waypoints.deathpoints.tooltip": "Вступит в силу после следующей смерти",
-
   "controls.minimap.title": "Контроль карты",
   "controls.minimap.unbind1": "Для отмены привязки клавиши, выделите его и нажмите 'Esc'",
   "controls.minimap.unbind2": "(За исключением клавиши Меню - она не может быть отменена)",
@@ -73,7 +71,6 @@
   "key.minimap.togglemobs": "Отображение существ",
   "key.minimap.waypointhotkey": "Установка маркера",
   "key.minimap.waypointmenu": "Меню маркеров",
-
   "minimap.waypoints.title": "Маркеры (Waypoints)",
   "minimap.waypoints.teleportto": "Телепортироваться на...",
   "minimap.waypoints.highlight": "Выделение",

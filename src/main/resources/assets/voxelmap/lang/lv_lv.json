@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Paslēpt šo ziņu ",
   "minimap.ui.zoomlevel": "Pietuvināšanas līmenis: ",
   "minimap.ui.otheroptions": "Citi uzstādijumi",
-
   "options.minimap.title": "Minimapes uzstādijumi ",
   "options.minimap.showcoordinates": "Rādīt koordinātes ",
   "options.minimap.hideminimap": "Paslēpt minimapi ",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Atspējot dzīvnieku ",
   "options.minimap.mobs.enabled": "Dzīvnieka rādīšana iespējota",
   "options.minimap.mobs.disabled": "Dzīvnieka rādīšana atspējota ",
-
   "controls.minimap.title": "Minimapes kontroles ",
   "controls.minimap.unbind1": "Lai atbindotu taustiņu, izvēlaties to un spiežat 'Escape'. ",
   "controls.minimap.unbind2": "(Izņemot izvēlnes taustiņu - to nevar atbindot) ",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Ispējot dzīvniekus ",
   "key.minimap.waypointhotkey": "Punktu ātrpievienošanas taustiņš",
   "key.minimap.waypointmenu": "Punktu izvēlne ",
-
   "minimap.waypoints.title": "Punkti",
   "minimap.waypoints.teleportto": "Teleportēt uz ",
   "minimap.waypoints.highlight": "Izcelt ",

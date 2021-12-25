@@ -3,28 +3,27 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ConfirmScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.entity.PlayerModelPart;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.client.render.entity.PlayerModelPart;
-import net.minecraft.text.Text;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.render.GameRenderer;
 
 public class GuiButtonRowListPlayers extends EntryListWidget {
     private final MinecraftClient client = MinecraftClient.getInstance();
@@ -53,9 +52,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     }
 
     private Text getPlayerName(PlayerListEntry ScoreboardEntryIn) {
-        return (Text) (ScoreboardEntryIn.getDisplayName() != null
-                ? ScoreboardEntryIn.getDisplayName()
-                : new LiteralText(ScoreboardEntryIn.getProfile().getName()));
+        return (Text) (ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : new LiteralText(ScoreboardEntryIn.getProfile().getName()));
     }
 
     private ButtonWidget createButtonFor(MinecraftClient mcIn, int x, int y, PlayerListEntry ScoreboardEntry) {
@@ -151,28 +148,13 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
             this.id2 = id2;
         }
 
-        public void render(
-                MatrixStack matrixStack, int slotIndex, int y, int x, int listWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks
-        ) {
+        public void render(MatrixStack matrixStack, int slotIndex, int y, int x, int listWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
             this.drawButton(matrixStack, this.button, this.id, slotIndex, x, y, listWidth, itemHeight, mouseX, mouseY, isSelected, partialTicks);
             this.drawButton(matrixStack, this.button1, this.id1, slotIndex, x, y, listWidth, itemHeight, mouseX, mouseY, isSelected, partialTicks);
             this.drawButton(matrixStack, this.button2, this.id2, slotIndex, x, y, listWidth, itemHeight, mouseX, mouseY, isSelected, partialTicks);
         }
 
-        private void drawButton(
-                MatrixStack matrixStack,
-                ButtonWidget button,
-                int id,
-                int slotIndex,
-                int x,
-                int y,
-                int listWidth,
-                int slotHeight,
-                int mouseX,
-                int mouseY,
-                boolean isSelected,
-                float partialTicks
-        ) {
+        private void drawButton(MatrixStack matrixStack, ButtonWidget button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
             if (button != null) {
                 button.y = y;
                 button.render(matrixStack, mouseX, mouseY, partialTicks);

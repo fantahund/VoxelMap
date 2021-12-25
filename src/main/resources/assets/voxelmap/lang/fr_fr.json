@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Cacher ce message",
   "minimap.ui.zoomlevel": "Niveau de zoom:",
   "minimap.ui.otheroptions": "Autres Options",
-
   "options.minimap.title": "Options concernant la minimap",
   "options.minimap.showcoordinates": "Montrer les coordonés",
   "options.minimap.hideminimap": "Cacher la minimap",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Plus récent",
   "options.minimap.waypoints.deathpoints.all": "Tous",
   "options.minimap.waypoints.deathpoints.tooltip": "A de l'éffect sur la prochaine mort",
-
   "controls.minimap.title": "Controles...",
   "controls.minimap.unbind1": "Pour changer un controle cliquer dessus,",
   "controls.minimap.unbind2": "et appuyer sur la touche désirée",
@@ -73,7 +71,6 @@
   "key.minimap.togglemobs": "Changer pour les mobs",
   "key.minimap.waypointhotkey": "Touche de raccourci pour le waypoint",
   "key.minimap.waypointmenu": "Menu du waypoint",
-
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Aller à",
   "minimap.waypoints.highlight": "Surligner",

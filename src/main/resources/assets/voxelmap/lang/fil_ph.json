@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Itago ang mensaheng ito",
   "minimap.ui.zoomlevel": "Antas ng zoom:",
   "minimap.ui.otheroptions": "Iba pang options",
-
   "options.minimap.title": "I-edit ang mapa",
   "options.minimap.showcoordinates": "Ipakita kung nasaan ka",
   "options.minimap.hideminimap": "Itago ang mapa ",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Disable Mob ",
   "options.minimap.mobs.enabled": "Mob Display Enabled ",
   "options.minimap.mobs.disabled": "Mob Display Disabled ",
-
   "controls.minimap.title": "Minimap Controls ",
   "controls.minimap.unbind1": "Para i-unbind ang key, piliin mo at i-press ang 'Escape'. ",
   "controls.minimap.unbind2": "(Maliban sa Menu key - hindi ito kayang i-unbound) ",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Ipakita ang mga mobs.",
   "key.minimap.waypointhotkey": "Waypoint Hotkey ",
   "key.minimap.waypointmenu": "Waypoint Menu ",
-
   "minimap.waypoints.title": "Waypoints ",
   "minimap.waypoints.teleportto": "Teleport To ",
   "minimap.waypoints.highlight": "Highlight ",

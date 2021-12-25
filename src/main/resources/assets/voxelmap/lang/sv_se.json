@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Dölj det här meddelandet",
   "minimap.ui.zoomlevel": "Zoom nivå:",
   "minimap.ui.otheroptions": "Andra Inställningar",
-
   "options.minimap.title": "Minimap Inställningar",
   "options.minimap.showcoordinates": "Visa Koordinater",
   "options.minimap.hideminimap": "Dölj Minimap",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Inaktivera Monster",
   "options.minimap.mobs.enabled": "Visa Monster Aktiverat",
   "options.minimap.mobs.disabled": "Visa Monster Inaktiverat",
-
   "controls.minimap.title": "Minimap Kontroller",
   "controls.minimap.unbind1": "För att ta bort en kontroll, markera den och tryck på \"esc\" knappen.",
   "controls.minimap.unbind2": "(Med undantag för menyknappen - Den kan inte tas bort.)",
@@ -82,7 +80,6 @@
   "key.minimap.waypointhotkey": "Waypoint-knapp",
   "key.minimap.togglemobs": "Aktivera Mobs",
   "key.minimap.waypointmenu": "Vägpunkts Meny",
-
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Teleportera till",
   "minimap.waypoints.highlight": "Markera",

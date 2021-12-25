@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Semunyikan pesan ini",
   "minimap.ui.zoomlevel": "Tingkat Perbesaran:",
   "minimap.ui.otheroptions": "Pengaturan Lainnya",
-
   "options.minimap.title": "Pengaturan Minimap",
   "options.minimap.showcoordinates": "Tampilkan Koordinat",
   "options.minimap.hideminimap": "Sembunyikan Minimap",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Sembunyikan Mob",
   "options.minimap.mobs.enabled": "Tampilan Mob Dihidupkan",
   "options.minimap.mobs.disabled": "Tampilan Mob Dimatikan",
-
   "controls.minimap.title": "Kontrol Minimap",
   "controls.minimap.unbind1": "Untuk mengubah penanda tombol, pilih dan tekan 'Escape/Esc'.",
   "controls.minimap.unbind2": "(Terkecuali untuk tombol Menu, tidak bisa diubah)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Alihkan Mob",
   "key.minimap.waypointhotkey": "Hotkey Penanda Arah",
   "key.minimap.waypointmenu": "Menu Penanda Arah",
-
   "minimap.waypoints.title": "Penanda Arah",
   "minimap.waypoints.teleportto": "Berpindah Ke",
   "minimap.waypoints.highlight": "Sorot",

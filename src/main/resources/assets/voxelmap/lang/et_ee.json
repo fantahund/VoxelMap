@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Peida see sõnum",
   "minimap.ui.zoomlevel": "Suurendustase:",
   "minimap.ui.otheroptions": "Lisavalikud",
-
   "options.minimap.title": "Minikaardi valikud",
   "options.minimap.showcoordinates": "Koordinaatide kuva",
   "options.minimap.hideminimap": "Minikaardi peitmine",
@@ -18,7 +17,7 @@
   "options.minimap.dynamiclighting": "Dünaamiline valgustus",
   "options.minimap.terraindepth": "Maastiku sügavus",
   "options.minimap.squaremap": "Ruudukujuline kaart",
-  "options.minimap.rotation": "Pööramine",  
+  "options.minimap.rotation": "Pööramine",
   "options.minimap.oldnorth": "Vana põhjasuund",
   "options.minimap.ingamewaypoints": "Mängusisesed kontrollp.",
   "options.minimap.ingamewaypoints.beacons": "majakad",
@@ -82,7 +81,6 @@
   "options.minimap.mobs.disable": "Keela elukaikoon",
   "options.minimap.mobs.enabled": "Tema ikooni kuvatakse.",
   "options.minimap.mobs.disabled": "Tema ikoon peidetakse.",
-
   "controls.minimap.title": "Minikaardi juhtnupud",
   "controls.minimap.unbind1": "Juhtnupu vabastamiseks vali see ning vajuta Esc-klahvi.",
   "controls.minimap.unbind2": "(Välja arvatud menüünupp - seda ei saa vabastada)",
@@ -94,8 +92,6 @@
   "key.minimap.waypointhotkey": "Loo kontrollpunkt",
   "key.minimap.togglemobs": "Lülita elukate kuva",
   "key.minimap.toggleingamewaypoints": "Lülita kontrollpunktide kuva",
-
-
   "minimap.waypoints.title": "Kontrollpunktid",
   "minimap.waypoints.teleportto": "Teleporteeru",
   "minimap.waypoints.highlight": "Too esile",
@@ -119,7 +115,6 @@
   "minimap.waypoints.sortbycreated": "Loodud",
   "minimap.waypoints.sortbycolor": "Värv",
   "minimap.waypoints.sortbyicon": "Ikoon",
-
   "minimap.waypointshare.title": "Jaga kontrollpunkti",
   "minimap.waypointshare.titlecoordinate": "Jaga koordinaate",
   "minimap.waypointshare.sharemessage": "Lisa sõnum (valikuline)",
@@ -130,7 +125,6 @@
   "minimap.waypointshare.all": "Kõik inimesed",
   "minimap.waypointshare.tooltip1": "Klõpsa koordinaadi esiletõstmiseks",
   "minimap.waypointshare.tooltip2": "või Ctrl+klõps kontrollpunkti lisamiseks/muutmiseks.",
-
   "options.minimap.worldmap": "Maailmakaart...",
   "worldmap.title": "VoxelMap",
   "options.worldmap.title": "Maailmakaardi valikud",
@@ -142,7 +136,6 @@
   "options.worldmap.maxzoom": "Maksimaalne suurendus",
   "options.worldmap.cachesize": "Regioonide vahemälu suurus",
   "options.worldmap.multiworld": "Mitmikmaailm...",
-
   "worldmap.multiworld.title": "VoxelMap - mitmikmaailma valik",
   "worldmap.multiworld.select": "Millises maailmas sa hetkel oled?",
   "worldmap.multiworld.newname": "Uus nimi",

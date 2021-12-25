@@ -1,5 +1,5 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
 public interface ISettingsAndLightingChangeListener {
-   void notifyOfActionableChange(ISettingsAndLightingChangeNotifier var1);
+    void notifyOfActionableChange(ISettingsAndLightingChangeNotifier var1);
 }

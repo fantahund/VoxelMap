@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Bu mesajı gizle",
   "minimap.ui.zoomlevel": "Zoom seviyesi:",
   "minimap.ui.otheroptions": "Diğer ayarlar",
-
   "options.minimap.title": "Miniharita Ayarları",
   "options.minimap.showcoordinates": "Koordinatları Goster",
   "options.minimap.hideminimap": "Minimap'i Gizle",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "En Yeni",
   "options.minimap.waypoints.deathpoints.all": "Hepsi",
   "options.minimap.waypoints.deathpoints.tooltip": "Oldugunuz yeri gosterir",
-
   "controls.minimap.title": "Miniharita Kontrolleri",
   "controls.minimap.unbind1": "Bir tuşun bağlantısını kaldırmak için,tuşu seçin ve \"ESC\" tuşuna basın.",
   "controls.minimap.unbind2": "(Menü butonu dışında-onun bağlantısı kaldırılamaz)",
@@ -73,7 +71,6 @@
   "key.minimap.togglemobs": "Mobları Aç/Kapa",
   "key.minimap.waypointhotkey": "Waypoint Kısayol Tuşu",
   "key.minimap.waypointmenu": "Waypoint Menusu",
-
   "minimap.waypoints.title": "Waypointler",
   "minimap.waypoints.teleportto": "Şuna ışınlan",
   "minimap.waypoints.highlight": "Highlight",

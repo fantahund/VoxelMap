@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Schovať túto správu",
   "minimap.ui.zoomlevel": "Priblíženie:",
   "minimap.ui.otheroptions": "Ostatné Nastavenia",
-
   "options.minimap.title": "Možnosti Minimapy",
   "options.minimap.showcoordinates": "Zobraziť Súradnice",
   "options.minimap.hideminimap": "Schovať Minimapu",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Zakázať Ikonku Mobov",
   "options.minimap.mobs.enabled": "Táto Ikona je Zobrazená",
   "options.minimap.mobs.disabled": "Táto Ikona nieje Zobrazená",
-
   "controls.minimap.title": "Ovládanie Minimapy",
   "controls.minimap.unbind1": "Pre zrušenie nastavenej klávesy stlačte 'Escape'.",
   "controls.minimap.unbind2": "(S výnimkou klávesy Menu, ktorá nejde zrušiť)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Prepnúť zobrazenie Mobov",
   "key.minimap.waypointhotkey": "Tlačidlo na Waypointy",
   "key.minimap.waypointmenu": "Menu Waypointov",
-
   "minimap.waypoints.title": "Waypointy",
   "minimap.waypoints.teleportto": "Teleportovať",
   "minimap.waypoints.highlight": "Zvýrazniť",

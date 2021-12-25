@@ -10,8 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class APIMixinInGameHud {
-   @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;F)V", at = @At("RETURN"))
-   private void onRenderGameOverlay(MatrixStack matrixStack, float partialTicks, CallbackInfo ci) {
-      FabricModVoxelMap.instance.renderOverlay(matrixStack);
-   }
+    @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;F)V", at = @At("RETURN"))
+    private void onRenderGameOverlay(MatrixStack matrixStack, float partialTicks, CallbackInfo ci) {
+        FabricModVoxelMap.instance.renderOverlay(matrixStack);
+    }
 }

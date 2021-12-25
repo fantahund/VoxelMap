@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "このメッセージを非表示",
   "minimap.ui.zoomlevel": "ズームレベル：",
   "minimap.ui.otheroptions": "その他のオプション",
-
   "options.minimap.title": "ミニマップのオプション",
   "options.minimap.showcoordinates": "表示座標",
   "options.minimap.hideminimap": "ミニマップを隠す",
@@ -18,7 +17,7 @@
   "options.minimap.dynamiclighting": "ダイナミックライティング",
   "options.minimap.terraindepth": "地形の深さ",
   "options.minimap.squaremap": "スクエア地図",
-  "options.minimap.rotation": "回転",  
+  "options.minimap.rotation": "回転",
   "options.minimap.oldnorth": "旧バージョンの北",
   "options.minimap.ingamewaypoints": "ゲーム内のウェイポイント",
   "options.minimap.ingamewaypoints.beacons": "ビーコンのみ",
@@ -82,7 +81,6 @@
   "options.minimap.mobs.disable": "Mobを非表示にする",
   "options.minimap.mobs.enabled": "このMobは表示されます",
   "options.minimap.mobs.disabled": "このMobは表示されません",
-
   "controls.minimap.title": "ミニマップコントロール",
   "controls.minimap.unbind1": "キーバインドを解除するには、それを選択して\"Escキー\"を押してください。",
   "controls.minimap.unbind2": "(メニューキーを除く - それはアンバインドできません)",
@@ -94,8 +92,6 @@
   "key.minimap.waypointhotkey": "ウェイポイント登録",
   "key.minimap.togglemobs": "Mob表示のON/OFF",
   "key.minimap.toggleingamewaypoints": "ウェイポイントのON/OFF",
-
-
   "minimap.waypoints.title": "ウェイポイント",
   "minimap.waypoints.teleportto": "にテレポート",
   "minimap.waypoints.highlight": "ハイライト",
@@ -119,7 +115,6 @@
   "minimap.waypoints.sortbycreated": "作成順",
   "minimap.waypoints.sortbycolor": "色順 ",
   "minimap.waypoints.sortbyicon": "アイコン",
-
   "minimap.waypointshare.title": "ウェイポイントの共有",
   "minimap.waypointshare.titlecoordinate": "Share Coordinate",
   "minimap.waypointshare.sharemessage": "追加のメッセージ(オプション)",
@@ -130,7 +125,6 @@
   "minimap.waypointshare.all": "全員",
   "minimap.waypointshare.tooltip1": "クリックして座標をハイライト表示",
   "minimap.waypointshare.tooltip2": "またはControlキーを押しながらクリックすると、ウェイポイントを追加/編集できます。",
-
   "options.minimap.worldmap": "ワールドマップ...",
   "worldmap.title": "VoxelMap",
   "options.worldmap.title": "ワールドマップオプション",
@@ -142,7 +136,6 @@
   "options.worldmap.maxzoom": "最大ズーム",
   "options.worldmap.cachesize": "Regionのキャッシュサイズ",
   "options.worldmap.multiworld": "Multiworld...",
-
   "worldmap.multiworld.title": "VoxelMap - Multiworld Selection",
   "worldmap.multiworld.select": "Which world are you in?",
   "worldmap.multiworld.newname": "New Name",

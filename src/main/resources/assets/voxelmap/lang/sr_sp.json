@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Сакриј ову поруку",
   "minimap.ui.zoomlevel": "Ниво зумирања:",
   "minimap.ui.otheroptions": "Остала Подешавања",
-
   "options.minimap.title": "Подешавања Минимапе",
   "options.minimap.showcoordinates": "Приказ путања",
   "options.minimap.hideminimap": "Сакриј Минимапу",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Онемогући Руље",
   "options.minimap.mobs.enabled": "Омогућено Приказивање Руља",
   "options.minimap.mobs.disabled": "Омогућено Приказивање Руља",
-
   "controls.minimap.title": "Контроле Минимапе",
   "controls.minimap.unbind1": "Дa раскорачите дугме, изаберите га и притисните 'Escape'.",
   "controls.minimap.unbind2": "(Осим за Мени дугме - не може се раскорачити)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Омогући Руље",
   "key.minimap.waypointhotkey": "Дугме за Путање",
   "key.minimap.waypointmenu": "Мени Путањи",
-
   "minimap.waypoints.title": "Путање",
   "minimap.waypoints.teleportto": "Телепортуј се",
   "minimap.waypoints.highlight": "Осветљење",

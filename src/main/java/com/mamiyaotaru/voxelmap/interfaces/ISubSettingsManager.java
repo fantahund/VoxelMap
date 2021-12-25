@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 
 public interface ISubSettingsManager extends ISettingsManager {
-   void loadSettings(File var1);
+    void loadSettings(File var1);
 
-   void saveAll(PrintWriter var1);
+    void saveAll(PrintWriter var1);
 }

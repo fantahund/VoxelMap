@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Skrýt zprávu",
   "minimap.ui.zoomlevel": "Úroveň měřítka:",
   "minimap.ui.otheroptions": "Další možnosti",
-
   "options.minimap.title": "Možnosti Minimapy",
   "options.minimap.showcoordinates": "Zobrazit souřadnice",
   "options.minimap.hideminimap": "Skrýt Minimapu",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Zakázat moba",
   "options.minimap.mobs.enabled": "Zobrazení moba povoleno",
   "options.minimap.mobs.disabled": "Zobrazení moba zakázáno",
-
   "controls.minimap.title": "Ovládání Minimapy",
   "controls.minimap.unbind1": "Pro odpojení klávesy ji vyber a stiskni 'Escape'.",
   "controls.minimap.unbind2": "(Vyjma klávesy pro Nabídku - ta nemůže být odpojena)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Přepnout moby",
   "key.minimap.waypointhotkey": "Klávesová zkratka pro body",
   "key.minimap.waypointmenu": "Nabídka bodů",
-
   "minimap.waypoints.title": "Body",
   "minimap.waypoints.teleportto": "Teleportovat na",
   "minimap.waypoints.highlight": "Zvýraznit",

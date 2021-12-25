@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Nascondi questo messaggio",
   "minimap.ui.zoomlevel": "Livello di zoom:",
   "minimap.ui.otheroptions": "Altre opzioni",
-
   "options.minimap.title": "Opzioni della minimappa",
   "options.minimap.showcoordinates": "Mostra coordinate",
   "options.minimap.hideminimap": "Nascondi minimappa",
@@ -53,7 +52,6 @@
   "options.minimap.terrain.slope": "Inclinazione",
   "options.minimap.terrain.both": "Entrambe",
   "options.minimap.waypoints": "Punti di interesse...",
-
   "controls.minimap.title": "Controlli della minimappa",
   "controls.minimap.unbind1": "Per deselezionare un tasto, selezionarlo e premere 'Escape'.",
   "controls.minimap.unbind2": "(Eccetto per il Tasto Menu - non può essere deselezionato)",
@@ -62,7 +60,6 @@
   "key.minimap.menu": "Menu",
   "key.minimap.waypointhotkey": "Tasto chiave dei punti di interesse",
   "key.minimap.togglemobs": "Seleziona Mob",
-
   "minimap.waypoints.title": "Punti di interesse",
   "minimap.waypoints.teleportto": "Teletrasporta a",
   "minimap.waypoints.newwaypoint": "Nuovo punto di interesse",

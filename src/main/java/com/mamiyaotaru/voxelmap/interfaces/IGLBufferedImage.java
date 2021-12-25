@@ -1,21 +1,21 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
 public interface IGLBufferedImage {
-   int getIndex();
+    int getIndex();
 
-   int getWidth();
+    int getWidth();
 
-   int getHeight();
+    int getHeight();
 
-   void baleet();
+    void baleet();
 
-   void write();
+    void write();
 
-   void blank();
+    void blank();
 
-   void setRGB(int var1, int var2, int var3);
+    void setRGB(int var1, int var2, int var3);
 
-   void moveX(int var1);
+    void moveX(int var1);
 
-   void moveY(int var1);
+    void moveY(int var1);
 }

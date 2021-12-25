@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Verberg dit bericht",
   "minimap.ui.zoomlevel": "Zoomniveau:",
   "minimap.ui.otheroptions": "Andere Opties",
-
   "options.minimap.title": "Minimap Opties",
   "options.minimap.showcoordinates": "Toon coordinaten",
   "options.minimap.hideminimap": "Verberg Minimap",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Schakel Mob uit",
   "options.minimap.mobs.enabled": "Mob weergave is ingeschakeld",
   "options.minimap.mobs.disabled": "Mob weergave is uitgeschakeld",
-
   "controls.minimap.title": "Minimap Controles",
   "controls.minimap.unbind1": "Om een toets te ontbinden, selecteer het en druk op \"Escape\".",
   "controls.minimap.unbind2": "(Behalve de menu-toets - dat kan niet worden ongebonden)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Schakel Mobs",
   "key.minimap.waypointhotkey": "Waypoint Sneltoets",
   "key.minimap.waypointmenu": "Routepunt Menu",
-
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Teleporteer Naar",
   "minimap.waypoints.highlight": "Markeer",

@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Ẩn tin nhắn này",
   "minimap.ui.zoomlevel": "Mức độ phóng đại:",
   "minimap.ui.otheroptions": "Tùy chọn khác",
-
   "options.minimap.title": "Tùy chọn cho bản đồ",
   "options.minimap.showcoordinates": "Hiển thị tọa độ",
   "options.minimap.hideminimap": "Ẩn bản đồ",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Ẩn biểu tượng Mob",
   "options.minimap.mobs.enabled": "Biểu tượng này đã được hiển thị",
   "options.minimap.mobs.disabled": "Biểu tượng này chưa được hiển thị.",
-
   "controls.minimap.title": "Điều khiển bản đồ",
   "controls.minimap.unbind1": "Để hủy gán một phím, chọn nó và ấn phím \"ESC\".",
   "controls.minimap.unbind2": "(Ngoại trừ phím Menu - Nó không thể bị hủy gán)",
@@ -82,7 +80,6 @@
   "key.minimap.menu": "Menu",
   "key.minimap.waypointhotkey": "Phím tắt chỉ đường",
   "key.minimap.togglemobs": "Chuyển đổi hiển thị Mob",
-
   "minimap.waypoints.title": "Điểm chỉ đường",
   "minimap.waypoints.teleportto": "Dịch chuyển đến",
   "minimap.waypoints.highlight": "Làm nổi bật",

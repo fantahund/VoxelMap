@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "إخفاء هذه الرسالة",
   "minimap.ui.zoomlevel": "مستوى التكبير:",
   "minimap.ui.otheroptions": "خيارات أخرى",
-
   "options.minimap.title": "خيارات الخريطة",
   "options.minimap.showcoordinates": "عرض الأحداثيات",
   "options.minimap.hideminimap": "إخفاء الخريطة",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "تعطيل الموب",
   "options.minimap.mobs.enabled": "عرض الموب ممكن",
   "options.minimap.mobs.disabled": "عرض الموب معطل",
-
   "controls.minimap.title": "تحكم الخريطة",
   "controls.minimap.unbind1": "لتوثيق مفتاح، حدده ثم اضغط على 'Esc'.",
   "controls.minimap.unbind2": "(باستثناء مفتاح القائمة - لا يمكن أن يكون موجود)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "تبديل الموب",
   "key.minimap.waypointhotkey": "مفتاح اختصار الإحداثيات",
   "key.minimap.waypointmenu": "قائمة الإحداثيات",
-
   "minimap.waypoints.title": "الإحداثيات",
   "minimap.waypoints.teleportto": "انتقال فوري ل",
   "minimap.waypoints.highlight": "تسليط الضوء",

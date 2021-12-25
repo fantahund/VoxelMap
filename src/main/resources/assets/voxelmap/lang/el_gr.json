@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Απόκρυψη αυτού του μηνύματος",
   "minimap.ui.zoomlevel": "Επίπεδο Ζουμ:",
   "minimap.ui.otheroptions": "Άλλες επιλογές",
-
   "options.minimap.title": "Μικρός Επιλογές",
   "options.minimap.showcoordinates": "Display Συντεταγμένες",
   "options.minimap.hideminimap": "Απόκρυψη Minimap",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Πιο Πρόσφατα",
   "options.minimap.waypoints.deathpoints.all": "Όλα",
   "options.minimap.waypoints.deathpoints.tooltip": "έναρξη ισχύος την επόμενη θανάτου",
-
   "controls.minimap.title": "Μικρός ελέγχου",
   "controls.minimap.unbind1": "Για να αποσυνδέσετε ένα κλειδί, επιλέξτε το και πατήστε «Escape».",
   "controls.minimap.unbind2": "(Εκτός από το πλήκτρο μενού - δεν μπορεί να είναι λυμένο)",
@@ -73,7 +71,6 @@
   "key.minimap.togglemobs": "Εναλλαγή όχλος",
   "key.minimap.waypointhotkey": "Waypoint Hotkey",
   "key.minimap.waypointmenu": "Waypoint Menu",
-
   "minimap.waypoints.title": "Σημεία",
   "minimap.waypoints.teleportto": "teleport σε",
   "minimap.waypoints.highlight": "Highlight",

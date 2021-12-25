@@ -6,37 +6,37 @@ import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 
 public interface IVoxelMap {
-   MapSettingsManager getMapOptions();
+    MapSettingsManager getMapOptions();
 
-   RadarSettingsManager getRadarOptions();
+    RadarSettingsManager getRadarOptions();
 
-   PersistentMapSettingsManager getPersistentMapOptions();
+    PersistentMapSettingsManager getPersistentMapOptions();
 
-   IMap getMap();
+    IMap getMap();
 
-   IRadar getRadar();
+    IRadar getRadar();
 
-   IColorManager getColorManager();
+    IColorManager getColorManager();
 
-   IWaypointManager getWaypointManager();
+    IWaypointManager getWaypointManager();
 
-   IDimensionManager getDimensionManager();
+    IDimensionManager getDimensionManager();
 
-   IPersistentMap getPersistentMap();
+    IPersistentMap getPersistentMap();
 
-   void setPermissions(boolean var1, boolean var2, boolean var3, boolean var4);
+    void setPermissions(boolean var1, boolean var2, boolean var3, boolean var4);
 
-   void newSubWorldName(String var1, boolean var2);
+    void newSubWorldName(String var1, boolean var2);
 
-   void newSubWorldHash(String var1);
+    void newSubWorldHash(String var1);
 
-   ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier();
+    ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier();
 
-   String getWorldSeed();
+    String getWorldSeed();
 
-   void setWorldSeed(String var1);
+    void setWorldSeed(String var1);
 
-   void sendPlayerMessageOnMainThread(String var1);
+    void sendPlayerMessageOnMainThread(String var1);
 
-   WorldUpdateListener getWorldUpdateListener();
+    WorldUpdateListener getWorldUpdateListener();
 }

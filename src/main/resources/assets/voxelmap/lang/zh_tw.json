@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "隱藏此訊息",
   "minimap.ui.zoomlevel": "縮放等級:",
   "minimap.ui.otheroptions": "其他選項",
-
   "options.minimap.title": "小地圖選項",
   "options.minimap.showcoordinates": "顯示座標",
   "options.minimap.hideminimap": "隱藏地圖",
@@ -18,7 +17,7 @@
   "options.minimap.dynamiclighting": "動態光照",
   "options.minimap.terraindepth": "地形深度",
   "options.minimap.squaremap": "方形地圖",
-  "options.minimap.rotation": "方向旋轉", 
+  "options.minimap.rotation": "方向旋轉",
   "options.minimap.oldnorth": "日落為北",
   "options.minimap.ingamewaypoints": "在遊戲中的記錄點",
   "options.minimap.ingamewaypoints.beacons": "僅有光柱",
@@ -82,7 +81,6 @@
   "options.minimap.mobs.disable": "關閉怪物圖示",
   "options.minimap.mobs.enabled": "此圖示已經設定顯示",
   "options.minimap.mobs.disabled": "此圖示已經設定不顯示.",
-
   "controls.minimap.title": "小地圖按鍵選項",
   "controls.minimap.unbind1": "如果要解除按鍵設置, 請在選擇該項目後按 'Esc'.",
   "controls.minimap.unbind2": "(除了菜單鍵 - 它是不能解除的)",
@@ -94,8 +92,6 @@
   "key.minimap.waypointhotkey": "記錄點熱鍵",
   "key.minimap.togglemobs": "切換顯示生物",
   "key.minimap.toggleingamewaypoints": "切換顯示記錄點",
-
-
   "minimap.waypoints.title": "記錄點清單",
   "minimap.waypoints.teleportto": "瞬移到選擇的記錄點",
   "minimap.waypoints.highlight": "高亮",
@@ -119,7 +115,6 @@
   "minimap.waypoints.sortbycreated": "創建",
   "minimap.waypoints.sortbycolor": "顏色",
   "minimap.waypoints.sortbyicon": "圖標",
-
   "minimap.waypointshare.title": "分享記錄點",
   "minimap.waypointshare.titlecoordinate": "分享坐標",
   "minimap.waypointshare.sharemessage": "添加信息 (可選)",
@@ -130,7 +125,6 @@
   "minimap.waypointshare.all": "所有人",
   "minimap.waypointshare.tooltip1": "單擊以高亮顯示坐標,",
   "minimap.waypointshare.tooltip2": "或者單擊 添加/編輯 記錄點.",
-
   "options.minimap.worldmap": "世界地圖...",
   "worldmap.title": "VoxelMap",
   "options.worldmap.title": "世界地圖選項",
@@ -142,7 +136,6 @@
   "options.worldmap.maxzoom": "最大縮放等级",
   "options.worldmap.cachesize": "區域緩存大小",
   "options.worldmap.multiworld": "多世界...",
-
   "worldmap.multiworld.title": "VoxelMap - 多世界選擇",
   "worldmap.multiworld.select": "請選擇你所在的世界?",
   "worldmap.multiworld.newname": "新名稱",

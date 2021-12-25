@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Ocultar este mensaje",
   "minimap.ui.zoomlevel": "Nivel de Zoom:",
   "minimap.ui.otheroptions": "Otras Opciones",
-
   "options.minimap.title": "Opciones de Mapa",
   "options.minimap.showcoordinates": "Mostrar coordenadas",
   "options.minimap.hideminimap": "Ocultar Minimapa",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Desactivar ícono de Mob",
   "options.minimap.mobs.enabled": "Este ícono se está mostrando.",
   "options.minimap.mobs.disabled": "Este ícono no se está mostrando.",
-
   "controls.minimap.title": "Controles de Minimapa",
   "controls.minimap.unbind1": "Para desasociar una clave, pulse 'Escape'.",
   "controls.minimap.unbind2": "(Excepto por la clave de Menú - No la puede desasociar)",
@@ -82,7 +80,6 @@
   "key.minimap.menu": "Menú",
   "key.minimap.waypointhotkey": "Tecla para waypoints",
   "key.minimap.togglemobs": "Activar Mobs",
-
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Teletransportar a",
   "minimap.waypoints.highlight": "Elegir",

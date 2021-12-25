@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Skjul denne meldinga",
   "minimap.ui.zoomlevel": "Zoomnivå:",
   "minimap.ui.otheroptions": "Andre instillingar",
-
   "options.minimap.title": "Minimap-Instillingar",
   "options.minimap.showcoordinates": "Vis Koordinatar",
   "options.minimap.hideminimap": "Skjul Minimap",
@@ -63,7 +62,6 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Nyligst",
   "options.minimap.waypoints.deathpoints.all": "Alle",
   "options.minimap.waypoints.deathpoints.tooltip": "Aktiverast neste død",
-
   "controls.minimap.title": "Minimap-Kontroller",
   "controls.minimap.unbind1": "For å lauskople ein tast, vel den og trykk 'Escape'.",
   "controls.minimap.unbind2": "(Unntak for Menyknappen - den kan ikkje bli lauskopla)",
@@ -73,7 +71,6 @@
   "key.minimap.waypointhotkey": "Hurtigtast Landemerke",
   "key.minimap.togglemobs": "Mobs av/på",
   "key.minimap.waypointmenu": "Landemerkemeny",
-
   "minimap.waypoints.title": "Landemerker",
   "minimap.waypoints.teleportto": "Teleporter Til",
   "minimap.waypoints.highlight": "Lys opp",

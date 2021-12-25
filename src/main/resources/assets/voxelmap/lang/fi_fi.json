@@ -10,7 +10,6 @@
   "minimap.ui.welcome8": "Piilota tämä viesti",
   "minimap.ui.zoomlevel": "Zoomin taso:",
   "minimap.ui.otheroptions": "Muut asetukset",
-
   "options.minimap.title": "Kartan asetukset",
   "options.minimap.showcoordinates": "Näytä koordinaatit",
   "options.minimap.hideminimap": "Piilota kartta",
@@ -72,7 +71,6 @@
   "options.minimap.mobs.disable": "Deaktivoi olento",
   "options.minimap.mobs.enabled": "Olento-näkymä aktivoitu",
   "options.minimap.mobs.disabled": "Olento-näkymä deaktivoitu",
-
   "controls.minimap.title": "Kartan näppäimet",
   "controls.minimap.unbind1": "Avataksesi näppäimen, valitse ja paina 'Escape'.",
   "controls.minimap.unbind2": "(Paitsi Valikko-näppäintä - sitä ei voi purkaa)",
@@ -82,7 +80,6 @@
   "key.minimap.togglemobs": "Aktivoi/Deaktivoi olennot",
   "key.minimap.waypointhotkey": "Reittipisteiden pikanäppäin",
   "key.minimap.waypointmenu": "Reittipiste-valikko",
-
   "minimap.waypoints.title": "Reittipisteet",
   "minimap.waypoints.teleportto": "Teleporttaa",
   "minimap.waypoints.highlight": "Korosta",
