@@ -98,7 +98,7 @@ import java.util.TreeSet;
 public class Map implements Runnable, IMap {
     private IVoxelMap master;
     private MinecraftClient game;
-    private String zmodver = "v1.10.15";
+    private String zmodver = "v1.10.17";
     private ClientWorld world = null;
     private final int WORLD_HEIGHT = 256;
     private MapSettingsManager options = null;
