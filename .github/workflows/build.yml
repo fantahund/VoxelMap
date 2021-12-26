@@ -16,7 +16,7 @@ jobs:
         run: ./gradlew
       - uses: actions/upload-artifact@v2
         with:
-          name: voxelmap
+          name: voxelMap
           path: build/libs/*
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -25,4 +25,4 @@ jobs:
           prerelease: false
           title: "VoxelMap"
           files: |
-            build/libs/voxelmap-*([0-9\.\-]).jar
+            build/libs/voxelmap-*.jar
