@@ -53,7 +53,7 @@ public class GuiScreenMinimap extends Screen {
         return this.height;
     }
 
-    public List getButtonList() {
+    public List<?> getButtonList() {
         return this.children();
     }
 

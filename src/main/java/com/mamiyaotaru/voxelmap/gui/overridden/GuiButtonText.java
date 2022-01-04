@@ -8,11 +8,7 @@ import net.minecraft.text.Text;
 
 public class GuiButtonText extends ButtonWidget {
     private boolean editing = false;
-    private TextFieldWidget textField;
-
-    public GuiButtonText(TextRenderer fontRenderer, int x, int y, Text buttonText, ButtonWidget.PressAction action) {
-        this(fontRenderer, x, y, 200, 20, buttonText, action);
-    }
+    private final TextFieldWidget textField;
 
     public GuiButtonText(TextRenderer fontRenderer, int x, int y, int widthIn, int heightIn, Text buttonText, ButtonWidget.PressAction action) {
         super(x, y, widthIn, heightIn, buttonText, action);

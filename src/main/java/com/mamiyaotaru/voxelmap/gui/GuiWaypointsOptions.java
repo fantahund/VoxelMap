@@ -27,8 +27,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         int var2 = 0;
         this.screenTitle = new TranslatableText("options.minimap.waypoints.title");
 
-        for (int t = 0; t < relevantOptions.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions[t];
+        for (EnumOptionsMinimap option : relevantOptions) {
             if (option.isFloat()) {
                 float distance = this.options.getOptionFloatValue(option);
                 if (distance < 0.0F) {
@@ -38,7 +37,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
                 distance = (distance - 50.0F) / 9951.0F;
                 this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, distance, this.options));
             } else {
-                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), button -> this.optionClicked(button));
+                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), this::optionClicked);
                 this.addDrawableChild(optionButton);
             }
 

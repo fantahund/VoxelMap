@@ -5,7 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import java.util.ArrayList;
 
 public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupGuiScreen {
-    private ArrayList<Popup> popups = new ArrayList();
+    private final ArrayList<Popup> popups = new ArrayList<>();
 
     public void drawMap() {
     }
@@ -14,7 +14,7 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     public void removed() {
     }
 
-    public void createPopup(int x, int y, int directX, int directY, ArrayList entries) {
+    public void createPopup(int x, int y, int directX, int directY, ArrayList<?> entries) {
         this.popups.add(new Popup(x, y, directX, directY, entries, this));
     }
 
@@ -24,7 +24,7 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
 
     public boolean clickedPopup(double x, double y) {
         boolean clicked = false;
-        ArrayList deadPopups = new ArrayList();
+        ArrayList<Popup> deadPopups = new ArrayList<>();
 
         for (Popup popup : this.popups) {
             boolean clickedPopup = popup.clickedMe(x, y);
@@ -50,12 +50,12 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
             over = over || overPopup;
         }
 
-        return over;
+        return !over;
     }
 
     @Override
     public boolean popupOpen() {
-        return this.popups.size() > 0;
+        return this.popups.size() <= 0;
     }
 
     public void render(MatrixStack matrixStack, int x, int y, float dunno) {

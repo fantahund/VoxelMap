@@ -23,9 +23,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 class GuiSlotMobs extends GuiSlotMinimap {
-    private ArrayList mobs;
-    private ArrayList mobsFiltered;
-    private RadarSettingsManager options;
+    private final ArrayList<MobItem> mobs;
+    private ArrayList<?> mobsFiltered;
     final GuiMobs parentGui;
     final TranslatableText ENABLE = new TranslatableText("options.minimap.mobs.enable");
     final TranslatableText DISABLE = new TranslatableText("options.minimap.mobs.disable");
@@ -37,33 +36,29 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public GuiSlotMobs(GuiMobs par1GuiMobs) {
         super(par1GuiMobs.options.game, par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
         this.parentGui = par1GuiMobs;
-        this.options = this.parentGui.options;
-        this.mobs = new ArrayList();
+        RadarSettingsManager options = this.parentGui.options;
+        this.mobs = new ArrayList<MobItem>();
 
         for (EnumMobs mob : EnumMobs.values()) {
-            if (mob.isTopLevelUnit && (mob.isHostile && this.options.showHostiles || mob.isNeutral && this.options.showNeutrals)) {
+            if (mob.isTopLevelUnit && (mob.isHostile && options.showHostiles || mob.isNeutral && options.showNeutrals)) {
                 this.mobs.add(new MobItem(this.parentGui, mob.id));
             }
         }
 
         for (CustomMob mob : CustomMobsManager.mobs) {
-            if (mob.isHostile && this.options.showHostiles || mob.isNeutral && this.options.showNeutrals) {
+            if (mob.isHostile && options.showHostiles || mob.isNeutral && options.showNeutrals) {
                 this.mobs.add(new MobItem(this.parentGui, mob.id));
             }
         }
 
         final Collator collator = I18nUtils.getLocaleAwareCollator();
-        Collections.sort(this.mobs, new Comparator<MobItem>() {
-            public int compare(MobItem mob1, MobItem mob2) {
-                return collator.compare(mob1.name, mob2.name);
-            }
-        });
-        this.mobsFiltered = new ArrayList(this.mobs);
-        this.mobsFiltered.forEach(x$0 -> this.addEntry((EntryListWidget.Entry) x$0));
+        this.mobs.sort((mob1, mob2) -> collator.compare(mob1.name, mob2.name));
+        this.mobsFiltered = new ArrayList<>(this.mobs);
+        this.mobsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
     }
 
     private static String getTranslatedName(String name) {
-        if (name.indexOf(".") == -1) {
+        if (!name.contains(".")) {
             name = "entity.minecraft." + name.toLowerCase();
         }
 
@@ -77,7 +72,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public void setSelected(MobItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof MobItem) {
-            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", new Object[]{((MobItem) this.getSelectedOrNull()).name})).getString());
+            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 
         this.parentGui.setSelectedMob(item.id);
@@ -97,21 +92,21 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
     protected void updateFilter(String filterString) {
         this.clearEntries();
-        this.mobsFiltered = new ArrayList(this.mobs);
-        Iterator iterator = this.mobsFiltered.iterator();
+        this.mobsFiltered = new ArrayList<>(this.mobs);
+        Iterator<?> iterator = this.mobsFiltered.iterator();
 
         while (iterator.hasNext()) {
             String mobName = ((MobItem) iterator.next()).name;
             if (!mobName.toLowerCase().contains(filterString)) {
-                if (mobName == this.parentGui.selectedMobId) {
-                    this.parentGui.setSelectedMob((String) null);
+                if (mobName.equals(this.parentGui.selectedMobId)) {
+                    this.parentGui.setSelectedMob(null);
                 }
 
                 iterator.remove();
             }
         }
 
-        this.mobsFiltered.forEach(x$0 -> this.addEntry((EntryListWidget.Entry) x$0));
+        this.mobsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
     }
 
     public class MobItem extends EntryListWidget.Entry<MobItem> {
@@ -145,7 +140,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
-            int color = -16777216 + (red << 16) + (green << 8) + 0;
+            int color = -16777216 + (red << 16) + (green << 8);
             DrawableHelper.drawCenteredText(matrixStack, this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, slotYPos + 3, color);
             byte padding = 3;
             if (mouseX >= leftEdge - padding && mouseY >= slotYPos && mouseX <= leftEdge + 215 + padding && mouseY <= slotYPos + GuiSlotMobs.this.itemHeight) {

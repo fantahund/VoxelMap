@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.world.dimension.DimensionType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public class WorldMatcher {
                 MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
                 if (!WorldMatcher.this.cancelled && this.candidateRegions.size() == 1 && !WorldMatcher.this.master.getWaypointManager().receivedAutoSubworldName()) {
                     WorldMatcher.this.master.newSubWorldName(((ComparisonCachedRegion) this.candidateRegions.get(0)).getSubworldName(), false);
-                    StringBuilder successBuilder = (new StringBuilder(I18nUtils.getString("worldmap.multiworld.foundworld1"))).append(":").append(" ").append(((ComparisonCachedRegion) this.candidateRegions.get(0)).getSubworldName()).append(".").append(" ").append(I18nUtils.getString("worldmap.multiworld.foundworld2"));
+                    StringBuilder successBuilder = (new StringBuilder(I18nUtils.getString("worldmap.multiworld.foundworld1"))).append(":").append(" §a").append(((ComparisonCachedRegion) this.candidateRegions.get(0)).getSubworldName()).append(".§r").append(" ").append(I18nUtils.getString("worldmap.multiworld.foundworld2"));
                     MessageUtils.chatInfo(successBuilder.toString());
                 } else if (!WorldMatcher.this.cancelled && !WorldMatcher.this.master.getWaypointManager().receivedAutoSubworldName()) {
                     MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());

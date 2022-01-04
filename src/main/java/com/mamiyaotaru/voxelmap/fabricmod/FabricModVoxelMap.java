@@ -26,19 +26,12 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public void lateInit() {
         this.initialized = true;
         this.master.lateInit(true, false);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                FabricModVoxelMap.this.onShutDown();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(FabricModVoxelMap.this::onShutDown));
     }
 
     public void clientTick(MinecraftClient client) {
         if (!this.initialized) {
-            boolean OK = true;
-            if (MinecraftClient.getInstance() == null || client.getResourceManager() == null || client.getTextureManager() == null) {
-                OK = false;
-            }
+            boolean OK = MinecraftClient.getInstance() != null && client.getResourceManager() != null && client.getTextureManager() != null;
 
             if (OK) {
                 this.lateInit();
@@ -78,7 +71,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public static void onRenderHand(float partialTicks, long timeSlice, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
             instance.master.getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-        } catch (Exception var9) {
+        } catch (Exception ignored) {
         }
 
     }
@@ -95,7 +88,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
             try {
                 Thread.sleep(200L);
-            } catch (InterruptedException var4) {
+            } catch (InterruptedException ignored) {
             }
         }
 

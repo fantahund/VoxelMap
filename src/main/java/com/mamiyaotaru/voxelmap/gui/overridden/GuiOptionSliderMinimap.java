@@ -5,8 +5,8 @@ import net.minecraft.client.gui.widget.SliderWidget;
 import net.minecraft.text.LiteralText;
 
 public class GuiOptionSliderMinimap extends SliderWidget {
-    private ISettingsManager options;
-    private EnumOptionsMinimap option = null;
+    private final ISettingsManager options;
+    private final EnumOptionsMinimap option;
 
     public GuiOptionSliderMinimap(int x, int y, EnumOptionsMinimap optionIn, float sliderValue, ISettingsManager options) {
         super(x, y, 150, 20, new LiteralText(options.getKeyText(optionIn)), (double) sliderValue);
@@ -28,7 +28,7 @@ public class GuiOptionSliderMinimap extends SliderWidget {
 
     public void setValue(float value) {
         if (!this.isHovered()) {
-            this.value = (double) value;
+            this.value = value;
             this.updateMessage();
         }
 

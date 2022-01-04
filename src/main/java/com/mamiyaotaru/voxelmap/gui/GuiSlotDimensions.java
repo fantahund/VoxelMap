@@ -15,9 +15,8 @@ import net.minecraft.text.TranslatableText;
 import java.util.ArrayList;
 
 class GuiSlotDimensions extends GuiSlotMinimap {
-    private IDimensionManager dimensionManager;
     final GuiAddWaypoint parentGui;
-    private ArrayList dimensions;
+    private final ArrayList<DimensionItem> dimensions;
     final TranslatableText APPLIES = new TranslatableText("minimap.waypoints.dimension.applies");
     final TranslatableText NOT_APPLIES = new TranslatableText("minimap.waypoints.dimension.notapplies");
 
@@ -29,11 +28,11 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         this.setRenderSelection(false);
         this.setShowTopBottomBG(false);
         this.setShowSlotBG(false);
-        this.dimensionManager = this.parentGui.master.getDimensionManager();
-        this.dimensions = new ArrayList();
+        IDimensionManager dimensionManager = this.parentGui.master.getDimensionManager();
+        this.dimensions = new ArrayList<>();
         DimensionItem first = null;
 
-        for (DimensionContainer dim : this.dimensionManager.getDimensions()) {
+        for (DimensionContainer dim : dimensionManager.getDimensions()) {
             DimensionItem item = new DimensionItem(this.parentGui, dim);
             this.dimensions.add(item);
             if (dim.equals(this.parentGui.waypoint.dimensions.first())) {
@@ -41,7 +40,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             }
         }
 
-        this.dimensions.forEach(x$0 -> this.addEntry((EntryListWidget.Entry) x$0));
+        this.dimensions.forEach(this::addEntry);
         if (first != null) {
             this.ensureVisible(first);
         }
@@ -51,14 +50,14 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     public void setSelected(DimensionItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof DimensionItem) {
-            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", new Object[]{((DimensionItem) this.getSelectedOrNull()).dim.name})).getString());
+            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
         }
 
         this.parentGui.setSelectedDimension(item.dim);
     }
 
     protected boolean isSelectedEntry(int par1) {
-        return ((DimensionItem) this.dimensions.get(par1)).dim.equals(this.parentGui.selectedDimension);
+        return this.dimensions.get(par1).dim.equals(this.parentGui.selectedDimension);
     }
 
     public void renderBackground(MatrixStack matrixStack) {
@@ -80,8 +79,8 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             leftEdge = this.parentGui.getWidth() / 2;
             int width = GuiSlotDimensions.this.slotWidth;
             if (mouseX >= leftEdge + padding && mouseY >= slotYPos && mouseX <= leftEdge + width + padding && mouseY <= slotYPos + GuiSlotDimensions.this.itemHeight) {
-                TranslatableText tooltip = null;
-                if (!this.parentGui.popupOpen() && mouseX >= leftEdge + width - iconWidth - padding && mouseX <= leftEdge + width) {
+                TranslatableText tooltip;
+                if (this.parentGui.popupOpen() && mouseX >= leftEdge + width - iconWidth - padding && mouseX <= leftEdge + width) {
                     tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? GuiSlotDimensions.this.APPLIES : GuiSlotDimensions.this.NOT_APPLIES;
                 } else {
                     tooltip = null;

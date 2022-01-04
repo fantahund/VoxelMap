@@ -30,7 +30,7 @@ public class Popup {
     PopupGuiScreen parentGui;
     int padding = 6;
 
-    public Popup(int x, int y, int directX, int directY, ArrayList entries, PopupGuiScreen parentGui) {
+    public Popup(int x, int y, int directX, int directY, ArrayList<?> entries, PopupGuiScreen parentGui) {
         this.client = MinecraftClient.getInstance();
         this.fontRendererObj = this.client.textRenderer;
         this.parentGui = parentGui;
@@ -45,8 +45,8 @@ public class Popup {
         this.w = 0;
         this.h = this.entries.length * 20;
 
-        for (int t = 0; t < this.entries.length; ++t) {
-            int entryWidth = this.fontRendererObj.getWidth(this.entries[t].name);
+        for (PopupEntry entry : this.entries) {
+            int entryWidth = this.fontRendererObj.getWidth(entry.name);
             if (entryWidth > this.w) {
                 this.w = entryWidth;
             }
@@ -97,10 +97,10 @@ public class Popup {
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var6 = 32.0F;
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        vertexBuffer.vertex((double) this.x, (double) (this.y + this.h), 0.0).texture((float) this.x / var6, (float) this.y / var6).color(64, 64, 64, 255).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + this.h), 0.0).texture((float) (this.x + this.w) / var6, (float) this.y / var6).color(64, 64, 64, 255).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + 0), 0.0).texture((float) (this.x + this.w) / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
-        vertexBuffer.vertex((double) this.x, (double) (this.y + 0), 0.0).texture((float) this.x / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x, this.y + this.h, 0.0).texture((float) this.x / var6, (float) this.y / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).texture((float) (this.x + this.w) / var6, (float) this.y / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y, 0.0).texture((float) (this.x + this.w) / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x, this.y, 0.0).texture((float) this.x / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
         tessellator.draw();
         GLShim.glEnable(3042);
         GLShim.glBlendFunc(770, 771);
@@ -108,28 +108,28 @@ public class Popup {
         GLShim.glDisable(3553);
         byte fadeWidth = 4;
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        vertexBuffer.vertex((double) this.x, (double) (this.y + 4), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + 4), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) this.y, 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) this.x, (double) this.y, 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) this.x, (double) (this.y + this.h), 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + this.h), 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + this.h - 4), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) this.x, (double) (this.y + this.h - 4), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) this.x, (double) this.y, 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) this.x, (double) (this.y + this.h), 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) (this.x + 4), (double) (this.y + this.h), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + 4), (double) this.y, 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w - 4), (double) this.y, 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w - 4), (double) (this.y + this.h), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + this.h), 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) this.y, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x, this.y + 4, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + 4, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x, this.y, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + this.h - 4, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x, this.y + this.h - 4, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x, this.y, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x + 4, this.y + this.h, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + 4, this.y, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w - 4, this.y, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w - 4, this.y + this.h, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
         tessellator.draw();
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-        vertexBuffer.vertex((double) (this.x + this.w - 4), (double) this.y, 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w - 4), (double) (this.y + this.h), 0.0).color(0, 0, 0, 0).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) (this.y + this.h), 0.0).color(0, 0, 0, 255).next();
-        vertexBuffer.vertex((double) (this.x + this.w), (double) this.y, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x + this.w - 4, this.y, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w - 4, this.y + this.h, 0.0).color(0, 0, 0, 0).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
         tessellator.draw();
         GLShim.glEnable(3553);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

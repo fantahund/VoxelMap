@@ -97,7 +97,7 @@ public class GuiMobs extends GuiScreenMinimap {
             return mob.enabled;
         } else {
             CustomMob customMob = CustomMobsManager.getCustomMobByType(mobId);
-            return customMob != null ? customMob.enabled : false;
+            return customMob != null && customMob.enabled;
         }
     }
 
@@ -146,8 +146,8 @@ public class GuiMobs extends GuiScreenMinimap {
 
     }
 
-    static Text setTooltip(GuiMobs par0GuiWaypoints, Text par1Str) {
-        return par0GuiWaypoints.tooltip = par1Str;
+    static void setTooltip(GuiMobs par0GuiWaypoints, Text par1Str) {
+        par0GuiWaypoints.tooltip = par1Str;
     }
 
     @Override

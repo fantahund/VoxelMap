@@ -21,14 +21,12 @@ import net.minecraft.text.TranslatableText;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 
 public class GuiButtonRowListPlayers extends EntryListWidget {
     private final MinecraftClient client = MinecraftClient.getInstance();
-    private ArrayList players;
-    private ArrayList playersFiltered;
+    private final ArrayList<PlayerListEntry> players;
+    private ArrayList<?> playersFiltered;
     final GuiSelectPlayer parentGui;
     Row everyoneRow;
     final TranslatableText ALL = new TranslatableText("minimap.waypointshare.all");
@@ -41,9 +39,9 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
         super(MinecraftClient.getInstance(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
         this.parentGui = par1GuiSelectPlayer;
         ClientPlayNetworkHandler netHandlerPlayClient = MinecraftClient.getInstance().player.networkHandler;
-        this.players = new ArrayList(netHandlerPlayClient.getPlayerList());
+        this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
         this.sort();
-        ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, (Text) this.ALL, null) {
+        ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null) {
             public void onPress() {
             }
         };
@@ -55,7 +53,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
         return (Text) (ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : new LiteralText(ScoreboardEntryIn.getProfile().getName()));
     }
 
-    private ButtonWidget createButtonFor(MinecraftClient mcIn, int x, int y, PlayerListEntry ScoreboardEntry) {
+    private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {
         if (ScoreboardEntry == null) {
             return null;
         } else {
@@ -63,10 +61,6 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
             return new ButtonWidget(x, y, 150, 20, name, button -> {
             });
         }
-    }
-
-    public Row getListEntry(int index) {
-        return this.getListEntry(index);
     }
 
     public int getRowWidth() {
@@ -79,7 +73,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
 
     protected void sort() {
         final Collator collator = I18nUtils.getLocaleAwareCollator();
-        Collections.sort(this.players, (Comparator<PlayerListEntry>) (player1, player2) -> {
+        this.players.sort((player1, player2) -> {
             String name1 = GuiButtonRowListPlayers.this.getPlayerName(player1).getString();
             String name2 = GuiButtonRowListPlayers.this.getPlayerName(player2).getString();
             return collator.compare(name1, name2);
@@ -87,8 +81,8 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     }
 
     protected void updateFilter(String filterString) {
-        this.playersFiltered = new ArrayList(this.players);
-        Iterator iterator = this.playersFiltered.iterator();
+        this.playersFiltered = new ArrayList<>(this.players);
+        Iterator<?> iterator = this.playersFiltered.iterator();
 
         while (iterator.hasNext()) {
             PlayerListEntry ScoreboardEntry = (PlayerListEntry) iterator.next();
@@ -104,8 +98,8 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
         for (int i = 0; i < this.playersFiltered.size(); i += 2) {
             PlayerListEntry ScoreboardEntry1 = (PlayerListEntry) this.playersFiltered.get(i);
             PlayerListEntry ScoreboardEntry2 = i < this.playersFiltered.size() - 1 ? (PlayerListEntry) this.playersFiltered.get(i + 1) : null;
-            ButtonWidget guibutton1 = this.createButtonFor(this.client, this.parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
-            ButtonWidget guibutton2 = this.createButtonFor(this.client, this.parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
+            ButtonWidget guibutton1 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
+            ButtonWidget guibutton2 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
             this.addEntry(new Row(guibutton1, i, guibutton2, i + 1));
         }
 
@@ -163,7 +157,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
                 }
 
                 if (button.isHovered() && mouseY >= GuiButtonRowListPlayers.this.top && mouseY <= GuiButtonRowListPlayers.this.bottom) {
-                    Text tooltip = new TranslatableText("minimap.waypointshare.sharewithname", new Object[]{button.getMessage()});
+                    Text tooltip = new TranslatableText("minimap.waypointshare.sharewithname", button.getMessage());
                     GuiSelectPlayer.setTooltip(GuiButtonRowListPlayers.this.parentGui, tooltip);
                 }
             }

@@ -96,17 +96,32 @@ import java.util.Random;
 import java.util.TreeSet;
 
 public class Map implements Runnable, IMap {
+    private final int WORLD_HEIGHT = 256;
+    private final float[] lastLightBrightnessTable = new float[16];
+    private final Object coordinateLock = new Object();
+    private final int SEAFLOORLAYER = 0;
+    private final int GROUNDLAYER = 1;
+    private final int FOLIAGELAYER = 2;
+    private final int TRANSPARENTLAYER = 3;
+    private final float SQRT2 = 1.4142F;
+    private final Identifier arrowResourceLocation = new Identifier("voxelmap", "images/mmarrow.png");
+    private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
+    private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
+    private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
+    LiveScaledGLBufferedImage roundImage = new LiveScaledGLBufferedImage(128, 128, 6);
     private IVoxelMap master;
     private MinecraftClient game;
-    private String zmodver = "v1.10.17";
+    private String zmodver = "v1.10.18";
     private ClientWorld world = null;
-    private final int WORLD_HEIGHT = 256;
     private MapSettingsManager options = null;
     private LayoutVariables layoutVariables = null;
     private IColorManager colorManager = null;
     private IWaypointManager waypointManager = null;
     private int availableProcessors = Runtime.getRuntime().availableProcessors();
     private boolean multicore = this.availableProcessors > 1;
+    private int heightMapResetHeight = this.multicore ? 2 : 5;
+    private int heightMapResetTime = this.multicore ? 300 : 3000;
+    private boolean threading = this.multicore;
     private FullMapData[] mapData = new FullMapData[5];
     private MapChunkCache[] chunkCache = new MapChunkCache[5];
     private MutableNativeImageBackedTexture[] mapImages;
@@ -123,7 +138,6 @@ public class Map implements Runnable, IMap {
     private boolean needLightmapRefresh = true;
     private int tickWithLightChange = 0;
     private boolean lastPaused = true;
-    private final float[] lastLightBrightnessTable = new float[16];
     private double lastGamma = 0.0;
     private float lastSunBrightness = 0.0F;
     private float lastLightning = 0.0F;
@@ -162,27 +176,13 @@ public class Map implements Runnable, IMap {
     private float percentX;
     private float percentY;
     private String subworldName = "";
-    private int heightMapResetHeight = this.multicore ? 2 : 5;
-    private int heightMapResetTime = this.multicore ? 300 : 3000;
     private int northRotate = 0;
     private Thread zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
     private int zCalcTicker = 0;
-    private boolean threading = this.multicore;
     private TextRenderer fontRenderer;
     private int[] lightmapColors = new int[256];
-    private final Object coordinateLock = new Object();
-    private final int SEAFLOORLAYER = 0;
-    private final int GROUNDLAYER = 1;
-    private final int FOLIAGELAYER = 2;
-    private final int TRANSPARENTLAYER = 3;
     private double zoomScale = 1.0;
     private double zoomScaleAdjusted = 1.0;
-    private final float SQRT2 = 1.4142F;
-    private final Identifier arrowResourceLocation = new Identifier("voxelmap", "images/mmarrow.png");
-    private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
-    private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
-    private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
-    LiveScaledGLBufferedImage roundImage = new LiveScaledGLBufferedImage(128, 128, 6);
     private int count = 0;
     private int mapImageInt = -1;
 
@@ -931,7 +931,11 @@ public class Map implements Runnable, IMap {
 
     @Override
     public void handleChangeInWorld(int chunkX, int chunkZ) {
-        this.chunkCache[this.zoom].registerChangeAt(chunkX, chunkZ);
+        try {
+            this.chunkCache[this.zoom].registerChangeAt(chunkX, chunkZ);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

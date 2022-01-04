@@ -16,14 +16,13 @@ import net.minecraft.text.TranslatableText;
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
     private final Screen parentScreen;
     protected Text screenTitle = new LiteralText("players");
-    private boolean sharingWaypoint = true;
+    private boolean sharingWaypoint;
     private GuiButtonRowListPlayers playerList;
     protected boolean allClicked = false;
     protected TextFieldWidget message;
     protected TextFieldWidget filter;
     private Text tooltip = null;
-    private String locInfo;
-    private final int maxMessageLength = 78;
+    private final String locInfo;
     final MutableText SHARE_MESSAGE = (new TranslatableText("minimap.waypointshare.sharemessage")).append(":");
     final TranslatableText SHARE_WITH = new TranslatableText("minimap.waypointshare.sharewith");
     final TranslatableText SHARE_WAYPOINT = new TranslatableText("minimap.waypointshare.title");
@@ -142,8 +141,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     }
 
-    static Text setTooltip(GuiSelectPlayer par0GuiWaypoints, Text par1Str) {
-        return par0GuiWaypoints.tooltip = par1Str;
+    static void setTooltip(GuiSelectPlayer par0GuiWaypoints, Text par1Str) {
+        par0GuiWaypoints.tooltip = par1Str;
     }
 
     @Override

@@ -14,9 +14,8 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 
 public class GuiMinimapOptions extends GuiScreenMinimap {
-    private Screen parent;
-    private IVoxelMap master;
-    private static EnumOptionsMinimap[] relevantOptions;
+    private final Screen parent;
+    private final IVoxelMap master;
     private final MapSettingsManager options;
     protected String screenTitle = "Minimap Options";
 
@@ -27,13 +26,12 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     public void init() {
-        relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE};
+        EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE};
         int var2 = 0;
         this.screenTitle = I18nUtils.getString("options.minimap.title");
 
-        for (int t = 0; t < relevantOptions.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions[t];
-            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), button -> this.optionClicked(button));
+        for (EnumOptionsMinimap option : relevantOptions) {
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), this::optionClicked);
             this.addDrawableChild(optionButton);
             if (option.equals(EnumOptionsMinimap.CAVEMODE)) {
                 optionButton.active = this.options.cavesAllowed;

@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -23,7 +24,7 @@ import java.util.TreeSet;
 
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private final Screen parentScreen;
-    private IVoxelMap master;
+    private final IVoxelMap master;
     protected final MapSettingsManager options;
     protected final IWaypointManager waypointManager;
     protected Text screenTitle;
@@ -43,9 +44,9 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private boolean addClicked = false;
     private Text tooltip = null;
     protected Waypoint selectedWaypoint = null;
-    protected Waypoint highlightedWaypoint = null;
+    protected Waypoint highlightedWaypoint;
     protected Waypoint newWaypoint = null;
-    private Random generator = new Random();
+    private final Random generator = new Random();
     private boolean changedSort = false;
 
     public GuiWaypoints(Screen parentScreen, IVoxelMap master) {
@@ -127,7 +128,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         if (var2 != null) {
             this.deleteClicked = true;
             TranslatableText title = new TranslatableText("minimap.waypoints.deleteconfirm");
-            TranslatableText explanation = new TranslatableText("selectServer.deleteWarning", new Object[]{var2});
+            TranslatableText explanation = new TranslatableText("selectServer.deleteWarning", var2);
             TranslatableText affirm = new TranslatableText("selectServer.deleteButton");
             TranslatableText deny = new TranslatableText("gui.cancel");
             ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
@@ -144,7 +145,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
             this.options.game.player.sendChatMessage("/tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
         }
 
-        this.getMinecraft().setScreen((Screen) null);
+        this.getMinecraft().setScreen(null);
     }
 
     protected void sortClicked(int id) {
@@ -264,7 +265,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
             b = this.generator.nextFloat();
         }
 
-        TreeSet dimensions = new TreeSet();
+        TreeSet<DimensionContainer> dimensions = new TreeSet<>();
         dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(this.getMinecraft().world));
         double dimensionScale = this.options.game.player.world.getDimension().getCoordinateScale();
         this.newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
@@ -290,8 +291,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     }
 
-    static Text setTooltip(GuiWaypoints par0GuiWaypoints, Text par1Str) {
-        return par0GuiWaypoints.tooltip = par1Str;
+    static void setTooltip(GuiWaypoints par0GuiWaypoints, Text par1Str) {
+        par0GuiWaypoints.tooltip = par1Str;
     }
 
     public boolean canTeleport() {

@@ -21,26 +21,22 @@ import net.minecraft.text.TranslatableText;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
     private Text title;
     private Text select;
     private boolean multiworld = false;
-    private ButtonWidget cancelBtn;
     private TextFieldWidget newNameField;
     private boolean newWorld = false;
     private float yaw;
-    private Perspective thirdPersonViewOrig;
-    private ButtonWidget[] selectButtons;
-    private ButtonWidget[] editButtons;
+    private final Perspective thirdPersonViewOrig;
     private String[] worlds;
-    private Screen parent;
+    private final Screen parent;
     ClientPlayerEntity thePlayer;
     ClientPlayerEntity camera;
-    private IVoxelMap master;
-    private IWaypointManager waypointManager;
+    private final IVoxelMap master;
+    private final IWaypointManager waypointManager;
 
     public GuiSubworldsSelect(Screen parent, IVoxelMap master) {
         this.client = MinecraftClient.getInstance();
@@ -56,7 +52,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     public void init() {
-        ArrayList knownSubworldNames = new ArrayList(this.waypointManager.getKnownSubworldNames());
+        ArrayList<String> knownSubworldNames = new ArrayList(this.waypointManager.getKnownSubworldNames());
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !this.getMinecraft().isConnectedToRealms()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, new TranslatableText("worldmap.multiworld.isthismultiworld"), new TranslatableText("worldmap.multiworld.explanation"), new TranslatableText("gui.yes"), new TranslatableText("gui.no"));
             this.getMinecraft().setScreen(confirmScreen);
@@ -76,16 +72,16 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
         int buttonWidth = this.width / buttonsPerRow - 5;
         int xSpacing = (this.width - buttonsPerRow * buttonWidth) / 2;
-        this.cancelBtn = new ButtonWidget(centerX - 100, this.height - 30, 200, 20, new TranslatableText("gui.cancel"), button -> this.getMinecraft().setScreen((Screen) null));
-        this.addDrawableChild(this.cancelBtn);
+        ButtonWidget cancelBtn = new ButtonWidget(centerX - 100, this.height - 30, 200, 20, new TranslatableText("gui.cancel"), button -> this.getMinecraft().setScreen(null));
+        this.addDrawableChild(cancelBtn);
         final Collator collator = I18nUtils.getLocaleAwareCollator();
-        Collections.sort(knownSubworldNames, (Comparator<String>) (name1, name2) -> -collator.compare(name1, name2));
+        knownSubworldNames.sort((name1, name2) -> -collator.compare(name1, name2));
         int numKnownSubworlds = knownSubworldNames.size();
-        int completeRows = (int) Math.floor((double) ((float) (numKnownSubworlds + 1) / (float) buttonsPerRow));
-        int lastRowShiftBy = (int) (Math.ceil((double) ((float) (numKnownSubworlds + 1) / (float) buttonsPerRow)) * (double) buttonsPerRow - (double) (numKnownSubworlds + 1));
+        int completeRows = (int) Math.floor((float) (numKnownSubworlds + 1) / (float) buttonsPerRow);
+        int lastRowShiftBy = (int) (Math.ceil((float) (numKnownSubworlds + 1) / (float) buttonsPerRow) * (double) buttonsPerRow - (double) (numKnownSubworlds + 1));
         this.worlds = new String[numKnownSubworlds];
-        this.selectButtons = new ButtonWidget[numKnownSubworlds + 1];
-        this.editButtons = new ButtonWidget[numKnownSubworlds + 1];
+        ButtonWidget[] selectButtons = new ButtonWidget[numKnownSubworlds + 1];
+        ButtonWidget[] editButtons = new ButtonWidget[numKnownSubworlds + 1];
 
         for (int t = 0; t < numKnownSubworlds; ++t) {
             int shiftBy = 1;
@@ -93,24 +89,24 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
                 shiftBy = lastRowShiftBy + 1;
             }
 
-            this.worlds[t] = (String) knownSubworldNames.get(t);
+            this.worlds[t] = knownSubworldNames.get(t);
             int tt = t;
-            this.selectButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - t / buttonsPerRow * 21, buttonWidth - 32, 20, new LiteralText(this.worlds[t]), button -> this.worldSelected(this.worlds[tt]));
-            this.editButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing + buttonWidth - 32, this.height - 60 - t / buttonsPerRow * 21, 30, 20, new LiteralText("⚒"), button -> this.editWorld(this.worlds[tt]));
-            this.addDrawableChild(this.selectButtons[t]);
-            this.addDrawableChild(this.editButtons[t]);
+            selectButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - t / buttonsPerRow * 21, buttonWidth - 32, 20, new LiteralText(this.worlds[t]), button -> this.worldSelected(this.worlds[tt]));
+            editButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing + buttonWidth - 32, this.height - 60 - t / buttonsPerRow * 21, 30, 20, new LiteralText("⚒"), button -> this.editWorld(this.worlds[tt]));
+            this.addDrawableChild(selectButtons[t]);
+            this.addDrawableChild(editButtons[t]);
         }
 
-        int numButtons = this.selectButtons.length - 1;
+        int numButtons = selectButtons.length - 1;
         if (!this.newWorld) {
-            this.selectButtons[numButtons] = new ButtonWidget((buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20, new LiteralText("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
+            selectButtons[numButtons] = new ButtonWidget((buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20, new LiteralText("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
                 this.newWorld = true;
                 this.newNameField.setTextFieldFocused(true);
             });
-            this.addDrawableChild(this.selectButtons[numButtons]);
+            this.addDrawableChild(selectButtons[numButtons]);
         }
 
-        this.newNameField = new TextFieldWidget(this.getFontRenderer(), (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, (Text) null);
+        this.newNameField = new TextFieldWidget(this.getFontRenderer(), (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
     public void accept(boolean par1) {

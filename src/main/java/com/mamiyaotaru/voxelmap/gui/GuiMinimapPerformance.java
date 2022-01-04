@@ -17,9 +17,9 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.LIGHTING, EnumOptionsMinimap.TERRAIN, EnumOptionsMinimap.WATERTRANSPARENCY, EnumOptionsMinimap.BLOCKTRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNKGRID, EnumOptionsMinimap.BIOMEOVERLAY, EnumOptionsMinimap.SLIMECHUNKS};
     private GuiButtonText worldSeedButton;
     private GuiOptionButtonMinimap slimeChunksButton;
-    private Screen parentScreen;
+    private final Screen parentScreen;
     protected String screenTitle = "Details / Performance";
-    private MapSettingsManager options;
+    private final MapSettingsManager options;
     IVoxelMap master;
 
     public GuiMinimapPerformance(Screen par1GuiScreen, IVoxelMap master) {
@@ -38,14 +38,13 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         int leftBorder = this.getLeftBorder();
         int var2 = 0;
 
-        for (int t = 0; t < relevantOptions.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions[t];
+        for (EnumOptionsMinimap option : relevantOptions) {
             String text = this.options.getKeyText(option);
             if ((option == EnumOptionsMinimap.WATERTRANSPARENCY || option == EnumOptionsMinimap.BLOCKTRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !this.options.multicore && this.options.getOptionBooleanValue(option)) {
                 text = "§c" + text;
             }
 
-            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(text), button -> this.optionClicked(button));
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(text), this::optionClicked);
             this.addDrawableChild(optionButton);
             ++var2;
             if (optionButton.returnEnumOptions().equals(EnumOptionsMinimap.SLIMECHUNKS)) {

@@ -385,7 +385,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        if (!this.popupOpen()) {
+        if (this.popupOpen()) {
             this.coordinates.mouseClicked(mouseX, mouseY, mouseButton);
             this.editingCoordinates = this.coordinates.isFocused();
             if (this.editingCoordinates && !this.lastEditingCoordinates) {
@@ -553,7 +553,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.guiToDirectMouse = this.scScale;
         this.renderBackground(matrixStack);
         if (this.mc.mouse.wasLeftButtonClicked()) {
-            if (!this.leftMouseButtonDown && !this.overPopup(mouseX, mouseY)) {
+            if (!this.leftMouseButtonDown && this.overPopup(mouseX, mouseY)) {
                 this.deltaX = 0.0F;
                 this.deltaY = 0.0F;
                 this.lastMouseX = mouseDirectX;

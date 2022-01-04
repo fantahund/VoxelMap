@@ -14,9 +14,9 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 public class GuiMinimapControls extends GuiScreenMinimap {
-    private Screen parentScreen;
+    private final Screen parentScreen;
     protected String screenTitle = "Controls";
-    private MapSettingsManager options;
+    private final MapSettingsManager options;
     public KeyBinding buttonId = null;
 
     public GuiMinimapControls(Screen par1GuiScreen, IVoxelMap master) {

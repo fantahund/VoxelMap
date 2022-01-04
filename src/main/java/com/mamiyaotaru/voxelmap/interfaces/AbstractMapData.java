@@ -9,11 +9,11 @@ import java.util.List;
 public abstract class AbstractMapData implements IMapData {
     protected int width;
     protected int height;
-    protected Object dataLock = new Object();
-    private Object labelLock = new Object();
+    protected final Object dataLock = new Object();
+    private final Object labelLock = new Object();
     public Point[][] points;
     public ArrayList<Segment> segments;
-    private ArrayList labels = new ArrayList();
+    private final ArrayList<BiomeLabel> labels = new ArrayList<>();
 
     @Override
     public int getWidth() {
@@ -27,7 +27,7 @@ public abstract class AbstractMapData implements IMapData {
 
     public void segmentBiomes() {
         this.points = new Point[this.width][this.height];
-        this.segments = new ArrayList();
+        this.segments = new ArrayList<>();
 
         for (int x = 0; x < this.width; ++x) {
             for (int z = 0; z < this.height; ++z) {
@@ -85,15 +85,13 @@ public abstract class AbstractMapData implements IMapData {
         }
     }
 
-    public ArrayList getBiomeLabels() {
-        ArrayList labelsToReturn = new ArrayList();
+    public ArrayList<?> getBiomeLabels() {
         synchronized (this.labelLock) {
-            labelsToReturn.addAll(this.labels);
-            return labelsToReturn;
+            return new ArrayList<>(this.labels);
         }
     }
 
-    public class BiomeLabel {
+    public static class BiomeLabel {
         public int biomeID = -1;
         public String name = "";
         public int segmentSize = 0;
@@ -101,7 +99,7 @@ public abstract class AbstractMapData implements IMapData {
         public int z = 0;
     }
 
-    private class Point {
+    private static class Point {
         public int x;
         public int z;
         public boolean inSegment = false;
@@ -123,7 +121,7 @@ public abstract class AbstractMapData implements IMapData {
 
     public class Segment {
         public ArrayList<Point> memberPoints;
-        ArrayList currentShell;
+        ArrayList<Point> currentShell;
         public int biomeID;
         public String name = null;
         public int centerX = 0;
@@ -135,17 +133,17 @@ public abstract class AbstractMapData implements IMapData {
                 this.name = BiomeRepository.getName(this.biomeID);
             }
 
-            this.memberPoints = new ArrayList();
+            this.memberPoints = new ArrayList<>();
             this.memberPoints.add(point);
-            this.currentShell = new ArrayList();
+            this.currentShell = new ArrayList<Point>();
         }
 
         public void flood() {
-            ArrayList candidatePoints = new ArrayList();
-            candidatePoints.add((Point) this.memberPoints.remove(0));
+            ArrayList<Point> candidatePoints = new ArrayList<>();
+            candidatePoints.add(this.memberPoints.remove(0));
 
             while (candidatePoints.size() > 0) {
-                Point point = (Point) candidatePoints.remove(0);
+                Point point = candidatePoints.remove(0);
                 point.isCandidate = false;
                 if (point.biomeID == this.biomeID) {
                     this.memberPoints.add(point);
@@ -266,7 +264,7 @@ public abstract class AbstractMapData implements IMapData {
             }
 
             if (this.currentShell.size() > 0) {
-                ArrayList remainingPoints = new ArrayList();
+                ArrayList<Point> remainingPoints = new ArrayList<>();
 
                 for (Point point : this.memberPoints) {
                     if (point.layer < 0 || point.layer == layer) {
@@ -282,7 +280,7 @@ public abstract class AbstractMapData implements IMapData {
         public ArrayList<Point> getNextShell(List<Point> pointsToCheck, int layer, boolean horizontalBias) {
             int layerWidth = horizontalBias ? 2 : 1;
             int layerHeight = horizontalBias ? 1 : 2;
-            ArrayList nextShell = new ArrayList();
+            ArrayList<Point> nextShell = new ArrayList<Point>();
 
             for (Point point : pointsToCheck) {
                 if (point.x < AbstractMapData.this.width - layerWidth) {

@@ -125,13 +125,16 @@ public class MapChunkCache {
     }
 
     public void registerChangeAt(int chunkX, int chunkZ) {
-        if (this.lastCenterChunk != null && chunkX >= this.left && chunkX <= this.right && chunkZ >= this.top && chunkZ <= this.bottom) {
-            int arrayX = chunkX - this.left;
-            int arrayZ = chunkZ - this.top;
-            MapChunk mapChunk = this.mapChunks[arrayX + arrayZ * this.width];
-            mapChunk.setModified(true);
+        try {
+            if (this.lastCenterChunk != null && chunkX >= this.left && chunkX <= this.right && chunkZ >= this.top && chunkZ <= this.bottom) {
+                int arrayX = chunkX - this.left;
+                int arrayZ = chunkZ - this.top;
+                MapChunk mapChunk = this.mapChunks[arrayX + arrayZ * this.width];
+                mapChunk.setModified(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
     }
 
     public boolean isChunkSurroundedByLoaded(int chunkX, int chunkZ) {

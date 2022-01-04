@@ -15,7 +15,6 @@ import net.minecraft.text.TranslatableText;
 public class GuiRadarOptions extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptionsFull = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWPLAYERNAMES, EnumOptionsMinimap.SHOWPLAYERHELMETS, EnumOptionsMinimap.SHOWMOBHELMETS, EnumOptionsMinimap.RADARFILTERING, EnumOptionsMinimap.RADAROUTLINES};
     private static final EnumOptionsMinimap[] relevantOptionsSimple = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWFACING};
-    private static EnumOptionsMinimap[] relevantOptions;
     private final Screen parent;
     private final RadarSettingsManager options;
     protected Text screenTitle;
@@ -30,22 +29,21 @@ public class GuiRadarOptions extends GuiScreenMinimap {
         this.children().clear();
         int var2 = 0;
         this.screenTitle = new TranslatableText("options.minimap.radar.title");
+        EnumOptionsMinimap[] relevantOptions;
         if (this.options.radarMode == 2) {
             relevantOptions = relevantOptionsFull;
         } else {
             relevantOptions = relevantOptionsSimple;
         }
 
-        for (int t = 0; t < relevantOptions.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions[t];
-            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx));
+        for (EnumOptionsMinimap option : relevantOptions) {
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), this::optionClicked);
             this.addDrawableChild(optionButton);
             ++var2;
         }
 
         for (Object buttonObj : this.getButtonList()) {
-            if (buttonObj instanceof GuiOptionButtonMinimap) {
-                GuiOptionButtonMinimap button = (GuiOptionButtonMinimap) buttonObj;
+            if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (!button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWRADAR)) {
                     button.active = this.options.showRadar;
                 }
@@ -82,8 +80,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
             buttonClicked.setMessage(new LiteralText(this.options.getKeyText(option)));
 
             for (Object buttonObj : this.getButtonList()) {
-                if (buttonObj instanceof GuiOptionButtonMinimap) {
-                    GuiOptionButtonMinimap button = (GuiOptionButtonMinimap) buttonObj;
+                if (buttonObj instanceof GuiOptionButtonMinimap button) {
                     if (!button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWRADAR)) {
                         button.active = this.options.showRadar;
                     }

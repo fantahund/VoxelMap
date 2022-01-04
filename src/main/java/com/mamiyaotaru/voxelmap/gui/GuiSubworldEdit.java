@@ -16,9 +16,9 @@ import net.minecraft.text.TranslatableText;
 import java.util.ArrayList;
 
 public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer {
-    private Screen parent;
-    private IWaypointManager waypointManager;
-    private ArrayList knownSubworldNames;
+    private final Screen parent;
+    private final IWaypointManager waypointManager;
+    private final ArrayList<?> knownSubworldNames;
     private String originalSubworldName = "";
     private String currentSubworldName = "";
     private TextFieldWidget subworldNameField;
@@ -30,7 +30,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.parent = parent;
         this.waypointManager = master.getWaypointManager();
         this.originalSubworldName = subworldName;
-        this.knownSubworldNames = new ArrayList(this.waypointManager.getKnownSubworldNames());
+        this.knownSubworldNames = new ArrayList<Object>(this.waypointManager.getKnownSubworldNames());
     }
 
     public void tick() {
@@ -40,7 +40,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     public void init() {
         this.getMinecraft().keyboard.setRepeatEvents(true);
         this.clearChildren();
-        this.subworldNameField = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 0 + 13, 200, 20, (Text) null);
+        this.subworldNameField = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
         this.setFocused(this.subworldNameField);
         this.subworldNameField.setTextFieldFocused(true);
         this.subworldNameField.setText(this.originalSubworldName);
@@ -69,7 +69,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private void deleteClicked() {
         this.deleteClicked = true;
         TranslatableText title = new TranslatableText("worldmap.subworld.deleteconfirm");
-        TranslatableText explanation = new TranslatableText("selectServer.deleteWarning", new Object[]{this.originalSubworldName});
+        TranslatableText explanation = new TranslatableText("selectServer.deleteWarning", this.originalSubworldName);
         TranslatableText affirm = new TranslatableText("selectServer.deleteButton");
         TranslatableText deny = new TranslatableText("gui.cancel");
         ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
@@ -121,7 +121,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         super.drawMap(matrixStack);
         this.renderBackground(matrixStack);
         drawCenteredText(matrixStack, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
-        drawStringWithShadow(matrixStack, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 0, 10526880);
+        drawStringWithShadow(matrixStack, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
         this.subworldNameField.render(matrixStack, mouseX, mouseY, partialTicks);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }
@@ -129,7 +129,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private boolean isNameAcceptable() {
         boolean acceptable = true;
         this.currentSubworldName = this.subworldNameField.getText();
-        acceptable = acceptable && this.currentSubworldName.length() > 0;
+        acceptable = this.currentSubworldName.length() > 0;
         return acceptable && (this.currentSubworldName.equals(this.originalSubworldName) || !this.knownSubworldNames.contains(this.currentSubworldName));
     }
 }

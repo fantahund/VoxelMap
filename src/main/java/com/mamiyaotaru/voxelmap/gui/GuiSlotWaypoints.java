@@ -29,8 +29,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 class GuiSlotWaypoints extends GuiSlotMinimap {
-    private ArrayList waypoints;
-    private ArrayList waypointsFiltered;
+    private final ArrayList<WaypointItem> waypoints;
+    private ArrayList<?> waypointsFiltered;
     final GuiWaypoints parentGui;
     private String filterString = "";
     final TranslatableText ENABLE = new TranslatableText("minimap.waypoints.enable");
@@ -41,7 +41,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     public GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
         super(par1GuiWaypoints.options.game, par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
         this.parentGui = par1GuiWaypoints;
-        this.waypoints = new ArrayList();
+        this.waypoints = new ArrayList<WaypointItem>();
 
         for (Waypoint pt : this.parentGui.waypointManager.getWaypoints()) {
             if (pt.inWorld && pt.inDimension) {
@@ -49,14 +49,14 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
             }
         }
 
-        this.waypointsFiltered = new ArrayList(this.waypoints);
-        this.waypointsFiltered.forEach(x$0 -> this.addEntry((EntryListWidget.Entry) x$0));
+        this.waypointsFiltered = new ArrayList<>(this.waypoints);
+        this.waypointsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
     }
 
     public void setSelected(WaypointItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof WaypointItem) {
-            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", new Object[]{((WaypointItem) this.getSelectedOrNull()).waypoint.name})).getString());
+            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
         }
 
         this.parentGui.setSelectedWaypoint(item.waypoint);
@@ -83,38 +83,34 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexbuffer = tessellator.getBuffer();
         vertexbuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexbuffer.vertex((double) (xCoord + 0), (double) (yCoord + heightIn), 1.0).texture(textureSprite.getMinU(), textureSprite.getMaxV()).next();
-        vertexbuffer.vertex((double) (xCoord + widthIn), (double) (yCoord + heightIn), 1.0).texture(textureSprite.getMaxU(), textureSprite.getMaxV()).next();
-        vertexbuffer.vertex((double) (xCoord + widthIn), (double) (yCoord + 0), 1.0).texture(textureSprite.getMaxU(), textureSprite.getMinV()).next();
-        vertexbuffer.vertex((double) (xCoord + 0), (double) (yCoord + 0), 1.0).texture(textureSprite.getMinU(), textureSprite.getMinV()).next();
+        vertexbuffer.vertex(xCoord, yCoord + heightIn, 1.0).texture(textureSprite.getMinU(), textureSprite.getMaxV()).next();
+        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 1.0).texture(textureSprite.getMaxU(), textureSprite.getMaxV()).next();
+        vertexbuffer.vertex(xCoord + widthIn, yCoord, 1.0).texture(textureSprite.getMaxU(), textureSprite.getMinV()).next();
+        vertexbuffer.vertex(xCoord, yCoord, 1.0).texture(textureSprite.getMinU(), textureSprite.getMinV()).next();
         tessellator.draw();
     }
 
     protected void sortBy(int sortKey, boolean ascending) {
         final int order = ascending ? 1 : -1;
         if (sortKey == 1) {
-            final ArrayList masterWaypointsList = this.parentGui.waypointManager.getWaypoints();
-            Collections.sort(this.waypoints, new Comparator<WaypointItem>() {
-                public int compare(WaypointItem waypointEntry1, WaypointItem waypointEntry2) {
-                    return Double.compare((double) masterWaypointsList.indexOf(waypointEntry1.waypoint), (double) masterWaypointsList.indexOf(waypointEntry2.waypoint)) * order;
-                }
-            });
+            final ArrayList<?> masterWaypointsList = this.parentGui.waypointManager.getWaypoints();
+            this.waypoints.sort((waypointEntry1, waypointEntry2) -> Double.compare(masterWaypointsList.indexOf(waypointEntry1.waypoint), masterWaypointsList.indexOf(waypointEntry2.waypoint)) * order);
         } else if (sortKey == 3) {
             if (ascending) {
                 Collections.sort(this.waypoints);
             } else {
-                Collections.sort(this.waypoints, Collections.reverseOrder());
+                this.waypoints.sort(Collections.reverseOrder());
             }
         } else if (sortKey == 2) {
             final Collator collator = I18nUtils.getLocaleAwareCollator();
-            Collections.sort(this.waypoints, (Comparator<WaypointItem>) (waypointEntry1, waypointEntry2) -> collator.compare(waypointEntry1.waypoint.name, waypointEntry2.waypoint.name) * order);
+            this.waypoints.sort((waypointEntry1, waypointEntry2) -> collator.compare(waypointEntry1.waypoint.name, waypointEntry2.waypoint.name) * order);
         } else if (sortKey == 4) {
-            Collections.sort(this.waypoints, (Comparator<WaypointItem>) (waypointEntry1, waypointEntry2) -> {
+            this.waypoints.sort((waypointEntry1, waypointEntry2) -> {
                 Waypoint waypoint1 = waypointEntry1.waypoint;
                 Waypoint waypoint2 = waypointEntry2.waypoint;
-                float hue1 = Color.RGBtoHSB((int) (waypoint1.red * 255.0F), (int) (waypoint1.green * 255.0F), (int) (waypoint1.blue * 255.0F), (float[]) null)[0];
-                float hue2 = Color.RGBtoHSB((int) (waypoint2.red * 255.0F), (int) (waypoint2.green * 255.0F), (int) (waypoint2.blue * 255.0F), (float[]) null)[0];
-                return Double.compare((double) hue1, (double) hue2) * order;
+                float hue1 = Color.RGBtoHSB((int) (waypoint1.red * 255.0F), (int) (waypoint1.green * 255.0F), (int) (waypoint1.blue * 255.0F), null)[0];
+                float hue2 = Color.RGBtoHSB((int) (waypoint2.red * 255.0F), (int) (waypoint2.green * 255.0F), (int) (waypoint2.blue * 255.0F), null)[0];
+                return Double.compare(hue1, hue2) * order;
             });
         }
 
@@ -124,21 +120,21 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     protected void updateFilter(String filterString) {
         this.clearEntries();
         this.filterString = filterString;
-        this.waypointsFiltered = new ArrayList(this.waypoints);
-        Iterator iterator = this.waypointsFiltered.iterator();
+        this.waypointsFiltered = new ArrayList<>(this.waypoints);
+        Iterator<?> iterator = this.waypointsFiltered.iterator();
 
         while (iterator.hasNext()) {
             Waypoint waypoint = ((WaypointItem) iterator.next()).waypoint;
             if (!TextUtils.scrubCodes(waypoint.name).toLowerCase().contains(filterString)) {
                 if (waypoint == this.parentGui.selectedWaypoint) {
-                    this.parentGui.setSelectedWaypoint((Waypoint) null);
+                    this.parentGui.setSelectedWaypoint(null);
                 }
 
                 iterator.remove();
             }
         }
 
-        this.waypointsFiltered.forEach(x$0 -> this.addEntry((EntryListWidget.Entry) x$0));
+        this.waypointsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
     }
 
     public class WaypointItem extends EntryListWidget.Entry<WaypointItem> implements Comparable<WaypointItem> {

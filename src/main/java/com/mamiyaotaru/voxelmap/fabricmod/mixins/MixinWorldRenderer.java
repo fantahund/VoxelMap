@@ -44,7 +44,7 @@ public class MixinWorldRenderer {
 
     @Inject(method = "renderLayer(Lnet/minecraft/client/render/RenderLayer;Lnet/minecraft/client/util/math/MatrixStack;DDDLnet/minecraft/util/math/Matrix4f;)V", at = @At("RETURN"))
     private void postRenderLayer(RenderLayer renderLayer, MatrixStack matrixStack, double x, double y, double z, Matrix4f matrix4f, CallbackInfo ci) {
-        if (MinecraftClient.isFabulousGraphicsOrBetter() && VoxelMap.getInstance().getMapOptions().showWaypoints && renderLayer == RenderLayer.getTranslucent()) {
+        if (MinecraftClient.isFabulousGraphicsOrBetter() && VoxelMap.getInstance().getMapOptions().showWaypoints && renderLayer == RenderLayer.getTranslucent() && MinecraftClient.getInstance().worldRenderer.getTranslucentFramebuffer() != null) {
             MinecraftClient.getInstance().worldRenderer.getTranslucentFramebuffer().beginWrite(false);
             FabricModVoxelMap.onRenderHand(MinecraftClient.getInstance().getTickDelta(), 0L, matrixStack, false, true, true, false);
             MinecraftClient.getInstance().getFramebuffer().beginWrite(false);
