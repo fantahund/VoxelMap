@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlockRepository {
-    public static Block air;
+    public static Block air = Blocks.AIR;
     public static Block voidAir;
     public static Block caveAir;
     public static int airID = 0;
@@ -52,14 +52,14 @@ public class BlockRepository {
     public static Block chorusPlant;
     public static Block chorusFlower;
     public static FluidState dry = Fluids.EMPTY.getDefaultState();
-    public static HashSet biomeBlocks;
+    public static HashSet<Block> biomeBlocks;
     public static Block[] biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
-    public static HashSet shapedBlocks;
+    public static HashSet<Block> shapedBlocks;
     public static Block[] shapedBlocksArray = new Block[]{ladder, vine};
-    private static ConcurrentHashMap stateToInt = new ConcurrentHashMap(1024);
-    private static ReferenceArrayList blockStates = new ReferenceArrayList(16384);
+    private static final ConcurrentHashMap<BlockState, Integer> stateToInt = new ConcurrentHashMap<>(1024);
+    private static final ReferenceArrayList<BlockState> blockStates = new ReferenceArrayList<>(16384);
     private static int count = 1;
-    private static ReadWriteLock incrementLock = new ReentrantReadWriteLock();
+    private static final ReadWriteLock incrementLock = new ReentrantReadWriteLock();
 
     public static void getBlocks() {
         air = Blocks.AIR;
@@ -95,9 +95,9 @@ public class BlockRepository {
         chorusPlant = Blocks.CHORUS_PLANT;
         chorusFlower = Blocks.CHORUS_FLOWER;
         biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
-        biomeBlocks = new HashSet(Arrays.asList(biomeBlocksArray));
+        biomeBlocks = new HashSet<>(Arrays.asList(biomeBlocksArray));
         shapedBlocksArray = new Block[]{ladder, vine};
-        shapedBlocks = new HashSet(Arrays.asList(shapedBlocksArray));
+        shapedBlocks = new HashSet<>(Arrays.asList(shapedBlocksArray));
 
         for (Block block : Registry.BLOCK) {
             if (block instanceof DoorBlock || block instanceof AbstractSignBlock) {
@@ -108,10 +108,10 @@ public class BlockRepository {
     }
 
     public static int getStateId(BlockState blockState) {
-        Integer id = (Integer) stateToInt.get(blockState);
+        Integer id = stateToInt.get(blockState);
         if (id == null) {
             synchronized (incrementLock) {
-                id = (Integer) stateToInt.get(blockState);
+                id = stateToInt.get(blockState);
                 if (id == null) {
                     id = count;
                     blockStates.add(blockState);
@@ -125,7 +125,7 @@ public class BlockRepository {
     }
 
     public static BlockState getStateById(int id) {
-        return (BlockState) blockStates.get(id);
+        return blockStates.get(id);
     }
 
     static {

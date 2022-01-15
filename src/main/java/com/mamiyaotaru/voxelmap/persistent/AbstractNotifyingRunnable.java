@@ -14,7 +14,7 @@ public abstract class AbstractNotifyingRunnable implements Runnable {
         this.listeners.remove(listener);
     }
 
-    private final void notifyListeners() {
+    private void notifyListeners() {
         for (IThreadCompleteListener listener : this.listeners) {
             listener.notifyOfThreadComplete(this);
         }

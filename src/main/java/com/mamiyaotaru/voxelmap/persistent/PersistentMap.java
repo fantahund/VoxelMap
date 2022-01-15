@@ -55,12 +55,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     int[] lightmapColors;
     ClientWorld world;
     String subworldName = "";
-    private final int SEAFLOORLAYER = 0;
-    private final int GROUNDLAYER = 1;
-    private final int FOLIAGELAYER = 2;
-    private final int TRANSPARENTLAYER = 3;
-    private final int DRAWHEIGHT = 80;
-    protected List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList());
+    protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList());
     protected ConcurrentHashMap cachedRegions = new ConcurrentHashMap(150, 0.9F, 2);
     int lastLeft = 0;
     int lastRight = 0;
@@ -81,13 +76,13 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         }
     };
     Comparator distanceSorter = (Comparator<RegionCoordinates>) (coordinates1, coordinates2) -> {
-        double distance1sq = (double) ((coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ));
-        double distance2sq = (double) ((coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ));
+        double distance1sq = (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ);
+        double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
         return Double.compare(distance1sq, distance2sq);
     };
     private boolean queuedChangedChunks = false;
     private MapChunkCache chunkCache;
-    private ConcurrentLinkedQueue chunkUpdateQueue = new ConcurrentLinkedQueue();
+    private final ConcurrentLinkedQueue chunkUpdateQueue = new ConcurrentLinkedQueue();
 
     public PersistentMap(IVoxelMap master) {
         this.master = master;
@@ -111,8 +106,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
         if (world != null) {
             this.newWorldStuff();
-        } else if (world == null) {
-            Thread pauseForSubworldNamesThread = new Thread((ThreadGroup) null, (Runnable) null, "VoxelMap Pause for Subworld Name Thread") {
+        } else {
+            Thread pauseForSubworldNamesThread = new Thread(null, null, "VoxelMap Pause for Subworld Name Thread") {
                 public void run() {
                     try {
                         Thread.sleep(2000L);
@@ -227,6 +222,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         for (int t = 0; t < 16; ++t) {
             if (lightmapColors[t * skylightMultiplier + torchOffset] != this.lightmapColors[t * skylightMultiplier + torchOffset]) {
                 changed = true;
+                break;
             }
         }
 
@@ -239,16 +235,16 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
     @Override
     public void getAndStoreData(AbstractMapData mapData, World world, WorldChunk chunk, MutableBlockPos blockPos, boolean underground, int startX, int startZ, int imageX, int imageY) {
-        int surfaceHeight = 0;
+        int surfaceHeight;
         int seafloorHeight = 0;
         int transparentHeight = 0;
         int foliageHeight = 0;
-        BlockState surfaceBlockState = BlockRepository.air.getDefaultState();
+        BlockState surfaceBlockState;
         BlockState transparentBlockState = BlockRepository.air.getDefaultState();
         BlockState foliageBlockState = BlockRepository.air.getDefaultState();
         BlockState seafloorBlockState = BlockRepository.air.getDefaultState();
         blockPos = blockPos.withXYZ(startX + imageX, 64, startZ + imageY);
-        int biomeID = 0;
+        int biomeID;
         if (!chunk.isEmpty()) {
             biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(blockPos));
         } else {
@@ -259,7 +255,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         if (biomeID != -1) {
             boolean solid = false;
             if (underground) {
-                surfaceHeight = this.getNetherHeight(underground, chunk, startX + imageX, startZ + imageY);
+                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY);
                 surfaceBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                 if (surfaceHeight != -1) {
                     foliageHeight = surfaceHeight + 1;
@@ -280,7 +276,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
                 surfaceHeight = transparentHeight;
                 surfaceBlockState = transparentBlockState;
-                VoxelShape voxelShape = null;
+                VoxelShape voxelShape;
                 boolean hasOpacity = transparentBlockState.getOpacity(world, blockPos) > 0;
                 if (!hasOpacity && transparentBlockState.isOpaque() && transparentBlockState.hasSidedTransparency()) {
                     voxelShape = transparentBlockState.getCullingFace(world, blockPos, Direction.DOWN);
@@ -379,21 +375,18 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             mapData.setLight(imageX, imageY, light);
             int seafloorLight = 0;
             if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.getDefaultState()) {
-                seafloorLight = 255;
                 seafloorLight = this.getLight(seafloorBlockState, world, blockPos, startX + imageX, startZ + imageY, seafloorHeight, solid);
             }
 
             mapData.setOceanFloorLight(imageX, imageY, seafloorLight);
             int transparentLight = 0;
             if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
-                transparentLight = 255;
                 transparentLight = this.getLight(transparentBlockState, world, blockPos, startX + imageX, startZ + imageY, transparentHeight, solid);
             }
 
             mapData.setTransparentLight(imageX, imageY, transparentLight);
             int foliageLight = 0;
             if (foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
-                foliageLight = 255;
                 foliageLight = this.getLight(foliageBlockState, world, blockPos, startX + imageX, startZ + imageY, foliageHeight, solid);
             }
 
@@ -401,7 +394,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         }
     }
 
-    private int getNetherHeight(boolean nether, WorldChunk chunk, int x, int z) {
+    private int getNetherHeight(WorldChunk chunk, int x, int z) {
         int y = 80;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = chunk.getBlockState(this.blockPos);

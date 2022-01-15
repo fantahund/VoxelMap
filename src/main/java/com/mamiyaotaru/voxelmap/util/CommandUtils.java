@@ -244,7 +244,7 @@ public class CommandUtils {
         for (Waypoint wp : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
                 boolean mp = !MinecraftClient.getInstance().isIntegratedServerRunning();
-                int y = wp.getY() > 0 ? wp.getY() : (!MinecraftClient.getInstance().player.world.getDimension().hasCeiling() ? 255 : 64);
+                int y = wp.getY() > MinecraftClient.getInstance().world.getBottomY() ? wp.getY() : (!MinecraftClient.getInstance().player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
                 MinecraftClient.getInstance().player.sendChatMessage("/tp " + MinecraftClient.getInstance().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
                     MinecraftClient.getInstance().player.sendChatMessage("/tppos " + wp.getX() + " " + y + " " + wp.getZ());

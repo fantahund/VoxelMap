@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -139,7 +140,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     private void teleportClicked() {
         boolean mp = !this.client.isIntegratedServerRunning();
-        int y = this.selectedWaypoint.getY() > 0 ? this.selectedWaypoint.getY() : (!this.options.game.player.world.getDimension().hasCeiling() ? 255 : 64);
+        int y = this.selectedWaypoint.getY() > MinecraftClient.getInstance().world.getBottomY() ? this.selectedWaypoint.getY() : (!this.options.game.player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
         this.options.game.player.sendChatMessage("/tp " + this.options.game.player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
         if (mp) {
             this.options.game.player.sendChatMessage("/tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
@@ -296,7 +297,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public boolean canTeleport() {
-        boolean allowed = false;
+        boolean allowed;
         boolean singlePlayer = this.options.game.isIntegratedServerRunning();
         if (singlePlayer) {
             try {

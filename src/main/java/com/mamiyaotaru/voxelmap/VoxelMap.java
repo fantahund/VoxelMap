@@ -224,13 +224,11 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                         msg = msg.replaceAll("§r", "");
                         if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
                             killCaves = true;
-                            System.out.println("Server disabled cavemapping.");
                             error = error + "Server disabled cavemapping.  ";
                         }
 
                         if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
                             killRadar = true;
-                            System.out.println("Server disabled radar.");
                             error = error + "Server disabled radar.  ";
                         }
 

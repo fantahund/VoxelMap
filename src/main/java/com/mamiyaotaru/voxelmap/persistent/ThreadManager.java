@@ -1,5 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -9,13 +11,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadManager {
     static final int concurrentThreads = Math.min(Math.max(Runtime.getRuntime().availableProcessors() - 1, 1), 4);
-    static final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue();
+    static final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     public static ThreadPoolExecutor executorService = new ThreadPoolExecutor(concurrentThreads, concurrentThreads, 0L, TimeUnit.MILLISECONDS, queue);
 
     public static void emptyQueue() {
         for (Runnable runnable : queue) {
             if (runnable instanceof FutureTask) {
-                ((FutureTask) runnable).cancel(false);
+                ((FutureTask<?>) runnable).cancel(false);
             }
         }
 
@@ -34,7 +36,7 @@ public class ThreadManager {
             this.name = name;
         }
 
-        public Thread newThread(Runnable runnable) {
+        public Thread newThread(@NotNull Runnable runnable) {
             return new Thread(runnable, this.name + " " + this.threadCount.getAndIncrement());
         }
     }
