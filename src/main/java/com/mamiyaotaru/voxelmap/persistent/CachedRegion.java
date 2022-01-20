@@ -450,7 +450,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                         while (!this.closed && !lightFuture.isDone()) {
                                             try {
                                                 Thread.sleep(3L);
-                                            } catch (InterruptedException var36) {
+                                            } catch (InterruptedException ignored) {
                                             }
                                         }
 
@@ -484,7 +484,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                         tickLock.writeLock().lock();
 
                         try {
-                            CompletableFuture tickFuture = CompletableFuture.runAsync(() -> this.chunkProvider.tick(() -> true), this.executor);
+                            CompletableFuture tickFuture = CompletableFuture.runAsync(() -> this.chunkProvider.tick(() -> true, executor.isOnThread()));
                             long tickTime = System.currentTimeMillis();
                             if (debug) {
                                 System.out.println(Thread.currentThread().getName() + " starting chunk GC tick");
