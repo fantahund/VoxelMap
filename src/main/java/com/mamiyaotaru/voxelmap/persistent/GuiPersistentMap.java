@@ -163,11 +163,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.getSkin();
         }
 
-        this.forwardCode = InputUtil.fromTranslationKey(this.mc.options.keyForward.getBoundKeyTranslationKey());
-        this.leftCode = InputUtil.fromTranslationKey(this.mc.options.keyLeft.getBoundKeyTranslationKey());
-        this.backCode = InputUtil.fromTranslationKey(this.mc.options.keyBack.getBoundKeyTranslationKey());
-        this.rightCode = InputUtil.fromTranslationKey(this.mc.options.keyRight.getBoundKeyTranslationKey());
-        this.sprintCode = InputUtil.fromTranslationKey(this.mc.options.keySprint.getBoundKeyTranslationKey());
+        this.forwardCode = InputUtil.fromTranslationKey(this.mc.options.forwardKey.getBoundKeyTranslationKey());
+        this.leftCode = InputUtil.fromTranslationKey(this.mc.options.leftKey.getBoundKeyTranslationKey());
+        this.backCode = InputUtil.fromTranslationKey(this.mc.options.backKey.getBoundKeyTranslationKey());
+        this.rightCode = InputUtil.fromTranslationKey(this.mc.options.rightKey.getBoundKeyTranslationKey());
+        this.sprintCode = InputUtil.fromTranslationKey(this.mc.options.sprintKey.getBoundKeyTranslationKey());
     }
 
     private void getSkin() {
@@ -255,11 +255,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.keyBindBack.setBoundKey(this.backCode);
         this.keyBindRight.setBoundKey(this.rightCode);
         this.keyBindSprint.setBoundKey(this.sprintCode);
-        this.mc.options.keyForward.setBoundKey(this.nullInput);
-        this.mc.options.keyLeft.setBoundKey(this.nullInput);
-        this.mc.options.keyBack.setBoundKey(this.nullInput);
-        this.mc.options.keyRight.setBoundKey(this.nullInput);
-        this.mc.options.keySprint.setBoundKey(this.nullInput);
+        this.mc.options.forwardKey.setBoundKey(this.nullInput);
+        this.mc.options.leftKey.setBoundKey(this.nullInput);
+        this.mc.options.backKey.setBoundKey(this.nullInput);
+        this.mc.options.rightKey.setBoundKey(this.nullInput);
+        this.mc.options.sprintKey.setBoundKey(this.nullInput);
         KeyBinding.updateKeysByCode();
     }
 
@@ -410,12 +410,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public boolean keyPressed(int keysm, int scancode, int b) {
-        if (!this.editingCoordinates && (this.mc.options.keyJump.matchesKey(keysm, scancode) || this.mc.options.keySneak.matchesKey(keysm, scancode))) {
-            if (this.mc.options.keyJump.matchesKey(keysm, scancode)) {
+        if (!this.editingCoordinates && (this.mc.options.jumpKey.matchesKey(keysm, scancode) || this.mc.options.sneakKey.matchesKey(keysm, scancode))) {
+            if (this.mc.options.jumpKey.matchesKey(keysm, scancode)) {
                 this.zoomGoal /= 1.26F;
             }
 
-            if (this.mc.options.keySneak.matchesKey(keysm, scancode)) {
+            if (this.mc.options.sneakKey.matchesKey(keysm, scancode)) {
                 this.zoomGoal *= 1.26F;
             }
 
@@ -987,11 +987,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void removed() {
-        this.mc.options.keyForward.setBoundKey(this.forwardCode);
-        this.mc.options.keyLeft.setBoundKey(this.leftCode);
-        this.mc.options.keyBack.setBoundKey(this.backCode);
-        this.mc.options.keyRight.setBoundKey(this.rightCode);
-        this.mc.options.keySprint.setBoundKey(this.sprintCode);
+        this.mc.options.forwardKey.setBoundKey(this.forwardCode);
+        this.mc.options.leftKey.setBoundKey(this.leftCode);
+        this.mc.options.backKey.setBoundKey(this.backCode);
+        this.mc.options.rightKey.setBoundKey(this.rightCode);
+        this.mc.options.sprintKey.setBoundKey(this.sprintCode);
         this.keyBindForward.setBoundKey(this.nullInput);
         this.keyBindLeft.setBoundKey(this.nullInput);
         this.keyBindBack.setBoundKey(this.nullInput);
@@ -1179,7 +1179,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.selectedWaypoint = hovered;
                     boolean mp = !this.mc.isInSingleplayer();
-                    y = this.selectedWaypoint.getY() > 0 ? this.selectedWaypoint.getY() : (!this.mc.player.world.getDimension().hasCeiling() ? 128 : 64);
+                    y = this.selectedWaypoint.getY() > MinecraftClient.getInstance().world.getBottomY() ? this.selectedWaypoint.getY() : (!this.mc.player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
                     this.mc.player.sendChatMessage("/tp " + this.mc.player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     if (mp) {
                         this.mc.player.sendChatMessage("/tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
@@ -1188,7 +1188,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     }
                 } else {
                     if (y == 0) {
-                        y = !this.mc.player.world.getDimension().hasCeiling() ? 255 : 64;
+                        y = !this.mc.player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64;
                     }
 
                     this.mc.player.sendChatMessage("/tp " + this.mc.player.getName().getString() + " " + x + " " + y + " " + z);

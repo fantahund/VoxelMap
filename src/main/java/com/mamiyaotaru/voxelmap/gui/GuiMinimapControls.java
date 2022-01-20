@@ -85,7 +85,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             boolean keycodeCollision = false;
             KeyBinding keyBinding = this.options.keyBindings[keyCounter];
 
-            for (int compareKeyCounter = 0; compareKeyCounter < this.options.game.options.keysAll.length; ++compareKeyCounter) {
+            for (int compareKeyCounter = 0; compareKeyCounter < this.options.game.options.allKeys.length; ++compareKeyCounter) {
                 if (compareKeyCounter < this.options.keyBindings.length) {
                     KeyBinding compareBinding = this.options.keyBindings[compareKeyCounter];
                     if (keyBinding != compareBinding && keyBinding.equals(compareBinding)) {
@@ -94,8 +94,8 @@ public class GuiMinimapControls extends GuiScreenMinimap {
                     }
                 }
 
-                if (compareKeyCounter < this.options.game.options.keysAll.length) {
-                    KeyBinding compareBinding = this.options.game.options.keysAll[compareKeyCounter];
+                if (compareKeyCounter < this.options.game.options.allKeys.length) {
+                    KeyBinding compareBinding = this.options.game.options.allKeys[compareKeyCounter];
                     if (keyBinding != compareBinding && keyBinding.equals(compareBinding)) {
                         keycodeCollision = true;
                         break;

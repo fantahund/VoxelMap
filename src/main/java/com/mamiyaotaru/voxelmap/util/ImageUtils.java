@@ -102,14 +102,13 @@ public class ImageUtils {
             byteBuffer.position(0);
             byte[] bytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(bytes);
-
             for (int x = 0; x < imageWidth; ++x) {
                 for (int y = 0; y < imageHeight; ++y) {
                     int index = y * imageWidth * 4 + x * 4;
                     byte var8 = 0;
-                    int color24 = var8 | (bytes[index + 2] & 255) << 0;
+                    int color24 = var8 | (bytes[index + 2] & 255);
                     color24 |= (bytes[index + 1] & 255) << 8;
-                    color24 |= (bytes[index + 0] & 255) << 16;
+                    color24 |= (bytes[index] & 255) << 16;
                     color24 |= (bytes[index + 3] & 255) << 24;
                     image.setRGB(x, y, color24);
                 }
@@ -120,14 +119,13 @@ public class ImageUtils {
                 imageHeight /= 2;
                 size = (long) imageWidth * (long) imageHeight * 4L;
             }
-
             int glid = GLShim.glGetInteger(32873);
             image = new BufferedImage(imageWidth, imageHeight, 6);
             int fboWidth = 512;
             int fboHeight = 512;
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4).order(ByteOrder.nativeOrder());
             byte[] bytes = new byte[byteBuffer.remaining()];
-            GLShim.glPushAttrib(4096);
+            GLShim.glPushAttrib(4096); //TODO Putt Putt
             RenderSystem.backupProjectionMatrix();
             GLShim.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = Matrix4f.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
@@ -136,16 +134,15 @@ public class ImageUtils {
             matrixStack.loadIdentity();
             matrixStack.translate(0.0, 0.0, -2000.0);
             GLUtils.bindFrameBuffer();
-
             for (int startX = 0; startX + fboWidth < imageWidth; startX += fboWidth) {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
                     GLUtils.disp(glid);
                     GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
                     GLShim.glClear(16640);
                     GLUtils.drawPre();
-                    GLUtils.ldrawthree(0.0, (double) fboHeight, 1.0, (float) startX / (float) imageWidth, (float) startY / (float) imageHeight);
-                    GLUtils.ldrawthree((double) fboWidth, (double) fboHeight, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, (float) startY / (float) imageHeight);
-                    GLUtils.ldrawthree((double) fboWidth, 0.0, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, ((float) startY + (float) fboHeight) / (float) imageHeight);
+                    GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / (float) imageWidth, (float) startY / (float) imageHeight);
+                    GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, (float) startY / (float) imageHeight);
+                    GLUtils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, ((float) startY + (float) fboHeight) / (float) imageHeight);
                     GLUtils.ldrawthree(0.0, 0.0, 1.0, (float) startX / (float) imageWidth, ((float) startY + (float) fboHeight) / (float) imageHeight);
                     GLUtils.drawPost();
                     GLUtils.disp(GLUtils.fboTextureID);
@@ -158,9 +155,9 @@ public class ImageUtils {
                         for (int y = 0; y < fboHeight && startY + y < imageHeight; ++y) {
                             int index = y * fboWidth * 4 + x * 4;
                             byte var8 = 0;
-                            int color24 = var8 | (bytes[index + 2] & 255) << 0;
+                            int color24 = var8 | (bytes[index + 2] & 255);
                             color24 |= (bytes[index + 1] & 255) << 8;
-                            color24 |= (bytes[index + 0] & 255) << 16;
+                            color24 |= (bytes[index] & 255) << 16;
                             color24 |= (bytes[index + 3] & 255) << 24;
                             image.setRGB(startX + x, startY + y, color24);
                         }
@@ -173,7 +170,6 @@ public class ImageUtils {
             GLShim.glPopAttrib();
             GLShim.glViewport(0, 0, MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight());
         }
-
         return image;
     }
 
@@ -242,8 +238,8 @@ public class ImageUtils {
     }
 
     public static BufferedImage eraseArea(BufferedImage image, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scaleX = (float) (image.getWidth((ImageObserver) null) / imageWidth);
-        float scaleY = (float) (image.getHeight((ImageObserver) null) / imageHeight);
+        float scaleX = (float) (image.getWidth(null) / imageWidth);
+        float scaleY = (float) (image.getHeight(null) / imageHeight);
         x = (int) ((float) x * scaleX);
         y = (int) ((float) y * scaleY);
         w = (int) ((float) w * scaleX);
@@ -280,8 +276,8 @@ public class ImageUtils {
         h = (int) ((float) h * scale);
         w = Math.max(1, w);
         h = Math.max(1, h);
-        x = Math.min(mobSkin.getWidth((ImageObserver) null) - w, x);
-        y = Math.min(mobSkin.getHeight((ImageObserver) null) - h, y);
+        x = Math.min(mobSkin.getWidth(null) - w, x);
+        y = Math.min(mobSkin.getHeight(null) - h, y);
         return mobSkin.getSubimage(x, y, w, h);
     }
 

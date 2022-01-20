@@ -75,46 +75,24 @@ public class GLShim {
 
     public static void glEnable(int attrib) {
         switch (attrib) {
-            case 2884:
-                RenderSystem.enableCull();
-                break;
-            case 2929:
-                RenderSystem.enableDepthTest();
-                break;
-            case 3042:
-                RenderSystem.enableBlend();
-                break;
-            case 3089:
-                GL11.glEnable(3089);
-                break;
-            case 3553:
-                RenderSystem.enableTexture();
-                break;
-            case 32823:
-                RenderSystem.enablePolygonOffset();
+            case 2884 -> RenderSystem.enableCull();
+            case 2929 -> RenderSystem.enableDepthTest();
+            case 3042 -> RenderSystem.enableBlend();
+            case 3089 -> GL11.glEnable(3089);
+            case 3553 -> RenderSystem.enableTexture();
+            case 32823 -> RenderSystem.enablePolygonOffset();
         }
 
     }
 
     public static void glDisable(int attrib) {
         switch (attrib) {
-            case 2884:
-                RenderSystem.disableCull();
-                break;
-            case 2929:
-                RenderSystem.disableDepthTest();
-                break;
-            case 3042:
-                RenderSystem.disableBlend();
-                break;
-            case 3089:
-                GL11.glDisable(3089);
-                break;
-            case 3553:
-                RenderSystem.disableTexture();
-                break;
-            case 32823:
-                RenderSystem.disablePolygonOffset();
+            case 2884 -> RenderSystem.disableCull();
+            case 2929 -> RenderSystem.disableDepthTest();
+            case 3042 -> RenderSystem.disableBlend();
+            case 3089 -> GL11.glDisable(3089);
+            case 3553 -> RenderSystem.disableTexture();
+            case 32823 -> RenderSystem.disablePolygonOffset();
         }
 
     }
@@ -216,12 +194,10 @@ public class GLShim {
     }
 
     public static void glBindTexture(int target, int texture) {
-        switch (target) {
-            case 3553:
-                RenderSystem.bindTexture(texture);
-                break;
-            default:
-                GL11.glBindTexture(target, texture);
+        if (target == 3553) {
+            RenderSystem.bindTexture(texture);
+        } else {
+            GL11.glBindTexture(target, texture);
         }
 
     }

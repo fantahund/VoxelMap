@@ -108,72 +108,40 @@ public class MapSettingsManager implements ISettingsManager {
                 String sCurrentLine;
                 for (in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), Charset.forName("UTF-8").newDecoder())); (sCurrentLine = in.readLine()) != null; KeyBinding.updateKeysByCode()) {
                     String[] curLine = sCurrentLine.split(":");
-                    if (curLine[0].equals("Zoom Level")) {
-                        this.zoom = Math.max(0, Math.min(4, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Hide Minimap")) {
-                        this.hide = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Show Coordinates")) {
-                        this.coords = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Enable Cave Mode")) {
-                        this.showCaves = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Dynamic Lighting")) {
-                        this.lightmap = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Height Map")) {
-                        this.heightmap = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Slope Map")) {
-                        this.slopemap = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Blur")) {
-                        this.filtering = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Water Transparency")) {
-                        this.waterTransparency = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Block Transparency")) {
-                        this.blockTransparency = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Biomes")) {
-                        this.biomes = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Biome Overlay")) {
-                        this.biomeOverlay = Math.max(0, Math.min(2, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Chunk Grid")) {
-                        this.chunkGrid = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Slime Chunks")) {
-                        this.slimeChunks = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Square Map")) {
-                        this.squareMap = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Rotation")) {
-                        this.rotates = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Old North")) {
-                        this.oldNorth = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Waypoint Beacons")) {
-                        this.showBeacons = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Waypoint Signs")) {
-                        this.showWaypoints = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Deathpoints")) {
-                        this.deathpoints = Math.max(0, Math.min(2, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Waypoint Max Distance")) {
-                        this.maxWaypointDisplayDistance = Math.max(-1, Math.min(10000, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Waypoint Sort By")) {
-                        this.sort = Math.max(1, Math.min(4, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Welcome Message")) {
-                        this.welcome = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Real Time Torch Flicker")) {
-                        this.realTimeTorches = Boolean.parseBoolean(curLine[1]);
-                    } else if (curLine[0].equals("Map Corner")) {
-                        this.mapCorner = Math.max(0, Math.min(3, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Map Size")) {
-                        this.sizeModifier = Math.max(-1, Math.min(4, Integer.parseInt(curLine[1])));
-                    } else if (curLine[0].equals("Zoom Key")) {
-                        this.bindKey(this.keyBindZoom, curLine[1]);
-                    } else if (curLine[0].equals("Fullscreen Key")) {
-                        this.bindKey(this.keyBindFullscreen, curLine[1]);
-                    } else if (curLine[0].equals("Menu Key")) {
-                        this.bindKey(this.keyBindMenu, curLine[1]);
-                    } else if (curLine[0].equals("Waypoint Menu Key")) {
-                        this.bindKey(this.keyBindWaypointMenu, curLine[1]);
-                    } else if (curLine[0].equals("Waypoint Key")) {
-                        this.bindKey(this.keyBindWaypoint, curLine[1]);
-                    } else if (curLine[0].equals("Mob Key")) {
-                        this.bindKey(this.keyBindMobToggle, curLine[1]);
-                    } else if (curLine[0].equals("In-game Waypoint Key")) {
-                        this.bindKey(this.keyBindWaypointToggle, curLine[1]);
+                    switch (curLine[0]) {
+                        case "Zoom Level" -> this.zoom = Math.max(0, Math.min(4, Integer.parseInt(curLine[1])));
+                        case "Hide Minimap" -> this.hide = Boolean.parseBoolean(curLine[1]);
+                        case "Show Coordinates" -> this.coords = Boolean.parseBoolean(curLine[1]);
+                        case "Enable Cave Mode" -> this.showCaves = Boolean.parseBoolean(curLine[1]);
+                        case "Dynamic Lighting" -> this.lightmap = Boolean.parseBoolean(curLine[1]);
+                        case "Height Map" -> this.heightmap = Boolean.parseBoolean(curLine[1]);
+                        case "Slope Map" -> this.slopemap = Boolean.parseBoolean(curLine[1]);
+                        case "Blur" -> this.filtering = Boolean.parseBoolean(curLine[1]);
+                        case "Water Transparency" -> this.waterTransparency = Boolean.parseBoolean(curLine[1]);
+                        case "Block Transparency" -> this.blockTransparency = Boolean.parseBoolean(curLine[1]);
+                        case "Biomes" -> this.biomes = Boolean.parseBoolean(curLine[1]);
+                        case "Biome Overlay" -> this.biomeOverlay = Math.max(0, Math.min(2, Integer.parseInt(curLine[1])));
+                        case "Chunk Grid" -> this.chunkGrid = Boolean.parseBoolean(curLine[1]);
+                        case "Slime Chunks" -> this.slimeChunks = Boolean.parseBoolean(curLine[1]);
+                        case "Square Map" -> this.squareMap = Boolean.parseBoolean(curLine[1]);
+                        case "Rotation" -> this.rotates = Boolean.parseBoolean(curLine[1]);
+                        case "Old North" -> this.oldNorth = Boolean.parseBoolean(curLine[1]);
+                        case "Waypoint Beacons" -> this.showBeacons = Boolean.parseBoolean(curLine[1]);
+                        case "Waypoint Signs" -> this.showWaypoints = Boolean.parseBoolean(curLine[1]);
+                        case "Deathpoints" -> this.deathpoints = Math.max(0, Math.min(2, Integer.parseInt(curLine[1])));
+                        case "Waypoint Max Distance" -> this.maxWaypointDisplayDistance = Math.max(-1, Math.min(10000, Integer.parseInt(curLine[1])));
+                        case "Waypoint Sort By" -> this.sort = Math.max(1, Math.min(4, Integer.parseInt(curLine[1])));
+                        case "Welcome Message" -> this.welcome = Boolean.parseBoolean(curLine[1]);
+                        case "Real Time Torch Flicker" -> this.realTimeTorches = Boolean.parseBoolean(curLine[1]);
+                        case "Map Corner" -> this.mapCorner = Math.max(0, Math.min(3, Integer.parseInt(curLine[1])));
+                        case "Map Size" -> this.sizeModifier = Math.max(-1, Math.min(4, Integer.parseInt(curLine[1])));
+                        case "Zoom Key" -> this.bindKey(this.keyBindZoom, curLine[1]);
+                        case "Fullscreen Key" -> this.bindKey(this.keyBindFullscreen, curLine[1]);
+                        case "Menu Key" -> this.bindKey(this.keyBindMenu, curLine[1]);
+                        case "Waypoint Menu Key" -> this.bindKey(this.keyBindWaypointMenu, curLine[1]);
+                        case "Waypoint Key" -> this.bindKey(this.keyBindWaypoint, curLine[1]);
+                        case "Mob Key" -> this.bindKey(this.keyBindMobToggle, curLine[1]);
+                        case "In-game Waypoint Key" -> this.bindKey(this.keyBindWaypointToggle, curLine[1]);
                     }
                 }
 
@@ -286,38 +254,23 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public boolean getOptionBooleanValue(EnumOptionsMinimap par1EnumOptions) {
-        switch (par1EnumOptions) {
-            case COORDS:
-                return this.coords;
-            case HIDE:
-                return this.hide;
-            case CAVEMODE:
-                return this.cavesAllowed && this.showCaves;
-            case LIGHTING:
-                return this.lightmap;
-            case SQUARE:
-                return this.squareMap;
-            case ROTATES:
-                return this.rotates;
-            case OLDNORTH:
-                return this.oldNorth;
-            case WELCOME:
-                return this.welcome;
-            case FILTERING:
-                return this.filtering;
-            case WATERTRANSPARENCY:
-                return this.waterTransparency;
-            case BLOCKTRANSPARENCY:
-                return this.blockTransparency;
-            case BIOMES:
-                return this.biomes;
-            case CHUNKGRID:
-                return this.chunkGrid;
-            case SLIMECHUNKS:
-                return this.slimeChunks;
-            default:
-                throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
-        }
+        return switch (par1EnumOptions) {
+            case COORDS -> this.coords;
+            case HIDE -> this.hide;
+            case CAVEMODE -> this.cavesAllowed && this.showCaves;
+            case LIGHTING -> this.lightmap;
+            case SQUARE -> this.squareMap;
+            case ROTATES -> this.rotates;
+            case OLDNORTH -> this.oldNorth;
+            case WELCOME -> this.welcome;
+            case FILTERING -> this.filtering;
+            case WATERTRANSPARENCY -> this.waterTransparency;
+            case BLOCKTRANSPARENCY -> this.blockTransparency;
+            case BIOMES -> this.biomes;
+            case CHUNKGRID -> this.chunkGrid;
+            case SLIMECHUNKS -> this.slimeChunks;
+            default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
+        };
     }
 
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {

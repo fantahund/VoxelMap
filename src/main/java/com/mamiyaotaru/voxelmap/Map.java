@@ -194,7 +194,7 @@ public class Map implements Runnable, IMap {
         this.waypointManager = master.getWaypointManager();
         this.layoutVariables = new LayoutVariables();
         ArrayList tempBindings = new ArrayList();
-        tempBindings.addAll(Arrays.asList(this.game.options.keysAll));
+        tempBindings.addAll(Arrays.asList(this.game.options.allKeys));
         tempBindings.addAll(Arrays.asList(this.options.keyBindings));
         Field f = ReflectionUtils.getFieldByType(this.game.options, GameOptions.class, KeyBinding[].class, 1);
 
@@ -1931,8 +1931,8 @@ public class Map implements Runnable, IMap {
             matrixStack.translate(0.0, 0.0, 1160.0);
             RenderSystem.applyModelViewMatrix();
 
-            for (int t = 0; t < labels.size(); ++t) {
-                AbstractMapData.BiomeLabel label = (AbstractMapData.BiomeLabel) labels.get(t);
+            for (Object o : labels) {
+                AbstractMapData.BiomeLabel label = (AbstractMapData.BiomeLabel) o;
                 if (label.segmentSize > minimumSize) {
                     String name = label.name;
                     int nameWidth = this.chkLen(name);
@@ -2073,13 +2073,13 @@ public class Map implements Runnable, IMap {
             matrixStack.scale(scale, scale, 1.0F);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.chkLen(xy) / 2;
-            this.write(matrixStack, xy, (float) x / scale - (float) m, (float) textStart / scale, 16777215);
+            this.write(matrixStack, xy, (float) x / scale - (float) m, (float) textStart / scale, 16777215); //X, Z
             xy = Integer.toString(GameVariableAccessShim.yCoord());
             m = this.chkLen(xy) / 2;
-            this.write(matrixStack, xy, (float) x / scale - (float) m, (float) textStart / scale + 10.0F, 16777215);
+            this.write(matrixStack, xy, (float) x / scale - (float) m, (float) textStart / scale + 10.0F, 16777215); //Y
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(matrixStack, this.error, (float) x / scale - (float) m, (float) textStart / scale + 19.0F, 16777215);
+                this.write(matrixStack, this.error, (float) x / scale - (float) m, (float) textStart / scale + 19.0F, 16777215); //WORLD NAME
             }
 
             matrixStack.pop();

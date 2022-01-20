@@ -628,26 +628,25 @@ public class WaypointManager implements IWaypointManager {
                     String subWorldsS = properties.getProperty("subworlds", "");
                     String[] subWorlds = subWorldsS.split(",");
 
-                    for (int t = 0; t < subWorlds.length; ++t) {
-                        if (!subWorlds[t].equals("")) {
-                            this.knownSubworldNames.add(TextUtils.descrubName(subWorlds[t]));
+                    for (String subWorld : subWorlds) {
+                        if (!subWorld.equals("")) {
+                            this.knownSubworldNames.add(TextUtils.descrubName(subWorld));
                         }
                     }
 
                     String oldNorthWorldsS = properties.getProperty("oldNorthWorlds", "");
                     String[] oldNorthWorlds = oldNorthWorldsS.split(",");
 
-                    for (int t = 0; t < oldNorthWorlds.length; ++t) {
-                        if (!oldNorthWorlds[t].equals("")) {
-                            this.oldNorthWorldNames.add(TextUtils.descrubName(oldNorthWorlds[t]));
+                    for (String oldNorthWorld : oldNorthWorlds) {
+                        if (!oldNorthWorld.equals("")) {
+                            this.oldNorthWorldNames.add(TextUtils.descrubName(oldNorthWorld));
                         }
                     }
 
                     String worldSeedsS = properties.getProperty("seeds", "");
                     String[] worldSeedPairs = worldSeedsS.split(",");
 
-                    for (int t = 0; t < worldSeedPairs.length; ++t) {
-                        String pair = worldSeedPairs[t];
+                    for (String pair : worldSeedPairs) {
                         String[] worldSeedPair = pair.split("#");
                         if (worldSeedPair.length == 2) {
                             this.worldSeeds.put(worldSeedPair[0], worldSeedPair[1]);
@@ -655,7 +654,7 @@ public class WaypointManager implements IWaypointManager {
                     }
 
                     fr.close();
-                } catch (IOException var26) {
+                } catch (IOException ignored) {
                 }
 
                 try {
@@ -678,11 +677,11 @@ public class WaypointManager implements IWaypointManager {
                                 String world = "";
                                 TreeSet dimensions = new TreeSet();
 
-                                for (int t = 0; t < pairs.length; ++t) {
-                                    int splitIndex = pairs[t].indexOf(":");
+                                for (String pair : pairs) {
+                                    int splitIndex = pair.indexOf(":");
                                     if (splitIndex != -1) {
-                                        String key = pairs[t].substring(0, splitIndex).toLowerCase().trim();
-                                        String value = pairs[t].substring(splitIndex + 1).trim();
+                                        String key = pair.substring(0, splitIndex).toLowerCase().trim();
+                                        String value = pair.substring(splitIndex + 1).trim();
                                         if (key.equals("name")) {
                                             name = TextUtils.descrubName(value);
                                         } else if (key.equals("x")) {
@@ -706,8 +705,8 @@ public class WaypointManager implements IWaypointManager {
                                         } else if (key.equals("dimensions")) {
                                             String[] dimensionStrings = value.split("#");
 
-                                            for (int s = 0; s < dimensionStrings.length; ++s) {
-                                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionStrings[s]));
+                                            for (String dimensionString : dimensionStrings) {
+                                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
                                             }
 
                                             if (dimensions.size() == 0) {
@@ -724,7 +723,7 @@ public class WaypointManager implements IWaypointManager {
                                     }
                                 }
                             }
-                        } catch (Exception var24) {
+                        } catch (Exception ignored) {
                         }
                     }
 
@@ -756,7 +755,7 @@ public class WaypointManager implements IWaypointManager {
         this.wayPts.remove(point);
         this.saveWaypoints();
         if (point == this.highlightedWaypoint) {
-            this.setHighlightedWaypoint((Waypoint) null, false);
+            this.setHighlightedWaypoint(null, false);
         }
 
     }
@@ -819,9 +818,9 @@ public class WaypointManager implements IWaypointManager {
             InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.png")).getInputStream();
             Image image = ImageIO.read(is);
             is.close();
-            BufferedImage mapImage = new BufferedImage(image.getWidth((ImageObserver) null), image.getHeight((ImageObserver) null), 2);
+            BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
             Graphics gfx = mapImage.createGraphics();
-            gfx.drawImage(image, 0, 0, (ImageObserver) null);
+            gfx.drawImage(image, 0, 0, null);
             gfx.dispose();
             is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
@@ -845,7 +844,7 @@ public class WaypointManager implements IWaypointManager {
             }
 
             isr.close();
-        } catch (Exception var18) {
+        } catch (Exception ignored) {
         }
 
     }

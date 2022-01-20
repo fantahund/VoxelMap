@@ -197,7 +197,7 @@ public class ColorManager implements IColorManager {
         BiomeRepository.getBiomes();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
-        Sprite missing = (Sprite) this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
+        Sprite missing = this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
         this.failedToLoadX = missing.getMinU();
         this.failedToLoadY = missing.getMinV();
         this.loaded = false;
@@ -347,9 +347,9 @@ public class ColorManager implements IColorManager {
             TextureManager textureManager = this.game.getTextureManager();
             textureManager.bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
-            this.terrainBuff = new BufferedImage(terrainStitched.getWidth((ImageObserver) null), terrainStitched.getHeight((ImageObserver) null), 6);
+            this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();
-            gfx.drawImage(terrainStitched, 0, 0, (ImageObserver) null);
+            gfx.drawImage(terrainStitched, 0, 0, null);
             gfx.dispose();
         } catch (Exception var4) {
             System.err.println("Error processing new resource pack: " + var4.getLocalizedMessage());

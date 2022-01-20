@@ -493,7 +493,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                             while (!this.closed && !tickFuture.isDone()) {
                                 try {
                                     Thread.sleep(3L);
-                                } catch (InterruptedException var35) {
+                                } catch (InterruptedException ignored) {
                                 }
                             }
 
