@@ -1,6 +1,6 @@
-name: VoxelMap
+name: Build VoxelMap
 
-on: [push]
+on: workflow_dispatch
 
 jobs:
   build:
