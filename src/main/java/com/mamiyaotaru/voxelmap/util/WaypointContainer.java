@@ -79,7 +79,7 @@ public class WaypointContainer {
                     int z = pt.getZ();
                     WorldChunk chunk = this.mc.world.getChunk(x >> 4, z >> 4);
                     if (chunk != null && !chunk.isEmpty() && this.mc.world.isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = 0.0 - renderPosY;
+                        double bottomOfWorld = mc.world.getBottomY() - renderPosY;
                         this.renderBeam(pt, (double) x - renderPosX, bottomOfWorld, (double) z - renderPosZ, 64.0F, matrix4f);
                     }
                 }
@@ -149,7 +149,7 @@ public class WaypointContainer {
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, float par8, Matrix4f matrix4f) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        int height = 256;
+        int height = mc.world.getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;
@@ -185,8 +185,8 @@ public class WaypointContainer {
                     vertZ1 = (float) ((double) vertZ1 + d7 * 2.0);
                 }
 
-                vertexBuffer.vertex(matrix4f, vertX1, (float) baseY + 0.0F, vertZ1).color(r * brightness, g * brightness, b * brightness, 0.8F).next();
-                vertexBuffer.vertex(matrix4f, vertX2, (float) baseY + (float) height, vertZ2).color(r * brightness, g * brightness, b * brightness, 0.8F).next();
+                vertexBuffer.vertex(matrix4f, vertX1, (float) baseY, vertZ1).color(r * brightness, g * brightness, b * brightness, 0.8F).next();
+                vertexBuffer.vertex(matrix4f, vertX2, (float) (baseY + height), vertZ2).color(r * brightness, g * brightness, b * brightness, 0.8F).next();
             }
 
             tessellator.draw();
