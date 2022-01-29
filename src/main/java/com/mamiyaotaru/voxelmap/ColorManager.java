@@ -93,7 +93,6 @@ public class ColorManager implements IColorManager {
     private BufferedImage terrainBuff = null;
     private BufferedImage colorPicker;
     private int sizeOfBiomeArray = 0;
-    private final int WORLD_HEIGHT = 256;
     private final int BIOME_ARRAY_HEIGHT = 32;
     private final int BIOME_ARRAY_HEIGHT_MULTIPLIER = 8;
     private int[] blockColors = new int[16384];
@@ -203,8 +202,8 @@ public class ColorManager implements IColorManager {
         this.loaded = false;
 
         try {
-            Arrays.fill(this.blockColors, -16842497);
-            Arrays.fill(this.blockColorsWithDefaultTint, -16842497);
+            Arrays.fill(this.blockColors, COLOR_NOT_LOADED);
+            Arrays.fill(this.blockColorsWithDefaultTint, COLOR_NOT_LOADED);
             this.loadSpecialColors();
             this.biomeTintsAvailable.clear();
             this.biomeTextureAvailable.clear();
@@ -375,14 +374,14 @@ public class ColorManager implements IColorManager {
     @Override
     public final int getBlockColorWithDefaultTint(MutableBlockPos blockPos, int blockStateID) {
         if (this.loaded) {
-            int col = 452984832;
+            int col = COLOR_FAILED_LOAD;
 
             try {
                 col = this.blockColorsWithDefaultTint[blockStateID];
             } catch (ArrayIndexOutOfBoundsException var5) {
             }
 
-            return col != -16842497 ? col : this.getBlockColor(blockPos, blockStateID);
+            return col != COLOR_NOT_LOADED ? col : this.getBlockColor(blockPos, blockStateID);
         } else {
             return 0;
         }
@@ -409,7 +408,7 @@ public class ColorManager implements IColorManager {
     }
 
     private final int getBlockColor(MutableBlockPos blockPos, int blockStateID) {
-        int col = 452984832;
+        int col = COLOR_FAILED_LOAD;
 
         try {
             col = this.blockColors[blockStateID];
@@ -417,7 +416,7 @@ public class ColorManager implements IColorManager {
             this.resizeColorArrays(blockStateID);
         }
 
-        if (col == -16842497 || col == 452984832) {
+        if (col == COLOR_NOT_LOADED || col == COLOR_FAILED_LOAD) {
             BlockState blockState = BlockRepository.getStateById(blockStateID);
             col = this.blockColors[blockStateID] = this.getColor(blockPos, blockState);
         }
@@ -431,8 +430,8 @@ public class ColorManager implements IColorManager {
             int[] newBlockColorsWithDefaultTint = new int[this.blockColors.length * 2];
             System.arraycopy(this.blockColors, 0, newBlockColors, 0, this.blockColors.length);
             System.arraycopy(this.blockColorsWithDefaultTint, 0, newBlockColorsWithDefaultTint, 0, this.blockColorsWithDefaultTint.length);
-            Arrays.fill(newBlockColors, this.blockColors.length, newBlockColors.length, -16842497);
-            Arrays.fill(newBlockColorsWithDefaultTint, this.blockColorsWithDefaultTint.length, newBlockColorsWithDefaultTint.length, -16842497);
+            Arrays.fill(newBlockColors, this.blockColors.length, newBlockColors.length, COLOR_NOT_LOADED);
+            Arrays.fill(newBlockColorsWithDefaultTint, this.blockColorsWithDefaultTint.length, newBlockColorsWithDefaultTint.length, COLOR_NOT_LOADED);
             this.blockColors = newBlockColors;
             this.blockColorsWithDefaultTint = newBlockColorsWithDefaultTint;
         }
@@ -442,7 +441,7 @@ public class ColorManager implements IColorManager {
     private int getColor(MutableBlockPos blockPos, BlockState blockState) {
         try {
             int color = this.getColorForBlockPosBlockStateAndFacing(blockPos, blockState, Direction.UP);
-            if (color == 452984832) {
+            if (color == COLOR_FAILED_LOAD) {
                 BlockRenderManager blockRendererDispatcher = this.game.getBlockRenderManager();
                 color = this.getColorForTerrainSprite(blockState, blockRendererDispatcher);
             }
@@ -467,19 +466,19 @@ public class ColorManager implements IColorManager {
             }
 
             if ((color >> 24 & 0xFF) < 27) {
-                color |= 452984832;
+                color |= COLOR_FAILED_LOAD;
             }
 
             return color;
         } catch (Exception var5) {
             System.err.println("failed getting color: " + blockState.getBlock().getName().getString());
             var5.printStackTrace();
-            return 452984832;
+            return COLOR_FAILED_LOAD;
         }
     }
 
     private int getColorForBlockPosBlockStateAndFacing(BlockPos blockPos, BlockState blockState, Direction facing) {
-        int color = 452984832;
+        int color = COLOR_FAILED_LOAD;
 
         try {
             BlockRenderType blockRenderType = blockState.getRenderType();
@@ -502,14 +501,14 @@ public class ColorManager implements IColorManager {
         } catch (Exception var11) {
             System.out.println(var11.getMessage());
             var11.printStackTrace();
-            color = 452984832;
+            color = COLOR_FAILED_LOAD;
         }
 
         return color;
     }
 
     private int getColorForTerrainSprite(BlockState blockState, BlockRenderManager blockRendererDispatcher) {
-        int color = 452984832;
+        int color = COLOR_FAILED_LOAD;
         BlockModels blockModelShapes = blockRendererDispatcher.getModels();
         Sprite icon = blockModelShapes.getModelParticleSprite(blockState);
         if (icon == blockModelShapes.getModelManager().getMissingModel().getParticleSprite()) {
@@ -532,7 +531,7 @@ public class ColorManager implements IColorManager {
     }
 
     private int getColorForIcon(Sprite icon) {
-        int color = 452984832;
+        int color = COLOR_FAILED_LOAD;
         if (icon != null) {
             float left = icon.getMinU();
             float right = icon.getMaxU();
@@ -545,7 +544,7 @@ public class ColorManager implements IColorManager {
     }
 
     private int getColorForCoordinatesAndImage(float[] uv, BufferedImage imageBuff) {
-        int color = 452984832;
+        int color = COLOR_FAILED_LOAD;
         if (uv[0] != this.failedToLoadX || uv[2] != this.failedToLoadY) {
             int left = (int) (uv[0] * (float) imageBuff.getWidth());
             int right = (int) Math.ceil((double) (uv[1] * (float) imageBuff.getWidth()));
@@ -563,7 +562,7 @@ public class ColorManager implements IColorManager {
             } catch (RasterFormatException var12) {
                 System.out.println("error getting color");
                 System.out.println(left + " " + right + " " + top + " " + bottom);
-                color = 452984832;
+                color = COLOR_FAILED_LOAD;
             }
         }
 
@@ -609,7 +608,7 @@ public class ColorManager implements IColorManager {
                     this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, tint);
                     //this.createTintTable(blockState, tempBlockPos);
                 } else {
-                    this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 452984832;
+                    this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = COLOR_FAILED_LOAD;
                 }
             }
         } catch (Exception var9) {
@@ -894,9 +893,9 @@ public class ColorManager implements IColorManager {
         }
 
         for (int t = 0; t < this.blockColors.length; ++t) {
-            if (this.blockColors[t] != 452984832 && this.blockColors[t] != -16842497) {
+            if (this.blockColors[t] != COLOR_FAILED_LOAD && this.blockColors[t] != COLOR_NOT_LOADED) {
                 if ((this.blockColors[t] >> 24 & 0xFF) < 27) {
-                    this.blockColors[t] |= 452984832;
+                    this.blockColors[t] |= COLOR_FAILED_LOAD;
                 }
 
                 this.checkForBiomeTinting(this.dummyBlockPos, BlockRepository.getStateById(t), this.blockColors[t]);
@@ -1042,7 +1041,7 @@ public class ColorManager implements IColorManager {
                                 topRGB = this.processRenderPassThree(topRGB);
                                 int blockStateID = BlockRepository.getStateId(blockState);
                                 int baseRGB = this.blockColors[blockStateID];
-                                if (baseRGB != 452984832 && baseRGB != -16842497) {
+                                if (baseRGB != COLOR_FAILED_LOAD && baseRGB != COLOR_NOT_LOADED) {
                                     topRGB = ColorUtils.colorMultiplier(baseRGB, topRGB);
                                 }
                             }

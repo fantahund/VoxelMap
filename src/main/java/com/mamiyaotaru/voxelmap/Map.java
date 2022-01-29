@@ -96,14 +96,8 @@ import java.util.Random;
 import java.util.TreeSet;
 
 public class Map implements Runnable, IMap {
-    private final int WORLD_HEIGHT = 256;
     private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
-    private final int SEAFLOORLAYER = 0;
-    private final int GROUNDLAYER = 1;
-    private final int FOLIAGELAYER = 2;
-    private final int TRANSPARENTLAYER = 3;
-    private final float SQRT2 = 1.4142F;
     private final Identifier arrowResourceLocation = new Identifier("voxelmap", "images/mmarrow.png");
     private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
     private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
@@ -111,7 +105,6 @@ public class Map implements Runnable, IMap {
     LiveScaledGLBufferedImage roundImage = new LiveScaledGLBufferedImage(128, 128, 6);
     private IVoxelMap master;
     private MinecraftClient game;
-    private String zmodver = "v1.10.18";
     private ClientWorld world = null;
     private MapSettingsManager options = null;
     private LayoutVariables layoutVariables = null;
@@ -848,7 +841,7 @@ public class Map implements Runnable, IMap {
         boolean nether = false;
         boolean caves = false;
         boolean netherPlayerInOpen = false;
-        this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
+        this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), game.world.getTopY() - 1), 0), this.lastZ);
         if (this.game.player.world.getDimension().hasCeiling()) {
 
             netherPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
@@ -947,7 +940,7 @@ public class Map implements Runnable, IMap {
         boolean nether = false;
         boolean caves = false;
         boolean netherPlayerInOpen = false;
-        this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
+        this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), game.player.world.getTopY() - 1), 0), this.lastZ);
         int currentY = GameVariableAccessShim.yCoord();
         if (this.game.player.world.getDimension().hasCeiling()) {
             netherPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
@@ -1411,7 +1404,7 @@ public class Map implements Runnable, IMap {
 
             return y;
         } else {
-            while (y <= this.lastY + 10 && y < (nether ? 127 : 256)) {
+            while (y <= this.lastY + 10 && y < game.world.getTopY()) {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(this.blockPos);
@@ -1567,7 +1560,7 @@ public class Map implements Runnable, IMap {
         if (solid) {
             i3 = 0;
         } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.lightmap) {
-            this.blockPos.setXYZ(x, Math.max(Math.min(height, 256 - 1), 0), z);
+            this.blockPos.setXYZ(x, Math.max(Math.min(height, world.getTopY()), 0), z);
             int blockLight = world.getLightLevel(LightType.BLOCK, this.blockPos);
             int skyLight = world.getLightLevel(LightType.SKY, this.blockPos);
             if (blockState.getMaterial() == Material.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
@@ -2126,7 +2119,7 @@ public class Map implements Runnable, IMap {
 
     private void drawWelcomeScreen(MatrixStack matrixStack, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
-            this.welcomeText[0] = (new LiteralText("")).append((new LiteralText("VoxelMap! ")).formatted(Formatting.RED)).append(this.zmodver + " ").append(new TranslatableText("minimap.ui.welcome1"));
+            this.welcomeText[0] = (new LiteralText("")).append((new LiteralText("VoxelMap! ")).formatted(Formatting.RED)).append(new TranslatableText("minimap.ui.welcome1"));
             this.welcomeText[1] = new TranslatableText("minimap.ui.welcome2");
             this.welcomeText[2] = new TranslatableText("minimap.ui.welcome3");
             this.welcomeText[3] = new TranslatableText("minimap.ui.welcome4");
