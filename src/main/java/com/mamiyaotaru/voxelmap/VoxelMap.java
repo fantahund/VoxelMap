@@ -31,7 +31,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.resource.ReloadableResourceManager;
+import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
 import net.minecraft.text.LiteralText;
@@ -113,7 +113,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
-        ReloadableResourceManager resourceManager = (ReloadableResourceManager) MinecraftClient.getInstance().getResourceManager();
+        ReloadableResourceManagerImpl resourceManager = (ReloadableResourceManagerImpl) MinecraftClient.getInstance().getResourceManager();
         resourceManager.registerReloader(this);
         this.apply(resourceManager);
     }

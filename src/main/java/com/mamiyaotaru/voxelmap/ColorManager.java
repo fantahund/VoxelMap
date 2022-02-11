@@ -720,7 +720,7 @@ public class ColorManager implements IColorManager {
                         for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
                             int biomeID = 0;
                             if (live) {
-                                biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)));
+                                biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value());
                             } else {
                                 int dataX = t - startX;
                                 int dataZ = s - startZ;

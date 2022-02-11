@@ -28,7 +28,8 @@ public abstract class APIMixinReloadableResourceManagerImpl {
 
     private ZipResourcePack zipPack;
 
-    @Inject(method = "reload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/resource/ResourceReload;", at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;clear()V", shift = Shift.AFTER))
+    @Inject(method = "reload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/resource/ResourceReload;", 
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;clear()V", shift = Shift.AFTER))
     public void reload(Executor prepareExecutor, Executor applyExecutor, CompletableFuture<Unit> initialStage, List<ResourcePack> packs, CallbackInfoReturnable<ResourceReload> cir) {
         if (this.zipPack == null) {
             CodeSource src = VoxelMap.class.getProtectionDomain().getCodeSource();
