@@ -10,7 +10,6 @@
     "APIMixinInGameHud",
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
-    "APIMixinReloadableResourceManagerImpl",
     "MixinWorldRenderer",
     "ONMixinBackgroundRenderer",
     "ONMixinWorldRenderer"
