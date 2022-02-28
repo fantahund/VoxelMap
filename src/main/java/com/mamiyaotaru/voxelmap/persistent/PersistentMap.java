@@ -428,7 +428,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         if (solid) {
             i3 = 0;
         } else if (blockState != null && blockState.getMaterial() != Material.AIR) {
-            blockPos.setXYZ(x, Math.max(Math.min(height, world.getTopY()), 0), z);
+            blockPos.setXYZ(x, Math.max(Math.min(height, 255), 0), z);
             int blockLight = world.getLightLevel(LightType.BLOCK, blockPos) & 15;
             int skyLight = world.getLightLevel(LightType.SKY, blockPos);
             if (blockState.getMaterial() == Material.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
@@ -524,7 +524,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             }
 
                             seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0);
-                            int seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
+                            int seafloorLight = 255;
+                            seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
                             if (mapOptions.lightmap) {
                                 int lightValue = this.getLight(seafloorLight);
                                 seafloorColor = ColorUtils.colorMultiplier(seafloorColor, lightValue);
