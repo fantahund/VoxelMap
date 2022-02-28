@@ -111,6 +111,7 @@ public class Map implements Runnable, IMap {
     LiveScaledGLBufferedImage roundImage = new LiveScaledGLBufferedImage(128, 128, 6);
     private IVoxelMap master;
     private MinecraftClient game;
+    private String zmodver = "v1.10.18";
     private ClientWorld world = null;
     private MapSettingsManager options = null;
     private LayoutVariables layoutVariables = null;
@@ -2125,7 +2126,7 @@ public class Map implements Runnable, IMap {
 
     private void drawWelcomeScreen(MatrixStack matrixStack, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
-            this.welcomeText[0] = (new LiteralText("")).append((new LiteralText("VoxelMap! ")).formatted(Formatting.RED)).append(new TranslatableText("minimap.ui.welcome1"));
+            this.welcomeText[0] = (new LiteralText("")).append((new LiteralText("VoxelMap! ")).formatted(Formatting.RED)).append(this.zmodver + " ").append(new TranslatableText("minimap.ui.welcome1"));
             this.welcomeText[1] = new TranslatableText("minimap.ui.welcome2");
             this.welcomeText[2] = new TranslatableText("minimap.ui.welcome3");
             this.welcomeText[3] = new TranslatableText("minimap.ui.welcome4");
