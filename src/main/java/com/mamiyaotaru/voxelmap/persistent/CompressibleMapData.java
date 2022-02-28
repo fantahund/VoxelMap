@@ -45,19 +45,7 @@ public class CompressibleMapData extends AbstractMapData {
     private boolean isCompressed = false;
     private BiMap<BlockState, Integer> stateToInt = null;
     int blockStateCount = 1;
-
     private static byte[] compressedEmptyData = new byte[DATABYTES * 256 * 256];
-
-    static {
-        Arrays.fill(compressedEmptyData, (byte) 0);
-
-        try {
-            compressedEmptyData = CompressionUtils.compress(compressedEmptyData);
-        } catch (IOException var1) {
-            var1.printStackTrace();
-        }
-
-    }
 
     public CompressibleMapData(int width, int height) {
         this.width = width;
@@ -420,25 +408,25 @@ public class CompressibleMapData extends AbstractMapData {
         return this.isCompressed;
     }
 
+    private synchronized int getIDFromState(BlockState blockState) {
+        Integer id = this.stateToInt.get(blockState);
+        if (id == null && blockState != null) {
+            id = getNextBlockStateId();
+            this.stateToInt.put(blockState, id);
+        }
+        if (id == null) id = 0;
+        return id;
+    }
+
     private BlockState getStateFromID(int id) {
         return this.stateToInt.inverse().get(id);
     }
 
-    private synchronized int getIDFromState(BlockState blockState) {
-        return getIDFromState(blockState, stateToInt);
-    }
-
-    private synchronized int getIDFromState(BlockState blockState, BiMap<BlockState, Integer> stateToInt) {
-        if (blockState == null) return 0;
-        Integer id = stateToInt.get(blockState);
-        if (id == null) {
-            while (stateToInt.containsValue(blockStateCount)) {
-                ++blockStateCount;
-            }
-            id = blockStateCount;
-            stateToInt.put(blockState, id);
+    private synchronized int getNextBlockStateId() {
+        while (this.stateToInt.inverse().containsKey(this.blockStateCount)) {
+            ++this.blockStateCount;
         }
-        return id;
+        return this.blockStateCount;
     }
 
     public BiMap<BlockState, Integer> buildStateToInt() {
@@ -455,33 +443,60 @@ public class CompressibleMapData extends AbstractMapData {
                 int oldID = getUnsignedShort(x, z, BLOCKSTATE_POS);
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
-                    int id = getIDFromState(blockState, newMap);
+                    Integer id = newMap.get(blockState);
+                    if (id == null && blockState != null) {
+                        id = getNextBlockStateId();
+                        newMap.put(blockState, id);
+                    }
                     setShort(x, z, 1, id);
                 }
 
                 oldID = getUnsignedShort(x, z, OCEANFLOOR_BLOCKSTATE_POS);
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
-                    int id = getIDFromState(blockState, newMap);
+                    Integer id = newMap.get(blockState);
+                    if (id == null && blockState != null) {
+                        id = getNextBlockStateId();
+                        newMap.put(blockState, id);
+                    }
                     setShort(x, z, OCEANFLOOR_BLOCKSTATE_POS, id);
                 }
 
                 oldID = getUnsignedShort(x, z, TRANSPARENT_BLOCKSTATE_POS);
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
-                    int id = getIDFromState(blockState, newMap);
+                    Integer id = newMap.get(blockState);
+                    if (id == null && blockState != null) {
+                        id = getNextBlockStateId();
+                        newMap.put(blockState, id);
+                    }
                     setShort(x, z, TRANSPARENT_BLOCKSTATE_POS, id);
                 }
 
                 oldID = getUnsignedShort(x, z, FOLIAGE_BLOCKSTATE_POS);
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
-                    int id = getIDFromState(blockState, newMap);
+                    Integer id = newMap.get(blockState);
+                    if (id == null && blockState != null) {
+                        id = getNextBlockStateId();
+                        newMap.put(blockState, id);
+                    }
                     setShort(x, z, FOLIAGE_BLOCKSTATE_POS, id);
                 }
             }
         }
 
         return newMap;
+    }
+
+    static {
+        Arrays.fill(compressedEmptyData, (byte) 0);
+
+        try {
+            compressedEmptyData = CompressionUtils.compress(compressedEmptyData);
+        } catch (IOException var1) {
+            var1.printStackTrace();
+        }
+
     }
 }
