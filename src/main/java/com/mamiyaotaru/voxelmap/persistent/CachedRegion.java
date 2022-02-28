@@ -53,9 +53,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import static com.mamiyaotaru.voxelmap.persistent.CompressibleMapData.DATABYTES;
-import static com.mamiyaotaru.voxelmap.persistent.CompressibleMapData.VERSION;
-
 public class CachedRegion implements IThreadCompleteListener, ISettingsAndLightingChangeListener {
     public static EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
     private long mostRecentView = 0L;
@@ -522,24 +519,25 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
                 ZipFile zFile = new ZipFile(cachedRegionFile);
+                BiMap stateToInt = null;
                 int total = 0;
-                byte[] decompressedByteData = new byte[this.data.getWidth() * this.data.getHeight() * DATABYTES * 4];
+                byte[] decompressedByteData = new byte[this.data.getWidth() * this.data.getHeight() * 17 * 4];
                 ZipEntry ze = zFile.getEntry("data");
                 InputStream is = zFile.getInputStream(ze);
 
                 int count;
-                for (byte[] byteData = new byte[2048]; (count = is.read(byteData, 0, 2048)) != -1 && count + total < this.data.getWidth() * this.data.getHeight() * DATABYTES * 4; total += count) {
+                for (byte[] byteData = new byte[2048]; (count = is.read(byteData, 0, 2048)) != -1 && count + total <= this.data.getWidth() * this.data.getHeight() * 17 * 4; total += count) {
                     System.arraycopy(byteData, 0, decompressedByteData, total, count);
                 }
 
                 is.close();
                 ze = zFile.getEntry("key");
                 is = zFile.getInputStream(ze);
-                BiMap stateToInt = HashBiMap.create();
+                BiMap var18 = HashBiMap.create();
                 Scanner sc = new Scanner(is);
 
                 while (sc.hasNextLine()) {
-                    BlockStateParser.parseLine(sc.nextLine(), stateToInt);
+                    BlockStateParser.parseLine(sc.nextLine(), var18);
                 }
 
                 sc.close();
@@ -564,17 +562,17 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 }
 
                 zFile.close();
-                if (total == this.data.getWidth() * this.data.getHeight() * DATABYTES && stateToInt != null) {
-                    byte[] var23 = new byte[this.data.getWidth() * this.data.getHeight() * DATABYTES];
+                if (total == this.data.getWidth() * this.data.getHeight() * 18 && var18 != null) {
+                    byte[] var23 = new byte[this.data.getWidth() * this.data.getHeight() * 18];
                     System.arraycopy(decompressedByteData, 0, var23, 0, var23.length);
-                    this.data.setData(var23, stateToInt, version);
+                    this.data.setData(var23, var18, version);
                     this.empty = false;
                     this.dataUpdated = true;
                 } else {
                     System.out.println("failed to load data from " + cachedRegionFile.getPath());
                 }
 
-                if (stateToInt == null || version < VERSION) {
+                if (var18 == null || version < 2) {
                     this.liveChunksUpdated = true;
                 }
             }
@@ -617,13 +615,12 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     }
 
     private void doSave() throws IOException {
-        BiMap stateToInt = data.buildStateToInt();
-        byte[] byteArray = data.getData();
-
-        if (byteArray.length != data.getWidth() * data.getHeight() * DATABYTES) {
-            System.err.println("Data array wrong size: " + byteArray.length + "for " + x + "," + z + " in " + worldNamePathPart + "/" + subworldNamePathPart + dimensionNamePathPart);
-            return;
-        } else {
+        BiMap stateToInt = this.data.getStateToInt();
+        byte[] byteArray = this.data.getData();
+        int var10000 = byteArray.length;
+        int var10001 = this.data.getWidth() * this.data.getHeight();
+        CompressibleMapData var10002 = this.data;
+        if (var10000 == var10001 * 18) {
             File cachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
@@ -653,7 +650,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             }
 
             StringBuffer stringBuffer = new StringBuffer();
-            String nextLine = "version:" + VERSION + "\r\n";
+            String nextLine = "version:2\r\n";
             stringBuffer.append(nextLine);
             byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
             ze = new ZipEntry("control");
@@ -663,7 +660,10 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             zos.closeEntry();
             zos.close();
             fos.close();
+        } else {
+            System.err.println("Data array wrong size: " + byteArray.length + "for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
         }
+
     }
 
     private void fillImage() {
