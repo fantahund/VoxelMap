@@ -1188,7 +1188,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     }
                 } else {
                     if (y == 0) {
-                        y = !this.mc.player.world.getDimension().hasCeiling() ? mc.world.getTopY() : 64;
+                        y = !this.mc.player.world.getDimension().hasCeiling() ? 255 : 64;
                     }
 
                     this.mc.player.sendChatMessage("/tp " + this.mc.player.getName().getString() + " " + x + " " + y + " " + z);
