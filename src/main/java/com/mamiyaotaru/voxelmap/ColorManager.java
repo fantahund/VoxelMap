@@ -93,7 +93,6 @@ public class ColorManager implements IColorManager {
     private BufferedImage terrainBuff = null;
     private BufferedImage colorPicker;
     private int sizeOfBiomeArray = 0;
-    private final int WORLD_HEIGHT = 256;
     private final int BIOME_ARRAY_HEIGHT = 32;
     private final int BIOME_ARRAY_HEIGHT_MULTIPLIER = 8;
     private int[] blockColors = new int[16384];

@@ -96,7 +96,6 @@ import java.util.Random;
 import java.util.TreeSet;
 
 public class Map implements Runnable, IMap {
-    private final int WORLD_HEIGHT = 256;
     private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
     private final int SEAFLOORLAYER = 0;

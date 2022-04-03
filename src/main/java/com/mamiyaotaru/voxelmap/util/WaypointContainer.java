@@ -79,7 +79,7 @@ public class WaypointContainer {
                     int z = pt.getZ();
                     WorldChunk chunk = this.mc.world.getChunk(x >> 4, z >> 4);
                     if (chunk != null && !chunk.isEmpty() && this.mc.world.isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = 0.0 - renderPosY;
+                        double bottomOfWorld = MinecraftClient.getInstance().world.getBottomY() - renderPosY;
                         this.renderBeam(pt, (double) x - renderPosX, bottomOfWorld, (double) z - renderPosZ, 64.0F, matrix4f);
                     }
                 }
@@ -134,22 +134,17 @@ public class WaypointContainer {
         Vec3d cameraPosPlusDirection = cameraEntity.getRotationVec(partialTicks);
         Vec3d cameraPosPlusDirectionTimesDistance = cameraPos.add(cameraPosPlusDirection.x * distance, cameraPosPlusDirection.y * distance, cameraPosPlusDirection.z * distance);
         Box axisalignedbb = new Box((double) ((float) waypoint.getX() + 0.5F) - size, (double) ((float) waypoint.getY() + 1.5F) - size, (double) ((float) waypoint.getZ() + 0.5F) - size, (double) ((float) waypoint.getX() + 0.5F) + size, (double) ((float) waypoint.getY() + 1.5F) + size, (double) ((float) waypoint.getZ() + 0.5F) + size);
-        Optional raytraceresult = axisalignedbb.raycast(cameraPos, cameraPosPlusDirectionTimesDistance);
+        Optional<Vec3d> raytraceresult = axisalignedbb.raycast(cameraPos, cameraPosPlusDirectionTimesDistance);
         if (axisalignedbb.contains(cameraPos)) {
-            if (distance >= 1.0) {
-                return true;
-            }
-        } else if (raytraceresult.isPresent()) {
-            return true;
-        }
-
-        return false;
+            return distance >= 1.0;
+        } else
+            return raytraceresult.isPresent();
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, float par8, Matrix4f matrix4f) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        int height = 256;
+        int height = MinecraftClient.getInstance().world.getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;
