@@ -73,7 +73,7 @@ public class BiomeRepository {
         }
 
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(new Identifier("voxelmap", "conf/biomecolors.txt")).getInputStream();
+            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(new Identifier("voxelmap", "conf/biomecolors.txt")).get().getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             String sCurrentLine;

@@ -16,16 +16,13 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 import java.awt.*;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 
 class GuiSlotWaypoints extends GuiSlotMinimap {
@@ -33,8 +30,8 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     private ArrayList<?> waypointsFiltered;
     final GuiWaypoints parentGui;
     private String filterString = "";
-    final TranslatableText ENABLE = new TranslatableText("minimap.waypoints.enable");
-    final TranslatableText DISABLE = new TranslatableText("minimap.waypoints.disable");
+    final Text ENABLE = Text.translatable("minimap.waypoints.enable");
+    final Text DISABLE = Text.translatable("minimap.waypoints.disable");
     final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
@@ -56,7 +53,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     public void setSelected(WaypointItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof WaypointItem) {
-            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
+            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
         }
 
         this.parentGui.setSelectedWaypoint(item.waypoint);
@@ -159,7 +156,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
                         tooltipText = tooltipText + " Y: " + this.waypoint.getY();
                     }
 
-                    tooltip = new LiteralText(tooltipText);
+                    tooltip = Text.literal(tooltipText);
                 }
 
                 if (mouseX >= GuiSlotWaypoints.this.left && mouseX <= GuiSlotWaypoints.this.right && mouseY >= GuiSlotWaypoints.this.top && mouseY <= GuiSlotWaypoints.this.bottom) {

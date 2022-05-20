@@ -141,6 +141,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
@@ -742,7 +743,7 @@ public class Radar implements IRadar {
             InputStream is = null;
 
             try {
-                is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
             } catch (IOException var15) {
                 is = null;
             }
@@ -751,7 +752,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + ".png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var14) {
                     is = null;
                 }
@@ -761,7 +762,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "8.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var13) {
                     is = null;
                 }
@@ -771,7 +772,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "8.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var12) {
                     is = null;
                 }
@@ -782,7 +783,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "16.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var11) {
                     is = null;
                 }
@@ -792,7 +793,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "16.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var10) {
                     is = null;
                 }
@@ -803,7 +804,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "32.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var9) {
                     is = null;
                 }
@@ -813,7 +814,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "32.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var8) {
                     is = null;
                 }
@@ -993,14 +994,14 @@ public class Radar implements IRadar {
         VillagerResourceMetadata.HatType hatType = VillagerResourceMetadata.HatType.NONE;
         if (resourceLocation != null) {
             try {
-                Resource resource = this.game.getResourceManager().getResource(resourceLocation);
+                Optional<Resource> resource = this.game.getResourceManager().getResource(resourceLocation);
                 if (resource != null) {
-                    VillagerResourceMetadata villagerResourceMetadata = (VillagerResourceMetadata) resource.getMetadata(VillagerResourceMetadata.READER);
+                    VillagerResourceMetadata villagerResourceMetadata = (VillagerResourceMetadata) resource.get().getMetadata();
                     if (villagerResourceMetadata != null) {
                         hatType = villagerResourceMetadata.getHatType();
                     }
 
-                    resource.close();
+                    resource.get().getReader().close();
                 }
             } catch (IOException var5) {
             }
@@ -1026,7 +1027,7 @@ public class Radar implements IRadar {
                 InputStream is = null;
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException var43) {
                     is = null;
                 }
@@ -1035,7 +1036,7 @@ public class Radar implements IRadar {
                     fullPath = ("textures/icons/" + simpleName + ".properties").toLowerCase();
 
                     try {
-                        is = this.game.getResourceManager().getResource(new Identifier(fullPath)).getInputStream();
+                        is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                     } catch (IOException var42) {
                         is = null;
                     }
@@ -1885,7 +1886,7 @@ public class Radar implements IRadar {
                             blue = (float) (contact.armorColor >> 0 & 0xFF) / 255.0F;
                             if (contact.type == EnumMobs.SHEEP) {
                                 SheepEntity sheepEntity = (SheepEntity) contact.entity;
-                                if (sheepEntity.hasCustomName() && "jeb_".equals(sheepEntity.getName().asString())) {
+                                if (sheepEntity.hasCustomName() && "jeb_".equals(sheepEntity.getName().getString())) {
                                     int semiRandom = sheepEntity.age / 25 + sheepEntity.getId();
                                     int numDyeColors = DyeColor.values().length;
                                     int colorID1 = semiRandom % numDyeColors;

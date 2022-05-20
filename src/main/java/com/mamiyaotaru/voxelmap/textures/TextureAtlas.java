@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 public class TextureAtlas extends AbstractTexture {
     private static final Logger logger = LogManager.getLogger();
@@ -221,8 +222,8 @@ public class TextureAtlas extends AbstractTexture {
                 icon = Sprite.spriteFromResourceLocation(resourceLocation);
 
                 try {
-                    Resource entryResource = resourceManager.getResource(resourceLocation);
-                    BufferedImage entryBufferedImage = TextureUtilLegacy.readBufferedImage(entryResource.getInputStream());
+                    Optional<Resource> entryResource = resourceManager.getResource(resourceLocation);
+                    BufferedImage entryBufferedImage = TextureUtilLegacy.readBufferedImage(entryResource.get().getInputStream());
                     icon.bufferedImageToIntData(entryBufferedImage);
                     entryBufferedImage.flush();
                 } catch (RuntimeException var6) {

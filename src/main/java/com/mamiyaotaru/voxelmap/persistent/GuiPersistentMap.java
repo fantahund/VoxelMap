@@ -45,7 +45,6 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
@@ -57,11 +56,11 @@ import java.util.Random;
 import java.util.TreeSet;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
-    private MinecraftClient mc;
-    private Random generator = new Random();
-    private IVoxelMap master;
-    private IPersistentMap persistentMap;
-    private IWaypointManager waypointManager;
+    private final MinecraftClient mc;
+    private final Random generator = new Random();
+    private final IVoxelMap master;
+    private final IPersistentMap persistentMap;
+    private final IWaypointManager waypointManager;
     private final Screen parent;
     private final MapSettingsManager mapOptions;
     private final PersistentMapSettingsManager options;
@@ -114,28 +113,22 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private boolean closed = false;
     private CachedRegion[] regions = new CachedRegion[0];
     BackgroundImageInfo backGroundImageInfo = null;
-    private BiomeMapData biomeMapData = new BiomeMapData(760, 360);
+    private final BiomeMapData biomeMapData = new BiomeMapData(760, 360);
     private float mapPixelsX = 0.0F;
     private float mapPixelsY = 0.0F;
     private final Object closedLock = new Object();
-    private KeyBinding keyBindForward = new KeyBinding("key.forward.fake", 17, "key.categories.movement");
-    private KeyBinding keyBindLeft = new KeyBinding("key.left.fake", 30, "key.categories.movement");
-    private KeyBinding keyBindBack = new KeyBinding("key.back.fake", 31, "key.categories.movement");
-    private KeyBinding keyBindRight = new KeyBinding("key.right.fake", 32, "key.categories.movement");
-    private KeyBinding keyBindSprint = new KeyBinding("key.sprint.fake", 29, "key.categories.movement");
-    private InputUtil.Key forwardCode;
-    private InputUtil.Key leftCode;
-    private InputUtil.Key backCode;
-    private InputUtil.Key rightCode;
-    private InputUtil.Key sprintCode;
+    private final KeyBinding keyBindForward = new KeyBinding("key.forward.fake", 17, "key.categories.movement");
+    private final KeyBinding keyBindLeft = new KeyBinding("key.left.fake", 30, "key.categories.movement");
+    private final KeyBinding keyBindBack = new KeyBinding("key.back.fake", 31, "key.categories.movement");
+    private final KeyBinding keyBindRight = new KeyBinding("key.right.fake", 32, "key.categories.movement");
+    private final KeyBinding keyBindSprint = new KeyBinding("key.sprint.fake", 29, "key.categories.movement");
+    private final InputUtil.Key forwardCode;
+    private final InputUtil.Key leftCode;
+    private final InputUtil.Key backCode;
+    private final InputUtil.Key rightCode;
+    private final InputUtil.Key sprintCode;
     InputUtil.Key nullInput = InputUtil.fromTranslationKey("key.keyboard.unknown");
-    private final int NEW = 0;
-    private final int HIGHLIGHT = 1;
-    private final int SHARE = 2;
-    private final int TELEPORT = 3;
-    private final int EDIT = 4;
-    private final int DELETE = 5;
-    private TranslatableText multiworldButtonName = null;
+    private Text multiworldButtonName = null;
     private MutableText multiworldButtonNameRed = null;
     int sideMargin = 10;
     int buttonCount = 5;
@@ -223,19 +216,19 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.buttonCount = 5;
         this.buttonSeparation = 4;
         this.buttonWidth = (this.width - this.sideMargin * 2 - this.buttonSeparation * (this.buttonCount - 1)) / this.buttonCount;
-        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 0 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, new TranslatableText("options.minimap.waypoints"), buttonWidget_1 -> this.getMinecraft().setScreen(new GuiWaypoints(this, this.master)), this));
-        this.multiworldButtonName = new TranslatableText(this.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld");
-        this.multiworldButtonNameRed = (new TranslatableText(this.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
+        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 0 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> this.getMinecraft().setScreen(new GuiWaypoints(this, this.master)), this));
+        this.multiworldButtonName = Text.translatable(this.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld");
+        this.multiworldButtonNameRed = (Text.translatable(this.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
         if (!this.getMinecraft().isIntegratedServerRunning() && !this.master.getWaypointManager().receivedAutoSubworldName()) {
             this.addDrawableChild(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + 1 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> this.getMinecraft().setScreen(new GuiSubworldsSelect(this, this.master)), this));
         }
 
-        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, new TranslatableText("menu.options"), null, this) {
+        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("menu.options"), null, this) {
             public void onPress() {
                 GuiPersistentMap.this.getMinecraft().setScreen(new GuiMinimapOptions(GuiPersistentMap.this, GuiPersistentMap.this.master));
             }
         });
-        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, new TranslatableText("gui.done"), null, this) {
+        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("gui.done"), null, this) {
             public void onPress() {
                 GuiPersistentMap.this.getMinecraft().setScreen(GuiPersistentMap.this.parent);
             }
@@ -1129,7 +1122,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.editClicked = false;
         this.addClicked = false;
         this.deleteClicked = false;
-        double dimensionScale = this.mc.player.world.getDimension().getCoordinateScale();
+        double dimensionScale = this.mc.player.world.getDimension().coordinateScale();
         switch (action) {
             case 0:
                 if (hovered != null) {
@@ -1208,10 +1201,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.deleteClicked = true;
                     this.selectedWaypoint = hovered;
-                    TranslatableText title = new TranslatableText("minimap.waypoints.deleteconfirm");
-                    TranslatableText explanation = new TranslatableText("selectServer.deleteWarning", new Object[]{this.selectedWaypoint.name});
-                    TranslatableText affirm = new TranslatableText("selectServer.deleteButton");
-                    TranslatableText deny = new TranslatableText("gui.cancel");
+                    Text title = Text.translatable("minimap.waypoints.deleteconfirm");
+                    Text explanation = Text.translatable("selectServer.deleteWarning", new Object[]{this.selectedWaypoint.name});
+                    Text affirm = Text.translatable("selectServer.deleteButton");
+                    Text deny = Text.translatable("gui.cancel");
                     ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
                     this.getMinecraft().setScreen(confirmScreen);
                 }

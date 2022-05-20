@@ -46,7 +46,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.AoMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.option.Option;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
@@ -62,10 +61,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.text.KeybindText;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -380,7 +376,7 @@ public class Map implements Runnable, IMap {
 
             TreeSet dimensions = new TreeSet();
             dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(this.game.world));
-            double dimensionScale = this.game.player.world.getDimension().getCoordinateScale();
+            double dimensionScale = this.game.player.world.getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             this.game.setScreen(new GuiAddWaypoint((IGuiWaypoints) null, this.master, newWaypoint, false));
         }
@@ -505,7 +501,7 @@ public class Map implements Runnable, IMap {
             this.options.zoom = 0;
             this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (4.0x)";
         } else if (this.options.zoom == 0) {
-            if (this.multicore && Option.RENDER_DISTANCE.get(this.game.options) > 8.0) {
+            if (this.multicore && this.game.options.getSimulationDistance().getValue() > 8) {
                 this.options.zoom = 4;
                 this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (0.25x)";
             } else {
@@ -539,96 +535,99 @@ public class Map implements Runnable, IMap {
     }
 
     public void calculateCurrentLightAndSkyColor() {
-        if (this.world != null) {
-            if (this.needLightmapRefresh && TickCounter.tickCounter != this.tickWithLightChange && !this.game.isPaused() || this.options.realTimeTorches) {
-                GLUtils.disp(this.lightmapTexture.getGlId());
-                ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
-                GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
+        try {
+            if (this.world != null) {
+                if (this.needLightmapRefresh && TickCounter.tickCounter != this.tickWithLightChange && !this.game.isPaused() || this.options.realTimeTorches) {
+                    GLUtils.disp(this.lightmapTexture.getGlId());
+                    ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
+                    GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
 
-                for (int i = 0; i < this.lightmapColors.length; ++i) {
-                    int index = i * 4;
-                    this.lightmapColors[i] = (byteBuffer.get(index + 3) << 24) + (byteBuffer.get(index) << 16) + (byteBuffer.get(index + 1) << 8) + (byteBuffer.get(index + 2) << 0);
+                    for (int i = 0; i < this.lightmapColors.length; ++i) {
+                        int index = i * 4;
+                        this.lightmapColors[i] = (byteBuffer.get(index + 3) << 24) + (byteBuffer.get(index) << 16) + (byteBuffer.get(index + 1) << 8) + (byteBuffer.get(index + 2) << 0);
+                    }
+
+                    if (this.lightmapColors[255] != 0) {
+                        this.needLightmapRefresh = false;
+                    }
                 }
 
-                if (this.lightmapColors[255] != 0) {
-                    this.needLightmapRefresh = false;
-                }
-            }
-
-            boolean lightChanged = false;
-            if (this.game.options.gamma != this.lastGamma) {
-                lightChanged = true;
-                this.lastGamma = this.game.options.gamma;
-            }
-
-            float[] providerLightBrightnessTable = new float[16];
-
-            for (int t = 0; t < 16; ++t) {
-                providerLightBrightnessTable[t] = this.world.getDimension().getBrightness(t);
-            }
-
-            for (int t = 0; t < 16; ++t) {
-                if (providerLightBrightnessTable[t] != this.lastLightBrightnessTable[t]) {
+                boolean lightChanged = false;
+                if (this.game.options.getGamma().getValue() != this.lastGamma) {
                     lightChanged = true;
-                    this.lastLightBrightnessTable[t] = providerLightBrightnessTable[t];
+                    this.lastGamma = this.game.options.getGamma().getValue();
+                }
+
+                float[] providerLightBrightnessTable = new float[16];
+
+                for (int t = 0; t < 16; ++t) {
+                    providerLightBrightnessTable[t] = this.world.getDimension().getSkyAngle(t);
+                }
+
+                for (int t = 0; t < 16; ++t) {
+                    if (providerLightBrightnessTable[t] != this.lastLightBrightnessTable[t]) {
+                        lightChanged = true;
+                        this.lastLightBrightnessTable[t] = providerLightBrightnessTable[t];
+                    }
+                }
+
+                float sunBrightness = this.world.getStarBrightness(1.0F);
+                if ((double) Math.abs(this.lastSunBrightness - sunBrightness) > 0.01 || (double) sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness || (double) sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {
+                    lightChanged = true;
+                    this.needSkyColor = true;
+                    this.lastSunBrightness = sunBrightness;
+                }
+
+                float potionEffect = 0.0F;
+                if (this.game.player.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
+                    int duration = this.game.player.getStatusEffect(StatusEffects.NIGHT_VISION).getDuration();
+                    potionEffect = duration > 200 ? 1.0F : 0.7F + MathHelper.sin(((float) duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
+                }
+
+                if (this.lastPotion != potionEffect) {
+                    this.lastPotion = potionEffect;
+                    lightChanged = true;
+                }
+
+                int lastLightningBolt = this.world.getLightningTicksLeft();
+                if (this.lastLightning != (float) lastLightningBolt) {
+                    this.lastLightning = (float) lastLightningBolt;
+                    lightChanged = true;
+                }
+
+                if (this.lastPaused != this.game.isPaused()) {
+                    this.lastPaused = !this.lastPaused;
+                    lightChanged = true;
+                }
+
+                boolean scheduledUpdate = (this.timer - 50) % (this.lastLightBrightnessTable[0] == 0.0F ? 250 : 2000) == 0;
+                if (lightChanged || scheduledUpdate) {
+                    this.tickWithLightChange = TickCounter.tickCounter;
+                    lightChanged = false;
+                    this.needLightmapRefresh = true;
+                }
+
+                boolean aboveHorizon = this.game.player.getCameraPosVec(0.0F).y >= this.world.getLevelProperties().getSkyDarknessHeight(this.world);
+                if (this.world.getRegistryKey().getValue().toString().toLowerCase().contains("ether")) {
+                    aboveHorizon = true;
+                }
+
+                if (aboveHorizon != this.lastAboveHorizon) {
+                    this.needSkyColor = true;
+                    this.lastAboveHorizon = aboveHorizon;
+                }
+
+                int biomeID = this.world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(this.world.getBiome(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), GameVariableAccessShim.yCoord(), GameVariableAccessShim.zCoord())).value());
+                if (biomeID != this.lastBiome) {
+                    this.needSkyColor = true;
+                    this.lastBiome = biomeID;
+                }
+
+                if (this.needSkyColor || scheduledUpdate) {
+                    this.colorManager.setSkyColor(this.getSkyColor());
                 }
             }
-
-            float sunBrightness = this.world.getStarBrightness(1.0F);
-            if ((double) Math.abs(this.lastSunBrightness - sunBrightness) > 0.01 || (double) sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness || (double) sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {
-                lightChanged = true;
-                this.needSkyColor = true;
-                this.lastSunBrightness = sunBrightness;
-            }
-
-            float potionEffect = 0.0F;
-            if (this.game.player.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
-                int duration = this.game.player.getStatusEffect(StatusEffects.NIGHT_VISION).getDuration();
-                potionEffect = duration > 200 ? 1.0F : 0.7F + MathHelper.sin(((float) duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
-            }
-
-            if (this.lastPotion != potionEffect) {
-                this.lastPotion = potionEffect;
-                lightChanged = true;
-            }
-
-            int lastLightningBolt = this.world.getLightningTicksLeft();
-            if (this.lastLightning != (float) lastLightningBolt) {
-                this.lastLightning = (float) lastLightningBolt;
-                lightChanged = true;
-            }
-
-            if (this.lastPaused != this.game.isPaused()) {
-                this.lastPaused = !this.lastPaused;
-                lightChanged = true;
-            }
-
-            boolean scheduledUpdate = (this.timer - 50) % (this.lastLightBrightnessTable[0] == 0.0F ? 250 : 2000) == 0;
-            if (lightChanged || scheduledUpdate) {
-                this.tickWithLightChange = TickCounter.tickCounter;
-                lightChanged = false;
-                this.needLightmapRefresh = true;
-            }
-
-            boolean aboveHorizon = this.game.player.getCameraPosVec(0.0F).y >= this.world.getLevelProperties().getSkyDarknessHeight(this.world);
-            if (this.world.getRegistryKey().getValue().toString().toLowerCase().contains("ether")) {
-                aboveHorizon = true;
-            }
-
-            if (aboveHorizon != this.lastAboveHorizon) {
-                this.needSkyColor = true;
-                this.lastAboveHorizon = aboveHorizon;
-            }
-
-            int biomeID = this.world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(this.world.getBiome(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), GameVariableAccessShim.yCoord(), GameVariableAccessShim.zCoord())).value());
-            if (biomeID != this.lastBiome) {
-                this.needSkyColor = true;
-                this.lastBiome = biomeID;
-            }
-
-            if (this.needSkyColor || scheduledUpdate) {
-                this.colorManager.setSkyColor(this.getSkyColor());
-            }
+        } catch (NullPointerException ignore) {
 
         }
     }
@@ -638,18 +637,18 @@ public class Map implements Runnable, IMap {
         boolean aboveHorizon = this.lastAboveHorizon;
         float[] fogColors = new float[4];
         FloatBuffer temp = BufferUtils.createFloatBuffer(4);
-        BackgroundRenderer.render(this.game.gameRenderer.getCamera(), 0.0F, this.world, this.game.options.viewDistance, this.game.gameRenderer.getSkyDarkness(0.0F));
+        BackgroundRenderer.render(this.game.gameRenderer.getCamera(), 0.0F, this.world, this.game.options.getViewDistance().getValue(), this.game.gameRenderer.getSkyDarkness(0.0F));
         GLShim.glGetFloatv(3106, temp);
         temp.get(fogColors);
         float r = fogColors[0];
         float g = fogColors[1];
         float b = fogColors[2];
-        if (!aboveHorizon && this.game.options.viewDistance >= 4) {
+        if (!aboveHorizon && this.game.options.getViewDistance().getValue() >= 4) {
             return 167772160 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
         } else {
             int backgroundColor = -16777216 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
             float[] sunsetColors = this.world.getDimensionEffects().getFogColorOverride(this.world.getSkyAngle(0.0F), 0.0F);
-            if (sunsetColors != null && this.game.options.viewDistance >= 4) {
+            if (sunsetColors != null && this.game.options.getViewDistance().getValue() >= 4) {
                 int sunsetColor = (int) (sunsetColors[3] * 128.0F) * 16777216 + (int) (sunsetColors[0] * 255.0F) * 65536 + (int) (sunsetColors[1] * 255.0F) * 256 + (int) (sunsetColors[2] * 255.0F);
                 return ColorUtils.colorAdder(sunsetColor, backgroundColor);
             } else {
@@ -757,7 +756,7 @@ public class Map implements Runnable, IMap {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         this.game.textRenderer.getClass();
-        this.game.textRenderer.drawWithShadow(modelViewMatrixStack, new LiteralText("******sdkfjhsdkjfhsdkjfh"), 100.0F, 100.0F, -1);
+        this.game.textRenderer.drawWithShadow(modelViewMatrixStack, Text.literal("******sdkfjhsdkjfhsdkjfh"), 100.0F, 100.0F, -1);
         if (this.showWelcomeScreen) {
             GLShim.glEnable(3042);
             this.drawWelcomeScreen(matrixStack, this.game.getWindow().getScaledWidth(), this.game.getWindow().getScaledHeight());
@@ -795,15 +794,15 @@ public class Map implements Runnable, IMap {
 
     }
 
-    private void mapCalc(boolean full) {
+    private void mapCalc(boolean full) { //TODO Dynamic Light below 0
         int currentX = GameVariableAccessShim.xCoord();
         int currentZ = GameVariableAccessShim.zCoord();
         int currentY = GameVariableAccessShim.yCoord();
         int offsetX = currentX - this.lastX;
         int offsetZ = currentZ - this.lastZ;
         int offsetY = currentY - this.lastY;
-        int multi = (int) Math.pow(2.0, (double) this.zoom);
-        boolean needHeightAndID = false;
+        int multi = (int) Math.pow(2.0, this.zoom);
+        boolean needHeightAndID;
         boolean needHeightMap = false;
         boolean needLight = false;
         boolean skyColorChanged = false;
@@ -846,7 +845,7 @@ public class Map implements Runnable, IMap {
 
         boolean nether = false;
         boolean caves = false;
-        boolean netherPlayerInOpen = false;
+        boolean netherPlayerInOpen;
         this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
         if (this.game.player.world.getDimension().hasCeiling()) {
 
@@ -1243,9 +1242,9 @@ public class Map implements Runnable, IMap {
                     Material materialAbove = blockStateAbove.getMaterial();
                     if (this.options.lightmap && materialAbove == Material.ICE) {
                         int multiplier = 255;
-                        if (this.game.options.ao == AoMode.MIN) {
+                        if (this.game.options.getAo().getValue() == AoMode.MIN) {
                             multiplier = 200;
-                        } else if (this.game.options.ao == AoMode.MAX) {
+                        } else if (this.game.options.getAo().getValue() == AoMode.MAX) {
                             multiplier = 120;
                         }
 
@@ -1639,13 +1638,13 @@ public class Map implements Runnable, IMap {
             GLShim.glBlendFunc(770, 0);
             GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
             GLUtils.drawPre();
-            GLUtils.ldrawthree((double) (256.0F - 256.0F / scale), (double) (256.0F + 256.0F / scale), 1.0, 0.0F, 0.0F);
-            GLUtils.ldrawthree((double) (256.0F + 256.0F / scale), (double) (256.0F + 256.0F / scale), 1.0, 1.0F, 0.0F);
-            GLUtils.ldrawthree((double) (256.0F + 256.0F / scale), (double) (256.0F - 256.0F / scale), 1.0, 1.0F, 1.0F);
-            GLUtils.ldrawthree((double) (256.0F - 256.0F / scale), (double) (256.0F - 256.0F / scale), 1.0, 0.0F, 1.0F);
+            GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
+            GLUtils.ldrawthree( (256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
+            GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
+            GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
             BufferBuilder bb = Tessellator.getInstance().getBuffer();
             bb.end();
-            BufferRenderer.draw(bb);
+            BufferRenderer.drawWithoutShader(bb.end());
             GLShim.glBlendFuncSeparate(1, 0, 774, 0);
             synchronized (this.coordinateLock) {
                 if (this.imageChanged) {
@@ -1974,13 +1973,13 @@ public class Map implements Runnable, IMap {
         }
 
         try {
-            InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/squaremap.png")).getInputStream();
+            InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/squaremap.png")).get().getInputStream();
             BufferedImage mapImage = ImageIO.read(is);
             is.close();
             this.mapImageInt = GLUtils.tex(mapImage);
         } catch (Exception var8) {
             try {
-                InputStream is = this.game.getResourceManager().getResource(new Identifier("textures/map/map_background.png")).getInputStream();
+                InputStream is = this.game.getResourceManager().getResource(new Identifier("textures/map/map_background.png")).get().getInputStream();
                 Image tpMap = ImageIO.read(is);
                 is.close();
                 BufferedImage mapImage = new BufferedImage(tpMap.getWidth((ImageObserver) null), tpMap.getHeight((ImageObserver) null), 2);
@@ -2013,7 +2012,7 @@ public class Map implements Runnable, IMap {
     }
 
     private void drawDirections(MatrixStack matrixStack, int x, int y) {
-        boolean unicode = this.game.options.forceUnicodeFont;
+        boolean unicode = this.game.options.getForceUnicodeFont().getValue();
         float scale = unicode ? 0.65F : 0.5F;
         float rotate;
         if (this.options.rotates) {
@@ -2066,7 +2065,7 @@ public class Map implements Runnable, IMap {
         }
 
         if (!this.options.hide && !this.fullscreenMap) {
-            boolean unicode = this.game.options.forceUnicodeFont;
+            boolean unicode = this.game.options.getForceUnicodeFont().getValue();
             float scale = unicode ? 0.65F : 0.5F;
             matrixStack.push();
             matrixStack.scale(scale, scale, 1.0F);
@@ -2125,14 +2124,14 @@ public class Map implements Runnable, IMap {
 
     private void drawWelcomeScreen(MatrixStack matrixStack, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
-            this.welcomeText[0] = (new LiteralText("")).append((new LiteralText("VoxelMap! ")).formatted(Formatting.RED)).append(this.zmodver + " ").append(new TranslatableText("minimap.ui.welcome1"));
-            this.welcomeText[1] = new TranslatableText("minimap.ui.welcome2");
-            this.welcomeText[2] = new TranslatableText("minimap.ui.welcome3");
-            this.welcomeText[3] = new TranslatableText("minimap.ui.welcome4");
-            this.welcomeText[4] = (new LiteralText("")).append((new KeybindText(this.options.keyBindZoom.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(new TranslatableText("minimap.ui.welcome5a")).append(", ").append((new KeybindText(this.options.keyBindMenu.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(new TranslatableText("minimap.ui.welcome5b"));
-            this.welcomeText[5] = (new LiteralText("")).append((new KeybindText(this.options.keyBindFullscreen.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(new TranslatableText("minimap.ui.welcome6"));
-            this.welcomeText[6] = (new LiteralText("")).append((new KeybindText(this.options.keyBindWaypoint.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(new TranslatableText("minimap.ui.welcome7"));
-            this.welcomeText[7] = this.options.keyBindZoom.getBoundKeyLocalizedText().shallowCopy().append(": ").append((new TranslatableText("minimap.ui.welcome8")).formatted(Formatting.GRAY));
+            this.welcomeText[0] = (Text.literal("")).append((Text.literal("VoxelMap! ")).formatted(Formatting.RED)).append(this.zmodver + " ").append(Text.translatable("minimap.ui.welcome1"));
+            this.welcomeText[1] = Text.translatable("minimap.ui.welcome2");
+            this.welcomeText[2] = Text.translatable("minimap.ui.welcome3");
+            this.welcomeText[3] = Text.translatable("minimap.ui.welcome4");
+            this.welcomeText[4] = (Text.literal("")).append((Text.keybind(this.options.keyBindZoom.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(Text.translatable("minimap.ui.welcome5a")).append(", ").append((Text.keybind(this.options.keyBindMenu.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(Text.translatable("minimap.ui.welcome5b"));
+            this.welcomeText[5] = (Text.literal("")).append((Text.keybind(this.options.keyBindFullscreen.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(Text.translatable("minimap.ui.welcome6"));
+            this.welcomeText[6] = (Text.literal("")).append((Text.keybind(this.options.keyBindWaypoint.getTranslationKey())).formatted(Formatting.AQUA)).append(": ").append(Text.translatable("minimap.ui.welcome7"));
+            this.welcomeText[7] = this.options.keyBindZoom.getBoundKeyLocalizedText().shallowCopy().append(": ").append((Text.translatable("minimap.ui.welcome8")).formatted(Formatting.GRAY));
         }
 
         GLShim.glBlendFunc(770, 771);

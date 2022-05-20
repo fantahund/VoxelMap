@@ -7,7 +7,6 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.option.Option;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -16,7 +15,7 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
@@ -200,7 +199,7 @@ public class WaypointContainer {
         }
 
         name = name + " (" + (int) distance + "m)";
-        double maxDistance = Option.RENDER_DISTANCE.get(this.options.game.options) * 16.0 * 0.99;
+        double maxDistance = GameVariableAccessShim.getMinecraft().options.getSimulationDistance().getValue() * 16.0 * 0.99;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;
@@ -307,7 +306,7 @@ public class WaypointContainer {
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;
                 GLShim.glDisable(2929);
-                fontRenderer.draw(new LiteralText(name), (float) (-fontRenderer.getWidth(name) / 2), (float) elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
+                fontRenderer.draw(Text.literal(name), (float) (-fontRenderer.getWidth(name) / 2), (float) elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
                 vertexConsumerProvider.draw();
                 GLShim.glEnable(2929);
                 textColor = (int) (255.0F * fade) << 24 | 16777215;

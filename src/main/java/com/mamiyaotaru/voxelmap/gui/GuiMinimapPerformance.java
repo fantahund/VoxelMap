@@ -10,8 +10,7 @@ import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 public class GuiMinimapPerformance extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.LIGHTING, EnumOptionsMinimap.TERRAIN, EnumOptionsMinimap.WATERTRANSPARENCY, EnumOptionsMinimap.BLOCKTRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNKGRID, EnumOptionsMinimap.BIOMEOVERLAY, EnumOptionsMinimap.SLIMECHUNKS};
@@ -44,7 +43,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
                 text = "§c" + text;
             }
 
-            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(text), this::optionClicked);
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(text), this::optionClicked);
             this.addDrawableChild(optionButton);
             ++var2;
             if (optionButton.returnEnumOptions().equals(EnumOptionsMinimap.SLIMECHUNKS)) {
@@ -59,12 +58,12 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         }
 
         String buttonText = I18nUtils.getString("options.minimap.worldseed") + ": " + worldSeedDisplay;
-        this.worldSeedButton = new GuiButtonText(this.getFontRenderer(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, new LiteralText(buttonText), button -> this.worldSeedButton.setEditing(true));
+        this.worldSeedButton = new GuiButtonText(this.getFontRenderer(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, Text.literal(buttonText), button -> this.worldSeedButton.setEditing(true));
         this.worldSeedButton.setText(this.master.getWorldSeed());
         this.worldSeedButton.active = !this.getMinecraft().isIntegratedServerRunning();
         this.addDrawableChild(this.worldSeedButton);
         ++var2;
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, new TranslatableText("gui.done"), button -> this.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> this.getMinecraft().setScreen(this.parentScreen)));
     }
 
     @Override
@@ -80,7 +79,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
             perfBomb = "§c";
         }
 
-        par1GuiButton.setMessage(new LiteralText(perfBomb + this.options.getKeyText(option)));
+        par1GuiButton.setMessage(Text.literal(perfBomb + this.options.getKeyText(option)));
     }
 
     public boolean keyPressed(int keysm, int scancode, int b) {
@@ -113,7 +112,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         }
 
         String buttonText = I18nUtils.getString("options.minimap.worldseed") + ": " + worldSeedDisplay;
-        this.worldSeedButton.setMessage(new LiteralText(buttonText));
+        this.worldSeedButton.setMessage(Text.literal(buttonText));
         this.worldSeedButton.setText(this.master.getWorldSeed());
         this.master.getMap().forceFullRender(true);
         this.slimeChunksButton.active = this.getMinecraft().isIntegratedServerRunning() || !this.master.getWorldSeed().equals("");

@@ -46,11 +46,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public int getX() {
-        return (int) ((double) this.x / MinecraftClient.getInstance().player.world.getDimension().getCoordinateScale());
+        return (int) ((double) this.x / MinecraftClient.getInstance().player.world.getDimension().coordinateScale());
     }
 
     public int getZ() {
-        return (int) ((double) this.z / MinecraftClient.getInstance().player.world.getDimension().getCoordinateScale());
+        return (int) ((double) this.z / MinecraftClient.getInstance().player.world.getDimension().coordinateScale());
     }
 
     public int getY() {
@@ -58,11 +58,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public void setX(int x) {
-        this.x = (int) ((double) x * MinecraftClient.getInstance().player.world.getDimension().getCoordinateScale());
+        this.x = (int) ((double) x * MinecraftClient.getInstance().player.world.getDimension().coordinateScale());
     }
 
     public void setZ(int z) {
-        this.z = (int) ((double) z * MinecraftClient.getInstance().player.world.getDimension().getCoordinateScale());
+        this.z = (int) ((double) z * MinecraftClient.getInstance().player.world.getDimension().coordinateScale());
     }
 
     public void setY(int y) {

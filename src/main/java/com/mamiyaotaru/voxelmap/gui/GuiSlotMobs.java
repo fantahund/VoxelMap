@@ -13,23 +13,21 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 
 class GuiSlotMobs extends GuiSlotMinimap {
     private final ArrayList<MobItem> mobs;
     private ArrayList<?> mobsFiltered;
     final GuiMobs parentGui;
-    final TranslatableText ENABLE = new TranslatableText("options.minimap.mobs.enable");
-    final TranslatableText DISABLE = new TranslatableText("options.minimap.mobs.disable");
-    final TranslatableText ENABLED = new TranslatableText("options.minimap.mobs.enabled");
-    final TranslatableText DISABLED = new TranslatableText("options.minimap.mobs.disabled");
+    final Text ENABLE = Text.translatable("options.minimap.mobs.enable");
+    final Text DISABLE = Text.translatable("options.minimap.mobs.disable");
+    final Text ENABLED = Text.translatable("options.minimap.mobs.enabled");
+    final Text DISABLED = Text.translatable("options.minimap.mobs.disabled");
     final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
@@ -72,7 +70,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public void setSelected(MobItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof MobItem) {
-            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
+            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 
         this.parentGui.setSelectedMob(item.id);
@@ -144,7 +142,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             DrawableHelper.drawCenteredText(matrixStack, this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, slotYPos + 3, color);
             byte padding = 3;
             if (mouseX >= leftEdge - padding && mouseY >= slotYPos && mouseX <= leftEdge + 215 + padding && mouseY <= slotYPos + GuiSlotMobs.this.itemHeight) {
-                TranslatableText tooltip;
+                Text tooltip;
                 if (mouseX >= leftEdge + 215 - 16 - padding && mouseX <= leftEdge + 215 + padding) {
                     tooltip = isEnabled ? GuiSlotMobs.this.DISABLE : GuiSlotMobs.this.ENABLE;
                 } else {

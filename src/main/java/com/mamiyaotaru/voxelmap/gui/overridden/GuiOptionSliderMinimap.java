@@ -2,20 +2,20 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 public class GuiOptionSliderMinimap extends SliderWidget {
     private final ISettingsManager options;
     private final EnumOptionsMinimap option;
 
     public GuiOptionSliderMinimap(int x, int y, EnumOptionsMinimap optionIn, float sliderValue, ISettingsManager options) {
-        super(x, y, 150, 20, new LiteralText(options.getKeyText(optionIn)), (double) sliderValue);
+        super(x, y, 150, 20, Text.literal(options.getKeyText(optionIn)), (double) sliderValue);
         this.options = options;
         this.option = optionIn;
     }
 
     protected void updateMessage() {
-        this.setMessage(new LiteralText(this.options.getKeyText(this.option)));
+        this.setMessage(Text.literal(this.options.getKeyText(this.option)));
     }
 
     protected void applyValue() {

@@ -67,7 +67,7 @@ public class ImageUtils {
 
     public static BufferedImage createBufferedImageFromResourceLocation(Identifier resourceLocation) {
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).getInputStream();
+            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage image = ImageIO.read(is);
             is.close();
             if (image.getType() != 6) {
@@ -187,7 +187,7 @@ public class ImageUtils {
 
     public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).getInputStream();
+            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage mobSkin = ImageIO.read(is);
             is.close();
             BufferedImage temp = new BufferedImage(w * mobSkin.getWidth() / imageWidth, h * mobSkin.getWidth() / imageWidth, 6);

@@ -34,7 +34,7 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
@@ -138,7 +138,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     public void onTickInGame(MatrixStack matrixStack, MinecraftClient mc) {
         this.map.onTickInGame(matrixStack, mc);
         if (this.passMessage != null) {
-            mc.inGameHud.getChatHud().addMessage(new LiteralText(this.passMessage));
+            mc.inGameHud.getChatHud().addMessage(Text.literal(this.passMessage));
             this.passMessage = null;
         }
 

@@ -51,6 +51,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vector4f;
+import net.minecraft.util.math.random.AbstractRandom;
 import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockRenderView;
@@ -68,11 +69,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -80,7 +78,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -107,14 +104,14 @@ public class ColorManager implements IColorManager {
     private float failedToLoadX = 0.0F;
     private float failedToLoadY = 0.0F;
     private String renderPassThreeBlendMode;
-    private Random random = new Random();
+    private AbstractRandom random = AbstractRandom.create();
     private final Object tpLoadLock = new Object();
     private boolean loaded = false;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ());
     private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getSpruceColor();
     private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getBirchColor();
-    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt((double) blockPos.getX(), (double) blockPos.getZ());
+    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt(blockPos.getX(), blockPos.getZ());
     private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor();
     private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
     private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedstoneWireBlock.getWireColor(blockState.get(RedstoneWireBlock.POWER));
@@ -321,7 +318,7 @@ public class ColorManager implements IColorManager {
 
     private void loadColorPicker() {
         try {
-            InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/colorpicker.png")).getInputStream();
+            InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/colorpicker.png")).get().getInputStream();
             Image picker = ImageIO.read(is);
             is.close();
             this.colorPicker = new BufferedImage(picker.getWidth((ImageObserver) null), picker.getHeight((ImageObserver) null), 2);
@@ -872,7 +869,7 @@ public class ColorManager implements IColorManager {
         Identifier propertiesFile = new Identifier("minecraft", "optifine/renderpass.properties");
 
         try {
-            InputStream input = this.game.getResourceManager().getResource(propertiesFile).getInputStream();
+            InputStream input = this.game.getResourceManager().getResource(propertiesFile).get().getInputStream();
             if (input != null) {
                 properties.load(input);
                 input.close();
@@ -911,7 +908,7 @@ public class ColorManager implements IColorManager {
             Properties properties = new Properties();
 
             try {
-                InputStream input = this.game.getResourceManager().getResource(propertiesFile).getInputStream();
+                InputStream input = this.game.getResourceManager().getResource(propertiesFile).get().getInputStream();
                 if (input != null) {
                     properties.load(input);
                     input.close();
@@ -1018,7 +1015,7 @@ public class ColorManager implements IColorManager {
                 if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.length() == 0)) {
                     try {
                         Identifier pngResource = new Identifier(propertiesFile.getNamespace(), tilePath);
-                        InputStream is = this.game.getResourceManager().getResource(pngResource).getInputStream();
+                        InputStream is = this.game.getResourceManager().getResource(pngResource).get().getInputStream();
                         Image top = ImageIO.read(is);
                         is.close();
                         top = top.getScaledInstance(1, 1, 4);
@@ -1225,7 +1222,7 @@ public class ColorManager implements IColorManager {
     }
 
     private int parseBiomeName(String name) {
-        Biome biome = (Biome) this.world.getRegistryManager().get(Registry.BIOME_KEY).get(new Identifier(name));
+        Biome biome = this.world.getRegistryManager().get(Registry.BIOME_KEY).get(new Identifier(name));
         return biome != null ? this.world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(biome) : -1;
     }
 
@@ -1239,27 +1236,23 @@ public class ColorManager implements IColorManager {
         }
 
         String suffix = suffixMaybeNull == null ? "" : suffixMaybeNull;
-        ArrayList resources = new ArrayList();
+        ArrayList<Identifier> resources = new ArrayList<>();
 
-        for (Identifier candidate : this.game.getResourceManager().findResources(directory, asset -> asset.endsWith(suffix))) {
+        for (Identifier candidate : this.game.getResourceManager().findResources(directory, asset -> asset.endsWith(suffix))) { //TODO 1.19
             if (candidate.getNamespace().equals(namespace)) {
                 resources.add(candidate);
             }
         }
 
         if (sortByFilename) {
-            Collections.sort(resources, (Comparator<Identifier>) (o1, o2) -> {
+            resources.sort((o1, o2) -> {
                 String f1 = o1.getPath().replaceAll(".*/", "").replaceFirst("\\.properties", "");
                 String f2 = o2.getPath().replaceAll(".*/", "").replaceFirst("\\.properties", "");
                 int result = f1.compareTo(f2);
                 return result != 0 ? result : o1.getPath().compareTo(o2.getPath());
             });
         } else {
-            Collections.sort(resources, new Comparator<Identifier>() {
-                public int compare(Identifier o1, Identifier o2) {
-                    return o1.getPath().compareTo(o2.getPath());
-                }
-            });
+            resources.sort(Comparator.comparing(Identifier::getPath));
         }
 
         return resources;
@@ -1269,12 +1262,12 @@ public class ColorManager implements IColorManager {
         Properties properties = new Properties();
 
         try {
-            InputStream input = this.game.getResourceManager().getResource(new Identifier("optifine/color.properties")).getInputStream();
+            InputStream input = this.game.getResourceManager().getResource(new Identifier("optifine/color.properties")).get().getInputStream();
             if (input != null) {
                 properties.load(input);
                 input.close();
             }
-        } catch (IOException var20) {
+        } catch (IOException ignored) {
         }
 
         BlockState blockState = BlockRepository.lilypad.getDefaultState();
@@ -1286,15 +1279,15 @@ public class ColorManager implements IColorManager {
             lilypadMultiplier = Integer.parseInt(lilypadMultiplierString, 16);
         }
 
-        for (UnmodifiableIterator defaultFormat = BlockRepository.lilypad.getStateManager().getStates().iterator(); defaultFormat.hasNext(); this.blockColorsWithDefaultTint[blockStateID] = this.blockColors[blockStateID]) {
-            BlockState padBlockState = (BlockState) defaultFormat.next();
+        for (UnmodifiableIterator<BlockState> defaultFormat = BlockRepository.lilypad.getStateManager().getStates().iterator(); defaultFormat.hasNext(); this.blockColorsWithDefaultTint[blockStateID] = this.blockColors[blockStateID]) {
+            BlockState padBlockState = defaultFormat.next();
             blockStateID = BlockRepository.getStateId(padBlockState);
             this.blockColors[blockStateID] = ColorUtils.colorMultiplier(lilyRGB, lilypadMultiplier | 0xFF000000);
         }
 
         String defaultFormat = properties.getProperty("palette.format");
         boolean globalGrid = defaultFormat != null && defaultFormat.equalsIgnoreCase("grid");
-        Enumeration e = properties.propertyNames();
+        Enumeration<?> e = properties.propertyNames();
 
         while (e.hasMoreElements()) {
             String key = (String) e.nextElement();
@@ -1309,7 +1302,7 @@ public class ColorManager implements IColorManager {
             Properties colorProperties = new Properties();
 
             try {
-                InputStream input = this.game.getResourceManager().getResource(resource).getInputStream();
+                InputStream input = this.game.getResourceManager().getResource(resource).get().getInputStream();
                 if (input != null) {
                     colorProperties.load(input);
                     input.close();
@@ -1330,14 +1323,7 @@ public class ColorManager implements IColorManager {
             if (source != null) {
                 resourcePNG = new Identifier(resource.getNamespace(), source);
 
-                try {
-                    this.game.getResourceManager().getResource(resourcePNG);
-                } catch (IOException var19) {
-                    Path path = Paths.get("optifine/colormap/blocks/", source);
-                    path = path.normalize();
-                    resourcePNG = new Identifier(resource.getNamespace(), path.toString().replace(File.separatorChar, '/'));
-                    System.out.println("trying " + resourcePNG.toString());
-                }
+                this.game.getResourceManager().getResource(resourcePNG);
             } else {
                 resourcePNG = new Identifier(resource.getNamespace(), resource.getPath().replace(".properties", ".png"));
             }
@@ -1345,7 +1331,7 @@ public class ColorManager implements IColorManager {
             String format = colorProperties.getProperty("format");
             boolean grid;
             if (format != null) {
-                grid = format != null && format.equalsIgnoreCase("grid");
+                grid = format.equalsIgnoreCase("grid");
             } else {
                 grid = globalGrid;
             }
@@ -1353,7 +1339,7 @@ public class ColorManager implements IColorManager {
             String yOffsetString = colorProperties.getProperty("yOffset");
             int yOffset = 0;
             if (yOffsetString != null) {
-                yOffset = Integer.valueOf(yOffsetString);
+                yOffset = Integer.parseInt(yOffsetString);
             }
 
             this.processColorProperty(resourcePNG, names, grid, yOffset);
@@ -1377,7 +1363,7 @@ public class ColorManager implements IColorManager {
         int yOffset = 0;
 
         try {
-            InputStream input = this.game.getResourceManager().getResource(resourceProperties).getInputStream();
+            InputStream input = this.game.getResourceManager().getResource(resourceProperties).get().getInputStream();
             if (input != null) {
                 colorProperties.load(input);
                 input.close();
@@ -1392,7 +1378,7 @@ public class ColorManager implements IColorManager {
             if (yOffsetString != null) {
                 yOffset = Integer.valueOf(yOffsetString);
             }
-        } catch (IOException var10) {
+        } catch (IOException ignored) {
         }
 
         this.processColorProperty(resource, list, grid, yOffset);
@@ -1406,10 +1392,10 @@ public class ColorManager implements IColorManager {
         }
 
         boolean swamp = resource.getPath().contains("/swamp");
-        Image tintColors = null;
+        Image tintColors;
 
         try {
-            InputStream is = this.game.getResourceManager().getResource(resource).getInputStream();
+            InputStream is = this.game.getResourceManager().getResource(resource).get().getInputStream();
             tintColors = ImageIO.read(is);
             is.close();
         } catch (IOException var21) {
@@ -1418,12 +1404,12 @@ public class ColorManager implements IColorManager {
 
         BufferedImage tintColorsBuff = new BufferedImage(tintColors.getWidth((ImageObserver) null), tintColors.getHeight((ImageObserver) null), 1);
         Graphics gfx = tintColorsBuff.createGraphics();
-        gfx.drawImage(tintColors, 0, 0, (ImageObserver) null);
+        gfx.drawImage(tintColors, 0, 0, null);
         gfx.dispose();
         int numBiomesToCheck = grid ? Math.min(tintColorsBuff.getWidth(), this.sizeOfBiomeArray) : this.sizeOfBiomeArray;
 
         for (int t = 0; t < numBiomesToCheck; ++t) {
-            Biome biome = (Biome) this.world.getRegistryManager().get(Registry.BIOME_KEY).get(t);
+            Biome biome = this.world.getRegistryManager().get(Registry.BIOME_KEY).get(t);
             if (biome != null) {
                 int tintMult = 0;
                 int heightMultiplier = tintColorsBuff.getHeight() / 32;
@@ -1432,8 +1418,8 @@ public class ColorManager implements IColorManager {
                     if (grid) {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
-                        double var1 = (double) MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
-                        double var2 = (double) MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
+                        double var1 = MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
+                        double var2 = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
                         var2 *= var1;
                         var1 = 1.0 - var1;
                         var2 = 1.0 - var2;
@@ -1492,10 +1478,8 @@ public class ColorManager implements IColorManager {
     private Block getBlockFromName(String name) {
         try {
             Identifier resourceLocation = new Identifier(name);
-            return Registry.BLOCK.containsId(resourceLocation) ? (Block) Registry.BLOCK.get(resourceLocation) : null;
-        } catch (InvalidIdentifierException var3) {
-            return null;
-        } catch (NumberFormatException var4) {
+            return Registry.BLOCK.containsId(resourceLocation) ? Registry.BLOCK.get(resourceLocation) : null;
+        } catch (InvalidIdentifierException | NumberFormatException var3) {
             return null;
         }
     }

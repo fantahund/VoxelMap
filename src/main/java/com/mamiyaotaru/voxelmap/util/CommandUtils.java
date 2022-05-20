@@ -11,7 +11,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -41,20 +41,20 @@ public class CommandUtils {
         if (waypointStrings.size() <= 0) {
             return true;
         } else {
-            ArrayList<LiteralText> textComponents = new ArrayList();
+            ArrayList<Text> textComponents = new ArrayList();
             int count = 0;
 
             for (String waypointString : waypointStrings) {
                 int waypointStringLocation = message.indexOf(waypointString);
                 if (waypointStringLocation > count) {
-                    textComponents.add(new LiteralText(message.substring(count, waypointStringLocation)));
+                    textComponents.add(Text.literal(message.substring(count, waypointStringLocation)));
                 }
 
-                LiteralText clickableWaypoint = new LiteralText(waypointString);
+                MutableText clickableWaypoint = Text.literal(waypointString);
                 Style chatStyle = clickableWaypoint.getStyle();
                 chatStyle = chatStyle.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/newWaypoint " + waypointString.substring(1, waypointString.length() - 1)));
                 chatStyle = chatStyle.withColor(Formatting.AQUA);
-                LiteralText hover = new LiteralText(I18nUtils.getString("minimap.waypointshare.tooltip1") + "\n" + I18nUtils.getString("minimap.waypointshare.tooltip2"));
+                Text hover = Text.literal(I18nUtils.getString("minimap.waypointshare.tooltip1") + "\n" + I18nUtils.getString("minimap.waypointshare.tooltip2"));
                 chatStyle = chatStyle.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
                 clickableWaypoint.setStyle(chatStyle);
                 textComponents.add(clickableWaypoint);
@@ -62,12 +62,12 @@ public class CommandUtils {
             }
 
             if (count < message.length() - 1) {
-                textComponents.add(new LiteralText(message.substring(count, message.length())));
+                textComponents.add(Text.literal(message.substring(count, message.length())));
             }
 
-            LiteralText finalTextComponent = new LiteralText("");
+            MutableText finalTextComponent = Text.literal("");
 
-            for (LiteralText textComponent : textComponents) {
+            for (Text textComponent : textComponents) {
                 finalTextComponent.append(textComponent);
             }
 
@@ -76,8 +76,8 @@ public class CommandUtils {
         }
     }
 
-    public static ArrayList getWaypointStrings(String message) {
-        ArrayList list = new ArrayList();
+    public static ArrayList<String> getWaypointStrings(String message) {
+        ArrayList<String> list = new ArrayList<>();
         if (message.contains("[") && message.contains("]")) {
             Matcher matcher = pattern.matcher(message);
 
@@ -100,20 +100,20 @@ public class CommandUtils {
             String name = "";
             Integer x = null;
             Integer z = null;
-            Integer y = 64;
+            int y = 64;
             boolean enabled = true;
             float red = generator.nextFloat();
             float green = generator.nextFloat();
             float blue = generator.nextFloat();
             String suffix = "";
             String world = "";
-            TreeSet dimensions = new TreeSet();
+            TreeSet<DimensionContainer> dimensions = new TreeSet<>();
 
-            for (int t = 0; t < pairs.length; ++t) {
-                int splitIndex = pairs[t].indexOf(":");
+            for (String pair : pairs) {
+                int splitIndex = pair.indexOf(":");
                 if (splitIndex != -1) {
-                    String key = pairs[t].substring(0, splitIndex).toLowerCase().trim();
-                    String value = pairs[t].substring(splitIndex + 1).trim();
+                    String key = pair.substring(0, splitIndex).toLowerCase().trim();
+                    String value = pair.substring(splitIndex + 1).trim();
                     if (key.equals("name")) {
                         name = TextUtils.descrubName(value);
                     } else if (key.equals("x")) {
@@ -134,18 +134,18 @@ public class CommandUtils {
                         int color = Integer.decode(value);
                         red = (float) (color >> 16 & 0xFF) / 255.0F;
                         green = (float) (color >> 8 & 0xFF) / 255.0F;
-                        blue = (float) (color >> 0 & 0xFF) / 255.0F;
+                        blue = (float) (color & 0xFF) / 255.0F;
                     } else if (!key.equals("suffix") && !key.equals("icon")) {
-                        if (key.equals("world")) {
-                            world = TextUtils.descrubName(value);
-                        } else if (key.equals("dimensions")) {
-                            String[] dimensionStrings = value.split("#");
-
-                            for (int s = 0; s < dimensionStrings.length; ++s) {
-                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionStrings[s]));
+                        switch (key) {
+                            case "world" -> world = TextUtils.descrubName(value);
+                            case "dimensions" -> {
+                                String[] dimensionStrings = value.split("#");
+                                for (String dimensionString : dimensionStrings) {
+                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                }
                             }
-                        } else if (key.equals("dimension") || key.equals("dim")) {
-                            dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(value));
+                            case "dimension", "dim" ->
+                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(value));
                         }
                     } else {
                         suffix = value;
@@ -153,7 +153,7 @@ public class CommandUtils {
                 }
             }
 
-            if (world == "") {
+            if (world.equals("")) {
                 world = AbstractVoxelMap.getInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
             }
 
@@ -162,10 +162,10 @@ public class CommandUtils {
             }
 
             if (x != null && z != null) {
-                if (dimensions.size() == 1 && ((DimensionContainer) dimensions.first()).type.getCoordinateScale() != 1.0) {
-                    double dimensionScale = ((DimensionContainer) dimensions.first()).type.getCoordinateScale();
-                    x = (int) ((double) x.intValue() * dimensionScale);
-                    z = (int) ((double) z.intValue() * dimensionScale);
+                if (dimensions.size() == 1 && (dimensions.first()).type.coordinateScale() != 1.0) {
+                    double dimensionScale = (dimensions.first()).type.coordinateScale();
+                    x = (int) ((double) x * dimensionScale);
+                    z = (int) ((double) z * dimensionScale);
                 }
 
                 waypoint = new Waypoint(name, x, z, y, enabled, red, green, blue, suffix, world, dimensions);
@@ -185,7 +185,7 @@ public class CommandUtils {
             for (Waypoint existingWaypoint : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
                 if (newWaypoint.getX() == existingWaypoint.getX() && newWaypoint.getZ() == existingWaypoint.getZ()) {
                     if (control) {
-                        MinecraftClient.getInstance().setScreen(new GuiAddWaypoint((IGuiWaypoints) null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
+                        MinecraftClient.getInstance().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
                     } else {
                         AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
                     }
@@ -195,7 +195,7 @@ public class CommandUtils {
             }
 
             if (control) {
-                MinecraftClient.getInstance().setScreen(new GuiAddWaypoint((IGuiWaypoints) null, AbstractVoxelMap.getInstance(), newWaypoint, false));
+                MinecraftClient.getInstance().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), newWaypoint, false));
             } else {
                 AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
             }
@@ -206,15 +206,15 @@ public class CommandUtils {
     public static void sendWaypoint(Waypoint waypoint) {
         Identifier resourceLocation = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(MinecraftClient.getInstance().world).resourceLocation;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
-        String hexColor = Integer.toHexString(color);
+        StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
         while (hexColor.length() < 6) {
-            hexColor = "0" + hexColor;
+            hexColor.insert(0, "0");
         }
 
-        hexColor = "#" + hexColor;
+        hexColor.insert(0, "#");
         String world = AbstractVoxelMap.getInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-        if (waypoint.world != null && waypoint.world != "") {
+        if (waypoint.world != null && !waypoint.world.equals("")) {
             world = waypoint.world;
         }
 
@@ -288,13 +288,13 @@ public class CommandUtils {
         BlockPos blockPos = new BlockPos(par1, par2, par3);
         BlockState blockState = worldObj.getBlockState(blockPos);
         Block block = blockState.getBlock();
-        return block == null ? false : blockState.getMaterial().blocksLight();
+        return block != null && blockState.getMaterial().blocksLight();
     }
 
     private static boolean isBlockOpen(World worldObj, int par1, int par2, int par3) {
         BlockPos blockPos = new BlockPos(par1, par2, par3);
         BlockState blockState = worldObj.getBlockState(blockPos);
         Block block = blockState.getBlock();
-        return block == null ? true : !blockState.shouldSuffocate(worldObj, blockPos);
+        return block == null || !blockState.shouldSuffocate(worldObj, blockPos);
     }
 }

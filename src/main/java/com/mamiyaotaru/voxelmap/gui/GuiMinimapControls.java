@@ -9,8 +9,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 public class GuiMinimapControls extends GuiScreenMinimap {
@@ -36,7 +35,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             this.addDrawableChild(new ButtonWidget(left + t % 2 * 160, this.getHeight() / 6 + 24 * (t >> 1), 70, 20, this.options.getKeybindDisplayString(t), button -> this.controlButtonClicked(id)));
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, new TranslatableText("gui.done"), button -> this.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> this.getMinecraft().setScreen(this.parentScreen)));
         this.screenTitle = I18nUtils.getString("controls.minimap.title");
     }
 
@@ -104,7 +103,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             }
 
             if (this.buttonId == this.options.keyBindings[keyCounter]) {
-                ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage((new LiteralText("> ")).append((new LiteralText("???")).shallowCopy().formatted(Formatting.YELLOW)).append(" <").formatted(Formatting.YELLOW));
+                ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage((Text.literal("> ")).append((Text.literal("???")).shallowCopy().formatted(Formatting.YELLOW)).append(" <").formatted(Formatting.YELLOW));
             } else if (keycodeCollision) {
                 ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage(this.options.getKeybindDisplayString(keyCounter).shallowCopy().formatted(Formatting.RED));
             } else {

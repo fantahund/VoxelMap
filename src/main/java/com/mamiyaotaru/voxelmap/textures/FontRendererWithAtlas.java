@@ -87,7 +87,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
     private void readFontTexture() {
         BufferedImage fontImage;
         try {
-            fontImage = TextureUtilLegacy.readBufferedImage(MinecraftClient.getInstance().getResourceManager().getResource(this.locationFontTexture).getInputStream());
+            fontImage = TextureUtilLegacy.readBufferedImage(MinecraftClient.getInstance().getResourceManager().getResource(this.locationFontTexture).get().getInputStream());
         } catch (IOException var17) {
             throw new RuntimeException(var17);
         }
@@ -200,7 +200,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         }
 
         this.vertexBuffer.end();
-        BufferRenderer.draw(this.vertexBuffer);
+        BufferRenderer.drawWithShader(this.vertexBuffer.end());
         return var6;
     }
 

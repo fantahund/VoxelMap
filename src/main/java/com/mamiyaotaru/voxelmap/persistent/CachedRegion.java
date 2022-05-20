@@ -339,13 +339,13 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
 
             if (!this.closed && !full) {
                 File directory = new File(DimensionType.getSaveDirectory(this.worldServer.getRegistryKey(), this.worldServer.getServer().getSavePath(WorldSavePath.ROOT).normalize()).toString(), "region");
-                File regionFile = new File(directory, "r." + (int) Math.floor((double) (this.x / 2)) + "." + (int) Math.floor((double) (this.z / 2)) + ".mca");
+                File regionFile = new File(directory, "r." + (int) Math.floor(this.x / 2) + "." + (int) Math.floor(this.z / 2) + ".mca");
                 if (regionFile.exists()) {
                     boolean dataChanged = false;
                     boolean loadedChunks = false;
                     Chunk[] chunks = new Chunk[256];
                     boolean[] chunkChanged = new boolean[256];
-                    Arrays.fill(chunks, (Object) null);
+                    Arrays.fill(chunks, null);
                     Arrays.fill(chunkChanged, false);
                     tickLock.readLock().lock();
 
@@ -360,51 +360,41 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                 for (int tx = 0; tx < 16; ++tx) {
                                     for (int sx = 0; sx < 16; ++sx) {
                                         if (!this.closed && this.data.getHeight(tx * 16, sx * 16) == 0 && this.data.getLight(tx * 16, sx * 16) == 0) {
-                                            try {
-                                                int index = tx + sx * 16;
-                                                ChunkPos chunkPos = new ChunkPos(this.x * 16 + tx, this.z * 16 + sx);
-                                                NbtCompound rawNbt = this.chunkLoader.getNbt(chunkPos);
-                                                if (rawNbt != null) {
-                                                    NbtCompound nbt = this.chunkLoader.updateChunkNbt(this.worldServer.getRegistryKey(), () -> this.worldServer.getPersistentStateManager(), rawNbt, Optional.empty());
-                                                    if (!this.closed && nbt.contains("Level", 10)) {
-                                                        NbtCompound level = nbt.getCompound("Level");
-                                                        int chunkX = level.getInt("xPos");
-                                                        int chunkZ = level.getInt("zPos");
-                                                        if (chunkPos.x == chunkX && chunkPos.z == chunkZ && level.contains("Status", 8) && ChunkStatus.byId(level.getString("Status")).isAtLeast(ChunkStatus.SPAWN) && level.contains("Sections")) {
-                                                            NbtList sections = level.getList("Sections", 10);
-                                                            if (!sections.isEmpty() && sections.size() != 0) {
-                                                                boolean hasInfo = false;
+                                            int index = tx + sx * 16;
+                                            ChunkPos chunkPos = new ChunkPos(this.x * 16 + tx, this.z * 16 + sx);
+                                            NbtCompound rawNbt = this.chunkLoader.getNbt(chunkPos).join().get();
+                                            NbtCompound nbt = this.chunkLoader.updateChunkNbt(this.worldServer.getRegistryKey(), () -> this.worldServer.getPersistentStateManager(), rawNbt, Optional.empty());
+                                            if (!this.closed && nbt.contains("Level", 10)) {
+                                                NbtCompound level = nbt.getCompound("Level");
+                                                int chunkX = level.getInt("xPos");
+                                                int chunkZ = level.getInt("zPos");
+                                                if (chunkPos.x == chunkX && chunkPos.z == chunkZ && level.contains("Status", 8) && ChunkStatus.byId(level.getString("Status")).isAtLeast(ChunkStatus.SPAWN) && level.contains("Sections")) {
+                                                    NbtList sections = level.getList("Sections", 10);
+                                                    if (!sections.isEmpty() && sections.size() != 0) {
+                                                        boolean hasInfo = false;
 
-                                                                for (int i = 0; i < sections.size() && !hasInfo && !this.closed; ++i) {
-                                                                    NbtCompound section = sections.getCompound(i);
-                                                                    if (section.contains("Palette", 9) && section.contains("BlockStates", 12)) {
-                                                                        hasInfo = true;
-                                                                    }
-                                                                }
-
-                                                                if (hasInfo) {
-                                                                    boolean hasLight = true;
-                                                                    if (!level.contains("isLightOn") || !level.getBoolean("isLightOn")) {
-                                                                        hasLight = false;
-                                                                    }
-
-                                                                    if (level.contains("LightPopulated")) {
-                                                                        hasLight = false;
-                                                                    }
-
-                                                                    if (!nbt.contains("DataVersion") || nbt.getInt("DataVersion") < 1900) {
-                                                                        hasLight = false;
-                                                                    }
-
-                                                                    chunks[index] = this.worldServer.getChunk(chunkPos.x, chunkPos.z);
-                                                                }
+                                                        for (int i = 0; i < sections.size() && !hasInfo && !this.closed; ++i) {
+                                                            NbtCompound section = sections.getCompound(i);
+                                                            if (section.contains("Palette", 9) && section.contains("BlockStates", 12)) {
+                                                                hasInfo = true;
                                                             }
+                                                        }
+
+                                                        if (hasInfo) {
+                                                            boolean hasLight = level.contains("isLightOn") && level.getBoolean("isLightOn");
+
+                                                            if (level.contains("LightPopulated")) {
+                                                                hasLight = false;
+                                                            }
+
+                                                            if (!nbt.contains("DataVersion") || nbt.getInt("DataVersion") < 1900) {
+                                                                hasLight = false;
+                                                            }
+
+                                                            chunks[index] = this.worldServer.getChunk(chunkPos.x, chunkPos.z);
                                                         }
                                                     }
                                                 }
-                                            } catch (IOException var15x) {
-                                                System.out.println("failed checking NBT while loading from anvil: " + var15x.getMessage());
-                                                var15x.printStackTrace();
                                             }
                                         }
                                     }
@@ -415,7 +405,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                             while (!this.closed && !loadFuture.isDone()) {
                                 try {
                                     Thread.sleep(3L);
-                                } catch (InterruptedException var37) {
+                                } catch (InterruptedException ignored) {
                                 }
                             }
 

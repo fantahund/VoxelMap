@@ -11,7 +11,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 import java.util.ArrayList;
 
@@ -45,10 +44,10 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.subworldNameField.setTextFieldFocused(true);
         this.subworldNameField.setText(this.originalSubworldName);
         this.addDrawableChild(this.subworldNameField);
-        this.addDrawableChild(this.doneButton = new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, new TranslatableText("gui.done"), button -> this.changeNameClicked()));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, new TranslatableText("gui.cancel"), button -> this.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(this.doneButton = new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.done"), button -> this.changeNameClicked()));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> this.getMinecraft().setScreen(this.parent)));
         int buttonListY = this.getHeight() / 6 + 82 + 6;
-        this.addDrawableChild(this.deleteButton = new ButtonWidget(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20, new TranslatableText("selectServer.delete"), button -> this.deleteClicked()));
+        this.addDrawableChild(this.deleteButton = new ButtonWidget(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20, Text.translatable("selectServer.delete"), button -> this.deleteClicked()));
         this.doneButton.active = this.isNameAcceptable();
         this.deleteButton.active = this.originalSubworldName.equals(this.subworldNameField.getText());
     }
@@ -68,10 +67,10 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     private void deleteClicked() {
         this.deleteClicked = true;
-        TranslatableText title = new TranslatableText("worldmap.subworld.deleteconfirm");
-        TranslatableText explanation = new TranslatableText("selectServer.deleteWarning", this.originalSubworldName);
-        TranslatableText affirm = new TranslatableText("selectServer.deleteButton");
-        TranslatableText deny = new TranslatableText("gui.cancel");
+        Text title = Text.translatable("worldmap.subworld.deleteconfirm");
+        Text explanation = Text.translatable("selectServer.deleteWarning", this.originalSubworldName);
+        Text affirm = Text.translatable("selectServer.deleteButton");
+        Text deny = Text.translatable("gui.cancel");
         ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
         this.getMinecraft().setScreen(confirmScreen);
     }

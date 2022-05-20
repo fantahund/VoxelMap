@@ -7,17 +7,16 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
 import java.util.List;
 
 public class GuiScreenMinimap extends Screen {
     protected GuiScreenMinimap() {
-        this(new LiteralText(""));
+        this(Text.literal(""));
     }
 
-    protected GuiScreenMinimap(LiteralText textComponent_1) {
+    protected GuiScreenMinimap(Text textComponent_1) {
         super(textComponent_1);
         this.setZOffset(0);
     }

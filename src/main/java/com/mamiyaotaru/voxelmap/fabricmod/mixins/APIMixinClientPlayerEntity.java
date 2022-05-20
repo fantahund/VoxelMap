@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPlayerEntity.class)
 public abstract class APIMixinClientPlayerEntity extends AbstractClientPlayerEntity {
     public APIMixinClientPlayerEntity() {
-        super((ClientWorld) null, (GameProfile) null);
+        super( null, null, null);
     }
 
     @Inject(method = "sendChatMessage(Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)

@@ -15,9 +15,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -29,11 +27,11 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     private ArrayList<?> playersFiltered;
     final GuiSelectPlayer parentGui;
     Row everyoneRow;
-    final TranslatableText ALL = new TranslatableText("minimap.waypointshare.all");
-    final TranslatableText TITLE = new TranslatableText("minimap.waypointshare.sharewitheveryone");
-    final TranslatableText EXPLANATION = new TranslatableText("minimap.waypointshare.sharewitheveryone2");
-    final TranslatableText AFFIRM = new TranslatableText("gui.yes");
-    final TranslatableText DENY = new TranslatableText("gui.cancel");
+    final Text ALL = Text.translatable("minimap.waypointshare.all");
+    final Text TITLE = Text.translatable("minimap.waypointshare.sharewitheveryone");
+    final Text EXPLANATION = Text.translatable("minimap.waypointshare.sharewitheveryone2");
+    final Text AFFIRM = Text.translatable("gui.yes");
+    final Text DENY = Text.translatable("gui.cancel");
 
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
         super(MinecraftClient.getInstance(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
@@ -50,7 +48,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     }
 
     private Text getPlayerName(PlayerListEntry ScoreboardEntryIn) {
-        return (Text) (ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : new LiteralText(ScoreboardEntryIn.getProfile().getName()));
+        return (Text) (ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName()));
     }
 
     private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {
@@ -157,7 +155,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
                 }
 
                 if (button.isHovered() && mouseY >= GuiButtonRowListPlayers.this.top && mouseY <= GuiButtonRowListPlayers.this.bottom) {
-                    Text tooltip = new TranslatableText("minimap.waypointshare.sharewithname", button.getMessage());
+                    Text tooltip = Text.translatable("minimap.waypointshare.sharewithname", button.getMessage());
                     GuiSelectPlayer.setTooltip(GuiButtonRowListPlayers.this.parentGui, tooltip);
                 }
             }

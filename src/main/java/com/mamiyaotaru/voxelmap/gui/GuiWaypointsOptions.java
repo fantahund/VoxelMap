@@ -8,10 +8,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-
 public class GuiWaypointsOptions extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DEATHPOINTS};
     private final Screen parent;
@@ -25,7 +22,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
     public void init() {
         int var2 = 0;
-        this.screenTitle = new TranslatableText("options.minimap.waypoints.title");
+        this.screenTitle = Text.translatable("options.minimap.waypoints.title");
 
         for (EnumOptionsMinimap option : relevantOptions) {
             if (option.isFloat()) {
@@ -37,20 +34,20 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
                 distance = (distance - 50.0F) / 9951.0F;
                 this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, distance, this.options));
             } else {
-                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), this::optionClicked);
+                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked);
                 this.addDrawableChild(optionButton);
             }
 
             ++var2;
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, new TranslatableText("gui.done"), button -> this.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> this.getMinecraft().setScreen(this.parent)));
     }
 
     protected void optionClicked(ButtonWidget par1GuiButton) {
         EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
         this.options.setOptionValue(option);
-        par1GuiButton.setMessage(new LiteralText(this.options.getKeyText(option)));
+        par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
     }
 
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {

@@ -8,14 +8,12 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
     private final Screen parentScreen;
-    protected Text screenTitle = new LiteralText("players");
+    protected Text screenTitle = Text.literal("players");
     private boolean sharingWaypoint;
     private GuiButtonRowListPlayers playerList;
     protected boolean allClicked = false;
@@ -23,10 +21,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected TextFieldWidget filter;
     private Text tooltip = null;
     private final String locInfo;
-    final MutableText SHARE_MESSAGE = (new TranslatableText("minimap.waypointshare.sharemessage")).append(":");
-    final TranslatableText SHARE_WITH = new TranslatableText("minimap.waypointshare.sharewith");
-    final TranslatableText SHARE_WAYPOINT = new TranslatableText("minimap.waypointshare.title");
-    final TranslatableText SHARE_COORDINATES = new TranslatableText("minimap.waypointshare.titlecoordinate");
+    final MutableText SHARE_MESSAGE = (Text.translatable("minimap.waypointshare.sharemessage")).append(":");
+    final Text SHARE_WITH = Text.translatable("minimap.waypointshare.sharewith");
+    final Text SHARE_WAYPOINT = Text.translatable("minimap.waypointshare.title");
+    final Text SHARE_COORDINATES = Text.translatable("minimap.waypointshare.titlecoordinate");
 
     public GuiSelectPlayer(Screen parentScreen, IVoxelMap master, String locInfo, boolean sharingWaypoint) {
         this.parentScreen = parentScreen;
@@ -51,7 +49,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, (Text) null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
-        this.addDrawableChild(new ButtonWidget(this.width / 2 - 100, this.height - 27, 150, 20, new TranslatableText("gui.cancel"), button -> this.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget(this.width / 2 - 100, this.height - 27, 150, 20, Text.translatable("gui.cancel"), button -> this.getMinecraft().setScreen(this.parentScreen)));
         this.setFocused(this.filter);
         this.filter.setTextFieldFocused(true);
     }

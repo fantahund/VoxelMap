@@ -23,9 +23,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
@@ -97,12 +95,12 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.addDrawableChild(this.waypointZ);
         this.addDrawableChild(this.waypointY);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
-        this.addDrawableChild(this.buttonEnabled = new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY, 100, 20, new LiteralText("Enabled: " + (this.waypoint.enabled ? "On" : "Off")), button -> this.waypoint.enabled = !this.waypoint.enabled, this));
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, new LiteralText(I18nUtils.getString("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 48, 100, 20, new LiteralText(I18nUtils.getString("minimap.waypoints.sortbyicon") + ":     "), button -> this.choosingIcon = true, this));
-        this.doneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, new TranslatableText("addServer.add"), button -> this.acceptWaypoint(), this);
+        this.addDrawableChild(this.buttonEnabled = new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY, 100, 20, Text.literal("Enabled: " + (this.waypoint.enabled ? "On" : "Off")), button -> this.waypoint.enabled = !this.waypoint.enabled, this));
+        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, Text.literal(I18nUtils.getString("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
+        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 48, 100, 20, Text.literal(I18nUtils.getString("minimap.waypoints.sortbyicon") + ":     "), button -> this.choosingIcon = true, this));
+        this.doneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("addServer.add"), button -> this.acceptWaypoint(), this);
         this.addDrawableChild(this.doneButton);
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, new TranslatableText("gui.cancel"), button -> this.cancelWaypoint(), this));
+        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> this.cancelWaypoint(), this));
         this.doneButton.active = this.waypointName.getText().length() > 0;
         this.setFocused(this.waypointName);
         this.waypointName.setTextFieldFocused(true);
@@ -293,7 +291,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         super.drawMap(matrixStack);
         float scScale = (float) this.getMinecraft().getWindow().getScaleFactor();
         this.tooltip = null;
-        this.buttonEnabled.setMessage(new LiteralText(I18nUtils.getString("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18nUtils.getString("options.on") : I18nUtils.getString("options.off"))));
+        this.buttonEnabled.setMessage(Text.literal(I18nUtils.getString("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18nUtils.getString("options.on") : I18nUtils.getString("options.off"))));
         if (!this.choosingColor && !this.choosingIcon) {
             this.renderBackground(matrixStack);
         }
@@ -368,7 +366,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 float y = (float) (mouseY - (this.getHeight() / 2 - displayHeight / 2)) * scale;
                 icon = chooser.getIconAt(x, y);
                 if (icon != chooser.getMissingImage()) {
-                    this.tooltip = new LiteralText(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));
+                    this.tooltip = Text.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));
                 }
             }
 

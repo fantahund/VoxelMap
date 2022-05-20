@@ -19,32 +19,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MapSettingsManager implements ISettingsManager {
-    public final int SORT_DATE = 1;
-    public final int SORT_NAME = 2;
-    public final int SORT_DISTANCE = 3;
-    public final int SORT_COLOR = 4;
-    public final int TOP_LEFT = 0;
-    public final int TOP_RIGHT = 1;
-    public final int BOTTOM_RIGHT = 2;
-    public final int BOTTOM_LEFT = 3;
-    public final int SMALL = -1;
-    public final int MEDIUM = 0;
-    public final int LARGE = 1;
-    public final int XL = 2;
-    public final int XXL = 3;
-    public final int XXXL = 4;
-    public final int OFF = 0;
-    public final int SOLID = 1;
-    public final int TRANSPARENT = 2;
-    public final int MOST_RECENT = 1;
-    public final int ALL = 2;
     private File settingsFile;
     public boolean showUnderMenus;
-    private int availableProcessors = Runtime.getRuntime().availableProcessors();
+    private final int availableProcessors = Runtime.getRuntime().availableProcessors();
     public boolean multicore = this.availableProcessors > 1;
     public boolean hide = false;
     public boolean coords = true;
@@ -70,7 +52,6 @@ public class MapSettingsManager implements ISettingsManager {
     public int maxWaypointDisplayDistance = 1000;
     protected boolean welcome = true;
     public int zoom = 2;
-    protected int regularZoom = 2;
     public int sizeModifier = 1;
     public int mapCorner = 1;
     public Boolean cavesAllowed = true;
@@ -84,10 +65,10 @@ public class MapSettingsManager implements ISettingsManager {
     public KeyBinding keyBindMobToggle = new KeyBinding("key.minimap.togglemobs", -1, "controls.minimap.title");
     public KeyBinding keyBindWaypointToggle = new KeyBinding("key.minimap.toggleingamewaypoints", -1, "controls.minimap.title");
     public KeyBinding[] keyBindings;
-    public MinecraftClient game = null;
+    public MinecraftClient game;
     private boolean somethingChanged;
     public static MapSettingsManager instance;
-    private List<ISubSettingsManager> subSettingsManagers = new ArrayList();
+    private final List<ISubSettingsManager> subSettingsManagers = new ArrayList<>();
 
     public MapSettingsManager() {
         instance = this;
@@ -106,7 +87,7 @@ public class MapSettingsManager implements ISettingsManager {
             if (this.settingsFile.exists()) {
                 BufferedReader in;
                 String sCurrentLine;
-                for (in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), Charset.forName("UTF-8").newDecoder())); (sCurrentLine = in.readLine()) != null; KeyBinding.updateKeysByCode()) {
+                for (in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), StandardCharsets.UTF_8.newDecoder())); (sCurrentLine = in.readLine()) != null; KeyBinding.updateKeysByCode()) {
                     String[] curLine = sCurrentLine.split(":");
                     switch (curLine[0]) {
                         case "Zoom Level" -> this.zoom = Math.max(0, Math.min(4, Integer.parseInt(curLine[1])));

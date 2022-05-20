@@ -8,17 +8,15 @@ import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 
 public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final Screen parent;
     private static EnumOptionsMinimap[] relevantOptions;
     private final PersistentMapSettingsManager options;
-    private final Text screenTitle = new TranslatableText("options.worldmap.title");
-    private final Text cacheSettings = new TranslatableText("options.worldmap.cachesettings");
-    private final Text warning = new TranslatableText("options.worldmap.warning");
+    private final Text screenTitle = Text.translatable("options.worldmap.title");
+    private final Text cacheSettings = Text.translatable("options.worldmap.cachesettings");
+    private final Text warning = Text.translatable("options.worldmap.warning");
     private static EnumOptionsMinimap[] relevantOptions2;
 
     public GuiPersistentMapOptions(Screen parent, IVoxelMap master) {
@@ -32,7 +30,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         for (int t = 0; t < relevantOptions.length; ++t) {
             EnumOptionsMinimap option = relevantOptions[t];
-            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
+            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
             ++var2;
         }
 
@@ -52,13 +50,13 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
                     default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 }, this.options));
             } else {
-                this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, new LiteralText(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
+                this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
             }
 
             ++var2;
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, new TranslatableText("gui.done"), buttonx -> this.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> this.getMinecraft().setScreen(this.parent)));
 
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap) {
@@ -74,7 +72,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     protected void optionClicked(ButtonWidget par1GuiButton) {
         EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
         this.options.setOptionValue(option);
-        par1GuiButton.setMessage(new LiteralText(this.options.getKeyText(option)));
+        par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
 
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap) {

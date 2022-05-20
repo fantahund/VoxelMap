@@ -10,15 +10,15 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 
 class GuiSlotDimensions extends GuiSlotMinimap {
     final GuiAddWaypoint parentGui;
     private final ArrayList<DimensionItem> dimensions;
-    final TranslatableText APPLIES = new TranslatableText("minimap.waypoints.dimension.applies");
-    final TranslatableText NOT_APPLIES = new TranslatableText("minimap.waypoints.dimension.notapplies");
+    final Text APPLIES = Text.translatable("minimap.waypoints.dimension.applies");
+    final Text NOT_APPLIES = Text.translatable("minimap.waypoints.dimension.notapplies");
 
     public GuiSlotDimensions(GuiAddWaypoint par1GuiWaypoints) {
         super(MinecraftClient.getInstance(), 101, par1GuiWaypoints.getHeight(), par1GuiWaypoints.getHeight() / 6 + 82 + 6, par1GuiWaypoints.getHeight() / 6 + 164 + 3, 18);
@@ -50,7 +50,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     public void setSelected(DimensionItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof DimensionItem) {
-            NarratorManager.INSTANCE.narrate((new TranslatableText("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
+            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
         }
 
         this.parentGui.setSelectedDimension(item.dim);
@@ -79,7 +79,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             leftEdge = this.parentGui.getWidth() / 2;
             int width = GuiSlotDimensions.this.slotWidth;
             if (mouseX >= leftEdge + padding && mouseY >= slotYPos && mouseX <= leftEdge + width + padding && mouseY <= slotYPos + GuiSlotDimensions.this.itemHeight) {
-                TranslatableText tooltip;
+                Text tooltip;
                 if (this.parentGui.popupOpen() && mouseX >= leftEdge + width - iconWidth - padding && mouseX <= leftEdge + width) {
                     tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? GuiSlotDimensions.this.APPLIES : GuiSlotDimensions.this.NOT_APPLIES;
                 } else {

@@ -67,7 +67,7 @@ public class TextUtils {
         String lastStyleString = "";
 
         for (Text text : TextUtils.stream(text2)) {
-            String contentString = text.asString();
+            String contentString = text.toString();
             if (!contentString.isEmpty()) {
                 String styleString = asString(text.getStyle());
                 if (!styleString.equals(lastStyleString)) {
@@ -91,7 +91,7 @@ public class TextUtils {
     }
 
     private static List<Text> stream(Text text) {
-        List<Text> stream = new ArrayList();
+        List<Text> stream = new ArrayList<>();
         stream.add(text);
 
         for (Text sibling : text.getSiblings()) {
