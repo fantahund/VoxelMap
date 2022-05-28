@@ -41,6 +41,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
@@ -77,6 +78,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -1238,7 +1240,8 @@ public class ColorManager implements IColorManager {
         String suffix = suffixMaybeNull == null ? "" : suffixMaybeNull;
         ArrayList<Identifier> resources = new ArrayList<>();
 
-        for (Identifier candidate : this.game.getResourceManager().findResources(directory, asset -> asset.endsWith(suffix))) { //TODO 1.19
+        Map<Identifier, Resource> resourceMap = this.game.getResourceManager().findResources(directory, asset -> asset.getPath().endsWith(suffix));
+        for (Identifier candidate : resourceMap.keySet()) { //TODO 1.19
             if (candidate.getNamespace().equals(namespace)) {
                 resources.add(candidate);
             }

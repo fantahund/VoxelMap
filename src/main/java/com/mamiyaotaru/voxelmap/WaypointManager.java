@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
@@ -95,7 +96,8 @@ public class WaypointManager implements IWaypointManager {
         IIconCreator iconCreator = textureAtlas -> {
             MinecraftClient mc = MinecraftClient.getInstance();
 
-            for (Identifier candidate : mc.getResourceManager().findResources("images", asset -> asset.endsWith(".png"))) { //TODO 1.19
+            Map<Identifier, Resource> resourceMap = mc.getResourceManager().findResources("images", asset -> asset.getPath().endsWith(".png"));
+            for (Identifier candidate : resourceMap.keySet()) { //TODO 1.19
                 if (candidate.getNamespace().equals("voxelmap") && candidate.getPath().contains("images/waypoints")) {
                     images.add(candidate);
                 }
