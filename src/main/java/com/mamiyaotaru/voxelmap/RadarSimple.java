@@ -28,6 +28,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -47,6 +49,8 @@ public class RadarSimple implements IRadar {
     private float direction = 0.0F;
     private ArrayList<Contact> contacts = new ArrayList(40);
     UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
+
+    private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
     public RadarSimple(IVoxelMap master) {
         this.minimapOptions = master.getMapOptions();
@@ -281,8 +285,9 @@ public class RadarSimple implements IRadar {
                         GLUtils.setMap(this.textureAtlas.getAtlasSprite("facing"), (float) x, (float) y, 16.0F);
                         GLUtils.drawPost();
                     }
-                } catch (Exception var30) {
-                    System.err.println("Error rendering mob icon! " + var30.getLocalizedMessage() + " contact type " + contact.type);
+                } catch (Exception e) {
+                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
+                    logger.log(Level.ERROR, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();

@@ -127,6 +127,8 @@ import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerDataContainer;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -194,6 +196,9 @@ public class Radar implements IRadar {
     private NativeImageBackedTexture nativeBackedTexture = new NativeImageBackedTexture(2, 2, false);
     private final Identifier nativeBackedTextureLocation = new Identifier("voxelmap", "tempimage");
     private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
+
+    private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
+
     private static final Int2ObjectMap LEVEL_TO_ID = (Int2ObjectMap) Util.make(new Int2ObjectOpenHashMap(), int2ObjectOpenHashMap -> {
         int2ObjectOpenHashMap.put(1, new Identifier("stone"));
         int2ObjectOpenHashMap.put(2, new Identifier("iron"));
@@ -1958,8 +1963,9 @@ public class Radar implements IRadar {
                         int m = this.chkLen(contact.name) / 2;
                         this.write(contact.name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
                     }
-                } catch (Exception var46) {
-                    System.err.println("Error rendering mob icon! " + var46.getLocalizedMessage() + " contact type " + contact.type);
+                } catch (Exception e) {
+                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
+                    logger.log(Level.ERROR, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();

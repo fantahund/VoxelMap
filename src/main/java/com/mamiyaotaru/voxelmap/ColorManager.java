@@ -52,7 +52,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vector4f;
-import net.minecraft.util.math.random.AbstractRandom;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.BuiltinRegistries;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockRenderView;
@@ -106,7 +106,7 @@ public class ColorManager implements IColorManager {
     private float failedToLoadX = 0.0F;
     private float failedToLoadY = 0.0F;
     private String renderPassThreeBlendMode;
-    private AbstractRandom random = AbstractRandom.create();
+    private Random random = Random.create();
     private final Object tpLoadLock = new Object();
     private boolean loaded = false;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ());

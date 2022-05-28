@@ -103,9 +103,9 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             }
 
             if (this.buttonId == this.options.keyBindings[keyCounter]) {
-                ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage((Text.literal("> ")).append((Text.literal("???")).shallowCopy().formatted(Formatting.YELLOW)).append(" <").formatted(Formatting.YELLOW));
+                ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage((Text.literal("> ")).append((Text.literal("???")).copy().formatted(Formatting.YELLOW)).append(" <").formatted(Formatting.YELLOW));
             } else if (keycodeCollision) {
-                ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage(this.options.getKeybindDisplayString(keyCounter).shallowCopy().formatted(Formatting.RED));
+                ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage(this.options.getKeybindDisplayString(keyCounter).copy().formatted(Formatting.RED));
             } else {
                 ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage(this.options.getKeybindDisplayString(keyCounter));
             }
