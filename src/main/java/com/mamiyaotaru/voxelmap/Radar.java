@@ -1761,7 +1761,7 @@ public class Radar implements IRadar {
             double wayX = lastX - contactX;
             double wayZ = lastZ - contactZ;
             int wayY = lastY - contactY;
-            double adjustedDiff = max - (double) Math.max(Math.abs(wayY) - 0, 0);
+            double adjustedDiff = max - (double) Math.max(Math.abs(wayY), 0);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
@@ -1769,7 +1769,7 @@ public class Radar implements IRadar {
             if (wayY < 0) {
                 GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
-                GLShim.glColor3f(1.0F * contact.brightness, 1.0F * contact.brightness, 1.0F * contact.brightness);
+                GLShim.glColor3f(contact.brightness, contact.brightness, contact.brightness);
             }
 
             if (this.minimapOptions.rotates) {
@@ -1778,11 +1778,11 @@ public class Radar implements IRadar {
                 contact.angle -= 90.0F;
             }
 
-            boolean inRange = false;
+            boolean inRange;
             if (!this.minimapOptions.squareMap) {
                 inRange = contact.distance < 31.0;
             } else {
-                double radLocate = Math.toRadians((double) contact.angle);
+                double radLocate = Math.toRadians(contact.angle);
                 double dispX = contact.distance * Math.cos(radLocate);
                 double dispY = contact.distance * Math.sin(radLocate);
                 inRange = Math.abs(dispX) <= 28.5 && Math.abs(dispY) <= 28.5;
@@ -1792,19 +1792,15 @@ public class Radar implements IRadar {
                 try {
                     matrixStack.push();
                     if (this.options.filtering) {
-                        matrixStack.translate((double) x, (double) y, 0.0);
+                        matrixStack.translate(x, y, 0.0);
                         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-contact.angle));
                         matrixStack.translate(0.0, -contact.distance, 0.0);
                         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(contact.angle + (float) contact.rotationFactor));
-                        matrixStack.translate((double) (-x), (double) (-y), 0.0);
+                        matrixStack.translate((-x), (-y), 0.0);
                     } else {
-                        wayX = Math.sin(Math.toRadians((double) contact.angle)) * contact.distance;
-                        wayZ = Math.cos(Math.toRadians((double) contact.angle)) * contact.distance;
-                        if (this.options.filtering) {
-                            matrixStack.translate(-wayX, -wayZ, 0.0);
-                        } else {
-                            matrixStack.translate((double) Math.round(-wayX * (double) this.layoutVariables.scScale) / (double) this.layoutVariables.scScale, (double) Math.round(-wayZ * (double) this.layoutVariables.scScale) / (double) this.layoutVariables.scScale, 0.0);
-                        }
+                        wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
+                        wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
+                        matrixStack.translate((double) Math.round(-wayX * (double) this.layoutVariables.scScale) / (double) this.layoutVariables.scScale, (double) Math.round(-wayZ * (double) this.layoutVariables.scScale) / (double) this.layoutVariables.scScale, 0.0);
                     }
 
                     RenderSystem.applyModelViewMatrix();
@@ -1820,14 +1816,9 @@ public class Radar implements IRadar {
                                     if (contact.type == EnumMobs.PUFFERFISH || contact.type == EnumMobs.PUFFERFISHHALF || contact.type == EnumMobs.PUFFERFISHFULL) {
                                         int size = ((PufferfishEntity) contact.entity).getPuffState();
                                         switch (size) {
-                                            case 0:
-                                                contact.type = EnumMobs.PUFFERFISH;
-                                                break;
-                                            case 1:
-                                                contact.type = EnumMobs.PUFFERFISHHALF;
-                                                break;
-                                            case 2:
-                                                contact.type = EnumMobs.PUFFERFISHFULL;
+                                            case 0 -> contact.type = EnumMobs.PUFFERFISH;
+                                            case 1 -> contact.type = EnumMobs.PUFFERFISHHALF;
+                                            case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
                                         }
                                     }
                                 } else {
@@ -1922,7 +1913,7 @@ public class Radar implements IRadar {
                             if (wayY < 0) {
                                 GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
                             } else {
-                                GLShim.glColor3f(1.0F * contact.brightness, 1.0F * contact.brightness, 1.0F * contact.brightness);
+                                GLShim.glColor3f(contact.brightness, contact.brightness, contact.brightness);
                             }
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[2]);
