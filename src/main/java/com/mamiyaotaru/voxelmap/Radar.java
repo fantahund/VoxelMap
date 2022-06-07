@@ -982,7 +982,7 @@ public class Radar implements IRadar {
         if (resourceLocation != null) {
             try {
                 Optional<Resource> resource = this.game.getResourceManager().getResource(resourceLocation);
-                if (resource != null) {
+                if (resource.isPresent()) {
                     VillagerResourceMetadata villagerResourceMetadata = (VillagerResourceMetadata) resource.get().getMetadata();
                     if (villagerResourceMetadata != null) {
                         hatType = villagerResourceMetadata.getHatType();
@@ -990,7 +990,8 @@ public class Radar implements IRadar {
 
                     resource.get().getReader().close();
                 }
-            } catch (IOException var5) {
+            } catch (IOException | ClassCastException ignored) {
+                hatType = VillagerResourceMetadata.HatType.NONE;
             }
         }
 
@@ -1922,15 +1923,16 @@ public class Radar implements IRadar {
                     }
 
                     if (contact.name != null && (this.options.showPlayerNames && contact.type == EnumMobs.PLAYER || this.options.showMobNames && contact.type != EnumMobs.PLAYER)) {
-                        float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
-                        matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
-                        RenderSystem.applyModelViewMatrix();
+                        if (contact.entity.hasCustomName() || contact.type == EnumMobs.PLAYER) {
+                            float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
+                            matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                            RenderSystem.applyModelViewMatrix();
 
+                            String name = contact.entity.getDisplayName().getString();
+                            int m = this.fontRenderer.getWidth(name) / 2;
 
-                        String name = contact.entity.getDisplayName().getString();
-                        int m = this.fontRenderer.getWidth(name) / 2;
-
-                        this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
+                            this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
+                        }
                     }
                 } catch (Exception e) {
                     System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
