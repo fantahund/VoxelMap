@@ -7,17 +7,7 @@ import com.mamiyaotaru.voxelmap.textures.FontRendererWithAtlas;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.StitcherException;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.util.CustomMob;
-import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
-import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.GLShim;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
-import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mamiyaotaru.voxelmap.util.LayoutVariables;
-import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
-import com.mamiyaotaru.voxelmap.util.TextUtils;
+import com.mamiyaotaru.voxelmap.util.*;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
@@ -80,6 +70,7 @@ import net.minecraft.client.render.entity.model.SquidEntityModel;
 import net.minecraft.client.render.entity.model.StriderEntityModel;
 import net.minecraft.client.render.entity.model.VillagerResemblingModel;
 import net.minecraft.client.render.entity.model.WolfEntityModel;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.PlayerSkinTexture;
@@ -114,6 +105,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -136,16 +128,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
@@ -1029,57 +1012,49 @@ public class Radar implements IRadar {
                 String fullName = contact.vanillaType ? "minecraft." + contact.type.id : contact.entity.getClass().getName();
                 String simpleName = contact.vanillaType ? contact.type.id : contact.entity.getClass().getSimpleName();
                 String fullPath = ("textures/icons/" + fullName + ".properties").toLowerCase();
-                InputStream is = null;
+                //InputStream is = null;
 
-                try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var43) {
-                    is = null;
-                }
+                ResourceManager resourceManager = this.game.getResourceManager();
+                Optional<Resource> resource = resourceManager.getResource(new Identifier(fullPath));
 
-                if (is == null) {
+                if (resource.isEmpty()) {
                     fullPath = ("textures/icons/" + simpleName + ".properties").toLowerCase();
-
-                    try {
-                        is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                    } catch (IOException var42) {
-                        is = null;
-                    }
+                    resource = resourceManager.getResource(new Identifier(fullPath));
                 }
+                if (resource.isPresent())
+                    try (InputStream is = resource.get().getInputStream()) {
+                        properties.load(is);
+                        is.close();
+                        String subModelNames = properties.getProperty("models", "").toLowerCase();
+                        String[] submodelNamesArray = subModelNames.split(",");
+                        List subModelNamesList = Arrays.asList(submodelNamesArray);
+                        HashSet subModelNamesSet = new HashSet();
+                        subModelNamesSet.addAll(subModelNamesList);
+                        ArrayList headPartsArrayList = new ArrayList();
 
-                if (is != null) {
-                    properties.load(is);
-                    is.close();
-                    String subModelNames = properties.getProperty("models", "").toLowerCase();
-                    String[] submodelNamesArray = subModelNames.split(",");
-                    List subModelNamesList = Arrays.asList(submodelNamesArray);
-                    HashSet subModelNamesSet = new HashSet();
-                    subModelNamesSet.addAll(subModelNamesList);
-                    ArrayList headPartsArrayList = new ArrayList();
-
-                    for (Field submodelArray : submodelArrays) {
-                        String name = submodelArray.getName().toLowerCase();
-                        if (subModelNamesSet.contains(name) || subModelNames.equals("all")) {
-                            ModelPart[] submodelArrayValue = (ModelPart[]) submodelArray.get(model);
-                            if (submodelArrayValue != null) {
-                                for (int t = 0; t < submodelArrayValue.length; ++t) {
-                                    headPartsArrayList.add(submodelArrayValue[t]);
+                        for (Field submodelArray : submodelArrays) {
+                            String name = submodelArray.getName().toLowerCase();
+                            if (subModelNamesSet.contains(name) || subModelNames.equals("all")) {
+                                ModelPart[] submodelArrayValue = (ModelPart[]) submodelArray.get(model);
+                                if (submodelArrayValue != null) {
+                                    for (int t = 0; t < submodelArrayValue.length; ++t) {
+                                        headPartsArrayList.add(submodelArrayValue[t]);
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    for (Field submodel : submodels) {
-                        String name = submodel.getName().toLowerCase();
-                        if ((subModelNamesSet.contains(name) || subModelNames.equals("all")) && submodel.get(model) != null) {
-                            headPartsArrayList.add((ModelPart) submodel.get(model));
+                        for (Field submodel : submodels) {
+                            String name = submodel.getName().toLowerCase();
+                            if ((subModelNamesSet.contains(name) || subModelNames.equals("all")) && submodel.get(model) != null) {
+                                headPartsArrayList.add((ModelPart) submodel.get(model));
+                            }
+                        }
+
+                        if (headPartsArrayList.size() > 0) {
+                            headBits = (ModelPart[]) headPartsArrayList.toArray(new ModelPart[headPartsArrayList.size()]);
                         }
                     }
-
-                    if (headPartsArrayList.size() > 0) {
-                        headBits = (ModelPart[]) headPartsArrayList.toArray(new ModelPart[headPartsArrayList.size()]);
-                    }
-                }
 
                 if (headBits == null) {
                     if (model instanceof PlayerEntityModel) {
@@ -1951,12 +1926,22 @@ public class Radar implements IRadar {
                         float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
                         RenderSystem.applyModelViewMatrix();
-                        int m = this.chkLen(contact.name) / 2;
-                        this.write(contact.name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
+
+                        //todo this is dumb
+                        int index = contact.name.indexOf("key='") +5 ;
+                        int index2 = contact.name.indexOf("'",index);
+
+                        String transKey = contact.name.substring(index,index2);
+                        String name = I18nUtils.getString(transKey);
+
+                        int m = this.chkLen(name) / 2;
+                        this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
                     }
                 } catch (Exception e) {
-                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
-                    logger.log(Level.ERROR, e);
+                    //System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
+                    //logger.log(Level.ERROR, e);
+                    e.printStackTrace();
+                    System.out.println("booger");
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();

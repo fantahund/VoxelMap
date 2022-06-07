@@ -199,7 +199,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             var6 = this.renderString(text, x, y, color, false);
         }
 
-        this.vertexBuffer.end();
+       // this.vertexBuffer.end();
         BufferRenderer.drawWithShader(this.vertexBuffer.end());
         return var6;
     }
