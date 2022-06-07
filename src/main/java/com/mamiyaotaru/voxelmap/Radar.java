@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.Maps;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.textures.FontRendererWithAtlas;
@@ -25,10 +26,7 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
@@ -592,6 +590,7 @@ public class Radar implements IRadar {
         GLShim.glTexParameteri(3553, 10241, 9728);
         GLShim.glTexParameteri(3553, 10240, 9728);
         this.fontRenderer.drawStringWithShadow(paramStr, x, y, color);
+
     }
 
     private boolean isEntityShown(Entity entity) {
@@ -1927,28 +1926,22 @@ public class Radar implements IRadar {
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
                         RenderSystem.applyModelViewMatrix();
 
-                        //todo this is dumb
-                        int index = contact.name.indexOf("key='") +5 ;
-                        int index2 = contact.name.indexOf("'",index);
 
-                        String transKey = contact.name.substring(index,index2);
-                        String name = I18nUtils.getString(transKey);
+                        String name = contact.entity.getDisplayName().getString();
+                        int m = this.fontRenderer.getWidth(name) / 2;
 
-                        int m = this.chkLen(name) / 2;
                         this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
                     }
                 } catch (Exception e) {
-                    //System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
-                    //logger.log(Level.ERROR, e);
-                    e.printStackTrace();
-                    System.out.println("booger");
+                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
+                    logger.log(Level.ERROR, e);
+                    //e.printStackTrace(); //this is way better for debugging
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();
                 }
             }
         }
-
     }
 
     private void applyFilteringParameters() {

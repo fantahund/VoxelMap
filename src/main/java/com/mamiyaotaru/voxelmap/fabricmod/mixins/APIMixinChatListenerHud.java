@@ -2,8 +2,8 @@ package com.mamiyaotaru.voxelmap.fabricmod.mixins;
 
 import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import net.minecraft.client.gui.hud.ChatHudListener;
-import net.minecraft.network.MessageSender;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageSender;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
