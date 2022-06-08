@@ -35,6 +35,7 @@ public class BlockRepository {
     public static Block jungleLeaves;
     public static Block acaciaLeaves;
     public static Block darkOakLeaves;
+    public static Block mangroveLeaves;
     public static Block grass;
     public static Block fern;
     public static Block tallGrass;
@@ -53,7 +54,7 @@ public class BlockRepository {
     public static Block chorusFlower;
     public static FluidState dry = Fluids.EMPTY.getDefaultState();
     public static HashSet<Block> biomeBlocks;
-    public static Block[] biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
+    public static Block[] biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
     public static HashSet<Block> shapedBlocks;
     public static Block[] shapedBlocksArray = new Block[]{ladder, vine};
     private static final ConcurrentHashMap<BlockState, Integer> stateToInt = new ConcurrentHashMap<>(1024);
@@ -79,6 +80,7 @@ public class BlockRepository {
         jungleLeaves = Blocks.JUNGLE_LEAVES;
         acaciaLeaves = Blocks.ACACIA_LEAVES;
         darkOakLeaves = Blocks.DARK_OAK_LEAVES;
+        mangroveLeaves = Blocks.MANGROVE_LEAVES;
         grass = Blocks.GRASS;
         fern = Blocks.FERN;
         tallGrass = Blocks.TALL_GRASS;
@@ -94,7 +96,7 @@ public class BlockRepository {
         barrier = Blocks.BARRIER;
         chorusPlant = Blocks.CHORUS_PLANT;
         chorusFlower = Blocks.CHORUS_FLOWER;
-        biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
+        biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
         biomeBlocks = new HashSet<>(Arrays.asList(biomeBlocksArray));
         shapedBlocksArray = new Block[]{ladder, vine};
         shapedBlocks = new HashSet<>(Arrays.asList(shapedBlocksArray));

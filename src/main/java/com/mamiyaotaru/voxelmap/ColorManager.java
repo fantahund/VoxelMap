@@ -783,7 +783,7 @@ public class ColorManager implements IColorManager {
             colorResolver = this.spruceColorResolver;
         } else if (block == BlockRepository.birchLeaves) {
             colorResolver = this.birchColorResolver;
-        } else if (block != BlockRepository.oakLeaves && block != BlockRepository.jungleLeaves && block != BlockRepository.acaciaLeaves && block != BlockRepository.darkOakLeaves && block != BlockRepository.vine) {
+        } else if (block != BlockRepository.oakLeaves && block != BlockRepository.jungleLeaves && block != BlockRepository.acaciaLeaves && block != BlockRepository.darkOakLeaves && block != BlockRepository.mangroveLeaves && block != BlockRepository.vine) {
             if (block == BlockRepository.redstone) {
                 colorResolver = this.redstoneColorResolver;
             } else if (BlockRepository.biomeBlocks.contains(block)) {
