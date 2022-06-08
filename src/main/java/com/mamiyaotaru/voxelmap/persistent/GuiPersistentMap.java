@@ -1173,9 +1173,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     this.selectedWaypoint = hovered;
                     boolean mp = !this.mc.isInSingleplayer();
                     y = this.selectedWaypoint.getY() > MinecraftClient.getInstance().world.getBottomY() ? this.selectedWaypoint.getY() : (!this.mc.player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
-                    this.mc.player.sendChatMessage("/tp " + this.mc.player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+                    this.mc.player.sendCommand("tp " + this.mc.player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     if (mp) {
-                        this.mc.player.sendChatMessage("/tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+                        this.mc.player.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     } else {
                         this.getMinecraft().setScreen((Screen) null);
                     }
@@ -1184,9 +1184,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         y = !this.mc.player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64;
                     }
 
-                    this.mc.player.sendChatMessage("/tp " + this.mc.player.getName().getString() + " " + x + " " + y + " " + z);
+                    this.mc.player.sendCommand("tp " + this.mc.player.getName().getString() + " " + x + " " + y + " " + z);
                     if (!this.mc.isInSingleplayer()) {
-                        this.mc.player.sendChatMessage("/tppos " + x + " " + y + " " + z);
+                        this.mc.player.sendCommand("tppos " + x + " " + y + " " + z);
                     }
                 }
                 break;

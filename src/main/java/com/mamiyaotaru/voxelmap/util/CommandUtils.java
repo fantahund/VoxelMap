@@ -245,9 +245,9 @@ public class CommandUtils {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
                 boolean mp = !MinecraftClient.getInstance().isIntegratedServerRunning();
                 int y = wp.getY() > MinecraftClient.getInstance().world.getBottomY() ? wp.getY() : (!MinecraftClient.getInstance().player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
-                MinecraftClient.getInstance().player.sendChatMessage("/tp " + MinecraftClient.getInstance().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
+                MinecraftClient.getInstance().player.sendCommand("tp " + MinecraftClient.getInstance().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
-                    MinecraftClient.getInstance().player.sendChatMessage("/tppos " + wp.getX() + " " + y + " " + wp.getZ());
+                    MinecraftClient.getInstance().player.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
                 }
 
                 return;

@@ -139,9 +139,9 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private void teleportClicked() {
         boolean mp = !this.client.isIntegratedServerRunning();
         int y = this.selectedWaypoint.getY() > MinecraftClient.getInstance().world.getBottomY() ? this.selectedWaypoint.getY() : (!this.options.game.player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
-        this.options.game.player.sendChatMessage("/tp " + this.options.game.player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+        this.options.game.player.sendCommand("tp " + this.options.game.player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
         if (mp) {
-            this.options.game.player.sendChatMessage("/tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+            this.options.game.player.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
         }
 
         this.getMinecraft().setScreen(null);

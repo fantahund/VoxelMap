@@ -111,12 +111,12 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     protected void sendMessageToPlayer(String name) {
-        String combined = "/msg " + name + " " + this.message.getText() + " " + this.locInfo;
+        String combined = "msg " + name + " " + this.message.getText() + " " + this.locInfo;
         if (combined.length() > 100) {
-            this.getMinecraft().player.sendChatMessage("/msg " + name + " " + this.message.getText());
-            this.getMinecraft().player.sendChatMessage("/msg " + name + " " + this.locInfo);
+            this.getMinecraft().player.sendCommand("msg " + name + " " + this.message.getText());
+            this.getMinecraft().player.sendCommand("msg " + name + " " + this.locInfo);
         } else {
-            this.getMinecraft().player.sendChatMessage(combined);
+            this.getMinecraft().player.sendCommand(combined);
         }
 
         this.getMinecraft().setScreen(this.parentScreen);
