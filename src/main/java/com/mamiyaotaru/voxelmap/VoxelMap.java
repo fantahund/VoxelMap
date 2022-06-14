@@ -34,12 +34,13 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.UUID;
@@ -64,8 +65,10 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     private Long newServerTime = 0L;
     private boolean checkMOTD = false;
     private ChatHudLine mostRecentLine = null;
-    private final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
-    private String passMessage = null;
+    private final UUID devUUID = UUID.fromString("677f5375-2034-40f6-8fb6-389dd81ad0cb");
+    private static String passMessage = null;
+
+    private static final Logger logger = LogManager.getLogger("VoxelMap");
 
     public VoxelMap() {
         instance = this;
@@ -146,7 +149,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
     public void onTick(MinecraftClient mc) {
         if (this.checkMOTD) {
-            this.checkPermissionMessages(mc);
+            //this.checkPermissionMessages(mc);
         }
 
         if (GameVariableAccessShim.getWorld() != null && !GameVariableAccessShim.getWorld().equals(this.world) || this.world != null && !this.world.equals(GameVariableAccessShim.getWorld())) {
@@ -233,7 +236,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                         }
 
                         if (!error.equals("")) {
-                            this.passMessage = error;
+                            passMessage = error;
                         }
                     }
 
@@ -248,6 +251,37 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
             this.checkMOTD = false;
         }
 
+    }
+
+    public static void checkPermissionMessages(Text message) {
+
+        if (GameVariableAccessShim.getWorld() != null) {
+            boolean killRadar = false;
+            boolean killCaves = false;
+
+            String msg = TextUtils.asFormattedString(message);
+            String error = "";
+            msg = msg.replaceAll("§r", "");
+            System.out.println("mc = " + msg);
+            if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
+                killCaves = true;
+                error = error + "Server disabled cavemapping.  ";
+            }
+
+            if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
+                killRadar = true;
+                error = error + "Server disabled radar.  ";
+            }
+
+            if (!error.equals("")) {
+                passMessage = error;
+            }
+
+            radarOptions.radarAllowed = radarOptions.radarAllowed && (!killRadar);
+            radarOptions.radarPlayersAllowed = radarOptions.radarAllowed;
+            radarOptions.radarMobsAllowed = radarOptions.radarAllowed;
+            mapOptions.cavesAllowed = mapOptions.cavesAllowed && (!killCaves);
+        }
     }
 
     @Override
@@ -370,5 +404,9 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     @Override
     public WorldUpdateListener getWorldUpdateListener() {
         return this.worldUpdateListener;
+    }
+
+    public static Logger getLogger() {
+        return logger;
     }
 }
