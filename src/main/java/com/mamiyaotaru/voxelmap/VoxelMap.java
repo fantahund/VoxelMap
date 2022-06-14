@@ -16,7 +16,6 @@ import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
-import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.TickCounter;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
@@ -24,14 +23,10 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.gui.hud.ChatHudLine;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
@@ -62,10 +57,6 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     private IDimensionManager dimensionManager = null;
     private ClientWorld world;
     private String worldName = "";
-    private Long newServerTime = 0L;
-    private boolean checkMOTD = false;
-    private ChatHudLine mostRecentLine = null;
-    private final UUID devUUID = UUID.fromString("677f5375-2034-40f6-8fb6-389dd81ad0cb");
     private static String passMessage = null;
 
     private static final Logger logger = LogManager.getLogger("VoxelMap");
@@ -75,7 +66,6 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     }
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
-        getLogger().warn("lateInit");
         GLUtils.textureManager = MinecraftClient.getInstance().getTextureManager();
         mapOptions = new MapSettingsManager();
         mapOptions.showUnderMenus = showUnderMenus;
@@ -155,10 +145,6 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     }
 
     public void onTick(MinecraftClient mc) {
-        if (this.checkMOTD) {
-            // this.checkPermissionMessages(mc);
-        }
-
         if (GameVariableAccessShim.getWorld() != null && !GameVariableAccessShim.getWorld().equals(this.world) || this.world != null && !this.world.equals(GameVariableAccessShim.getWorld())) {
             this.world = GameVariableAccessShim.getWorld();
             this.waypointManager.newWorld(this.world);
@@ -197,96 +183,34 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         this.persistentMap.onTick(mc);
     }
 
-    private void checkPermissionMessages(MinecraftClient mc) {
-
-        if (GameVariableAccessShim.getWorld() != null && mc.player != null && mc.inGameHud != null && System.currentTimeMillis() - this.newServerTime < 20000L) {
-            UUID playerUUID = mc.player.getUuid();
-            Object guiNewChat = mc.inGameHud.getChatHud();
-            if (guiNewChat == null) {
-                System.out.println("failed to get guiNewChat");
-            } else {
-                Object chatListObj = ReflectionUtils.getPrivateFieldValueByType(guiNewChat, ChatHud.class, List.class, 1);
-                if (chatListObj == null) {
-                    System.out.println("could not get chatlist");
-                } else {
-                    List<?> chatList = (List) chatListObj;
-                    boolean killRadar = false;
-                    boolean killCaves = false;
-
-                    for (int t = 0; t < chatList.size(); ++t) {
-                        ChatHudLine checkMe = (ChatHudLine) chatList.get(t);
-                        if (checkMe.equals(this.mostRecentLine)) {
-                            break;
-                        }
-
-                        Text rawText = (Text) checkMe.getText();
-                        String msg = TextUtils.asFormattedString(rawText);
-                        String error = "";
-                        msg = msg.replaceAll("§r", "");
-                        if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
-                            killCaves = true;
-                            error = error + "Server disabled cavemapping.  ";
-                        }
-
-                        if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
-                            killRadar = true;
-                            error = error + "Server disabled radar.  ";
-                        }
-
-                        if (!error.equals("")) {
-                            passMessage = error;
-                        }
-                    }
-
-                    radarOptions.radarAllowed = radarOptions.radarAllowed && (!killRadar || this.devUUID.equals(playerUUID));
-                    radarOptions.radarPlayersAllowed = radarOptions.radarAllowed;
-                    radarOptions.radarMobsAllowed = radarOptions.radarAllowed;
-                    mapOptions.cavesAllowed = mapOptions.cavesAllowed && (!killCaves || this.devUUID.equals(playerUUID));
-                    this.mostRecentLine = chatList.size() > 0 ? (ChatHudLine) chatList.get(0) : null;
-                }
-            }
-        } else if (System.currentTimeMillis() - this.newServerTime >= 20000L) {
-            this.checkMOTD = false;
-        }
-
-    }
-
     public static void checkPermissionMessages(Text message) {
         String msg = TextUtils.asFormattedString(message);
-        String error = "";
         msg = msg.replaceAll("§r", "");
-        getLogger().warn("mc = " + msg);
 
-        if (GameVariableAccessShim.getWorld() != null) {
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
-                mapOptions.cavesAllowed = false;
-                error = error + "Server disabled cavemapping.  ";
-            }
-
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
-                radarOptions.radarAllowed = false;
-                radarOptions.radarPlayersAllowed = false;
-                radarOptions.radarMobsAllowed = false;
-                error = error + "Server disabled radar.  ";
-            }
-
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
-                mapOptions.cavesAllowed = true;
-                error = error + "Server enabled cavemapping.  ";
-            }
-
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
-                radarOptions.radarAllowed = true;
-                radarOptions.radarPlayersAllowed = true;
-                radarOptions.radarMobsAllowed = true;
-                error = error + "Server enabled radar.  ";
-            }
-
-            if (!error.equals("")) {
-                passMessage = error;
-            }
-
+        if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
+            mapOptions.cavesAllowed = false;
+            getLogger().info("Server disabled cavemapping.");
         }
+
+        if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
+            radarOptions.radarAllowed = false;
+            radarOptions.radarPlayersAllowed = false;
+            radarOptions.radarMobsAllowed = false;
+            getLogger().info("Server disabled radar.");
+        }
+
+        if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
+            mapOptions.cavesAllowed = true;
+            getLogger().info("Server enabled cavemapping.");
+        }
+
+        if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
+            radarOptions.radarAllowed = true;
+            radarOptions.radarPlayersAllowed = true;
+            radarOptions.radarMobsAllowed = true;
+            getLogger().info("Server enabled radar.");
+        }
+
     }
 
     @Override
@@ -351,19 +275,10 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
     @Override
     public void setPermissions(boolean hasFullRadarPermission, boolean hasPlayersOnRadarPermission, boolean hasMobsOnRadarPermission, boolean hasCavemodePermission) {
-        boolean override = false;
-
-        try {
-            UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
-            UUID playerUUID = MinecraftClient.getInstance().player.getUuid();
-            override = playerUUID.equals(devUUID);
-        } catch (Exception var8) {
-        }
-
-        radarOptions.radarAllowed = hasFullRadarPermission || override;
-        radarOptions.radarPlayersAllowed = hasPlayersOnRadarPermission || override;
-        radarOptions.radarMobsAllowed = hasMobsOnRadarPermission || override;
-        mapOptions.cavesAllowed = hasCavemodePermission || override;
+        radarOptions.radarAllowed = hasFullRadarPermission;
+        radarOptions.radarPlayersAllowed = hasPlayersOnRadarPermission;
+        radarOptions.radarMobsAllowed = hasMobsOnRadarPermission;
+        mapOptions.cavesAllowed = hasCavemodePermission;
     }
 
     @Override
