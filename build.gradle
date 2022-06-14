@@ -18,6 +18,13 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 dependencies {
@@ -27,6 +34,13 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Runs the game with Iris when using runClient.
+    modImplementation "maven.modrinth:iris:1.19.x-v1.2.5"
+
+    modImplementation "maven.modrinth:sodium:mc1.19-0.4.2"
+    runtimeOnly "org.joml:joml:1.10.2"
+    runtimeOnly "org.anarres:jcpp:1.4.14"
 }
 
 processResources {

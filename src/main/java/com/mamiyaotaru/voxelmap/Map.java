@@ -1643,8 +1643,7 @@ public class Map implements Runnable, IMap {
             GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
             GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
             BufferBuilder bb = Tessellator.getInstance().getBuffer();
-            bb.end();
-            BufferRenderer.drawWithoutShader(bb.end());
+            BufferRenderer.drawWithShader(bb.end());
             GLShim.glBlendFuncSeparate(1, 0, 774, 0);
             synchronized (this.coordinateLock) {
                 if (this.imageChanged) {

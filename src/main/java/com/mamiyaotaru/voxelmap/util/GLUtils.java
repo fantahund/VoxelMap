@@ -38,7 +38,8 @@ public class GLUtils {
     private static int previousFBOIDREAD = 0;
     private static int previousFBOIDDRAW = 0;
     private static int previousProgram = 0;
-    public static boolean hasAlphaBits = GL30.glGetFramebufferAttachmentParameteri(36008, 1026, 33301) > 0;
+    public static boolean hasAlphaBits = false;// Suppress error, the codepath that uses this makes no sense.
+    //public static boolean hasAlphaBits = GL30.glGetFramebufferAttachmentParameteri(36008, 1026, 33301) > 0;
     public static final int fboSize = 512;
     public static final int fboRad = 256;
     private static final IntBuffer dataBuffer = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
