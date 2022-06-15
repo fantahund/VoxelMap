@@ -67,7 +67,7 @@ public class TextUtils {
         String lastStyleString = "";
 
         for (Text text : TextUtils.stream(text2)) {
-            String contentString = text.toString();
+            String contentString = text.getString();
             if (!contentString.isEmpty()) {
                 String styleString = asString(text.getStyle());
                 if (!styleString.equals(lastStyleString)) {

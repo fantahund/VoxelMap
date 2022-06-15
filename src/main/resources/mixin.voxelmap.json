@@ -12,7 +12,8 @@
     "APIMixinNetHandlerPlayClient",
     "MixinWorldRenderer",
     "ONMixinBackgroundRenderer",
-    "ONMixinWorldRenderer"
+    "ONMixinWorldRenderer",
+    "MixinChatHud"
   ],
   "injectors": {
     "defaultRequire": 1
