@@ -1153,7 +1153,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.waypointManager.setHighlightedWaypoint(hovered, true);
                 } else {
-                    y = y > 0 ? y : 64;
+                    y = y > mc.player.world.getBottomY() ? y : 64;
                     TreeSet dimensions2 = new TreeSet();
                     dimensions2.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(this.mc.world));
                     Waypoint fakePoint = new Waypoint("", (int) ((double) x * dimensionScale), (int) ((double) z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
@@ -1164,7 +1164,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     CommandUtils.sendWaypoint(hovered);
                 } else {
-                    y = y > 0 ? y : 64;
+                    y = y > this.mc.player.world.getBottomY() ? y : 64;
                     CommandUtils.sendCoordinate(x, y, z);
                 }
                 break;

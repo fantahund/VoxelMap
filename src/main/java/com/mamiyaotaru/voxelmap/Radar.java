@@ -1,14 +1,23 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.Maps;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.textures.FontRendererWithAtlas;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.StitcherException;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.*;
+import com.mamiyaotaru.voxelmap.util.Contact;
+import com.mamiyaotaru.voxelmap.util.CustomMob;
+import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
+import com.mamiyaotaru.voxelmap.util.EnumMobs;
+import com.mamiyaotaru.voxelmap.util.GLShim;
+import com.mamiyaotaru.voxelmap.util.GLUtils;
+import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
+import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.LayoutVariables;
+import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
+import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
@@ -26,7 +35,10 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.TexturedModelData;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
@@ -68,7 +80,6 @@ import net.minecraft.client.render.entity.model.SquidEntityModel;
 import net.minecraft.client.render.entity.model.StriderEntityModel;
 import net.minecraft.client.render.entity.model.VillagerResemblingModel;
 import net.minecraft.client.render.entity.model.WolfEntityModel;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.PlayerSkinTexture;
@@ -103,7 +114,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -126,7 +136,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
@@ -177,6 +196,8 @@ public class Radar implements IRadar {
     private NativeImageBackedTexture nativeBackedTexture = new NativeImageBackedTexture(2, 2, false);
     private final Identifier nativeBackedTextureLocation = new Identifier("voxelmap", "tempimage");
     private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
+
+    private static final HashMap<EnumMobs, BufferedImage> entityIconMap = new HashMap<>();
 
     private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
@@ -1002,6 +1023,10 @@ public class Radar implements IRadar {
         BufferedImage headImage = null;
         EntityModel model = null;
         if (render instanceof LivingEntityRenderer) {
+            if (entityIconMap.containsKey(contact.type)) {
+                return entityIconMap.get(contact.type);
+            }
+
             try {
                 model = ((LivingEntityRenderer) render).getModel();
                 ArrayList<Field> submodels = ReflectionUtils.getFieldsByType(model, Model.class, ModelPart.class);
@@ -1257,6 +1282,7 @@ public class Radar implements IRadar {
             headImage = this.trimAndOutlineImage(contact, headImage, true, model != null && model instanceof BipedEntityModel);
         }
 
+        entityIconMap.put(contact.type, headImage);
         return headImage;
     }
 

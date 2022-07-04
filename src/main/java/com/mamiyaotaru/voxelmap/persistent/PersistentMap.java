@@ -469,7 +469,6 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                     color24 = 0;
                 }
 
-                return MapUtils.doSlimeAndGrid(color24, mcX, mcZ);
             } else {
                 boolean solid = false;
                 int blockStateID = 0;
@@ -623,8 +622,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                     color24 = ColorUtils.colorAdder(bc, color24);
                 }
 
-                return MapUtils.doSlimeAndGrid(color24, mcX, mcZ);
             }
+            return MapUtils.doSlimeAndGrid(color24, mcX, mcZ);
         } else {
             return 0;
         }
