@@ -187,7 +187,6 @@ public class Radar implements IRadar {
     private Field modelDataField = null;
     private Method getEntityMethod = null;
     private boolean lastOutlines = true;
-    UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
     private SkullEntityModel playerSkullModel;
     private BipedEntityModel bipedArmorModel;
     private SkeletonEntityModel strayOverlayModel;
@@ -1854,7 +1853,7 @@ public class Radar implements IRadar {
                         this.newMobs = false;
                     }
 
-                    if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
+                    if (contact.uuid != null) {
                         Sprite icon = this.textureAtlas.getAtlasSprite("glow");
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
@@ -1940,7 +1939,7 @@ public class Radar implements IRadar {
                             GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
                         }
-                    } else if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
+                    } else if (contact.uuid != null) {
                         Sprite icon = this.textureAtlas.getAtlasSprite("crown");
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
