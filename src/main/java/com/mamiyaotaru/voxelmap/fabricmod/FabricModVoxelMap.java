@@ -49,7 +49,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
             this.lateInit();
         }
 
-        this.master.onTickInGame(matrixStack, MinecraftClient.getInstance());
+        try {
+            this.master.onTickInGame(matrixStack, MinecraftClient.getInstance());
+        } catch (Exception ignore) {}
     }
 
     public boolean onChat(Text chat) {

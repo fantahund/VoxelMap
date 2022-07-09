@@ -64,7 +64,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             this.renderHeader(matrixStack, leftEdge, topOfListYPos, tessellator);
         }
 
-        this.renderList(matrixStack, leftEdge, topOfListYPos, mouseX, mouseY, partialTicks);
+        this.renderList(matrixStack, mouseX, mouseY, partialTicks);
         GLShim.glDisable(2929);
         byte topBottomFadeHeight = 4;
         if (this.showTopBottomBG) {

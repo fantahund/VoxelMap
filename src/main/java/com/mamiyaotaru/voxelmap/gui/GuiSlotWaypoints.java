@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
@@ -53,7 +54,8 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     public void setSelected(WaypointItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof WaypointItem) {
-            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
+            NarratorManager narratorManager = new NarratorManager(MinecraftClient.getInstance());
+            narratorManager.narrate((Text.translatable("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
         }
 
         this.parentGui.setSelectedWaypoint(item.waypoint);

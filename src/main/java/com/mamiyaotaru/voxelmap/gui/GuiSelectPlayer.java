@@ -96,10 +96,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
             if (par1) {
                 String combined = this.message.getText() + " " + this.locInfo;
                 if (combined.length() > 100) {
-                    this.client.player.sendChatMessage(this.message.getText());
-                    this.client.player.sendChatMessage(this.locInfo);
+                    this.client.player.sendChatMessage(this.message.getText(), null);
+                    this.client.player.sendChatMessage(this.locInfo, null);
                 } else {
-                    this.client.player.sendChatMessage(combined);
+                    this.client.player.sendChatMessage(combined, null);
                 }
 
                 this.getMinecraft().setScreen(this.parentScreen);

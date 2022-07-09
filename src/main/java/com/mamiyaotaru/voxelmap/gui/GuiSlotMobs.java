@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
@@ -70,7 +71,8 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public void setSelected(MobItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof MobItem) {
-            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
+            NarratorManager narratorManager = new NarratorManager(MinecraftClient.getInstance());
+            narratorManager.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 
         this.parentGui.setSelectedMob(item.id);

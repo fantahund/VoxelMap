@@ -50,7 +50,8 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     public void setSelected(DimensionItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof DimensionItem) {
-            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
+            NarratorManager narratorManager = new NarratorManager(MinecraftClient.getInstance());
+            narratorManager.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
         }
 
         this.parentGui.setSelectedDimension(item.dim);
