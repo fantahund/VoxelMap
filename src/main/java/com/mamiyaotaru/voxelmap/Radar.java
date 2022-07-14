@@ -1022,7 +1022,7 @@ public class Radar implements IRadar {
         BufferedImage headImage = null;
         EntityModel model = null;
         if (render instanceof LivingEntityRenderer) {
-            if (entityIconMap.containsKey(contact.type)) {
+            if (contact.type != EnumMobs.PLAYER && entityIconMap.containsKey(contact.type)) {
                 return entityIconMap.get(contact.type);
             }
 
@@ -1948,16 +1948,15 @@ public class Radar implements IRadar {
                     }
 
                     if (contact.name != null && (this.options.showPlayerNames && contact.type == EnumMobs.PLAYER || this.options.showMobNames && contact.type != EnumMobs.PLAYER)) {
-                        if (contact.entity.hasCustomName() || contact.type == EnumMobs.PLAYER) {
-                            float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
-                            matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
-                            RenderSystem.applyModelViewMatrix();
 
-                            String name = contact.entity.getDisplayName().getString();
-                            int m = this.fontRenderer.getWidth(name) / 2;
+                        float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
+                        matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        RenderSystem.applyModelViewMatrix();
 
-                            this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
-                        }
+                        String name = contact.entity.getDisplayName().getString();
+                        int m = this.fontRenderer.getWidth(name) / 2;
+
+                        this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
                     }
                 } catch (Exception e) {
                     System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);

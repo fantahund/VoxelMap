@@ -11,7 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class GuiRadarOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptionsFull = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWPLAYERNAMES, EnumOptionsMinimap.SHOWPLAYERHELMETS, EnumOptionsMinimap.SHOWMOBHELMETS, EnumOptionsMinimap.RADARFILTERING, EnumOptionsMinimap.RADAROUTLINES};
+    private static final EnumOptionsMinimap[] relevantOptionsFull = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWPLAYERNAMES, EnumOptionsMinimap.SHOWMOBNAMES, EnumOptionsMinimap.SHOWPLAYERHELMETS, EnumOptionsMinimap.SHOWMOBHELMETS, EnumOptionsMinimap.RADARFILTERING, EnumOptionsMinimap.RADAROUTLINES};
     private static final EnumOptionsMinimap[] relevantOptionsSimple = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWFACING};
     private final Screen parent;
     private final RadarSettingsManager options;
@@ -50,7 +50,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
                     button.active = button.active && (this.options.radarAllowed || this.options.radarPlayersAllowed);
                 } else if (!button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWNEUTRALS) && !button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWHOSTILES)) {
                     if (!button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWPLAYERHELMETS) && !button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWPLAYERNAMES)) {
-                        if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWMOBHELMETS)) {
+                        if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWMOBHELMETS) && !button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWMOBNAMES)) {
                             button.active = button.active && (this.options.showNeutrals || this.options.showHostiles) && (this.options.radarAllowed || this.options.radarMobsAllowed);
                         }
                     } else {
@@ -87,7 +87,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
                         button.active = button.active && (this.options.radarAllowed || this.options.radarPlayersAllowed);
                     } else if (!button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWNEUTRALS) && !button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWHOSTILES)) {
                         if (!button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWPLAYERHELMETS) && !button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWPLAYERNAMES)) {
-                            if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWMOBHELMETS)) {
+                            if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWMOBHELMETS) && !button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWMOBNAMES)) {
                                 button.active = button.active && (this.options.showNeutrals || this.options.showHostiles) && (this.options.radarAllowed || this.options.radarMobsAllowed);
                             }
                         } else {

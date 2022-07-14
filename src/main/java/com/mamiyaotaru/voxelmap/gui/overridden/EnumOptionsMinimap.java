@@ -29,6 +29,7 @@ public enum EnumOptionsMinimap {
     SHOWPLAYERHELMETS("options.minimap.radar.showplayerhelmets", false, true, false),
     SHOWMOBHELMETS("options.minimap.radar.showmobhelmets", false, true, false),
     SHOWPLAYERNAMES("options.minimap.radar.showplayernames", false, true, false),
+    SHOWMOBNAMES("options.minimap.radar.showmobnames", false, true, false),
     RADAROUTLINES("options.minimap.radar.iconoutlines", false, true, false),
     RADARFILTERING("options.minimap.radar.iconfiltering", false, true, false),
     SHOWFACING("options.minimap.radar.showfacing", false, true, false),

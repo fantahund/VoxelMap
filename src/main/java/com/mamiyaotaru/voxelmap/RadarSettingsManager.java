@@ -67,6 +67,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     this.showHelmetsMobs = Boolean.parseBoolean(curLine[1]);
                 } else if (curLine[0].equals("Show Player Names")) {
                     this.showPlayerNames = Boolean.parseBoolean(curLine[1]);
+                } else if (curLine[0].equals("Show Mob Names")) {
+                    this.showMobNames = Boolean.parseBoolean(curLine[1]);
                 } else if (curLine[0].equals("Font Scale")) {
                     this.fontScale = Float.parseFloat(curLine[1]);
                 } else if (curLine[0].equals("Show Facing")) {
@@ -114,6 +116,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Show Player Helmets:" + Boolean.toString(this.showHelmetsPlayers));
         out.println("Show Mob Helmets:" + Boolean.toString(this.showHelmetsMobs));
         out.println("Show Player Names:" + Boolean.toString(this.showPlayerNames));
+        out.println("Show Mob Names:" + Boolean.toString(this.showMobNames));
         out.println("Font Scale:" + Float.toString(this.fontScale));
         out.println("Show Facing:" + Boolean.toString(this.showFacing));
         out.print("Hidden Mobs:");
@@ -162,6 +165,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
                 return this.showHelmetsMobs;
             case SHOWPLAYERNAMES:
                 return this.showPlayerNames;
+            case SHOWMOBNAMES:
+                return this.showMobNames;
             case RADAROUTLINES:
                 return this.outlines;
             case RADARFILTERING:
@@ -212,6 +217,9 @@ public class RadarSettingsManager implements ISubSettingsManager {
                 break;
             case SHOWPLAYERNAMES:
                 this.showPlayerNames = !this.showPlayerNames;
+                break;
+            case SHOWMOBNAMES:
+                this.showMobNames = !this.showMobNames;
                 break;
             case RADAROUTLINES:
                 this.outlines = !this.outlines;
