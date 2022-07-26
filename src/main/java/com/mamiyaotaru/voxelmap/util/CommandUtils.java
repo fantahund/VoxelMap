@@ -77,7 +77,7 @@ public class CommandUtils {
                 finalTextComponent.append(textComponent);
             }
 
-            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), MessageIndicator.Icon.CHAT_MODIFIED, null, "ModifiedbyVoxelMap"));
+            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
             return false;
         }
     }
