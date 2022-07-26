@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
@@ -54,15 +55,15 @@ public class FabricModVoxelMap implements ClientModInitializer {
         } catch (Exception ignore) {}
     }
 
-    public boolean onChat(Text chat) {
-        return CommandUtils.checkForWaypoints(chat);
+    public boolean onChat(Text chat, MessageIndicator indicator) {
+        return CommandUtils.checkForWaypoints(chat, indicator);
     }
 
     public boolean onSendChatMessage(String message) {
-        if (message.startsWith("/newWaypoint")) {
+        if (message.startsWith("newWaypoint")) {
             CommandUtils.waypointClicked(message);
             return false;
-        } else if (message.startsWith("/ztp")) {
+        } else if (message.startsWith("ztp")) {
             CommandUtils.teleport(message);
             return false;
         } else {

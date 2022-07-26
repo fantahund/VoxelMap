@@ -2,11 +2,11 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
-import com.mamiyaotaru.voxelmap.gui.IGuiWaypoints;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.ClickEvent;
@@ -21,6 +21,7 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeSet;
@@ -35,7 +36,12 @@ public class CommandUtils {
     private static Random generator = new Random();
     public static Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", 2);
 
-    public static boolean checkForWaypoints(Text chat) {
+    public static boolean checkForWaypoints(Text chat, MessageIndicator indicator) {
+        if (indicator != null && indicator.loggedName() != null && indicator.loggedName().equals("ModifiedbyVoxelMap")) {
+            return true;
+        }
+
+
         String message = chat.getString();
         ArrayList<String> waypointStrings = getWaypointStrings(message);
         if (waypointStrings.size() <= 0) {
@@ -71,7 +77,7 @@ public class CommandUtils {
                 finalTextComponent.append(textComponent);
             }
 
-            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(finalTextComponent);
+            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), MessageIndicator.Icon.CHAT_MODIFIED, null, "ModifiedbyVoxelMap"));
             return false;
         }
     }
