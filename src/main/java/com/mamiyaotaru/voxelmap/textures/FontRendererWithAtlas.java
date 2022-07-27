@@ -54,7 +54,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
     private BufferBuilder vertexBuffer;
 
     public FontRendererWithAtlas(TextureManager renderEngine, Identifier locationFontTexture) {
-        super(identifierx -> (FontStorage) Util.make(new FontStorage(renderEngine, locationFontTexture), fontStorage -> fontStorage.setFonts(Lists.newArrayList(new Font[]{new BlankFont()}))));
+        super(identifierx -> Util.make(new FontStorage(renderEngine, locationFontTexture), fontStorage -> fontStorage.setFonts(Lists.newArrayList(new Font[]{new BlankFont()}))), true);
         this.locationFontTexture = locationFontTexture;
         this.renderEngine = renderEngine;
         renderEngine.bindTexture(this.locationFontTexture);
