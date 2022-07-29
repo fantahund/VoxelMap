@@ -1939,7 +1939,7 @@ public class Radar implements IRadar {
                             GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
                         }
-                    } else if (contact.uuid != null) {
+                    } else if (contact.uuid != null && contact.uuid.equals(UUID.fromString("677f5375-2034-40f6-8fb6-389dd81ad0cb"))) { //UUID from fantahund :>
                         Sprite icon = this.textureAtlas.getAtlasSprite("crown");
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
