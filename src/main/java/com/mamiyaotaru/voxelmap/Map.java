@@ -2113,7 +2113,7 @@ public class Map implements Runnable, IMap {
 
     private void drawWelcomeScreen(MatrixStack matrixStack, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
-            String zmodver = "v1.10.18";
+            String zmodver = "v1.11.10";
             this.welcomeText[0] = (Text.literal("")).append((Text.literal("VoxelMap! ")).formatted(Formatting.RED)).append(zmodver + " ").append(Text.translatable("minimap.ui.welcome1"));
             this.welcomeText[1] = Text.translatable("minimap.ui.welcome2");
             this.welcomeText[2] = Text.translatable("minimap.ui.welcome3");

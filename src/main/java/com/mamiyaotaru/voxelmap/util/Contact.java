@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -20,8 +21,7 @@ public class Contact {
     public UUID uuid = null;
     public String name = "_";
     public int rotationFactor = 0;
-    public String skinURL = "";
-    public Entity entity = null;
+    public Entity entity;
     public Sprite icon = null;
     public Sprite armorIcon = null;
     public int armorColor = -1;
