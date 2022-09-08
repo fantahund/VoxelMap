@@ -100,9 +100,8 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
     public boolean handleCustomPayload(CustomPayloadS2CPacket packet) {
         if (packet != null && packet.getChannel() != null) {
-            String channel = packet.getChannel().getPath();
             PacketByteBuf buffer = packet.getData();
-            if (channel.equals("world_info") || channel.equals("world_id")) {
+            if (packet.getChannel().toString().equals("worldinfo:world_id")) {
                 buffer.readByte(); // skip first byte
                 if (buffer.readByte() != 42) {
                     VoxelMap.getLogger().warn("Received possibly corrupted world_id packet");
