@@ -103,7 +103,11 @@ public class FabricModVoxelMap implements ClientModInitializer {
             String channel = packet.getChannel().getPath();
             PacketByteBuf buffer = packet.getData();
             if (channel.equals("world_info") || channel.equals("world_id")) {
-                buffer.readByte();
+                buffer.readByte(); // skip first byte
+                if (buffer.readByte() != 42) {
+                    VoxelMap.getLogger().warn("Received possibly corrupted world_id packet");
+                    return true;
+                }
                 byte length = buffer.readByte();
                 byte[] bytes = new byte[length];
                 buffer.readBytes(bytes);
