@@ -156,11 +156,11 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                 PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
                 buffer.writeBytes(channelList.toString().getBytes(Charsets.UTF_8));
                 mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
-                ByteBuf wIdRequestBuf = Unpooled.buffer(4);
-                wIdRequestBuf.writeInt(42); // legacy world_id
-                // wIdRequestBuf.writeByte(0);   // new world_id
-                // wIdRequestBuf.writeByte(42);  // new world_id
-                // wIdRequestBuf.writeByte(0);   // new world_id
+                ByteBuf wIdRequestBuf = Unpooled.buffer(3);
+                // send "new" world_id packet
+                wIdRequestBuf.writeByte(0);
+                wIdRequestBuf.writeByte(42);
+                wIdRequestBuf.writeByte(0);
                 mc.player.networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
                 mc.player.getSkinTexture();
                 java.util.Map skinMap = mc.getSkinProvider().getTextures(mc.player.getGameProfile());
