@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.google.common.base.Charsets;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
@@ -23,6 +22,7 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -151,10 +151,10 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
             this.persistentMap.newWorld(this.world);
             if (this.world != null) {
                 MapUtils.reset();
-                StringBuilder channelList = new StringBuilder();
-                channelList.append("worldinfo:world_id");
                 PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-                buffer.writeBytes(channelList.toString().getBytes(Charsets.UTF_8));
+                buffer.writeBytes("worldinfo:world_id".getBytes(StandardCharsets.UTF_8));
+                buffer.writeByte(0);
+                buffer.writeBytes("voxelmap:settings".getBytes(StandardCharsets.UTF_8));
                 mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
                 ByteBuf wIdRequestBuf = Unpooled.buffer(3);
                 // send "new" world_id packet
