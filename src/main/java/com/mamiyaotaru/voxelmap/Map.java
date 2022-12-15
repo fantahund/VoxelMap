@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
+import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
@@ -181,18 +182,18 @@ public class Map implements Runnable, IMap {
         this.colorManager = master.getColorManager();
         this.waypointManager = master.getWaypointManager();
         this.layoutVariables = new LayoutVariables();
-        ArrayList tempBindings = new ArrayList();
+        ArrayList<KeyBinding> tempBindings = new ArrayList<>();
         tempBindings.addAll(Arrays.asList(this.game.options.allKeys));
         tempBindings.addAll(Arrays.asList(this.options.keyBindings));
         Field f = ReflectionUtils.getFieldByType(this.game.options, GameOptions.class, KeyBinding[].class, 1);
 
         try {
-            f.set(this.game.options, tempBindings.toArray(new KeyBinding[tempBindings.size()]));
+            f.set(this.game.options, tempBindings.toArray(new KeyBinding[0]));
         } catch (IllegalArgumentException | IllegalAccessException var7) {
             var7.printStackTrace();
         }
 
-        java.util.Map categoryOrder = (java.util.Map) ReflectionUtils.getPrivateFieldValueByType((Object) null, KeyBinding.class, java.util.Map.class, 2);
+        java.util.Map categoryOrder = (java.util.Map) ReflectionUtils.getPrivateFieldValueByType(null, KeyBinding.class, java.util.Map.class, 2);
         System.out.println("CATEGORY ORDER IS " + categoryOrder.size());
         Integer categoryPlace = (Integer) categoryOrder.get("controls.minimap.title");
         if (categoryPlace == null) {
@@ -365,7 +366,7 @@ public class Map implements Runnable, IMap {
                 b = this.generator.nextFloat();
             }
 
-            TreeSet dimensions = new TreeSet();
+            TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(this.game.world));
             double dimensionScale = this.game.player.world.getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
@@ -535,7 +536,7 @@ public class Map implements Runnable, IMap {
 
                     for (int i = 0; i < this.lightmapColors.length; ++i) {
                         int index = i * 4;
-                        this.lightmapColors[i] = (byteBuffer.get(index + 3) << 24) + (byteBuffer.get(index) << 16) + (byteBuffer.get(index + 1) << 8) + (byteBuffer.get(index + 2) << 0);
+                        this.lightmapColors[i] = (byteBuffer.get(index + 3) << 24) + (byteBuffer.get(index) << 16) + (byteBuffer.get(index + 1) << 8) + (byteBuffer.get(index + 2));
                     }
 
                     if (this.lightmapColors[255] != 0) {
@@ -1533,7 +1534,7 @@ public class Map implements Runnable, IMap {
             int alpha = color24 >> 24 & 0xFF;
             int r = color24 >> 16 & 0xFF;
             int g = color24 >> 8 & 0xFF;
-            int b = color24 >> 0 & 0xFF;
+            int b = color24 & 0xFF;
             if (sc > 0.0) {
                 r += (int) (sc * (double) (255 - r));
                 g += (int) (sc * (double) (255 - g));

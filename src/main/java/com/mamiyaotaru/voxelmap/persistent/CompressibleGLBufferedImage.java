@@ -121,7 +121,7 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         synchronized (this.bufferLock) {
             int alpha = color24 >> 24 & 0xFF;
             this.bytes[index] = -1;
-            this.bytes[index + 1] = (byte) ((color24 >> 0 & 0xFF) * alpha / 255);
+            this.bytes[index + 1] = (byte) ((color24 & 0xFF) * alpha / 255);
             this.bytes[index + 2] = (byte) ((color24 >> 8 & 0xFF) * alpha / 255);
             this.bytes[index + 3] = (byte) ((color24 >> 16 & 0xFF) * alpha / 255);
         }

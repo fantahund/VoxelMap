@@ -1785,7 +1785,7 @@ public class Radar implements IRadar {
                         if (contact.armorColor != -1) {
                             red = (float) (contact.armorColor >> 16 & 0xFF) / 255.0F;
                             green = (float) (contact.armorColor >> 8 & 0xFF) / 255.0F;
-                            blue = (float) (contact.armorColor >> 0 & 0xFF) / 255.0F;
+                            blue = (float) (contact.armorColor & 0xFF) / 255.0F;
                             if (contact.type == EnumMobs.SHEEP) {
                                 SheepEntity sheepEntity = (SheepEntity) contact.entity;
                                 if (sheepEntity.hasCustomName() && "jeb_".equals(sheepEntity.getName().getString())) {

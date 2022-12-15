@@ -63,7 +63,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             int var6 = (colorCodeIndex >> 3 & 1) * 85;
             int red = (colorCodeIndex >> 2 & 1) * 170 + var6;
             int green = (colorCodeIndex >> 1 & 1) * 170 + var6;
-            int blue = (colorCodeIndex >> 0 & 1) * 170 + var6;
+            int blue = (colorCodeIndex & 1) * 170 + var6;
             if (colorCodeIndex == 6) {
                 red += 85;
             }

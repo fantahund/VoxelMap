@@ -4,7 +4,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public abstract class AbstractNotifyingRunnable implements Runnable {
-    private final Set<IThreadCompleteListener> listeners = new CopyOnWriteArraySet();
+    private final Set<IThreadCompleteListener> listeners = new CopyOnWriteArraySet<>();
 
     public final void addListener(IThreadCompleteListener listener) {
         this.listeners.add(listener);

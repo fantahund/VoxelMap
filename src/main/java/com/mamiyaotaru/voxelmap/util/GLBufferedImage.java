@@ -69,7 +69,7 @@ public class GLBufferedImage extends BufferedImage implements IGLBufferedImage {
         int index = (x + y * this.getWidth()) * 4;
         synchronized (this.bufferLock) {
             this.bytes[index] = (byte) (color24 >> 24);
-            this.bytes[index + 1] = (byte) (color24 >> 0);
+            this.bytes[index + 1] = (byte) (color24);
             this.bytes[index + 2] = (byte) (color24 >> 8);
             this.bytes[index + 3] = (byte) (color24 >> 16);
         }

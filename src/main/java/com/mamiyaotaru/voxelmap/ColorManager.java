@@ -853,7 +853,7 @@ public class ColorManager implements IColorManager {
         int alpha = color >> 24 & 0xFF;
         int red = color >> 16 & 0xFF;
         int green = color >> 8 & 0xFF;
-        int blue = color >> 0 & 0xFF;
+        int blue = color & 0xFF;
         if (block instanceof AbstractSignBlock) {
             alpha = 31;
         } else if (block instanceof DoorBlock) {
@@ -1084,7 +1084,7 @@ public class ColorManager implements IColorManager {
         if (this.renderPassThreeBlendMode.equals("color") || this.renderPassThreeBlendMode.equals("overlay")) {
             int red = rgb >> 16 & 0xFF;
             int green = rgb >> 8 & 0xFF;
-            int blue = rgb >> 0 & 0xFF;
+            int blue = rgb & 0xFF;
             float colorAverage = (float) (red + blue + green) / 3.0F;
             float lighteningFactor = (colorAverage - 127.5F) * 2.0F;
             red += (int) ((float) red * (lighteningFactor / 255.0F));

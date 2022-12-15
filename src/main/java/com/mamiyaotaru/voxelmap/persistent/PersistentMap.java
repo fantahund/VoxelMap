@@ -726,7 +726,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 int alpha = color24 >> 24 & 0xFF;
                 int r = color24 >> 16 & 0xFF;
                 int g = color24 >> 8 & 0xFF;
-                int b = color24 >> 0 & 0xFF;
+                int b = color24 & 0xFF;
                 if (sc > 0.0) {
                     r += (int) (sc * (double) (255 - r));
                     g += (int) (sc * (double) (255 - g));

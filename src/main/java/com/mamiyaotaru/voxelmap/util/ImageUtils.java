@@ -408,8 +408,8 @@ public class ImageUtils {
                         } else {
                             int red = newColor >> 16 & 0xFF;
                             int green = newColor >> 8 & 0xFF;
-                            int blue = newColor >> 0 & 0xFF;
-                            newColor = 0 | (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
+                            int blue = newColor & 0xFF;
+                            newColor = (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
                         }
 
                         temp.setRGB(t, s, newColor);
@@ -605,7 +605,7 @@ public class ImageUtils {
                 rx = (int) ((float) rx * r);
                 gx = (int) ((float) gx * g);
                 bx = (int) ((float) bx * b);
-                temp.setRGB(x, y, ax << 24 | rx << 16 | gx << 8 | bx << 0);
+                temp.setRGB(x, y, ax << 24 | rx << 16 | gx << 8 | bx);
             }
         }
 

@@ -72,7 +72,7 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
     public void setRGB(int x, int y, int color24) {
         int alpha = color24 >> 24 & 0xFF;
         byte a = -1;
-        byte r = (byte) ((color24 >> 0 & 0xFF) * alpha / 255);
+        byte r = (byte) ((color24 & 0xFF) * alpha / 255);
         byte g = (byte) ((color24 >> 8 & 0xFF) * alpha / 255);
         byte b = (byte) ((color24 >> 16 & 0xFF) * alpha / 255);
         int color = (a & 255) << 24 | (r & 255) << 16 | (g & 255) << 8 | b & 255;

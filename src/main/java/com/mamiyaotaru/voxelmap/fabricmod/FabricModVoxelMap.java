@@ -133,26 +133,20 @@ public class FabricModVoxelMap implements ClientModInitializer {
                     String setting = entry.getKey();
                     Object value = entry.getValue();
                     switch (setting) {
-                        case "worldName":
+                        case "worldName" -> {
                             if (value != null) {
                                 this.master.newSubWorldName((String) value, true);
                             }
-                            break;
-                        case "radarAllowed":
-                            this.master.getRadarOptions().radarAllowed = ((Boolean) value).booleanValue();
-                            break;
-                        case "radarMobsAllowed":
-                            this.master.getRadarOptions().radarMobsAllowed = ((Boolean) value).booleanValue();
-                            break;
-                        case "radarPlayersAllowed":
-                            this.master.getRadarOptions().radarPlayersAllowed = ((Boolean) value).booleanValue();
-                            break;
-                        case "cavesAllowed":
-                            this.master.getMapOptions().cavesAllowed = ((Boolean) value).booleanValue();
-                            break;
-                        default:
-                            VoxelMap.getLogger().warn("Unknown configuration option " + setting);
-                            break;
+                        }
+                        case "radarAllowed" ->
+                                this.master.getRadarOptions().radarAllowed = (Boolean) value;
+                        case "radarMobsAllowed" ->
+                                this.master.getRadarOptions().radarMobsAllowed = (Boolean) value;
+                        case "radarPlayersAllowed" ->
+                                this.master.getRadarOptions().radarPlayersAllowed = (Boolean) value;
+                        case "cavesAllowed" ->
+                                this.master.getMapOptions().cavesAllowed = (Boolean) value;
+                        default -> VoxelMap.getLogger().warn("Unknown configuration option " + setting);
                     }
                 }
                 return true;

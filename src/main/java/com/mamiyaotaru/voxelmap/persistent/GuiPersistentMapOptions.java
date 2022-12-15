@@ -28,8 +28,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWWAYPOINTS, EnumOptionsMinimap.SHOWWAYPOINTNAMES};
         int var2 = 0;
 
-        for (int t = 0; t < relevantOptions.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions[t];
+        for (EnumOptionsMinimap option : relevantOptions) {
             this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
             ++var2;
         }
@@ -37,17 +36,15 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         relevantOptions2 = new EnumOptionsMinimap[]{EnumOptionsMinimap.MINZOOM, EnumOptionsMinimap.MAXZOOM, EnumOptionsMinimap.CACHESIZE};
         var2 += 2;
 
-        for (int t = 0; t < relevantOptions2.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions2[t];
+        for (EnumOptionsMinimap option : relevantOptions2) {
             if (option.isFloat()) {
                 float sValue = this.options.getOptionFloatValue(option);
-                float fValue = 0.0F;
 
                 this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, switch (option) {
-                    case MINZOOM -> (sValue - -3.0F) / (float) (5 - -3);
-                    case MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
+                    case MINZOOM, MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
                     case CACHESIZE -> sValue / 5000.0F;
-                    default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
+                    default ->
+                            throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 }, this.options));
             } else {
                 this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
@@ -75,8 +72,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
 
         for (Object buttonObj : this.getButtonList()) {
-            if (buttonObj instanceof GuiOptionButtonMinimap) {
-                GuiOptionButtonMinimap button = (GuiOptionButtonMinimap) buttonObj;
+            if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWWAYPOINTNAMES)) {
                     button.active = this.options.showWaypoints;
                 }
@@ -87,15 +83,13 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     public void render(MatrixStack matrixStack, int par1, int par2, float par3) {
         for (Object buttonObj : this.getButtonList()) {
-            if (buttonObj instanceof GuiOptionSliderMinimap) {
-                GuiOptionSliderMinimap slider = (GuiOptionSliderMinimap) buttonObj;
+            if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
                 float sValue = this.options.getOptionFloatValue(option);
                 float fValue = 0.0F;
 
                 fValue = switch (option) {
-                    case MINZOOM -> (sValue - -3.0F) / (float) (5 - -3);
-                    case MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
+                    case MINZOOM, MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
                     case CACHESIZE -> sValue / 5000.0F;
                     default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 };
