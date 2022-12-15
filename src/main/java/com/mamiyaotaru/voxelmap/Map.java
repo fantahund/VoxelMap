@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
-import com.mamiyaotaru.voxelmap.gui.IGuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
@@ -81,7 +80,6 @@ import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -99,7 +97,6 @@ public class Map implements Runnable, IMap {
     private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
     private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
     private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
-    LiveScaledGLBufferedImage roundImage = new LiveScaledGLBufferedImage(128, 128, 6);
     private final IVoxelMap master;
     private MinecraftClient game;
     private ClientWorld world = null;
@@ -121,8 +118,6 @@ public class Map implements Runnable, IMap {
     private final MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
     private BlockState transparentBlockState;
     private BlockState surfaceBlockState;
-    private BlockState seafloorBlockState;
-    private BlockState foliageBlockState;
     private boolean imageChanged = true;
     private NativeImageBackedTexture lightmapTexture = null;
     private boolean needLightmapRefresh = true;
@@ -141,12 +136,8 @@ public class Map implements Runnable, IMap {
     private final Random generator = new Random();
     private boolean showWelcomeScreen;
     private Screen lastGuiScreen = null;
-    private boolean enabled = true;
     private boolean fullscreenMap = false;
-    private boolean active = false;
     private int zoom;
-    private int mapX = 37;
-    private int mapY = 37;
     private int scWidth;
     private int scHeight;
     private String error = "";
@@ -165,7 +156,6 @@ public class Map implements Runnable, IMap {
     private float direction = 0.0F;
     private float percentX;
     private float percentY;
-    private String subworldName = "";
     private int northRotate = 0;
     private Thread zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
     private int zCalcTicker = 0;
@@ -264,7 +254,8 @@ public class Map implements Runnable, IMap {
                     }
                 }
 
-                for (this.active = true; this.game.player != null && this.world != null && this.active; this.active = false) {
+                boolean active;
+                for (active = true; this.game.player != null && this.world != null && active; active = false) {
                     if (!this.options.hide) {
                         try {
                             this.mapCalc(this.doFullRender);
@@ -304,12 +295,12 @@ public class Map implements Runnable, IMap {
 
     @Override
     public void newWorldName() {
-        this.subworldName = this.waypointManager.getCurrentSubworldDescriptor(true);
+        String subworldName = this.waypointManager.getCurrentSubworldDescriptor(true);
         StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18nUtils.getString("worldmap.multiworld.newworld")).append(":").append(" ");
-        if (this.subworldName.equals("") && this.waypointManager.isMultiworld()) {
+        if (subworldName.equals("") && this.waypointManager.isMultiworld()) {
             subworldNameBuilder.append("???");
-        } else if (!this.subworldName.equals("")) {
-            subworldNameBuilder.append(this.subworldName);
+        } else if (!subworldName.equals("")) {
+            subworldNameBuilder.append(subworldName);
         }
 
         this.error = subworldNameBuilder.toString();
@@ -444,10 +435,11 @@ public class Map implements Runnable, IMap {
             this.doFullRender = false;
         }
 
+        boolean enabled = true;
         if (!mc.options.hudHidden && (this.options.showUnderMenus || this.game.currentScreen == null) && !this.game.options.debugEnabled) {
-            this.enabled = true;
+            enabled = true;
         } else {
-            this.enabled = false;
+            enabled = false;
         }
 
         this.direction = GameVariableAccessShim.rotationYaw() + 180.0F;
@@ -472,7 +464,7 @@ public class Map implements Runnable, IMap {
             this.error = "";
         }
 
-        if (this.enabled) {
+        if (enabled) {
             this.drawMinimap(matrixStack, mc);
         }
 
@@ -675,16 +667,18 @@ public class Map implements Runnable, IMap {
         modelViewMatrixStack.translate(0.0, 0.0, -2000.0);
         RenderSystem.applyModelViewMatrix();
         DiffuseLighting.enableGuiDepthLighting();
+        int mapX = 37;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
-            this.mapX = this.scWidth - 37;
+            mapX = this.scWidth - 37;
         } else {
-            this.mapX = 37;
+            mapX = 37;
         }
 
+        int mapY = 37;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 1) {
-            this.mapY = this.scHeight - 37;
+            mapY = this.scHeight - 37;
         } else {
-            this.mapY = 37;
+            mapY = 37;
         }
 
         if (this.options.mapCorner == 1 && this.game.player.getStatusEffects().size() > 0) {
@@ -702,7 +696,7 @@ public class Map implements Runnable, IMap {
 
             int scHeight = this.game.getWindow().getScaledHeight();
             float resFactor = (float) this.scHeight / (float) scHeight;
-            this.mapY += (int) (statusIconOffset * resFactor);
+            mapY += (int) (statusIconOffset * resFactor);
         }
 
         GLShim.glEnable(3042);
@@ -713,29 +707,29 @@ public class Map implements Runnable, IMap {
             if (this.fullscreenMap) {
                 this.renderMapFull(modelViewMatrixStack, this.scWidth, this.scHeight);
             } else {
-                this.renderMap(modelViewMatrixStack, this.mapX, this.mapY, scScale);
+                this.renderMap(modelViewMatrixStack, mapX, mapY, scScale);
             }
 
             GLShim.glDisable(2929);
             if (this.master.getRadar() != null && !this.fullscreenMap) {
-                this.layoutVariables.updateVars(scScale, this.mapX, this.mapY, this.zoomScale, this.zoomScaleAdjusted);
+                this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
                 this.master.getRadar().onTickInGame(modelViewMatrixStack, mc, this.layoutVariables);
             }
 
             if (!this.fullscreenMap) {
-                this.drawDirections(matrixStack, this.mapX, this.mapY);
+                this.drawDirections(matrixStack, mapX, mapY);
             }
 
             GLShim.glEnable(3042);
             if (this.fullscreenMap) {
                 this.drawArrow(modelViewMatrixStack, this.scWidth / 2, this.scHeight / 2);
             } else {
-                this.drawArrow(modelViewMatrixStack, this.mapX, this.mapY);
+                this.drawArrow(modelViewMatrixStack, mapX, mapY);
             }
         }
 
         if (this.options.coords) {
-            this.showCoords(matrixStack, this.mapX, this.mapY);
+            this.showCoords(matrixStack, mapX, mapY);
         }
 
         GLShim.glDepthMask(true);
@@ -990,8 +984,8 @@ public class Map implements Runnable, IMap {
         int foliageColor = 0;
         this.surfaceBlockState = null;
         this.transparentBlockState = BlockRepository.air.getDefaultState();
-        this.foliageBlockState = BlockRepository.air.getDefaultState();
-        this.seafloorBlockState = BlockRepository.air.getDefaultState();
+        BlockState foliageBlockState = BlockRepository.air.getDefaultState();
+        BlockState seafloorBlockState = BlockRepository.air.getDefaultState();
         boolean surfaceBlockChangeForcedTint = false;
         boolean transparentBlockChangeForcedTint = false;
         boolean foliageBlockChangeForcedTint = false;
@@ -1047,7 +1041,7 @@ public class Map implements Runnable, IMap {
                     }
 
                     while (!hasOpacity && surfaceHeight > 0) {
-                        this.foliageBlockState = this.surfaceBlockState;
+                        foliageBlockState = this.surfaceBlockState;
                         --surfaceHeight;
                         this.surfaceBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                         fluidState = this.surfaceBlockState.getFluidState();
@@ -1067,19 +1061,19 @@ public class Map implements Runnable, IMap {
                     if (surfaceHeight == transparentHeight) {
                         transparentHeight = -1;
                         this.transparentBlockState = BlockRepository.air.getDefaultState();
-                        this.foliageBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
+                        foliageBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                     }
 
-                    if (this.foliageBlockState.getMaterial() == Material.SNOW_LAYER) {
-                        this.surfaceBlockState = this.foliageBlockState;
-                        this.foliageBlockState = BlockRepository.air.getDefaultState();
+                    if (foliageBlockState.getMaterial() == Material.SNOW_LAYER) {
+                        this.surfaceBlockState = foliageBlockState;
+                        foliageBlockState = BlockRepository.air.getDefaultState();
                     }
 
-                    if (this.foliageBlockState == this.transparentBlockState) {
-                        this.foliageBlockState = BlockRepository.air.getDefaultState();
+                    if (foliageBlockState == this.transparentBlockState) {
+                        foliageBlockState = BlockRepository.air.getDefaultState();
                     }
 
-                    if (this.foliageBlockState != null && this.foliageBlockState.getMaterial() != Material.AIR) {
+                    if (foliageBlockState != null && foliageBlockState.getMaterial() != Material.AIR) {
                         foliageHeight = surfaceHeight + 1;
                     } else {
                         foliageHeight = -1;
@@ -1089,23 +1083,23 @@ public class Map implements Runnable, IMap {
                     if (material == Material.WATER || material == Material.ICE) {
                         seafloorHeight = surfaceHeight;
 
-                        for (this.seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); this.seafloorBlockState.getOpacity(world, this.blockPos) < 5 && this.seafloorBlockState.getMaterial() != Material.LEAVES && seafloorHeight > 1; this.seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
-                            material = this.seafloorBlockState.getMaterial();
+                        for (seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, this.blockPos) < 5 && seafloorBlockState.getMaterial() != Material.LEAVES && seafloorHeight > 1; seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                            material = seafloorBlockState.getMaterial();
                             if (transparentHeight == -1 && material != Material.ICE && material != Material.WATER && material.blocksMovement()) {
                                 transparentHeight = seafloorHeight;
-                                this.transparentBlockState = this.seafloorBlockState;
+                                this.transparentBlockState = seafloorBlockState;
                             }
 
-                            if (foliageHeight == -1 && seafloorHeight != transparentHeight && this.transparentBlockState != this.seafloorBlockState && material != Material.ICE && material != Material.WATER && material != Material.AIR && material != Material.BUBBLE_COLUMN) {
+                            if (foliageHeight == -1 && seafloorHeight != transparentHeight && this.transparentBlockState != seafloorBlockState && material != Material.ICE && material != Material.WATER && material != Material.AIR && material != Material.BUBBLE_COLUMN) {
                                 foliageHeight = seafloorHeight;
-                                this.foliageBlockState = this.seafloorBlockState;
+                                foliageBlockState = seafloorBlockState;
                             }
 
                             --seafloorHeight;
                         }
 
-                        if (this.seafloorBlockState.getMaterial() == Material.WATER) {
-                            this.seafloorBlockState = BlockRepository.air.getDefaultState();
+                        if (seafloorBlockState.getMaterial() == Material.WATER) {
+                            seafloorBlockState = BlockRepository.air.getDefaultState();
                         }
                     }
                 } else {
@@ -1114,10 +1108,10 @@ public class Map implements Runnable, IMap {
                     surfaceBlockStateID = BlockRepository.getStateId(this.surfaceBlockState);
                     foliageHeight = surfaceHeight + 1;
                     this.blockPos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
-                    this.foliageBlockState = world.getBlockState(this.blockPos);
-                    Material material = this.foliageBlockState.getMaterial();
+                    foliageBlockState = world.getBlockState(this.blockPos);
+                    Material material = foliageBlockState.getMaterial();
                     if (material != Material.SNOW_LAYER && material != Material.AIR && material != Material.LAVA && material != Material.WATER) {
-                        foliageBlockStateID = BlockRepository.getStateId(this.foliageBlockState);
+                        foliageBlockStateID = BlockRepository.getStateId(foliageBlockState);
                     } else {
                         foliageHeight = -1;
                     }
@@ -1137,19 +1131,19 @@ public class Map implements Runnable, IMap {
                 this.mapData[this.zoom].setTransparentHeight(imageX, imageY, transparentHeight);
                 transparentBlockStateID = BlockRepository.getStateId(this.transparentBlockState);
                 this.mapData[this.zoom].setTransparentBlockstateID(imageX, imageY, transparentBlockStateID);
-                if (this.options.biomes && this.foliageBlockState != this.mapData[this.zoom].getFoliageBlockstate(imageX, imageY)) {
+                if (this.options.biomes && foliageBlockState != this.mapData[this.zoom].getFoliageBlockstate(imageX, imageY)) {
                     foliageBlockChangeForcedTint = true;
                 }
 
                 this.mapData[this.zoom].setFoliageHeight(imageX, imageY, foliageHeight);
-                foliageBlockStateID = BlockRepository.getStateId(this.foliageBlockState);
+                foliageBlockStateID = BlockRepository.getStateId(foliageBlockState);
                 this.mapData[this.zoom].setFoliageBlockstateID(imageX, imageY, foliageBlockStateID);
-                if (this.options.biomes && this.seafloorBlockState != this.mapData[this.zoom].getOceanFloorBlockstate(imageX, imageY)) {
+                if (this.options.biomes && seafloorBlockState != this.mapData[this.zoom].getOceanFloorBlockstate(imageX, imageY)) {
                     seafloorBlockChangeForcedTint = true;
                 }
 
                 this.mapData[this.zoom].setOceanFloorHeight(imageX, imageY, seafloorHeight);
-                seafloorBlockStateID = BlockRepository.getStateId(this.seafloorBlockState);
+                seafloorBlockStateID = BlockRepository.getStateId(seafloorBlockState);
                 this.mapData[this.zoom].setOceanFloorBlockstateID(imageX, imageY, seafloorBlockStateID);
             } else {
                 surfaceHeight = this.mapData[this.zoom].getHeight(imageX, imageY);
@@ -1160,10 +1154,10 @@ public class Map implements Runnable, IMap {
                 this.transparentBlockState = BlockRepository.getStateById(transparentBlockStateID);
                 foliageHeight = this.mapData[this.zoom].getFoliageHeight(imageX, imageY);
                 foliageBlockStateID = this.mapData[this.zoom].getFoliageBlockstateID(imageX, imageY);
-                this.foliageBlockState = BlockRepository.getStateById(foliageBlockStateID);
+                foliageBlockState = BlockRepository.getStateById(foliageBlockStateID);
                 seafloorHeight = this.mapData[this.zoom].getOceanFloorHeight(imageX, imageY);
                 seafloorBlockStateID = this.mapData[this.zoom].getOceanFloorBlockstateID(imageX, imageY);
-                this.seafloorBlockState = BlockRepository.getStateById(seafloorBlockStateID);
+                seafloorBlockState = BlockRepository.getStateById(seafloorBlockStateID);
             }
 
             if (surfaceHeight == -1) {
@@ -1216,7 +1210,7 @@ public class Map implements Runnable, IMap {
                     if (!needTint && !seafloorBlockChangeForcedTint) {
                         tint = this.mapData[this.zoom].getOceanFloorBiomeTint(imageX, imageY);
                     } else {
-                        tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, this.seafloorBlockState, seafloorBlockStateID, this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY), this.tempBlockPos, startX, startZ);
+                        tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, seafloorBlockState, seafloorBlockStateID, this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY), this.tempBlockPos, startX, startZ);
                         this.mapData[this.zoom].setOceanFloorBiomeTint(imageX, imageY, tint);
                     }
 
@@ -1228,7 +1222,7 @@ public class Map implements Runnable, IMap {
                 seafloorColor = this.applyHeight(seafloorColor, nether, caves, world, multi, startX, startZ, imageX, imageY, seafloorHeight, solid, 0);
                 int seafloorLight = 255;
                 if (needLight) {
-                    seafloorLight = this.getLight(seafloorColor, this.seafloorBlockState, world, startX + imageX, startZ + imageY, seafloorHeight, solid);
+                    seafloorLight = this.getLight(seafloorColor, seafloorBlockState, world, startX + imageX, startZ + imageY, seafloorHeight, solid);
                     this.blockPos.setXYZ(startX + imageX, seafloorHeight, startZ + imageY);
                     BlockState blockStateAbove = world.getBlockState(this.blockPos);
                     Material materialAbove = blockStateAbove.getMaterial();
@@ -1290,7 +1284,7 @@ public class Map implements Runnable, IMap {
                     }
                 }
 
-                if (foliageHeight != -1 && this.foliageBlockState != null && this.foliageBlockState != BlockRepository.air.getDefaultState()) {
+                if (foliageHeight != -1 && foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
                     if (!this.options.biomes) {
                         foliageColor = this.colorManager.getBlockColorWithDefaultTint(this.blockPos, foliageBlockStateID);
                     } else {
@@ -1299,7 +1293,7 @@ public class Map implements Runnable, IMap {
                         if (!needTint && !foliageBlockChangeForcedTint) {
                             tint = this.mapData[this.zoom].getFoliageBiomeTint(imageX, imageY);
                         } else {
-                            tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, this.foliageBlockState, foliageBlockStateID, this.blockPos.withXYZ(startX + imageX, foliageHeight - 1, startZ + imageY), this.tempBlockPos, startX, startZ);
+                            tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, foliageBlockState, foliageBlockStateID, this.blockPos.withXYZ(startX + imageX, foliageHeight - 1, startZ + imageY), this.tempBlockPos, startX, startZ);
                             this.mapData[this.zoom].setFoliageBiomeTint(imageX, imageY, tint);
                         }
 
@@ -1311,7 +1305,7 @@ public class Map implements Runnable, IMap {
                     foliageColor = this.applyHeight(foliageColor, nether, caves, world, multi, startX, startZ, imageX, imageY, foliageHeight, solid, 2);
                     int foliageLight = 255;
                     if (needLight) {
-                        foliageLight = this.getLight(foliageColor, this.foliageBlockState, world, startX + imageX, startZ + imageY, foliageHeight, solid);
+                        foliageLight = this.getLight(foliageColor, foliageBlockState, world, startX + imageX, startZ + imageY, foliageHeight, solid);
                         this.mapData[this.zoom].setFoliageLight(imageX, imageY, foliageLight);
                     } else {
                         foliageLight = this.mapData[this.zoom].getFoliageLight(imageX, imageY);

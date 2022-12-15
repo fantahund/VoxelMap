@@ -40,14 +40,13 @@ import java.util.UUID;
 public class RadarSimple implements IRadar {
     private MinecraftClient game;
     private LayoutVariables layoutVariables = null;
-    public MapSettingsManager minimapOptions = null;
-    public RadarSettingsManager options = null;
-    private TextureAtlas textureAtlas;
-    private boolean enabled = true;
+    public MapSettingsManager minimapOptions;
+    public RadarSettingsManager options;
+    private final TextureAtlas textureAtlas;
     private boolean completedLoading = false;
     private int timer = 500;
     private float direction = 0.0F;
-    private ArrayList<Contact> contacts = new ArrayList(40);
+    private final ArrayList<Contact> contacts = new ArrayList<>(40);
     UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 
     private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
@@ -110,19 +109,17 @@ public class RadarSimple implements IRadar {
                 this.direction += 360.0F;
             }
 
-            if (this.enabled) {
-                if (this.completedLoading && this.timer > 95) {
-                    this.calculateMobs();
-                    this.timer = 0;
-                }
-
-                ++this.timer;
-                if (this.completedLoading) {
-                    this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
-                }
-
-                GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            if (this.completedLoading && this.timer > 95) {
+                this.calculateMobs();
+                this.timer = 0;
             }
+
+            ++this.timer;
+            if (this.completedLoading) {
+                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+            }
+
+            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
     }
@@ -136,7 +133,7 @@ public class RadarSimple implements IRadar {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.getPos().getZ();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.getPos().getY();
-                    double hypot = (double) (wayX * wayX + wayZ * wayZ + wayY * wayY);
+                    double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
                     if (hypot < 961.0) {
                         Contact contact = new Contact(entity, this.getUnknownMobNeutrality(entity));
@@ -152,11 +149,7 @@ public class RadarSimple implements IRadar {
             }
         }
 
-        Collections.sort(this.contacts, new Comparator<Contact>() {
-            public int compare(Contact contact1, Contact contact2) {
-                return contact1.y - contact2.y;
-            }
-        });
+        this.contacts.sort(Comparator.comparingInt(contact -> contact.y));
     }
 
     private EnumMobs getUnknownMobNeutrality(Entity entity) {
@@ -168,30 +161,25 @@ public class RadarSimple implements IRadar {
     }
 
     private boolean isHostile(Entity entity) {
-        if (entity instanceof ZombifiedPiglinEntity) {
-            ZombifiedPiglinEntity zombifiedPiglinEntity = (ZombifiedPiglinEntity) entity;
+        if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
             return zombifiedPiglinEntity.isAngryAt(this.game.player);
         } else if (entity instanceof Monster) {
             return true;
-        } else if (entity instanceof BeeEntity) {
-            BeeEntity beeEntity = (BeeEntity) entity;
+        } else if (entity instanceof BeeEntity beeEntity) {
             return beeEntity.hasAngerTime();
         } else {
-            if (entity instanceof PolarBearEntity) {
-                PolarBearEntity polarBearEntity = (PolarBearEntity) entity;
+            if (entity instanceof PolarBearEntity polarBearEntity) {
 
-                for (Object object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
-                    if (((PolarBearEntity) object).isBaby()) {
+                for (PolarBearEntity object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
+                    if (object.isBaby()) {
                         return true;
                     }
                 }
             }
 
-            if (entity instanceof RabbitEntity) {
-                RabbitEntity rabbitEntity = (RabbitEntity) entity;
+            if (entity instanceof RabbitEntity rabbitEntity) {
                 return rabbitEntity.getRabbitType() == 99;
-            } else if (entity instanceof WolfEntity) {
-                WolfEntity wolfEntity = (WolfEntity) entity;
+            } else if (entity instanceof WolfEntity wolfEntity) {
                 return wolfEntity.hasAngerTime();
             } else {
                 return false;
@@ -223,7 +211,7 @@ public class RadarSimple implements IRadar {
             double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
             double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
             int wayY = GameVariableAccessShim.yCoord() - contactY;
-            double adjustedDiff = max - (double) Math.max(Math.abs(wayY) - 0, 0);
+            double adjustedDiff = max - (double) Math.max(Math.abs(wayY), 0);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
@@ -232,7 +220,7 @@ public class RadarSimple implements IRadar {
             if (wayY < 0) {
                 GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
-                GLShim.glColor3f(1.0F * contact.brightness, 1.0F * contact.brightness, 1.0F * contact.brightness);
+                GLShim.glColor3f(contact.brightness, contact.brightness, contact.brightness);
             }
 
             if (this.minimapOptions.rotates) {
@@ -241,11 +229,11 @@ public class RadarSimple implements IRadar {
                 contact.angle -= 90.0F;
             }
 
-            boolean inRange = false;
+            boolean inRange;
             if (!this.minimapOptions.squareMap) {
                 inRange = contact.distance < 31.0;
             } else {
-                double radLocate = Math.toRadians((double) contact.angle);
+                double radLocate = Math.toRadians(contact.angle);
                 double dispX = contact.distance * Math.cos(radLocate);
                 double dispY = contact.distance * Math.sin(radLocate);
                 inRange = Math.abs(dispX) <= 28.5 && Math.abs(dispY) <= 28.5;
@@ -261,11 +249,11 @@ public class RadarSimple implements IRadar {
                         contactFacing += 90.0F;
                     }
 
-                    matrixStack.translate((double) x, (double) y, 0.0);
+                    matrixStack.translate(x, y, 0.0);
                     matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-contact.angle));
                     matrixStack.translate(0.0, -contact.distance, 0.0);
                     matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(contact.angle + contactFacing));
-                    matrixStack.translate((double) (-x), (double) (-y), 0.0);
+                    matrixStack.translate(-x, -y, 0.0);
                     RenderSystem.applyModelViewMatrix();
                     if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
                         Sprite icon = this.textureAtlas.getAtlasSprite("glow");

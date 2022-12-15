@@ -75,7 +75,7 @@ public class WaypointManager implements IWaypointManager {
     private final HashSet<String> oldNorthWorldNames = new HashSet<>();
     private final HashMap<String, String> worldSeeds = new HashMap<>();
     private BackgroundImageInfo backgroundImageInfo = null;
-    private WaypointContainer waypointContainer = null;
+    private WaypointContainer waypointContainer;
     private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
@@ -231,7 +231,7 @@ public class WaypointManager implements IWaypointManager {
 
     @Override
     public void handleDeath() {
-        HashSet<Waypoint> toDel = new HashSet();
+        HashSet<Waypoint> toDel = new HashSet<>();
 
         for (Waypoint pt : this.wayPts) {
             if (pt.name.equals("Latest Death")) {
@@ -246,9 +246,7 @@ public class WaypointManager implements IWaypointManager {
                         if (pt.name.length() > 15) {
                             num = Integer.parseInt(pt.name.substring(15));
                         }
-                    } catch (Exception var6) {
-                        num = 0;
-                    }
+                    } catch (Exception ignored) {}
 
                     pt.red -= (pt.red - 0.5F) / 8.0F;
                     pt.green -= (pt.green - 0.5F) / 8.0F;
@@ -268,7 +266,7 @@ public class WaypointManager implements IWaypointManager {
 
         if (this.options.deathpoints != 0) {
             ClientPlayerEntity thePlayer = MinecraftClient.getInstance().player;
-            TreeSet dimensions = new TreeSet();
+            TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(MinecraftClient.getInstance().world));
             double dimensionScale = thePlayer.world.getDimension().coordinateScale();
             this.addWaypoint(new Waypoint("Latest Death", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord() - 1, true, 1.0F, 1.0F, 1.0F, "Skull", this.getCurrentSubworldDescriptor(false), dimensions));
@@ -321,7 +319,7 @@ public class WaypointManager implements IWaypointManager {
     }
 
     @Override
-    public TreeSet getKnownSubworldNames() {
+    public TreeSet<String> getKnownSubworldNames() {
         return this.knownSubworldNames;
     }
 
@@ -482,7 +480,7 @@ public class WaypointManager implements IWaypointManager {
             key = this.getCurrentSubworldDescriptor(false);
         }
 
-        String seed = (String) this.worldSeeds.get(key);
+        String seed = this.worldSeeds.get(key);
         if (seed == null) {
             seed = "";
         }
@@ -535,10 +533,10 @@ public class WaypointManager implements IWaypointManager {
             }
 
             out.println("oldNorthWorlds:" + oldNorthWorldsString);
-            String seedsString = "";
+            StringBuilder seedsString = new StringBuilder();
 
-            for (Entry entry : this.worldSeeds.entrySet()) {
-                seedsString = seedsString + TextUtils.scrubName((String) entry.getKey()) + "#" + (String) entry.getValue() + ",";
+            for (Entry<String, String> entry : this.worldSeeds.entrySet()) {
+                seedsString.append(TextUtils.scrubName(entry.getKey())).append("#").append(entry.getValue()).append(",");
             }
 
             out.println("seeds:" + seedsString);
@@ -577,8 +575,8 @@ public class WaypointManager implements IWaypointManager {
         this.oldNorthWorldNames.clear();
         this.worldSeeds.clear();
         synchronized (this.waypointLock) {
-            boolean loaded = false;
-            this.wayPts = new ArrayList();
+            boolean loaded;
+            this.wayPts = new ArrayList<>();
             String worldNameStandard = this.getCurrentWorldName();
             if (worldNameStandard.endsWith(":25565")) {
                 int portSepLoc = worldNameStandard.lastIndexOf(":");
@@ -672,42 +670,32 @@ public class WaypointManager implements IWaypointManager {
                                 float blue = 0.0F;
                                 String suffix = "";
                                 String world = "";
-                                TreeSet dimensions = new TreeSet();
+                                TreeSet<DimensionContainer> dimensions = new TreeSet<>();
 
                                 for (String pair : pairs) {
                                     int splitIndex = pair.indexOf(":");
                                     if (splitIndex != -1) {
                                         String key = pair.substring(0, splitIndex).toLowerCase().trim();
                                         String value = pair.substring(splitIndex + 1).trim();
-                                        if (key.equals("name")) {
-                                            name = TextUtils.descrubName(value);
-                                        } else if (key.equals("x")) {
-                                            x = Integer.parseInt(value);
-                                        } else if (key.equals("z")) {
-                                            z = Integer.parseInt(value);
-                                        } else if (key.equals("y")) {
-                                            y = Integer.parseInt(value);
-                                        } else if (key.equals("enabled")) {
-                                            enabled = Boolean.parseBoolean(value);
-                                        } else if (key.equals("red")) {
-                                            red = Float.parseFloat(value);
-                                        } else if (key.equals("green")) {
-                                            green = Float.parseFloat(value);
-                                        } else if (key.equals("blue")) {
-                                            blue = Float.parseFloat(value);
-                                        } else if (key.equals("suffix")) {
-                                            suffix = value;
-                                        } else if (key.equals("world")) {
-                                            world = TextUtils.descrubName(value);
-                                        } else if (key.equals("dimensions")) {
-                                            String[] dimensionStrings = value.split("#");
-
-                                            for (String dimensionString : dimensionStrings) {
-                                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
-                                            }
-
-                                            if (dimensions.size() == 0) {
-                                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
+                                        switch (key) {
+                                            case "name" -> name = TextUtils.descrubName(value);
+                                            case "x" -> x = Integer.parseInt(value);
+                                            case "z" -> z = Integer.parseInt(value);
+                                            case "y" -> y = Integer.parseInt(value);
+                                            case "enabled" -> enabled = Boolean.parseBoolean(value);
+                                            case "red" -> red = Float.parseFloat(value);
+                                            case "green" -> green = Float.parseFloat(value);
+                                            case "blue" -> blue = Float.parseFloat(value);
+                                            case "suffix" -> suffix = value;
+                                            case "world" -> world = TextUtils.descrubName(value);
+                                            case "dimensions" -> {
+                                                String[] dimensionStrings = value.split("#");
+                                                for (String dimensionString : dimensionStrings) {
+                                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                                }
+                                                if (dimensions.size() == 0) {
+                                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
+                                                }
                                             }
                                         }
                                     }

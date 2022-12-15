@@ -163,9 +163,9 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                 wIdRequestBuf.writeByte(0);
                 mc.player.networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
                 mc.player.getSkinTexture();
-                java.util.Map skinMap = mc.getSkinProvider().getTextures(mc.player.getGameProfile());
+                java.util.Map<Type, MinecraftProfileTexture> skinMap = mc.getSkinProvider().getTextures(mc.player.getGameProfile());
                 if (skinMap.containsKey(Type.SKIN)) {
-                    mc.getSkinProvider().loadSkin((MinecraftProfileTexture) skinMap.get(Type.SKIN), Type.SKIN);
+                    mc.getSkinProvider().loadSkin(skinMap.get(Type.SKIN), Type.SKIN);
                 }
 
                 if (!this.worldName.equals(this.waypointManager.getCurrentWorldName())) {
@@ -296,8 +296,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
             try {
                 seed = Long.toString(MinecraftClient.getInstance().getServer().getWorld(World.OVERWORLD).getSeed());
-            } catch (Exception var3) {
-            }
+            } catch (Exception ignored) {}
 
             return seed;
         } else {

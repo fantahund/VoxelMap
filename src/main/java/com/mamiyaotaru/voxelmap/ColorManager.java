@@ -86,18 +86,14 @@ import java.util.regex.Pattern;
 
 public class ColorManager implements IColorManager {
     private IVoxelMap master;
-    MinecraftClient game = null;
+    MinecraftClient game;
     private boolean resourcePacksChanged = false;
     private ClientWorld world = null;
     private BufferedImage terrainBuff = null;
     private BufferedImage colorPicker;
     private int sizeOfBiomeArray = 0;
-    private final int BIOME_ARRAY_HEIGHT = 32;
-    private final int BIOME_ARRAY_HEIGHT_MULTIPLIER = 8;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
-    private final int COLOR_NOT_LOADED = -16842497;
-    private final int COLOR_FAILED_LOAD = 452984832;
     private HashSet biomeTintsAvailable = new HashSet();
     private boolean optifineInstalled = false;
     private HashMap blockTintTables = new HashMap();
@@ -106,8 +102,7 @@ public class ColorManager implements IColorManager {
     private float failedToLoadX = 0.0F;
     private float failedToLoadY = 0.0F;
     private String renderPassThreeBlendMode;
-    private Random random = Random.create();
-    private final Object tpLoadLock = new Object();
+    private final Random random = Random.create();
     private boolean loaded = false;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ());
     private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
@@ -126,8 +121,7 @@ public class ColorManager implements IColorManager {
 
         try {
             ofProfiler = GameOptions.class.getDeclaredField("ofProfiler");
-        } catch (SecurityException var9) {
-        } catch (NoSuchFieldException var10) {
+        } catch (SecurityException | NoSuchFieldException ignored) {
         } finally {
             if (ofProfiler != null) {
                 this.optifineInstalled = true;
@@ -286,7 +280,7 @@ public class ColorManager implements IColorManager {
         GLShim.glClear(16640);
         GLShim.glBlendFunc(770, 771);
         matrixStack.push();
-        matrixStack.translate((double) ((float) (width / 2) - size / 2.0F + transX), (double) ((float) (height / 2) - size / 2.0F + transY), (double) (0.0F + transZ));
+        matrixStack.translate((float) (width / 2) - size / 2.0F + transX, (float) (height / 2) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
         MinecraftClient.getInstance().getTextureManager().getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
         GLUtils.img2(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
@@ -323,9 +317,9 @@ public class ColorManager implements IColorManager {
             InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/colorpicker.png")).get().getInputStream();
             Image picker = ImageIO.read(is);
             is.close();
-            this.colorPicker = new BufferedImage(picker.getWidth((ImageObserver) null), picker.getHeight((ImageObserver) null), 2);
+            this.colorPicker = new BufferedImage(picker.getWidth(null), picker.getHeight(null), 2);
             Graphics gfx = this.colorPicker.createGraphics();
-            gfx.drawImage(picker, 0, 0, (ImageObserver) null);
+            gfx.drawImage(picker, 0, 0, null);
             gfx.dispose();
         } catch (Exception var4) {
             System.err.println("Error loading color picker: " + var4.getLocalizedMessage());
@@ -358,13 +352,13 @@ public class ColorManager implements IColorManager {
 
     private void loadSpecialColors() {
         int blockStateID;
-        for (Iterator blockStateIterator = BlockRepository.pistonTechBlock.getStateManager().getStates().iterator(); blockStateIterator.hasNext(); this.blockColors[blockStateID] = 0) {
-            BlockState blockState = (BlockState) blockStateIterator.next();
+        for (Iterator<BlockState> blockStateIterator = BlockRepository.pistonTechBlock.getStateManager().getStates().iterator(); blockStateIterator.hasNext(); this.blockColors[blockStateID] = 0) {
+            BlockState blockState = blockStateIterator.next();
             blockStateID = BlockRepository.getStateId(blockState);
         }
 
-        for (Iterator var6 = BlockRepository.barrier.getStateManager().getStates().iterator(); var6.hasNext(); this.blockColors[blockStateID] = 0) {
-            BlockState blockState = (BlockState) var6.next();
+        for (Iterator<BlockState> var6 = BlockRepository.barrier.getStateManager().getStates().iterator(); var6.hasNext(); this.blockColors[blockStateID] = 0) {
+            BlockState blockState = var6.next();
             blockStateID = BlockRepository.getStateId(blockState);
         }
 
@@ -377,8 +371,7 @@ public class ColorManager implements IColorManager {
 
             try {
                 col = this.blockColorsWithDefaultTint[blockStateID];
-            } catch (ArrayIndexOutOfBoundsException var5) {
-            }
+            } catch (ArrayIndexOutOfBoundsException ignored) {}
 
             return col != -16842497 ? col : this.getBlockColor(blockPos, blockStateID);
         } else {

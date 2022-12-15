@@ -130,6 +130,7 @@ import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -144,6 +145,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
@@ -190,14 +192,14 @@ public class Radar implements IRadar {
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
     private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
-    private static final Int2ObjectMap LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap(), int2ObjectOpenHashMap -> {
+    private static final Int2ObjectMap<Identifier> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
         int2ObjectOpenHashMap.put(1, new Identifier("stone"));
         int2ObjectOpenHashMap.put(2, new Identifier("iron"));
         int2ObjectOpenHashMap.put(3, new Identifier("gold"));
         int2ObjectOpenHashMap.put(4, new Identifier("emerald"));
         int2ObjectOpenHashMap.put(5, new Identifier("diamond"));
     });
-    private static final java.util.Map TEXTURES = Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
+    private static final Map<HorseMarking, @Nullable Object> TEXTURES = Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
         enumMap.put(HorseMarking.NONE, null);
         enumMap.put(HorseMarking.WHITE, new Identifier("textures/entity/horse/horse_markings_white.png"));
         enumMap.put(HorseMarking.WHITE_FIELD, new Identifier("textures/entity/horse/horse_markings_whitefield.png"));
@@ -215,47 +217,34 @@ public class Radar implements IRadar {
         this.textureAtlas.setFilter(false, false);
 
         try {
-            Class randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
+            Class<?> randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
             Field mapPropertiesField = randomEntitiesClass.getDeclaredField("mapProperties");
             mapPropertiesField.setAccessible(true);
             this.mapProperties = (java.util.Map) mapPropertiesField.get(null);
             Field randomEntityField = randomEntitiesClass.getDeclaredField("randomEntity");
             randomEntityField.setAccessible(true);
             this.randomEntity = randomEntityField.get((Object) null);
-            Class iRandomEntityClass = Class.forName("net.optifine.IRandomEntity");
+            Class<?> iRandomEntityClass = Class.forName("net.optifine.IRandomEntity");
             this.randomEntityClass = Class.forName("net.optifine.RandomEntity");
-            Class[] argClasses1 = new Class[]{Entity.class};
+            Class<?>[] argClasses1 = new Class[]{Entity.class};
             this.setEntityMethod = this.randomEntityClass.getDeclaredMethod("setEntity", argClasses1);
             this.randomEntitiesPropertiesClass = Class.forName("net.optifine.RandomEntityProperties");
-            Class[] argClasses2 = new Class[]{Identifier.class, iRandomEntityClass};
+            Class<?>[] argClasses2 = new Class[]{Identifier.class, iRandomEntityClass};
             this.getEntityTextureMethod = this.randomEntitiesPropertiesClass.getDeclaredMethod("getTextureLocation", argClasses2);
             this.randomobsOptifine = true;
-        } catch (ClassNotFoundException var7) {
-            this.randomobsOptifine = false;
-        } catch (NoSuchMethodException var8) {
-            this.randomobsOptifine = false;
-        } catch (NoSuchFieldException var9) {
-            this.randomobsOptifine = false;
-        } catch (SecurityException var10) {
-            this.randomobsOptifine = false;
-        } catch (IllegalArgumentException var11) {
-            this.randomobsOptifine = false;
-        } catch (IllegalAccessException var12) {
+        } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | SecurityException |
+                 IllegalArgumentException | IllegalAccessException var7) {
             this.randomobsOptifine = false;
         }
 
         try {
             this.entityCustomNpcClass = Class.forName("noppes.npcs.entity.EntityCustomNpc");
-            Class modelDataClass = Class.forName("noppes.npcs.ModelData");
+            Class<?> modelDataClass = Class.forName("noppes.npcs.ModelData");
             this.modelDataField = this.entityCustomNpcClass.getField("modelData");
-            Class entityNPCInterfaceClass = Class.forName("noppes.npcs.entity.EntityNPCInterface");
+            Class<?> entityNPCInterfaceClass = Class.forName("noppes.npcs.entity.EntityNPCInterface");
             this.getEntityMethod = modelDataClass.getMethod("getEntity", entityNPCInterfaceClass);
             this.hasCustomNPCs = true;
-        } catch (ClassNotFoundException var4) {
-            this.hasCustomNPCs = false;
-        } catch (NoSuchFieldException var5) {
-            this.hasCustomNPCs = false;
-        } catch (NoSuchMethodException var6) {
+        } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException var4) {
             this.hasCustomNPCs = false;
         }
 
@@ -362,7 +351,7 @@ public class Radar implements IRadar {
             scale = (float) sheepFur.getWidth() / 6.0F;
             sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
             int chop = (int) Math.max(1.0F, 2.0F);
-            sheepFur = ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
+            ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
             sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
             this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
             BufferedImage crown = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/crown.png"), 0, 0, 16, 16, 16, 16);
@@ -537,20 +526,17 @@ public class Radar implements IRadar {
                 this.direction += 360.0F;
             }
 
-            boolean enabled = true;
-            if (enabled) {
-                if (this.completedLoading && this.timer > 95) {
-                    this.calculateMobs();
-                    this.timer = 0;
-                }
-
-                ++this.timer;
-                if (this.completedLoading) {
-                    this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
-                }
-
-                GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            if (this.completedLoading && this.timer > 95) {
+                this.calculateMobs();
+                this.timer = 0;
             }
+
+            ++this.timer;
+            if (this.completedLoading) {
+                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+            }
+
+            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
     }
