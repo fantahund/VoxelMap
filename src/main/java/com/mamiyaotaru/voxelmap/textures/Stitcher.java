@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.util.math.MathHelper;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Stitcher {
-    private final Set setStitchHolders = Sets.newHashSetWithExpectedSize(256);
+    private final Set<@Nullable Object> setStitchHolders = Sets.newHashSetWithExpectedSize(256);
     private final List<Slot> stitchSlots = Lists.newArrayListWithCapacity(256);
     private int currentWidth = 0;
     private int currentHeight = 0;
@@ -54,9 +55,8 @@ public class Stitcher {
     }
 
     public void doStitch() {
-        Holder[] stitchHoldersArray = (Holder[]) this.setStitchHolders.toArray(new Holder[this.setStitchHolders.size()]);
+        Holder[] stitchHoldersArray = this.setStitchHolders.toArray(new Holder[this.setStitchHolders.size()]);
         Arrays.sort(stitchHoldersArray);
-        Holder[] tempStitchHoldersArray = stitchHoldersArray;
         int stitcherHoldersArrayLength = stitchHoldersArray.length;
         if (stitcherHoldersArrayLength > 0) {
             Holder holder = stitchHoldersArray[0];
@@ -65,8 +65,8 @@ public class Stitcher {
             boolean allSameSize = true;
 
             for (int stitcherHolderIndex = 1; stitcherHolderIndex < stitcherHoldersArrayLength && allSameSize; ++stitcherHolderIndex) {
-                holder = tempStitchHoldersArray[stitcherHolderIndex];
-                allSameSize = allSameSize && holder.width == iconWidth && holder.height == iconHeight;
+                holder = stitchHoldersArray[stitcherHolderIndex];
+                allSameSize = holder.width == iconWidth && holder.height == iconHeight;
             }
 
             if (allSameSize) {
@@ -83,8 +83,7 @@ public class Stitcher {
             }
         }
 
-        for (int stitcherHolderIndex = 0; stitcherHolderIndex < stitcherHoldersArrayLength; ++stitcherHolderIndex) {
-            Holder holder = tempStitchHoldersArray[stitcherHolderIndex];
+        for (Holder holder : stitchHoldersArray) {
             if (!this.allocateSlot(holder)) {
                 String errorString = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", holder.getAtlasSprite().getIconName(), holder.getAtlasSprite().getIconWidth(), holder.getAtlasSprite().getIconHeight());
                 throw new StitcherException(holder, errorString);
@@ -132,8 +131,8 @@ public class Stitcher {
     }
 
     private boolean allocateSlot(Holder holder) {
-        for (int stitcherSlotsIndex = 0; stitcherSlotsIndex < this.stitchSlots.size(); ++stitcherSlotsIndex) {
-            if (((Slot) this.stitchSlots.get(stitcherSlotsIndex)).addSlot(holder)) {
+        for (Slot stitchSlot : this.stitchSlots) {
+            if (stitchSlot.addSlot(holder)) {
                 return true;
             }
         }
@@ -188,7 +187,7 @@ public class Stitcher {
         }
     }
 
-    public class Holder implements Comparable<Holder> {
+    public static class Holder implements Comparable<Holder> {
         private final Sprite icon;
         private final int width;
         private final int height;
@@ -320,7 +319,7 @@ public class Stitcher {
             }
         }
 
-        public void getAllStitchSlots(List listOfStitchSlots) {
+        public void getAllStitchSlots(List<Slot> listOfStitchSlots) {
             if (this.holder != null) {
                 listOfStitchSlots.add(this);
             } else if (this.subSlots != null) {

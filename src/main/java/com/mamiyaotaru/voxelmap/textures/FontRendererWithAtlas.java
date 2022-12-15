@@ -23,40 +23,35 @@ import net.minecraft.util.profiler.Profiler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class FontRendererWithAtlas extends TextRenderer implements ResourceReloader {
-    private int[] charWidthArray = new int[256];
+    private final int[] charWidthArray = new int[256];
     public int FONT_HEIGHT = 9;
     public Random fontRandom = new Random();
-    private int[] colorCode = new int[32];
+    private final int[] colorCode = new int[32];
     private final Identifier locationFontTexture;
     private Sprite fontIcon = null;
     private Sprite blankIcon = null;
-    private int ref = 0;
-    private final TextureManager renderEngine;
     private float posX;
     private float posY;
     private float red;
     private float blue;
     private float green;
     private float alpha;
-    private int textColor;
     private boolean randomStyle;
     private boolean boldStyle;
     private boolean italicStyle;
     private boolean underlineStyle;
     private boolean strikethroughStyle;
-    private BufferBuilder vertexBuffer;
+    private final BufferBuilder vertexBuffer;
 
     public FontRendererWithAtlas(TextureManager renderEngine, Identifier locationFontTexture) {
         super(identifierx -> Util.make(new FontStorage(renderEngine, locationFontTexture), fontStorage -> fontStorage.setFonts(Lists.newArrayList(new Font[]{new BlankFont()}))), true);
         this.locationFontTexture = locationFontTexture;
-        this.renderEngine = renderEngine;
         renderEngine.bindTexture(this.locationFontTexture);
 
         for (int colorCodeIndex = 0; colorCodeIndex < 32; ++colorCodeIndex) {
@@ -104,7 +99,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             int newHeight = Math.max(1, (int) ((float) fontImage.getHeight() * scaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
-            g2.drawImage(fontImage, 0, 0, newWidth, newHeight, (ImageObserver) null);
+            g2.drawImage(fontImage, 0, 0, newWidth, newHeight, null);
             g2.dispose();
             fontImage = tmp;
         }
@@ -155,7 +150,6 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
     }
 
     public void setFontRef(int ref) {
-        this.ref = ref;
     }
 
     private float renderCharAtPos(int charIndex, char character, boolean shadow) {
@@ -171,10 +165,10 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         float charYPosInSheet = (float) (charIndex / 16 * 8) * fontScaleY + (float) this.fontIcon.originY + 1.0F;
         float shadowOffset = shadow ? 1.0F : 0.0F;
         float charWidth = (float) this.charWidthArray[charIndex] - 0.01F;
-        this.vertexBuffer.vertex((double) (this.posX + shadowOffset), (double) this.posY, 0.0).texture(charXPosInSheet / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
-        this.vertexBuffer.vertex((double) (this.posX - shadowOffset), (double) (this.posY + 7.99F), 0.0).texture(charXPosInSheet / sheetWidth, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
-        this.vertexBuffer.vertex((double) (this.posX + charWidth - 1.0F - shadowOffset), (double) (this.posY + 7.99F), 0.0).texture((charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
-        this.vertexBuffer.vertex((double) (this.posX + charWidth - 1.0F + shadowOffset), (double) this.posY, 0.0).texture((charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
+        this.vertexBuffer.vertex(this.posX + shadowOffset, this.posY, 0.0).texture(charXPosInSheet / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
+        this.vertexBuffer.vertex(this.posX - shadowOffset, this.posY + 7.99F, 0.0).texture(charXPosInSheet / sheetWidth, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
+        this.vertexBuffer.vertex(this.posX + charWidth - 1.0F - shadowOffset, this.posY + 7.99F, 0.0).texture((charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
+        this.vertexBuffer.vertex(this.posX + charWidth - 1.0F + shadowOffset, this.posY, 0.0).texture((charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
         return (float) this.charWidthArray[charIndex];
     }
 
@@ -199,7 +193,6 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             var6 = this.renderString(text, x, y, color, false);
         }
 
-       // this.vertexBuffer.end();
         BufferRenderer.drawWithShader(this.vertexBuffer.end());
         return var6;
     }
@@ -223,16 +216,6 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                     this.strikethroughStyle = false;
                     this.underlineStyle = false;
                     this.italicStyle = false;
-                    if (formatCode < 0 || formatCode > 15) {
-                        formatCode = 15;
-                    }
-
-                    if (shadow) {
-                        formatCode += 16;
-                    }
-
-                    int color = this.colorCode[formatCode];
-                    this.textColor = color;
                 } else if (formatCode == 16) {
                     this.randomStyle = true;
                 } else if (formatCode == 17) {
@@ -243,7 +226,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                     this.underlineStyle = true;
                 } else if (formatCode == 20) {
                     this.italicStyle = true;
-                } else if (formatCode == 21) {
+                } else {
                     this.randomStyle = false;
                     this.boldStyle = false;
                     this.strikethroughStyle = false;
@@ -279,18 +262,18 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                     }
 
                     if (this.strikethroughStyle) {
-                        this.vertexBuffer.vertex((double) this.posX, (double) (this.posY + (float) (this.FONT_HEIGHT / 2)), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex((double) (this.posX + widthOfRenderedChar), (double) (this.posY + (float) (this.FONT_HEIGHT / 2)), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex((double) (this.posX + widthOfRenderedChar), (double) (this.posY + (float) (this.FONT_HEIGHT / 2) - 1.0F), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex((double) this.posX, (double) (this.posY + (float) (this.FONT_HEIGHT / 2) - 1.0F), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX, this.posY + (float) (this.FONT_HEIGHT / 2), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (float) (this.FONT_HEIGHT / 2), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (float) (this.FONT_HEIGHT / 2) - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX, this.posY + (float) (this.FONT_HEIGHT / 2) - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
                     }
 
                     if (this.underlineStyle) {
-                        int l = this.underlineStyle ? -1 : 0;
-                        this.vertexBuffer.vertex((double) (this.posX + (float) l), (double) (this.posY + (float) this.FONT_HEIGHT), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex((double) (this.posX + widthOfRenderedChar), (double) (this.posY + (float) this.FONT_HEIGHT), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex((double) (this.posX + widthOfRenderedChar), (double) (this.posY + (float) this.FONT_HEIGHT - 1.0F), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex((double) (this.posX + (float) l), (double) (this.posY + (float) this.FONT_HEIGHT - 1.0F), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        int l = -1;
+                        this.vertexBuffer.vertex(this.posX + (float) l, this.posY + (float) this.FONT_HEIGHT, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (float) this.FONT_HEIGHT, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (float) this.FONT_HEIGHT - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + (float) l, this.posY + (float) this.FONT_HEIGHT - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
                     }
 
                     this.posX += (float) ((int) widthOfRenderedChar);
@@ -368,7 +351,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         }
     }
 
-    public CompletableFuture reload(ResourceReloader.Synchronizer var1, ResourceManager var2, Profiler var3, Profiler var4, Executor var5, Executor var6) {
+    public CompletableFuture<Void> reload(ResourceReloader.Synchronizer var1, ResourceManager var2, Profiler var3, Profiler var4, Executor var5, Executor var6) {
         return null;
     }
 }
