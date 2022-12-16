@@ -74,11 +74,11 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         if (par1EnumOptions.isFloat()) {
             float f = this.getOptionFloatValue(par1EnumOptions);
             if (par1EnumOptions == EnumOptionsMinimap.MINZOOM) {
-                return s + (float) Math.pow(2.0, (double) f) + "x";
+                return s + (float) Math.pow(2.0, f) + "x";
             }
 
             if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
-                return s + (float) Math.pow(2.0, (double) f) + "x";
+                return s + (float) Math.pow(2.0, f) + "x";
             }
 
             if (par1EnumOptions == EnumOptionsMinimap.CACHESIZE) {

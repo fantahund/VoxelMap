@@ -181,7 +181,7 @@ public class BiomeRepository {
         String translationKey = Util.createTranslationKey("biome", resourceLocation);
         String name = I18nUtils.getString(translationKey);
         if (name.equals(translationKey)) {
-            name = TextUtils.prettify(resourceLocation.getPath().toString());
+            name = TextUtils.prettify(resourceLocation.getPath());
         }
 
         return name;

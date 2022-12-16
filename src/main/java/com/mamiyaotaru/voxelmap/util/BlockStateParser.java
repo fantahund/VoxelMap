@@ -36,7 +36,7 @@ public class BlockStateParser {
             resourceLocation = new Identifier(resourceStringParts[0], resourceStringParts[1]);
         }
 
-        Block block = (Block) Registry.BLOCK.get(resourceLocation);
+        Block block = Registry.BLOCK.get(resourceLocation);
         if (block != Blocks.AIR || resourceString.equals("minecraft:air")) {
             blockState = block.getDefaultState();
             if (bracketIndex != -1) {

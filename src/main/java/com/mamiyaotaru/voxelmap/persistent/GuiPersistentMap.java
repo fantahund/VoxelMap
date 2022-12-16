@@ -232,7 +232,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 GuiPersistentMap.this.getMinecraft().setScreen(GuiPersistentMap.this.parent);
             }
         });
-        this.coordinates = new TextFieldWidget(this.getFontRenderer(), this.sideMargin, 10, 140, 20, (Text) null);
+        this.coordinates = new TextFieldWidget(this.getFontRenderer(), this.sideMargin, 10, 140, 20, null);
         this.top = 32;
         this.bottom = this.getHeight() - 32;
         this.centerX = this.getWidth() / 2;

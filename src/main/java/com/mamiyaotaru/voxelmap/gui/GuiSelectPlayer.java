@@ -42,11 +42,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.getMinecraft().keyboard.setRepeatEvents(true);
         this.playerList = new GuiButtonRowListPlayers(this);
         int messageStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypointshare.sharemessage") + ":");
-        this.message = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, (Text) null);
+        this.message = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, null);
         this.message.setMaxLength(78);
         this.addDrawableChild(this.message);
         int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
-        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, (Text) null);
+        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
         this.addDrawableChild(new ButtonWidget(this.width / 2 - 100, this.height - 27, 150, 20, Text.translatable("gui.cancel"), button -> this.getMinecraft().setScreen(this.parentScreen)));

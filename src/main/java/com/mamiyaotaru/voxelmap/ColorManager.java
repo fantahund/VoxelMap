@@ -1162,7 +1162,7 @@ public class ColorManager implements IColorManager {
                                         String[] range = value.split("-");
                                         int min = Integer.parseInt(range[0]);
                                         int max = Integer.parseInt(range[1]);
-                                        int intValue = Integer.class.cast(blockState.get(property));
+                                        int intValue = (Integer) blockState.get(property);
                                         if (intValue >= min && intValue <= max) {
                                             valueIncluded = true;
                                         }

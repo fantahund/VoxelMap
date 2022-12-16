@@ -232,12 +232,12 @@ public class CommandUtils {
         }
 
         message = message + "]";
-        MinecraftClient.getInstance().setScreen(new GuiSelectPlayer((Screen) null, AbstractVoxelMap.getInstance(), message, true));
+        MinecraftClient.getInstance().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, true));
     }
 
     public static void sendCoordinate(int x, int y, int z) {
         String message = String.format("[x:%s, y:%s, z:%s]", x, y, z);
-        MinecraftClient.getInstance().setScreen(new GuiSelectPlayer((Screen) null, AbstractVoxelMap.getInstance(), message, false));
+        MinecraftClient.getInstance().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, false));
     }
 
     public static void teleport(String command) {

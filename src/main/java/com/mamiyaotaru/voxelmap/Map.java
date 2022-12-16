@@ -944,7 +944,7 @@ public class Map implements Runnable, IMap {
 
         int startX = this.lastX;
         int startZ = this.lastZ;
-        int multi = (int) Math.pow(2.0, (double) this.zoom);
+        int multi = (int) Math.pow(2.0, this.zoom);
         startX -= 16 * multi;
         startZ -= 16 * multi;
         left = left - startX - 1;
@@ -1180,7 +1180,7 @@ public class Map implements Runnable, IMap {
             }
 
             surfaceColor = this.applyHeight(surfaceColor, nether, caves, world, multi, startX, startZ, imageX, imageY, surfaceHeight, solid, 1);
-            int light = solid ? 0 : 255;
+            int light;
             if (needLight) {
                 light = this.getLight(surfaceColor, this.surfaceBlockState, world, startX + imageX, startZ + imageY, surfaceHeight, solid);
                 this.mapData[this.zoom].setLight(imageX, imageY, light);
@@ -1589,10 +1589,10 @@ public class Map implements Runnable, IMap {
             this.percentY *= multi;
             GLUtils.disp2(this.mapImages[this.zoom].getIndex());
             matrixStack.push();
-            matrixStack.translate((double) x, (double) y, 0.0);
+            matrixStack.translate(x, y, 0.0);
             matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(!this.options.rotates ? (float) this.northRotate : -this.direction));
-            matrixStack.translate((double) (-x), (double) (-y), 0.0);
-            matrixStack.translate((double) (-this.percentX), (double) (-this.percentY), 0.0);
+            matrixStack.translate(-x, -y, 0.0);
+            matrixStack.translate(-this.percentX, -this.percentY, 0.0);
             RenderSystem.applyModelViewMatrix();
             GLShim.glTexParameteri(3553, 10241, 9987);
             GLShim.glTexParameteri(3553, 10240, 9729);
@@ -1648,7 +1648,7 @@ public class Map implements Runnable, IMap {
             }
 
             matrixStack.translate(-256.0, -256.0, 0.0);
-            matrixStack.translate((double) (-this.percentX * 512.0F / 64.0F), (double) (this.percentY * 512.0F / 64.0F), 0.0);
+            matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0);
             RenderSystem.applyModelViewMatrix();
             GLUtils.drawPre();
             GLUtils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
@@ -1729,7 +1729,7 @@ public class Map implements Runnable, IMap {
         double wayY = lastZDouble - (double) pt.getZ() - 0.5;
         float locate = (float) Math.toDegrees(Math.atan2(wayX, wayY));
         double hypot = Math.sqrt(wayX * wayX + wayY * wayY);
-        boolean far = false;
+        boolean far;
         if (this.options.rotates) {
             locate += this.direction;
         } else {
@@ -1738,7 +1738,7 @@ public class Map implements Runnable, IMap {
 
         hypot /= this.zoomScaleAdjusted;
         if (this.options.squareMap) {
-            double radLocate = Math.toRadians((double) locate);
+            double radLocate = Math.toRadians(locate);
             double dispX = hypot * Math.cos(radLocate);
             double dispY = hypot * Math.sin(radLocate);
             far = Math.abs(dispX) > 28.5 || Math.abs(dispY) > 28.5;
@@ -1775,14 +1775,14 @@ public class Map implements Runnable, IMap {
 
                 matrixStack.push();
                 GLShim.glColor4f(r, g, b, !pt.enabled && !target ? 0.3F : 1.0F);
-                matrixStack.translate((double) x, (double) y, 0.0);
+                matrixStack.translate(x, y, 0.0);
                 matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-locate));
                 if (uprightIcon) {
                     matrixStack.translate(0.0, -hypot, 0.0);
                     matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(locate));
-                    matrixStack.translate((double) (-x), (double) (-y), 0.0);
+                    matrixStack.translate(-x, -y, 0.0);
                 } else {
-                    matrixStack.translate((double) (-x), (double) (-y), 0.0);
+                    matrixStack.translate(-x, -y, 0.0);
                     matrixStack.translate(0.0, -hypot, 0.0);
                 }
 
@@ -1848,9 +1848,9 @@ public class Map implements Runnable, IMap {
             GLUtils.img2(this.arrowResourceLocation);
             GLShim.glTexParameteri(3553, 10241, 9729);
             GLShim.glTexParameteri(3553, 10240, 9729);
-            matrixStack.translate((double) x, (double) y, 0.0);
+            matrixStack.translate(x, y, 0.0);
             matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + (float) this.northRotate));
-            matrixStack.translate((double) (-x), (double) (-y), 0.0);
+            matrixStack.translate(-x, -y, 0.0);
             RenderSystem.applyModelViewMatrix();
             GLUtils.drawPre();
             GLUtils.setMap((float) x, (float) y, 16);
@@ -1879,9 +1879,9 @@ public class Map implements Runnable, IMap {
         GLShim.glTexParameteri(3553, 10241, 9987);
         GLShim.glTexParameteri(3553, 10240, 9729);
         matrixStack.push();
-        matrixStack.translate((double) ((float) scWidth / 2.0F), (double) ((float) scHeight / 2.0F), -0.0);
+        matrixStack.translate((float) scWidth / 2.0F, (float) scHeight / 2.0F, -0.0);
         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion((float) this.northRotate));
-        matrixStack.translate((double) (-((float) scWidth / 2.0F)), (double) (-((float) scHeight / 2.0F)), -0.0);
+        matrixStack.translate(-((float) scWidth / 2.0F), -((float) scHeight / 2.0F), -0.0);
         RenderSystem.applyModelViewMatrix();
         GLShim.glDisable(2929);
         GLUtils.drawPre();
@@ -2015,7 +2015,7 @@ public class Map implements Runnable, IMap {
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-rotate)), (double) distance * Math.cos(Math.toRadians((double) (-rotate))), 10.0);
+        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-rotate)), (double) distance * Math.cos(Math.toRadians(-rotate)), 10.0);
         this.write(matrixStack, "E", (float) x / scale - 2.0F, (float) y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();

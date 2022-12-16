@@ -298,7 +298,7 @@ public class Radar implements IRadar {
                 } else {
                     this.textureAtlas.registerFailedIcon(identifier + "custom");
                     if ((double) EnumMobs.values()[t].expectedWidth > 0.5) {
-                        mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, (Entity) null);
+                        mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
                         if (mobImage != null) {
                             float scale = (float) mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
                             mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
@@ -344,7 +344,7 @@ public class Radar implements IRadar {
             scale = (float) creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
             creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
-            BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, (Identifier) null, (Entity) null);
+            BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
             scale = (float) dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
             dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
@@ -1556,7 +1556,7 @@ public class Radar implements IRadar {
 
         try {
             if (getModel != null) {
-                modelBiped = (BipedEntityModel<LivingEntity>) getModel.invoke((Object) null, contact.entity, stack, EquipmentSlot.HEAD, null);
+                modelBiped = (BipedEntityModel<LivingEntity>) getModel.invoke(null, contact.entity, stack, EquipmentSlot.HEAD, null);
             }
         } catch (Exception ignored) {}
 

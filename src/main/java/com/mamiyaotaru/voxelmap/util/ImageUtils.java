@@ -57,7 +57,7 @@ public class ImageUtils {
         if (image.getType() != 6) {
             BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 6);
             Graphics2D g2 = temp.createGraphics();
-            g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), (ImageObserver) null);
+            g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
             g2.dispose();
             image = temp;
         }
@@ -73,7 +73,7 @@ public class ImageUtils {
             if (image.getType() != 6) {
                 BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 6);
                 Graphics2D g2 = temp.createGraphics();
-                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), (ImageObserver) null);
+                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
                 g2.dispose();
                 image = temp;
             }
@@ -269,7 +269,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scale = (float) (mobSkin.getWidth((ImageObserver) null) / imageWidth);
+        float scale = (float) (mobSkin.getWidth(null) / imageWidth);
         x = (int) ((float) x * scale);
         y = (int) ((float) y * scale);
         w = (int) ((float) w * scale);
@@ -284,7 +284,7 @@ public class ImageUtils {
     public static BufferedImage addImages(BufferedImage base, BufferedImage overlay, float x, float y, int baseWidth, int baseHeight) {
         int scale = base.getWidth() / baseWidth;
         Graphics gfx = base.getGraphics();
-        gfx.drawImage(overlay, (int) (x * (float) scale), (int) (y * (float) scale), (ImageObserver) null);
+        gfx.drawImage(overlay, (int) (x * (float) scale), (int) (y * (float) scale), null);
         gfx.dispose();
         return base;
     }
@@ -302,7 +302,7 @@ public class ImageUtils {
             int newHeight = Math.max(1, (int) ((float) image.getHeight() * scaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
-            g2.drawImage(image, 0, 0, newWidth, newHeight, (ImageObserver) null);
+            g2.drawImage(image, 0, 0, newWidth, newHeight, null);
             g2.dispose();
             return tmp;
         }
@@ -321,7 +321,7 @@ public class ImageUtils {
             int newHeight = Math.max(1, (int) ((float) image.getHeight() * yScaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
-            g2.drawImage(image, 0, 0, newWidth, newHeight, (ImageObserver) null);
+            g2.drawImage(image, 0, 0, newWidth, newHeight, null);
             g2.dispose();
             return tmp;
         }
@@ -329,15 +329,15 @@ public class ImageUtils {
 
     public static BufferedImage flipHorizontal(BufferedImage image) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1.0, 1.0);
-        tx.translate((double) (-image.getWidth((ImageObserver) null)), 0.0);
+        tx.translate(-image.getWidth(null), 0.0);
         AffineTransformOp op = new AffineTransformOp(tx, 1);
-        return op.filter(image, (BufferedImage) null);
+        return op.filter(image, null);
     }
 
     public static BufferedImage into128(BufferedImage base) {
         BufferedImage frame = new BufferedImage(128, 128, base.getType());
         Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, 64 - base.getWidth() / 2, 64 - base.getHeight() / 2, base.getWidth(), base.getHeight(), (ImageObserver) null);
+        gfx.drawImage(base, 64 - base.getWidth() / 2, 64 - base.getHeight() / 2, base.getWidth(), base.getHeight(), null);
         gfx.dispose();
         return frame;
     }
@@ -346,14 +346,14 @@ public class ImageUtils {
         int dim = Math.max(base.getWidth(), base.getHeight());
         int t = 1;
 
-        while (Math.pow(2.0, (double) (t - 1)) < (double) dim) {
+        while (Math.pow(2.0, t - 1) < (double) dim) {
             ++t;
         }
 
-        int size = (int) Math.pow(2.0, (double) t);
+        int size = (int) Math.pow(2.0, t);
         BufferedImage frame = new BufferedImage(size, size, base.getType());
         Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), (ImageObserver) null);
+        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
         gfx.dispose();
         return frame;
     }
@@ -364,7 +364,7 @@ public class ImageUtils {
         int size = dim + outlineWidth * 2;
         BufferedImage frame = new BufferedImage(size, size, base.getType());
         Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), (ImageObserver) null);
+        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
         gfx.dispose();
         return frame;
     }
@@ -388,7 +388,7 @@ public class ImageUtils {
         float armorOutlineFractionVertical = intendedHeight / 2.0F - 1.0F;
         BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         Graphics gfx = temp.getGraphics();
-        gfx.drawImage(image, 0, 0, (ImageObserver) null);
+        gfx.drawImage(image, 0, 0, null);
         gfx.dispose();
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
@@ -593,15 +593,15 @@ public class ImageUtils {
     public static BufferedImage colorify(BufferedImage image, float r, float g, float b) {
         BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 3);
         Graphics2D gfx = temp.createGraphics();
-        gfx.drawImage(image, 0, 0, (ImageObserver) null);
+        gfx.drawImage(image, 0, 0, null);
         gfx.dispose();
 
         for (int x = 0; x < temp.getWidth(); ++x) {
             for (int y = 0; y < temp.getHeight(); ++y) {
-                int ax = temp.getColorModel().getAlpha(temp.getRaster().getDataElements(x, y, (Object) null));
-                int rx = temp.getColorModel().getRed(temp.getRaster().getDataElements(x, y, (Object) null));
-                int gx = temp.getColorModel().getGreen(temp.getRaster().getDataElements(x, y, (Object) null));
-                int bx = temp.getColorModel().getBlue(temp.getRaster().getDataElements(x, y, (Object) null));
+                int ax = temp.getColorModel().getAlpha(temp.getRaster().getDataElements(x, y, null));
+                int rx = temp.getColorModel().getRed(temp.getRaster().getDataElements(x, y, null));
+                int gx = temp.getColorModel().getGreen(temp.getRaster().getDataElements(x, y, null));
+                int bx = temp.getColorModel().getBlue(temp.getRaster().getDataElements(x, y, null));
                 rx = (int) ((float) rx * r);
                 gx = (int) ((float) gx * g);
                 bx = (int) ((float) bx * b);

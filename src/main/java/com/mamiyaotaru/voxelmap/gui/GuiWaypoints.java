@@ -69,7 +69,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.addDrawableChild(this.buttonSortCreated = new ButtonWidget(this.getWidth() / 2, 34, 77, 20, Text.translatable("minimap.waypoints.sortbycreated"), button -> this.sortClicked(1)));
         this.addDrawableChild(this.buttonSortColor = new ButtonWidget(this.getWidth() / 2 + 77, 34, 77, 20, Text.translatable("minimap.waypoints.sortbycolor"), button -> this.sortClicked(4)));
         int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
-        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 80, 305 - filterStringWidth - 5, 20, (Text) null);
+        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 80, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
         this.addDrawableChild(this.buttonEdit = new ButtonWidget(this.getWidth() / 2 - 154, this.getHeight() - 52, 74, 20, Text.translatable("selectServer.edit"), button -> this.editWaypoint(this.selectedWaypoint)));

@@ -37,7 +37,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.getMinecraft().keyboard.setRepeatEvents(true);
         this.mobsList = new GuiSlotMobs(this);
         int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
-        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 56, 305 - filterStringWidth - 5, 20, (Text) null);
+        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 56, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
         this.addDrawableChild(this.buttonEnable = new ButtonWidget(this.getWidth() / 2 - 154, this.getHeight() - 28, 100, 20, Text.translatable("options.minimap.mobs.enable"), button -> this.setMobEnabled(this.selectedMobId, true)));

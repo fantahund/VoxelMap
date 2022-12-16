@@ -91,11 +91,11 @@ public class DimensionManager implements IDimensionManager {
 
     @Override
     public DimensionContainer getDimensionContainerByIdentifier(String ident) {
-        DimensionContainer dim = null;
+        DimensionContainer dim;
         Identifier resourceLocation = new Identifier(ident);
         dim = this.getDimensionContainerByResourceLocation(resourceLocation);
         if (dim == null) {
-            dim = new DimensionContainer((DimensionType) null, resourceLocation.getPath(), resourceLocation);
+            dim = new DimensionContainer(null, resourceLocation.getPath(), resourceLocation);
             this.dimensions.add(dim);
             this.sort();
         }
