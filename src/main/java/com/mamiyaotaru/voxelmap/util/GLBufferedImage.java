@@ -1,6 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.interfaces.IGLBufferedImage;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -47,15 +49,15 @@ public class GLBufferedImage extends BufferedImage implements IGLBufferedImage {
         }
 
         this.buffer.position(0).limit(this.bytes.length);
-        GLShim.glBindTexture(3553, this.index);
-        GLShim.glTexParameteri(3553, 10241, 9728);
-        GLShim.glTexParameteri(3553, 10240, 9728);
-        GLShim.glTexParameteri(3553, 10242, 33071);
-        GLShim.glTexParameteri(3553, 10243, 33071);
-        GLShim.glPixelStorei(3314, 0);
-        GLShim.glPixelStorei(3316, 0);
-        GLShim.glPixelStorei(3315, 0);
-        GLShim.glTexImage2D(3553, 0, 6408, this.getWidth(), this.getHeight(), 0, 6408, 32821, this.buffer);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, this.index);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        GLShim.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+        GLShim.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+        GLShim.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+        GLShim.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, this.getWidth(), this.getHeight(), 0, GL11.GL_RGBA, GL12.GL_UNSIGNED_INT_8_8_8_8, this.buffer);
     }
 
     @Override
