@@ -25,7 +25,7 @@ public interface IWaypointManager {
 
     String getCurrentWorldName();
 
-    TreeSet getKnownSubworldNames();
+    TreeSet<String> getKnownSubworldNames();
 
     boolean receivedAutoSubworldName();
 

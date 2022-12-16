@@ -182,9 +182,9 @@ public class Map implements Runnable, IMap {
             var7.printStackTrace();
         }
 
-        java.util.Map categoryOrder = (java.util.Map) ReflectionUtils.getPrivateFieldValueByType(null, KeyBinding.class, java.util.Map.class, 2);
+        java.util.Map<String, Integer> categoryOrder = (java.util.Map<String, Integer>) ReflectionUtils.getPrivateFieldValueByType(null, KeyBinding.class, java.util.Map.class, 2);
         System.out.println("CATEGORY ORDER IS " + categoryOrder.size());
-        Integer categoryPlace = (Integer) categoryOrder.get("controls.minimap.title");
+        Integer categoryPlace = categoryOrder.get("controls.minimap.title");
         if (categoryPlace == null) {
             int currentSize = categoryOrder.size();
             categoryOrder.put("controls.minimap.title", currentSize + 1);
@@ -502,7 +502,7 @@ public class Map implements Runnable, IMap {
     }
 
     private void setZoomScale() {
-        this.zoomScale = Math.pow(2.0, (double) this.zoom) / 2.0;
+        this.zoomScale = Math.pow(2.0, this.zoom) / 2.0;
         if (this.options.squareMap && this.options.rotates) {
             this.zoomScaleAdjusted = this.zoomScale / 1.4142F;
         } else {
@@ -688,7 +688,7 @@ public class Map implements Runnable, IMap {
                     if (statusEffectInstance.getEffectType().isBeneficial()) {
                         statusIconOffset = Math.max(statusIconOffset, 24.0F);
                     } else {
-                        statusIconOffset = Math.max(statusIconOffset, 50.0F);
+                        statusIconOffset = 50.0F;
                     }
                 }
             }
@@ -973,11 +973,11 @@ public class Map implements Runnable, IMap {
     }
 
     private int getPixelColor(boolean needBiome, boolean needHeightAndID, boolean needTint, boolean needLight, boolean nether, boolean caves, World world, int multi, int startX, int startZ, int imageX, int imageY) {
-        int surfaceHeight = 0;
+        int surfaceHeight;
         int seafloorHeight = -1;
         int transparentHeight = -1;
-        int foliageHeight = -1;
-        int surfaceColor = 0;
+        int foliageHeight;
+        int surfaceColor;
         int seafloorColor = 0;
         int transparentColor = 0;
         int foliageColor = 0;
@@ -989,13 +989,13 @@ public class Map implements Runnable, IMap {
         boolean transparentBlockChangeForcedTint = false;
         boolean foliageBlockChangeForcedTint = false;
         boolean seafloorBlockChangeForcedTint = false;
-        int surfaceBlockStateID = 0;
-        int transparentBlockStateID = 0;
-        int foliageBlockStateID = 0;
-        int seafloorBlockStateID = 0;
+        int surfaceBlockStateID;
+        int transparentBlockStateID;
+        int foliageBlockStateID;
+        int seafloorBlockStateID;
         this.blockPos = this.blockPos.withXYZ(startX + imageX, 0, startZ + imageY);
-        int color24 = 0;
-        int biomeID = 0;
+        int color24;
+        int biomeID;
         if (needBiome) {
             if (world.isChunkLoaded(this.blockPos)) {
                 biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(this.blockPos).value());
@@ -1030,7 +1030,7 @@ public class Map implements Runnable, IMap {
 
                     surfaceHeight = transparentHeight;
                     this.surfaceBlockState = this.transparentBlockState;
-                    VoxelShape voxelShape = null;
+                    VoxelShape voxelShape;
                     boolean hasOpacity = this.surfaceBlockState.getOpacity(world, this.blockPos) > 0;
                     if (!hasOpacity && this.surfaceBlockState.isOpaque() && this.surfaceBlockState.hasSidedTransparency()) {
                         voxelShape = this.surfaceBlockState.getCullingFace(world, this.blockPos, Direction.DOWN);
@@ -1219,7 +1219,7 @@ public class Map implements Runnable, IMap {
                 }
 
                 seafloorColor = this.applyHeight(seafloorColor, nether, caves, world, multi, startX, startZ, imageX, imageY, seafloorHeight, solid, 0);
-                int seafloorLight = 255;
+                int seafloorLight;
                 if (needLight) {
                     seafloorLight = this.getLight(seafloorColor, seafloorBlockState, world, startX + imageX, startZ + imageY, seafloorHeight, solid);
                     this.blockPos.setXYZ(startX + imageX, seafloorHeight, startZ + imageY);
@@ -1252,7 +1252,7 @@ public class Map implements Runnable, IMap {
                 if (transparentHeight != -1 && this.transparentBlockState != null && this.transparentBlockState != BlockRepository.air.getDefaultState()) {
                     if (this.options.biomes) {
                         transparentColor = this.colorManager.getBlockColor(this.blockPos, transparentBlockStateID, biomeID);
-                        int tint = -1;
+                        int tint;
                         if (!needTint && !transparentBlockChangeForcedTint) {
                             tint = this.mapData[this.zoom].getTransparentBiomeTint(imageX, imageY);
                         } else {
@@ -1416,7 +1416,7 @@ public class Map implements Runnable, IMap {
     }
 
     private int getTransparentHeight(boolean nether, boolean caves, World world, int x, int z, int height) {
-        int transHeight = -1;
+        int transHeight;
         if (!caves && !nether) {
             transHeight = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, this.blockPos.withXYZ(x, height, z)).getY();
             if (transHeight <= height) {
@@ -1447,15 +1447,13 @@ public class Map implements Runnable, IMap {
     private int applyHeight(int color24, boolean nether, boolean caves, World world, int multi, int startX, int startZ, int imageX, int imageY, int height, boolean solid, int layer) {
         if (color24 != this.colorManager.getAirColor() && color24 != 0 && (this.options.heightmap || this.options.slopemap) && !solid) {
             int heightComp = -1;
-            int diff = 0;
+            int diff;
             double sc = 0.0;
             if (!this.options.slopemap) {
-                if (this.options.heightmap) {
-                    diff = height - this.lastY;
-                    sc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 1.8;
-                    if (diff < 0) {
-                        sc = 0.0 - sc;
-                    }
+                diff = height - this.lastY;
+                sc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 1.8;
+                if (diff < 0) {
+                    sc = 0.0 - sc;
                 }
             } else {
                 if (imageX > 0 && imageY < 32 * multi - 1) {
@@ -1513,7 +1511,7 @@ public class Map implements Runnable, IMap {
 
                 diff = heightComp - height;
                 if (diff != 0) {
-                    sc = diff > 0 ? 1.0 : (diff < 0 ? -1.0 : 0.0);
+                    sc = diff > 0 ? 1.0 : -1.0;
                     sc /= 8.0;
                 }
 
@@ -1707,7 +1705,7 @@ public class Map implements Runnable, IMap {
             if (pt.isActive() || pt == highlightedPoint) {
                 double distanceSq = pt.getDistanceSqToEntity(this.game.getCameraEntity());
                 if (distanceSq < (double) (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                    this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, (Sprite) null, (Float) null, (Float) null, (Float) null);
+                    this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
                 }
             }
         }
@@ -1903,8 +1901,8 @@ public class Map implements Runnable, IMap {
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
         if (this.options.biomeOverlay != 0) {
-            double factor = Math.pow(2.0, (double) (3 - this.zoom));
-            int minimumSize = (int) Math.pow(2.0, (double) this.zoom);
+            double factor = Math.pow(2.0, 3 - this.zoom);
+            int minimumSize = (int) Math.pow(2.0, this.zoom);
             minimumSize *= minimumSize;
             ArrayList labels = this.mapData[this.zoom].getBiomeLabels();
             GLShim.glDisable(2929);
@@ -2009,7 +2007,7 @@ public class Map implements Runnable, IMap {
             if (this.options.rotates) {
                 float tempdir = this.direction % 90.0F;
                 tempdir = 45.0F - Math.abs(45.0F - tempdir);
-                distance = (float) (33.5 / (double) scale / Math.cos(Math.toRadians((double) tempdir)));
+                distance = (float) (33.5 / (double) scale / Math.cos(Math.toRadians(tempdir)));
             } else {
                 distance = 33.5F / scale;
             }
@@ -2024,7 +2022,7 @@ public class Map implements Runnable, IMap {
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate((double) distance * Math.sin(Math.toRadians((double) (-rotate))), (double) distance * Math.cos(Math.toRadians((double) (-rotate))), 10.0);
+        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-rotate)), (double) distance * Math.cos(Math.toRadians((double) (-rotate))), 10.0);
         this.write(matrixStack, "E", (float) x / scale - 2.0F, (float) y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();

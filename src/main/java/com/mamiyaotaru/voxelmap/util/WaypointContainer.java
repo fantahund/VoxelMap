@@ -28,11 +28,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class WaypointContainer {
-    private List<Waypoint> wayPts = new ArrayList();
+    private final List<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint = null;
-    private MinecraftClient mc;
-    public MapSettingsManager options = null;
-    private final String TARGETFLAG = "*&^TARget%$^";
+    private final MinecraftClient mc;
+    public MapSettingsManager options;
 
     public WaypointContainer(MapSettingsManager options) {
         this.mc = MinecraftClient.getInstance();
@@ -52,7 +51,7 @@ public class WaypointContainer {
     }
 
     private void sortWaypoints() {
-        Collections.sort(this.wayPts, Collections.reverseOrder());
+        this.wayPts.sort(Collections.reverseOrder());
     }
 
     public void renderWaypoints(float partialTicks, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
@@ -210,7 +209,7 @@ public class WaypointContainer {
 
         float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
         matrixStack.push();
-        matrixStack.translate((double) ((float) baseX + 0.5F), (double) ((float) baseY + 0.5F), (double) ((float) baseZ + 0.5F));
+        matrixStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-this.mc.getEntityRenderDispatcher().camera.getYaw()));
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(this.mc.getEntityRenderDispatcher().camera.getPitch()));
         matrixStack.scale(-var14, -var14, -var14);
@@ -236,10 +235,10 @@ public class WaypointContainer {
             GLShim.glDepthMask(distance < maxDistance);
             GLShim.glEnable(2929);
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(matrix4f, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, 1.0F * fade).next();
-            vertexBuffer.vertex(matrix4f, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, 1.0F * fade).next();
-            vertexBuffer.vertex(matrix4f, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, 1.0F * fade).next();
-            vertexBuffer.vertex(matrix4f, width, -width, 0.0F).texture(icon.getMaxU(), icon.getMinV()).color(r, g, b, 1.0F * fade).next();
+            vertexBuffer.vertex(matrix4f, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, fade).next();
+            vertexBuffer.vertex(matrix4f, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, fade).next();
+            vertexBuffer.vertex(matrix4f, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, fade).next();
+            vertexBuffer.vertex(matrix4f, width, -width, 0.0F).texture(icon.getMaxU(), icon.getMinV()).color(r, g, b, fade).next();
             tessellator.draw();
         }
 
@@ -306,11 +305,11 @@ public class WaypointContainer {
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;
                 GLShim.glDisable(2929);
-                fontRenderer.draw(Text.literal(name), (float) (-fontRenderer.getWidth(name) / 2), (float) elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
+                fontRenderer.draw(Text.literal(name), (float) (-fontRenderer.getWidth(name) / 2), elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
                 vertexConsumerProvider.draw();
                 GLShim.glEnable(2929);
                 textColor = (int) (255.0F * fade) << 24 | 16777215;
-                fontRenderer.draw(matrixStack, name, (float) (-fontRenderer.getWidth(name) / 2), (float) elevateBy, textColor);
+                fontRenderer.draw(matrixStack, name, (float) (-fontRenderer.getWidth(name) / 2), elevateBy, textColor);
             }
 
             GLShim.glEnable(3042);

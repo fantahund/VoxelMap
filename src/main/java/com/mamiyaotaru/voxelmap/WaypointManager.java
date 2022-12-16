@@ -50,9 +50,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class WaypointManager implements IWaypointManager {
     IVoxelMap master;
@@ -376,11 +378,7 @@ public class WaypointManager implements IWaypointManager {
         String currentSubWorldDescriptorScrubbed = TextUtils.scrubName(this.currentSubworldDescriptorNoCodes);
         synchronized (this.waypointLock) {
             for (Waypoint pt : this.wayPts) {
-                if (currentSubWorldDescriptorScrubbed != "" && pt.world != "" && !currentSubWorldDescriptorScrubbed.equals(pt.world)) {
-                    pt.inWorld = false;
-                } else {
-                    pt.inWorld = true;
-                }
+                pt.inWorld = currentSubWorldDescriptorScrubbed.equals("") || Objects.equals(pt.world, "") || currentSubWorldDescriptorScrubbed.equals(pt.world);
             }
         }
 
@@ -533,11 +531,7 @@ public class WaypointManager implements IWaypointManager {
             }
 
             out.println("oldNorthWorlds:" + oldNorthWorldsString);
-            StringBuilder seedsString = new StringBuilder();
-
-            for (Entry<String, String> entry : this.worldSeeds.entrySet()) {
-                seedsString.append(TextUtils.scrubName(entry.getKey())).append("#").append(entry.getValue()).append(",");
-            }
+            String seedsString = this.worldSeeds.entrySet().stream().map(entry -> TextUtils.scrubName(entry.getKey()) + "#" + entry.getValue() + ",").collect(Collectors.joining());
 
             out.println("seeds:" + seedsString);
 
@@ -553,7 +547,7 @@ public class WaypointManager implements IWaypointManager {
                         dimensionsString = dimensionsString + AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName();
                     }
 
-                    out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + Boolean.toString(pt.enabled) + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
+                    out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + pt.enabled + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
                 }
             }
 
@@ -726,7 +720,7 @@ public class WaypointManager implements IWaypointManager {
         }
     }
 
-    private void loadWaypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet dimensions) {
+    private void loadWaypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet<DimensionContainer> dimensions) {
         Waypoint newWaypoint = new Waypoint(name, x, z, y, enabled, red, green, blue, suffix, world, dimensions);
         if (!this.wayPts.contains(newWaypoint)) {
             this.wayPts.add(newWaypoint);

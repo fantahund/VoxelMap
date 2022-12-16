@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class BlockModel {
     ArrayList<BlockFace> faces;
@@ -167,15 +168,10 @@ public class BlockModel {
         }
 
         private boolean checkIfHorizontal() {
-            boolean isHorizontal = true;
+            boolean isHorizontal;
             float initialY = this.vertices[0].y;
 
-            for (int t = 1; t < this.vertices.length; ++t) {
-                if (this.vertices[t].y != initialY) {
-                    isHorizontal = false;
-                    break;
-                }
-            }
+            isHorizontal = IntStream.range(1, this.vertices.length).noneMatch(t -> this.vertices[t].y != initialY);
 
             return isHorizontal;
         }

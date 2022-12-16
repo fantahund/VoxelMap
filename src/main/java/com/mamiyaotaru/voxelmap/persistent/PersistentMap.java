@@ -44,6 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.IntStream;
 
 public class PersistentMap implements IPersistentMap, IChangeObserver {
     IVoxelMap master;
@@ -215,16 +216,11 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
     @Override
     public void setLightMapArray(int[] lightmapColors) {
-        boolean changed = false;
+        boolean changed;
         int torchOffset = 0;
         int skylightMultiplier = 16;
 
-        for (int t = 0; t < 16; ++t) {
-            if (lightmapColors[t * skylightMultiplier + torchOffset] != this.lightmapColors[t * skylightMultiplier + torchOffset]) {
-                changed = true;
-                break;
-            }
-        }
+        changed = IntStream.range(0, 16).anyMatch(t -> lightmapColors[t * skylightMultiplier + torchOffset] != this.lightmapColors[t * skylightMultiplier + torchOffset]);
 
         System.arraycopy(lightmapColors, 0, this.lightmapColors, 0, 256);
         if (changed) {
@@ -632,7 +628,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         if (color24 != this.colorManager.getAirColor() && color24 != 0) {
             int heightComp = -1;
             if ((mapOptions.heightmap || mapOptions.slopemap) && !solid) {
-                int diff = 0;
+                int diff;
                 double sc = 0.0;
                 boolean invert = false;
                 if (!mapOptions.slopemap) {

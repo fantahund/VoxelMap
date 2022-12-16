@@ -96,7 +96,7 @@ public class Stitcher {
     }
 
     public void doStitchNew() {
-        Holder[] stitchHoldersArray = (Holder[]) this.setStitchHolders.toArray(new Holder[this.setStitchHolders.size()]);
+        Holder[] stitchHoldersArray = this.setStitchHolders.toArray(new Holder[this.setStitchHolders.size()]);
         Arrays.sort(stitchHoldersArray);
 
         for (Holder holder : stitchHoldersArray) {
@@ -131,13 +131,7 @@ public class Stitcher {
     }
 
     private boolean allocateSlot(Holder holder) {
-        for (Slot stitchSlot : this.stitchSlots) {
-            if (stitchSlot.addSlot(holder)) {
-                return true;
-            }
-        }
-
-        return this.expandAndAllocateSlot(holder);
+        return this.stitchSlots.stream().anyMatch(stitchSlot -> stitchSlot.addSlot(holder)) || this.expandAndAllocateSlot(holder);
     }
 
     private boolean expandAndAllocateSlot(Holder holder) {

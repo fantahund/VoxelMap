@@ -29,7 +29,7 @@ public class WorldMatcher {
         Runnable runnable = new Runnable() {
             int x;
             int z;
-            ArrayList candidateRegions = new ArrayList();
+            final ArrayList<ComparisonCachedRegion> candidateRegions = new ArrayList<>();
             ComparisonCachedRegion region;
             final String worldName = WorldMatcher.this.master.getWaypointManager().getCurrentWorldName();
             final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
@@ -45,7 +45,7 @@ public class WorldMatcher {
                 }
 
                 this.cachedRegionFileDir.mkdirs();
-                ArrayList knownSubworldNames = new ArrayList(WorldMatcher.this.master.getWaypointManager().getKnownSubworldNames());
+                ArrayList<String> knownSubworldNames = new ArrayList<>(WorldMatcher.this.master.getWaypointManager().getKnownSubworldNames());
                 String[] subworldNamesArray = new String[knownSubworldNames.size()];
                 knownSubworldNames.toArray(subworldNamesArray);
                 ClientPlayerEntity player = MinecraftClient.getInstance().player;
@@ -86,10 +86,10 @@ public class WorldMatcher {
                     }
                 }
 
-                Iterator iterator = this.candidateRegions.iterator();
+                Iterator<ComparisonCachedRegion> iterator = this.candidateRegions.iterator();
 
                 while (!WorldMatcher.this.cancelled && iterator.hasNext()) {
-                    ComparisonCachedRegion candidateRegion = (ComparisonCachedRegion) iterator.next();
+                    ComparisonCachedRegion candidateRegion = iterator.next();
                     MessageUtils.printDebug("testing region " + candidateRegion.getSubworldName() + ": " + candidateRegion.getKey());
                     if (this.region.getSimilarityTo(candidateRegion) < 95) {
                         MessageUtils.printDebug("region failed");

@@ -80,6 +80,8 @@ import net.minecraft.entity.passive.WanderingTraderEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.util.Identifier;
 
+import java.util.Arrays;
+
 public enum EnumMobs {
     GENERICHOSTILE(null, "Monster", false, 8.0F, "textures/entity/zombie/zombie.png", "", true, false),
     GENERICNEUTRAL(null, "Mob", false, 8.0F, "textures/entity/pig/pig.png", "", false, true),
@@ -176,13 +178,7 @@ public enum EnumMobs {
     public boolean enabled;
 
     public static EnumMobs getMobByName(String par0) {
-        for (EnumMobs enumMob : values()) {
-            if (enumMob.id.equals(par0)) {
-                return enumMob;
-            }
-        }
-
-        return null;
+        return Arrays.stream(values()).filter(enumMob -> enumMob.id.equals(par0)).findFirst().orElse(null);
     }
 
     public static EnumMobs getMobTypeByEntity(Entity entity) {
@@ -198,13 +194,7 @@ public enum EnumMobs {
         if (OtherClientPlayerEntity.class.isAssignableFrom(clazz)) {
             return PLAYER;
         } else if (!clazz.equals(HorseEntity.class) && !clazz.equals(DonkeyEntity.class) && !clazz.equals(MuleEntity.class) && !clazz.equals(SkeletonHorseEntity.class) && !clazz.equals(ZombieHorseEntity.class)) {
-            for (EnumMobs enumMob : values()) {
-                if (clazz.equals(enumMob.clazz)) {
-                    return enumMob;
-                }
-            }
-
-            return UNKNOWN;
+            return Arrays.stream(values()).filter(enumMob -> clazz.equals(enumMob.clazz)).findFirst().orElse(UNKNOWN);
         } else {
             return HORSE;
         }

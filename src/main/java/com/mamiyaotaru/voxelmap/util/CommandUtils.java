@@ -29,12 +29,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommandUtils {
-    private static final String NEW_WAYPOINT_COMMAND = "/newWaypoint ";
     private static final int NEW_WAYPOINT_COMMAND_LENGTH = "/newWaypoint ".length();
-    private static final String TELEPORT_COMMAND = "/ztp ";
     private static final int TELEPORT_COMMAND_LENGTH = "/ztp ".length();
-    private static Random generator = new Random();
-    public static Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", 2);
+    private static final Random generator = new Random();
+    public static Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
 
     public static boolean checkForWaypoints(Text chat, MessageIndicator indicator) {
         if (indicator != null && indicator.loggedName() != null && indicator.loggedName().equals("ModifiedbyVoxelMap")) {
@@ -44,10 +42,10 @@ public class CommandUtils {
 
         String message = chat.getString();
         ArrayList<String> waypointStrings = getWaypointStrings(message);
-        if (waypointStrings.size() <= 0) {
+        if (waypointStrings.size() == 0) {
             return true;
         } else {
-            ArrayList<Text> textComponents = new ArrayList();
+            ArrayList<Text> textComponents = new ArrayList<>();
             int count = 0;
 
             for (String waypointString : waypointStrings) {
@@ -68,7 +66,7 @@ public class CommandUtils {
             }
 
             if (count < message.length() - 1) {
-                textComponents.add(Text.literal(message.substring(count, message.length())));
+                textComponents.add(Text.literal(message.substring(count)));
             }
 
             MutableText finalTextComponent = Text.literal("");
@@ -176,9 +174,7 @@ public class CommandUtils {
 
                 waypoint = new Waypoint(name, x, z, y, enabled, red, green, blue, suffix, world, dimensions);
             }
-        } catch (NumberFormatException var20) {
-            waypoint = null;
-        }
+        } catch (NumberFormatException ignored) {}
 
         return waypoint;
     }

@@ -3,25 +3,27 @@ package com.mamiyaotaru.voxelmap.util;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.TreeSet;
 
 public class Waypoint implements Serializable, Comparable<Waypoint> {
+    @Serial
     private static final long serialVersionUID = 8136790917447997951L;
     public String name;
-    public String imageSuffix = "";
-    public String world = "";
-    public TreeSet<DimensionContainer> dimensions = new TreeSet();
+    public String imageSuffix;
+    public String world;
+    public TreeSet<DimensionContainer> dimensions;
     public int x;
     public int z;
     public int y;
     public boolean enabled;
     public boolean inWorld = true;
     public boolean inDimension = true;
-    public float red = 0.0F;
-    public float green = 1.0F;
-    public float blue = 0.0F;
+    public float red;
+    public float green;
+    public float blue;
 
     public Waypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet dimensions) {
         this.name = name;
@@ -85,10 +87,9 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     public boolean equals(Object otherObject) {
         if (this == otherObject) {
             return true;
-        } else if (!(otherObject instanceof Waypoint)) {
+        } else if (!(otherObject instanceof Waypoint otherWaypoint)) {
             return false;
         } else {
-            Waypoint otherWaypoint = (Waypoint) otherObject;
             return this.name.equals(otherWaypoint.name) && this.imageSuffix.equals(otherWaypoint.imageSuffix) && this.world.equals(otherWaypoint.world) && this.x == otherWaypoint.x && this.y == otherWaypoint.y && this.z == otherWaypoint.z && this.red == otherWaypoint.red && this.green == otherWaypoint.green && this.blue == otherWaypoint.blue && this.dimensions.equals(otherWaypoint.dimensions);
         }
     }

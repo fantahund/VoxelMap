@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomMobsManager {
-    public static List<CustomMob> mobs = new ArrayList();
+    public static List<CustomMob> mobs = new ArrayList<>();
 
     public static void add(String type, boolean enabled) {
         CustomMob mob = getCustomMobByType(type);
@@ -28,12 +28,6 @@ public class CustomMobsManager {
     }
 
     public static CustomMob getCustomMobByType(String type) {
-        for (CustomMob mob : mobs) {
-            if (mob.id.equals(type)) {
-                return mob;
-            }
-        }
-
-        return null;
+        return mobs.stream().filter(mob -> mob.id.equals(type)).findFirst().orElse(null);
     }
 }

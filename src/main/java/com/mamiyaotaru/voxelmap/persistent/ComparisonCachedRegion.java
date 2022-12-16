@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.Heightmap;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -76,15 +78,8 @@ public class ComparisonCachedRegion {
     }
 
     private boolean isChunkEmpty(ClientWorld world, WorldChunk chunk) {
-        for (int t = 0; t < 16; ++t) {
-            for (int s = 0; s < 16; ++s) {
-                if (chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, t, s) != 0) {
-                    return false;
-                }
-            }
-        }
 
-        return true;
+        return IntStream.range(0, 16).noneMatch(t -> IntStream.range(0, 16).anyMatch(s -> chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, t, s) != 0));
     }
 
     private void loadChunkData(WorldChunk chunk, int chunkX, int chunkZ) {
@@ -105,7 +100,7 @@ public class ComparisonCachedRegion {
                 FileInputStream fis = new FileInputStream(cachedRegionFile);
                 ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
                 Scanner sc = new Scanner(zis);
-                BiMap stateToInt = null;
+                BiMap<BlockState, Integer> stateToInt = null;
                 int version = 1;
                 int total = 0;
 
