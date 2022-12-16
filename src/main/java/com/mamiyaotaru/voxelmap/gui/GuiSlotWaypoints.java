@@ -39,7 +39,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     public GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
         super(par1GuiWaypoints.options.game, par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
         this.parentGui = par1GuiWaypoints;
-        this.waypoints = new ArrayList<WaypointItem>();
+        this.waypoints = new ArrayList<>();
 
         for (Waypoint pt : this.parentGui.waypointManager.getWaypoints()) {
             if (pt.inWorld && pt.inDimension) {

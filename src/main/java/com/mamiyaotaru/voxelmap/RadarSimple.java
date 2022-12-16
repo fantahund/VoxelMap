@@ -33,7 +33,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
 

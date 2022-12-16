@@ -65,7 +65,6 @@ import net.minecraft.world.chunk.WorldChunk;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.IOException;

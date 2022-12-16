@@ -149,6 +149,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
@@ -223,7 +224,7 @@ public class Radar implements IRadar {
             this.mapProperties = (java.util.Map) mapPropertiesField.get(null);
             Field randomEntityField = randomEntitiesClass.getDeclaredField("randomEntity");
             randomEntityField.setAccessible(true);
-            this.randomEntity = randomEntityField.get((Object) null);
+            this.randomEntity = randomEntityField.get(null);
             Class<?> iRandomEntityClass = Class.forName("net.optifine.IRandomEntity");
             this.randomEntityClass = Class.forName("net.optifine.RandomEntity");
             Class<?>[] argClasses1 = new Class[]{Entity.class};
@@ -809,7 +810,7 @@ public class Radar implements IRadar {
                             resourceLocationTertiary = Registry.VILLAGER_PROFESSION.getId(villagerProfession);
                             resourceLocationTertiary = new Identifier(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
                             if (villagerProfession != VillagerProfession.NITWIT) {
-                                resourceLocationQuaternary = (Identifier) LEVEL_TO_ID.get(MathHelper.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
+                                resourceLocationQuaternary = LEVEL_TO_ID.get(MathHelper.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
                                 resourceLocationQuaternary = new Identifier(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
                             }
                         }
@@ -829,15 +830,15 @@ public class Radar implements IRadar {
             }
 
             if (resourceLocationSecondary != null) {
-                resourceLocationSecondary = this.getRandomizedResourceLocationForEntity(resourceLocationSecondary, (LivingEntity) contact.entity);
+                resourceLocationSecondary = this.getRandomizedResourceLocationForEntity(resourceLocationSecondary, contact.entity);
             }
 
             if (resourceLocationTertiary != null) {
-                resourceLocationTertiary = this.getRandomizedResourceLocationForEntity(resourceLocationTertiary, (LivingEntity) contact.entity);
+                resourceLocationTertiary = this.getRandomizedResourceLocationForEntity(resourceLocationTertiary, contact.entity);
             }
 
             if (resourceLocationQuaternary != null) {
-                resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, (LivingEntity) contact.entity);
+                resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, contact.entity);
             }
         }
 
@@ -1249,7 +1250,7 @@ public class Radar implements IRadar {
         GLShim.glClear(16640);
         GLShim.glBlendFunc(770, 771);
         matrixStack.push();
-        matrixStack.translate((double) (width / 2), (double) (height / 2), 0.0);
+        matrixStack.translate(width / 2f, height / 2f, 0.0);
         matrixStack.scale(size, size, size);
         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180.0F));
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
@@ -1272,13 +1273,13 @@ public class Radar implements IRadar {
             float maxY = 0.0F;
             float minY = 0.0F;
 
-            for (int t = 0; t < headBits.length; ++t) {
-                if (headBits[t].modelPart.pivotY < minY) {
-                    minY = headBits[t].modelPart.pivotY;
+            for (ModelPartWithResourceLocation headBit : headBits) {
+                if (headBit.modelPart.pivotY < minY) {
+                    minY = headBit.modelPart.pivotY;
                 }
 
-                if (headBits[t].modelPart.pivotY > maxY) {
-                    maxY = headBits[t].modelPart.pivotY;
+                if (headBit.modelPart.pivotY > maxY) {
+                    maxY = headBit.modelPart.pivotY;
                 }
             }
 
@@ -1288,17 +1289,16 @@ public class Radar implements IRadar {
                 offsetByY = 25.0F - maxY;
             }
 
-            for (int t = 0; t < headBits.length; ++t) {
-                VertexConsumer vertexConsumer = immediate.getBuffer(model.getLayer(headBits[t].resourceLocation));
-                if (model instanceof EntityModel) {
-                    EntityModel entityModel = (EntityModel) model;
+            for (ModelPartWithResourceLocation headBit : headBits) {
+                VertexConsumer vertexConsumer = immediate.getBuffer(model.getLayer(headBit.resourceLocation));
+                if (model instanceof EntityModel entityModel) {
                     entityModel.setAngles(livingEntity, 0.0F, 0.0F, 163.0F, 360.0F, 0.0F);
                 }
 
-                float y = headBits[t].modelPart.pivotY;
-                headBits[t].modelPart.pivotY += offsetByY;
-                headBits[t].modelPart.render(newMatrixStack, vertexConsumer, 15728880, OverlayTexture.DEFAULT_UV);
-                headBits[t].modelPart.pivotY = y;
+                float y = headBit.modelPart.pivotY;
+                headBit.modelPart.pivotY += offsetByY;
+                headBit.modelPart.render(newMatrixStack, vertexConsumer, 15728880, OverlayTexture.DEFAULT_UV);
+                headBit.modelPart.pivotY = y;
                 immediate.draw();
             }
         } catch (Exception var25) {
@@ -1372,7 +1372,7 @@ public class Radar implements IRadar {
             }
 
             if (checkCount < 5) {
-                PlayerSkinTexture imageData = null;
+                PlayerSkinTexture imageData;
 
                 try {
                     if (player.getSkinTexture() == DefaultSkinHelper.getTexture(player.getUuid())) {
@@ -1439,7 +1439,7 @@ public class Radar implements IRadar {
                     } else if (nbttagcompound.contains("SkullOwner", 8)) {
                         String name = nbttagcompound.getString("SkullOwner");
                         if (name != null && !name.equals("")) {
-                            gameProfile = new GameProfile((UUID) null, name);
+                            gameProfile = new GameProfile(null, name);
                             nbttagcompound.remove("SkullOwner");
                             SkullBlockEntity.loadProperties(gameProfile, gameProfilex -> nbttagcompound.put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), gameProfilex)));
                         }
@@ -1467,8 +1467,7 @@ public class Radar implements IRadar {
                         this.newMobs = true;
                     }
                 }
-            } else if (helmet instanceof ArmorItem) {
-                ArmorItem helmetArmor = (ArmorItem) helmet;
+            } else if (helmet instanceof ArmorItem helmetArmor) {
                 int armorType = this.getArmorType(helmetArmor);
                 if (armorType != UNKNOWN) {
                     icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[armorType]);
@@ -1482,12 +1481,10 @@ public class Radar implements IRadar {
                     }
                 }
 
-                if (helmetArmor instanceof DyeableArmorItem) {
-                    DyeableArmorItem dyeableHelmetArmor = (DyeableArmorItem) helmetArmor;
+                if (helmetArmor instanceof DyeableArmorItem dyeableHelmetArmor) {
                     contact.setArmorColor(dyeableHelmetArmor.getColor(stack));
                 }
-            } else if (helmet instanceof BlockItem) {
-                BlockItem blockItem = (BlockItem) helmet;
+            } else if (helmet instanceof BlockItem blockItem) {
                 Block block = blockItem.getBlock();
                 BlockState blockState = block.getDefaultState();
                 int stateID = Block.getRawIdFromState(blockState);
@@ -1518,11 +1515,11 @@ public class Radar implements IRadar {
         boolean isPiglin = contact.type == EnumMobs.PIGLIN || contact.type == EnumMobs.PIGLINZOMBIE;
         Method m = null;
 
+        // TODO Remove this. net.minecraftforge only applies to Forge. We're a Fabric mod xD // Algo
         try {
-            Class c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
+            Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
             m = c.getMethod("getArmorTexture", Entity.class, ItemStack.class, String.class, EquipmentSlot.class, String.class);
-        } catch (Exception var19) {
-        }
+        } catch (Exception ignored) {}
 
         Method getResourceLocation = m;
         Identifier resourceLocation = null;
@@ -1536,24 +1533,23 @@ public class Radar implements IRadar {
                 materialName = materialName.substring(sep + 1);
             }
 
-            String suffix = null;
-            suffix = suffix == null ? "" : "_" + suffix;
+            String suffix;
+            suffix = "";
             String resourcePath = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, materialName, 1, suffix);
             if (getResourceLocation != null) {
-                resourcePath = (String) getResourceLocation.invoke((Object) null, contact.entity, stack, resourcePath, EquipmentSlot.HEAD, null);
+                resourcePath = (String) getResourceLocation.invoke(null, contact.entity, stack, resourcePath, EquipmentSlot.HEAD, null);
             }
 
             resourceLocation = new Identifier(resourcePath);
-        } catch (Exception var18) {
-        }
+        } catch (Exception ignored) {}
 
         m = null;
 
+        // TODO Idem // Algo
         try {
-            Class c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
+            Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
             m = c.getMethod("getArmorModel", LivingEntity.class, ItemStack.class, EquipmentSlot.class, BipedEntityModel.class);
-        } catch (Exception var17) {
-        }
+        } catch (Exception ignored) {}
 
         Method getModel = m;
         BipedEntityModel<LivingEntity> modelBiped = null;
@@ -1562,8 +1558,7 @@ public class Radar implements IRadar {
             if (getModel != null) {
                 modelBiped = (BipedEntityModel<LivingEntity>) getModel.invoke((Object) null, contact.entity, stack, EquipmentSlot.HEAD, null);
             }
-        } catch (Exception var16) {
-        }
+        } catch (Exception ignored) {}
 
         float intendedWidth = 9.0F;
         float intendedHeight = 9.0F;
@@ -1621,8 +1616,7 @@ public class Radar implements IRadar {
         if (this.isHostile(entity)) {
             return EnumMobs.GENERICHOSTILE;
         } else {
-            if (entity instanceof TameableEntity) {
-                TameableEntity tameableEntity = (TameableEntity) entity;
+            if (entity instanceof TameableEntity tameableEntity) {
                 if (tameableEntity.isTamed() && (this.game.isIntegratedServerRunning() || tameableEntity.getOwner().equals(this.game.player))) {
                     return EnumMobs.GENERICTAME;
                 }
@@ -1703,7 +1697,7 @@ public class Radar implements IRadar {
                         yOffset = -4.0F;
                     }
 
-                    if (contact.type == EnumMobs.GHAST || contact.type == EnumMobs.GHASTATTACKING || contact.type == EnumMobs.WITHER || contact.type == EnumMobs.WITHERINVULNERABLE || contact.type == EnumMobs.VEX || contact.type == EnumMobs.VEXCHARGING || contact.type == EnumMobs.PUFFERFISH || contact.type == EnumMobs.PUFFERFISHHALF || contact.type == EnumMobs.PUFFERFISHFULL) {
+                    if (Stream.of(EnumMobs.GHAST, EnumMobs.GHASTATTACKING, EnumMobs.WITHER, EnumMobs.WITHERINVULNERABLE, EnumMobs.VEX, EnumMobs.VEXCHARGING, EnumMobs.PUFFERFISH, EnumMobs.PUFFERFISHHALF, EnumMobs.PUFFERFISHFULL).anyMatch(enumMobs -> contact.type == enumMobs)) {
                         if (contact.type != EnumMobs.GHAST && contact.type != EnumMobs.GHASTATTACKING) {
                             if (contact.type != EnumMobs.WITHER && contact.type != EnumMobs.WITHERINVULNERABLE) {
                                 if (contact.type != EnumMobs.VEX && contact.type != EnumMobs.VEXCHARGING) {
@@ -1876,30 +1870,25 @@ public class Radar implements IRadar {
     }
 
     private boolean isHostile(Entity entity) {
-        if (entity instanceof ZombifiedPiglinEntity) {
-            ZombifiedPiglinEntity zombifiedPiglinEntity = (ZombifiedPiglinEntity) entity;
+        if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
             return zombifiedPiglinEntity.isAngryAt(this.game.player);
         } else if (entity instanceof Monster) {
             return true;
-        } else if (entity instanceof BeeEntity) {
-            BeeEntity beeEntity = (BeeEntity) entity;
+        } else if (entity instanceof BeeEntity beeEntity) {
             return beeEntity.hasAngerTime();
         } else {
-            if (entity instanceof PolarBearEntity) {
-                PolarBearEntity polarBearEntity = (PolarBearEntity) entity;
+            if (entity instanceof PolarBearEntity polarBearEntity) {
 
-                for (Object object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
-                    if (((PolarBearEntity) object).isBaby()) {
+                for (PolarBearEntity object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
+                    if (object.isBaby()) {
                         return true;
                     }
                 }
             }
 
-            if (entity instanceof RabbitEntity) {
-                RabbitEntity rabbitEntity = (RabbitEntity) entity;
+            if (entity instanceof RabbitEntity rabbitEntity) {
                 return rabbitEntity.getRabbitType() == 99;
-            } else if (entity instanceof WolfEntity) {
-                WolfEntity wolfEntity = (WolfEntity) entity;
+            } else if (entity instanceof WolfEntity wolfEntity) {
                 return wolfEntity.hasAngerTime();
             } else {
                 return false;
@@ -1919,7 +1908,7 @@ public class Radar implements IRadar {
         }
     }
 
-    private class ModelPartWithResourceLocation {
+    private static class ModelPartWithResourceLocation {
         ModelPart modelPart;
         Identifier resourceLocation;
 

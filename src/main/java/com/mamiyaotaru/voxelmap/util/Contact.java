@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 

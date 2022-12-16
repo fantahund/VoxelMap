@@ -36,7 +36,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
         super(par1GuiMobs.options.game, par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
         this.parentGui = par1GuiMobs;
         RadarSettingsManager options = this.parentGui.options;
-        this.mobs = new ArrayList<MobItem>();
+        this.mobs = new ArrayList<>();
 
         for (EnumMobs mob : EnumMobs.values()) {
             if (mob.isTopLevelUnit && (mob.isHostile && options.showHostiles || mob.isNeutral && options.showNeutrals)) {

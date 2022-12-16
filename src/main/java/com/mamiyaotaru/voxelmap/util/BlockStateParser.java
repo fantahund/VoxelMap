@@ -11,7 +11,7 @@ import net.minecraft.util.registry.Registry;
 import java.util.Optional;
 
 public class BlockStateParser {
-    public static void parseLine(String line, BiMap map) {
+    public static void parseLine(String line, BiMap<BlockState, Integer> map) {
         String[] lineParts = line.split(" ");
         int id = Integer.parseInt(lineParts[0]);
         BlockState blockState = parseStateString(lineParts[1]);
@@ -43,9 +43,9 @@ public class BlockStateParser {
                 String propertiesString = stateString.substring(stateString.indexOf("[") + 1, stateString.lastIndexOf("]"));
                 String[] propertiesStringParts = propertiesString.split(",");
 
-                for (int t = 0; t < propertiesStringParts.length; ++t) {
-                    String[] propertyStringParts = propertiesStringParts[t].split("=");
-                    Property property = block.getStateManager().getProperty(propertyStringParts[0]);
+                for (String propertiesStringPart : propertiesStringParts) {
+                    String[] propertyStringParts = propertiesStringPart.split("=");
+                    Property<?> property = block.getStateManager().getProperty(propertyStringParts[0]);
                     if (property != null) {
                         blockState = withValue(blockState, property, propertyStringParts[1]);
                     }
@@ -59,7 +59,7 @@ public class BlockStateParser {
     private static BlockState withValue(BlockState blockState, Property property, String valueString) {
         Optional value = property.parse(valueString);
         if (value.isPresent()) {
-            blockState = (BlockState) blockState.with(property, (Comparable) value.get());
+            blockState = blockState.with(property, (Comparable) value.get());
         }
 
         return blockState;

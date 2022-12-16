@@ -280,7 +280,7 @@ public abstract class AbstractMapData implements IMapData {
         public ArrayList<Point> getNextShell(List<Point> pointsToCheck, int layer, boolean horizontalBias) {
             int layerWidth = horizontalBias ? 2 : 1;
             int layerHeight = horizontalBias ? 1 : 2;
-            ArrayList<Point> nextShell = new ArrayList<Point>();
+            ArrayList<Point> nextShell = new ArrayList<>();
 
             for (Point point : pointsToCheck) {
                 if (point.x < AbstractMapData.this.width - layerWidth) {
@@ -344,13 +344,11 @@ public abstract class AbstractMapData implements IMapData {
                 }
             }
 
-            if (nextShell.size() > 0) {
-                return nextShell;
-            } else {
+            if (nextShell.size() == 0) {
                 this.calculateCenterOfMass(pointsToCheck);
                 this.calculateClosestPointToCenter(pointsToCheck);
-                return nextShell;
             }
+            return nextShell;
         }
     }
 }

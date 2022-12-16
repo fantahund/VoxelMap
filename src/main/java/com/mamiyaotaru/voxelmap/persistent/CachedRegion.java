@@ -30,7 +30,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
