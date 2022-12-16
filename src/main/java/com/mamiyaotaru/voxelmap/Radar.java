@@ -1463,7 +1463,7 @@ public class Radar implements IRadar {
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
                         headImage = this.trimAndOutlineImage(new Contact(this.game.player, EnumMobs.PLAYER), headImage, true, true);
-                        icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head", headImage);
+                        icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation + "head", headImage);
                         this.newMobs = true;
                     }
                 }
@@ -1588,12 +1588,12 @@ public class Radar implements IRadar {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
                     float scale = (float) armorTexture.getWidth() / 8.0F;
                     BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
-                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation.toString(), armorImage);
+                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation, armorImage);
                 } else {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
                     float scale = (float) armorTexture.getWidth() / 8.0F;
                     BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 47.0F, 37.6F, 2);
-                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation.toString() + "_piglin", armorImage);
+                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation + "_piglin", armorImage);
                 }
 
                 this.newMobs = true;

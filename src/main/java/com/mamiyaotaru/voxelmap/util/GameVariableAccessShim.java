@@ -6,7 +6,7 @@ import net.minecraft.client.world.ClientWorld;
 import java.io.File;
 
 public class GameVariableAccessShim {
-    private static MinecraftClient minecraft = MinecraftClient.getInstance();
+    private static final MinecraftClient minecraft = MinecraftClient.getInstance();
 
     public static MinecraftClient getMinecraft() {
         return minecraft;

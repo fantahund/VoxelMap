@@ -7,16 +7,16 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 
 public class MapChunkCache {
-    private int width;
-    private int height;
+    private final int width;
+    private final int height;
     private WorldChunk lastCenterChunk = null;
-    private MapChunk[] mapChunks;
+    private final MapChunk[] mapChunks;
     private int left = 0;
     private int right = 0;
     private int top = 0;
     private int bottom = 0;
     private boolean loaded = false;
-    private IChangeObserver changeObserver;
+    private final IChangeObserver changeObserver;
 
     public MapChunkCache(int width, int height, IChangeObserver changeObserver) {
         this.width = width;

@@ -18,7 +18,6 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -157,7 +156,7 @@ public class MapSettingsManager implements ISettingsManager {
         this.settingsFile = new File(settingsFileDir, "voxelmap.properties");
 
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), Charset.forName("UTF-8").newEncoder())));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8.newEncoder())));
             out.println("Zoom Level:" + this.zoom);
             out.println("Hide Minimap:" + this.hide);
             out.println("Show Coordinates:" + this.coords);

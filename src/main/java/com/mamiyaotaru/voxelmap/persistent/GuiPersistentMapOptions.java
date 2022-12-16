@@ -39,7 +39,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
                 float sValue = this.options.getOptionFloatValue(option);
 
                 this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, switch (option) {
-                    case MINZOOM, MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
+                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (float) (5 + 3);
                     case CACHESIZE -> sValue / 5000.0F;
                     default ->
                             throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
@@ -86,7 +86,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
                 float fValue;
 
                 fValue = switch (option) {
-                    case MINZOOM, MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
+                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (float) (5 + 3);
                     case CACHESIZE -> sValue / 5000.0F;
                     default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 };

@@ -14,7 +14,7 @@ import net.minecraft.text.Text;
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
     private final Screen parentScreen;
     protected Text screenTitle = Text.literal("players");
-    private boolean sharingWaypoint;
+    private final boolean sharingWaypoint;
     private GuiButtonRowListPlayers playerList;
     protected boolean allClicked = false;
     protected TextFieldWidget message;

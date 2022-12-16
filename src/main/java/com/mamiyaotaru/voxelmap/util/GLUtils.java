@@ -26,8 +26,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class GLUtils {
-    private static Tessellator tessellator = Tessellator.getInstance();
-    private static BufferBuilder vertexBuffer = tessellator.getBuffer();
+    private static final Tessellator tessellator = Tessellator.getInstance();
+    private static final BufferBuilder vertexBuffer = tessellator.getBuffer();
     public static TextureManager textureManager;
     public static Framebuffer frameBuffer;
     public static int fboID = 0;
@@ -37,7 +37,7 @@ public class GLUtils {
     private static int previousFBOID = 0;
     private static int previousFBOIDREAD = 0;
     private static int previousFBOIDDRAW = 0;
-    private static int previousProgram = 0;
+    private static final int previousProgram = 0;
     public static boolean hasAlphaBits = false;// Suppress error, the codepath that uses this makes no sense.
     //public static boolean hasAlphaBits = GL30.glGetFramebufferAttachmentParameteri(36008, 1026, 33301) > 0;
     public static final int fboSize = 512;
@@ -144,18 +144,18 @@ public class GLUtils {
 
     public static void setMap(float x, float y, int imageSize) {
         float scale = (float) imageSize / 4.0F;
-        ldrawthree((double) (x - scale), (double) (y + scale), 1.0, 0.0F, 1.0F);
-        ldrawthree((double) (x + scale), (double) (y + scale), 1.0, 1.0F, 1.0F);
-        ldrawthree((double) (x + scale), (double) (y - scale), 1.0, 1.0F, 0.0F);
-        ldrawthree((double) (x - scale), (double) (y - scale), 1.0, 0.0F, 0.0F);
+        ldrawthree(x - scale, y + scale, 1.0, 0.0F, 1.0F);
+        ldrawthree(x + scale, y + scale, 1.0, 1.0F, 1.0F);
+        ldrawthree(x + scale, y - scale, 1.0, 1.0F, 0.0F);
+        ldrawthree(x - scale, y - scale, 1.0, 0.0F, 0.0F);
     }
 
     public static void setMap(Sprite icon, float x, float y, float imageSize) {
         float halfWidth = imageSize / 4.0F;
-        ldrawthree((double) (x - halfWidth), (double) (y + halfWidth), 1.0, icon.getMinU(), icon.getMaxV());
-        ldrawthree((double) (x + halfWidth), (double) (y + halfWidth), 1.0, icon.getMaxU(), icon.getMaxV());
-        ldrawthree((double) (x + halfWidth), (double) (y - halfWidth), 1.0, icon.getMaxU(), icon.getMinV());
-        ldrawthree((double) (x - halfWidth), (double) (y - halfWidth), 1.0, icon.getMinU(), icon.getMinV());
+        ldrawthree(x - halfWidth, y + halfWidth, 1.0, icon.getMinU(), icon.getMaxV());
+        ldrawthree(x + halfWidth, y + halfWidth, 1.0, icon.getMaxU(), icon.getMaxV());
+        ldrawthree(x + halfWidth, y - halfWidth, 1.0, icon.getMaxU(), icon.getMinV());
+        ldrawthree(x - halfWidth, y - halfWidth, 1.0, icon.getMinU(), icon.getMinV());
     }
 
     public static int tex(BufferedImage paramImg) {
@@ -230,7 +230,7 @@ public class GLUtils {
     }
 
     public static void ldrawone(int x, int y, double z, float u, float v) {
-        vertexBuffer.vertex((double) x, (double) y, z).texture(u, v).next();
+        vertexBuffer.vertex(x, y, z).texture(u, v).next();
     }
 
     public static void ldrawtwo(double x, double y, double z) {

@@ -116,14 +116,14 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     @Override
     public void setOptionFloatValue(EnumOptionsMinimap par1EnumOptions, float par2) {
         if (par1EnumOptions == EnumOptionsMinimap.MINZOOM) {
-            this.minZoomPower = (float) ((int) (par2 * 8.0F) + -3);
+            this.minZoomPower = (float) ((int) (par2 * 8.0F) - 3);
             this.minZoom = (float) Math.pow(2.0, this.minZoomPower);
             if (this.maxZoom < this.minZoom) {
                 this.maxZoom = this.minZoom;
                 this.maxZoomPower = this.minZoomPower;
             }
         } else if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
-            this.maxZoomPower = (float) ((int) (par2 * 8.0F) + -3);
+            this.maxZoomPower = (float) ((int) (par2 * 8.0F) - 3);
             this.maxZoom = (float) Math.pow(2.0, this.maxZoomPower);
             if (this.minZoom > this.maxZoom) {
                 this.minZoom = this.maxZoom;
