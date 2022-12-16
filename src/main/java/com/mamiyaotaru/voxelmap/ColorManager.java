@@ -31,11 +31,11 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockModels;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
@@ -43,6 +43,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.InvalidIdentifierException;
@@ -85,7 +86,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ColorManager implements IColorManager {
-    private IVoxelMap master;
+    private final IVoxelMap master;
     MinecraftClient game;
     private boolean resourcePacksChanged = false;
     private ClientWorld world = null;
@@ -94,11 +95,11 @@ public class ColorManager implements IColorManager {
     private int sizeOfBiomeArray = 0;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
-    private HashSet biomeTintsAvailable = new HashSet();
-    private boolean optifineInstalled = false;
-    private HashMap blockTintTables = new HashMap();
-    private HashSet biomeTextureAvailable = new HashSet();
-    private HashMap blockBiomeSpecificColors = new HashMap();
+    private final HashSet<Integer> biomeTintsAvailable = new HashSet<>();
+    private boolean optifineInstalled;
+    private final HashMap<Integer, int[][]> blockTintTables = new HashMap<>();
+    private final HashSet<Integer> biomeTextureAvailable = new HashSet<>();
+    private final HashMap<String, Integer> blockBiomeSpecificColors = new HashMap<>();
     private float failedToLoadX = 0.0F;
     private float failedToLoadY = 0.0F;
     private String renderPassThreeBlendMode;
@@ -189,7 +190,7 @@ public class ColorManager implements IColorManager {
         BiomeRepository.getBiomes();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
-        Sprite missing = this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
+        Sprite missing = this.game.getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
         this.failedToLoadX = missing.getMinU();
         this.failedToLoadY = missing.getMinV();
         this.loaded = false;
@@ -282,8 +283,8 @@ public class ColorManager implements IColorManager {
         matrixStack.push();
         matrixStack.translate((float) (width / 2) - size / 2.0F + transX, (float) (height / 2) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
-        MinecraftClient.getInstance().getTextureManager().getTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
-        GLUtils.img2(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+        MinecraftClient.getInstance().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
+        GLUtils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rotY));
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(rotX));
@@ -337,7 +338,7 @@ public class ColorManager implements IColorManager {
     private void loadTexturePackTerrainImage() {
         try {
             TextureManager textureManager = this.game.getTextureManager();
-            textureManager.bindTexture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+            textureManager.bindTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();
@@ -383,7 +384,7 @@ public class ColorManager implements IColorManager {
     public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, int biomeID) {
         if (this.loaded) {
             if (this.optifineInstalled && this.biomeTextureAvailable.contains(blockStateID)) {
-                Integer col = (Integer) this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
+                Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
                 if (col != null) {
                     return col;
                 }
@@ -399,7 +400,7 @@ public class ColorManager implements IColorManager {
         return this.getBlockColor(this.dummyBlockPos, blockStateID);
     }
 
-    private final int getBlockColor(MutableBlockPos blockPos, int blockStateID) {
+    private int getBlockColor(MutableBlockPos blockPos, int blockStateID) {
         int col = 452984832;
 
         try {
@@ -444,7 +445,7 @@ public class ColorManager implements IColorManager {
             }
 
             if (block == BlockRepository.redstone) {
-                color = ColorUtils.colorMultiplier(color, this.game.getBlockColors().getColor(blockState, (BlockRenderView) null, (BlockPos) null, 0) | 0xFF000000);
+                color = ColorUtils.colorMultiplier(color, this.game.getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
             }
 
             if (BlockRepository.biomeBlocks.contains(block)) {
@@ -477,9 +478,9 @@ public class ColorManager implements IColorManager {
             BlockRenderManager blockRendererDispatcher = this.game.getBlockRenderManager();
             if (blockRenderType == BlockRenderType.MODEL) {
                 BakedModel iBakedModel = blockRendererDispatcher.getModel(blockState);
-                List quads = new ArrayList();
+                List<BakedQuad> quads = new ArrayList<>();
                 quads.addAll(iBakedModel.getQuads(blockState, facing, this.random));
-                quads.addAll(iBakedModel.getQuads(blockState, (Direction) null, this.random));
+                quads.addAll(iBakedModel.getQuads(blockState, null, this.random));
                 BlockModel model = new BlockModel(quads, this.failedToLoadX, this.failedToLoadY);
                 if (model.numberOfFaces() > 0) {
                     BufferedImage modelImage = model.getImage(this.terrainBuff);
@@ -493,14 +494,12 @@ public class ColorManager implements IColorManager {
         } catch (Exception var11) {
             System.out.println(var11.getMessage());
             var11.printStackTrace();
-            color = 452984832;
         }
 
         return color;
     }
 
     private int getColorForTerrainSprite(BlockState blockState, BlockRenderManager blockRendererDispatcher) {
-        int color = 452984832;
         BlockModels blockModelShapes = blockRendererDispatcher.getModels();
         Sprite icon = blockModelShapes.getModelParticleSprite(blockState);
         if (icon == blockModelShapes.getModelManager().getMissingModel().getParticleSprite()) {
@@ -508,14 +507,14 @@ public class ColorManager implements IColorManager {
             Material material = blockState.getMaterial();
             if (block instanceof FluidBlock) {
                 if (material == Material.WATER) {
-                    icon = (Sprite) this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
+                    icon = this.game.getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
                 } else if (material == Material.LAVA) {
-                    icon = (Sprite) this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
+                    icon = this.game.getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
                 }
             } else if (material == Material.WATER) {
-                icon = (Sprite) this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
+                icon = this.game.getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
             } else if (material == Material.LAVA) {
-                icon = (Sprite) this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
+                icon = this.game.getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
             }
         }
 
@@ -539,22 +538,21 @@ public class ColorManager implements IColorManager {
         int color = 452984832;
         if (uv[0] != this.failedToLoadX || uv[2] != this.failedToLoadY) {
             int left = (int) (uv[0] * (float) imageBuff.getWidth());
-            int right = (int) Math.ceil((double) (uv[1] * (float) imageBuff.getWidth()));
+            int right = (int) Math.ceil(uv[1] * (float) imageBuff.getWidth());
             int top = (int) (uv[2] * (float) imageBuff.getHeight());
-            int bottom = (int) Math.ceil((double) (uv[3] * (float) imageBuff.getHeight()));
+            int bottom = (int) Math.ceil(uv[3] * (float) imageBuff.getHeight());
 
             try {
                 BufferedImage blockTexture = imageBuff.getSubimage(left, top, right - left, bottom - top);
                 Image singlePixel = blockTexture.getScaledInstance(1, 1, 4);
                 BufferedImage singlePixelBuff = new BufferedImage(1, 1, imageBuff.getType());
                 Graphics gfx = singlePixelBuff.createGraphics();
-                gfx.drawImage(singlePixel, 0, 0, (ImageObserver) null);
+                gfx.drawImage(singlePixel, 0, 0, null);
                 gfx.dispose();
                 color = singlePixelBuff.getRGB(0, 0);
             } catch (RasterFormatException var12) {
                 System.out.println("error getting color");
                 System.out.println(left + " " + right + " " + top + " " + bottom);
-                color = 452984832;
             }
         }
 
@@ -603,8 +601,7 @@ public class ColorManager implements IColorManager {
                     this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 452984832;
                 }
             }
-        } catch (Exception var9) {
-        }
+        } catch (Exception ignored) {}
 
     }
 
@@ -701,7 +698,7 @@ public class ColorManager implements IColorManager {
         int tint = -2;
         if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
-                int[][] tints = (int[][]) this.blockTintTables.get(blockStateID);
+                int[][] tints = this.blockTintTables.get(blockStateID);
                 if (tints != null) {
                     int r = 0;
                     int g = 0;
@@ -709,7 +706,7 @@ public class ColorManager implements IColorManager {
 
                     for (int t = blockPos.getX() - 1; t <= blockPos.getX() + 1; ++t) {
                         for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
-                            int biomeID = 0;
+                            int biomeID;
                             if (live) {
                                 biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value());
                             } else {
@@ -735,9 +732,7 @@ public class ColorManager implements IColorManager {
 
                     tint = 0xFF000000 | (r / 9 & 0xFF) << 16 | (g / 9 & 0xFF) << 8 | b / 9 & 0xFF;
                 }
-            } catch (Exception var22) {
-                tint = -2;
-            }
+            } catch (Exception ignored) {}
         }
 
         if (tint == -2) {
@@ -754,8 +749,7 @@ public class ColorManager implements IColorManager {
             if (live) {
                 try {
                     tint = this.game.getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
-                } catch (Exception var13) {
-                }
+                } catch (Exception ignored) {}
             }
 
             if (tint == -1) {
@@ -800,11 +794,11 @@ public class ColorManager implements IColorManager {
                     dataZ = Math.max(dataZ, 0);
                     dataZ = Math.min(dataZ, 255);
                     int biomeID = mapData.getBiomeID(dataX, dataZ);
-                    Biome biome = (Biome) world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
+                    Biome biome = world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
                     if (biome == null) {
                         MessageUtils.printDebug("Null biome ID! " + biomeID + " at " + t + "," + s);
                         MessageUtils.printDebug("block: " + mapData.getBlockstate(dataX, dataZ) + ", height: " + mapData.getHeight(dataX, dataZ));
-                        MessageUtils.printDebug("Mapdata: " + mapData.toString());
+                        MessageUtils.printDebug("Mapdata: " + mapData);
                         biome = BiomeRepository.FOREST;
                     }
 
@@ -824,7 +818,7 @@ public class ColorManager implements IColorManager {
     }
 
     private int getCustomBlockBiomeTintFromUnloadedChunk(AbstractMapData mapData, World world, BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
-        int tint = -1;
+        int tint;
 
         try {
             int dataX = blockPos.getX() - startX;
@@ -879,9 +873,7 @@ public class ColorManager implements IColorManager {
         for (Identifier s : this.findResources(namespace, "/optifine/ctm", ".properties", true, false, true)) {
             try {
                 this.loadCTM(s);
-            } catch (NumberFormatException var7) {
-            } catch (IllegalArgumentException var8) {
-            }
+            } catch (IllegalArgumentException ignored) {}
         }
 
         for (int t = 0; t < this.blockColors.length; ++t) {
@@ -922,8 +914,7 @@ public class ColorManager implements IColorManager {
             String biomes = properties.getProperty("biomes", "").trim().toLowerCase();
             String renderPass = properties.getProperty("renderPass", "").trim().toLowerCase();
             metadata = metadata.replaceAll("\\s+", ",");
-            Set<BlockState> blockStates = new HashSet();
-            blockStates.addAll(this.parseBlocksList(matchBlocks, metadata));
+            Set<BlockState> blockStates = new HashSet<>(this.parseBlocksList(matchBlocks, metadata));
             String directory = filePath.substring(0, filePath.lastIndexOf("/") + 1);
             String[] tilesParsed = this.parseStringList(tiles);
             String tilePath = directory + "0";
@@ -943,7 +934,7 @@ public class ColorManager implements IColorManager {
 
             String[] biomesArray = biomes.split(" ");
             if (blockStates.size() == 0) {
-                Block block = null;
+                Block block;
                 Pattern pattern = Pattern.compile(".*/block_(.+).properties");
                 Matcher matcher = pattern.matcher(filePath);
                 if (matcher.find()) {
@@ -966,21 +957,18 @@ public class ColorManager implements IColorManager {
                     }
 
                     Identifier matchID = new Identifier(matchTiles);
-                    Sprite compareIcon = (Sprite) this.game.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(matchID);
+                    Sprite compareIcon = this.game.getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(matchID);
                     if (compareIcon.getId() != MissingSprite.getMissingSpriteId()) {
                         ArrayList tmpList = new ArrayList();
 
                         for (Block testBlock : Registry.BLOCK) {
-                            UnmodifiableIterator blockStateID = testBlock.getStateManager().getStates().iterator();
 
-                            while (blockStateID.hasNext()) {
-                                BlockState blockState = (BlockState) blockStateID.next();
-
+                            for (BlockState blockState : testBlock.getStateManager().getStates()) {
                                 try {
                                     BakedModel bakedModel = blockModelShapes.getModel(blockState);
-                                    List quads = new ArrayList();
+                                    List<BakedQuad> quads = new ArrayList<>();
                                     quads.addAll(bakedModel.getQuads(blockState, Direction.UP, this.random));
-                                    quads.addAll(bakedModel.getQuads(blockState, (Direction) null, this.random));
+                                    quads.addAll(bakedModel.getQuads(blockState, null, this.random));
                                     BlockModel model = new BlockModel(quads, this.failedToLoadX, this.failedToLoadY);
                                     if (model.numberOfFaces() > 0) {
                                         ArrayList blockFaces = model.getFaces();
@@ -996,8 +984,7 @@ public class ColorManager implements IColorManager {
                                             }
                                         }
                                     }
-                                } catch (Exception var41) {
-                                }
+                                } catch (Exception ignored) {}
                             }
                         }
 
@@ -1014,9 +1001,9 @@ public class ColorManager implements IColorManager {
                         Image top = ImageIO.read(is);
                         is.close();
                         top = top.getScaledInstance(1, 1, 4);
-                        BufferedImage topBuff = new BufferedImage(top.getWidth((ImageObserver) null), top.getHeight((ImageObserver) null), 6);
+                        BufferedImage topBuff = new BufferedImage(top.getWidth(null), top.getHeight(null), 6);
                         Graphics gfx = topBuff.createGraphics();
-                        gfx.drawImage(top, 0, 0, (ImageObserver) null);
+                        gfx.drawImage(top, 0, 0, null);
                         gfx.dispose();
                         int topRGB = topBuff.getRGB(0, 0);
                         if ((topRGB >> 24 & 0xFF) == 0) {
@@ -1046,8 +1033,8 @@ public class ColorManager implements IColorManager {
                             if (!biomes.equals("")) {
                                 this.biomeTextureAvailable.add(blockStateID);
 
-                                for (int r = 0; r < biomesArray.length; ++r) {
-                                    int biomeInt = this.parseBiomeName(biomesArray[r]);
+                                for (String s : biomesArray) {
+                                    int biomeInt = this.parseBiomeName(s);
                                     if (biomeInt != -1) {
                                         this.blockBiomeSpecificColors.put(blockStateID + " " + biomeInt, topRGB);
                                     }
@@ -1091,7 +1078,7 @@ public class ColorManager implements IColorManager {
     }
 
     private String[] parseStringList(String list) {
-        ArrayList tmpList = new ArrayList();
+        ArrayList<String> tmpList = new ArrayList<>();
 
         for (String token : list.split("\\s+")) {
             token = token.trim();
@@ -1107,31 +1094,30 @@ public class ColorManager implements IColorManager {
                     for (int i = min; i <= max; ++i) {
                         tmpList.add(i + "");
                     }
-                } else if (token != null && token != "") {
+                } else if (!token.equals("")) {
                     tmpList.add(token);
                 }
-            } catch (NumberFormatException var11) {
-            }
+            } catch (NumberFormatException ignored) {}
         }
 
         String[] a = new String[tmpList.size()];
 
         for (int i = 0; i < a.length; ++i) {
-            a[i] = (String) tmpList.get(i);
+            a[i] = tmpList.get(i);
         }
 
         return a;
     }
 
-    private Set parseBlocksList(String blocks, String metadataLine) {
-        Set blockStates = new HashSet();
+    private Set<BlockState> parseBlocksList(String blocks, String metadataLine) {
+        Set<BlockState> blockStates = new HashSet<>();
 
         for (String blockString : blocks.split("\\s+")) {
-            String metadata = metadataLine;
+            StringBuilder metadata = new StringBuilder(metadataLine);
             blockString = blockString.trim();
             String[] blockComponents = blockString.split(":");
             int tokensUsed = 0;
-            Block block = null;
+            Block block;
             block = this.getBlockFromName(blockComponents[0]);
             if (block != null) {
                 tokensUsed = 1;
@@ -1144,45 +1130,43 @@ public class ColorManager implements IColorManager {
 
             if (block != null) {
                 if (blockComponents.length > tokensUsed) {
-                    metadata = blockComponents[tokensUsed];
+                    metadata = new StringBuilder(blockComponents[tokensUsed]);
 
                     for (int t = tokensUsed + 1; t < blockComponents.length; ++t) {
-                        metadata = metadata + ":" + blockComponents[t];
+                        metadata.append(":").append(blockComponents[t]);
                     }
                 }
 
-                blockStates.addAll(this.parseBlockMetadata(block, metadata));
+                blockStates.addAll(this.parseBlockMetadata(block, metadata.toString()));
             }
         }
 
         return blockStates;
     }
 
-    private Set parseBlockMetadata(Block block, String metadataList) {
-        Set blockStates = new HashSet();
+    private Set<BlockState> parseBlockMetadata(Block block, String metadataList) {
+        Set<BlockState> blockStates = new HashSet<>();
         if (metadataList.equals("")) {
             blockStates.addAll(block.getStateManager().getStates());
         } else {
-            Set<String> valuePairs = new HashSet();
+            Set<String> valuePairs = new HashSet<>();
 
             for (String metadata : metadataList.split(":")) {
-                metadata.trim();
+                metadata = metadata.trim();
                 if (metadata.contains("=")) {
                     valuePairs.add(metadata);
                 }
             }
 
             if (valuePairs.size() > 0) {
-                UnmodifiableIterator var22 = block.getStateManager().getStates().iterator();
 
-                while (var22.hasNext()) {
-                    BlockState blockState = (BlockState) var22.next();
+                for (BlockState blockState : block.getStateManager().getStates()) {
                     boolean matches = true;
 
                     for (String pair : valuePairs) {
                         String[] propertyAndValues = pair.split("\\s*=\\s*", 5);
                         if (propertyAndValues.length == 2) {
-                            Property property = block.getStateManager().getProperty(propertyAndValues[0]);
+                            Property<?> property = block.getStateManager().getProperty(propertyAndValues[0]);
                             if (property != null) {
                                 boolean valueIncluded = false;
                                 String[] values = propertyAndValues[1].split(",");
@@ -1372,7 +1356,7 @@ public class ColorManager implements IColorManager {
 
             String yOffsetString = colorProperties.getProperty("yOffset");
             if (yOffsetString != null) {
-                yOffset = Integer.valueOf(yOffsetString);
+                yOffset = Integer.parseInt(yOffsetString);
             }
         } catch (IOException ignored) {
         }
@@ -1398,7 +1382,7 @@ public class ColorManager implements IColorManager {
             return;
         }
 
-        BufferedImage tintColorsBuff = new BufferedImage(tintColors.getWidth((ImageObserver) null), tintColors.getHeight((ImageObserver) null), 1);
+        BufferedImage tintColorsBuff = new BufferedImage(tintColors.getWidth(null), tintColors.getHeight(null), 1);
         Graphics gfx = tintColorsBuff.createGraphics();
         gfx.drawImage(tintColors, 0, 0, null);
         gfx.dispose();
@@ -1407,7 +1391,7 @@ public class ColorManager implements IColorManager {
         for (int t = 0; t < numBiomesToCheck; ++t) {
             Biome biome = this.world.getRegistryManager().get(Registry.BIOME_KEY).get(t);
             if (biome != null) {
-                int tintMult = 0;
+                int tintMult;
                 int heightMultiplier = tintColorsBuff.getHeight() / 32;
 
                 for (int s = 0; s < 32; ++s) {
@@ -1429,12 +1413,11 @@ public class ColorManager implements IColorManager {
             }
         }
 
-        Set<BlockState> blockStates = new HashSet();
-        blockStates.addAll(this.parseBlocksList(list, ""));
+        Set<BlockState> blockStates = new HashSet<>(this.parseBlocksList(list, ""));
 
         for (BlockState blockState : blockStates) {
             int blockStateID = BlockRepository.getStateId(blockState);
-            int[][] previousTints = (int[][]) this.blockTintTables.get(blockStateID);
+            int[][] previousTints = this.blockTintTables.get(blockStateID);
             if (swamp && previousTints == null) {
                 Identifier defaultResource;
                 if (resource.getPath().contains("grass")) {
@@ -1451,7 +1434,7 @@ public class ColorManager implements IColorManager {
                 stateString = stateString.replace("]", "");
                 stateString = stateString.replace(",", ":");
                 this.processColorProperty(defaultResource, stateString, false, 0);
-                previousTints = (int[][]) this.blockTintTables.get(blockStateID);
+                previousTints = this.blockTintTables.get(blockStateID);
             }
 
             if (previousTints != null) {

@@ -48,7 +48,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final float blue;
     private final String suffix;
     private final boolean enabled;
-    private boolean editing = false;
+    private final boolean editing;
     private final Identifier pickerResourceLocation = new Identifier("voxelmap", "images/colorpicker.png");
     private final Identifier blank = new Identifier("textures/misc/white.png");
 

@@ -32,7 +32,6 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
     private final int[] charWidthArray = new int[256];
     public int FONT_HEIGHT = 9;
     public Random fontRandom = new Random();
-    private final int[] colorCode = new int[32];
     private final Identifier locationFontTexture;
     private Sprite fontIcon = null;
     private Sprite blankIcon = null;
@@ -69,7 +68,8 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                 blue /= 4;
             }
 
-            this.colorCode[colorCodeIndex] = (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
+            int[] colorCode = new int[32];
+            colorCode[colorCodeIndex] = (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
         }
 
         this.vertexBuffer = Tessellator.getInstance().getBuffer();

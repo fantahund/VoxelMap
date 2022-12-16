@@ -105,7 +105,7 @@ public abstract class AbstractMapData implements IMapData {
         public boolean inSegment = false;
         public boolean isCandidate = false;
         public int layer = -1;
-        public int biomeID = -1;
+        public int biomeID;
 
         public Point(int x, int z, int biomeID) {
             this.x = x;
@@ -135,7 +135,7 @@ public abstract class AbstractMapData implements IMapData {
 
             this.memberPoints = new ArrayList<>();
             this.memberPoints.add(point);
-            this.currentShell = new ArrayList<Point>();
+            this.currentShell = new ArrayList<>();
         }
 
         public void flood() {

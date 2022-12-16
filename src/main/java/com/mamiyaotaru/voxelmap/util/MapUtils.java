@@ -8,14 +8,13 @@ import java.util.Random;
 
 public class MapUtils {
     private static MapSettingsManager options = null;
-    private static IVoxelMap master = null;
     private static Random slimeRandom = null;
     private static int lastSlimeX = 0;
     private static int lastSlimeZ = 0;
     private static boolean isSlimeChunk = false;
 
     public static void reset() {
-        master = VoxelMap.getInstance();
+        IVoxelMap master = VoxelMap.getInstance();
         options = master.getMapOptions();
         slimeRandom = null;
         lastSlimeX = -120000;
@@ -46,18 +45,18 @@ public class MapUtils {
         int zPosition = mcZ >> 4;
         String seedString = VoxelMap.getInstance().getWorldSeed();
         if (!seedString.equals("")) {
-            long seed = 0L;
+            long seed;
 
             try {
                 seed = Long.parseLong(seedString);
             } catch (NumberFormatException var8) {
-                seed = (long) seedString.hashCode();
+                seed = seedString.hashCode();
             }
 
             if (xPosition != lastSlimeX || zPosition != lastSlimeZ || slimeRandom == null) {
                 lastSlimeX = xPosition;
                 lastSlimeZ = zPosition;
-                slimeRandom = new Random(seed + (long) (xPosition * xPosition * 4987142) + (long) (xPosition * 5947611) + (long) (zPosition * zPosition) * 4392871L + (long) (zPosition * 389711) ^ 987234911L);
+                slimeRandom = new Random(seed + ((long) xPosition * xPosition * 4987142) + (xPosition * 5947611L) + (long) zPosition * zPosition * 4392871L + (zPosition * 389711L) ^ 987234911L);
                 isSlimeChunk = slimeRandom.nextInt(10) == 0;
             }
         }

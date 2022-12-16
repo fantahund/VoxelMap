@@ -169,7 +169,7 @@ public class Radar implements IRadar {
     private Sprite clothIcon = null;
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
     private final String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
-    private boolean randomobsOptifine = false;
+    private boolean randomobsOptifine;
     private java.util.Map mapProperties = null;
     private Object randomEntity = null;
     private Class randomEntityClass = null;

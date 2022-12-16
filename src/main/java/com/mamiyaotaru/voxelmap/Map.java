@@ -1408,7 +1408,7 @@ public class Map implements Runnable, IMap {
         }
     }
 
-    private final int getSeafloorHeight(World world, int x, int z, int height) {
+    private int getSeafloorHeight(World world, int x, int z, int height) {
         for (BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z)); blockState.getOpacity(world, this.blockPos) < 5 && blockState.getMaterial() != Material.LEAVES && height > 1; blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z))) {
             --height;
         }
@@ -1416,7 +1416,7 @@ public class Map implements Runnable, IMap {
         return height;
     }
 
-    private final int getTransparentHeight(boolean nether, boolean caves, World world, int x, int z, int height) {
+    private int getTransparentHeight(boolean nether, boolean caves, World world, int x, int z, int height) {
         int transHeight = -1;
         if (!caves && !nether) {
             transHeight = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, this.blockPos.withXYZ(x, height, z)).getY();

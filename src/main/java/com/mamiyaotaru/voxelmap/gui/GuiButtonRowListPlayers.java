@@ -21,7 +21,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class GuiButtonRowListPlayers extends EntryListWidget {
+public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPlayers.Row> {
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final ArrayList<PlayerListEntry> players;
     private ArrayList<?> playersFiltered;
@@ -48,7 +48,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     }
 
     private Text getPlayerName(PlayerListEntry ScoreboardEntryIn) {
-        return (Text) (ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName()));
+        return ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName());
     }
 
     private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {

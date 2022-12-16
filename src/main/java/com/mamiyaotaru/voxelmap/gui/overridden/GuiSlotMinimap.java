@@ -16,7 +16,6 @@ import net.minecraft.util.math.MathHelper;
 
 public abstract class GuiSlotMinimap extends EntryListWidget {
     protected int slotWidth = 220;
-    protected boolean centerListVertically = true;
     private boolean showTopBottomBG = true;
     private boolean showSlotBG = true;
     private boolean hasListHeader;

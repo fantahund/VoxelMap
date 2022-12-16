@@ -26,16 +26,16 @@ public class BiomeRepository {
     public static Biome FOREST;
     public static Biome SWAMP;
     public static Biome SWAMP_HILLS;
-    private static Random generator = new Random();
-    private static HashMap IDtoColor = new HashMap(256);
-    private static TreeMap<String, Integer> nameToColor = new TreeMap();
+    private static final Random generator = new Random();
+    private static final HashMap<Integer, Integer> IDtoColor = new HashMap<>(256);
+    private static final TreeMap<String, Integer> nameToColor = new TreeMap<>();
     private static boolean dirty = false;
 
     public static void getBiomes() {
-        DEFAULT = (Biome) BuiltinRegistries.BIOME.get(BiomeKeys.OCEAN);
-        FOREST = (Biome) BuiltinRegistries.BIOME.get(BiomeKeys.FOREST);
-        SWAMP = (Biome) BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP);
-        SWAMP_HILLS = (Biome) BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP); //TODO :>
+        DEFAULT = BuiltinRegistries.BIOME.get(BiomeKeys.OCEAN);
+        FOREST = BuiltinRegistries.BIOME.get(BiomeKeys.FOREST);
+        SWAMP = BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP);
+        SWAMP_HILLS = BuiltinRegistries.BIOME.get(BiomeKeys.SWAMP); //TODO :>
     }
 
     public static void loadBiomeColors() {
@@ -56,7 +56,6 @@ public class BiomeRepository {
                             color = Integer.decode(curLine[1]);
                         } catch (NumberFormatException var10) {
                             System.out.println("Error decoding integer string for biome colors; " + curLine[1]);
-                            color = 0;
                         }
 
                         if (nameToColor.put(name, color) != null) {
@@ -81,7 +80,7 @@ public class BiomeRepository {
                 String[] curLine = sCurrentLine.split("=");
                 if (curLine.length == 2) {
                     String name = curLine[0];
-                    int color = 0;
+                    int color;
 
                     try {
                         color = Integer.decode(curLine[1]);
@@ -118,9 +117,9 @@ public class BiomeRepository {
             try {
                 PrintWriter out = new PrintWriter(new FileWriter(settingsFile));
 
-                for (Entry entry : nameToColor.entrySet()) {
-                    String name = (String) entry.getKey();
-                    Integer color = (Integer) entry.getValue();
+                for (Entry<String, Integer> entry : nameToColor.entrySet()) {
+                    String name = entry.getKey();
+                    Integer color = entry.getValue();
                     String hexColor = Integer.toHexString(color);
 
                     while (hexColor.length() < 6) {
@@ -142,15 +141,15 @@ public class BiomeRepository {
     }
 
     public static int getBiomeColor(int biomeID) {
-        Integer color = (Integer) IDtoColor.get(biomeID);
+        Integer color = IDtoColor.get(biomeID);
         if (color == null) {
-            Biome biome = (Biome) MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
+            Biome biome = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
             if (biome != null) {
                 String identifier = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome).toString();
-                color = (Integer) nameToColor.get(identifier);
+                color = nameToColor.get(identifier);
                 if (color == null) {
                     String friendlyName = getName(biome);
-                    color = (Integer) nameToColor.get(friendlyName);
+                    color = nameToColor.get(friendlyName);
                     if (color != null) {
                         nameToColor.remove(friendlyName);
                         nameToColor.put(identifier, color);
@@ -190,7 +189,7 @@ public class BiomeRepository {
 
     public static String getName(int biomeID) {
         String name = null;
-        Biome biome = (Biome) MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
+        Biome biome = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
         if (biome != null) {
             name = getName(biome);
         }

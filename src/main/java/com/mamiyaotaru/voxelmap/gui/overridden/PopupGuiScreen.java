@@ -14,7 +14,7 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     public void removed() {
     }
 
-    public void createPopup(int x, int y, int directX, int directY, ArrayList<?> entries) {
+    public void createPopup(int x, int y, int directX, int directY, ArrayList<Popup.PopupEntry> entries) {
         this.popups.add(new Popup(x, y, directX, directY, entries, this));
     }
 
@@ -55,7 +55,7 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
 
     @Override
     public boolean popupOpen() {
-        return this.popups.size() <= 0;
+        return this.popups.size() == 0;
     }
 
     public void render(MatrixStack matrixStack, int x, int y, float dunno) {

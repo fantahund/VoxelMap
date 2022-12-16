@@ -104,7 +104,7 @@ public enum EnumMobs {
     FOX(FoxEntity.class, "Fox", true, 0.0F, "textures/entity/fox/fox.png", "", false, true),
     FROG(FrogEntity.class, "Frog", true, 0.0F, "textures/entity/frog/cold_frog.png", "", false, true),
     GHAST(GhastEntity.class, "Ghast", true, 16.0F, "textures/entity/ghast/ghast.png", "", true, false),
-    GHASTATTACKING((Class) null, "Ghast", false, 16.0F, "textures/entity/ghast/ghast_shooting.png", "", true, false),
+    GHASTATTACKING(null, "Ghast", false, 16.0F, "textures/entity/ghast/ghast_shooting.png", "", true, false),
     GLOWSQUID(GlowSquidEntity.class, "Glow_Squid", true, 0.0F, "textures/entity/squid/glow_squid.png", "", false, true),
     GOAT(GoatEntity.class, "Goat", true, 0.0F, "textures/entity/goat/goat.png", "", false, true),
     GUARDIAN(GuardianEntity.class, "Guardian", true, 6.0F, "textures/entity/guardian.png", "", true, false),
@@ -165,7 +165,7 @@ public enum EnumMobs {
     ZOMBIEVILLAGER(ZombieVillagerEntity.class, "Zombie_villager", true, 0.0F, "textures/entity/zombie_villager/zombie_villager.png", "textures/entity/zombie_villager/profession/farmer.png", true, false),
     UNKNOWN(null, "Unknown", false, 8.0F, "/mob/uknown.png", "", true, true);
 
-    public final Class clazz;
+    public final Class<? extends Entity> clazz;
     public final String id;
     public final boolean isTopLevelUnit;
     public final float expectedWidth;
@@ -186,7 +186,7 @@ public enum EnumMobs {
     }
 
     public static EnumMobs getMobTypeByEntity(Entity entity) {
-        Class clazz = entity.getClass();
+        Class<? extends Entity> clazz = entity.getClass();
         if (clazz.equals(TropicalFishEntity.class)) {
             return ((TropicalFishEntity) entity).getShape() == 0 ? TROPICALFISHA : TROPICALFISHB;
         } else {
@@ -194,7 +194,7 @@ public enum EnumMobs {
         }
     }
 
-    private static EnumMobs getMobTypeByClass(Class clazz) {
+    private static EnumMobs getMobTypeByClass(Class<? extends Entity> clazz) {
         if (OtherClientPlayerEntity.class.isAssignableFrom(clazz)) {
             return PLAYER;
         } else if (!clazz.equals(HorseEntity.class) && !clazz.equals(DonkeyEntity.class) && !clazz.equals(MuleEntity.class) && !clazz.equals(SkeletonHorseEntity.class) && !clazz.equals(ZombieHorseEntity.class)) {
@@ -210,7 +210,7 @@ public enum EnumMobs {
         }
     }
 
-    private EnumMobs(Class clazz, String name, boolean topLevelUnit, float expectedWidth, String path, String secondaryPath, boolean isHostile, boolean isNeutral) {
+    EnumMobs(Class<? extends Entity> clazz, String name, boolean topLevelUnit, float expectedWidth, String path, String secondaryPath, boolean isHostile, boolean isNeutral) {
         this.clazz = clazz;
         this.id = name;
         this.isTopLevelUnit = topLevelUnit;
@@ -224,10 +224,5 @@ public enum EnumMobs {
 
     public int returnEnumOrdinal() {
         return this.ordinal();
-    }
-
-    // $FF: synthetic method
-    private static EnumMobs[] $values() {
-        return new EnumMobs[]{GENERICHOSTILE, GENERICNEUTRAL, GENERICTAME, AXOLOTL, ALLAY, BAT, BEE, BLAZE, CAT, CAVESPIDER, CHICKEN, COD, COW, CREEPER, DOLPHIN, DROWNED, ENDERDRAGON, ENDERMAN, ENDERMITE, EVOKER, FROG, FOX, GHAST, GHASTATTACKING, GLOWSQUID, GOAT, GUARDIAN, GUARDIANELDER, HOGLIN, HORSE, HUSK, ILLUSIONER, IRONGOLEM, LLAMA, LLAMATRADER, MAGMA, MOOSHROOM, OCELOT, PANDA, PARROT, PHANTOM, PIG, PIGLIN, PIGLINBRUTE, PIGLINZOMBIE, PILLAGER, PLAYER, POLARBEAR, PUFFERFISH, PUFFERFISHHALF, PUFFERFISHFULL, RABBIT, RAVAGER, SALMON, SHEEP, SHULKER, SILVERFISH, SKELETON, SKELETONWITHER, SLIME, SNOWGOLEM, SPIDER, SQUID, STRAY, STRIDER, TADPOLE, TROPICALFISHA, TROPICALFISHB, TURTLE, VEX, VEXCHARGING, VILLAGER, VINDICATOR, WANDERINGTRADER, WITCH, WITHER, WITHERINVULNERABLE,WARDEN, WOLF, ZOGLIN, ZOMBIE, ZOMBIEVILLAGER, UNKNOWN};
     }
 }

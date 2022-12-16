@@ -30,7 +30,7 @@ public class Popup {
     PopupGuiScreen parentGui;
     int padding = 6;
 
-    public Popup(int x, int y, int directX, int directY, ArrayList<?> entries, PopupGuiScreen parentGui) {
+    public Popup(int x, int y, int directX, int directY, ArrayList<PopupEntry> entries, PopupGuiScreen parentGui) {
         this.client = MinecraftClient.getInstance();
         this.fontRendererObj = this.client.textRenderer;
         this.parentGui = parentGui;
@@ -106,7 +106,6 @@ public class Popup {
         GLShim.glBlendFunc(770, 771);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         GLShim.glDisable(3553);
-        byte fadeWidth = 4;
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         vertexBuffer.vertex(this.x, this.y + 4, 0.0).color(0, 0, 0, 0).next();
         vertexBuffer.vertex(this.x + this.w, this.y + 4, 0.0).color(0, 0, 0, 0).next();
