@@ -120,13 +120,13 @@ public class BiomeRepository {
                 for (Entry<String, Integer> entry : nameToColor.entrySet()) {
                     String name = entry.getKey();
                     Integer color = entry.getValue();
-                    String hexColor = Integer.toHexString(color);
+                    StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
                     while (hexColor.length() < 6) {
-                        hexColor = "0" + hexColor;
+                        hexColor.insert(0, "0");
                     }
 
-                    hexColor = "0x" + hexColor;
+                    hexColor.insert(0, "0x");
                     out.println(name + "=" + hexColor);
                 }
 

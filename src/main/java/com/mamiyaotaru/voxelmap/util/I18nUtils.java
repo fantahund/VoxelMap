@@ -16,8 +16,7 @@ public class I18nUtils {
 
         try {
             mcLocale = MinecraftClient.getInstance().getLanguageManager().getLanguage().getCode();
-        } catch (NullPointerException var3) {
-        }
+        } catch (NullPointerException ignored) {}
 
         String[] bits = mcLocale.split("_");
         Locale locale = new Locale(bits[0], bits.length > 1 ? bits[1] : "");

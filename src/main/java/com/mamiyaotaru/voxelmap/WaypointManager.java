@@ -286,11 +286,7 @@ public class WaypointManager implements IWaypointManager {
             this.waypointContainer = new WaypointContainer(this.options);
 
             for (Waypoint pt : this.wayPts) {
-                if (pt.dimensions.size() != 0 && !pt.dimensions.contains(dimension)) {
-                    pt.inDimension = false;
-                } else {
-                    pt.inDimension = true;
-                }
+                pt.inDimension = pt.dimensions.size() == 0 || pt.dimensions.contains(dimension);
 
                 this.waypointContainer.addWaypoint(pt);
             }
@@ -516,18 +512,10 @@ public class WaypointManager implements IWaypointManager {
 
         try {
             PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8));
-            String knownSubworldsString = "";
-
-            for (String subworldName : this.knownSubworldNames) {
-                knownSubworldsString = knownSubworldsString + TextUtils.scrubName(subworldName) + ",";
-            }
+            String knownSubworldsString = this.knownSubworldNames.stream().map(subworldName -> TextUtils.scrubName(subworldName) + ",").collect(Collectors.joining());
 
             out.println("subworlds:" + knownSubworldsString);
-            String oldNorthWorldsString = "";
-
-            for (String oldNorthWorldName : this.oldNorthWorldNames) {
-                oldNorthWorldsString = oldNorthWorldsString + TextUtils.scrubName(oldNorthWorldName) + ",";
-            }
+            String oldNorthWorldsString = this.oldNorthWorldNames.stream().map(oldNorthWorldName -> TextUtils.scrubName(oldNorthWorldName) + ",").collect(Collectors.joining());
 
             out.println("oldNorthWorlds:" + oldNorthWorldsString);
             String seedsString = this.worldSeeds.entrySet().stream().map(entry -> TextUtils.scrubName(entry.getKey()) + "#" + entry.getValue() + ",").collect(Collectors.joining());
@@ -536,14 +524,14 @@ public class WaypointManager implements IWaypointManager {
 
             for (Waypoint pt : this.wayPts) {
                 if (!pt.name.startsWith("^")) {
-                    String dimensionsString = "";
+                    StringBuilder dimensionsString = new StringBuilder();
 
                     for (DimensionContainer dimension : pt.dimensions) {
-                        dimensionsString = dimensionsString + dimension.getStorageName() + "#";
+                        dimensionsString.append(dimension.getStorageName()).append("#");
                     }
 
-                    if (dimensionsString.equals("")) {
-                        dimensionsString = dimensionsString + AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName();
+                    if (dimensionsString.toString().equals("")) {
+                        dimensionsString.append(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName());
                     }
 
                     out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + pt.enabled + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);

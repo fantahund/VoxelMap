@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Stitcher {
-    private final Set<@Nullable Object> setStitchHolders = Sets.newHashSetWithExpectedSize(256);
+    private final Set<@Nullable Holder> setStitchHolders = Sets.newHashSetWithExpectedSize(256);
     private final List<Slot> stitchSlots = Lists.newArrayListWithCapacity(256);
     private int currentWidth = 0;
     private int currentHeight = 0;
@@ -55,7 +55,7 @@ public class Stitcher {
     }
 
     public void doStitch() {
-        Holder[] stitchHoldersArray = this.setStitchHolders.toArray(new Holder[this.setStitchHolders.size()]);
+        Holder[] stitchHoldersArray = this.setStitchHolders.toArray(new Holder[0]);
         Arrays.sort(stitchHoldersArray);
         int stitcherHoldersArrayLength = stitchHoldersArray.length;
         if (stitcherHoldersArrayLength > 0) {
@@ -96,7 +96,7 @@ public class Stitcher {
     }
 
     public void doStitchNew() {
-        Holder[] stitchHoldersArray = this.setStitchHolders.toArray(new Holder[this.setStitchHolders.size()]);
+        Holder[] stitchHoldersArray = this.setStitchHolders.toArray(new Holder[0]);
         Arrays.sort(stitchHoldersArray);
 
         for (Holder holder : stitchHoldersArray) {

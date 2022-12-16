@@ -130,6 +130,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                     int pixelY = (characterY * characterWidth + characterPixelYPos) * sheetWidth;
                     if ((sheetImageData[pixelX + pixelY] >> 24 & 0xFF) != 0) {
                         onlyBlankPixels = false;
+                        break;
                     }
                 }
 

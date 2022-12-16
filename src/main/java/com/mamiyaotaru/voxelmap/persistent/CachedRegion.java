@@ -142,7 +142,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 if (!Objects.equals(this.subworldName, "")) {
                     this.subworldNamePathPart = TextUtils.scrubNameFile(this.subworldName) + "/";
                 }
-            } catch (Exception var7) {
+            } catch (Exception ignored) {
             } finally {
                 this.threadLock.unlock();
                 this.closed = false;

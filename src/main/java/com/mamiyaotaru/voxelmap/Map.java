@@ -405,7 +405,7 @@ public class Map implements Runnable, IMap {
         this.lastGuiScreen = this.game.currentScreen;
         this.calculateCurrentLightAndSkyColor();
         if (this.threading) {
-            if (!this.zCalc.isAlive() && this.threading) {
+            if (!this.zCalc.isAlive()) {
                 this.zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
                 this.zCalc.setPriority(5);
                 this.zCalc.start();
@@ -422,7 +422,7 @@ public class Map implements Runnable, IMap {
                     }
                 }
             }
-        } else if (!this.threading) {
+        } else {
             if (!this.options.hide && this.world != null) {
                 this.mapCalc(this.doFullRender);
                 if (!this.doFullRender) {
@@ -434,12 +434,7 @@ public class Map implements Runnable, IMap {
             this.doFullRender = false;
         }
 
-        boolean enabled = true;
-        if (!mc.options.hudHidden && (this.options.showUnderMenus || this.game.currentScreen == null) && !this.game.options.debugEnabled) {
-            enabled = true;
-        } else {
-            enabled = false;
-        }
+        boolean enabled = !mc.options.hudHidden && (this.options.showUnderMenus || this.game.currentScreen == null) && !this.game.options.debugEnabled;
 
         this.direction = GameVariableAccessShim.rotationYaw() + 180.0F;
 
@@ -1015,7 +1010,6 @@ public class Map implements Runnable, IMap {
                 color24 = 0;
             }
 
-            return MapUtils.doSlimeAndGrid(color24, startX + imageX, startZ + imageY);
         } else {
             boolean solid = false;
             if (needHeightAndID) {
@@ -1351,8 +1345,8 @@ public class Map implements Runnable, IMap {
                 color24 = ColorUtils.colorAdder(bc, color24);
             }
 
-            return MapUtils.doSlimeAndGrid(color24, startX + imageX, startZ + imageY);
         }
+        return MapUtils.doSlimeAndGrid(color24, startX + imageX, startZ + imageY);
     }
 
     private int getBlockHeight(boolean nether, boolean caves, World world, int x, int z) {
