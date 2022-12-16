@@ -313,21 +313,11 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     private synchronized int getIDFromState(BlockState blockState) {
-        Integer id = (Integer) this.stateToInt.get(blockState);
-        if (id == null && blockState != null) {
-            while (this.stateToInt.inverse().containsKey(this.count)) {
-                ++this.count;
-            }
-
-            id = this.count;
-            this.stateToInt.put(blockState, id);
-        }
-
-        return id;
+        return this.stateToInt.get(blockState);
     }
 
     private BlockState getStateFromID(int id) {
-        return (BlockState) this.stateToInt.inverse().get(id);
+        return this.stateToInt.inverse().get(id);
     }
 
     public BiMap<BlockState, Integer> getStateToInt() {
@@ -335,16 +325,16 @@ public class CompressibleMapData extends AbstractMapData {
         return this.stateToInt;
     }
 
-    private BiMap createKeyFromCurrentBlocks(BiMap oldMap) {
+    private BiMap<BlockState, Integer> createKeyFromCurrentBlocks(BiMap<BlockState, Integer> oldMap) {
         this.count = 1;
-        BiMap newMap = HashBiMap.create();
+        BiMap<BlockState, Integer> newMap = HashBiMap.create();
 
         for (int x = 0; x < this.width; ++x) {
             for (int z = 0; z < this.height; ++z) {
                 int oldID = (this.getData(x, z, 1) & 255) << 8 | this.getData(x, z, 2) & 255;
                 if (oldID != 0) {
-                    BlockState blockState = (BlockState) oldMap.inverse().get(oldID);
-                    Integer id = (Integer) newMap.get(blockState);
+                    BlockState blockState = oldMap.inverse().get(oldID);
+                    Integer id = newMap.get(blockState);
                     if (id == null && blockState != null) {
                         while (newMap.inverse().containsKey(this.count)) {
                             ++this.count;
@@ -360,8 +350,8 @@ public class CompressibleMapData extends AbstractMapData {
 
                 oldID = (this.getData(x, z, 5) & 255) << 8 | this.getData(x, z, 6) & 255;
                 if (oldID != 0) {
-                    BlockState blockState = (BlockState) oldMap.inverse().get(oldID);
-                    Integer id = (Integer) newMap.get(blockState);
+                    BlockState blockState = oldMap.inverse().get(oldID);
+                    Integer id = newMap.get(blockState);
                     if (id == null && blockState != null) {
                         while (newMap.inverse().containsKey(this.count)) {
                             ++this.count;
@@ -377,8 +367,8 @@ public class CompressibleMapData extends AbstractMapData {
 
                 oldID = (this.getData(x, z, 9) & 255) << 8 | this.getData(x, z, 10) & 255;
                 if (oldID != 0) {
-                    BlockState blockState = (BlockState) oldMap.inverse().get(oldID);
-                    Integer id = (Integer) newMap.get(blockState);
+                    BlockState blockState = oldMap.inverse().get(oldID);
+                    Integer id = newMap.get(blockState);
                     if (id == null && blockState != null) {
                         while (newMap.inverse().containsKey(this.count)) {
                             ++this.count;
@@ -394,8 +384,8 @@ public class CompressibleMapData extends AbstractMapData {
 
                 oldID = (this.getData(x, z, 13) & 255) << 8 | this.getData(x, z, 14) & 255;
                 if (oldID != 0) {
-                    BlockState blockState = (BlockState) oldMap.inverse().get(oldID);
-                    Integer id = (Integer) newMap.get(blockState);
+                    BlockState blockState = oldMap.inverse().get(oldID);
+                    Integer id = newMap.get(blockState);
                     if (id == null && blockState != null) {
                         while (newMap.inverse().containsKey(this.count)) {
                             ++this.count;
