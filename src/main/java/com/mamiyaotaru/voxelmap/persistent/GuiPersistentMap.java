@@ -19,6 +19,7 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.BiomeMapData;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -90,15 +91,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     long timeAtLastTick = 0L;
     long timeOfLastKBInput = 0L;
     long timeOfLastMouseInput = 0L;
-    final float TIME_CONSTANT = 350.0F;
     float lastMouseX = 0.0F;
     float lastMouseY = 0.0F;
     protected int mouseX;
     protected int mouseY;
     boolean leftMouseButtonDown = false;
-    float zoom = 4.0F;
-    float zoomStart = 4.0F;
-    float zoomGoal = 4.0F;
+    float zoom;
+    float zoomStart;
+    float zoomGoal;
     long timeOfZoom = 0L;
     float zoomDirectX = 0.0F;
     float zoomDirectY = 0.0F;
@@ -216,11 +216,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.buttonCount = 5;
         this.buttonSeparation = 4;
         this.buttonWidth = (this.width - this.sideMargin * 2 - this.buttonSeparation * (this.buttonCount - 1)) / this.buttonCount;
-        this.addDrawableChild(new PopupGuiButton(this.sideMargin + 0 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> this.getMinecraft().setScreen(new GuiWaypoints(this, this.master)), this));
+        this.addDrawableChild(new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> this.getMinecraft().setScreen(new GuiWaypoints(this, this.master)), this));
         this.multiworldButtonName = Text.translatable(this.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld");
         this.multiworldButtonNameRed = (Text.translatable(this.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
         if (!this.getMinecraft().isIntegratedServerRunning() && !this.master.getWaypointManager().receivedAutoSubworldName()) {
-            this.addDrawableChild(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + 1 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> this.getMinecraft().setScreen(new GuiSubworldsSelect(this, this.master)), this));
+            this.addDrawableChild(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> this.getMinecraft().setScreen(new GuiSubworldsSelect(this, this.master)), this));
         }
 
         this.addDrawableChild(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("menu.options"), null, this) {
@@ -337,7 +337,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (elapsedTime == totalTime) {
             value = startValue + finalDelta;
         } else {
-            value = finalDelta * (-((float) Math.pow(2.0, (double) (-10.0F * elapsedTime / totalTime))) + 1.0F) + startValue;
+            value = finalDelta * (-((float) Math.pow(2.0, -10.0F * elapsedTime / totalTime)) + 1.0F) + startValue;
         }
 
         return value;
@@ -385,11 +385,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 int x = 0;
                 int z = 0;
                 if (this.oldNorth) {
-                    x = (int) Math.floor((double) this.mapCenterZ);
-                    z = -((int) Math.floor((double) this.mapCenterX));
+                    x = (int) Math.floor(this.mapCenterZ);
+                    z = -((int) Math.floor(this.mapCenterX));
                 } else {
-                    x = (int) Math.floor((double) this.mapCenterX);
-                    z = (int) Math.floor((double) this.mapCenterZ);
+                    x = (int) Math.floor(this.mapCenterX);
+                    z = (int) Math.floor(this.mapCenterZ);
                 }
 
                 this.coordinates.setText(x + ", " + z);
@@ -427,7 +427,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.coordinates.setEditableColor(isGood ? 16777215 : 16711680);
             if ((keysm == 257 || keysm == 335) && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getText().split(",");
-                this.centerAt(Integer.valueOf(xz[0].trim()), Integer.valueOf(xz[1].trim()));
+                this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
                 this.editingCoordinates = false;
                 this.lastEditingCoordinates = false;
                 this.switchToKeyboardInput();
@@ -457,7 +457,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.coordinates.setEditableColor(isGood ? 16777215 : 16711680);
             if (typedChar == '\r' && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getText().split(",");
-                this.centerAt(Integer.valueOf(xz[0].trim()), Integer.valueOf(xz[1].trim()));
+                this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
                 this.editingCoordinates = false;
                 this.lastEditingCoordinates = false;
                 this.switchToKeyboardInput();
@@ -477,9 +477,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             Integer.valueOf(xz[0].trim());
             Integer.valueOf(xz[1].trim());
             return true;
-        } catch (NumberFormatException var3) {
-            return false;
-        } catch (ArrayIndexOutOfBoundsException var4) {
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException var3) {
             return false;
         }
     }
@@ -564,8 +562,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         } else {
             long timeSinceRelease = System.currentTimeMillis() - this.timeOfRelease;
             if ((float) timeSinceRelease < 700.0F) {
-                this.deltaX = this.deltaXonRelease * (float) Math.exp((double) ((float) (-timeSinceRelease) / 350.0F));
-                this.deltaY = this.deltaYonRelease * (float) Math.exp((double) ((float) (-timeSinceRelease) / 350.0F));
+                this.deltaX = this.deltaXonRelease * (float) Math.exp((float) (-timeSinceRelease) / 350.0F);
+                this.deltaY = this.deltaYonRelease * (float) Math.exp((float) (-timeSinceRelease) / 350.0F);
             } else {
                 this.deltaX = 0.0F;
                 this.deltaY = 0.0F;
@@ -617,20 +615,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.centerX = this.getWidth() / 2;
         this.centerY = (this.bottom - this.top) / 2;
-        int left = 0;
-        int right = 0;
-        int top = 0;
-        int bottom = 0;
+        int left;
+        int right;
+        int top;
+        int bottom;
         if (this.oldNorth) {
-            left = (int) Math.floor((double) ((this.mapCenterZ - (float) this.centerY * this.guiToMap) / 256.0F));
-            right = (int) Math.floor((double) ((this.mapCenterZ + (float) this.centerY * this.guiToMap) / 256.0F));
-            top = (int) Math.floor((double) ((-this.mapCenterX - (float) this.centerX * this.guiToMap) / 256.0F));
-            bottom = (int) Math.floor((double) ((-this.mapCenterX + (float) this.centerX * this.guiToMap) / 256.0F));
+            left = (int) Math.floor((this.mapCenterZ - (float) this.centerY * this.guiToMap) / 256.0F);
+            right = (int) Math.floor((this.mapCenterZ + (float) this.centerY * this.guiToMap) / 256.0F);
+            top = (int) Math.floor((-this.mapCenterX - (float) this.centerX * this.guiToMap) / 256.0F);
+            bottom = (int) Math.floor((-this.mapCenterX + (float) this.centerX * this.guiToMap) / 256.0F);
         } else {
-            left = (int) Math.floor((double) ((this.mapCenterX - (float) this.centerX * this.guiToMap) / 256.0F));
-            right = (int) Math.floor((double) ((this.mapCenterX + (float) this.centerX * this.guiToMap) / 256.0F));
-            top = (int) Math.floor((double) ((this.mapCenterZ - (float) this.centerY * this.guiToMap) / 256.0F));
-            bottom = (int) Math.floor((double) ((this.mapCenterZ + (float) this.centerY * this.guiToMap) / 256.0F));
+            left = (int) Math.floor((this.mapCenterX - (float) this.centerX * this.guiToMap) / 256.0F);
+            right = (int) Math.floor((this.mapCenterX + (float) this.centerX * this.guiToMap) / 256.0F);
+            top = (int) Math.floor((this.mapCenterZ - (float) this.centerY * this.guiToMap) / 256.0F);
+            bottom = (int) Math.floor((this.mapCenterZ + (float) this.centerY * this.guiToMap) / 256.0F);
         }
 
         synchronized (this.closedLock) {
@@ -644,7 +642,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         MatrixStack modelViewMatrixStack = RenderSystem.getModelViewStack();
         modelViewMatrixStack.push();
         GLShim.glColor3f(1.0F, 1.0F, 1.0F);
-        modelViewMatrixStack.translate((double) ((float) this.centerX - this.mapCenterX * this.mapToGui), (double) ((float) (this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0);
+        modelViewMatrixStack.translate((float) this.centerX - this.mapCenterX * this.mapToGui, (float) (this.top + this.centerY) - this.mapCenterZ * this.mapToGui, 0.0);
         if (this.oldNorth) {
             modelViewMatrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(90.0F));
         }
@@ -657,8 +655,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.drawTexturedModalRect((float) this.backGroundImageInfo.left * this.mapToGui, (float) this.backGroundImageInfo.top * this.mapToGui, (float) this.backGroundImageInfo.width * this.mapToGui, (float) this.backGroundImageInfo.height * this.mapToGui);
         }
 
-        for (int t = 0; t < this.regions.length; ++t) {
-            CachedRegion region = this.regions[t];
+        for (CachedRegion region : this.regions) {
             int glid = region.getGLID();
             if (glid != 0) {
                 GLUtils.disp2(glid);
@@ -697,7 +694,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         if (this.options.showWaypoints) {
             for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                this.drawWaypoint(matrixStack, pt, cursorCoordX, cursorCoordZ, (Sprite) null, (Float) null, (Float) null, (Float) null);
+                this.drawWaypoint(matrixStack, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
             }
 
             if (this.waypointManager.getHighlightedWaypoint() != null) {
@@ -714,9 +711,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float playerZ = (float) GameVariableAccessShim.zCoordDouble();
         if (this.oldNorth) {
             modelViewMatrixStack.push();
-            modelViewMatrixStack.translate((double) (playerX * this.mapToGui), (double) (playerZ * this.mapToGui), 0.0);
+            modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0);
             modelViewMatrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
-            modelViewMatrixStack.translate((double) (-(playerX * this.mapToGui)), (double) (-(playerZ * this.mapToGui)), 0.0);
+            modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0);
             RenderSystem.applyModelViewMatrix();
         }
 
@@ -729,7 +726,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             modelViewMatrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
         }
 
-        modelViewMatrixStack.translate((double) (-((float) this.centerX - this.mapCenterX * this.mapToGui)), (double) (-((float) (this.top + this.centerY) - this.mapCenterZ * this.mapToGui)), 0.0);
+        modelViewMatrixStack.translate(-((float) this.centerX - this.mapCenterX * this.mapToGui), -((float) (this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0);
         RenderSystem.applyModelViewMatrix();
         if (mapOptions.biomeOverlay != 0) {
             float biomeScaleX = this.mapPixelsX / 760.0F;
@@ -739,11 +736,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             still = still && this.deltaX == 0.0F && this.deltaY == 0.0F;
             still = still && ThreadManager.executorService.getActiveCount() == 0;
             if (still && !this.lastStill) {
-                int column = 0;
+                int column;
                 if (this.oldNorth) {
-                    column = (int) Math.floor(Math.floor((double) (this.mapCenterZ - (float) this.centerY * this.guiToMap)) / 256.0) - (left - 1);
+                    column = (int) Math.floor(Math.floor(this.mapCenterZ - (float) this.centerY * this.guiToMap) / 256.0) - (left - 1);
                 } else {
-                    column = (int) Math.floor(Math.floor((double) (this.mapCenterX - (float) this.centerX * this.guiToMap)) / 256.0) - (left - 1);
+                    column = (int) Math.floor(Math.floor(this.mapCenterX - (float) this.centerX * this.guiToMap) / 256.0) - (left - 1);
                 }
 
                 for (int x = 0; x < this.biomeMapData.getWidth(); ++x) {
@@ -758,10 +755,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                             floatMapZ = (float) z * biomeScaleY * this.mouseDirectToMap + (this.mapCenterZ - (float) this.centerY * this.guiToMap);
                         }
 
-                        int mapX = (int) Math.floor((double) floatMapX);
-                        int mapZ = (int) Math.floor((double) floatMapZ);
-                        int regionX = (int) Math.floor((double) ((float) mapX / 256.0F)) - (left - 1);
-                        int regionZ = (int) Math.floor((double) ((float) mapZ / 256.0F)) - (top - 1);
+                        int mapX = (int) Math.floor(floatMapX);
+                        int mapZ = (int) Math.floor(floatMapZ);
+                        int regionX = (int) Math.floor((float) mapX / 256.0F) - (left - 1);
+                        int regionZ = (int) Math.floor((float) mapZ / 256.0F) - (top - 1);
                         if (!this.oldNorth && regionX != column || this.oldNorth && regionZ != column) {
                             this.persistentMap.compress();
                         }
@@ -795,16 +792,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             if (displayStill) {
                 int minimumSize = (int) (20.0F * this.scScale / biomeScaleX);
                 minimumSize *= minimumSize;
-                ArrayList labels = this.biomeMapData.getBiomeLabels();
+                ArrayList<AbstractMapData.BiomeLabel> labels = this.biomeMapData.getBiomeLabels();
                 GLShim.glDisable(2929);
 
-                for (int t = 0; t < labels.size(); ++t) {
-                    AbstractMapData.BiomeLabel label = (AbstractMapData.BiomeLabel) labels.get(t);
-                    if (label.segmentSize > minimumSize) {
-                        int nameWidth = this.chkLen(label.name);
-                        float x = (float) label.x * biomeScaleX / this.scScale;
-                        float z = (float) label.z * biomeScaleY / this.scScale;
-                        this.write(matrixStack, label.name, x - (float) (nameWidth / 2), (float) this.top + z - 3.0F, 16777215);
+                for (AbstractMapData.BiomeLabel biomeLabel : labels) {
+                    if (biomeLabel.segmentSize > minimumSize) {
+                        int nameWidth = this.chkLen(biomeLabel.name);
+                        float x = (float) biomeLabel.x * biomeScaleX / this.scScale;
+                        float z = (float) biomeLabel.z * biomeScaleY / this.scScale;
+                        this.write(matrixStack, biomeLabel.name, x - (float) (nameWidth / 2), (float) this.top + z - 3.0F, 16777215);
                     }
                 }
 
@@ -831,8 +827,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.overlayBackground(0, this.top, 255, 255);
         this.overlayBackground(this.bottom, this.getHeight(), 255, 255);
         drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
-        int x = (int) Math.floor((double) cursorCoordX);
-        int z = (int) Math.floor((double) cursorCoordZ);
+        int x = (int) Math.floor(cursorCoordX);
+        int z = (int) Math.floor(cursorCoordZ);
         if (this.master.getMapOptions().coords) {
             if (!this.editingCoordinates) {
                 drawStringWithShadow(matrixStack, this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
@@ -902,9 +898,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 GLShim.glTexParameteri(3553, 10240, 9729);
                 if (this.oldNorth) {
                     matrixStack.push();
-                    matrixStack.translate((double) (ptX * this.mapToGui), (double) (ptZ * this.mapToGui), 0.0);
+                    matrixStack.translate(ptX * this.mapToGui, ptZ * this.mapToGui, 0.0);
                     matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
-                    matrixStack.translate((double) (-(ptX * this.mapToGui)), (double) (-(ptZ * this.mapToGui)), 0.0);
+                    matrixStack.translate(-(ptX * this.mapToGui), -(ptZ * this.mapToGui), 0.0);
                     RenderSystem.applyModelViewMatrix();
                 }
 
@@ -920,9 +916,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     matrixStack.push();
                     matrixStack.scale(fontScale, fontScale, 1.0F);
                     if (this.oldNorth) {
-                        matrixStack.translate((double) (ptX * this.mapToGui / fontScale), (double) (ptZ * this.mapToGui / fontScale), 0.0);
+                        matrixStack.translate(ptX * this.mapToGui / fontScale, ptZ * this.mapToGui / fontScale, 0.0);
                         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
-                        matrixStack.translate((double) (-(ptX * this.mapToGui / fontScale)), (double) (-(ptZ * this.mapToGui / fontScale)), 0.0);
+                        matrixStack.translate(-(ptX * this.mapToGui / fontScale), -(ptZ * this.mapToGui / fontScale), 0.0);
                         RenderSystem.applyModelViewMatrix();
                     }
 
@@ -967,10 +963,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        vertexBuffer.vertex(0.0, (double) endY, 0.0).texture(0.0F, (float) endY / 32.0F).color(64, 64, 64, endAlpha).next();
-        vertexBuffer.vertex((double) (0 + this.getWidth()), (double) endY, 0.0).texture((float) this.width / 32.0F, (float) endY / 32.0F).color(64, 64, 64, endAlpha).next();
-        vertexBuffer.vertex((double) (0 + this.getWidth()), (double) startY, 0.0).texture((float) this.width / 32.0F, (float) startY / 32.0F).color(64, 64, 64, startAlpha).next();
-        vertexBuffer.vertex(0.0, (double) startY, 0.0).texture(0.0F, (float) startY / 32.0F).color(64, 64, 64, startAlpha).next();
+        vertexBuffer.vertex(0.0, endY, 0.0).texture(0.0F, (float) endY / 32.0F).color(64, 64, 64, endAlpha).next();
+        vertexBuffer.vertex(this.getWidth(), endY, 0.0).texture((float) this.width / 32.0F, (float) endY / 32.0F).color(64, 64, 64, endAlpha).next();
+        vertexBuffer.vertex(this.getWidth(), startY, 0.0).texture((float) this.width / 32.0F, (float) startY / 32.0F).color(64, 64, 64, startAlpha).next();
+        vertexBuffer.vertex(0.0, startY, 0.0).texture(0.0F, (float) startY / 32.0F).color(64, 64, 64, startAlpha).next();
         tessellator.draw();
     }
 
@@ -1004,10 +1000,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex((double) (x + 0.0F), (double) (y + height), (double) this.getZOffset()).texture(0.0F, 1.0F).next();
-        vertexBuffer.vertex((double) (x + width), (double) (y + height), (double) this.getZOffset()).texture(1.0F, 1.0F).next();
-        vertexBuffer.vertex((double) (x + width), (double) (y + 0.0F), (double) this.getZOffset()).texture(1.0F, 0.0F).next();
-        vertexBuffer.vertex((double) (x + 0.0F), (double) (y + 0.0F), (double) this.getZOffset()).texture(0.0F, 0.0F).next();
+        vertexBuffer.vertex(x + 0.0F, y + height, this.getZOffset()).texture(0.0F, 1.0F).next();
+        vertexBuffer.vertex(x + width, y + height, this.getZOffset()).texture(1.0F, 1.0F).next();
+        vertexBuffer.vertex(x + width, y + 0.0F, this.getZOffset()).texture(1.0F, 0.0F).next();
+        vertexBuffer.vertex(x + 0.0F, y + 0.0F, this.getZOffset()).texture(0.0F, 0.0F).next();
         tessellator.draw();
     }
 
@@ -1021,15 +1017,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex((double) (xCoord + 0.0F), (double) (yCoord + heightIn), (double) this.getZOffset()).texture(icon.getMinU(), icon.getMaxV()).next();
-        vertexBuffer.vertex((double) (xCoord + widthIn), (double) (yCoord + heightIn), (double) this.getZOffset()).texture(icon.getMaxU(), icon.getMaxV()).next();
-        vertexBuffer.vertex((double) (xCoord + widthIn), (double) (yCoord + 0.0F), (double) this.getZOffset()).texture(icon.getMaxU(), icon.getMinV()).next();
-        vertexBuffer.vertex((double) (xCoord + 0.0F), (double) (yCoord + 0.0F), (double) this.getZOffset()).texture(icon.getMinU(), icon.getMinV()).next();
+        vertexBuffer.vertex(xCoord + 0.0F, yCoord + heightIn, this.getZOffset()).texture(icon.getMinU(), icon.getMaxV()).next();
+        vertexBuffer.vertex(xCoord + widthIn, yCoord + heightIn, this.getZOffset()).texture(icon.getMaxU(), icon.getMaxV()).next();
+        vertexBuffer.vertex(xCoord + widthIn, yCoord + 0.0F, this.getZOffset()).texture(icon.getMaxU(), icon.getMinV()).next();
+        vertexBuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, this.getZOffset()).texture(icon.getMinU(), icon.getMinV()).next();
         tessellator.draw();
     }
 
     private void createPopup(int mouseX, int mouseY, int mouseDirectX, int mouseDirectY) {
-        ArrayList entries = new ArrayList();
+        ArrayList<Popup.PopupEntry> entries = new ArrayList<>();
         float cursorX = (float) mouseDirectX;
         float cursorY = (float) mouseDirectY - (float) this.top * this.guiToDirectMouse;
         float cursorCoordX;
@@ -1042,8 +1038,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - (float) this.centerY * this.guiToMap);
         }
 
-        int x = (int) Math.floor((double) cursorCoordX);
-        int z = (int) Math.floor((double) cursorCoordZ);
+        int x = (int) Math.floor(cursorCoordX);
+        int z = (int) Math.floor(cursorCoordZ);
         boolean canTeleport = this.canTeleport();
         canTeleport = canTeleport && (this.persistentMap.isGroundAt(x, z) || this.backGroundImageInfo != null && this.backGroundImageInfo.isGroundAt(x, z));
         Waypoint hovered = this.getHovered(cursorCoordX, cursorCoordZ);
@@ -1115,8 +1111,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - (float) this.centerY * this.guiToMap);
         }
 
-        int x = (int) Math.floor((double) cursorCoordX);
-        int z = (int) Math.floor((double) cursorCoordZ);
+        int x = (int) Math.floor(cursorCoordX);
+        int z = (int) Math.floor(cursorCoordZ);
         int y = this.persistentMap.getHeightAt(x, z);
         Waypoint hovered = this.getHovered(cursorCoordX, cursorCoordZ);
         this.editClicked = false;
@@ -1124,12 +1120,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.deleteClicked = false;
         double dimensionScale = this.mc.player.world.getDimension().coordinateScale();
         switch (action) {
-            case 0:
+            case 0 -> {
                 if (hovered != null) {
                     x = hovered.getX();
                     z = hovered.getZ();
                 }
-
                 this.addClicked = true;
                 float r;
                 float g;
@@ -1143,32 +1138,31 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     g = this.generator.nextFloat();
                     b = this.generator.nextFloat();
                 }
-
-                TreeSet dimensions = new TreeSet();
+                TreeSet<DimensionContainer> dimensions = new TreeSet<>();
                 dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(this.mc.world));
                 this.newWaypoint = new Waypoint("", (int) ((double) x * dimensionScale), (int) ((double) z * dimensionScale), y, true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
                 this.mc.setScreen(new GuiAddWaypoint(this, this.master, this.newWaypoint, false));
-                break;
-            case 1:
+            }
+            case 1 -> {
                 if (hovered != null) {
                     this.waypointManager.setHighlightedWaypoint(hovered, true);
                 } else {
                     y = y > mc.player.world.getBottomY() ? y : 64;
-                    TreeSet dimensions2 = new TreeSet();
+                    TreeSet<DimensionContainer> dimensions2 = new TreeSet<>();
                     dimensions2.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(this.mc.world));
                     Waypoint fakePoint = new Waypoint("", (int) ((double) x * dimensionScale), (int) ((double) z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
                     this.waypointManager.setHighlightedWaypoint(fakePoint, true);
                 }
-                break;
-            case 2:
+            }
+            case 2 -> {
                 if (hovered != null) {
                     CommandUtils.sendWaypoint(hovered);
                 } else {
                     y = y > this.mc.player.world.getBottomY() ? y : 64;
                     CommandUtils.sendCoordinate(x, y, z);
                 }
-                break;
-            case 3:
+            }
+            case 3 -> {
                 if (hovered != null) {
                     this.selectedWaypoint = hovered;
                     boolean mp = !this.mc.isInSingleplayer();
@@ -1177,7 +1171,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     if (mp) {
                         this.mc.player.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     } else {
-                        this.getMinecraft().setScreen((Screen) null);
+                        this.getMinecraft().setScreen(null);
                     }
                 } else {
                     if (y == 0) {
@@ -1189,28 +1183,27 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         this.mc.player.sendCommand("tppos " + x + " " + y + " " + z);
                     }
                 }
-                break;
-            case 4:
+            }
+            case 4 -> {
                 if (hovered != null) {
                     this.editClicked = true;
                     this.selectedWaypoint = hovered;
                     this.mc.setScreen(new GuiAddWaypoint(this, this.master, hovered, true));
                 }
-                break;
-            case 5:
+            }
+            case 5 -> {
                 if (hovered != null) {
                     this.deleteClicked = true;
                     this.selectedWaypoint = hovered;
                     Text title = Text.translatable("minimap.waypoints.deleteconfirm");
-                    Text explanation = Text.translatable("selectServer.deleteWarning", new Object[]{this.selectedWaypoint.name});
+                    Text explanation = Text.translatable("selectServer.deleteWarning", this.selectedWaypoint.name);
                     Text affirm = Text.translatable("selectServer.deleteButton");
                     Text deny = Text.translatable("gui.cancel");
                     ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
                     this.getMinecraft().setScreen(confirmScreen);
                 }
-                break;
-            default:
-                System.out.println("unimplemented command");
+            }
+            default -> System.out.println("unimplemented command");
         }
 
     }
@@ -1247,7 +1240,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public boolean canTeleport() {
-        boolean allowed = false;
+        boolean allowed;
         boolean singlePlayer = this.mc.isInSingleplayer();
         if (singlePlayer) {
             try {

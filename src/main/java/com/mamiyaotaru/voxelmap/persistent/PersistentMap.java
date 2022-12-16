@@ -55,14 +55,14 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     int[] lightmapColors;
     ClientWorld world;
     String subworldName = "";
-    protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList());
-    protected ConcurrentHashMap cachedRegions = new ConcurrentHashMap(150, 0.9F, 2);
+    protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
+    protected final ConcurrentHashMap<String, CachedRegion> cachedRegions = new ConcurrentHashMap<>(150, 0.9F, 2);
     int lastLeft = 0;
     int lastRight = 0;
     int lastTop = 0;
     int lastBottom = 0;
     CachedRegion[] lastRegionsArray = new CachedRegion[0];
-    Comparator ageThenDistanceSorter = (Comparator<CachedRegion>) (region1, region2) -> {
+    Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
         long mostRecentAccess1 = region1.getMostRecentView();
         long mostRecentAccess2 = region2.getMostRecentView();
         if (mostRecentAccess1 < mostRecentAccess2) {
@@ -70,19 +70,19 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         } else if (mostRecentAccess1 > mostRecentAccess2) {
             return -1;
         } else {
-            double distance1sq = (double) ((region1.getX() * 256 + region1.getWidth() / 2 - PersistentMap.this.options.mapX) * (region1.getX() * 256 + region1.getWidth() / 2 - PersistentMap.this.options.mapX) + (region1.getZ() * 256 + region1.getWidth() / 2 - PersistentMap.this.options.mapZ) * (region1.getZ() * 256 + region1.getWidth() / 2 - PersistentMap.this.options.mapZ));
-            double distance2sq = (double) ((region2.getX() * 256 + region2.getWidth() / 2 - PersistentMap.this.options.mapX) * (region2.getX() * 256 + region2.getWidth() / 2 - PersistentMap.this.options.mapX) + (region2.getZ() * 256 + region2.getWidth() / 2 - PersistentMap.this.options.mapZ) * (region2.getZ() * 256 + region2.getWidth() / 2 - PersistentMap.this.options.mapZ));
+            double distance1sq = (region1.getX() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapX) * (region1.getX() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapX) + (region1.getZ() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapZ) * (region1.getZ() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapZ);
+            double distance2sq = (region2.getX() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapX) * (region2.getX() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapX) + (region2.getZ() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapZ) * (region2.getZ() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapZ);
             return Double.compare(distance1sq, distance2sq);
         }
     };
-    Comparator distanceSorter = (Comparator<RegionCoordinates>) (coordinates1, coordinates2) -> {
+    Comparator<RegionCoordinates> distanceSorter = (coordinates1, coordinates2) -> {
         double distance1sq = (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ);
         double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
         return Double.compare(distance1sq, distance2sq);
     };
     private boolean queuedChangedChunks = false;
     private MapChunkCache chunkCache;
-    private final ConcurrentLinkedQueue chunkUpdateQueue = new ConcurrentLinkedQueue();
+    private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
 
     public PersistentMap(IVoxelMap master) {
         this.master = master;
@@ -173,8 +173,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             this.chunkCache.centerChunks(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), 0, GameVariableAccessShim.zCoord()));
             this.chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            while (!this.chunkUpdateQueue.isEmpty() && Math.abs(TickCounter.tickCounter - ((ChunkWithAge) this.chunkUpdateQueue.peek()).tick) >= 20) {
-                this.doProcessChunk(((ChunkWithAge) this.chunkUpdateQueue.remove()).chunk);
+            while (!this.chunkUpdateQueue.isEmpty() && Math.abs(TickCounter.tickCounter - this.chunkUpdateQueue.peek().tick) >= 20) {
+                this.doProcessChunk(this.chunkUpdateQueue.remove().chunk);
             }
         }
 
@@ -321,7 +321,6 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 if (foliageBlockState != null && foliageBlockState.getMaterial() != Material.AIR) {
                     foliageHeight = surfaceHeight + 1;
                 } else {
-                    foliageHeight = 0;
                     foliageBlockState = BlockRepository.air.getDefaultState();
                 }
 
@@ -445,20 +444,20 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     public int getPixelColor(AbstractMapData mapData, ClientWorld world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
-        BlockState surfaceBlockState = BlockRepository.air.getDefaultState();
-        BlockState transparentBlockState = BlockRepository.air.getDefaultState();
-        BlockState foliageBlockState = BlockRepository.air.getDefaultState();
-        BlockState seafloorBlockState = BlockRepository.air.getDefaultState();
-        int surfaceHeight = 0;
+        BlockState surfaceBlockState;
+        BlockState transparentBlockState;
+        BlockState foliageBlockState;
+        BlockState seafloorBlockState;
+        int surfaceHeight;
         int seafloorHeight = 0;
         int transparentHeight = 0;
         int foliageHeight = 0;
-        int surfaceColor = 0;
+        int surfaceColor;
         int seafloorColor = 0;
         int transparentColor = 0;
         int foliageColor = 0;
         blockPos = blockPos.withXYZ(mcX, 0, mcZ);
-        int color24 = 0;
+        int color24;
         int biomeID = mapData.getBiomeID(imageX, imageY);
         surfaceBlockState = mapData.getBlockstate(imageX, imageY);
         if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != 0) && biomeID != -1 && biomeID != 255) {
@@ -471,7 +470,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
             } else {
                 boolean solid = false;
-                int blockStateID = 0;
+                int blockStateID;
                 surfaceHeight = mapData.getHeight(imageX, imageY);
                 blockStateID = BlockRepository.getStateId(surfaceBlockState);
                 if (surfaceHeight == -1 || surfaceHeight == 255) {
@@ -523,7 +522,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             }
 
                             seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0);
-                            int seafloorLight = 255;
+                            int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
                             if (mapOptions.lightmap) {
                                 int lightValue = this.getLight(seafloorLight);
@@ -552,7 +551,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             }
 
                             transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3);
-                            int transparentLight = 255;
+                            int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
                             if (mapOptions.lightmap) {
                                 int lightValue = this.getLight(transparentLight);
@@ -569,7 +568,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             blockStateID = BlockRepository.getStateId(foliageBlockState);
                             if (mapOptions.biomes) {
                                 foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
-                                int tint = -1;
+                                int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, foliageBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                                 if (tint != -1) {
                                     foliageColor = ColorUtils.colorMultiplier(foliageColor, tint);
@@ -579,7 +578,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             }
 
                             foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2);
-                            int foliageLight = 255;
+                            int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
                             if (mapOptions.lightmap) {
                                 int lightValue = this.getLight(foliageLight);
@@ -637,12 +636,10 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 double sc = 0.0;
                 boolean invert = false;
                 if (!mapOptions.slopemap) {
-                    if (mapOptions.heightmap) {
-                        diff = height - 80;
-                        sc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 1.8;
-                        if (diff < 0) {
-                            sc = 0.0 - sc;
-                        }
+                    diff = height - 80;
+                    sc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 1.8;
+                    if (diff < 0) {
+                        sc = 0.0 - sc;
                     }
                 } else {
                     if (imageX > 0 && imageY < 32 * multi - 1) {
@@ -712,7 +709,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                     }
 
                     if (diff != 0) {
-                        sc = diff > 0 ? 1.0 : (diff < 0 ? -1.0 : 0.0);
+                        sc = diff > 0 ? 1.0 : -1.0;
                         sc /= 8.0;
                     }
 
@@ -758,7 +755,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             CachedRegion[] visibleCachedRegionsArray = new CachedRegion[(right - left + 1) * (bottom - top + 1)];
             String worldName = this.master.getWaypointManager().getCurrentWorldName();
             String subWorldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(false);
-            List<RegionCoordinates> regionsToDisplay = new ArrayList();
+            List<RegionCoordinates> regionsToDisplay = new ArrayList<>();
 
             for (int t = left; t <= right; ++t) {
                 for (int s = top; s <= bottom; ++s) {
@@ -767,16 +764,15 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 }
             }
 
-            Collections.sort(regionsToDisplay, this.distanceSorter);
+            regionsToDisplay.sort(this.distanceSorter);
 
             for (RegionCoordinates regionCoordinates : regionsToDisplay) {
                 int x = regionCoordinates.x;
                 int z = regionCoordinates.z;
-                StringBuilder keyBuilder = (new StringBuilder("")).append(x).append(",").append(z);
-                String key = keyBuilder.toString();
+                String key = "" + x + "," + z;
                 CachedRegion cachedRegion;
                 synchronized (this.cachedRegions) {
-                    cachedRegion = (CachedRegion) this.cachedRegions.get(key);
+                    cachedRegion = this.cachedRegions.get(key);
                     if (cachedRegion == null) {
                         cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, x, z);
                         this.cachedRegions.put(key, cachedRegion);
@@ -804,10 +800,10 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
     private void prunePool() {
         synchronized (this.cachedRegionsPool) {
-            Iterator iterator = this.cachedRegionsPool.iterator();
+            Iterator<CachedRegion> iterator = this.cachedRegionsPool.iterator();
 
             while (iterator.hasNext()) {
-                CachedRegion region = (CachedRegion) iterator.next();
+                CachedRegion region = iterator.next();
                 if (region.isLoaded() && region.isEmpty()) {
                     this.cachedRegions.put(region.getKey(), CachedRegion.emptyRegion);
                     region.cleanup();
@@ -816,7 +812,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             }
 
             if (this.cachedRegionsPool.size() > this.options.cacheSize) {
-                Collections.sort(this.cachedRegionsPool, this.ageThenDistanceSorter);
+                this.cachedRegionsPool.sort(this.ageThenDistanceSorter);
                 List<CachedRegion> toRemove = this.cachedRegionsPool.subList(this.options.cacheSize, this.cachedRegionsPool.size());
 
                 for (CachedRegion cachedRegion : toRemove) {
@@ -877,11 +873,10 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             int chunkZ = chunk.getPos().z;
             int regionX = (int) Math.floor((double) chunkX / 16.0);
             int regionZ = (int) Math.floor((double) chunkZ / 16.0);
-            StringBuilder keyBuilder = (new StringBuilder("")).append(regionX).append(",").append(regionZ);
-            String key = keyBuilder.toString();
+            String key = "" + regionX + "," + regionZ;
             CachedRegion cachedRegion;
             synchronized (this.cachedRegions) {
-                cachedRegion = (CachedRegion) this.cachedRegions.get(key);
+                cachedRegion = this.cachedRegions.get(key);
                 if (cachedRegion == null || cachedRegion == CachedRegion.emptyRegion) {
                     String worldName = this.master.getWaypointManager().getCurrentWorldName();
                     String subWorldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(false);
@@ -918,29 +913,29 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
     @Override
     public boolean isRegionLoaded(int blockX, int blockZ) {
-        int x = (int) Math.floor((double) ((float) blockX / 256.0F));
-        int z = (int) Math.floor((double) ((float) blockZ / 256.0F));
-        CachedRegion cachedRegion = (CachedRegion) this.cachedRegions.get(x + "," + z);
-        return cachedRegion == null ? false : cachedRegion.isLoaded();
+        int x = (int) Math.floor((float) blockX / 256.0F);
+        int z = (int) Math.floor((float) blockZ / 256.0F);
+        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
+        return cachedRegion != null && cachedRegion.isLoaded();
     }
 
     @Override
     public boolean isGroundAt(int blockX, int blockZ) {
-        int x = (int) Math.floor((double) ((float) blockX / 256.0F));
-        int z = (int) Math.floor((double) ((float) blockZ / 256.0F));
-        CachedRegion cachedRegion = (CachedRegion) this.cachedRegions.get(x + "," + z);
-        return cachedRegion == null ? false : cachedRegion.isGroundAt(blockX, blockZ);
+        int x = (int) Math.floor((float) blockX / 256.0F);
+        int z = (int) Math.floor((float) blockZ / 256.0F);
+        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
+        return cachedRegion != null && cachedRegion.isGroundAt(blockX, blockZ);
     }
 
     @Override
     public int getHeightAt(int blockX, int blockZ) {
-        int x = (int) Math.floor((double) ((float) blockX / 256.0F));
-        int z = (int) Math.floor((double) ((float) blockZ / 256.0F));
-        CachedRegion cachedRegion = (CachedRegion) this.cachedRegions.get(x + "," + z);
+        int x = (int) Math.floor((float) blockX / 256.0F);
+        int z = (int) Math.floor((float) blockZ / 256.0F);
+        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
         return cachedRegion == null ? 64 : cachedRegion.getHeightAt(blockX, blockZ);
     }
 
-    private class ChunkWithAge {
+    private static class ChunkWithAge {
         WorldChunk chunk;
         int tick;
 
@@ -950,7 +945,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         }
     }
 
-    private class RegionCoordinates {
+    private static class RegionCoordinates {
         int x;
         int z;
 

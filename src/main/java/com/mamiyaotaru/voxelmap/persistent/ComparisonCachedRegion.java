@@ -18,24 +18,24 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ComparisonCachedRegion {
-    private IPersistentMap persistentMap;
-    private String key;
-    private ClientWorld world;
-    private String worldName;
-    private String subworldName;
-    private String worldNamePathPart;
+    private final IPersistentMap persistentMap;
+    private final String key;
+    private final ClientWorld world;
+    private final String subworldName;
+    private final String worldNamePathPart;
     private String subworldNamePathPart;
-    private String dimensionNamePathPart;
-    private boolean underground;
-    private int x;
-    private int z;
-    private CompressibleMapData data;
+    private final String dimensionNamePathPart;
+    private final boolean underground;
+    private final int x;
+    private final int z;
+    private final CompressibleMapData data;
     MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     private int loadedChunks = 0;
     private boolean loaded = false;
@@ -46,10 +46,9 @@ public class ComparisonCachedRegion {
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;
-        this.worldName = worldName;
         this.subworldName = subworldName;
         this.worldNamePathPart = TextUtils.scrubNameFile(worldName);
-        if (subworldName != "") {
+        if (!Objects.equals(subworldName, "")) {
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
 

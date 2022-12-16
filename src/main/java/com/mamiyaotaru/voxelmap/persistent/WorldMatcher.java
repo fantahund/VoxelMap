@@ -8,16 +8,15 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.world.dimension.DimensionType;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class WorldMatcher {
-    private IVoxelMap master;
-    private IPersistentMap map;
-    private ClientWorld world;
+    private final IVoxelMap master;
+    private final IPersistentMap map;
+    private final ClientWorld world;
     private boolean cancelled = false;
 
     public WorldMatcher(IVoxelMap master, IPersistentMap map, ClientWorld world) {
@@ -32,11 +31,11 @@ public class WorldMatcher {
             int z;
             ArrayList candidateRegions = new ArrayList();
             ComparisonCachedRegion region;
-            String worldName = WorldMatcher.this.master.getWaypointManager().getCurrentWorldName();
-            String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
-            String dimensionName = WorldMatcher.this.master.getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
-            String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
-            File cachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
+            final String worldName = WorldMatcher.this.master.getWaypointManager().getCurrentWorldName();
+            final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
+            final String dimensionName = WorldMatcher.this.master.getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
+            final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
+            final File cachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
 
             public void run() {
                 try {
@@ -103,12 +102,10 @@ public class WorldMatcher {
                 MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
                 if (!WorldMatcher.this.cancelled && this.candidateRegions.size() == 1 && !WorldMatcher.this.master.getWaypointManager().receivedAutoSubworldName()) {
                     WorldMatcher.this.master.newSubWorldName(((ComparisonCachedRegion) this.candidateRegions.get(0)).getSubworldName(), false);
-                    StringBuilder successBuilder = (new StringBuilder(I18nUtils.getString("worldmap.multiworld.foundworld1"))).append(":").append(" §a").append(((ComparisonCachedRegion) this.candidateRegions.get(0)).getSubworldName()).append(".§r").append(" ").append(I18nUtils.getString("worldmap.multiworld.foundworld2"));
-                    MessageUtils.chatInfo(successBuilder.toString());
+                    MessageUtils.chatInfo(I18nUtils.getString("worldmap.multiworld.foundworld1") + ":" + " §a" + ((ComparisonCachedRegion) this.candidateRegions.get(0)).getSubworldName() + ".§r" + " " + I18nUtils.getString("worldmap.multiworld.foundworld2"));
                 } else if (!WorldMatcher.this.cancelled && !WorldMatcher.this.master.getWaypointManager().receivedAutoSubworldName()) {
                     MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
-                    StringBuilder failureBuilder = (new StringBuilder("§4VoxelMap§r")).append(":").append(" ").append(I18nUtils.getString("worldmap.multiworld.unknownsubworld"));
-                    MessageUtils.chatInfo(failureBuilder.toString());
+                    MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18nUtils.getString("worldmap.multiworld.unknownsubworld"));
                 }
 
             }
@@ -117,7 +114,7 @@ public class WorldMatcher {
                 for (String subworldName : subworldNamesArray) {
                     if (!WorldMatcher.this.cancelled) {
                         File subworldDir = new File(this.cachedRegionFileDir, subworldName + "/" + this.dimensionNamePathPart);
-                        if (subworldDir != null && subworldDir.isDirectory()) {
+                        if (subworldDir.isDirectory()) {
                             ComparisonCachedRegion candidateRegion = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, WorldMatcher.this.world, this.worldName, subworldName, this.x, this.z);
                             candidateRegion.loadStored();
                             this.candidateRegions.add(candidateRegion);

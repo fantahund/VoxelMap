@@ -30,6 +30,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -41,6 +42,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Scanner;
@@ -65,7 +67,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     Class executorClass;
     private ThreadExecutor executor;
     private ThreadedAnvilChunkStorage chunkLoader;
-    private String worldName;
     private String subworldName;
     private String worldNamePathPart;
     private String subworldNamePathPart = "";
@@ -73,18 +74,18 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private boolean underground = false;
     private int x;
     private int z;
-    private int width = 256;
+    private final int width = 256;
     private boolean empty = true;
     private boolean liveChunksUpdated = false;
     boolean remoteWorld;
-    private boolean[] liveChunkUpdateQueued = new boolean[256];
-    private boolean[] chunkUpdateQueued = new boolean[256];
+    private final boolean[] liveChunkUpdateQueued = new boolean[256];
+    private final boolean[] chunkUpdateQueued = new boolean[256];
     private CompressibleGLBufferedImage image;
     private CompressibleMapData data;
     MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
     Future future = null;
-    private ReentrantLock threadLock = new ReentrantLock();
+    private final ReentrantLock threadLock = new ReentrantLock();
     boolean displayOptionsChanged = false;
     boolean imageChanged = false;
     boolean refreshQueued = false;
@@ -96,7 +97,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private static final Object anvilLock = new Object();
     private static final ReadWriteLock tickLock = new ReentrantReadWriteLock();
     private static int loadedChunkCount = 0;
-    private static boolean debug = false;
     private boolean queuedToCompress = false;
 
     public CachedRegion() {
@@ -106,17 +106,16 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;
-        this.worldName = worldName;
         this.subworldName = subworldName;
         this.worldNamePathPart = TextUtils.scrubNameFile(worldName);
-        if (subworldName != "") {
+        if (!Objects.equals(subworldName, "")) {
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
 
         String dimensionName = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        boolean knownUnderground = false;
-        knownUnderground = knownUnderground || dimensionName.toLowerCase().contains("erebus");
+        boolean knownUnderground;
+        knownUnderground = dimensionName.toLowerCase().contains("erebus");
         this.underground = !world.getDimensionEffects().shouldBrightenLighting() && !world.getDimension().hasSkyLight() || world.getDimension().hasCeiling() || knownUnderground;
         this.remoteWorld = !MinecraftClient.getInstance().isIntegratedServerRunning();
         persistentMap.getSettingsAndLightingChangeNotifier().addObserver(this);
@@ -141,7 +140,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
 
             try {
                 this.subworldName = newName;
-                if (this.subworldName != "") {
+                if (!Objects.equals(this.subworldName, "")) {
                     this.subworldNamePathPart = TextUtils.scrubNameFile(this.subworldName) + "/";
                 }
             } catch (Exception var7) {
@@ -284,10 +283,8 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 }
             }
 
-            return true;
-        } else {
-            return true;
         }
+        return true;
     }
 
     private boolean isChunkEmpty(WorldChunk chunk) {
@@ -304,21 +301,19 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 }
             }
 
-            return true;
-        } else {
-            return true;
         }
+        return true;
     }
 
     public boolean isSurroundedByLoaded(WorldChunk chunk) {
         int chunkX = chunk.getPos().x;
         int chunkZ = chunk.getPos().z;
-        boolean neighborsLoaded = chunk != null && !chunk.isEmpty() && MinecraftClient.getInstance().world.isChunkLoaded(chunkX, chunkZ);
+        boolean neighborsLoaded = !chunk.isEmpty() && MinecraftClient.getInstance().world.isChunkLoaded(chunkX, chunkZ);
 
         for (int t = chunkX - 1; t <= chunkX + 1 && neighborsLoaded; ++t) {
             for (int s = chunkZ - 1; s <= chunkZ + 1 && neighborsLoaded; ++s) {
                 WorldChunk neighborChunk = MinecraftClient.getInstance().world.getChunk(t, s);
-                neighborsLoaded = neighborsLoaded && neighborChunk != null && !neighborChunk.isEmpty() && MinecraftClient.getInstance().world.isChunkLoaded(t, s);
+                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && MinecraftClient.getInstance().world.isChunkLoaded(t, s);
             }
         }
 
@@ -339,7 +334,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
 
             if (!this.closed && !full) {
                 File directory = new File(DimensionType.getSaveDirectory(this.worldServer.getRegistryKey(), this.worldServer.getServer().getSavePath(WorldSavePath.ROOT).normalize()).toString(), "region");
-                File regionFile = new File(directory, "r." + (int) Math.floor(this.x / 2) + "." + (int) Math.floor(this.z / 2) + ".mca");
+                File regionFile = new File(directory, "r." + (int) Math.floor(this.x / 2f) + "." + (int) Math.floor(this.z / 2f) + ".mca");
                 if (regionFile.exists()) {
                     boolean dataChanged = false;
                     boolean loadedChunks = false;
@@ -349,6 +344,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     Arrays.fill(chunkChanged, false);
                     tickLock.readLock().lock();
 
+                    boolean debug = false;
                     try {
                         synchronized (anvilLock) {
                             if (debug) {
@@ -370,7 +366,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                                 int chunkZ = level.getInt("zPos");
                                                 if (chunkPos.x == chunkX && chunkPos.z == chunkZ && level.contains("Status", 8) && ChunkStatus.byId(level.getString("Status")).isAtLeast(ChunkStatus.SPAWN) && level.contains("Sections")) {
                                                     NbtList sections = level.getList("Sections", 10);
-                                                    if (!sections.isEmpty() && sections.size() != 0) {
+                                                    if (!sections.isEmpty()) {
                                                         boolean hasInfo = false;
 
                                                         for (int i = 0; i < sections.size() && !hasInfo && !this.closed; ++i) {
@@ -381,16 +377,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                                         }
 
                                                         if (hasInfo) {
-                                                            boolean hasLight = level.contains("isLightOn") && level.getBoolean("isLightOn");
-
-                                                            if (level.contains("LightPopulated")) {
-                                                                hasLight = false;
-                                                            }
-
-                                                            if (!nbt.contains("DataVersion") || nbt.getInt("DataVersion") < 1900) {
-                                                                hasLight = false;
-                                                            }
-
                                                             chunks[index] = this.worldServer.getChunk(chunkPos.x, chunkPos.z);
                                                         }
                                                     }
@@ -474,7 +460,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                         tickLock.writeLock().lock();
 
                         try {
-                            CompletableFuture tickFuture = CompletableFuture.runAsync(() -> this.chunkProvider.tick(() -> true, executor.isOnThread()));
+                            CompletableFuture<Void> tickFuture = CompletableFuture.runAsync(() -> this.chunkProvider.tick(() -> true, executor.isOnThread()));
                             long tickTime = System.currentTimeMillis();
                             if (debug) {
                                 System.out.println(Thread.currentThread().getName() + " starting chunk GC tick");
@@ -509,7 +495,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
                 ZipFile zFile = new ZipFile(cachedRegionFile);
-                BiMap stateToInt = null;
                 int total = 0;
                 byte[] decompressedByteData = new byte[this.data.getWidth() * this.data.getHeight() * 17 * 4];
                 ZipEntry ze = zFile.getEntry("data");
@@ -523,7 +508,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 is.close();
                 ze = zFile.getEntry("key");
                 is = zFile.getInputStream(ze);
-                BiMap var18 = HashBiMap.create();
+                BiMap<BlockState, Integer> var18 = HashBiMap.create();
                 Scanner sc = new Scanner(is);
 
                 while (sc.hasNextLine()) {
@@ -543,16 +528,14 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
 
                         try {
                             version = Integer.parseInt(versionString);
-                        } catch (NumberFormatException var16) {
-                            version = 1;
-                        }
+                        } catch (NumberFormatException ignored) {}
 
                         is.close();
                     }
                 }
 
                 zFile.close();
-                if (total == this.data.getWidth() * this.data.getHeight() * 18 && var18 != null) {
+                if (total == this.data.getWidth() * this.data.getHeight() * 18) {
                     byte[] var23 = new byte[this.data.getWidth() * this.data.getHeight() * 18];
                     System.arraycopy(decompressedByteData, 0, var23, 0, var23.length);
                     this.data.setData(var23, var18, version);
@@ -562,7 +545,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     System.out.println("failed to load data from " + cachedRegionFile.getPath());
                 }
 
-                if (var18 == null || version < 2) {
+                if (version < 2) {
                     this.liveChunksUpdated = true;
                 }
             }
@@ -576,20 +559,18 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private void saveData(boolean newThread) {
         if (this.liveChunksUpdated && !this.worldNamePathPart.equals("")) {
             if (newThread) {
-                ThreadManager.executorService.execute(new Runnable() {
-                    public void run() {
-                        CachedRegion.this.threadLock.lock();
+                ThreadManager.executorService.execute(() -> {
+                    CachedRegion.this.threadLock.lock();
 
-                        try {
-                            CachedRegion.this.doSave();
-                        } catch (IOException var5) {
-                            System.err.println("Failed to save region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart);
-                            var5.printStackTrace();
-                        } finally {
-                            CachedRegion.this.threadLock.unlock();
-                        }
-
+                    try {
+                        CachedRegion.this.doSave();
+                    } catch (IOException var5) {
+                        System.err.println("Failed to save region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart);
+                        var5.printStackTrace();
+                    } finally {
+                        CachedRegion.this.threadLock.unlock();
                     }
+
                 });
             } else {
                 try {
@@ -609,7 +590,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
         byte[] byteArray = this.data.getData();
         int var10000 = byteArray.length;
         int var10001 = this.data.getWidth() * this.data.getHeight();
-        CompressibleMapData var10002 = this.data;
         if (var10000 == var10001 * 18) {
             File cachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
@@ -617,34 +597,32 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             FileOutputStream fos = new FileOutputStream(cachedRegionFile);
             ZipOutputStream zos = new ZipOutputStream(fos);
             ZipEntry ze = new ZipEntry("data");
-            ze.setSize((long) byteArray.length);
+            ze.setSize(byteArray.length);
             zos.putNextEntry(ze);
             zos.write(byteArray);
             zos.closeEntry();
             if (stateToInt != null) {
                 Iterator iterator = stateToInt.entrySet().iterator();
-                StringBuffer stringBuffer = new StringBuffer();
+                StringBuilder stringBuffer = new StringBuilder();
 
                 while (iterator.hasNext()) {
                     Entry entry = (Entry) iterator.next();
-                    String nextLine = entry.getValue() + " " + ((BlockState) entry.getKey()).toString() + "\r\n";
+                    String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
                     stringBuffer.append(nextLine);
                 }
 
                 byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
                 ze = new ZipEntry("key");
-                ze.setSize((long) keyByteArray.length);
+                ze.setSize(keyByteArray.length);
                 zos.putNextEntry(ze);
                 zos.write(keyByteArray);
                 zos.closeEntry();
             }
 
-            StringBuffer stringBuffer = new StringBuffer();
             String nextLine = "version:2\r\n";
-            stringBuffer.append(nextLine);
-            byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
+            byte[] keyByteArray = nextLine.getBytes();
             ze = new ZipEntry("control");
-            ze.setSize((long) keyByteArray.length);
+            ze.setSize(keyByteArray.length);
             zos.putNextEntry(ze);
             zos.write(keyByteArray);
             zos.closeEntry();
@@ -657,7 +635,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     }
 
     private void fillImage() {
-        int color24 = 0;
+        int color24;
 
         for (int t = 0; t < 256; ++t) {
             for (int s = 0; s < 256; ++s) {
@@ -674,22 +652,20 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             imageFileDir.mkdirs();
             final File imageFile = new File(imageFileDir, this.key + ".png");
             if (this.liveChunksUpdated || !imageFile.exists()) {
-                ThreadManager.executorService.execute(new Runnable() {
-                    public void run() {
-                        CachedRegion.this.threadLock.lock();
+                ThreadManager.executorService.execute(() -> {
+                    CachedRegion.this.threadLock.lock();
 
-                        try {
-                            BufferedImage realBufferedImage = new BufferedImage(CachedRegion.this.width, CachedRegion.this.width, 6);
-                            byte[] dstArray = ((DataBufferByte) realBufferedImage.getRaster().getDataBuffer()).getData();
-                            System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, CachedRegion.this.image.getData().length);
-                            ImageIO.write(realBufferedImage, "png", imageFile);
-                        } catch (IOException var6) {
-                            var6.printStackTrace();
-                        } finally {
-                            CachedRegion.this.threadLock.unlock();
-                        }
-
+                    try {
+                        BufferedImage realBufferedImage = new BufferedImage(CachedRegion.this.width, CachedRegion.this.width, 6);
+                        byte[] dstArray = ((DataBufferByte) realBufferedImage.getRaster().getDataBuffer()).getData();
+                        System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, CachedRegion.this.image.getData().length);
+                        ImageIO.write(realBufferedImage, "png", imageFile);
+                    } catch (IOException var6) {
+                        var6.printStackTrace();
+                    } finally {
+                        CachedRegion.this.threadLock.unlock();
                     }
+
                 });
             }
         }
@@ -767,19 +743,17 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     public void compress() {
         if (this.data != null && !this.isCompressed() && !this.queuedToCompress) {
             this.queuedToCompress = true;
-            ThreadManager.executorService.execute(new Runnable() {
-                public void run() {
-                    if (CachedRegion.this.threadLock.tryLock()) {
-                        try {
-                            CachedRegion.this.compressData();
-                        } catch (Exception var5) {
-                        } finally {
-                            CachedRegion.this.threadLock.unlock();
-                        }
+            ThreadManager.executorService.execute(() -> {
+                if (CachedRegion.this.threadLock.tryLock()) {
+                    try {
+                        CachedRegion.this.compressData();
+                    } catch (Exception ignored) {
+                    } finally {
+                        CachedRegion.this.threadLock.unlock();
                     }
-
-                    CachedRegion.this.queuedToCompress = false;
                 }
+
+                CachedRegion.this.queuedToCompress = false;
             });
         }
 
@@ -813,8 +787,8 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     }
 
     private class FillChunkRunnable implements Runnable {
-        private WorldChunk chunk;
-        private int index;
+        private final WorldChunk chunk;
+        private final int index;
 
         public FillChunkRunnable(WorldChunk chunk) {
             this.chunk = chunk;
@@ -834,7 +808,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 int chunkX = this.chunk.getPos().x - CachedRegion.this.x * 16;
                 int chunkZ = this.chunk.getPos().z - CachedRegion.this.z * 16;
                 CachedRegion.this.loadChunkData(this.chunk, chunkX, chunkZ);
-            } catch (Exception var6) {
+            } catch (Exception ignored) {
             } finally {
                 CachedRegion.this.threadLock.unlock();
                 CachedRegion.this.chunkUpdateQueued[this.index] = false;
@@ -844,7 +818,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     }
 
     private class RefreshRunnable extends AbstractNotifyingRunnable {
-        private boolean forceCompress = false;
+        private final boolean forceCompress;
 
         public RefreshRunnable(boolean forceCompress) {
             this.forceCompress = forceCompress;

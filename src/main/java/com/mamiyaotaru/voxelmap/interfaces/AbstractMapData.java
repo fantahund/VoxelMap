@@ -85,7 +85,7 @@ public abstract class AbstractMapData implements IMapData {
         }
     }
 
-    public ArrayList<?> getBiomeLabels() {
+    public ArrayList<BiomeLabel> getBiomeLabels() {
         synchronized (this.labelLock) {
             return new ArrayList<>(this.labels);
         }
