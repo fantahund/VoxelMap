@@ -93,12 +93,10 @@ public class GuiMinimapControls extends GuiScreenMinimap {
                     }
                 }
 
-                if (compareKeyCounter < this.options.game.options.allKeys.length) {
-                    KeyBinding compareBinding = this.options.game.options.allKeys[compareKeyCounter];
-                    if (keyBinding != compareBinding && keyBinding.equals(compareBinding)) {
-                        keycodeCollision = true;
-                        break;
-                    }
+                KeyBinding compareBinding = this.options.game.options.allKeys[compareKeyCounter];
+                if (keyBinding != compareBinding && keyBinding.equals(compareBinding)) {
+                    keycodeCollision = true;
+                    break;
                 }
             }
 

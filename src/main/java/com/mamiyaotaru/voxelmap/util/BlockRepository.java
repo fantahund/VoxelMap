@@ -7,8 +7,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.PistonExtensionBlock;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
@@ -52,7 +50,6 @@ public class BlockRepository {
     public static Block barrier;
     public static Block chorusPlant;
     public static Block chorusFlower;
-    public static FluidState dry = Fluids.EMPTY.getDefaultState();
     public static HashSet<Block> biomeBlocks;
     public static Block[] biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
     public static HashSet<Block> shapedBlocks;

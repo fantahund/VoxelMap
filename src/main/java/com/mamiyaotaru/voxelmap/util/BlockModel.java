@@ -337,19 +337,5 @@ public class BlockModel {
         }
     }
 
-    private static class BlockVertex {
-        final float x;
-        final float y;
-        final float z;
-        final float u;
-        final float v;
-
-        BlockVertex(float x, float y, float z, float u, float v) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.u = u;
-            this.v = v;
-        }
-    }
+    private record BlockVertex(float x, float y, float z, float u, float v) {}
 }

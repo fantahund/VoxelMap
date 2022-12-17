@@ -37,7 +37,7 @@ public class MapChunk {
                 this.isLoaded = true;
                 hasChanged = true;
             }
-        } else if (this.isLoaded && (this.chunk == null || this.chunk.isEmpty() || !MinecraftClient.getInstance().world.isChunkLoaded(this.x, this.z))) {
+        } else if (this.chunk == null || this.chunk.isEmpty() || !MinecraftClient.getInstance().world.isChunkLoaded(this.x, this.z)) {
             this.isLoaded = false;
             hasChanged = true;
         }
@@ -68,7 +68,7 @@ public class MapChunk {
         for (int t = this.x - 1; t <= this.x + 1 && neighborsLoaded; ++t) {
             for (int s = this.z - 1; s <= this.z + 1 && neighborsLoaded; ++s) {
                 WorldChunk neighborChunk = MinecraftClient.getInstance().world.getChunk(t, s);
-                neighborsLoaded = neighborsLoaded && neighborChunk != null && !neighborChunk.isEmpty() && MinecraftClient.getInstance().world.isChunkLoaded(t, s);
+                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && MinecraftClient.getInstance().world.isChunkLoaded(t, s);
             }
         }
 

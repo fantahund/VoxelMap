@@ -931,23 +931,6 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         return cachedRegion == null ? 64 : cachedRegion.getHeightAt(blockX, blockZ);
     }
 
-    private static class ChunkWithAge {
-        final WorldChunk chunk;
-        final int tick;
-
-        public ChunkWithAge(WorldChunk chunk, int tick) {
-            this.chunk = chunk;
-            this.tick = tick;
-        }
-    }
-
-    private static class RegionCoordinates {
-        final int x;
-        final int z;
-
-        public RegionCoordinates(int x, int z) {
-            this.x = x;
-            this.z = z;
-        }
-    }
+    private record ChunkWithAge(WorldChunk chunk, int tick) {}
+    private record RegionCoordinates(int x, int z) {}
 }

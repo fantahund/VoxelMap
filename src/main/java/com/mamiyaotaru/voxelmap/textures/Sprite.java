@@ -115,11 +115,9 @@ public class Sprite {
         int var4 = bufferedImage.getHeight();
         this.width = var3;
         this.height = var4;
-        int[] imageData = new int[0];
-        if (bufferedImage != null) {
-            imageData = new int[bufferedImage.getWidth() * bufferedImage.getHeight()];
-            bufferedImage.getRGB(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), imageData, 0, bufferedImage.getWidth());
-        }
+        int[] imageData;
+        imageData = new int[bufferedImage.getWidth() * bufferedImage.getHeight()];
+        bufferedImage.getRGB(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), imageData, 0, bufferedImage.getWidth());
 
         if (var4 != var3) {
             throw new RuntimeException("broken aspect ratio");

@@ -1152,7 +1152,7 @@ public class Radar implements IRadar {
                     headBits = headPartsArrayList.toArray(new ModelPart[0]);
                 }
 
-                if (contact.entity != null && (headBits.length > 0 || headPartsWithResourceLocationList.size() > 0) && resourceLocations[0] != null) {
+                if ((headBits.length > 0 || headPartsWithResourceLocationList.size() > 0) && resourceLocations[0] != null) {
                     String scaleString = properties.getProperty("scale", "1");
                     float scale = Float.parseFloat(scaleString);
                     Direction facing = Direction.NORTH;

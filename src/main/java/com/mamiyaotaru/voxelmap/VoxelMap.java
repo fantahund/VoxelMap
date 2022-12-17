@@ -103,8 +103,8 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         }
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             radarOptions.radarAllowed = true;
-            radarOptions.radarPlayersAllowed = radarOptions.radarAllowed;
-            radarOptions.radarMobsAllowed = radarOptions.radarAllowed;
+            radarOptions.radarPlayersAllowed = true;
+            radarOptions.radarMobsAllowed = true;
             mapOptions.cavesAllowed = true;
         });
         this.map = new Map(this);
