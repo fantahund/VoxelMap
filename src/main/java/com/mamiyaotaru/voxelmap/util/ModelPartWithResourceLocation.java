@@ -4,8 +4,8 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.util.Identifier;
 
 public class ModelPartWithResourceLocation {
-    public ModelPart modelPart;
-    public Identifier resourceLocation;
+    public final ModelPart modelPart;
+    public final Identifier resourceLocation;
 
     public ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {
         this.modelPart = modelPart;

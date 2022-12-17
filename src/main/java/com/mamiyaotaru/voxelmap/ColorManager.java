@@ -86,7 +86,7 @@ import java.util.stream.IntStream;
 
 public class ColorManager implements IColorManager {
     private final IVoxelMap master;
-    MinecraftClient game;
+    final MinecraftClient game;
     private boolean resourcePacksChanged = false;
     private ClientWorld world = null;
     private BufferedImage terrainBuff = null;

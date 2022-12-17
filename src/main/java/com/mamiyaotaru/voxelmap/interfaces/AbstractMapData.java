@@ -100,12 +100,12 @@ public abstract class AbstractMapData implements IMapData {
     }
 
     private static class Point {
-        public int x;
-        public int z;
+        public final int x;
+        public final int z;
         public boolean inSegment = false;
         public boolean isCandidate = false;
         public int layer = -1;
-        public int biomeID;
+        public final int biomeID;
 
         public Point(int x, int z, int biomeID) {
             this.x = x;
@@ -120,9 +120,9 @@ public abstract class AbstractMapData implements IMapData {
     }
 
     public class Segment {
-        public ArrayList<Point> memberPoints;
+        public final ArrayList<Point> memberPoints;
         ArrayList<Point> currentShell;
-        public int biomeID;
+        public final int biomeID;
         public String name = null;
         public int centerX = 0;
         public int centerZ = 0;

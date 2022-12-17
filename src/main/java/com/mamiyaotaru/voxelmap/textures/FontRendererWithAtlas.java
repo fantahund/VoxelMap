@@ -31,8 +31,8 @@ import java.util.stream.IntStream;
 
 public class FontRendererWithAtlas extends TextRenderer implements ResourceReloader {
     private final int[] charWidthArray = new int[256];
-    public int FONT_HEIGHT = 9;
-    public Random fontRandom = new Random();
+    public final int FONT_HEIGHT = 9;
+    public final Random fontRandom = new Random();
     private final Identifier locationFontTexture;
     private Sprite fontIcon = null;
     private Sprite blankIcon = null;
@@ -165,8 +165,9 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         float charWidth = (float) this.charWidthArray[charIndex] - 0.01F;
         this.vertexBuffer.vertex(this.posX + shadowOffset, this.posY, 0.0).texture(charXPosInSheet / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
         this.vertexBuffer.vertex(this.posX - shadowOffset, this.posY + 7.99F, 0.0).texture(charXPosInSheet / sheetWidth, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
-        this.vertexBuffer.vertex(this.posX + charWidth - 1.0F - shadowOffset, this.posY + 7.99F, 0.0).texture((charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
-        this.vertexBuffer.vertex(this.posX + charWidth - 1.0F + shadowOffset, this.posY, 0.0).texture((charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
+        float var1 = (charXPosInSheet + (charWidth - 1.0F) * fontScaleX) / sheetWidth;
+        this.vertexBuffer.vertex(this.posX + charWidth - 1.0F - shadowOffset, this.posY + 7.99F, 0.0).texture(var1, (charYPosInSheet + 7.99F * fontScaleY) / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
+        this.vertexBuffer.vertex(this.posX + charWidth - 1.0F + shadowOffset, this.posY, 0.0).texture(var1, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();
         return (float) this.charWidthArray[charIndex];
     }
 

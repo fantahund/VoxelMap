@@ -5,7 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class PopupGuiButton extends ButtonWidget {
-    IPopupGuiScreen parentScreen;
+    final IPopupGuiScreen parentScreen;
 
     public PopupGuiButton(int x, int y, int widthIn, int heightIn, Text buttonText, ButtonWidget.PressAction pressAction, IPopupGuiScreen parentScreen) {
         super(x, y, widthIn, heightIn, buttonText, pressAction);

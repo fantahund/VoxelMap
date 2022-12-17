@@ -15,20 +15,20 @@ import net.minecraft.client.util.math.MatrixStack;
 import java.util.ArrayList;
 
 public class Popup {
-    MinecraftClient client;
-    TextRenderer fontRendererObj;
+    final MinecraftClient client;
+    final TextRenderer fontRendererObj;
     int x;
     int y;
-    PopupEntry[] entries;
+    final PopupEntry[] entries;
     int w;
-    int h;
-    public int clickedX;
-    public int clickedY;
-    public int clickedDirectX;
-    public int clickedDirectY;
+    final int h;
+    public final int clickedX;
+    public final int clickedY;
+    public final int clickedDirectX;
+    public final int clickedDirectY;
     boolean shouldClose = false;
-    PopupGuiScreen parentGui;
-    int padding = 6;
+    final PopupGuiScreen parentGui;
+    final int padding = 6;
 
     public Popup(int x, int y, int directX, int directY, ArrayList<PopupEntry> entries, PopupGuiScreen parentGui) {
         this.client = MinecraftClient.getInstance();
@@ -142,10 +142,10 @@ public class Popup {
     }
 
     public static class PopupEntry {
-        public String name;
-        public int action;
-        boolean causesClose;
-        boolean enabled;
+        public final String name;
+        public final int action;
+        final boolean causesClose;
+        final boolean enabled;
 
         public PopupEntry(String name, int action, boolean causesClose, boolean enabled) {
             this.name = name;

@@ -127,7 +127,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final InputUtil.Key backCode;
     private final InputUtil.Key rightCode;
     private final InputUtil.Key sprintCode;
-    InputUtil.Key nullInput = InputUtil.fromTranslationKey("key.keyboard.unknown");
+    final InputUtil.Key nullInput = InputUtil.fromTranslationKey("key.keyboard.unknown");
     private Text multiworldButtonName = null;
     private MutableText multiworldButtonNameRed = null;
     int sideMargin = 10;

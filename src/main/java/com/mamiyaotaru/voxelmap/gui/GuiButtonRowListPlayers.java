@@ -26,7 +26,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     private final ArrayList<PlayerListEntry> players;
     private ArrayList<?> playersFiltered;
     final GuiSelectPlayer parentGui;
-    Row everyoneRow;
+    final Row everyoneRow;
     final Text ALL = Text.translatable("minimap.waypointshare.all");
     final Text TITLE = Text.translatable("minimap.waypointshare.sharewitheveryone");
     final Text EXPLANATION = Text.translatable("minimap.waypointshare.sharewitheveryone2");

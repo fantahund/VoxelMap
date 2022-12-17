@@ -164,8 +164,8 @@ public class Radar implements IRadar {
     private MinecraftClient game;
     private final IVoxelMap master;
     private LayoutVariables layoutVariables = null;
-    public MapSettingsManager minimapOptions;
-    public RadarSettingsManager options;
+    public final MapSettingsManager minimapOptions;
+    public final RadarSettingsManager options;
     private final FontRendererWithAtlas fontRenderer;
     private final TextureAtlas textureAtlas;
     private boolean newMobs = false;
@@ -173,8 +173,8 @@ public class Radar implements IRadar {
     private int timer = 500;
     private float direction = 0.0F;
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
-    public HashMap<String, Integer> mpContactsSkinGetTries = new HashMap<>();
-    public HashMap<String, Integer> contactsSkinGetTries = new HashMap<>();
+    public final HashMap<String, Integer> mpContactsSkinGetTries = new HashMap<>();
+    public final HashMap<String, Integer> contactsSkinGetTries = new HashMap<>();
     private Sprite clothIcon = null;
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
     private final String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
@@ -1917,8 +1917,8 @@ public class Radar implements IRadar {
     }
 
     private static class ModelPartWithResourceLocation {
-        ModelPart modelPart;
-        Identifier resourceLocation;
+        final ModelPart modelPart;
+        final Identifier resourceLocation;
 
         public ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {
             this.modelPart = modelPart;

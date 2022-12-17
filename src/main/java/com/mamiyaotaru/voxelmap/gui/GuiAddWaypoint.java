@@ -27,9 +27,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    IVoxelMap master;
-    IWaypointManager waypointManager;
-    IColorManager colorManager;
+    final IVoxelMap master;
+    final IWaypointManager waypointManager;
+    final IColorManager colorManager;
     private final IGuiWaypoints parentGui;
     private PopupGuiButton doneButton;
     private GuiSlotDimensions dimensionList;
@@ -40,7 +40,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private TextFieldWidget waypointZ;
     private TextFieldWidget waypointY;
     private PopupGuiButton buttonEnabled;
-    protected Waypoint waypoint;
+    protected final Waypoint waypoint;
     private boolean choosingColor = false;
     private boolean choosingIcon = false;
     private final float red;

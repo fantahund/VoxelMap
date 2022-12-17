@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CustomMobsManager {
-    public static List<CustomMob> mobs = new ArrayList<>();
+    public static final List<CustomMob> mobs = new ArrayList<>();
 
     public static void add(String type, boolean enabled) {
         CustomMob mob = getCustomMobByType(type);

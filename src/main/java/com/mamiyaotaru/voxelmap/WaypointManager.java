@@ -56,11 +56,11 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class WaypointManager implements IWaypointManager {
-    IVoxelMap master;
+    final IVoxelMap master;
     private MinecraftClient game;
-    public MapSettingsManager options;
-    TextureAtlas textureAtlas;
-    TextureAtlas textureAtlasChooser;
+    public final MapSettingsManager options;
+    final TextureAtlas textureAtlas;
+    final TextureAtlas textureAtlasChooser;
     private boolean loaded = false;
     private boolean needSave = false;
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
@@ -805,7 +805,7 @@ public class WaypointManager implements IWaypointManager {
                 this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
             } else if (left != null && top != null && right != null && bottom != null) {
                 int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
-                int heightInt = Integer.parseInt(right) - Integer.parseInt(left);
+                int heightInt = widthInt;
                 this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, heightInt);
             }
 

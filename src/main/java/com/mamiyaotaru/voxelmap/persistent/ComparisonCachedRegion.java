@@ -38,7 +38,7 @@ public class ComparisonCachedRegion {
     private final int x;
     private final int z;
     private final CompressibleMapData data;
-    MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
+    final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     private int loadedChunks = 0;
     private boolean loaded = false;
     private boolean empty = true;

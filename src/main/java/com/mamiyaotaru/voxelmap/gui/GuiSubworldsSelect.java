@@ -30,8 +30,8 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private final Perspective thirdPersonViewOrig;
     private String[] worlds;
     private final Screen parent;
-    ClientPlayerEntity thePlayer;
-    ClientPlayerEntity camera;
+    final ClientPlayerEntity thePlayer;
+    final ClientPlayerEntity camera;
     private final IVoxelMap master;
     private final IWaypointManager waypointManager;
 
@@ -88,22 +88,24 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
             this.worlds[t] = knownSubworldNames.get(t);
             int tt = t;
-            selectButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - t / buttonsPerRow * 21, buttonWidth - 32, 20, Text.literal(this.worlds[t]), button -> this.worldSelected(this.worlds[tt]));
-            editButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing + buttonWidth - 32, this.height - 60 - t / buttonsPerRow * 21, 30, 20, Text.literal("⚒"), button -> this.editWorld(this.worlds[tt]));
+            int i = (buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth;
+            selectButtons[t] = new ButtonWidget(i + xSpacing, this.height - 60 - t / buttonsPerRow * 21, buttonWidth - 32, 20, Text.literal(this.worlds[t]), button -> this.worldSelected(this.worlds[tt]));
+            editButtons[t] = new ButtonWidget(i + xSpacing + buttonWidth - 32, this.height - 60 - t / buttonsPerRow * 21, 30, 20, Text.literal("⚒"), button -> this.editWorld(this.worlds[tt]));
             this.addDrawableChild(selectButtons[t]);
             this.addDrawableChild(editButtons[t]);
         }
 
         int numButtons = selectButtons.length - 1;
+        int i = (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth;
         if (!this.newWorld) {
-            selectButtons[numButtons] = new ButtonWidget((buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20, Text.literal("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
+            selectButtons[numButtons] = new ButtonWidget(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20, Text.literal("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
                 this.newWorld = true;
                 this.newNameField.setTextFieldFocused(true);
             });
             this.addDrawableChild(selectButtons[numButtons]);
         }
 
-        this.newNameField = new TextFieldWidget(this.getFontRenderer(), (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
+        this.newNameField = new TextFieldWidget(this.getFontRenderer(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
     public void accept(boolean par1) {

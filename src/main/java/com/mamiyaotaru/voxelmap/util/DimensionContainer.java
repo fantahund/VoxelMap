@@ -8,7 +8,7 @@ import java.text.Collator;
 public class DimensionContainer implements Comparable<DimensionContainer> {
     public DimensionType type;
     public String name = "notLoaded";
-    public Identifier resourceLocation;
+    public final Identifier resourceLocation;
     private static final Collator collator = I18nUtils.getLocaleAwareCollator();
 
     public DimensionContainer(DimensionType type, String name, Identifier resourceLocation) {

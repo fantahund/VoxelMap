@@ -13,8 +13,8 @@ import java.text.Collator;
 import java.util.ArrayList;
 
 public class DimensionManager implements IDimensionManager {
-    IVoxelMap master;
-    public ArrayList<DimensionContainer> dimensions;
+    final IVoxelMap master;
+    public final ArrayList<DimensionContainer> dimensions;
     private final ArrayList<RegistryKey<World>> vanillaWorlds = new ArrayList<>();
 
     public DimensionManager(IVoxelMap master) {

@@ -11,10 +11,10 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class GLBufferedImage extends BufferedImage implements IGLBufferedImage {
-    protected ByteBuffer buffer;
-    protected byte[] bytes;
+    protected final ByteBuffer buffer;
+    protected final byte[] bytes;
     protected int index = 0;
-    protected Object bufferLock = new Object();
+    protected final Object bufferLock = new Object();
 
     public GLBufferedImage(int width, int height, int imageType) {
         super(width, height, imageType);

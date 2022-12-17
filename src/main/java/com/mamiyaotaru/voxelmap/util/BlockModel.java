@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class BlockModel {
-    ArrayList<BlockFace> faces;
+    final ArrayList<BlockFace> faces;
     BlockVertex[] longestSide;
-    float failedToLoadX;
-    float failedToLoadY;
+    final float failedToLoadX;
+    final float failedToLoadY;
 
     public BlockModel(List<BakedQuad> quads, float failedToLoadX, float failedToLoadY) {
         BlockFace face;
@@ -139,12 +139,12 @@ public class BlockModel {
     }
 
     public static class BlockFace implements Comparable<BlockFace> {
-        BlockVertex[] vertices;
-        boolean isHorizontal;
-        boolean isVertical;
-        boolean isClockwise;
-        float yLevel;
-        BlockVertex[] longestSide;
+        final BlockVertex[] vertices;
+        final boolean isHorizontal;
+        final boolean isVertical;
+        final boolean isClockwise;
+        final float yLevel;
+        final BlockVertex[] longestSide;
 
         BlockFace(int[] values) {
             int arraySize = values.length;
@@ -338,11 +338,11 @@ public class BlockModel {
     }
 
     private static class BlockVertex {
-        float x;
-        float y;
-        float z;
-        float u;
-        float v;
+        final float x;
+        final float y;
+        final float z;
+        final float u;
+        final float v;
 
         BlockVertex(float x, float y, float z, float u, float v) {
             this.x = x;

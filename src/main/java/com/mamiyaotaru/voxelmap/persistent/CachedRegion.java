@@ -55,7 +55,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 public class CachedRegion implements IThreadCompleteListener, ISettingsAndLightingChangeListener {
-    public static EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
+    public static final EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
     private long mostRecentView = 0L;
     private long mostRecentChange = 0L;
     private IPersistentMap persistentMap;
@@ -81,8 +81,8 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private final boolean[] chunkUpdateQueued = new boolean[256];
     private CompressibleGLBufferedImage image;
     private CompressibleMapData data;
-    MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
-    MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
+    final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
+    final MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
     Future<?> future = null;
     private final ReentrantLock threadLock = new ReentrantLock();
     boolean displayOptionsChanged = false;
@@ -97,7 +97,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private static final ReadWriteLock tickLock = new ReentrantReadWriteLock();
     private static int loadedChunkCount = 0;
     private boolean queuedToCompress = false;
-    boolean debug = false;
+    final boolean debug = false;
 
     public CachedRegion() {}
 

@@ -31,7 +31,7 @@ public class CommandUtils {
     private static final int NEW_WAYPOINT_COMMAND_LENGTH = "/newWaypoint ".length();
     private static final int TELEPORT_COMMAND_LENGTH = "/ztp ".length();
     private static final Random generator = new Random();
-    public static Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
+    public static final Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
 
     public static boolean checkForWaypoints(Text chat, MessageIndicator indicator) {
         if (indicator != null && indicator.loggedName() != null && indicator.loggedName().equals("ModifiedbyVoxelMap")) {

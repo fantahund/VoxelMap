@@ -39,14 +39,14 @@ import java.util.UUID;
 public class RadarSimple implements IRadar {
     private MinecraftClient game;
     private LayoutVariables layoutVariables = null;
-    public MapSettingsManager minimapOptions;
-    public RadarSettingsManager options;
+    public final MapSettingsManager minimapOptions;
+    public final RadarSettingsManager options;
     private final TextureAtlas textureAtlas;
     private boolean completedLoading = false;
     private int timer = 500;
     private float direction = 0.0F;
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
-    UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
+    final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 
     private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 

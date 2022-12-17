@@ -14,7 +14,7 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     public String name;
     public String imageSuffix;
     public String world;
-    public TreeSet<DimensionContainer> dimensions;
+    public final TreeSet<DimensionContainer> dimensions;
     public int x;
     public int z;
     public int y;

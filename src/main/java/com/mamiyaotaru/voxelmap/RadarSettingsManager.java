@@ -15,7 +15,7 @@ import java.io.PrintWriter;
 import java.util.Objects;
 
 public class RadarSettingsManager implements ISubSettingsManager {
-    public MinecraftClient game;
+    public final MinecraftClient game;
     private boolean somethingChanged;
     public int radarMode = 2;
     public boolean showRadar = true;

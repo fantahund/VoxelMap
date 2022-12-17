@@ -39,7 +39,7 @@ public class GLUtils {
     private static int previousFBOID = 0;
     private static int previousFBOIDREAD = 0;
     private static int previousFBOIDDRAW = 0;
-    public static boolean hasAlphaBits = false;
+    public static final boolean hasAlphaBits = false;
     private static final IntBuffer dataBuffer = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
 
     public static void setupFrameBuffer() {

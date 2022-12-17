@@ -47,13 +47,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
 public class PersistentMap implements IPersistentMap, IChangeObserver {
-    IVoxelMap master;
-    MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
-    IColorManager colorManager;
-    MapSettingsManager mapOptions;
-    PersistentMapSettingsManager options;
+    final IVoxelMap master;
+    final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
+    final IColorManager colorManager;
+    final MapSettingsManager mapOptions;
+    final PersistentMapSettingsManager options;
     WorldMatcher worldMatcher;
-    int[] lightmapColors;
+    final int[] lightmapColors;
     ClientWorld world;
     String subworldName = "";
     protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
@@ -63,7 +63,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     int lastTop = 0;
     int lastBottom = 0;
     CachedRegion[] lastRegionsArray = new CachedRegion[0];
-    Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
+    final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
         long mostRecentAccess1 = region1.getMostRecentView();
         long mostRecentAccess2 = region2.getMostRecentView();
         if (mostRecentAccess1 < mostRecentAccess2) {
@@ -76,7 +76,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             return Double.compare(distance1sq, distance2sq);
         }
     };
-    Comparator<RegionCoordinates> distanceSorter = (coordinates1, coordinates2) -> {
+    final Comparator<RegionCoordinates> distanceSorter = (coordinates1, coordinates2) -> {
         double distance1sq = (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ);
         double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
         return Double.compare(distance1sq, distance2sq);
@@ -932,8 +932,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     }
 
     private static class ChunkWithAge {
-        WorldChunk chunk;
-        int tick;
+        final WorldChunk chunk;
+        final int tick;
 
         public ChunkWithAge(WorldChunk chunk, int tick) {
             this.chunk = chunk;
@@ -942,8 +942,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     }
 
     private static class RegionCoordinates {
-        int x;
-        int z;
+        final int x;
+        final int z;
 
         public RegionCoordinates(int x, int z) {
             this.x = x;

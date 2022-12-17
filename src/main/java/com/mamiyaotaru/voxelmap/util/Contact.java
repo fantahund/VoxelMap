@@ -15,12 +15,12 @@ public class Contact {
     public double distance;
     public float brightness;
     public EnumMobs type;
-    public boolean vanillaType;
+    public final boolean vanillaType;
     public boolean custom = false;
     public UUID uuid = null;
     public String name = "_";
     public int rotationFactor = 0;
-    public Entity entity;
+    public final Entity entity;
     public Sprite icon = null;
     public Sprite armorIcon = null;
     public int armorColor = -1;

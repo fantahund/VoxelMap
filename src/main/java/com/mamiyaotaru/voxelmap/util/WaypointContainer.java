@@ -31,7 +31,7 @@ public class WaypointContainer {
     private final List<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint = null;
     private final MinecraftClient mc;
-    public MapSettingsManager options;
+    public final MapSettingsManager options;
 
     public WaypointContainer(MapSettingsManager options) {
         this.mc = MinecraftClient.getInstance();
