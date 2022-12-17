@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 class GuiSlotMobs extends GuiSlotMinimap {
     private final ArrayList<MobItem> mobs;
-    private ArrayList<?> mobsFiltered;
+    private ArrayList<Entry<?>> mobsFiltered;
     final GuiMobs parentGui;
     final Text ENABLE = Text.translatable("options.minimap.mobs.enable");
     final Text DISABLE = Text.translatable("options.minimap.mobs.disable");
@@ -53,7 +53,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
         final Collator collator = I18nUtils.getLocaleAwareCollator();
         this.mobs.sort((mob1, mob2) -> collator.compare(mob1.name, mob2.name));
         this.mobsFiltered = new ArrayList<>(this.mobs);
-        this.mobsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
+        this.mobsFiltered.forEach(this::addEntry);
     }
 
     private static String getTranslatedName(String name) {
@@ -106,7 +106,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             }
         }
 
-        this.mobsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
+        this.mobsFiltered.forEach(this::addEntry);
     }
 
     public class MobItem extends EntryListWidget.Entry<MobItem> {

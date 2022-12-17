@@ -63,8 +63,8 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private ClientWorld world;
     private ServerWorld worldServer;
     private ServerChunkManager chunkProvider;
-    Class executorClass;
-    private ThreadExecutor executor;
+    Class<?> executorClass;
+    private ThreadExecutor<RefreshRunnable> executor;
     private ThreadedAnvilChunkStorage chunkLoader;
     private String subworldName;
     private String worldNamePathPart;
@@ -83,7 +83,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private CompressibleMapData data;
     MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
-    Future future = null;
+    Future<?> future = null;
     private final ReentrantLock threadLock = new ReentrantLock();
     boolean displayOptionsChanged = false;
     boolean imageChanged = false;
@@ -97,9 +97,9 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     private static final ReadWriteLock tickLock = new ReentrantReadWriteLock();
     private static int loadedChunkCount = 0;
     private boolean queuedToCompress = false;
+    boolean debug = false;
 
-    public CachedRegion() {
-    }
+    public CachedRegion() {}
 
     public CachedRegion(IPersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
         this.persistentMap = persistentMap;
@@ -124,7 +124,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             this.worldServer = MinecraftClient.getInstance().getServer().getWorld(world.getRegistryKey());
             this.chunkProvider = this.worldServer.getChunkManager();
             this.executorClass = this.chunkProvider.getClass().getDeclaredClasses()[0];
-            this.executor = (ThreadExecutor) ReflectionUtils.getPrivateFieldValueByType(this.chunkProvider, ServerChunkManager.class, this.executorClass);
+            this.executor = (ThreadExecutor<RefreshRunnable>) ReflectionUtils.getPrivateFieldValueByType(this.chunkProvider, ServerChunkManager.class, this.executorClass);
             this.chunkLoader = this.chunkProvider.threadedAnvilChunkStorage;
         }
 
@@ -343,7 +343,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     Arrays.fill(chunkChanged, false);
                     tickLock.readLock().lock();
 
-                    boolean debug = false;
                     try {
                         synchronized (anvilLock) {
                             if (debug) {
@@ -420,7 +419,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                     }
 
                                     if (!this.closed && loadedChunk != null && loadedChunk.getStatus().isAtLeast(ChunkStatus.FULL)) {
-                                        CompletableFuture lightFuture = this.chunkProvider.getLightingProvider().light(loadedChunk, false);
+                                        CompletableFuture<Chunk> lightFuture = this.chunkProvider.getLightingProvider().light(loadedChunk, false);
 
                                         while (!this.closed && !lightFuture.isDone()) {
                                             try {
@@ -585,7 +584,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
     }
 
     private void doSave() throws IOException {
-        BiMap stateToInt = this.data.getStateToInt();
+        BiMap<BlockState, Integer> stateToInt = this.data.getStateToInt();
         byte[] byteArray = this.data.getData();
         int var10000 = byteArray.length;
         int var10001 = this.data.getWidth() * this.data.getHeight();
@@ -601,11 +600,11 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             zos.write(byteArray);
             zos.closeEntry();
             if (stateToInt != null) {
-                Iterator iterator = stateToInt.entrySet().iterator();
+                Iterator<Entry<BlockState, Integer>> iterator = stateToInt.entrySet().iterator();
                 StringBuilder stringBuffer = new StringBuilder();
 
                 while (iterator.hasNext()) {
-                    Entry entry = (Entry) iterator.next();
+                    Entry<BlockState, Integer> entry = iterator.next();
                     String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
                     stringBuffer.append(nextLine);
                 }

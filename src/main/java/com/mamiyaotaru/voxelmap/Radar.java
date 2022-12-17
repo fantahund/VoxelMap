@@ -89,16 +89,23 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.IllagerEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.mob.PhantomEntity;
+import net.minecraft.entity.mob.ShulkerEntity;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
+import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.entity.passive.HorseMarking;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraft.entity.passive.PufferfishEntity;
 import net.minecraft.entity.passive.RabbitEntity;
 import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.StriderEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -131,6 +138,7 @@ import net.minecraft.village.VillagerType;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -171,14 +179,14 @@ public class Radar implements IRadar {
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
     private final String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
     private boolean randomobsOptifine;
-    private java.util.Map mapProperties = null;
+    private java.util.Map<String, Object> mapProperties = null;
     private Object randomEntity = null;
-    private Class randomEntityClass = null;
+    private Class<?> randomEntityClass = null;
     private Method setEntityMethod = null;
-    private Class randomEntitiesPropertiesClass = null;
+    private Class<?> randomEntitiesPropertiesClass = null;
     private Method getEntityTextureMethod = null;
     private boolean hasCustomNPCs;
-    private Class entityCustomNpcClass = null;
+    private Class<?> entityCustomNpcClass = null;
     private Field modelDataField = null;
     private Method getEntityMethod = null;
     private boolean lastOutlines = true;
@@ -543,8 +551,8 @@ public class Radar implements IRadar {
     }
 
     private void write(String paramStr, float x, float y, int color) {
-        GLShim.glTexParameteri(3553, 10241, 9728);
-        GLShim.glTexParameteri(3553, 10240, 9728);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         this.fontRenderer.drawStringWithShadow(paramStr, x, y, color);
 
     }
@@ -946,7 +954,7 @@ public class Radar implements IRadar {
 
         BufferedImage headImage = null;
         Model model = null;
-        if (entityRenderer instanceof LivingEntityRenderer render) {
+        if (entityRenderer instanceof LivingEntityRenderer<?, ?> render) {
             try {
                 model = render.getModel();
                 ArrayList<Field> submodels = ReflectionUtils.getFieldsByType(model, Model.class, ModelPart.class);
@@ -1029,63 +1037,63 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{batEntityModel.getPart().getChild("head")};
                     } else if (model instanceof BeeEntityModel) {
                         headBits = new ModelPart[]{((ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, BeeEntityModel.class, ModelPart.class, 0)).getChild("body")};
-                    } else if (model instanceof BipedEntityModel bipedEntityModel) {
+                    } else if (model instanceof BipedEntityModel<? extends LivingEntity> bipedEntityModel) {
                         headBits = new ModelPart[]{bipedEntityModel.head, bipedEntityModel.hat};
-                    } else if (model instanceof BlazeEntityModel blazeEntityModel) {
+                    } else if (model instanceof BlazeEntityModel<? extends Entity> blazeEntityModel) {
                         headBits = new ModelPart[]{blazeEntityModel.getPart().getChild("head")};
                     } else if (model instanceof ChickenEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, ChickenEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof CreeperEntityModel creeperEntityModel) {
+                    } else if (model instanceof CreeperEntityModel<? extends Entity> creeperEntityModel) {
                         headBits = new ModelPart[]{creeperEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof DolphinEntityModel dolphinEntityModel) {
+                    } else if (model instanceof DolphinEntityModel<? extends Entity> dolphinEntityModel) {
                         headBits = new ModelPart[]{dolphinEntityModel.getPart().getChild("body").getChild("head")};
-                    } else if (model instanceof EndermiteEntityModel endermiteEntityModel) {
+                    } else if (model instanceof EndermiteEntityModel<? extends Entity> endermiteEntityModel) {
                         headBits = new ModelPart[]{endermiteEntityModel.getPart().getChild("segment0"), endermiteEntityModel.getPart().getChild("segment1")};
-                    } else if (model instanceof GhastEntityModel ghastEntityModel) {
+                    } else if (model instanceof GhastEntityModel<? extends Entity> ghastEntityModel) {
                         headBits = new ModelPart[]{ghastEntityModel.getPart()};
                     } else if (model instanceof GuardianEntityModel guardianEntityModel) {
                         headBits = new ModelPart[]{guardianEntityModel.getPart().getChild("head")};
                     } else if (model instanceof HoglinEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, HoglinEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof HorseEntityModel horseEntityModel) {
-                        headBits = (ModelPart[]) StreamSupport.stream(horseEntityModel.getHeadParts().spliterator(), false).toArray(ModelPart[]::new);
-                    } else if (model instanceof IllagerEntityModel illagerEntityModel) {
+                    } else if (model instanceof HorseEntityModel<? extends AbstractHorseEntity> horseEntityModel) {
+                        headBits = StreamSupport.stream(horseEntityModel.getHeadParts().spliterator(), false).toArray(ModelPart[]::new);
+                    } else if (model instanceof IllagerEntityModel<? extends IllagerEntity> illagerEntityModel) {
                         headBits = new ModelPart[]{illagerEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof IronGolemEntityModel ironGolemEntityModel) {
+                    } else if (model instanceof IronGolemEntityModel<? extends IronGolemEntity> ironGolemEntityModel) {
                         headBits = new ModelPart[]{ironGolemEntityModel.getPart().getChild("head")};
                     } else if (model instanceof MagmaCubeEntityModel) {
                         headBits = (ModelPart[]) ReflectionUtils.getPrivateFieldValueByType(model, MagmaCubeEntityModel.class, ModelPart[].class);
                     } else if (model instanceof OcelotEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, OcelotEntityModel.class, ModelPart.class, 6)};
-                    } else if (model instanceof PhantomEntityModel phantomEntityModel) {
+                    } else if (model instanceof PhantomEntityModel<? extends PhantomEntity> phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.getPart().getChild("body")};
                     } else if (model instanceof RabbitEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 7), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 8), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 9), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 11)};
                     } else if (model instanceof RavagerEntityModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.getPart().getChild("neck").getChild("head")};
-                    } else if (model instanceof ShulkerEntityModel shulkerEntityModel) {
+                    } else if (model instanceof ShulkerEntityModel<? extends ShulkerEntity> shulkerEntityModel) {
                         headBits = new ModelPart[]{shulkerEntityModel.getHead()};
-                    } else if (model instanceof SilverfishEntityModel silverFishEntityModel) {
+                    } else if (model instanceof SilverfishEntityModel<? extends Entity> silverFishEntityModel) {
                         headBits = new ModelPart[]{silverFishEntityModel.getPart().getChild("segment0"), silverFishEntityModel.getPart().getChild("segment1")};
-                    } else if (model instanceof SlimeEntityModel slimeEntityModel) {
+                    } else if (model instanceof SlimeEntityModel<? extends Entity> slimeEntityModel) {
                         headBits = new ModelPart[]{slimeEntityModel.getPart()};
-                    } else if (model instanceof SnowGolemEntityModel snowGolemEntityModel) {
+                    } else if (model instanceof SnowGolemEntityModel<? extends Entity> snowGolemEntityModel) {
                         headBits = new ModelPart[]{snowGolemEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof SpiderEntityModel spiderEntityModel) {
+                    } else if (model instanceof SpiderEntityModel<? extends Entity> spiderEntityModel) {
                         headBits = new ModelPart[]{spiderEntityModel.getPart().getChild("head"), spiderEntityModel.getPart().getChild("body0")};
-                    } else if (model instanceof SquidEntityModel squidEntityModel) {
+                    } else if (model instanceof SquidEntityModel<? extends Entity> squidEntityModel) {
                         headBits = new ModelPart[]{squidEntityModel.getPart().getChild("body")};
-                    } else if (model instanceof WardenEntityModel wardenEntityModel) {
+                    } else if (model instanceof WardenEntityModel<? extends WardenEntity> wardenEntityModel) {
                         headBits = new ModelPart[]{wardenEntityModel.getPart().getChild("bone").getChild("body").getChild("head")};
-                    } else if (model instanceof StriderEntityModel striderEntityModel) {
+                    } else if (model instanceof StriderEntityModel<? extends StriderEntity> striderEntityModel) {
                         headBits = new ModelPart[]{striderEntityModel.getPart().getChild("body")};
-                    } else if (model instanceof VillagerResemblingModel villagerResemblingModel) {
+                    } else if (model instanceof VillagerResemblingModel<? extends Entity> villagerResemblingModel) {
                         headBits = new ModelPart[]{villagerResemblingModel.getHead()};
                     } else if (model instanceof WolfEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, WolfEntityModel.class, ModelPart.class)};
                     } else if (model instanceof QuadrupedEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, QuadrupedEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof SinglePartEntityModel singlePartEntityModel) {
+                    } else if (model instanceof SinglePartEntityModel<? extends Entity> singlePartEntityModel) {
                         try {
                             headBits = new ModelPart[]{singlePartEntityModel.getPart().getChild("head")};
                         } catch (Exception ignored) {
@@ -1202,7 +1210,7 @@ public class Radar implements IRadar {
                             overlay = ImageUtils.scaleImage(overlay, xScale, yScale);
                         }
 
-                        base = ImageUtils.addImages(base, overlay, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                        ImageUtils.addImages(base, overlay, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                         overlay.flush();
                     }
                 }
@@ -1226,10 +1234,10 @@ public class Radar implements IRadar {
     private boolean drawModel(float scale, int captureDepth, LivingEntity livingEntity, Direction facing, Model model, ModelPartWithResourceLocation[] headBits) {
         boolean failed = false;
         float size = 64.0F * scale;
-        GLShim.glBindTexture(3553, GLUtils.fboTextureID);
-        int width = GLShim.glGetTexLevelParameteri(3553, 0, 4096);
-        int height = GLShim.glGetTexLevelParameteri(3553, 0, 4097);
-        GLShim.glBindTexture(3553, 0);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, GLUtils.fboTextureID);
+        int width = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TRANSFORM_BIT);
+        int height = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
@@ -1241,14 +1249,14 @@ public class Radar implements IRadar {
         RenderSystem.applyModelViewMatrix();
         GLUtils.bindFrameBuffer();
         GLShim.glDepthMask(true);
-        GLShim.glEnable(2929);
-        GLShim.glEnable(3553);
-        GLShim.glEnable(3042);
-        GLShim.glDisable(2884);
+        GLShim.glEnable(GL11.GL_DEPTH_TEST);
+        GLShim.glEnable(GL11.GL_TEXTURE_2D);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glDisable(GL11.GL_CULL_FACE);
         GLShim.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
         GLShim.glClearDepth(1.0);
         GLShim.glClear(16640);
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         matrixStack.push();
         matrixStack.translate(width / 2f, height / 2f, 0.0);
         matrixStack.scale(size, size, size);
@@ -1310,8 +1318,8 @@ public class Radar implements IRadar {
         matrixStack.pop();
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
-        GLShim.glEnable(2884);
-        GLShim.glDisable(2929);
+        GLShim.glEnable(GL11.GL_CULL_FACE);
+        GLShim.glDisable(GL11.GL_DEPTH_TEST);
         GLShim.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
@@ -1494,10 +1502,10 @@ public class Radar implements IRadar {
                     if (blockImage != null) {
                         int width = blockImage.getWidth();
                         int height = blockImage.getHeight();
-                        blockImage = ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
+                        ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
                         BufferedImage blockImageFront = this.master.getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
                         blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
-                        blockImage = ImageUtils.addImages(blockImage, blockImageFront, (float) (width / 2 - 15), (float) (height / 2 - 15), width, height);
+                        ImageUtils.addImages(blockImage, blockImageFront, (float) (width / 2 - 15), (float) (height / 2 - 15), width, height);
                         blockImageFront.flush();
                         blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
                         icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
@@ -1637,8 +1645,8 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         GLUtils.disp2(this.textureAtlas.getGlId());
-        GLShim.glEnable(3042);
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         for (Contact contact : this.contacts) {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -1858,13 +1866,13 @@ public class Radar implements IRadar {
 
     private void applyFilteringParameters() {
         if (this.options.filtering) {
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
-            GLShim.glTexParameteri(3553, 10242, 10496);
-            GLShim.glTexParameteri(3553, 10243, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
         } else {
-            GLShim.glTexParameteri(3553, 10241, 9728);
-            GLShim.glTexParameteri(3553, 10240, 9728);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         }
 
     }
