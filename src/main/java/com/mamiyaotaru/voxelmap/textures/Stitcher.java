@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.util.math.MathHelper;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Stitcher {
-    private final Set<@Nullable Holder> setStitchHolders = Sets.newHashSetWithExpectedSize(256);
+    private final Set<Holder> setStitchHolders = Sets.newHashSetWithExpectedSize(256);
     private final List<Slot> stitchSlots = Lists.newArrayListWithCapacity(256);
     private int currentWidth = 0;
     private int currentHeight = 0;

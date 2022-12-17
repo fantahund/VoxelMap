@@ -137,7 +137,6 @@ import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
@@ -179,7 +178,7 @@ public class Radar implements IRadar {
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
     private final String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
     private boolean randomobsOptifine;
-    private java.util.Map<String, Object> mapProperties = null;
+    private Map<String, Object> mapProperties = null;
     private Object randomEntity = null;
     private Class<?> randomEntityClass = null;
     private Method setEntityMethod = null;
@@ -208,7 +207,7 @@ public class Radar implements IRadar {
         int2ObjectOpenHashMap.put(4, new Identifier("emerald"));
         int2ObjectOpenHashMap.put(5, new Identifier("diamond"));
     });
-    private static final Map<HorseMarking, @Nullable Object> TEXTURES = Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
+    private static final Map<HorseMarking, Object> TEXTURES = Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
         enumMap.put(HorseMarking.NONE, null);
         enumMap.put(HorseMarking.WHITE, new Identifier("textures/entity/horse/horse_markings_white.png"));
         enumMap.put(HorseMarking.WHITE_FIELD, new Identifier("textures/entity/horse/horse_markings_whitefield.png"));
