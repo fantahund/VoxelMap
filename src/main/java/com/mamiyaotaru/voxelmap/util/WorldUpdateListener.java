@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 
@@ -19,7 +20,7 @@ public class WorldUpdateListener {
                 chunkProcessor.handleChangeInWorld(chunkX, chunkZ);
             }
         } catch (Exception e) {
-            VoxelMap.getLogger().error("Exception", e);
+            VoxelConstants.getLogger().error("Exception", e);
         }
 
     }

@@ -134,7 +134,7 @@ public class MapChunkCache {
                 mapChunk.setModified(true);
             }
         } catch (Exception e) {
-            VoxelMap.getLogger().error(e);
+            VoxelConstants.getLogger().error(e);
         }
     }
 

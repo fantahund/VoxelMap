@@ -38,8 +38,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     public static MapSettingsManager mapOptions = null;
@@ -57,8 +55,6 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     private ClientWorld world;
     private String worldName = "";
     private static String passMessage = null;
-
-    private static final Logger logger = LogManager.getLogger("VoxelMap");
 
     public VoxelMap() {
         instance = this;
@@ -92,7 +88,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                 this.radarSimple = new RadarSimple(this);
             }
         } catch (Exception var4) {
-            logger.error("Failed creating radar " + var4.getLocalizedMessage(), var4);
+            VoxelConstants.getLogger().error("Failed creating radar " + var4.getLocalizedMessage(), var4);
             radarOptions.radarAllowed = false;
             radarOptions.radarMobsAllowed = false;
             radarOptions.radarPlayersAllowed = false;
@@ -184,26 +180,26 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
         if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
             mapOptions.cavesAllowed = false;
-            getLogger().info("Server disabled cavemapping.");
+            VoxelConstants.getLogger().info("Server disabled cavemapping.");
         }
 
         if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
             radarOptions.radarAllowed = false;
             radarOptions.radarPlayersAllowed = false;
             radarOptions.radarMobsAllowed = false;
-            getLogger().info("Server disabled radar.");
+            VoxelConstants.getLogger().info("Server disabled radar.");
         }
 
         if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
             mapOptions.cavesAllowed = true;
-            getLogger().info("Server enabled cavemapping.");
+            VoxelConstants.getLogger().info("Server enabled cavemapping.");
         }
 
         if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
             radarOptions.radarAllowed = true;
             radarOptions.radarPlayersAllowed = true;
             radarOptions.radarMobsAllowed = true;
-            getLogger().info("Server enabled radar.");
+            VoxelConstants.getLogger().info("Server enabled radar.");
         }
 
     }
@@ -318,9 +314,5 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     @Override
     public WorldUpdateListener getWorldUpdateListener() {
         return this.worldUpdateListener;
-    }
-
-    public static Logger getLogger() {
-        return logger;
     }
 }

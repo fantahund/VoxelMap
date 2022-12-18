@@ -139,7 +139,7 @@ public class MapSettingsManager implements ISettingsManager {
         try {
             keyBinding.setBoundKey(InputUtil.fromTranslationKey(id));
         } catch (Exception var4) {
-            VoxelMap.getLogger().warn(id + " is not a valid keybinding");
+            VoxelConstants.getLogger().warn(id + " is not a valid keybinding");
         }
 
     }

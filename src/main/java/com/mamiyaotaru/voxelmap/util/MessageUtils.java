@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 
 public class MessageUtils {
@@ -11,7 +12,7 @@ public class MessageUtils {
 
     public static void printDebug(String line) {
         if (debug) {
-            VoxelMap.getLogger().warn(line);
+            VoxelConstants.getLogger().warn(line);
         }
 
     }

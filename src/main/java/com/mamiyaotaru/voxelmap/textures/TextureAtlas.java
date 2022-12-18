@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.google.common.collect.Maps;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,8 +12,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 public class TextureAtlas extends AbstractTexture {
-    private static final Logger logger = LogManager.getLogger();
     private final HashMap<String, Sprite> mapRegisteredSprites;
     private final HashMap<String, Sprite> mapUploadedSprites;
     private final String basePath;
@@ -83,7 +81,7 @@ public class TextureAtlas extends AbstractTexture {
 
         this.stitcher.doStitch();
 
-        logger.info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
+        VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
         TextureUtilLegacy.allocateTextureImpl(this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
         Arrays.fill(zeros, 0);
@@ -130,7 +128,7 @@ public class TextureAtlas extends AbstractTexture {
         if (oldWidth == this.stitcher.getCurrentImageWidth() && oldHeight == this.stitcher.getCurrentImageHeight()) {
             GLShim.glBindTexture(3553, this.glId);
         } else {
-            logger.info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
+            VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
             TextureUtilLegacy.allocateTextureImpl(this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
             int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
             Arrays.fill(zeros, 0);
@@ -208,9 +206,9 @@ public class TextureAtlas extends AbstractTexture {
                     icon.bufferedImageToIntData(entryBufferedImage);
                     entryBufferedImage.flush();
                 } catch (RuntimeException var6) {
-                    logger.error("Unable to parse metadata from " + resourceLocation, var6);
+                    VoxelConstants.getLogger().error("Unable to parse metadata from " + resourceLocation, var6);
                 } catch (IOException var7) {
-                    logger.error("Using missing texture, unable to load " + resourceLocation, var7);
+                    VoxelConstants.getLogger().error("Using missing texture, unable to load " + resourceLocation, var7);
                 }
 
                 this.mapRegisteredSprites.put(resourceLocation.toString(), icon);

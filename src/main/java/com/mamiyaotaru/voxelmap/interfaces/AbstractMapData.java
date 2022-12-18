@@ -42,14 +42,14 @@ public abstract class AbstractMapData implements IMapData {
                     if (!this.points[x][z].inSegment) {
                         long startTime = System.nanoTime();
                         if (this.points[x][z].biomeID == -1) {
-                            VoxelMap.getLogger().warn("no biome segment!");
+                            VoxelConstants.getLogger().warn("no biome segment!");
                         }
 
                         Segment segment = new Segment(this.points[x][z]);
                         this.segments.add(segment);
                         segment.flood();
                         if (this.points[x][z].biomeID == -1) {
-                            VoxelMap.getLogger().warn("created in " + (System.nanoTime() - startTime));
+                            VoxelConstants.getLogger().warn("created in " + (System.nanoTime() - startTime));
                         }
                     }
                 }

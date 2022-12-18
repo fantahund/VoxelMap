@@ -176,11 +176,11 @@ public class Map implements Runnable, IMap {
         try {
             f.set(VoxelConstants.getMinecraft().options, tempBindings.toArray(new KeyBinding[0]));
         } catch (IllegalArgumentException | IllegalAccessException var7) {
-            VoxelMap.getLogger().error(var7);
+            VoxelConstants.getLogger().error(var7);
         }
 
         java.util.Map<String, Integer> categoryOrder = (java.util.Map<String, Integer>) ReflectionUtils.getPrivateFieldValueByType(null, KeyBinding.class, java.util.Map.class, 2);
-        VoxelMap.getLogger().warn("CATEGORY ORDER IS " + categoryOrder.size());
+        VoxelConstants.getLogger().warn("CATEGORY ORDER IS " + categoryOrder.size());
         Integer categoryPlace = categoryOrder.get("controls.minimap.title");
         if (categoryPlace == null) {
             int currentSize = categoryOrder.size();
@@ -906,7 +906,7 @@ public class Map implements Runnable, IMap {
         try {
             this.chunkCache[this.zoom].registerChangeAt(chunkX, chunkZ);
         } catch (Exception e) {
-            VoxelMap.getLogger().warn(e);
+            VoxelConstants.getLogger().warn(e);
         }
     }
 
@@ -1959,7 +1959,7 @@ public class Map implements Runnable, IMap {
                 gfx.dispose();
                 this.mapImageInt = GLUtils.tex(mapImage);
             } catch (Exception var7) {
-                VoxelMap.getLogger().warn("Error loading texture pack's map image: " + var7.getLocalizedMessage());
+                VoxelConstants.getLogger().warn("Error loading texture pack's map image: " + var7.getLocalizedMessage());
             }
         }
 

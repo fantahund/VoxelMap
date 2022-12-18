@@ -42,7 +42,7 @@ public class WorldMatcher {
                 try {
                     Thread.sleep(500L);
                 } catch (InterruptedException var8) {
-                    VoxelMap.getLogger().error(var8);
+                    VoxelConstants.getLogger().error(var8);
                 }
 
                 this.cachedRegionFileDir.mkdirs();
@@ -62,7 +62,7 @@ public class WorldMatcher {
                     try {
                         Thread.sleep(1000L);
                     } catch (InterruptedException var7) {
-                        VoxelMap.getLogger().error(var7);
+                        VoxelConstants.getLogger().error(var7);
                     }
 
                     if (this.x == (int) Math.floor(player.getX() / 256.0) && this.z == (int) Math.floor(player.getZ() / 256.0)) {

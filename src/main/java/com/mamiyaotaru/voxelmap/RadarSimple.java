@@ -27,7 +27,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
-import org.apache.logging.log4j.Logger;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -44,8 +43,6 @@ public class RadarSimple implements IRadar {
     private float direction = 0.0F;
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
     final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
-
-    private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
 
     public RadarSimple(IVoxelMap master) {
         this.minimapOptions = master.getMapOptions();
@@ -76,7 +73,7 @@ public class RadarSimple implements IRadar {
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var4) {
-            logger.error("Failed getting mobs " + var4.getLocalizedMessage(), var4);
+            VoxelConstants.getLogger().error("Failed getting mobs " + var4.getLocalizedMessage(), var4);
         }
 
     }
@@ -134,7 +131,7 @@ public class RadarSimple implements IRadar {
                     }
                 }
             } catch (Exception var11) {
-                logger.error(var11.getLocalizedMessage(), var11);
+                VoxelConstants.getLogger().error(var11.getLocalizedMessage(), var11);
             }
         }
 
@@ -263,7 +260,7 @@ public class RadarSimple implements IRadar {
                         GLUtils.drawPost();
                     }
                 } catch (Exception e) {
-                    logger.error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
+                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();

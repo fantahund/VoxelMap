@@ -56,7 +56,7 @@ public class BiomeRepository {
                         try {
                             color = Integer.decode(curLine[1]);
                         } catch (NumberFormatException var10) {
-                            VoxelMap.getLogger().warn("Error decoding integer string for biome colors; " + curLine[1]);
+                            VoxelConstants.getLogger().warn("Error decoding integer string for biome colors; " + curLine[1]);
                         }
 
                         if (nameToColor.put(name, color) != null) {
@@ -67,7 +67,7 @@ public class BiomeRepository {
 
                 br.close();
             } catch (Exception var12) {
-                VoxelMap.getLogger().error("biome load error: " + var12.getLocalizedMessage(), var12);
+                VoxelConstants.getLogger().error("biome load error: " + var12.getLocalizedMessage(), var12);
             }
         }
 
@@ -85,7 +85,7 @@ public class BiomeRepository {
                     try {
                         color = Integer.decode(curLine[1]);
                     } catch (NumberFormatException var9) {
-                        VoxelMap.getLogger().warn("Error decoding integer string for biome colors; " + curLine[1]);
+                        VoxelConstants.getLogger().warn("Error decoding integer string for biome colors; " + curLine[1]);
                         color = 0;
                     }
 
@@ -99,7 +99,7 @@ public class BiomeRepository {
             br.close();
             is.close();
         } catch (IOException var11) {
-            VoxelMap.getLogger().error("Error loading biome color config file from litemod!", var11);
+            VoxelConstants.getLogger().error("Error loading biome color config file from litemod!", var11);
         }
 
     }
@@ -131,7 +131,7 @@ public class BiomeRepository {
 
                 out.close();
             } catch (Exception var8) {
-                VoxelMap.getLogger().error("biome save error: " + var8.getLocalizedMessage(), var8);
+                VoxelConstants.getLogger().error("biome save error: " + var8.getLocalizedMessage(), var8);
             }
         }
 
@@ -164,7 +164,7 @@ public class BiomeRepository {
                     dirty = true;
                 }
             } else {
-                VoxelMap.getLogger().warn("non biome");
+                VoxelConstants.getLogger().warn("non biome");
                 color = 0;
             }
 

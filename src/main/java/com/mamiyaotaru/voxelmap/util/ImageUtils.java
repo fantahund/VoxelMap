@@ -1,13 +1,10 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -26,7 +23,6 @@ import java.util.Arrays;
 
 public class ImageUtils {
     public static void saveImage(String name, int glid, int maxMipmapLevel, int width, int height) {
-        Logger logger = LogManager.getLogger();
         GLShim.glBindTexture(3553, glid);
         GLShim.glPixelStorei(3333, 1);
         GLShim.glPixelStorei(3317, 1);
@@ -45,9 +41,9 @@ public class ImageUtils {
 
             try {
                 ImageIO.write(bufferedImage, "png", file);
-                logger.debug("Exported png to: {}", new Object[]{file.getAbsolutePath()});
+                VoxelConstants.getLogger().debug("Exported png to: {}", new Object[]{file.getAbsolutePath()});
             } catch (IOException var15) {
-                logger.debug("Unable to write: ", var15);
+                VoxelConstants.getLogger().debug("Unable to write: ", var15);
             }
         }
 
@@ -197,7 +193,7 @@ public class ImageUtils {
             g2.dispose();
             return temp;
         } catch (Exception var13) {
-            VoxelMap.getLogger().error("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage(), var13);
+            VoxelConstants.getLogger().error("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage(), var13);
             return null;
         }
     }
@@ -258,7 +254,7 @@ public class ImageUtils {
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
         } else {
-            VoxelMap.getLogger().warn("Failed getting image: " + resourceLocation.toString());
+            VoxelConstants.getLogger().warn("Failed getting image: " + resourceLocation.toString());
             return null;
         }
     }

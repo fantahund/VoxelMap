@@ -203,19 +203,19 @@ public class ColorManager implements IColorManager {
                 try {
                     this.processCTM();
                 } catch (Exception var4) {
-                    VoxelMap.getLogger().error("error loading CTM " + var4.getLocalizedMessage(), var4);
+                    VoxelConstants.getLogger().error("error loading CTM " + var4.getLocalizedMessage(), var4);
                 }
 
                 try {
                     this.processColorProperties();
                 } catch (Exception var3) {
-                    VoxelMap.getLogger().error("error loading custom color properties " + var3.getLocalizedMessage(), var3);
+                    VoxelConstants.getLogger().error("error loading custom color properties " + var3.getLocalizedMessage(), var3);
                 }
             }
 
             this.master.getMap().forceFullRender(true);
         } catch (Exception var5) {
-            VoxelMap.getLogger().error("error loading pack", var5);
+            VoxelConstants.getLogger().error("error loading pack", var5);
         }
 
         this.loaded = true;
@@ -230,7 +230,7 @@ public class ColorManager implements IColorManager {
             ImageIO.write(blockImage, "png", new File(VoxelConstants.getMinecraft().runDirectory, blockState.getBlock().getName().getString() + "-" + Block.getRawIdFromState(blockState) + ".png"));
             return blockImage;
         } catch (Exception var8) {
-            VoxelMap.getLogger().error("error getting block armor image for " + blockState.toString() + ": " + var8.getLocalizedMessage(), var8);
+            VoxelConstants.getLogger().error("error getting block armor image for " + blockState.toString() + ": " + var8.getLocalizedMessage(), var8);
             return null;
         }
     }
@@ -315,7 +315,7 @@ public class ColorManager implements IColorManager {
             gfx.drawImage(picker, 0, 0, null);
             gfx.dispose();
         } catch (Exception var4) {
-            VoxelMap.getLogger().error("Error loading color picker: " + var4.getLocalizedMessage());
+            VoxelConstants.getLogger().error("Error loading color picker: " + var4.getLocalizedMessage());
         }
 
     }
@@ -337,7 +337,7 @@ public class ColorManager implements IColorManager {
             gfx.drawImage(terrainStitched, 0, 0, null);
             gfx.dispose();
         } catch (Exception var4) {
-            VoxelMap.getLogger().error("Error processing new resource pack: " + var4.getLocalizedMessage(), var4);
+            VoxelConstants.getLogger().error("Error processing new resource pack: " + var4.getLocalizedMessage(), var4);
         }
 
     }
@@ -455,7 +455,7 @@ public class ColorManager implements IColorManager {
 
             return color;
         } catch (Exception var5) {
-            VoxelMap.getLogger().error("failed getting color: " + blockState.getBlock().getName().getString(), var5);
+            VoxelConstants.getLogger().error("failed getting color: " + blockState.getBlock().getName().getString(), var5);
             return 452984832;
         }
     }
@@ -477,12 +477,12 @@ public class ColorManager implements IColorManager {
                     if (modelImage != null) {
                         color = this.getColorForCoordinatesAndImage(new float[]{0.0F, 1.0F, 0.0F, 1.0F}, modelImage);
                     } else {
-                        VoxelMap.getLogger().warn("image was null");
+                        VoxelConstants.getLogger().warn("image was null");
                     }
                 }
             }
         } catch (Exception var11) {
-            VoxelMap.getLogger().error(var11.getMessage(), var11);
+            VoxelConstants.getLogger().error(var11.getMessage(), var11);
         }
 
         return color;
@@ -540,8 +540,8 @@ public class ColorManager implements IColorManager {
                 gfx.dispose();
                 color = singlePixelBuff.getRGB(0, 0);
             } catch (RasterFormatException var12) {
-                VoxelMap.getLogger().warn("error getting color");
-                VoxelMap.getLogger().warn(IntStream.of(left, right, top, bottom).mapToObj(String::valueOf).collect(Collectors.joining(" ")));
+                VoxelConstants.getLogger().warn("error getting color");
+                VoxelConstants.getLogger().warn(IntStream.of(left, right, top, bottom).mapToObj(String::valueOf).collect(Collectors.joining(" ")));
             }
         }
 
@@ -951,7 +951,7 @@ public class ColorManager implements IColorManager {
                             }
                         }
                     } catch (IOException var40) {
-                        VoxelMap.getLogger().error("error getting CTM block from " + propertiesFile.getPath() + ": " + filePath + " " + Registry.BLOCK.getId(blockStates.iterator().next().getBlock()) + " " + tilePath, var40);
+                        VoxelConstants.getLogger().error("error getting CTM block from " + propertiesFile.getPath() + ": " + filePath + " " + Registry.BLOCK.getId(blockStates.iterator().next().getBlock()) + " " + tilePath, var40);
                     }
                 }
 

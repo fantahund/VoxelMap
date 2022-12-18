@@ -1201,7 +1201,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     VoxelConstants.getMinecraft().setScreen(confirmScreen);
                 }
             }
-            default -> VoxelMap.getLogger().warn("unimplemented command");
+            default -> VoxelConstants.getLogger().warn("unimplemented command");
         }
 
     }

@@ -114,7 +114,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                     try {
                         Thread.sleep(2000L);
                     } catch (InterruptedException var2) {
-                        VoxelMap.getLogger().error(var2);
+                        VoxelConstants.getLogger().error(var2);
                     }
 
                     if (PersistentMap.this.world != null) {
@@ -136,9 +136,9 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             newCacheDir.getParentFile().mkdirs();
             boolean success = oldCacheDir.renameTo(newCacheDir);
             if (!success) {
-                VoxelMap.getLogger().warn("Failed moving Voxelmap cache files.  Please move " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
+                VoxelConstants.getLogger().warn("Failed moving Voxelmap cache files.  Please move " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
             } else {
-                VoxelMap.getLogger().warn("Moved Voxelmap cache files from " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
+                VoxelConstants.getLogger().warn("Moved Voxelmap cache files from " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
             }
         }
 
@@ -898,7 +898,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 cachedRegion.handleChangedChunk(chunk);
             }
         } catch (Exception var19) {
-            VoxelMap.getLogger().error(var19.getMessage(), var19);
+            VoxelConstants.getLogger().error(var19.getMessage(), var19);
         }
 
     }

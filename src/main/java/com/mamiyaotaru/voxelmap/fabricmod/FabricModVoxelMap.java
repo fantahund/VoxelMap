@@ -110,11 +110,11 @@ public class FabricModVoxelMap implements ClientModInitializer {
                     length = buffer.readByte();
                 } else if (b == 0) {
                     // length == 0 ?
-                    VoxelMap.getLogger().warn("Received unknown world_id packet");
+                    VoxelConstants.getLogger().warn("Received unknown world_id packet");
                     return true;
                 } else {
                     // probably "legacy" packet
-                    VoxelMap.getLogger().warn("Assuming legacy world_id packet. " +
+                    VoxelConstants.getLogger().warn("Assuming legacy world_id packet. " +
                             "The support might be removed in the future versions.");
                     length = b;
                 }
@@ -143,7 +143,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
                                 this.master.getRadarOptions().radarPlayersAllowed = (Boolean) value;
                         case "cavesAllowed" ->
                                 this.master.getMapOptions().cavesAllowed = (Boolean) value;
-                        default -> VoxelMap.getLogger().warn("Unknown configuration option " + setting);
+                        default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
                     }
                 }
                 return true;
