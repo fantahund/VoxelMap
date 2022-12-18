@@ -585,7 +585,6 @@ public class ColorManager implements IColorManager {
                     int blockStateID = BlockRepository.getStateId(blockState);
                     this.biomeTintsAvailable.add(blockStateID);
                     this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, tint);
-                    //this.createTintTable(blockState, tempBlockPos);
                 } else {
                     this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 452984832;
                 }
@@ -595,89 +594,8 @@ public class ColorManager implements IColorManager {
     }
 
     private int tintFromFakePlacedBlock(BlockState blockState, MutableBlockPos loopBlockPos, byte biomeID) {
-        ClientWorld world = VoxelConstants.getMinecraft().world;
-        if (world == null) {
-            return -1;
-        } else if (blockState.getBlock() == null) {
-            return -1;
-        } else {
-            int tint = -1;
-            //TODO Update 1.18 xD
-            /*
-            try {
-                int fakeX = (int) VoxelContants.getMinecraft().player.getX() - 32;
-                int fakeZ = (int) VoxelContants.getMinecraft().player.getZ() - 32;
-                Chunk chunk = world.getChunk(loopBlockPos.withXYZ(fakeX, 0, fakeZ));
-                BlockState actualBlockState = world.getBlockState(loopBlockPos);
-                chunk.setBlockState(loopBlockPos, blockState, false);
-
-                BiomeArray biomeArray = chunk.getBiomeArray();
-                Biome[] currentBiomes = (Biome[]) ReflectionUtils.getPrivateFieldValueByType(biomeArray, BiomeArray.class, Biome[].class);
-                Biome[] originalBiomes = new Biome[currentBiomes.length];
-                System.arraycopy(currentBiomes, 0, originalBiomes, 0, currentBiomes.length);
-                Arrays.fill(currentBiomes, world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID));
-                world.resetChunkColor(chunk.getPos());
-                tint = VoxelContants.getMinecraft().getBlockColors().getColor(blockState, world, loopBlockPos.withXYZ(fakeX + 256, 0, fakeZ), 1) | 0xFF000000;
-                tint = VoxelContants.getMinecraft().getBlockColors().getColor(blockState, world, loopBlockPos.withXYZ(fakeX, 0, fakeZ), 1) | 0xFF000000;
-                System.arraycopy(originalBiomes, 0, currentBiomes, 0, currentBiomes.length);
-                chunk.setBlockState(loopBlockPos, actualBlockState, false);
-                world.resetChunkColor(chunk.getPos());
-            } catch (Exception var13) {
-            }
-             */
-
-            return tint;
-        }
+        return -1;
     }
-    //TODO Update 1.18 xD
-    /*
-    private void createTintTable(BlockState blockState, MutableBlockPos loopBlockPos) {
-        ClientWorld world = VoxelContants.getMinecraft().world;
-        if (world != null) {
-            Block block = blockState.getBlock();
-            if (block != null) {
-                try {
-                    int[][] tints = new int[this.sizeOfBiomeArray][32];
-
-                    for (int[] row : tints) {
-                        Arrays.fill(row, -1);
-                    }
-
-                    int fakeX = (int) VoxelContants.getMinecraft().player.getX() - 32;
-                    int fakeZ = (int) VoxelContants.getMinecraft().player.getZ() - 32;
-                    Chunk chunk = world.getChunk(loopBlockPos.withXYZ(fakeX, 64, fakeZ));
-                    BlockState actualBlockState = world.getBlockState(loopBlockPos);
-                    chunk.setBlockState(loopBlockPos, blockState, false);
-                    BiomeArray biomeArray = chunk.getBiomeArray();
-                    Biome[] currentBiomes = (Biome[]) ReflectionUtils.getPrivateFieldValueByType(biomeArray, BiomeArray.class, Biome[].class);
-                    Biome[] originalBiomes = new Biome[currentBiomes.length];
-                    System.arraycopy(currentBiomes, 0, originalBiomes, 0, currentBiomes.length);
-
-                    for (int biomeID = 0; biomeID < this.sizeOfBiomeArray; ++biomeID) {
-                        Biome biome = (Biome) world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
-                        if (biome != null) {
-                            int[] row = new int[32];
-                            Arrays.fill(currentBiomes, biome);
-                            world.resetChunkColor(chunk.getPos());
-                            int tint = VoxelContants.getMinecraft().getBlockColors().getColor(blockState, world, loopBlockPos.withXYZ(fakeX + 264, 64, fakeZ + 264), 1) | 0xFF000000;
-                            tint = VoxelContants.getMinecraft().getBlockColors().getColor(blockState, world, loopBlockPos.withXYZ(fakeX, 64, fakeZ), 1) | 0xFF000000;
-                            Arrays.fill(row, tint);
-                            tints[biomeID] = row;
-                        }
-                    }
-
-                    System.arraycopy(originalBiomes, 0, currentBiomes, 0, currentBiomes.length);
-                    chunk.setBlockState(loopBlockPos, actualBlockState, false);
-                    world.resetChunkColor(chunk.getPos());
-                    int blockStateID = BlockRepository.getStateId(blockState);
-                    this.blockTintTables.put(blockStateID, tints);
-                } catch (Exception var17) {
-                }
-
-            }
-        }
-    }
-     */
 
     @Override
     public int getBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {

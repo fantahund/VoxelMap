@@ -125,7 +125,7 @@ public class ImageUtils {
             int fboHeight = 512;
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4).order(ByteOrder.nativeOrder());
             byte[] bytes = new byte[byteBuffer.remaining()];
-            GLShim.glPushAttrib(4096); //TODO Putt Putt
+            GLShim.glPushAttrib(4096);
             RenderSystem.backupProjectionMatrix();
             GLShim.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = Matrix4f.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
