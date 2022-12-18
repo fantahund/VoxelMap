@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.fabricmod;
 
 import com.google.gson.Gson;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -9,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Map.Entry;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
@@ -32,9 +32,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
         Runtime.getRuntime().addShutdownHook(new Thread(FabricModVoxelMap.this::onShutDown));
     }
 
-    public void clientTick(MinecraftClient client) {
+    public void clientTick() {
         if (!this.initialized) {
-            boolean OK = MinecraftClient.getInstance() != null && client.getResourceManager() != null && client.getTextureManager() != null;
+            boolean OK = VoxelContants.getMinecraft().getResourceManager() != null && VoxelContants.getMinecraft().getTextureManager() != null;
 
             if (OK) {
                 this.lateInit();
@@ -42,7 +42,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         if (this.initialized) {
-            this.master.onTick(client);
+            this.master.onTick();
         }
 
     }
@@ -53,7 +53,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         try {
-            this.master.onTickInGame(matrixStack, MinecraftClient.getInstance());
+            this.master.onTickInGame(matrixStack);
         } catch (Exception ignore) {}
     }
 

@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -44,7 +44,7 @@ public class GLShim {
     }
 
     public static void glClear(int mask) {
-        RenderSystem.clear(mask, MinecraftClient.IS_SYSTEM_MAC);
+        RenderSystem.clear(mask, VoxelContants.isSystemMacOS());
     }
 
     public static void glClearColor(float red, float green, float blue, float alpha) {

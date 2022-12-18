@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
@@ -9,7 +10,6 @@ import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
@@ -33,7 +33,8 @@ class GuiSlotMobs extends GuiSlotMinimap {
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
     public GuiSlotMobs(GuiMobs par1GuiMobs) {
-        super(par1GuiMobs.options.game, par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
+        super (par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
+
         this.parentGui = par1GuiMobs;
         RadarSettingsManager options = this.parentGui.options;
         this.mobs = new ArrayList<>();
@@ -71,7 +72,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public void setSelected(MobItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof MobItem) {
-            NarratorManager narratorManager = new NarratorManager(MinecraftClient.getInstance());
+            NarratorManager narratorManager = new NarratorManager(VoxelContants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 

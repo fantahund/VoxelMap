@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
@@ -67,7 +67,7 @@ public class ImageUtils {
 
     public static BufferedImage createBufferedImageFromResourceLocation(Identifier resourceLocation) {
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).get().getInputStream();
+            InputStream is = VoxelContants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage image = ImageIO.read(is);
             is.close();
             if (image.getType() != 6) {
@@ -168,7 +168,7 @@ public class ImageUtils {
             GLUtils.unbindFrameBuffer();
             RenderSystem.restoreProjectionMatrix();
             GLShim.glPopAttrib();
-            GLShim.glViewport(0, 0, MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight());
+            GLShim.glViewport(0, 0, VoxelContants.getMinecraft().getWindow().getFramebufferWidth(), VoxelContants.getMinecraft().getWindow().getFramebufferHeight());
         }
         return image;
     }
@@ -187,7 +187,7 @@ public class ImageUtils {
 
     public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).get().getInputStream();
+            InputStream is = VoxelContants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage mobSkin = ImageIO.read(is);
             is.close();
             BufferedImage temp = new BufferedImage(w * mobSkin.getWidth() / imageWidth, h * mobSkin.getWidth() / imageWidth, 6);

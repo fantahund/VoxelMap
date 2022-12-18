@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
@@ -51,7 +52,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             ++var2;
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> this.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> VoxelContants.getMinecraft().setScreen(this.parent)));
 
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {

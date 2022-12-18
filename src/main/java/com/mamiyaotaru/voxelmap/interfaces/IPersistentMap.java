@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.interfaces;
 import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
@@ -11,7 +10,7 @@ import net.minecraft.world.chunk.WorldChunk;
 public interface IPersistentMap extends IChangeObserver {
     void newWorld(ClientWorld var1);
 
-    void onTick(MinecraftClient var1);
+    void onTick();
 
     ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier();
 

@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -33,7 +33,7 @@ public class DimensionManager implements IDimensionManager {
     @Override
     public void populateDimensions(World world) {
         this.dimensions.clear();
-        Registry<DimensionType> dimensionTypeRegistry = MinecraftClient.getInstance().getNetworkHandler().getRegistryManager().get(Registry.DIMENSION_TYPE_KEY);
+        Registry<DimensionType> dimensionTypeRegistry = VoxelContants.getMinecraft().getNetworkHandler().getRegistryManager().get(Registry.DIMENSION_TYPE_KEY);
 
         for (RegistryKey<World> vanillaWorldKey : this.vanillaWorlds) {
             RegistryKey<DimensionType> typeKey = RegistryKey.of(Registry.DIMENSION_TYPE_KEY, vanillaWorldKey.getValue());

@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
@@ -66,7 +65,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     }
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
-        GLUtils.textureManager = MinecraftClient.getInstance().getTextureManager();
+        GLUtils.textureManager = VoxelContants.getMinecraft().getTextureManager();
         mapOptions = new MapSettingsManager();
         mapOptions.showUnderMenus = showUnderMenus;
         radarOptions = new RadarSettingsManager();
@@ -111,7 +110,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
-        ReloadableResourceManagerImpl resourceManager = (ReloadableResourceManagerImpl) MinecraftClient.getInstance().getResourceManager();
+        ReloadableResourceManagerImpl resourceManager = (ReloadableResourceManagerImpl) VoxelContants.getMinecraft().getResourceManager();
         resourceManager.registerReloader(this);
         this.apply(resourceManager);
     }
@@ -134,16 +133,16 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         this.colorManager.onResourceManagerReload(resourceManager);
     }
 
-    public void onTickInGame(MatrixStack matrixStack, MinecraftClient mc) {
-        this.map.onTickInGame(matrixStack, mc);
+    public void onTickInGame(MatrixStack matrixStack) {
+        this.map.onTickInGame(matrixStack);
         if (VoxelMap.passMessage != null) {
-            mc.inGameHud.getChatHud().addMessage(Text.literal(VoxelMap.passMessage));
+            VoxelContants.getMinecraft().inGameHud.getChatHud().addMessage(Text.literal(VoxelMap.passMessage));
             VoxelMap.passMessage = null;
         }
 
     }
 
-    public void onTick(MinecraftClient mc) {
+    public void onTick() {
         if (GameVariableAccessShim.getWorld() != null && !GameVariableAccessShim.getWorld().equals(this.world) || this.world != null && !this.world.equals(GameVariableAccessShim.getWorld())) {
             this.world = GameVariableAccessShim.getWorld();
             this.waypointManager.newWorld(this.world);
@@ -154,17 +153,17 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                 buffer.writeBytes("worldinfo:world_id".getBytes(StandardCharsets.UTF_8));
                 buffer.writeByte(0);
                 buffer.writeBytes("voxelmap:settings".getBytes(StandardCharsets.UTF_8));
-                mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
+                VoxelContants.getMinecraft().getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
                 ByteBuf wIdRequestBuf = Unpooled.buffer(3);
                 // send "new" world_id packet
                 wIdRequestBuf.writeByte(0);
                 wIdRequestBuf.writeByte(42);
                 wIdRequestBuf.writeByte(0);
-                mc.player.networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
-                mc.player.getSkinTexture();
-                java.util.Map<Type, MinecraftProfileTexture> skinMap = mc.getSkinProvider().getTextures(mc.player.getGameProfile());
+                VoxelContants.getMinecraft().player.networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
+                VoxelContants.getMinecraft().player.getSkinTexture();
+                java.util.Map<Type, MinecraftProfileTexture> skinMap = VoxelContants.getMinecraft().getSkinProvider().getTextures(VoxelContants.getMinecraft().player.getGameProfile());
                 if (skinMap.containsKey(Type.SKIN)) {
-                    mc.getSkinProvider().loadSkin(skinMap.get(Type.SKIN), Type.SKIN);
+                    VoxelContants.getMinecraft().getSkinProvider().loadSkin(skinMap.get(Type.SKIN), Type.SKIN);
                 }
 
                 if (!this.worldName.equals(this.waypointManager.getCurrentWorldName())) {
@@ -176,7 +175,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         }
 
         TickCounter.onTick();
-        this.persistentMap.onTick(mc);
+        this.persistentMap.onTick();
     }
 
     public static void checkPermissionMessages(Text message) {
@@ -290,11 +289,11 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
     @Override
     public String getWorldSeed() {
-        if (MinecraftClient.getInstance().isIntegratedServerRunning()) {
+        if (VoxelContants.getMinecraft().isIntegratedServerRunning()) {
             String seed = "";
 
             try {
-                seed = Long.toString(MinecraftClient.getInstance().getServer().getWorld(World.OVERWORLD).getSeed());
+                seed = Long.toString(VoxelContants.getMinecraft().getServer().getWorld(World.OVERWORLD).getSeed());
             } catch (Exception ignored) {}
 
             return seed;
@@ -305,7 +304,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
     @Override
     public void setWorldSeed(String newSeed) {
-        if (!MinecraftClient.getInstance().isIntegratedServerRunning()) {
+        if (!VoxelContants.getMinecraft().isIntegratedServerRunning()) {
             this.waypointManager.setWorldSeed(newSeed);
         }
 

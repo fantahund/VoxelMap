@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
@@ -21,7 +21,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     final Text NOT_APPLIES = Text.translatable("minimap.waypoints.dimension.notapplies");
 
     public GuiSlotDimensions(GuiAddWaypoint par1GuiWaypoints) {
-        super(MinecraftClient.getInstance(), 101, par1GuiWaypoints.getHeight(), par1GuiWaypoints.getHeight() / 6 + 82 + 6, par1GuiWaypoints.getHeight() / 6 + 164 + 3, 18);
+        super(101, par1GuiWaypoints.getHeight(), par1GuiWaypoints.getHeight() / 6 + 82 + 6, par1GuiWaypoints.getHeight() / 6 + 164 + 3, 18);
         this.parentGui = par1GuiWaypoints;
         this.setSlotWidth(88);
         this.setLeftPos(this.parentGui.getWidth() / 2);
@@ -50,7 +50,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     public void setSelected(DimensionItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof DimensionItem) {
-            NarratorManager narratorManager = new NarratorManager(MinecraftClient.getInstance());
+            NarratorManager narratorManager = new NarratorManager(VoxelContants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
         }
 

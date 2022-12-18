@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.google.common.collect.Lists;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.BlankFont;
 import net.minecraft.client.font.Font;
 import net.minecraft.client.font.FontStorage;
@@ -82,7 +82,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
     private void readFontTexture() {
         BufferedImage fontImage;
         try {
-            fontImage = TextureUtilLegacy.readBufferedImage(MinecraftClient.getInstance().getResourceManager().getResource(this.locationFontTexture).get().getInputStream());
+            fontImage = TextureUtilLegacy.readBufferedImage(VoxelContants.getMinecraft().getResourceManager().getResource(this.locationFontTexture).get().getInputStream());
         } catch (IOException var17) {
             throw new RuntimeException(var17);
         }

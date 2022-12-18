@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
@@ -30,11 +30,9 @@ import java.util.Optional;
 public class WaypointContainer {
     private final List<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint = null;
-    private final MinecraftClient mc;
     public final MapSettingsManager options;
 
     public WaypointContainer(MapSettingsManager options) {
-        this.mc = MinecraftClient.getInstance();
         this.options = options;
     }
 
@@ -56,7 +54,7 @@ public class WaypointContainer {
 
     public void renderWaypoints(float partialTicks, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         this.sortWaypoints();
-        Entity cameraEntity = this.options.game.getCameraEntity();
+        Entity cameraEntity = VoxelContants.getMinecraft().getCameraEntity();
         double renderPosX = GameVariableAccessShim.xCoordDouble();
         double renderPosY = GameVariableAccessShim.yCoordDouble();
         double renderPosZ = GameVariableAccessShim.zCoordDouble();
@@ -75,9 +73,9 @@ public class WaypointContainer {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
                     int z = pt.getZ();
-                    WorldChunk chunk = this.mc.world.getChunk(x >> 4, z >> 4);
-                    if (chunk != null && !chunk.isEmpty() && this.mc.world.isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = MinecraftClient.getInstance().world.getBottomY() - renderPosY;
+                    WorldChunk chunk = VoxelContants.getMinecraft().world.getChunk(x >> 4, z >> 4);
+                    if (chunk != null && !chunk.isEmpty() && VoxelContants.getMinecraft().world.isChunkLoaded(x >> 4, z >> 4)) {
+                        double bottomOfWorld = VoxelContants.getMinecraft().world.getBottomY() - renderPosY;
                         this.renderBeam(pt, (double) x - renderPosX, bottomOfWorld, (double) z - renderPosZ, 64.0F, matrix4f);
                     }
                 }
@@ -100,7 +98,7 @@ public class WaypointContainer {
                     int z = pt.getZ();
                     int y = pt.getY();
                     double distance = Math.sqrt(pt.getDistanceSqToEntity(cameraEntity));
-                    if ((distance < (double) this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !this.options.game.options.hudHidden) {
+                    if ((distance < (double) this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelContants.getMinecraft().options.hudHidden) {
                         boolean isPointedAt = this.isPointedAt(pt, distance, cameraEntity, partialTicks);
                         String label = pt.name;
                         this.renderLabel(matrixStack, pt, distance, isPointedAt, label, (double) x - renderPosX, (double) y - renderPosY - 0.5, (double) z - renderPosZ, 64, withDepth, withoutDepth);
@@ -108,7 +106,7 @@ public class WaypointContainer {
                 }
             }
 
-            if (this.highlightedWaypoint != null && !this.options.game.options.hudHidden) {
+            if (this.highlightedWaypoint != null && !VoxelContants.getMinecraft().options.hudHidden) {
                 int x = this.highlightedWaypoint.getX();
                 int z = this.highlightedWaypoint.getZ();
                 int y = this.highlightedWaypoint.getY();
@@ -142,7 +140,7 @@ public class WaypointContainer {
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, float par8, Matrix4f matrix4f) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        int height = MinecraftClient.getInstance().world.getHeight();
+        int height = VoxelContants.getMinecraft().world.getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;
@@ -198,7 +196,7 @@ public class WaypointContainer {
         }
 
         name = name + " (" + (int) distance + "m)";
-        double maxDistance = GameVariableAccessShim.getMinecraft().options.getSimulationDistance().getValue() * 16.0 * 0.99;
+        double maxDistance = VoxelContants.getMinecraft().options.getSimulationDistance().getValue() * 16.0 * 0.99;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;
@@ -210,8 +208,8 @@ public class WaypointContainer {
         float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
         matrixStack.push();
         matrixStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-this.mc.getEntityRenderDispatcher().camera.getYaw()));
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(this.mc.getEntityRenderDispatcher().camera.getPitch()));
+        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-VoxelContants.getMinecraft().getEntityRenderDispatcher().camera.getYaw()));
+        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(VoxelContants.getMinecraft().getEntityRenderDispatcher().camera.getPitch()));
         matrixStack.scale(-var14, -var14, -var14);
         Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         Tessellator tessellator = Tessellator.getInstance();
@@ -253,7 +251,7 @@ public class WaypointContainer {
             tessellator.draw();
         }
 
-        TextRenderer fontRenderer = this.mc.textRenderer;
+        TextRenderer fontRenderer = VoxelContants.getMinecraft().textRenderer;
         if (isPointedAt && fontRenderer != null) {
             byte elevateBy = -19;
             GLShim.glDisable(3553);
@@ -301,7 +299,7 @@ public class WaypointContainer {
             GLShim.glDisable(32823);
             GLShim.glDepthMask(false);
             GLShim.glEnable(3553);
-            VertexConsumerProvider.Immediate vertexConsumerProvider = this.mc.getBufferBuilders().getEntityVertexConsumers();
+            VertexConsumerProvider.Immediate vertexConsumerProvider = VoxelContants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;
                 GLShim.glDisable(2929);

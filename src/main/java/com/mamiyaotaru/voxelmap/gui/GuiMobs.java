@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
@@ -34,7 +35,7 @@ public class GuiMobs extends GuiScreenMinimap {
 
     public void init() {
         this.screenTitle = Text.translatable("options.minimap.mobs.title");
-        this.getMinecraft().keyboard.setRepeatEvents(true);
+        VoxelContants.getMinecraft().keyboard.setRepeatEvents(true);
         this.mobsList = new GuiSlotMobs(this);
         int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
         this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 56, 305 - filterStringWidth - 5, 20, null);
@@ -42,7 +43,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.addDrawableChild(this.filter);
         this.addDrawableChild(this.buttonEnable = new ButtonWidget(this.getWidth() / 2 - 154, this.getHeight() - 28, 100, 20, Text.translatable("options.minimap.mobs.enable"), button -> this.setMobEnabled(this.selectedMobId, true)));
         this.addDrawableChild(this.buttonDisable = new ButtonWidget(this.getWidth() / 2 - 50, this.getHeight() - 28, 100, 20, Text.translatable("options.minimap.mobs.disable"), button -> this.setMobEnabled(this.selectedMobId, false)));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 4 + 50, this.getHeight() - 28, 100, 20, Text.translatable("gui.done"), button -> this.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 4 + 50, this.getHeight() - 28, 100, 20, Text.translatable("gui.done"), button -> VoxelContants.getMinecraft().setScreen(this.parentScreen)));
         this.setFocused(this.filter);
         this.filter.setTextFieldFocused(true);
         boolean isSomethingSelected = this.selectedMobId != null;
@@ -151,7 +152,7 @@ public class GuiMobs extends GuiScreenMinimap {
 
     @Override
     public void removed() {
-        this.client.keyboard.setRepeatEvents(false);
+        VoxelContants.getMinecraft().keyboard.setRepeatEvents(false);
         super.removed();
     }
 }

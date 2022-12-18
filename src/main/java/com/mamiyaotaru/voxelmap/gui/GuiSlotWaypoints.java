@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -8,7 +9,6 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
@@ -37,7 +37,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
     public GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
-        super(par1GuiWaypoints.options.game, par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
+        super(par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
         this.parentGui = par1GuiWaypoints;
         this.waypoints = new ArrayList<>();
 
@@ -54,7 +54,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     public void setSelected(WaypointItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof WaypointItem) {
-            NarratorManager narratorManager = new NarratorManager(MinecraftClient.getInstance());
+            NarratorManager narratorManager = new NarratorManager(VoxelContants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
         }
 

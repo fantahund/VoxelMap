@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
@@ -22,8 +22,8 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     protected long lastClicked = 0L;
     public boolean doubleclick = false;
 
-    public GuiSlotMinimap(MinecraftClient par1Minecraft, int width, int height, int y1, int y2, int slotHeight) {
-        super(par1Minecraft, width, height, y1, y2, slotHeight);
+    public GuiSlotMinimap(int width, int height, int y1, int y2, int slotHeight) {
+        super(VoxelContants.getMinecraft(), width, height, y1, y2, slotHeight);
         this.setZOffset(0);
     }
 

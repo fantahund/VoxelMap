@@ -12,7 +12,6 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -28,7 +27,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 import java.awt.image.BufferedImage;
@@ -37,7 +35,6 @@ import java.util.Comparator;
 import java.util.UUID;
 
 public class RadarSimple implements IRadar {
-    private MinecraftClient game;
     private LayoutVariables layoutVariables = null;
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
@@ -53,7 +50,6 @@ public class RadarSimple implements IRadar {
     public RadarSimple(IVoxelMap master) {
         this.minimapOptions = master.getMapOptions();
         this.options = master.getRadarOptions();
-        this.game = MinecraftClient.getInstance();
         this.textureAtlas = new TextureAtlas("pings");
         this.textureAtlas.setFilter(false, false);
     }
@@ -86,12 +82,8 @@ public class RadarSimple implements IRadar {
     }
 
     @Override
-    public void onTickInGame(MatrixStack matrixStack, MinecraftClient mc, LayoutVariables layoutVariables) {
+    public void onTickInGame(MatrixStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
-            if (this.game == null) {
-                this.game = mc;
-            }
-
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
                 this.timer = 500;
@@ -125,9 +117,9 @@ public class RadarSimple implements IRadar {
     public void calculateMobs() {
         this.contacts.clear();
 
-        for (Entity entity : this.game.world.getEntities()) {
+        for (Entity entity : VoxelContants.getMinecraft().world.getEntities()) {
             try {
-                if (entity != null && !entity.isInvisibleTo(this.game.player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
+                if (entity != null && !entity.isInvisibleTo(VoxelContants.getMinecraft().player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.getPos().getZ();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.getPos().getY();
@@ -153,13 +145,13 @@ public class RadarSimple implements IRadar {
         if (this.isHostile(entity)) {
             return EnumMobs.GENERICHOSTILE;
         } else {
-            return !(entity instanceof TameableEntity) || !((TameableEntity) entity).isTamed() || !this.game.isIntegratedServerRunning() && !((TameableEntity) entity).getOwner().equals(this.game.player) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
+            return !(entity instanceof TameableEntity) || !((TameableEntity) entity).isTamed() || !VoxelContants.getMinecraft().isIntegratedServerRunning() && !((TameableEntity) entity).getOwner().equals(VoxelContants.getMinecraft().player) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
         }
     }
 
     private boolean isHostile(Entity entity) {
         if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.isAngryAt(this.game.player);
+            return zombifiedPiglinEntity.isAngryAt(VoxelContants.getMinecraft().player);
         } else if (entity instanceof Monster) {
             return true;
         } else if (entity instanceof BeeEntity beeEntity) {

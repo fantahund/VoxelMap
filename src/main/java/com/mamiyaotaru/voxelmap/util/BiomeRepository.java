@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.registry.BuiltinRegistries;
@@ -40,7 +40,7 @@ public class BiomeRepository {
     }
 
     public static void loadBiomeColors() {
-        File saveDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/");
+        File saveDir = new File(VoxelContants.getMinecraft().runDirectory, "/voxelmap/");
         File settingsFile = new File(saveDir, "biomecolors.txt");
         if (settingsFile.exists()) {
             try {
@@ -72,7 +72,7 @@ public class BiomeRepository {
         }
 
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(new Identifier("voxelmap", "conf/biomecolors.txt")).get().getInputStream();
+            InputStream is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "conf/biomecolors.txt")).get().getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             String sCurrentLine;
@@ -106,7 +106,7 @@ public class BiomeRepository {
 
     public static void saveBiomeColors() {
         if (dirty) {
-            File saveDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/");
+            File saveDir = new File(VoxelContants.getMinecraft().runDirectory, "/voxelmap/");
             if (!saveDir.exists()) {
                 saveDir.mkdirs();
             }
@@ -141,9 +141,9 @@ public class BiomeRepository {
     public static int getBiomeColor(int biomeID) {
         Integer color = IDtoColor.get(biomeID);
         if (color == null) {
-            Biome biome = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
+            Biome biome = VoxelContants.getMinecraft().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
             if (biome != null) {
-                String identifier = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome).toString();
+                String identifier = VoxelContants.getMinecraft().world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome).toString();
                 color = nameToColor.get(identifier);
                 if (color == null) {
                     String friendlyName = getName(biome);
@@ -175,7 +175,7 @@ public class BiomeRepository {
     }
 
     private static String getName(Biome biome) {
-        Identifier resourceLocation = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome);
+        Identifier resourceLocation = VoxelContants.getMinecraft().world.getRegistryManager().get(Registry.BIOME_KEY).getId(biome);
         String translationKey = Util.createTranslationKey("biome", resourceLocation);
         String name = I18nUtils.getString(translationKey);
         if (name.equals(translationKey)) {
@@ -187,7 +187,7 @@ public class BiomeRepository {
 
     public static String getName(int biomeID) {
         String name = null;
-        Biome biome = MinecraftClient.getInstance().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
+        Biome biome = VoxelContants.getMinecraft().world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
         if (biome != null) {
             name = getName(biome);
         }

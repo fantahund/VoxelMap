@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 
 import java.util.UUID;
@@ -48,8 +48,8 @@ public class Contact {
     }
 
     public void updateLocation() {
-        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * (double) MinecraftClient.getInstance().getTickDelta();
+        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * (double) VoxelContants.getMinecraft().getTickDelta();
         this.y = (int) this.entity.getY() + this.yFudge;
-        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * (double) MinecraftClient.getInstance().getTickDelta();
+        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * (double) VoxelContants.getMinecraft().getTickDelta();
     }
 }

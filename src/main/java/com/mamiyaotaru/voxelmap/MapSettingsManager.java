@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
@@ -64,14 +63,12 @@ public class MapSettingsManager implements ISettingsManager {
     public final KeyBinding keyBindMobToggle = new KeyBinding("key.minimap.togglemobs", -1, "controls.minimap.title");
     public final KeyBinding keyBindWaypointToggle = new KeyBinding("key.minimap.toggleingamewaypoints", -1, "controls.minimap.title");
     public final KeyBinding[] keyBindings;
-    public final MinecraftClient game;
     private boolean somethingChanged;
     public static MapSettingsManager instance;
     private final List<ISubSettingsManager> subSettingsManagers = new ArrayList<>();
 
     public MapSettingsManager() {
         instance = this;
-        this.game = MinecraftClient.getInstance();
         this.keyBindings = new KeyBinding[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle};
     }
 
@@ -80,7 +77,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public void loadAll() {
-        this.settingsFile = new File(this.game.runDirectory, "config/voxelmap.properties");
+        this.settingsFile = new File(VoxelContants.getMinecraft().runDirectory, "config/voxelmap.properties");
 
         try {
             if (this.settingsFile.exists()) {
@@ -148,7 +145,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public void saveAll() {
-        File settingsFileDir = new File(this.game.runDirectory, "/config/");
+        File settingsFileDir = new File(VoxelContants.getMinecraft().runDirectory, "/config/");
         if (!settingsFileDir.exists()) {
             settingsFileDir.mkdirs();
         }

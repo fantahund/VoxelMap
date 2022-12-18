@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
-import net.minecraft.client.MinecraftClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -254,7 +254,7 @@ public abstract class AbstractMapData implements IMapData {
         }
 
         public void morphologicallyErode(boolean horizontalBias) {
-            float labelWidth = (float) (MinecraftClient.getInstance().textRenderer.getWidth(this.name) + 8);
+            float labelWidth = (float) (VoxelContants.getMinecraft().textRenderer.getWidth(this.name) + 8);
             float multi = (float) (AbstractMapData.this.width / 32);
             float shellWidth = 2.0F;
             float labelPadding = labelWidth / 16.0F * multi / shellWidth;

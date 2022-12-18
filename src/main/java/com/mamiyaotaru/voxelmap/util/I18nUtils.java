@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.client.MinecraftClient;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import net.minecraft.client.resource.language.I18n;
 
 import java.text.Collator;
@@ -15,7 +15,7 @@ public class I18nUtils {
         String mcLocale = "en_US";
 
         try {
-            mcLocale = MinecraftClient.getInstance().getLanguageManager().getLanguage().getCode();
+            mcLocale = VoxelContants.getMinecraft().getLanguageManager().getLanguage().getCode();
         } catch (NullPointerException ignored) {}
 
         String[] bits = mcLocale.split("_");

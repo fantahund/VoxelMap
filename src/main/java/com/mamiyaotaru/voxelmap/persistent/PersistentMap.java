@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelContants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
@@ -23,7 +24,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.GlassBlock;
 import net.minecraft.block.Material;
 import net.minecraft.block.StainedGlassBlock;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
@@ -130,9 +130,9 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
     private void newWorldStuff() {
         String worldName = TextUtils.scrubNameFile(this.master.getWaypointManager().getCurrentWorldName());
-        File oldCacheDir = new File(MinecraftClient.getInstance().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
+        File oldCacheDir = new File(VoxelContants.getMinecraft().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
         if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
-            File newCacheDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/cache/" + worldName + "/");
+            File newCacheDir = new File(VoxelContants.getMinecraft().runDirectory, "/voxelmap/cache/" + worldName + "/");
             newCacheDir.getParentFile().mkdirs();
             boolean success = oldCacheDir.renameTo(newCacheDir);
             if (!success) {
@@ -142,7 +142,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             }
         }
 
-        if (this.master.getWaypointManager().isMultiworld() && !MinecraftClient.getInstance().isInSingleplayer() && !this.master.getWaypointManager().receivedAutoSubworldName()) {
+        if (this.master.getWaypointManager().isMultiworld() && !VoxelContants.getMinecraft().isInSingleplayer() && !this.master.getWaypointManager().receivedAutoSubworldName()) {
             this.worldMatcher = new WorldMatcher(this.master, this, this.world);
             this.worldMatcher.findMatch();
         }
@@ -151,8 +151,8 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     }
 
     @Override
-    public void onTick(MinecraftClient mc) {
-        if (mc.currentScreen == null) {
+    public void onTick() {
+        if (VoxelContants.getMinecraft().currentScreen == null) {
             this.options.mapX = GameVariableAccessShim.xCoord();
             this.options.mapZ = GameVariableAccessShim.zCoord();
         }
@@ -891,7 +891,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 }
             }
 
-            if (MinecraftClient.getInstance().currentScreen != null && MinecraftClient.getInstance().currentScreen instanceof GuiPersistentMap) {
+            if (VoxelContants.getMinecraft().currentScreen != null && VoxelContants.getMinecraft().currentScreen instanceof GuiPersistentMap) {
                 cachedRegion.registerChangeAt(chunkX, chunkZ);
                 cachedRegion.refresh(false);
             } else {

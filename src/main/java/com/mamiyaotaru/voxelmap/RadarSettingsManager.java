@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
-import net.minecraft.client.MinecraftClient;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,7 +14,6 @@ import java.io.PrintWriter;
 import java.util.Objects;
 
 public class RadarSettingsManager implements ISubSettingsManager {
-    public final MinecraftClient game;
     private boolean somethingChanged;
     public int radarMode = 2;
     public boolean showRadar = true;
@@ -33,10 +31,6 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean radarPlayersAllowed = true;
     public boolean radarMobsAllowed = true;
     float fontScale = 1.0F;
-
-    public RadarSettingsManager() {
-        this.game = MinecraftClient.getInstance();
-    }
 
     @Override
     public void loadSettings(File settingsFile) {
