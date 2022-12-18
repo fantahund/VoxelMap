@@ -25,7 +25,7 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     public float green;
     public float blue;
 
-    public Waypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet<DimensionContainer> dimensions) {
+    public Waypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet dimensions) {
         this.name = name;
         this.x = x;
         this.z = z;

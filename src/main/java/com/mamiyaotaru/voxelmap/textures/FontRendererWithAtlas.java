@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.stream.IntStream;
 
 public class FontRendererWithAtlas extends TextRenderer implements ResourceReloader {
     private final int[] charWidthArray = new int[256];
@@ -127,8 +126,12 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             while (thisCharacterWidth >= 0 && onlyBlankPixels) {
                 int pixelX = characterX * characterWidth + thisCharacterWidth;
 
-                if (IntStream.range(0, characterHeight).map(characterPixelYPos -> (characterY * characterWidth + characterPixelYPos) * sheetWidth).anyMatch(pixelY -> (sheetImageData[pixelX + pixelY] >> 24 & 0xFF) != 0)) {
-                    onlyBlankPixels = false;
+                for (int characterPixelYPos = 0; characterPixelYPos < characterHeight && onlyBlankPixels; ++characterPixelYPos) {
+                    int pixelY = (characterY * characterWidth + characterPixelYPos) * sheetWidth;
+                    if ((sheetImageData[pixelX + pixelY] >> 24 & 0xFF) != 0) {
+                        onlyBlankPixels = false;
+                        break;
+                    }
                 }
 
                 if (onlyBlankPixels) {
@@ -171,8 +174,8 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         return (float) this.charWidthArray[charIndex];
     }
 
-    public void drawStringWithShadow(String text, float x, float y, int color) {
-        this.drawString(text, x, y, color, true);
+    public int drawStringWithShadow(String text, float x, float y, int color) {
+        return this.drawString(text, x, y, color, true);
     }
 
     public int drawString(String text, int x, int y, int color) {
