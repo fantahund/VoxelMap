@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.textures;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.util.math.MathHelper;
 
@@ -171,7 +172,7 @@ public class Stitcher {
 
                 if (!slot.addSlot(holder)) {
                     String errorString = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", holder.getAtlasSprite().getIconName(), holder.getAtlasSprite().getIconWidth(), holder.getAtlasSprite().getIconHeight());
-                    System.err.println(errorString);
+                    VoxelMap.getLogger().warn(errorString);
                 }
 
                 this.stitchSlots.add(slot);

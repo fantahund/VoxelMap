@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import net.minecraft.block.BlockState;
@@ -410,7 +411,7 @@ public class CompressibleMapData extends AbstractMapData {
         try {
             compressedEmptyData = CompressionUtils.compress(compressedEmptyData);
         } catch (IOException var1) {
-            var1.printStackTrace();
+            VoxelMap.getLogger().error(var1);
         }
 
     }

@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import net.minecraft.client.MinecraftClient;
 
@@ -41,14 +42,14 @@ public abstract class AbstractMapData implements IMapData {
                     if (!this.points[x][z].inSegment) {
                         long startTime = System.nanoTime();
                         if (this.points[x][z].biomeID == -1) {
-                            System.out.println("no biome segment!");
+                            VoxelMap.getLogger().warn("no biome segment!");
                         }
 
                         Segment segment = new Segment(this.points[x][z]);
                         this.segments.add(segment);
                         segment.flood();
                         if (this.points[x][z].biomeID == -1) {
-                            System.out.println("created in " + (System.nanoTime() - startTime));
+                            VoxelMap.getLogger().warn("created in " + (System.nanoTime() - startTime));
                         }
                     }
                 }

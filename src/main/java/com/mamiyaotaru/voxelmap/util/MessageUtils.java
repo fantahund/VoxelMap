@@ -11,7 +11,7 @@ public class MessageUtils {
 
     public static void printDebug(String line) {
         if (debug) {
-            System.out.println(line);
+            VoxelMap.getLogger().warn(line);
         }
 
     }

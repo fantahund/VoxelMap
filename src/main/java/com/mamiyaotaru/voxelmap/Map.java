@@ -179,11 +179,11 @@ public class Map implements Runnable, IMap {
         try {
             f.set(this.game.options, tempBindings.toArray(new KeyBinding[0]));
         } catch (IllegalArgumentException | IllegalAccessException var7) {
-            var7.printStackTrace();
+            VoxelMap.getLogger().error(var7);
         }
 
         java.util.Map<String, Integer> categoryOrder = (java.util.Map<String, Integer>) ReflectionUtils.getPrivateFieldValueByType(null, KeyBinding.class, java.util.Map.class, 2);
-        System.out.println("CATEGORY ORDER IS " + categoryOrder.size());
+        VoxelMap.getLogger().warn("CATEGORY ORDER IS " + categoryOrder.size());
         Integer categoryPlace = categoryOrder.get("controls.minimap.title");
         if (categoryPlace == null) {
             int currentSize = categoryOrder.size();
@@ -912,7 +912,7 @@ public class Map implements Runnable, IMap {
         try {
             this.chunkCache[this.zoom].registerChangeAt(chunkX, chunkZ);
         } catch (Exception e) {
-            e.printStackTrace();
+            VoxelMap.getLogger().warn(e);
         }
     }
 
@@ -1965,7 +1965,7 @@ public class Map implements Runnable, IMap {
                 gfx.dispose();
                 this.mapImageInt = GLUtils.tex(mapImage);
             } catch (Exception var7) {
-                System.err.println("Error loading texture pack's map image: " + var7.getLocalizedMessage());
+                VoxelMap.getLogger().warn("Error loading texture pack's map image: " + var7.getLocalizedMessage());
             }
         }
 

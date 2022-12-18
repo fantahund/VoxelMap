@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
 import com.mamiyaotaru.voxelmap.gui.GuiSubworldsSelect;
@@ -1202,7 +1203,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     this.getMinecraft().setScreen(confirmScreen);
                 }
             }
-            default -> System.out.println("unimplemented command");
+            default -> VoxelMap.getLogger().warn("unimplemented command");
         }
 
     }

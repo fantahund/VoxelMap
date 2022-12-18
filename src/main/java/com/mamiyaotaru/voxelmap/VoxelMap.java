@@ -93,8 +93,7 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                 this.radarSimple = new RadarSimple(this);
             }
         } catch (Exception var4) {
-            System.err.println("Failed creating radar " + var4.getLocalizedMessage());
-            var4.printStackTrace();
+            logger.error("Failed creating radar " + var4.getLocalizedMessage(), var4);
             radarOptions.radarAllowed = false;
             radarOptions.radarMobsAllowed = false;
             radarOptions.radarPlayersAllowed = false;

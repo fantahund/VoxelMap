@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
@@ -113,7 +114,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                     try {
                         Thread.sleep(2000L);
                     } catch (InterruptedException var2) {
-                        var2.printStackTrace();
+                        VoxelMap.getLogger().error(var2);
                     }
 
                     if (PersistentMap.this.world != null) {
@@ -135,9 +136,9 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
             newCacheDir.getParentFile().mkdirs();
             boolean success = oldCacheDir.renameTo(newCacheDir);
             if (!success) {
-                System.out.println("Failed moving Voxelmap cache files.  Please move " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
+                VoxelMap.getLogger().warn("Failed moving Voxelmap cache files.  Please move " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
             } else {
-                System.out.println("Moved Voxelmap cache files from " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
+                VoxelMap.getLogger().warn("Moved Voxelmap cache files from " + oldCacheDir.getPath() + " to " + newCacheDir.getPath());
             }
         }
 
@@ -897,8 +898,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                 cachedRegion.handleChangedChunk(chunk);
             }
         } catch (Exception var19) {
-            System.out.println(var19.getMessage());
-            var19.printStackTrace();
+            VoxelMap.getLogger().error(var19.getMessage(), var19);
         }
 
     }

@@ -386,8 +386,7 @@ public class Radar implements IRadar {
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var30) {
-            System.err.println("Failed getting mobs " + var30.getLocalizedMessage());
-            var30.printStackTrace();
+            logger.error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
         }
 
     }
@@ -638,8 +637,7 @@ public class Radar implements IRadar {
                     }
                 }
             } catch (Exception var16) {
-                System.err.println(var16.getLocalizedMessage());
-                var16.printStackTrace();
+                logger.error(var16.getLocalizedMessage(), var16);
             }
         }
 
@@ -647,7 +645,7 @@ public class Radar implements IRadar {
             try {
                 this.textureAtlas.stitchNew();
             } catch (StitcherException var14) {
-                System.err.println("Stitcher exception!  Resetting mobs texture atlas.");
+                logger.warn("Stitcher exception!  Resetting mobs texture atlas.");
                 this.loadTexturePackIcons();
             }
         }
@@ -1223,7 +1221,7 @@ public class Radar implements IRadar {
                     resourceLocation = this.nativeBackedTextureLocation;
                 }
             } catch (Exception var9) {
-                var9.printStackTrace();
+                logger.warn(var9);
             }
         }
 
@@ -1309,8 +1307,7 @@ public class Radar implements IRadar {
                 immediate.draw();
             }
         } catch (Exception var25) {
-            System.out.println("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName());
-            var25.printStackTrace();
+            logger.warn("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName(), var25);
             failed = true;
         }
 
@@ -1608,7 +1605,7 @@ public class Radar implements IRadar {
         }
 
         if (icon == null) {
-            System.out.println("can't get texture for custom armor type: " + helmet.getClass());
+            VoxelMap.getLogger().warn("can't get texture for custom armor type: " + helmet.getClass());
             this.textureAtlas.registerFailedIcon("armor " + helmet.getTranslationKey() + helmet.getClass().getName());
         }
 
@@ -1736,7 +1733,7 @@ public class Radar implements IRadar {
                             try {
                                 this.textureAtlas.stitchNew();
                             } catch (StitcherException var45) {
-                                System.err.println("Stitcher exception in render method!  Resetting mobs texture atlas.");
+                                logger.warn("Stitcher exception in render method!  Resetting mobs texture atlas.");
                                 this.loadTexturePackIcons();
                             }
 
@@ -1852,9 +1849,7 @@ public class Radar implements IRadar {
                         this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
                     }
                 } catch (Exception e) {
-                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
-                    logger.log(Level.ERROR, e);
-                    //e.printStackTrace(); //this is way better for debugging
+                    logger.error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();

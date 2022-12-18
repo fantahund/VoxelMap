@@ -89,15 +89,12 @@ public class FabricModVoxelMap implements ClientModInitializer {
         long shutdownTime = System.currentTimeMillis();
 
         while (ThreadManager.executorService.getQueue().size() + ThreadManager.executorService.getActiveCount() > 0 && System.currentTimeMillis() - shutdownTime < 10000L) {
-            System.out.print(".");
 
             try {
                 Thread.sleep(200L);
             } catch (InterruptedException ignored) {
             }
         }
-
-        System.out.println();
     }
 
     public boolean handleCustomPayload(CustomPayloadS2CPacket packet) {

@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
@@ -196,8 +197,7 @@ public class ImageUtils {
             g2.dispose();
             return temp;
         } catch (Exception var13) {
-            System.err.println("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage());
-            var13.printStackTrace();
+            VoxelMap.getLogger().error("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage(), var13);
             return null;
         }
     }
@@ -258,7 +258,7 @@ public class ImageUtils {
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
         } else {
-            System.err.println("Failed getting image: " + resourceLocation.toString());
+            VoxelMap.getLogger().warn("Failed getting image: " + resourceLocation.toString());
             return null;
         }
     }

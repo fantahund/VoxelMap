@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
@@ -41,7 +42,7 @@ public class WorldMatcher {
                 try {
                     Thread.sleep(500L);
                 } catch (InterruptedException var8) {
-                    var8.printStackTrace();
+                    VoxelMap.getLogger().error(var8);
                 }
 
                 this.cachedRegionFileDir.mkdirs();
@@ -61,7 +62,7 @@ public class WorldMatcher {
                     try {
                         Thread.sleep(1000L);
                     } catch (InterruptedException var7) {
-                        var7.printStackTrace();
+                        VoxelMap.getLogger().error(var7);
                     }
 
                     if (this.x == (int) Math.floor(player.getX() / 256.0) && this.z == (int) Math.floor(player.getZ() / 256.0)) {

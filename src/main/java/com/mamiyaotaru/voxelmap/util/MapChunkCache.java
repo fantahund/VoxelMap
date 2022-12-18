@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
@@ -133,7 +134,7 @@ public class MapChunkCache {
                 mapChunk.setModified(true);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            VoxelMap.getLogger().error(e);
         }
     }
 

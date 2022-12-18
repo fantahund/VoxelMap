@@ -203,13 +203,13 @@ public class WaypointManager implements IWaypointManager {
             if (serverData != null) {
                 boolean isOnLAN = serverData.isLocal();
                 if (isOnLAN) {
-                    System.out.println("LAN server detected!");
+                    VoxelMap.getLogger().warn("LAN server detected!");
                     serverName = serverData.name;
                 } else {
                     serverName = serverData.address;
                 }
             } else if (this.game.isConnectedToRealms()) {
-                System.out.println("REALMS server detected!");
+                VoxelMap.getLogger().warn("REALMS server detected!");
                 serverName = "Realms";
             } else {
                 ClientPlayNetworkHandler netHandler = this.game.getNetworkHandler();
@@ -218,8 +218,7 @@ public class WaypointManager implements IWaypointManager {
                 serverName = socketAddress.getHostString() + ":" + socketAddress.getPort();
             }
         } catch (Exception var6) {
-            System.err.println("error getting ServerData");
-            var6.printStackTrace();
+            VoxelMap.getLogger().error("error getting ServerData", var6);
         }
 
         return serverName;
@@ -340,7 +339,7 @@ public class WaypointManager implements IWaypointManager {
                 }
 
                 if (!name.equals(this.currentSubWorldName)) {
-                    System.out.println("New world name: " + TextUtils.scrubCodes(name));
+                    VoxelMap.getLogger().warn("New world name: " + TextUtils.scrubCodes(name));
                 }
 
                 this.lastNewWorldNameTime = System.currentTimeMillis();
@@ -425,7 +424,7 @@ public class WaypointManager implements IWaypointManager {
                 File newCachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
                 boolean success = oldCachedRegionFileDir.renameTo(newCachedRegionFileDir);
                 if (!success) {
-                    System.out.println("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
+                    VoxelMap.getLogger().warn("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
                 }
             }
 
@@ -541,7 +540,7 @@ public class WaypointManager implements IWaypointManager {
             out.close();
         } catch (Exception var12) {
             MessageUtils.chatInfo("§EError Saving Waypoints");
-            var12.printStackTrace();
+            VoxelMap.getLogger().error(var12);
         }
 
     }
@@ -697,8 +696,7 @@ public class WaypointManager implements IWaypointManager {
                     return true;
                 } catch (Exception var25) {
                     MessageUtils.chatInfo("§EError Loading Waypoints");
-                    System.err.println("waypoint load error: " + var25.getLocalizedMessage());
-                    var25.printStackTrace();
+                    VoxelMap.getLogger().error("waypoint load error: " + var25.getLocalizedMessage(), var25);
                     return false;
                 }
             } else {

@@ -80,8 +80,7 @@ public class RadarSimple implements IRadar {
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var4) {
-            System.err.println("Failed getting mobs " + var4.getLocalizedMessage());
-            var4.printStackTrace();
+            logger.error("Failed getting mobs " + var4.getLocalizedMessage(), var4);
         }
 
     }
@@ -143,8 +142,7 @@ public class RadarSimple implements IRadar {
                     }
                 }
             } catch (Exception var11) {
-                System.err.println(var11.getLocalizedMessage());
-                var11.printStackTrace();
+                logger.error(var11.getLocalizedMessage(), var11);
             }
         }
 
@@ -273,8 +271,7 @@ public class RadarSimple implements IRadar {
                         GLUtils.drawPost();
                     }
                 } catch (Exception e) {
-                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
-                    logger.log(Level.ERROR, e);
+                    logger.error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();

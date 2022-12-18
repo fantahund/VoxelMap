@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeListener;
@@ -346,7 +347,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     try {
                         synchronized (anvilLock) {
                             if (debug) {
-                                System.out.println(Thread.currentThread().getName() + " starting load");
+                                VoxelMap.getLogger().warn(Thread.currentThread().getName() + " starting load");
                             }
 
                             long loadTime = System.currentTimeMillis();
@@ -395,12 +396,12 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
 
                             loadFuture.cancel(false);
                             if (debug) {
-                                System.out.println(Thread.currentThread().getName() + " finished load after " + (System.currentTimeMillis() - loadTime) + " milliseconds");
+                                VoxelMap.getLogger().warn(Thread.currentThread().getName() + " finished load after " + (System.currentTimeMillis() - loadTime) + " milliseconds");
                             }
                         }
 
                         if (debug) {
-                            System.out.println(Thread.currentThread().getName() + " starting calculation");
+                            VoxelMap.getLogger().warn(Thread.currentThread().getName() + " starting calculation");
                         }
 
                         long calcTime = System.currentTimeMillis();
@@ -415,7 +416,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                                     if (chunks[index] instanceof WorldChunk) {
                                         loadedChunk = (WorldChunk) chunks[index];
                                     } else {
-                                        System.out.println("non world chunk at " + chunks[index].getPos().x + "," + chunks[index].getPos().z);
+                                        VoxelMap.getLogger().warn("non world chunk at " + chunks[index].getPos().x + "," + chunks[index].getPos().z);
                                     }
 
                                     if (!this.closed && loadedChunk != null && loadedChunk.getStatus().isAtLeast(ChunkStatus.FULL)) {
@@ -441,10 +442,10 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                         }
 
                         if (debug) {
-                            System.out.println(Thread.currentThread().getName() + " finished calculating after " + (System.currentTimeMillis() - calcTime) + " milliseconds");
+                            VoxelMap.getLogger().warn(Thread.currentThread().getName() + " finished calculating after " + (System.currentTimeMillis() - calcTime) + " milliseconds");
                         }
                     } catch (Exception var41) {
-                        System.out.println("error in anvil loading");
+                        VoxelMap.getLogger().warn("error in anvil loading");
                     } finally {
                         tickLock.readLock().unlock();
                     }
@@ -461,7 +462,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                             CompletableFuture<Void> tickFuture = CompletableFuture.runAsync(() -> this.chunkProvider.tick(() -> true, executor.isOnThread()));
                             long tickTime = System.currentTimeMillis();
                             if (debug) {
-                                System.out.println(Thread.currentThread().getName() + " starting chunk GC tick");
+                                VoxelMap.getLogger().warn(Thread.currentThread().getName() + " starting chunk GC tick");
                             }
 
                             while (!this.closed && !tickFuture.isDone()) {
@@ -472,10 +473,10 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                             }
 
                             if (debug) {
-                                System.out.println(Thread.currentThread().getName() + " finished chunk GC tick after " + (System.currentTimeMillis() - tickTime) + " milliseconds");
+                                VoxelMap.getLogger().warn(Thread.currentThread().getName() + " finished chunk GC tick after " + (System.currentTimeMillis() - tickTime) + " milliseconds");
                             }
                         } catch (Exception var38) {
-                            System.out.println("error ticking from anvil loading");
+                            VoxelMap.getLogger().warn("error ticking from anvil loading");
                         } finally {
                             tickLock.writeLock().unlock();
                         }
@@ -540,7 +541,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     this.empty = false;
                     this.dataUpdated = true;
                 } else {
-                    System.out.println("failed to load data from " + cachedRegionFile.getPath());
+                    VoxelMap.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
                 }
 
                 if (version < 2) {
@@ -548,8 +549,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 }
             }
         } catch (Exception var17) {
-            System.err.println("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
-            var17.printStackTrace();
+            VoxelMap.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, var17);
         }
 
     }
@@ -563,8 +563,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     try {
                         CachedRegion.this.doSave();
                     } catch (IOException var5) {
-                        System.err.println("Failed to save region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart);
-                        var5.printStackTrace();
+                        VoxelMap.getLogger().error("Failed to save region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart, var5);
                     } finally {
                         CachedRegion.this.threadLock.unlock();
                     }
@@ -574,7 +573,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                 try {
                     this.doSave();
                 } catch (IOException var3) {
-                    var3.printStackTrace();
+                    VoxelMap.getLogger().error(var3);
                 }
             }
 
@@ -627,7 +626,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             zos.close();
             fos.close();
         } else {
-            System.err.println("Data array wrong size: " + byteArray.length + "for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+            VoxelMap.getLogger().warn("Data array wrong size: " + byteArray.length + "for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
         }
 
     }
@@ -659,7 +658,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                         System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, CachedRegion.this.image.getData().length);
                         ImageIO.write(realBufferedImage, "png", imageFile);
                     } catch (IOException var6) {
-                        var6.printStackTrace();
+                        VoxelMap.getLogger().error(var6);
                     } finally {
                         CachedRegion.this.threadLock.unlock();
                     }
@@ -851,8 +850,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
                     CachedRegion.this.compressData();
                 }
             } catch (Exception var8) {
-                System.out.println("Exception loading region: " + var8.getLocalizedMessage());
-                var8.printStackTrace();
+                VoxelMap.getLogger().error("Exception loading region: " + var8.getLocalizedMessage(), var8);
             } finally {
                 CachedRegion.this.threadLock.unlock();
                 CachedRegion.this.refreshQueued = false;
