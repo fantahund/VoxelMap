@@ -1898,19 +1898,18 @@ public class Map implements Runnable, IMap {
             double factor = Math.pow(2.0, 3 - this.zoom);
             int minimumSize = (int) Math.pow(2.0, this.zoom);
             minimumSize *= minimumSize;
-            ArrayList labels = this.mapData[this.zoom].getBiomeLabels();
+            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
             GLShim.glDisable(2929);
             matrixStack.push();
             matrixStack.translate(0.0, 0.0, 1160.0);
             RenderSystem.applyModelViewMatrix();
 
-            for (Object o : labels) {
-                AbstractMapData.BiomeLabel label = (AbstractMapData.BiomeLabel) o;
-                if (label.segmentSize > minimumSize) {
-                    String name = label.name;
+            for (AbstractMapData.BiomeLabel o : labels) {
+                if (o.segmentSize > minimumSize) {
+                    String name = o.name;
                     int nameWidth = this.chkLen(name);
-                    float x = (float) ((double) label.x * factor);
-                    float z = (float) ((double) label.z * factor);
+                    float x = (float) ((double) o.x * factor);
+                    float z = (float) ((double) o.z * factor);
                     if (this.options.oldNorth) {
                         this.write(matrixStack, name, (float) (left + 256) - z - (float) (nameWidth / 2), (float) top + x - 3.0F, 16777215);
                     } else {

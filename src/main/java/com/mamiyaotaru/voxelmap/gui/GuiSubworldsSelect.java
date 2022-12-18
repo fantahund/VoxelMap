@@ -49,7 +49,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     public void init() {
-        ArrayList<String> knownSubworldNames = new ArrayList(this.waypointManager.getKnownSubworldNames());
+        ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !this.getMinecraft().isConnectedToRealms()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Text.translatable("worldmap.multiworld.isthismultiworld"), Text.translatable("worldmap.multiworld.explanation"), Text.translatable("gui.yes"), Text.translatable("gui.no"));
             this.getMinecraft().setScreen(confirmScreen);

@@ -1910,13 +1910,5 @@ public class Radar implements IRadar {
         }
     }
 
-    private static class ModelPartWithResourceLocation {
-        final ModelPart modelPart;
-        final Identifier resourceLocation;
-
-        public ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {
-            this.modelPart = modelPart;
-            this.resourceLocation = resourceLocation;
-        }
-    }
+    private record ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {}
 }
