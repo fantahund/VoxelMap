@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.textures;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.util.math.MathHelper;
 

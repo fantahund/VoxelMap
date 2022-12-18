@@ -376,7 +376,6 @@ public class Radar implements IRadar {
             BufferedImage blankImage = ImageUtils.loadImage(blankResourceLocation, 0, 0, 8, 8, 8, 8);
             Sprite blankSprite = this.textureAtlas.registerIconForBufferedImage(blankResourceLocation.toString(), blankImage);
             this.fontRenderer.setSprites(fontSprite, blankSprite);
-            this.fontRenderer.setFontRef(this.textureAtlas.getGlId());
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var30) {

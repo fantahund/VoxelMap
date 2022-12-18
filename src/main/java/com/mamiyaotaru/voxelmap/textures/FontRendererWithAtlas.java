@@ -150,9 +150,6 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         this.blankIcon = blank;
     }
 
-    public void setFontRef(int ref) {
-    }
-
     private float renderCharAtPos(int charIndex, char character, boolean shadow) {
         return character == ' ' ? 4.0F : this.renderDefaultChar(charIndex, shadow);
     }

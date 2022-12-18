@@ -25,9 +25,6 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
         this.pointer = Long.parseLong(pointerString);
     }
 
-    public void blank() {
-    }
-
     public void write() {
         this.upload();
     }

@@ -284,7 +284,6 @@ public class Map implements Runnable, IMap {
         this.world = world;
         this.lightmapTexture = this.getLightmapTexture();
         this.mapData[this.zoom].blank();
-        this.mapImages[this.zoom].blank();
         this.doFullRender = true;
         this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
     }
@@ -486,7 +485,6 @@ public class Map implements Runnable, IMap {
         this.zoomChanged = true;
         this.zoom = this.options.zoom;
         this.setZoomScale();
-        this.mapImages[this.zoom].blank();
         this.doFullRender = true;
     }
 

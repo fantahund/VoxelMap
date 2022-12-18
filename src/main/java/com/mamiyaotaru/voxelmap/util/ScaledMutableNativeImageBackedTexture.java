@@ -16,10 +16,6 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
     }
 
     @Override
-    public void blank() {
-    }
-
-    @Override
     public void write() {
         this.upload();
     }

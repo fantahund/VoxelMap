@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;

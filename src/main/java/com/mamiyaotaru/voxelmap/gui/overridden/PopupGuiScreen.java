@@ -7,12 +7,8 @@ import java.util.ArrayList;
 public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupGuiScreen {
     private final ArrayList<Popup> popups = new ArrayList<>();
 
-    public void drawMap() {
-    }
-
     @Override
-    public void removed() {
-    }
+    public void removed() {}
 
     public void createPopup(int x, int y, int directX, int directY, ArrayList<Popup.PopupEntry> entries) {
         this.popups.add(new Popup(x, y, directX, directY, entries, this));
