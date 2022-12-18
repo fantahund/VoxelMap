@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
@@ -72,7 +72,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public void setSelected(MobItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof MobItem) {
-            NarratorManager narratorManager = new NarratorManager(VoxelContants.getMinecraft());
+            NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 

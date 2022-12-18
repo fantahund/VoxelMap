@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
@@ -74,7 +74,7 @@ public class CommandUtils {
                 finalTextComponent.append(textComponent);
             }
 
-            VoxelContants.getMinecraft().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
+            VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
             return false;
         }
     }
@@ -161,7 +161,7 @@ public class CommandUtils {
             }
 
             if (dimensions.size() == 0) {
-                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelContants.getMinecraft().world));
+                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             }
 
             if (x != null && z != null) {
@@ -179,14 +179,14 @@ public class CommandUtils {
     }
 
     public static void waypointClicked(String command) {
-        boolean control = InputUtil.isKeyPressed(VoxelContants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.left.control").getCode()) || InputUtil.isKeyPressed(VoxelContants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.right.control").getCode());
+        boolean control = InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.left.control").getCode()) || InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.right.control").getCode());
         String details = command.substring(NEW_WAYPOINT_COMMAND_LENGTH);
         Waypoint newWaypoint = createWaypointFromChat(details);
         if (newWaypoint != null) {
             for (Waypoint existingWaypoint : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
                 if (newWaypoint.getX() == existingWaypoint.getX() && newWaypoint.getZ() == existingWaypoint.getZ()) {
                     if (control) {
-                        VoxelContants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
+                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
                     } else {
                         AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
                     }
@@ -196,7 +196,7 @@ public class CommandUtils {
             }
 
             if (control) {
-                VoxelContants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), newWaypoint, false));
+                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), newWaypoint, false));
             } else {
                 AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
             }
@@ -205,7 +205,7 @@ public class CommandUtils {
     }
 
     public static void sendWaypoint(Waypoint waypoint) {
-        Identifier resourceLocation = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelContants.getMinecraft().world).resourceLocation;
+        Identifier resourceLocation = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world).resourceLocation;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
         StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
@@ -231,12 +231,12 @@ public class CommandUtils {
         }
 
         message = message + "]";
-        VoxelContants.getMinecraft().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, true));
+        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, true));
     }
 
     public static void sendCoordinate(int x, int y, int z) {
         String message = String.format("[x:%s, y:%s, z:%s]", x, y, z);
-        VoxelContants.getMinecraft().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, false));
+        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, false));
     }
 
     public static void teleport(String command) {
@@ -244,11 +244,11 @@ public class CommandUtils {
 
         for (Waypoint wp : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
-                boolean mp = !VoxelContants.getMinecraft().isIntegratedServerRunning();
-                int y = wp.getY() > VoxelContants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelContants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelContants.getMinecraft().world.getTopY() : 64);
-                VoxelContants.getMinecraft().player.sendCommand("tp " + VoxelContants.getMinecraft().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
+                boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
+                int y = wp.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
+                VoxelConstants.getMinecraft().player.sendCommand("tp " + VoxelConstants.getMinecraft().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
-                    VoxelContants.getMinecraft().player.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
+                    VoxelConstants.getMinecraft().player.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
                 }
 
                 return;

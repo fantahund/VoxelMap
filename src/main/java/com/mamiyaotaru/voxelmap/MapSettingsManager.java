@@ -77,7 +77,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public void loadAll() {
-        this.settingsFile = new File(VoxelContants.getMinecraft().runDirectory, "config/voxelmap.properties");
+        this.settingsFile = new File(VoxelConstants.getMinecraft().runDirectory, "config/voxelmap.properties");
 
         try {
             if (this.settingsFile.exists()) {
@@ -145,7 +145,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public void saveAll() {
-        File settingsFileDir = new File(VoxelContants.getMinecraft().runDirectory, "/config/");
+        File settingsFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/config/");
         if (!settingsFileDir.exists()) {
             settingsFileDir.mkdirs();
         }

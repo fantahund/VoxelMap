@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
@@ -50,7 +50,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     public void setSelected(DimensionItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof DimensionItem) {
-            NarratorManager narratorManager = new NarratorManager(VoxelContants.getMinecraft());
+            NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
         }
 

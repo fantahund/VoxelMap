@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
@@ -38,7 +38,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void init() {
-        VoxelContants.getMinecraft().keyboard.setRepeatEvents(true);
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(true);
         this.clearChildren();
         this.subworldNameField = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
         this.setFocused(this.subworldNameField);
@@ -46,7 +46,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.subworldNameField.setText(this.originalSubworldName);
         this.addDrawableChild(this.subworldNameField);
         this.addDrawableChild(this.doneButton = new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.done"), button -> this.changeNameClicked()));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> VoxelContants.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)));
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         this.addDrawableChild(this.deleteButton = new ButtonWidget(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20, Text.translatable("selectServer.delete"), button -> this.deleteClicked()));
         this.doneButton.active = this.isNameAcceptable();
@@ -55,7 +55,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     @Override
     public void removed() {
-        VoxelContants.getMinecraft().keyboard.setRepeatEvents(false);
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
     }
 
     private void changeNameClicked() {
@@ -63,7 +63,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
             this.waypointManager.changeSubworldName(this.originalSubworldName, this.currentSubworldName);
         }
 
-        VoxelContants.getMinecraft().setScreen(this.parent);
+        VoxelConstants.getMinecraft().setScreen(this.parent);
     }
 
     private void deleteClicked() {
@@ -73,7 +73,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         Text affirm = Text.translatable("selectServer.deleteButton");
         Text deny = Text.translatable("gui.cancel");
         ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
-        VoxelContants.getMinecraft().setScreen(confirmScreen);
+        VoxelConstants.getMinecraft().setScreen(confirmScreen);
     }
 
     public void accept(boolean par1) {
@@ -83,7 +83,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
                 this.waypointManager.deleteSubworld(this.originalSubworldName);
             }
 
-            VoxelContants.getMinecraft().setScreen(this.parent);
+            VoxelConstants.getMinecraft().setScreen(this.parent);
         }
 
     }

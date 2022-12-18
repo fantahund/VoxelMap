@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.fabricmod.mixins;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -31,14 +31,14 @@ public class MixinWorldRenderer {
     @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;FJZLnet/minecraft/client/render/Camera;Lnet/minecraft/client/render/GameRenderer;Lnet/minecraft/client/render/LightmapTextureManager;Lnet/minecraft/util/math/Matrix4f;)V", at = @At("RETURN"))
     private void postRender(MatrixStack matrixStack, float partialTicks, long timeSlice, boolean lookingAtBlock, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo ci) {
         if (VoxelMap.getInstance().getMapOptions().showBeacons || VoxelMap.getInstance().getMapOptions().showWaypoints) {
-            if (VoxelContants.isFabulousGraphicsOrBetter()) {
-                Framebuffer framebuffer = VoxelContants.getMinecraft().getFramebuffer();
+            if (VoxelConstants.isFabulousGraphicsOrBetter()) {
+                Framebuffer framebuffer = VoxelConstants.getMinecraft().getFramebuffer();
                 GlStateManager._glBindFramebuffer(36008, this.translucentFramebuffer.fbo);
                 GlStateManager._glBindFramebuffer(36009, framebuffer.fbo);
                 GlStateManager._glBlitFrameBuffer(0, 0, this.translucentFramebuffer.textureWidth, this.translucentFramebuffer.textureHeight, 0, 0, framebuffer.textureWidth, framebuffer.textureHeight, 256, 9728);
             }
 
-            boolean drawSignForeground = !VoxelContants.isFabulousGraphicsOrBetter();
+            boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter();
             FabricModVoxelMap.onRenderHand(partialTicks, timeSlice, matrixStack, VoxelMap.getInstance().getMapOptions().showBeacons, VoxelMap.getInstance().getMapOptions().showWaypoints, drawSignForeground, true);
         }
 
@@ -46,10 +46,10 @@ public class MixinWorldRenderer {
 
     @Inject(method = "renderLayer(Lnet/minecraft/client/render/RenderLayer;Lnet/minecraft/client/util/math/MatrixStack;DDDLnet/minecraft/util/math/Matrix4f;)V", at = @At("RETURN"))
     private void postRenderLayer(RenderLayer renderLayer, MatrixStack matrixStack, double x, double y, double z, Matrix4f matrix4f, CallbackInfo ci) {
-        if (VoxelContants.isFabulousGraphicsOrBetter() && VoxelMap.getInstance().getMapOptions().showWaypoints && renderLayer == RenderLayer.getTranslucent() && VoxelContants.getMinecraft().worldRenderer.getTranslucentFramebuffer() != null) {
-            VoxelContants.getMinecraft().worldRenderer.getTranslucentFramebuffer().beginWrite(false);
-            FabricModVoxelMap.onRenderHand(VoxelContants.getMinecraft().getTickDelta(), 0L, matrixStack, false, true, true, false);
-            VoxelContants.getMinecraft().getFramebuffer().beginWrite(false);
+        if (VoxelConstants.isFabulousGraphicsOrBetter() && VoxelMap.getInstance().getMapOptions().showWaypoints && renderLayer == RenderLayer.getTranslucent() && VoxelConstants.getMinecraft().worldRenderer.getTranslucentFramebuffer() != null) {
+            VoxelConstants.getMinecraft().worldRenderer.getTranslucentFramebuffer().beginWrite(false);
+            FabricModVoxelMap.onRenderHand(VoxelConstants.getMinecraft().getTickDelta(), 0L, matrixStack, false, true, true, false);
+            VoxelConstants.getMinecraft().getFramebuffer().beginWrite(false);
         }
 
     }

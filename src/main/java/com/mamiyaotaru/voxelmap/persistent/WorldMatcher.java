@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
@@ -36,7 +36,7 @@ public class WorldMatcher {
             final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
             final String dimensionName = WorldMatcher.this.master.getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
             final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
-            final File cachedRegionFileDir = new File(VoxelContants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
+            final File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
 
             public void run() {
                 try {
@@ -49,7 +49,7 @@ public class WorldMatcher {
                 ArrayList<String> knownSubworldNames = new ArrayList<>(WorldMatcher.this.master.getWaypointManager().getKnownSubworldNames());
                 String[] subworldNamesArray = new String[knownSubworldNames.size()];
                 knownSubworldNames.toArray(subworldNamesArray);
-                ClientPlayerEntity player = VoxelContants.getMinecraft().player;
+                ClientPlayerEntity player = VoxelConstants.getMinecraft().player;
                 MessageUtils.printDebug("player coords " + player.getX() + " " + player.getZ() + " in world " + WorldMatcher.this.master.getWaypointManager().getCurrentWorldName());
                 this.x = (int) Math.floor(player.getX() / 256.0);
                 this.z = (int) Math.floor(player.getZ() / 256.0);
@@ -126,7 +126,7 @@ public class WorldMatcher {
                     }
                 }
 
-                this.region = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, VoxelContants.getMinecraft().world, this.worldName, "", this.x, this.z);
+                this.region = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, VoxelConstants.getMinecraft().world, this.worldName, "", this.x, this.z);
                 MessageUtils.printDebug("going to load current region");
                 this.region.loadCurrent();
                 MessageUtils.printDebug("loaded chunks in local region: " + this.region.getLoadedChunks());

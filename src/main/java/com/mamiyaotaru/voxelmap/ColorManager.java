@@ -154,8 +154,8 @@ public class ColorManager implements IColorManager {
     @Override
     public boolean checkForChanges() {
         boolean biomesChanged = false;
-        if (VoxelContants.getMinecraft().world != null && VoxelContants.getMinecraft().world != this.world) {
-            this.world = VoxelContants.getMinecraft().world;
+        if (VoxelConstants.getMinecraft().world != null && VoxelConstants.getMinecraft().world != this.world) {
+            this.world = VoxelConstants.getMinecraft().world;
             int largestBiomeID = 0;
 
             for (Biome biome : this.world.getRegistryManager().get(Registry.BIOME_KEY)) {
@@ -181,12 +181,12 @@ public class ColorManager implements IColorManager {
     }
 
     private void loadColors() {
-        VoxelContants.getMinecraft().player.getSkinTexture();
+        VoxelConstants.getMinecraft().player.getSkinTexture();
         BlockRepository.getBlocks();
         BiomeRepository.getBiomes();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
-        Sprite missing = VoxelContants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
+        Sprite missing = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
         this.failedToLoadX = missing.getMinU();
         this.failedToLoadY = missing.getMinV();
         this.loaded = false;
@@ -224,10 +224,10 @@ public class ColorManager implements IColorManager {
     @Override
     public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, World world, float iconScale, float captureDepth) {
         try {
-            BakedModel model = VoxelContants.getMinecraft().getItemRenderer().getModel(stack, world, null, 0);
+            BakedModel model = VoxelConstants.getMinecraft().getItemRenderer().getModel(stack, world, null, 0);
             this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
             BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
-            ImageIO.write(blockImage, "png", new File(VoxelContants.getMinecraft().runDirectory, blockState.getBlock().getName().getString() + "-" + Block.getRawIdFromState(blockState) + ".png"));
+            ImageIO.write(blockImage, "png", new File(VoxelConstants.getMinecraft().runDirectory, blockState.getBlock().getName().getString() + "-" + Block.getRawIdFromState(blockState) + ".png"));
             return blockImage;
         } catch (Exception var8) {
             VoxelMap.getLogger().error("error getting block armor image for " + blockState.toString() + ": " + var8.getLocalizedMessage(), var8);
@@ -275,7 +275,7 @@ public class ColorManager implements IColorManager {
         matrixStack.push();
         matrixStack.translate((float) (width / 2) - size / 2.0F + transX, (float) (height / 2) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
-        VoxelContants.getMinecraft().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
+        VoxelConstants.getMinecraft().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
         GLUtils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rotY));
@@ -291,8 +291,8 @@ public class ColorManager implements IColorManager {
         Vec3f fullbright3 = new Vec3f(fullbright2);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
         MatrixStack newMatrixStack = new MatrixStack();
-        VertexConsumerProvider.Immediate immediate = VoxelContants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
-        VoxelContants.getMinecraft().getItemRenderer().renderItem(stack, ModelTransformation.Mode.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.DEFAULT_UV, model);
+        VertexConsumerProvider.Immediate immediate = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+        VoxelConstants.getMinecraft().getItemRenderer().renderItem(stack, ModelTransformation.Mode.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.DEFAULT_UV, model);
         immediate.draw();
         matrixStack.pop();
         matrixStack.pop();
@@ -302,12 +302,12 @@ public class ColorManager implements IColorManager {
         GLShim.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
-        GLShim.glViewport(0, 0, VoxelContants.getMinecraft().getWindow().getFramebufferWidth(), VoxelContants.getMinecraft().getWindow().getFramebufferHeight());
+        GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
     }
 
     private void loadColorPicker() {
         try {
-            InputStream is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/colorpicker.png")).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/colorpicker.png")).get().getInputStream();
             Image picker = ImageIO.read(is);
             is.close();
             this.colorPicker = new BufferedImage(picker.getWidth(null), picker.getHeight(null), 2);
@@ -329,7 +329,7 @@ public class ColorManager implements IColorManager {
 
     private void loadTexturePackTerrainImage() {
         try {
-            TextureManager textureManager = VoxelContants.getMinecraft().getTextureManager();
+            TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
             textureManager.bindTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
@@ -426,7 +426,7 @@ public class ColorManager implements IColorManager {
         try {
             int color = this.getColorForBlockPosBlockStateAndFacing(blockPos, blockState, Direction.UP);
             if (color == 452984832) {
-                BlockRenderManager blockRendererDispatcher = VoxelContants.getMinecraft().getBlockRenderManager();
+                BlockRenderManager blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderManager();
                 color = this.getColorForTerrainSprite(blockState, blockRendererDispatcher);
             }
 
@@ -436,7 +436,7 @@ public class ColorManager implements IColorManager {
             }
 
             if (block == BlockRepository.redstone) {
-                color = ColorUtils.colorMultiplier(color, VoxelContants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
+                color = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
             }
 
             if (BlockRepository.biomeBlocks.contains(block)) {
@@ -465,7 +465,7 @@ public class ColorManager implements IColorManager {
 
         try {
             BlockRenderType blockRenderType = blockState.getRenderType();
-            BlockRenderManager blockRendererDispatcher = VoxelContants.getMinecraft().getBlockRenderManager();
+            BlockRenderManager blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderManager();
             if (blockRenderType == BlockRenderType.MODEL) {
                 BakedModel iBakedModel = blockRendererDispatcher.getModel(blockState);
                 List<BakedQuad> quads = new ArrayList<>();
@@ -496,14 +496,14 @@ public class ColorManager implements IColorManager {
             Material material = blockState.getMaterial();
             if (block instanceof FluidBlock) {
                 if (material == Material.WATER) {
-                    icon = VoxelContants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
+                    icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
                 } else if (material == Material.LAVA) {
-                    icon = VoxelContants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
+                    icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
                 }
             } else if (material == Material.WATER) {
-                icon = VoxelContants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
+                icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
             } else if (material == Material.LAVA) {
-                icon = VoxelContants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
+                icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
             }
         }
 
@@ -555,7 +555,7 @@ public class ColorManager implements IColorManager {
             if (block == BlockRepository.water) {
                 this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, BiomeRepository.FOREST.getWaterColor() | 0xFF000000);
             } else {
-                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, VoxelContants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
+                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
             }
         } else {
             this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, GrassColors.getColor(0.7, 0.8) | 0xFF000000);
@@ -573,9 +573,9 @@ public class ColorManager implements IColorManager {
                 if (blockPos == this.dummyBlockPos) {
                     tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
                 } else {
-                    Chunk chunk = VoxelContants.getMinecraft().world.getChunk(blockPos);
-                    if (chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelContants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
-                        tint = VoxelContants.getMinecraft().getBlockColors().getColor(blockState, VoxelContants.getMinecraft().world, blockPos, 1) | 0xFF000000;
+                    Chunk chunk = VoxelConstants.getMinecraft().world.getChunk(blockPos);
+                    if (chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
+                        tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, VoxelConstants.getMinecraft().world, blockPos, 1) | 0xFF000000;
                     } else {
                         tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
                     }
@@ -595,7 +595,7 @@ public class ColorManager implements IColorManager {
     }
 
     private int tintFromFakePlacedBlock(BlockState blockState, MutableBlockPos loopBlockPos, byte biomeID) {
-        ClientWorld world = VoxelContants.getMinecraft().world;
+        ClientWorld world = VoxelConstants.getMinecraft().world;
         if (world == null) {
             return -1;
         } else if (blockState.getBlock() == null) {
@@ -682,8 +682,8 @@ public class ColorManager implements IColorManager {
     @Override
     public int getBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         Chunk chunk = world.getChunk(blockPos);
-        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelContants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
-        live = live && VoxelContants.getMinecraft().world.isChunkLoaded(blockPos);
+        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
+        live = live && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos);
         int tint = -2;
         if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
@@ -737,7 +737,7 @@ public class ColorManager implements IColorManager {
         if (BlockRepository.biomeBlocks.contains(block) || this.biomeTintsAvailable.contains(blockStateID)) {
             if (live) {
                 try {
-                    tint = VoxelContants.getMinecraft().getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
+                    tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
                 } catch (Exception ignored) {}
             }
 
@@ -847,7 +847,7 @@ public class ColorManager implements IColorManager {
         Identifier propertiesFile = new Identifier("minecraft", "optifine/renderpass.properties");
 
         try {
-            InputStream input = VoxelContants.getMinecraft().getResourceManager().getResource(propertiesFile).get().getInputStream();
+            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile).get().getInputStream();
             if (input != null) {
                 properties.load(input);
                 input.close();
@@ -879,12 +879,12 @@ public class ColorManager implements IColorManager {
 
     private void loadCTM(Identifier propertiesFile) {
         if (propertiesFile != null) {
-            BlockRenderManager blockRendererDispatcher = VoxelContants.getMinecraft().getBlockRenderManager();
+            BlockRenderManager blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderManager();
             BlockModels blockModelShapes = blockRendererDispatcher.getModels();
             Properties properties = new Properties();
 
             try {
-                InputStream input = VoxelContants.getMinecraft().getResourceManager().getResource(propertiesFile).get().getInputStream();
+                InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile).get().getInputStream();
                 if (input != null) {
                     properties.load(input);
                     input.close();
@@ -946,7 +946,7 @@ public class ColorManager implements IColorManager {
                     }
 
                     Identifier matchID = new Identifier(matchTiles);
-                    Sprite compareIcon = VoxelContants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(matchID);
+                    Sprite compareIcon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(matchID);
                     if (compareIcon.getId() != MissingSprite.getMissingSpriteId()) {
                         ArrayList<BlockState> tmpList = new ArrayList<>();
 
@@ -986,7 +986,7 @@ public class ColorManager implements IColorManager {
                 if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.length() == 0)) {
                     try {
                         Identifier pngResource = new Identifier(propertiesFile.getNamespace(), tilePath);
-                        InputStream is = VoxelContants.getMinecraft().getResourceManager().getResource(pngResource).get().getInputStream();
+                        InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource).get().getInputStream();
                         Image top = ImageIO.read(is);
                         is.close();
                         top = top.getScaledInstance(1, 1, 4);
@@ -1192,7 +1192,7 @@ public class ColorManager implements IColorManager {
         String suffix = suffixMaybeNull == null ? "" : suffixMaybeNull;
         ArrayList<Identifier> resources;
 
-        Map<Identifier, Resource> resourceMap = VoxelContants.getMinecraft().getResourceManager().findResources(directory, asset -> asset.getPath().endsWith(suffix));
+        Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().findResources(directory, asset -> asset.getPath().endsWith(suffix));
         resources = resourceMap.keySet().stream().filter(candidate -> candidate.getNamespace().equals(namespace)).collect(Collectors.toCollection(ArrayList::new));
 
         if (sortByFilename) {
@@ -1213,7 +1213,7 @@ public class ColorManager implements IColorManager {
         Properties properties = new Properties();
 
         try {
-            InputStream input = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier("optifine/color.properties")).get().getInputStream();
+            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("optifine/color.properties")).get().getInputStream();
             if (input != null) {
                 properties.load(input);
                 input.close();
@@ -1253,7 +1253,7 @@ public class ColorManager implements IColorManager {
             Properties colorProperties = new Properties();
 
             try {
-                InputStream input = VoxelContants.getMinecraft().getResourceManager().getResource(resource).get().getInputStream();
+                InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(resource).get().getInputStream();
                 if (input != null) {
                     colorProperties.load(input);
                     input.close();
@@ -1274,7 +1274,7 @@ public class ColorManager implements IColorManager {
             if (source != null) {
                 resourcePNG = new Identifier(resource.getNamespace(), source);
 
-                VoxelContants.getMinecraft().getResourceManager().getResource(resourcePNG);
+                VoxelConstants.getMinecraft().getResourceManager().getResource(resourcePNG);
             } else {
                 resourcePNG = new Identifier(resource.getNamespace(), resource.getPath().replace(".properties", ".png"));
             }
@@ -1314,7 +1314,7 @@ public class ColorManager implements IColorManager {
         int yOffset = 0;
 
         try {
-            InputStream input = VoxelContants.getMinecraft().getResourceManager().getResource(resourceProperties).get().getInputStream();
+            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceProperties).get().getInputStream();
             if (input != null) {
                 colorProperties.load(input);
                 input.close();
@@ -1346,7 +1346,7 @@ public class ColorManager implements IColorManager {
         Image tintColors;
 
         try {
-            InputStream is = VoxelContants.getMinecraft().getResourceManager().getResource(resource).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resource).get().getInputStream();
             tintColors = ImageIO.read(is);
             is.close();
         } catch (IOException var21) {

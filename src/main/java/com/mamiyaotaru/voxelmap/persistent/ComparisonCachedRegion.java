@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
@@ -94,7 +94,7 @@ public class ComparisonCachedRegion {
 
     public void loadStored() {
         try {
-            File cachedRegionFileDir = new File(VoxelContants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {

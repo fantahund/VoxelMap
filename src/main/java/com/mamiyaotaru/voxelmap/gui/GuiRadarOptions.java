@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
@@ -64,10 +64,10 @@ public class GuiRadarOptions extends GuiScreenMinimap {
         }
 
         if (this.options.radarMode == 2) {
-            this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20, Text.translatable("options.minimap.radar.selectmobs"), buttonx -> VoxelContants.getMinecraft().setScreen(new GuiMobs(this, this.options))));
+            this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20, Text.translatable("options.minimap.radar.selectmobs"), buttonx -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, this.options))));
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> VoxelContants.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)));
     }
 
     protected void optionClicked(ButtonWidget buttonClicked) {

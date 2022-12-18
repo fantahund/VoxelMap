@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -54,7 +54,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     public void setSelected(WaypointItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof WaypointItem) {
-            NarratorManager narratorManager = new NarratorManager(VoxelContants.getMinecraft());
+            NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
         }
 

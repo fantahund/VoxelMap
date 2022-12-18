@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.fabricmod;
 
 import com.google.gson.Gson;
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -34,7 +34,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
     public void clientTick() {
         if (!this.initialized) {
-            boolean OK = VoxelContants.getMinecraft().getResourceManager() != null && VoxelContants.getMinecraft().getTextureManager() != null;
+            boolean OK = VoxelConstants.getMinecraft().getResourceManager() != null && VoxelConstants.getMinecraft().getTextureManager() != null;
 
             if (OK) {
                 this.lateInit();

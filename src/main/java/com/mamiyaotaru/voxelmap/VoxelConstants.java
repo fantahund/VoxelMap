@@ -3,8 +3,8 @@ package com.mamiyaotaru.voxelmap;
 import net.minecraft.client.MinecraftClient;
 import org.jetbrains.annotations.NotNull;
 
-public class VoxelContants {
-    private VoxelContants() {}
+public class VoxelConstants {
+    private VoxelConstants() {}
 
     @NotNull
     public static MinecraftClient getMinecraft() { return MinecraftClient.getInstance(); }

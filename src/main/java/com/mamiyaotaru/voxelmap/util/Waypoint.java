@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.entity.Entity;
 
 import java.io.Serial;
@@ -48,11 +48,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public int getX() {
-        return (int) ((double) this.x / VoxelContants.getMinecraft().player.world.getDimension().coordinateScale());
+        return (int) ((double) this.x / VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale());
     }
 
     public int getZ() {
-        return (int) ((double) this.z / VoxelContants.getMinecraft().player.world.getDimension().coordinateScale());
+        return (int) ((double) this.z / VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale());
     }
 
     public int getY() {
@@ -60,11 +60,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public void setX(int x) {
-        this.x = (int) ((double) x * VoxelContants.getMinecraft().player.world.getDimension().coordinateScale());
+        this.x = (int) ((double) x * VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale());
     }
 
     public void setZ(int z) {
-        this.z = (int) ((double) z * VoxelContants.getMinecraft().player.world.getDimension().coordinateScale());
+        this.z = (int) ((double) z * VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale());
     }
 
     public void setY(int y) {
@@ -72,8 +72,8 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public int compareTo(Waypoint arg0) {
-        double myDistance = this.getDistanceSqToEntity(VoxelContants.getMinecraft().player);
-        double comparedDistance = arg0.getDistanceSqToEntity(VoxelContants.getMinecraft().player);
+        double myDistance = this.getDistanceSqToEntity(VoxelConstants.getMinecraft().player);
+        double comparedDistance = arg0.getDistanceSqToEntity(VoxelConstants.getMinecraft().player);
         return Double.compare(myDistance, comparedDistance);
     }
 

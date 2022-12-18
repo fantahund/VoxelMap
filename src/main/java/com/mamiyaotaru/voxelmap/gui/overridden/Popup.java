@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
@@ -30,7 +30,7 @@ public class Popup {
     final int padding = 6;
 
     public Popup(int x, int y, int directX, int directY, ArrayList<PopupEntry> entries, PopupGuiScreen parentGui) {
-        this.fontRendererObj = VoxelContants.getMinecraft().textRenderer;
+        this.fontRendererObj = VoxelConstants.getMinecraft().textRenderer;
         this.parentGui = parentGui;
         this.clickedX = x;
         this.clickedY = y;

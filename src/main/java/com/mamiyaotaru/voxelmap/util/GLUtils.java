@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
@@ -68,7 +68,7 @@ public class GLUtils {
     }
 
     public static void setupFrameBufferUsingMinecraft() {
-        frameBuffer = new SimpleFramebuffer(512, 512, true, VoxelContants.isSystemMacOS());
+        frameBuffer = new SimpleFramebuffer(512, 512, true, VoxelConstants.isSystemMacOS());
         fboID = frameBuffer.fbo;
         fboTextureID = frameBuffer.getColorAttachment();
     }
@@ -95,7 +95,7 @@ public class GLUtils {
         int i = 16384;
         GlStateManager._clearDepth(1.0);
         i |= 256;
-        GlStateManager._clear(i, VoxelContants.isSystemMacOS());
+        GlStateManager._clear(i, VoxelConstants.isSystemMacOS());
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         GlStateManager._bindTexture(0);
     }

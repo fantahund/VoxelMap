@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
@@ -36,7 +36,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             this.addDrawableChild(new ButtonWidget(left + t % 2 * 160, this.getHeight() / 6 + 24 * (t >> 1), 70, 20, this.options.getKeybindDisplayString(t), button -> this.controlButtonClicked(id)));
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> VoxelContants.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)));
         this.screenTitle = I18nUtils.getString("controls.minimap.title");
     }
 
@@ -85,7 +85,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             boolean keycodeCollision = false;
             KeyBinding keyBinding = this.options.keyBindings[keyCounter];
 
-            for (int compareKeyCounter = 0; compareKeyCounter < VoxelContants.getMinecraft().options.allKeys.length; ++compareKeyCounter) {
+            for (int compareKeyCounter = 0; compareKeyCounter < VoxelConstants.getMinecraft().options.allKeys.length; ++compareKeyCounter) {
                 if (compareKeyCounter < this.options.keyBindings.length) {
                     KeyBinding compareBinding = this.options.keyBindings[compareKeyCounter];
                     if (keyBinding != compareBinding && keyBinding.equals(compareBinding)) {
@@ -94,7 +94,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
                     }
                 }
 
-                KeyBinding compareBinding = VoxelContants.getMinecraft().options.allKeys[compareKeyCounter];
+                KeyBinding compareBinding = VoxelConstants.getMinecraft().options.allKeys[compareKeyCounter];
                 if (keyBinding != compareBinding && keyBinding.equals(compareBinding)) {
                     keycodeCollision = true;
                     break;

@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -34,9 +33,9 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     final Text DENY = Text.translatable("gui.cancel");
 
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
-        super(VoxelContants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
+        super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
         this.parentGui = par1GuiSelectPlayer;
-        ClientPlayNetworkHandler netHandlerPlayClient = VoxelContants.getMinecraft().player.networkHandler;
+        ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getMinecraft().player.networkHandler;
         this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
         this.sort();
         ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null) {
@@ -164,7 +163,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         private void drawIconForButton(MatrixStack matrixStack, ButtonWidget button, int id) {
             PlayerListEntry networkPlayerInfo = (PlayerListEntry) GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
-            PlayerEntity entityPlayer = VoxelContants.getMinecraft().world.getPlayerByUuid(gameProfile.getId());
+            PlayerEntity entityPlayer = VoxelConstants.getMinecraft().world.getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, networkPlayerInfo.getSkinTexture());
             Screen.drawTexture(matrixStack, button.x + 6, button.y + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);

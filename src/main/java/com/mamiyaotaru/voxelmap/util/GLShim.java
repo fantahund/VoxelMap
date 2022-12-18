@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.VoxelContants;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL11;
@@ -44,7 +44,7 @@ public class GLShim {
     }
 
     public static void glClear(int mask) {
-        RenderSystem.clear(mask, VoxelContants.isSystemMacOS());
+        RenderSystem.clear(mask, VoxelConstants.isSystemMacOS());
     }
 
     public static void glClearColor(float red, float green, float blue, float alpha) {

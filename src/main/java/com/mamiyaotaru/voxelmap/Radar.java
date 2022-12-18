@@ -217,7 +217,7 @@ public class Radar implements IRadar {
         this.master = master;
         this.minimapOptions = master.getMapOptions();
         this.options = master.getRadarOptions();
-        this.fontRenderer = new FontRendererWithAtlas(VoxelContants.getMinecraft().getTextureManager(), new Identifier("textures/font/ascii.png"));
+        this.fontRenderer = new FontRendererWithAtlas(VoxelConstants.getMinecraft().getTextureManager(), new Identifier("textures/font/ascii.png"));
         this.textureAtlas = new TextureAtlas("mobs");
         this.textureAtlas.setFilter(false, false);
 
@@ -549,12 +549,12 @@ public class Radar implements IRadar {
     }
 
     private boolean isEntityShown(Entity entity) {
-        return entity != null && !entity.isInvisibleTo(VoxelContants.getMinecraft().player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
+        return entity != null && !entity.isInvisibleTo(VoxelConstants.getMinecraft().player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
     }
 
     public void calculateMobs() {
         this.contacts.clear();
-        for (Entity entity : VoxelContants.getMinecraft().world.getEntities()) {
+        for (Entity entity : VoxelConstants.getMinecraft().world.getEntities()) {
             try {
                 if (this.isEntityShown(entity)) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();
@@ -678,7 +678,7 @@ public class Radar implements IRadar {
             InputStream is = null;
 
             try {
-                is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
             } catch (IOException ignored) {
             }
 
@@ -686,7 +686,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + ".png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -695,7 +695,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "8.png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -704,7 +704,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "8.png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -714,7 +714,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "16.png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -723,7 +723,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "16.png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -733,7 +733,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "32.png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -742,7 +742,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "32.png").toLowerCase();
 
                 try {
-                    is = VoxelContants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -762,7 +762,7 @@ public class Radar implements IRadar {
     }
 
     private void tryAutoIcon(Contact contact) {
-        EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelContants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+        EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
         Identifier resourceLocation = render.getTexture(contact.entity);
         resourceLocation = this.getRandomizedResourceLocationForEntity(resourceLocation, contact.entity);
         Identifier resourceLocationSecondary = null;
@@ -916,7 +916,7 @@ public class Radar implements IRadar {
         VillagerResourceMetadata.HatType hatType = VillagerResourceMetadata.HatType.NONE;
         if (resourceLocation != null) {
             try {
-                Optional<Resource> resource = VoxelContants.getMinecraft().getResourceManager().getResource(resourceLocation);
+                Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation);
                 if (resource.isPresent()) {
                     VillagerResourceMetadata villagerResourceMetadata = (VillagerResourceMetadata) resource.get().getMetadata();
                     if (villagerResourceMetadata != null) {
@@ -956,7 +956,7 @@ public class Radar implements IRadar {
                 String simpleName = contact.vanillaType ? contact.type.id : contact.entity.getClass().getSimpleName();
                 String fullPath = ("textures/icons/" + fullName + ".properties").toLowerCase();
 
-                ResourceManager resourceManager = VoxelContants.getMinecraft().getResourceManager();
+                ResourceManager resourceManager = VoxelConstants.getMinecraft().getResourceManager();
                 Optional<Resource> resource = resourceManager.getResource(new Identifier(fullPath));
 
                 if (resource.isEmpty()) {
@@ -1266,7 +1266,7 @@ public class Radar implements IRadar {
 
         try {
             MatrixStack newMatrixStack = new MatrixStack();
-            VertexConsumerProvider.Immediate immediate = VoxelContants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+            VertexConsumerProvider.Immediate immediate = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
             float offsetByY = model instanceof EndermanEntityModel ? 8.0F : (!(model instanceof BipedEntityModel) && !(model instanceof SkullEntityModel) ? 0.0F : 4.0F);
             float maxY = 0.0F;
             float minY = 0.0F;
@@ -1312,7 +1312,7 @@ public class Radar implements IRadar {
         GLShim.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
-        GLShim.glViewport(0, 0, VoxelContants.getMinecraft().getWindow().getFramebufferWidth(), VoxelContants.getMinecraft().getWindow().getFramebufferHeight());
+        GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         return !failed;
     }
 
@@ -1377,12 +1377,12 @@ public class Radar implements IRadar {
                     }
 
                     AbstractClientPlayerEntity.loadSkin(player.getSkinTexture(), player.getName().getString());
-                    imageData = (PlayerSkinTexture) VoxelContants.getMinecraft().getTextureManager().getTexture(player.getSkinTexture());
+                    imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(player.getSkinTexture());
                     if (imageData == null) {
                         throw new Exception("failed to get skin: image data was null");
                     }
 
-                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelContants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                     BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, player.getSkinTexture(), null);
                     icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
                     this.newMobs = true;
@@ -1445,9 +1445,9 @@ public class Radar implements IRadar {
 
                 Identifier resourceLocation = DefaultSkinHelper.getTexture();
                 if (gameProfile != null) {
-                    java.util.Map<Type, MinecraftProfileTexture> map = VoxelContants.getMinecraft().getSkinProvider().getTextures(gameProfile);
+                    java.util.Map<Type, MinecraftProfileTexture> map = VoxelConstants.getMinecraft().getSkinProvider().getTextures(gameProfile);
                     if (map.containsKey(Type.SKIN)) {
-                        resourceLocation = VoxelContants.getMinecraft().getSkinProvider().loadSkin(map.get(Type.SKIN), Type.SKIN);
+                        resourceLocation = VoxelConstants.getMinecraft().getSkinProvider().loadSkin(map.get(Type.SKIN), Type.SKIN);
                     }
                 }
 
@@ -1459,7 +1459,7 @@ public class Radar implements IRadar {
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
-                        headImage = this.trimAndOutlineImage(new Contact(VoxelContants.getMinecraft().player, EnumMobs.PLAYER), headImage, true, true);
+                        headImage = this.trimAndOutlineImage(new Contact(VoxelConstants.getMinecraft().player, EnumMobs.PLAYER), headImage, true, true);
                         icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation + "head", headImage);
                         this.newMobs = true;
                     }
@@ -1614,7 +1614,7 @@ public class Radar implements IRadar {
             return EnumMobs.GENERICHOSTILE;
         } else {
             if (entity instanceof TameableEntity tameableEntity) {
-                if (tameableEntity.isTamed() && (VoxelContants.getMinecraft().isIntegratedServerRunning() || tameableEntity.getOwner().equals(VoxelContants.getMinecraft().player))) {
+                if (tameableEntity.isTamed() && (VoxelConstants.getMinecraft().isIntegratedServerRunning() || tameableEntity.getOwner().equals(VoxelConstants.getMinecraft().player))) {
                     return EnumMobs.GENERICTAME;
                 }
             }
@@ -1705,17 +1705,17 @@ public class Radar implements IRadar {
                                         case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
                                     }
                                 } else {
-                                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelContants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                                     String path = render.getTexture(contact.entity).getPath();
                                     contact.type = path.endsWith("vex_charging.png") ? EnumMobs.VEXCHARGING : EnumMobs.VEX;
                                 }
                             } else {
-                                EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelContants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                                EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                                 String path = render.getTexture(contact.entity).getPath();
                                 contact.type = path.endsWith("wither_invulnerable.png") ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER;
                             }
                         } else {
-                            EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelContants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                            EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                             String path = render.getTexture(contact.entity).getPath();
                             contact.type = path.endsWith("ghast_fire.png") ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST;
                         }
@@ -1770,7 +1770,7 @@ public class Radar implements IRadar {
                                     int numDyeColors = DyeColor.values().length;
                                     int colorID1 = semiRandom % numDyeColors;
                                     int colorID2 = (semiRandom + 1) % numDyeColors;
-                                    float lerpVal = ((float) (sheepEntity.age % 25) + VoxelContants.getMinecraft().getTickDelta()) / 25.0F;
+                                    float lerpVal = ((float) (sheepEntity.age % 25) + VoxelConstants.getMinecraft().getTickDelta()) / 25.0F;
                                     float[] sheepColors1 = SheepEntity.getRgbColor(DyeColor.byId(colorID1));
                                     float[] sheepColors2 = SheepEntity.getRgbColor(DyeColor.byId(colorID2));
                                     red = sheepColors1[0] * (1.0F - lerpVal) + sheepColors2[0] * lerpVal;
@@ -1866,7 +1866,7 @@ public class Radar implements IRadar {
 
     private boolean isHostile(Entity entity) {
         if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.isAngryAt(VoxelContants.getMinecraft().player);
+            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getMinecraft().player);
         } else if (entity instanceof Monster) {
             return true;
         } else if (entity instanceof BeeEntity beeEntity) {
