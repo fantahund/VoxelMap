@@ -294,7 +294,7 @@ public class WaypointManager implements IWaypointManager {
 
     @Override
     public void setOldNorth(boolean oldNorth) {
-        String oldNorthWorldName = "";
+        String oldNorthWorldName;
         if (this.knownSubworldNames.size() == 0) {
             oldNorthWorldName = "all";
         } else {

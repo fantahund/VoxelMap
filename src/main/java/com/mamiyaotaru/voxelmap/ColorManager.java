@@ -568,7 +568,7 @@ public class ColorManager implements IColorManager {
             Block block = blockState.getBlock();
             String blockName = Registry.BLOCK.getId(block) + "";
             if (BlockRepository.biomeBlocks.contains(block) || !blockName.startsWith("minecraft:")) {
-                int tint = -1;
+                int tint;
                 MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
                 if (blockPos == this.dummyBlockPos) {
                     tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);

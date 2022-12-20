@@ -573,7 +573,6 @@ public class Map implements Runnable, IMap {
                 boolean scheduledUpdate = (this.timer - 50) % (this.lastLightBrightnessTable[0] == 0.0F ? 250 : 2000) == 0;
                 if (lightChanged || scheduledUpdate) {
                     this.tickWithLightChange = TickCounter.tickCounter;
-                    lightChanged = false;
                     this.needLightmapRefresh = true;
                 }
 
@@ -653,14 +652,14 @@ public class Map implements Runnable, IMap {
         modelViewMatrixStack.translate(0.0, 0.0, -2000.0);
         RenderSystem.applyModelViewMatrix();
         DiffuseLighting.enableGuiDepthLighting();
-        int mapX = 37;
+        int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
             mapX = this.scWidth - 37;
         } else {
             mapX = 37;
         }
 
-        int mapY = 37;
+        int mapY;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 1) {
             mapY = this.scHeight - 37;
         } else {
@@ -842,7 +841,7 @@ public class Map implements Runnable, IMap {
 
         this.lastBeneathRendering = beneathRendering;
         needHeightAndID = needHeightMap && (nether || caves);
-        int color24 = -1;
+        int color24;
         synchronized (this.coordinateLock) {
             if (!full) {
                 this.mapImages[this.zoom].moveY(offsetZ);
@@ -916,7 +915,7 @@ public class Map implements Runnable, IMap {
     private void rectangleCalc(int left, int top, int right, int bottom) {
         boolean nether = false;
         boolean caves = false;
-        boolean netherPlayerInOpen = false;
+        boolean netherPlayerInOpen;
         this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
         int currentY = GameVariableAccessShim.yCoord();
         if (VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling()) {
@@ -947,7 +946,7 @@ public class Map implements Runnable, IMap {
         right = Math.min(32 * multi - 1, right);
         top = Math.max(0, top);
         bottom = Math.min(32 * multi - 1, bottom);
-        int color24 = 0;
+        int color24;
 
         for (int imageY = bottom; imageY >= top; --imageY) {
             for (int imageX = left; imageX <= right; ++imageX) {
@@ -1156,7 +1155,7 @@ public class Map implements Runnable, IMap {
 
             if (this.options.biomes) {
                 surfaceColor = this.colorManager.getBlockColor(this.blockPos, surfaceBlockStateID, biomeID);
-                int tint = -1;
+                int tint;
                 if (!needTint && !surfaceBlockChangeForcedTint) {
                     tint = this.mapData[this.zoom].getBiomeTint(imageX, imageY);
                 } else {
@@ -1191,7 +1190,7 @@ public class Map implements Runnable, IMap {
                     seafloorColor = this.colorManager.getBlockColorWithDefaultTint(this.blockPos, seafloorBlockStateID);
                 } else {
                     seafloorColor = this.colorManager.getBlockColor(this.blockPos, seafloorBlockStateID, biomeID);
-                    int tint = -1;
+                    int tint;
                     if (!needTint && !seafloorBlockChangeForcedTint) {
                         tint = this.mapData[this.zoom].getOceanFloorBiomeTint(imageX, imageY);
                     } else {
@@ -1254,7 +1253,7 @@ public class Map implements Runnable, IMap {
                     }
 
                     transparentColor = this.applyHeight(transparentColor, nether, caves, world, multi, startX, startZ, imageX, imageY, transparentHeight, solid, 3);
-                    int transparentLight = 255;
+                    int transparentLight;
                     if (needLight) {
                         transparentLight = this.getLight(transparentColor, this.transparentBlockState, world, startX + imageX, startZ + imageY, transparentHeight, solid);
                         this.mapData[this.zoom].setTransparentLight(imageX, imageY, transparentLight);
@@ -1274,7 +1273,7 @@ public class Map implements Runnable, IMap {
                         foliageColor = this.colorManager.getBlockColorWithDefaultTint(this.blockPos, foliageBlockStateID);
                     } else {
                         foliageColor = this.colorManager.getBlockColor(this.blockPos, foliageBlockStateID, biomeID);
-                        int tint = -1;
+                        int tint;
                         if (!needTint && !foliageBlockChangeForcedTint) {
                             tint = this.mapData[this.zoom].getFoliageBiomeTint(imageX, imageY);
                         } else {
@@ -1288,7 +1287,7 @@ public class Map implements Runnable, IMap {
                     }
 
                     foliageColor = this.applyHeight(foliageColor, nether, caves, world, multi, startX, startZ, imageX, imageY, foliageHeight, solid, 2);
-                    int foliageLight = 255;
+                    int foliageLight;
                     if (needLight) {
                         foliageLight = this.getLight(foliageColor, foliageBlockState, world, startX + imageX, startZ + imageY, foliageHeight, solid);
                         this.mapData[this.zoom].setFoliageLight(imageX, imageY, foliageLight);

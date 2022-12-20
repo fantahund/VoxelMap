@@ -223,7 +223,7 @@ public class ImageUtils {
         Graphics2D g2 = image.createGraphics();
         g2.setColor(new Color(0, 0, 0, 255));
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setFont(new Font("Arial", 0, image.getHeight()));
+        g2.setFont(new Font("Arial", Font.PLAIN, image.getHeight()));
         FontMetrics fm = g2.getFontMetrics();
         int x = (image.getWidth() - fm.stringWidth("?")) / 2;
         int y = fm.getAscent() + (image.getHeight() - (fm.getAscent() + fm.getDescent())) / 2;
@@ -482,7 +482,7 @@ public class ImageUtils {
         int top = -1;
         int bottom = image.getHeight();
         boolean foundColor = false;
-        int color = 0;
+        int color;
 
         while (!foundColor && left < right - 1) {
             ++left;
@@ -545,7 +545,7 @@ public class ImageUtils {
         int top = -1;
         int bottom = height;
         boolean foundColor = false;
-        int color = 0;
+        int color;
 
         while (!foundColor && left < width / 2 - 1 && top < height / 2 - 1) {
             ++left;
@@ -618,7 +618,7 @@ public class ImageUtils {
     public static float percentageOfEdgePixelsThatAreSolid(BufferedImage image) {
         float edgePixels = (float) (image.getWidth() * 2 + image.getHeight() * 2 - 2);
         float edgePixelsWithColor = 0.0F;
-        int color = 0;
+        int color;
 
         for (int t = 0; t < image.getHeight(); ++t) {
             color = image.getRGB(0, t);

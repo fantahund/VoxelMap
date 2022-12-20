@@ -19,7 +19,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private final Screen parent;
     private final IWaypointManager waypointManager;
     private final ArrayList<?> knownSubworldNames;
-    private String originalSubworldName = "";
+    private String originalSubworldName;
     private String currentSubworldName = "";
     private TextFieldWidget subworldNameField;
     private ButtonWidget doneButton;
@@ -127,7 +127,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     private boolean isNameAcceptable() {
-        boolean acceptable = true;
+        boolean acceptable;
         this.currentSubworldName = this.subworldNameField.getText();
         acceptable = this.currentSubworldName.length() > 0;
         return acceptable && (this.currentSubworldName.equals(this.originalSubworldName) || !this.knownSubworldNames.contains(this.currentSubworldName));

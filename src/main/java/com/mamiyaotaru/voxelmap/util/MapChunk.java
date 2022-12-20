@@ -5,12 +5,12 @@ import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import net.minecraft.world.chunk.WorldChunk;
 
 public class MapChunk {
-    private int x = 0;
-    private int z = 0;
+    private int x;
+    private int z;
     private WorldChunk chunk;
-    private boolean isChanged = false;
-    private boolean isLoaded = false;
-    private boolean isSurroundedByLoaded = false;
+    private boolean isChanged;
+    private boolean isLoaded;
+    private boolean isSurroundedByLoaded;
 
     public MapChunk(int x, int z) {
         this.x = x;

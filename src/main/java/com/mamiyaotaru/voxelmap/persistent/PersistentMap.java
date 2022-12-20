@@ -481,7 +481,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
 
                 if (mapOptions.biomes) {
                     surfaceColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
-                    int tint = -1;
+                    int tint;
                     tint = this.colorManager.getBiomeTint(mapData, world, surfaceBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                     if (tint != -1) {
                         surfaceColor = ColorUtils.colorMultiplier(surfaceColor, tint);
@@ -508,7 +508,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             blockStateID = BlockRepository.getStateId(seafloorBlockState);
                             if (mapOptions.biomes) {
                                 seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
-                                int tint = -1;
+                                int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, seafloorBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                                 if (tint != -1) {
                                     seafloorColor = ColorUtils.colorMultiplier(seafloorColor, tint);
@@ -537,7 +537,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
                             blockStateID = BlockRepository.getStateId(transparentBlockState);
                             if (mapOptions.biomes) {
                                 transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
-                                int tint = -1;
+                                int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, transparentBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                                 if (tint != -1) {
                                     transparentColor = ColorUtils.colorMultiplier(transparentColor, tint);

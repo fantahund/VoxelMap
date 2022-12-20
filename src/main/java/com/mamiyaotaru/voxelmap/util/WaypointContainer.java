@@ -186,7 +186,7 @@ public class WaypointContainer {
     }
 
     private void renderLabel(MatrixStack matrixStack, Waypoint pt, double distance, boolean isPointedAt, String name, double baseX, double baseY, double baseZ, int par9, boolean withDepth, boolean withoutDepth) {
-        boolean target = name == "*&^TARget%$^";
+        boolean target = name.equals("*&^TARget%$^");
         if (target) {
             if (pt.red == 2.0F && pt.green == 0.0F && pt.blue == 0.0F) {
                 name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();

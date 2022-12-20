@@ -379,8 +379,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.coordinates.mouseClicked(mouseX, mouseY, mouseButton);
             this.editingCoordinates = this.coordinates.isFocused();
             if (this.editingCoordinates && !this.lastEditingCoordinates) {
-                int x = 0;
-                int z = 0;
+                int x;
+                int z;
                 if (this.oldNorth) {
                     x = (int) Math.floor(this.mapCenterZ);
                     z = -((int) Math.floor(this.mapCenterX));

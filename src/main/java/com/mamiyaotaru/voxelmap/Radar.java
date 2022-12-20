@@ -1357,7 +1357,7 @@ public class Radar implements IRadar {
         contact.setUUID(uuid);
         String playerName = this.scrubCodes(gameProfile.getName());
         Sprite icon = this.textureAtlas.getAtlasSprite(playerName);
-        Integer checkCount = 0;
+        Integer checkCount;
         if (icon == this.textureAtlas.getMissingImage()) {
             checkCount = this.mpContactsSkinGetTries.get(playerName);
             if (checkCount == null) {
