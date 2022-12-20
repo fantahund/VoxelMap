@@ -16,8 +16,9 @@ public abstract class APIMixinClientPlayerEntity extends AbstractClientPlayerEnt
 
     @Inject(method = "sendCommand(Ljava/lang/String;)Z", at = @At("HEAD"))
     public void onSendChatMessage(String command, CallbackInfoReturnable<Boolean> cir) {
-        if (!FabricModVoxelMap.instance.onSendChatMessage(command)) {
-            cir.cancel();
-        }
+        //if (!FabricModVoxelMap.instance.onSendChatMessage(command)) {
+        //    cir.cancel();
+        //}
+        FabricModVoxelMap.instance.onSendChatMessage(command); // TODO make better fix
     }
 }

@@ -178,6 +178,7 @@ public class CommandUtils {
         return waypoint;
     }
 
+    // TODO Fix this code
     public static void waypointClicked(String command) {
         boolean control = InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.left.control").getCode()) || InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.right.control").getCode());
         String details = command.substring(NEW_WAYPOINT_COMMAND_LENGTH);
