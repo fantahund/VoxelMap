@@ -5,14 +5,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
-@Deprecated
 public class ReflectionUtils {
-    @Deprecated
     public static Object getPrivateFieldValueByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype) {
         return getPrivateFieldValueByType(o, objectClasstype, fieldClasstype, 0);
     }
 
-    @Deprecated
     public static Object getPrivateFieldValueByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
         Class<?> objectClass;
         if (o != null) {
@@ -44,7 +41,6 @@ public class ReflectionUtils {
         return null;
     }
 
-    @Deprecated
     public static Object getFieldValueByName(Object o, String fieldName) {
         Field[] fields = o.getClass().getFields();
 
@@ -60,7 +56,6 @@ public class ReflectionUtils {
         return null;
     }
 
-    @Deprecated
     public static ArrayList<Field> getFieldsByType(Object o, Class<?> objectClassBaseType, Class<?> fieldClasstype) {
         ArrayList<Field> matches = new ArrayList<>();
 
@@ -78,14 +73,10 @@ public class ReflectionUtils {
         return matches;
     }
 
-    // TODO Continue from here
-
-    @Deprecated
     public static Field getFieldByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype) {
         return getFieldByType(o, objectClasstype, fieldClasstype, 0);
     }
 
-    @Deprecated
     public static Field getFieldByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
         Class<?> objectClass = o.getClass();
 
@@ -110,12 +101,10 @@ public class ReflectionUtils {
         return null;
     }
 
-    @Deprecated
     public static Method getMethodByType(Class<?> objectType, Class<?> returnType, Class<?>... parameterTypes) {
         return getMethodByType(0, objectType, returnType, parameterTypes);
     }
 
-    @Deprecated
     public static Method getMethodByType(int index, Class<?> objectType, Class<?> returnType, Class<?>... parameterTypes) {
         Method[] methods = objectType.getDeclaredMethods();
         int counter = 0;
@@ -139,7 +128,6 @@ public class ReflectionUtils {
         return null;
     }
 
-    @Deprecated
     public static boolean classExists(String className) {
         try {
             Class.forName(className);

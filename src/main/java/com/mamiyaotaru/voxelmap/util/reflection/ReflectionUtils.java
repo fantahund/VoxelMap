@@ -1,8 +1,10 @@
 package com.mamiyaotaru.voxelmap.util.reflection;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 public class ReflectionUtils {
     public static <T> Optional<T> getPrivateFieldValueByType(T object, Class<T> objectClassType, Class<T> fieldClassType) { return getPrivateFieldValueByType(object, objectClassType, fieldClassType, 0); }
@@ -62,5 +64,65 @@ public class ReflectionUtils {
         return matches;
     }
 
-    // TODO Continue from here
+    public static <T> Optional<Field> getFieldByType(T object, Class<T> objectClassType, Class<T> fieldClassType) { return getFieldByType(object, objectClassType, fieldClassType, 0); }
+
+    public static <T> Optional<Field> getFieldByType(T object, Class<T> objectClassType, Class<T> fieldClassType, int index) {
+        Class<?> objectClass = object.getClass();
+
+        while (!(objectClass.equals(objectClassType)) && objectClass.getSuperclass() != null) objectClass = objectClass.getSuperclass();
+
+        int counter = 0;
+
+        for (Field field : objectClass.getDeclaredFields()) {
+            if (fieldClassType.equals(field.getType())) {
+                if (counter == index) {
+                    field.setAccessible(true);
+
+                    return Optional.of(field);
+                }
+
+                counter++;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    @SafeVarargs
+    public static <T> Optional<Method> getMethodByType(Class<T> objectType, Class<T> returnType, Class<T>... parameterTypes) { return getMethodByType(0, objectType, returnType, parameterTypes); }
+
+    @SafeVarargs
+    public static <T> Optional<Method> getMethodByType(int index, Class<T> objectType, Class<T> returnType, Class<T>... parameterTypes) {
+        int counter = 0;
+
+        for (Method method : objectType.getDeclaredMethods()) {
+            if (returnType.equals(method.getReturnType())) {
+                Class<?>[] methodParameterTypes = method.getParameterTypes();
+
+                if (parameterTypes.length == methodParameterTypes.length) {
+                    boolean match = IntStream.range(0, parameterTypes.length).noneMatch(type -> parameterTypes[type] != methodParameterTypes[type]);
+
+                    if (counter == index && match) {
+                        method.setAccessible(true);
+
+                        return Optional.of(method);
+                    }
+                }
+
+                counter++;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static boolean classExists(String name) {
+        try {
+            Class.forName(name);
+
+            return true;
+        } catch (ClassNotFoundException ignored) {}
+
+        return false;
+    }
 }
