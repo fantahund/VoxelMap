@@ -11,6 +11,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 
@@ -89,7 +90,7 @@ public class Popup {
     public void drawPopup(MatrixStack matrixStack, int mouseX, int mouseY) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        GLShim.glDisable(2929);
+        GLShim.glDisable(GL11.GL_DEPTH_TEST);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -100,10 +101,10 @@ public class Popup {
         vertexBuffer.vertex(this.x + this.w, this.y, 0.0).texture((float) (this.x + this.w) / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
         vertexBuffer.vertex(this.x, this.y, 0.0).texture((float) this.x / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
         tessellator.draw();
-        GLShim.glEnable(3042);
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        GLShim.glDisable(3553);
+        GLShim.glDisable(GL11.GL_TEXTURE_2D);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         vertexBuffer.vertex(this.x, this.y + 4, 0.0).color(0, 0, 0, 0).next();
         vertexBuffer.vertex(this.x + this.w, this.y + 4, 0.0).color(0, 0, 0, 0).next();
@@ -128,9 +129,9 @@ public class Popup {
         vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
         vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
         tessellator.draw();
-        GLShim.glEnable(3553);
+        GLShim.glEnable(GL11.GL_TEXTURE_2D);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        GLShim.glDisable(3042);
+        GLShim.glDisable(GL11.GL_BLEND);
 
         for (int t = 0; t < this.entries.length; ++t) {
             int color = !this.entries[t].enabled ? 10526880 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 16777120 : 14737632);

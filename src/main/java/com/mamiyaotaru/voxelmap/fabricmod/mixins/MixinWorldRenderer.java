@@ -13,6 +13,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -35,7 +36,7 @@ public class MixinWorldRenderer {
                 Framebuffer framebuffer = VoxelConstants.getMinecraft().getFramebuffer();
                 GlStateManager._glBindFramebuffer(36008, this.translucentFramebuffer.fbo);
                 GlStateManager._glBindFramebuffer(36009, framebuffer.fbo);
-                GlStateManager._glBlitFrameBuffer(0, 0, this.translucentFramebuffer.textureWidth, this.translucentFramebuffer.textureHeight, 0, 0, framebuffer.textureWidth, framebuffer.textureHeight, 256, 9728);
+                GlStateManager._glBlitFrameBuffer(0, 0, this.translucentFramebuffer.textureWidth, this.translucentFramebuffer.textureHeight, 0, 0, framebuffer.textureWidth, framebuffer.textureHeight, 256, GL11.GL_NEAREST);
             }
 
             boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter();

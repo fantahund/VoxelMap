@@ -27,6 +27,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -202,7 +203,7 @@ public class RadarSimple implements IRadar {
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
-            GLShim.glBlendFunc(770, 771);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (wayY < 0) {
                 GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
@@ -272,13 +273,13 @@ public class RadarSimple implements IRadar {
 
     private void applyFilteringParameters() {
         if (this.options.filtering) {
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
-            GLShim.glTexParameteri(3553, 10242, 10496);
-            GLShim.glTexParameteri(3553, 10243, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, 10496);
         } else {
-            GLShim.glTexParameteri(3553, 10241, 9728);
-            GLShim.glTexParameteri(3553, 10240, 9728);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         }
 
     }

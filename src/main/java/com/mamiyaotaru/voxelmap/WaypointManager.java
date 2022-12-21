@@ -27,6 +27,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionTypes;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -118,8 +119,8 @@ public class WaypointManager implements IWaypointManager {
 
         };
         this.textureAtlas.loadTextureAtlas(iconCreator);
-        GLShim.glTexParameteri(3553, 10241, 9729);
-        GLShim.glTexParameteri(3553, 10240, 9729);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         this.textureAtlasChooser.reset();
         int expectedSize = 32;
 

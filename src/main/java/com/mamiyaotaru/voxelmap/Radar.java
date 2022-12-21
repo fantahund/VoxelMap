@@ -1241,7 +1241,7 @@ public class Radar implements IRadar {
         GLShim.glDisable(GL11.GL_CULL_FACE);
         GLShim.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
         GLShim.glClearDepth(1.0);
-        GLShim.glClear(16640);
+        GLShim.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         matrixStack.push();
         matrixStack.translate(width / 2f, height / 2f, 0.0);

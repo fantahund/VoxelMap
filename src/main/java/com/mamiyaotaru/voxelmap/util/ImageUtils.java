@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -23,9 +24,9 @@ import java.util.Arrays;
 
 public class ImageUtils {
     public static void saveImage(String name, int glid, int maxMipmapLevel, int width, int height) {
-        GLShim.glBindTexture(3553, glid);
-        GLShim.glPixelStorei(3333, 1);
-        GLShim.glPixelStorei(3317, 1);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, glid);
+        GLShim.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
+        GLShim.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
         for (int mipmapLevel = 0; mipmapLevel <= maxMipmapLevel; ++mipmapLevel) {
             File file = new File(name + "_" + mipmapLevel + ".png");
@@ -34,7 +35,7 @@ public class ImageUtils {
             int numPixels = destWidth * destHeight;
             IntBuffer pixelBuffer = BufferUtils.createIntBuffer(numPixels);
             int[] pixelArray = new int[numPixels];
-            GLShim.glGetTexImage(3553, mipmapLevel, 32993, 33639, pixelBuffer);
+            GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, mipmapLevel, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
             pixelBuffer.get(pixelArray);
             BufferedImage bufferedImage = new BufferedImage(destWidth, destHeight, 2);
             bufferedImage.setRGB(0, 0, destWidth, destHeight, pixelArray, 0, destWidth);
@@ -81,20 +82,20 @@ public class ImageUtils {
     }
 
     public static BufferedImage createBufferedImageFromGLID(int id) {
-        GLShim.glBindTexture(3553, id);
-        GL11.glBindTexture(3553, id);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, id);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
         return createBufferedImageFromCurrentGLImage();
     }
 
     public static BufferedImage createBufferedImageFromCurrentGLImage() {
-        int imageWidth = GLShim.glGetTexLevelParameteri(3553, 0, 4096);
-        int imageHeight = GLShim.glGetTexLevelParameteri(3553, 0, 4097);
+        int imageWidth = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TRANSFORM_BIT);
+        int imageHeight = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         long size = (long) imageWidth * (long) imageHeight * 4L;
         BufferedImage image;
         if (size < 2147483647L) {
             image = new BufferedImage(imageWidth, imageHeight, 6);
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(imageWidth * imageHeight * 4).order(ByteOrder.nativeOrder());
-            GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
+            GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
             byteBuffer.position(0);
             byte[] bytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(bytes);
@@ -115,13 +116,13 @@ public class ImageUtils {
                 imageHeight /= 2;
                 size = (long) imageWidth * (long) imageHeight * 4L;
             }
-            int glid = GLShim.glGetInteger(32873);
+            int glid = GLShim.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             image = new BufferedImage(imageWidth, imageHeight, 6);
             int fboWidth = 512;
             int fboHeight = 512;
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4).order(ByteOrder.nativeOrder());
             byte[] bytes = new byte[byteBuffer.remaining()];
-            GLShim.glPushAttrib(4096);
+            GLShim.glPushAttrib(GL11.GL_TRANSFORM_BIT);
             RenderSystem.backupProjectionMatrix();
             GLShim.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = Matrix4f.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
@@ -134,7 +135,7 @@ public class ImageUtils {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
                     GLUtils.disp(glid);
                     GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-                    GLShim.glClear(16640);
+                    GLShim.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GLUtils.drawPre();
                     GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / (float) imageWidth, (float) startY / (float) imageHeight);
                     GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, (float) startY / (float) imageHeight);
@@ -143,7 +144,7 @@ public class ImageUtils {
                     GLUtils.drawPost();
                     GLUtils.disp(GLUtils.fboTextureID);
                     byteBuffer.position(0);
-                    GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
+                    GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
                     byteBuffer.position(0);
                     byteBuffer.get(bytes);
 

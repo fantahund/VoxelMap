@@ -74,6 +74,7 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -510,7 +511,7 @@ public class Map implements Runnable, IMap {
                 if (this.needLightmapRefresh && TickCounter.tickCounter != this.tickWithLightChange && !VoxelConstants.getMinecraft().isPaused() || this.options.realTimeTorches) {
                     GLUtils.disp(this.lightmapTexture.getGlId());
                     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
-                    GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
+                    GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
 
                     for (int i = 0; i < this.lightmapColors.length; ++i) {
                         int index = i * 4;
@@ -607,7 +608,7 @@ public class Map implements Runnable, IMap {
         float[] fogColors = new float[4];
         FloatBuffer temp = BufferUtils.createFloatBuffer(4);
         BackgroundRenderer.render(VoxelConstants.getMinecraft().gameRenderer.getCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.getViewDistance().getValue(), VoxelConstants.getMinecraft().gameRenderer.getSkyDarkness(0.0F));
-        GLShim.glGetFloatv(3106, temp);
+        GLShim.glGetFloatv(GL11.GL_COLOR_CLEAR_VALUE, temp);
         temp.get(fogColors);
         float r = fogColors[0];
         float g = fogColors[1];
@@ -684,9 +685,9 @@ public class Map implements Runnable, IMap {
             mapY += (int) (statusIconOffset * resFactor);
         }
 
-        GLShim.glEnable(3042);
-        GLShim.glEnable(3553);
-        GLShim.glBlendFunc(770, 0);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glEnable(GL11.GL_TEXTURE_2D);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, 0);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (!this.options.hide) {
             if (this.fullscreenMap) {
@@ -695,7 +696,7 @@ public class Map implements Runnable, IMap {
                 this.renderMap(modelViewMatrixStack, mapX, mapY, scScale);
             }
 
-            GLShim.glDisable(2929);
+            GLShim.glDisable(GL11.GL_DEPTH_TEST);
             if (this.master.getRadar() != null && !this.fullscreenMap) {
                 this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
                 this.master.getRadar().onTickInGame(modelViewMatrixStack, this.layoutVariables);
@@ -705,7 +706,7 @@ public class Map implements Runnable, IMap {
                 this.drawDirections(matrixStack, mapX, mapY);
             }
 
-            GLShim.glEnable(3042);
+            GLShim.glEnable(GL11.GL_BLEND);
             if (this.fullscreenMap) {
                 this.drawArrow(modelViewMatrixStack, this.scWidth / 2, this.scHeight / 2);
             } else {
@@ -718,26 +719,26 @@ public class Map implements Runnable, IMap {
         }
 
         GLShim.glDepthMask(true);
-        GLShim.glEnable(2929);
+        GLShim.glEnable(GL11.GL_DEPTH_TEST);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.restoreProjectionMatrix();
         RenderSystem.applyModelViewMatrix();
-        GLShim.glDisable(2929);
+        GLShim.glDisable(GL11.GL_DEPTH_TEST);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         VoxelConstants.getMinecraft().textRenderer.getClass();
         VoxelConstants.getMinecraft().textRenderer.drawWithShadow(modelViewMatrixStack, Text.literal("******sdkfjhsdkjfhsdkjfh"), 100.0F, 100.0F, -1);
         if (this.showWelcomeScreen) {
-            GLShim.glEnable(3042);
+            GLShim.glEnable(GL11.GL_BLEND);
             this.drawWelcomeScreen(matrixStack, VoxelConstants.getMinecraft().getWindow().getScaledWidth(), VoxelConstants.getMinecraft().getWindow().getScaledHeight());
         }
 
         GLShim.glDepthMask(true);
-        GLShim.glEnable(2929);
+        GLShim.glEnable(GL11.GL_DEPTH_TEST);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        GLShim.glTexParameteri(3553, 10241, 9728);
-        GLShim.glTexParameteri(3553, 10240, 9728);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
     }
 
     private void checkForChanges() {
@@ -1557,7 +1558,7 @@ public class Map implements Runnable, IMap {
             GLShim.glColorMask(false, false, false, true);
             GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
             GLShim.glClear(16384);
-            GLShim.glBlendFunc(770, 771);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             GLShim.glColorMask(true, true, true, true);
             GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
             GLUtils.drawPre();
@@ -1585,10 +1586,10 @@ public class Map implements Runnable, IMap {
             matrixStack.translate(-x, -y, 0.0);
             matrixStack.translate(-this.percentX, -this.percentY, 0.0);
             RenderSystem.applyModelViewMatrix();
-            GLShim.glTexParameteri(3553, 10241, 9987);
-            GLShim.glTexParameteri(3553, 10240, 9729);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         } else {
-            GLShim.glBindTexture(3553, 0);
+            GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
             Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, 512.0F, 0.0F, 512.0F, 1000.0F, 3000.0F);
@@ -1600,10 +1601,10 @@ public class Map implements Runnable, IMap {
             matrixStack.translate(0.0, 0.0, -2000.0);
             RenderSystem.applyModelViewMatrix();
             GLShim.glDepthMask(false);
-            GLShim.glDisable(2929);
+            GLShim.glDisable(GL11.GL_DEPTH_TEST);
             GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
             GLShim.glClear(16384);
-            GLShim.glBlendFunc(770, 0);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, 0);
             GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
             GLUtils.drawPre();
             GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
@@ -1628,8 +1629,8 @@ public class Map implements Runnable, IMap {
             this.percentX *= multi;
             this.percentY *= multi;
             GLUtils.disp2(this.mapImages[this.zoom].getIndex());
-            GLShim.glTexParameteri(3553, 10241, 9987);
-            GLShim.glTexParameteri(3553, 10240, 9729);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
             matrixStack.push();
             matrixStack.translate(256.0, 256.0, 0.0);
             if (!this.options.rotates) {
@@ -1650,13 +1651,13 @@ public class Map implements Runnable, IMap {
             matrixStack.pop();
             RenderSystem.applyModelViewMatrix();
             GLShim.glDepthMask(true);
-            GLShim.glEnable(2929);
+            GLShim.glEnable(GL11.GL_DEPTH_TEST);
             GLUtils.unbindFrameBuffer();
             GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
             matrixStack.pop();
             RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
             matrixStack.push();
-            GLShim.glBlendFunc(770, 0);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, 0);
             GLUtils.disp2(GLUtils.fboTextureID);
         }
 
@@ -1669,7 +1670,7 @@ public class Map implements Runnable, IMap {
         GLShim.glDisable(3089);
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.options.squareMap) {
             this.drawSquareMapFrame(x, y);
@@ -1681,9 +1682,9 @@ public class Map implements Runnable, IMap {
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = this.master.getWaypointManager().getTextureAtlas();
         GLUtils.disp2(textureAtlas.getGlId());
-        GLShim.glEnable(3042);
-        GLShim.glBlendFunc(770, 771);
-        GLShim.glDisable(2929);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GLShim.glDisable(GL11.GL_DEPTH_TEST);
         Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
 
         for (Waypoint pt : this.waypointManager.getWaypoints()) {
@@ -1778,8 +1779,8 @@ public class Map implements Runnable, IMap {
                 }
 
                 RenderSystem.applyModelViewMatrix();
-                GLShim.glTexParameteri(3553, 10241, 9729);
-                GLShim.glTexParameteri(3553, 10240, 9729);
+                GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+                GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                 GLUtils.drawPre();
                 GLUtils.setMap(icon, (float) x, (float) y, 16.0F);
                 GLUtils.drawPost();
@@ -1815,8 +1816,8 @@ public class Map implements Runnable, IMap {
                 matrixStack.translate(0.0, -hypot, 0.0);
                 matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-(-locate)));
                 RenderSystem.applyModelViewMatrix();
-                GLShim.glTexParameteri(3553, 10241, 9729);
-                GLShim.glTexParameteri(3553, 10240, 9729);
+                GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+                GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                 GLUtils.drawPre();
                 GLUtils.setMap(icon, (float) x, (float) y, 16.0F);
                 GLUtils.drawPost();
@@ -1835,10 +1836,10 @@ public class Map implements Runnable, IMap {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             matrixStack.push();
             GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            GLShim.glBlendFunc(770, 771);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             GLUtils.img2(this.arrowResourceLocation);
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
             matrixStack.translate(x, y, 0.0);
             matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + (float) this.northRotate));
             matrixStack.translate(-x, -y, 0.0);
@@ -1867,14 +1868,14 @@ public class Map implements Runnable, IMap {
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         GLUtils.disp2(this.mapImages[this.zoom].getIndex());
-        GLShim.glTexParameteri(3553, 10241, 9987);
-        GLShim.glTexParameteri(3553, 10240, 9729);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         matrixStack.push();
         matrixStack.translate((float) scWidth / 2.0F, (float) scHeight / 2.0F, -0.0);
         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion((float) this.northRotate));
         matrixStack.translate(-((float) scWidth / 2.0F), -((float) scHeight / 2.0F), -0.0);
         RenderSystem.applyModelViewMatrix();
-        GLShim.glDisable(2929);
+        GLShim.glDisable(GL11.GL_DEPTH_TEST);
         GLUtils.drawPre();
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
@@ -1890,7 +1891,7 @@ public class Map implements Runnable, IMap {
             int minimumSize = (int) Math.pow(2.0, this.zoom);
             minimumSize *= minimumSize;
             ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
-            GLShim.glDisable(2929);
+            GLShim.glDisable(GL11.GL_DEPTH_TEST);
             matrixStack.push();
             matrixStack.translate(0.0, 0.0, 1160.0);
             RenderSystem.applyModelViewMatrix();
@@ -1911,7 +1912,7 @@ public class Map implements Runnable, IMap {
 
             matrixStack.pop();
             RenderSystem.applyModelViewMatrix();
-            GLShim.glEnable(2929);
+            GLShim.glEnable(GL11.GL_DEPTH_TEST);
         }
 
     }
@@ -1919,10 +1920,10 @@ public class Map implements Runnable, IMap {
     private void drawSquareMapFrame(int x, int y) {
         try {
             GLUtils.disp2(this.mapImageInt);
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
-            GLShim.glTexParameteri(3553, 10242, 10496);
-            GLShim.glTexParameteri(3553, 10243, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, 10496);
             GLUtils.drawPre();
             GLUtils.setMap((float) x, (float) y, 128);
             GLUtils.drawPost();
@@ -1965,8 +1966,8 @@ public class Map implements Runnable, IMap {
     private void drawRoundMapFrame(int x, int y) {
         try {
             GLUtils.img2(this.roundmapResourceLocation);
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
             GLUtils.drawPre();
             GLUtils.setMap((float) x, (float) y, 128);
             GLUtils.drawPost();
@@ -2100,7 +2101,7 @@ public class Map implements Runnable, IMap {
             this.welcomeText[7] = this.options.keyBindZoom.getBoundKeyLocalizedText().copy().append(": ").append((Text.translatable("minimap.ui.welcome8")).formatted(Formatting.GRAY));
         }
 
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         int maxSize = 0;
         int border = 2;
         Text head = this.welcomeText[0];
@@ -2117,7 +2118,7 @@ public class Map implements Runnable, IMap {
         int centerY = (int) ((double) (scHeight + 5) / 2.0);
         Text hide = this.welcomeText[this.welcomeText.length - 1];
         int footer = this.chkLen(hide);
-        GLShim.glDisable(3553);
+        GLShim.glDisable(GL11.GL_TEXTURE_2D);
         GLShim.glColor4f(0.0F, 0.0F, 0.0F, 0.7F);
         double leftX = (double) centerX - (double) title / 2.0 - (double) border;
         double rightX = (double) centerX + (double) title / 2.0 + (double) border;
@@ -2134,7 +2135,7 @@ public class Map implements Runnable, IMap {
         topY = (double) centerY + (double) (height - 1) / 2.0 * 10.0 - (double) border + 10.0;
         botY = (double) centerY + (double) (height - 1) / 2.0 * 10.0 + (double) border + 20.0;
         this.drawBox(leftX, rightX, topY, botY);
-        GLShim.glEnable(3553);
+        GLShim.glEnable(GL11.GL_TEXTURE_2D);
         this.write(matrixStack, head, (float) (centerX - title / 2), (float) (centerY - (height - 1) * 10 / 2 - 19), 16777215);
 
         for (int n = 1; n < height; ++n) {
