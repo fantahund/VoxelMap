@@ -800,8 +800,7 @@ public class WaypointManager implements IWaypointManager {
                 this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
             } else if (left != null && top != null && right != null && bottom != null) {
                 int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
-                int heightInt = widthInt;
-                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, heightInt);
+                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, widthInt);
             }
 
             isr.close();

@@ -19,7 +19,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private final Screen parent;
     private final IWaypointManager waypointManager;
     private final ArrayList<?> knownSubworldNames;
-    private String originalSubworldName;
+    private final String originalSubworldName;
     private String currentSubworldName = "";
     private TextFieldWidget subworldNameField;
     private ButtonWidget doneButton;

@@ -5,8 +5,8 @@ import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import net.minecraft.world.chunk.WorldChunk;
 
 public class MapChunk {
-    private int x;
-    private int z;
+    private final int x;
+    private final int z;
     private WorldChunk chunk;
     private boolean isChanged;
     private boolean isLoaded;
