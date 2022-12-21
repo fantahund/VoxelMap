@@ -16,8 +16,10 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.Text;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.TreeSet;
 
@@ -137,12 +139,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void teleportClicked() {
-        boolean mp = !this.client.isIntegratedServerRunning();
         int y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
         VoxelConstants.getMinecraft().player.sendCommand("tp " + VoxelConstants.getMinecraft().player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-        if (mp) {
-            VoxelConstants.getMinecraft().player.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-        }
 
         VoxelConstants.getMinecraft().setScreen(null);
     }
@@ -295,27 +293,21 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public boolean canTeleport() {
-        boolean allowed;
-        boolean singlePlayer = VoxelConstants.getMinecraft().isIntegratedServerRunning();
-        if (singlePlayer) {
-            try {
-                allowed = VoxelConstants.getMinecraft().getServer().getPlayerManager().isOperator(VoxelConstants.getMinecraft().player.getGameProfile());
-            } catch (Exception var4) {
-                allowed = VoxelConstants.getMinecraft().getServer().getSaveProperties().areCommandsAllowed();
-            }
-        } else {
-            allowed = true;
-        }
+        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
 
-        return allowed;
+        if (integratedServer.isEmpty()) return true;
+
+        try {
+            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getMinecraft().player.getGameProfile());
+        } catch (Exception exception) {
+            return integratedServer.get().getSaveProperties().areCommandsAllowed();
+        }
     }
 
     @Override
     public void removed() {
-        this.client.keyboard.setRepeatEvents(false);
-        if (this.changedSort) {
-            super.removed();
-        }
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
 
+        if (changedSort) super.removed();
     }
 }

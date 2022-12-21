@@ -23,6 +23,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.World;
@@ -189,7 +190,16 @@ public class WaypointManager implements IWaypointManager {
     }
 
     public String getMapName() {
-        return VoxelConstants.getMinecraft().getServer().getSavePath(WorldSavePath.ROOT).normalize().toFile().getName();
+        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
+
+        if (integratedServer.isEmpty()) {
+            String error = "Tried fetching map name on a non-integrated server!";
+
+            VoxelConstants.getLogger().fatal(error);
+            throw new IllegalStateException(error);
+        }
+
+        return integratedServer.get().getSavePath(WorldSavePath.ROOT).normalize().toFile().getName();
     }
 
     public String getServerName() {

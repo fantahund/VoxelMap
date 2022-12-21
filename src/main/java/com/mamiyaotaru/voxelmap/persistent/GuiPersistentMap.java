@@ -44,6 +44,7 @@ import net.minecraft.client.texture.PlayerSkinTexture;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -54,8 +55,10 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();
@@ -266,28 +269,21 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void buildWorldName() {
-        String worldName = "";
-        if (VoxelConstants.getMinecraft().isIntegratedServerRunning()) {
-            worldName = VoxelConstants.getMinecraft().getServer().getSaveProperties().getLevelName();
-            if (worldName == null || worldName.equals("")) {
-                worldName = "Singleplayer World";
-            }
-        } else {
-            ServerInfo serverData = VoxelConstants.getMinecraft().getCurrentServerEntry();
-            if (serverData != null) {
-                worldName = serverData.name;
-            }
+        final AtomicReference<String> worldName = new AtomicReference<>();
 
-            if (worldName == null || worldName.equals("")) {
-                worldName = "Multiplayer Server";
-            }
+        VoxelConstants.getIntegratedServer().ifPresentOrElse(integratedServer -> {
+            worldName.set(integratedServer.getSaveProperties().getLevelName());
 
-            if (this.client.isConnectedToRealms()) {
-                worldName = "Realms";
-            }
-        }
+            if (worldName.get() == null || worldName.get().isBlank()) worldName.set("Singleplayer World");
+        }, () -> {
+            ServerInfo info = VoxelConstants.getMinecraft().getCurrentServerEntry();
 
-        StringBuilder worldNameBuilder = (new StringBuilder("§r")).append(worldName);
+            if (info != null) worldName.set(info.name);
+            if (worldName.get() == null || worldName.get().isBlank()) worldName.set("Multiplayer Server");
+            if (VoxelConstants.getMinecraft().isConnectedToRealms()) worldName.set("Realms");
+        });
+
+        StringBuilder worldNameBuilder = (new StringBuilder("§r")).append(worldName.get());
         String subworldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(true);
         this.subworldName = subworldName;
         if ((subworldName == null || subworldName.equals("")) && this.master.getWaypointManager().isMultiworld()) {
@@ -301,9 +297,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.worldNameDisplay = worldNameBuilder.toString();
         this.worldNameDisplayLength = this.getFontRenderer().getWidth(this.worldNameDisplay);
 
-        for (this.maxWorldNameDisplayLength = this.getWidth() / 2 - this.getFontRenderer().getWidth(this.screenTitle) / 2 - this.sideMargin * 2; this.worldNameDisplayLength > this.maxWorldNameDisplayLength && worldName.length() > 5; this.worldNameDisplayLength = this.getFontRenderer().getWidth(this.worldNameDisplay)) {
-            worldName = worldName.substring(0, worldName.length() - 1);
-            worldNameBuilder = new StringBuilder(worldName);
+        for (this.maxWorldNameDisplayLength = this.getWidth() / 2 - this.getFontRenderer().getWidth(this.screenTitle) / 2 - this.sideMargin * 2; this.worldNameDisplayLength > this.maxWorldNameDisplayLength && worldName.get().length() > 5; this.worldNameDisplayLength = this.getFontRenderer().getWidth(this.worldNameDisplay)) {
+            worldName.set(worldName.get().substring(0, worldName.get().length() - 1));
+            worldNameBuilder = new StringBuilder(worldName.get());
             worldNameBuilder.append("...");
             if (subworldName != null && !subworldName.equals("")) {
                 worldNameBuilder.append(" - ").append(subworldName);
@@ -314,7 +310,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         if (subworldName != null && !subworldName.equals("")) {
             while (this.worldNameDisplayLength > this.maxWorldNameDisplayLength && subworldName.length() > 5) {
-                worldNameBuilder = new StringBuilder(worldName);
+                worldNameBuilder = new StringBuilder(worldName.get());
                 worldNameBuilder.append("...");
                 subworldName = subworldName.substring(0, subworldName.length() - 1);
                 worldNameBuilder.append(" - ").append(subworldName);
@@ -1238,19 +1234,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public boolean canTeleport() {
-        boolean allowed;
-        boolean singlePlayer = VoxelConstants.getMinecraft().isInSingleplayer();
-        if (singlePlayer) {
-            try {
-                allowed = VoxelConstants.getMinecraft().getServer().getPlayerManager().isOperator(VoxelConstants.getMinecraft().player.getGameProfile());
-            } catch (Exception var4) {
-                allowed = VoxelConstants.getMinecraft().getServer().getSaveProperties().areCommandsAllowed();
-            }
-        } else {
-            allowed = true;
-        }
+        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
 
-        return allowed;
+        if (integratedServer.isEmpty()) return true;
+
+        try {
+            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getMinecraft().player.getGameProfile());
+        } catch (Exception exception) {
+            return integratedServer.get().getSaveProperties().areCommandsAllowed();
+        }
     }
 
     private int chkLen(String string) {

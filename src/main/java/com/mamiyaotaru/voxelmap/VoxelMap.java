@@ -23,6 +23,7 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -33,6 +34,7 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
@@ -285,16 +287,14 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
     @Override
     public String getWorldSeed() {
-        if (VoxelConstants.getMinecraft().isIntegratedServerRunning()) {
-            String seed = "";
+        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
 
-            try {
-                seed = Long.toString(VoxelConstants.getMinecraft().getServer().getWorld(World.OVERWORLD).getSeed());
-            } catch (Exception ignored) {}
+        if (integratedServer.isEmpty()) return waypointManager.getWorldSeed();
 
-            return seed;
-        } else {
-            return this.waypointManager.getWorldSeed();
+        try {
+            return Long.toString(integratedServer.get().getWorld(World.OVERWORLD).getSeed());
+        } catch (Exception exception) {
+            return "";
         }
     }
 

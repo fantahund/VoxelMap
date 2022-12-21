@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeListener;
@@ -17,6 +18,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -121,7 +123,16 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
         this.x = x;
         this.z = z;
         if (!this.remoteWorld) {
-            this.worldServer = VoxelConstants.getMinecraft().getServer().getWorld(world.getRegistryKey());
+            Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
+
+            if (integratedServer.isEmpty()) {
+                String error = "Attempted to fetch Integrated Server instance, but none is active!";
+
+                VoxelConstants.getLogger().fatal(error);
+                throw new IllegalStateException(error);
+            }
+
+            this.worldServer = integratedServer.get().getWorld(world.getRegistryKey());
             this.chunkProvider = this.worldServer.getChunkManager();
             this.executorClass = this.chunkProvider.getClass().getDeclaredClasses()[0];
             this.executor = (ThreadExecutor<RefreshRunnable>) ReflectionUtils.getPrivateFieldValueByType(this.chunkProvider, ServerChunkManager.class, this.executorClass);
