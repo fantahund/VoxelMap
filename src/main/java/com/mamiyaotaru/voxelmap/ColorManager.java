@@ -182,7 +182,7 @@ public class ColorManager implements IColorManager {
     }
 
     private void loadColors() {
-        VoxelConstants.getMinecraft().player.getSkinTexture();
+        VoxelConstants.getPlayer().getSkinTexture();
         BlockRepository.getBlocks();
         BiomeRepository.getBiomes();
         this.loadColorPicker();

@@ -232,12 +232,12 @@ public class CommandUtils {
         }
 
         message = message + "]";
-        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, true));
+        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, message, true));
     }
 
     public static void sendCoordinate(int x, int y, int z) {
         String message = String.format("[x:%s, y:%s, z:%s]", x, y, z);
-        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, AbstractVoxelMap.getInstance(), message, false));
+        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, message, false));
     }
 
     public static void teleport(String command) {
@@ -246,10 +246,10 @@ public class CommandUtils {
         for (Waypoint wp : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
                 boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
-                int y = wp.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
-                VoxelConstants.getMinecraft().player.sendCommand("tp " + VoxelConstants.getMinecraft().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
+                int y = wp.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
+                VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
-                    VoxelConstants.getMinecraft().player.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
+                    VoxelConstants.getPlayer().sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
                 }
 
                 return;

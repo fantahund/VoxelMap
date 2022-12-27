@@ -545,7 +545,7 @@ public class Radar implements IRadar {
     }
 
     private boolean isEntityShown(Entity entity) {
-        return entity != null && !entity.isInvisibleTo(VoxelConstants.getMinecraft().player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
+        return entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
     }
 
     public void calculateMobs() {
@@ -1455,7 +1455,7 @@ public class Radar implements IRadar {
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
-                        headImage = this.trimAndOutlineImage(new Contact(VoxelConstants.getMinecraft().player, EnumMobs.PLAYER), headImage, true, true);
+                        headImage = this.trimAndOutlineImage(new Contact(VoxelConstants.getPlayer(), EnumMobs.PLAYER), headImage, true, true);
                         icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation + "head", headImage);
                         this.newMobs = true;
                     }
@@ -1610,7 +1610,7 @@ public class Radar implements IRadar {
             return EnumMobs.GENERICHOSTILE;
         } else {
             if (entity instanceof TameableEntity tameableEntity) {
-                if (tameableEntity.isTamed() && (VoxelConstants.getMinecraft().isIntegratedServerRunning() || tameableEntity.getOwner().equals(VoxelConstants.getMinecraft().player))) {
+                if (tameableEntity.isTamed() && (VoxelConstants.getMinecraft().isIntegratedServerRunning() || tameableEntity.getOwner().equals(VoxelConstants.getPlayer()))) {
                     return EnumMobs.GENERICTAME;
                 }
             }
@@ -1862,7 +1862,7 @@ public class Radar implements IRadar {
 
     private boolean isHostile(Entity entity) {
         if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getMinecraft().player);
+            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getPlayer());
         } else if (entity instanceof Monster) {
             return true;
         } else if (entity instanceof BeeEntity beeEntity) {

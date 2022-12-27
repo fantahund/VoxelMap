@@ -17,7 +17,6 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.ClientConnection;
@@ -272,10 +271,9 @@ public class WaypointManager implements IWaypointManager {
         }
 
         if (this.options.deathpoints != 0) {
-            ClientPlayerEntity thePlayer = VoxelConstants.getMinecraft().player;
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
-            double dimensionScale = thePlayer.world.getDimension().coordinateScale();
+            double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             this.addWaypoint(new Waypoint("Latest Death", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord() - 1, true, 1.0F, 1.0F, 1.0F, "Skull", this.getCurrentSubworldDescriptor(false), dimensions));
         }
 

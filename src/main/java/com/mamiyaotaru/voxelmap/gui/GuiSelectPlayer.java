@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.gui.screen.Screen;
@@ -27,7 +26,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     final Text SHARE_WAYPOINT = Text.translatable("minimap.waypointshare.title");
     final Text SHARE_COORDINATES = Text.translatable("minimap.waypointshare.titlecoordinate");
 
-    public GuiSelectPlayer(Screen parentScreen, IVoxelMap master, String locInfo, boolean sharingWaypoint) {
+    public GuiSelectPlayer(Screen parentScreen, String locInfo, boolean sharingWaypoint) {
         this.parentScreen = parentScreen;
         this.locInfo = locInfo;
         this.sharingWaypoint = sharingWaypoint;
@@ -97,10 +96,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
             if (par1) {
                 String combined = this.message.getText() + " " + this.locInfo;
                 if (combined.length() > 100) {
-                    this.client.player.sendChatMessage(this.message.getText(), null);
-                    this.client.player.sendChatMessage(this.locInfo, null);
+                    VoxelConstants.getPlayer().sendChatMessage(this.message.getText(), null);
+                    VoxelConstants.getPlayer().sendChatMessage(this.locInfo, null);
                 } else {
-                    this.client.player.sendChatMessage(combined, null);
+                    VoxelConstants.getPlayer().sendChatMessage(combined, null);
                 }
 
                 VoxelConstants.getMinecraft().setScreen(this.parentScreen);
@@ -114,10 +113,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected void sendMessageToPlayer(String name) {
         String combined = "msg " + name + " " + this.message.getText() + " " + this.locInfo;
         if (combined.length() > 100) {
-            VoxelConstants.getMinecraft().player.sendCommand("msg " + name + " " + this.message.getText());
-            VoxelConstants.getMinecraft().player.sendCommand("msg " + name + " " + this.locInfo);
+            VoxelConstants.getPlayer().sendCommand("msg " + name + " " + this.message.getText());
+            VoxelConstants.getPlayer().sendCommand("msg " + name + " " + this.locInfo);
         } else {
-            VoxelConstants.getMinecraft().player.sendCommand(combined);
+            VoxelConstants.getPlayer().sendCommand(combined);
         }
 
         VoxelConstants.getMinecraft().setScreen(this.parentScreen);

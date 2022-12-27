@@ -35,7 +35,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
         super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
         this.parentGui = par1GuiSelectPlayer;
-        ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getMinecraft().player.networkHandler;
+        ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getPlayer().networkHandler;
         this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
         this.sort();
         ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null) {

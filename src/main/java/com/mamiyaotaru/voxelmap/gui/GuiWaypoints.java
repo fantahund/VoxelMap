@@ -139,8 +139,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void teleportClicked() {
-        int y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
-        VoxelConstants.getMinecraft().player.sendCommand("tp " + VoxelConstants.getMinecraft().player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+        int y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
+        VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
 
         VoxelConstants.getMinecraft().setScreen(null);
     }
@@ -264,7 +264,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         TreeSet<DimensionContainer> dimensions = new TreeSet<>();
         dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
-        double dimensionScale = VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale();
+        double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
         this.newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
         VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, this.newWaypoint, false));
     }
@@ -298,7 +298,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         if (integratedServer.isEmpty()) return true;
 
         try {
-            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getMinecraft().player.getGameProfile());
+            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getPlayer().getGameProfile());
         } catch (Exception exception) {
             return integratedServer.get().getSaveProperties().areCommandsAllowed();
         }

@@ -37,7 +37,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     public GuiSubworldsSelect(Screen parent, IVoxelMap master) {
         this.parent = parent;
-        this.thePlayer = VoxelConstants.getMinecraft().player;
+        this.thePlayer = VoxelConstants.getPlayer();
         this.camera = new ClientPlayerEntity(VoxelConstants.getMinecraft(), VoxelConstants.getMinecraft().world, VoxelConstants.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
         this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
         this.camera.refreshPositionAndAngles(this.thePlayer.getX(), this.thePlayer.getY() - this.thePlayer.getHeightOffset(), this.thePlayer.getZ(), this.thePlayer.getYaw(), 0.0F);

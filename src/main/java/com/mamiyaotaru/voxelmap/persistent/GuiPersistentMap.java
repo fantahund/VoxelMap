@@ -166,12 +166,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void getSkin() {
-        Identifier skinLocation = VoxelConstants.getMinecraft().player.getSkinTexture();
+        Identifier skinLocation = VoxelConstants.getPlayer().getSkinTexture();
         PlayerSkinTexture imageData = null;
 
         try {
-            if (skinLocation != DefaultSkinHelper.getTexture(VoxelConstants.getMinecraft().player.getUuid())) {
-                AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getMinecraft().player.getName().getString());
+            if (skinLocation != DefaultSkinHelper.getTexture(VoxelConstants.getPlayer().getUuid())) {
+                AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
                 imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
         } catch (Exception ignored) {}
@@ -185,7 +185,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         BufferedImage skinImage = ImageUtils.createBufferedImageFromCurrentGLImage();
-        boolean showHat = VoxelConstants.getMinecraft().player.isPartVisible(PlayerModelPart.HAT);
+        boolean showHat = VoxelConstants.getPlayer().isPartVisible(PlayerModelPart.HAT);
         if (showHat) {
             skinImage = ImageUtils.addImages(ImageUtils.loadImage(skinImage, 8, 8, 8, 8), ImageUtils.loadImage(skinImage, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
         } else {
@@ -1112,7 +1112,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.editClicked = false;
         this.addClicked = false;
         this.deleteClicked = false;
-        double dimensionScale = VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale();
+        double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
         switch (action) {
             case 0 -> {
                 if (hovered != null) {
@@ -1141,7 +1141,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.waypointManager.setHighlightedWaypoint(hovered, true);
                 } else {
-                    y = y > VoxelConstants.getMinecraft().player.world.getBottomY() ? y : 64;
+                    y = y > VoxelConstants.getPlayer().world.getBottomY() ? y : 64;
                     TreeSet<DimensionContainer> dimensions2 = new TreeSet<>();
                     dimensions2.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
                     Waypoint fakePoint = new Waypoint("", (int) ((double) x * dimensionScale), (int) ((double) z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
@@ -1152,7 +1152,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     CommandUtils.sendWaypoint(hovered);
                 } else {
-                    y = y > VoxelConstants.getMinecraft().player.world.getBottomY() ? y : 64;
+                    y = y > VoxelConstants.getPlayer().world.getBottomY() ? y : 64;
                     CommandUtils.sendCoordinate(x, y, z);
                 }
             }
@@ -1160,21 +1160,21 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.selectedWaypoint = hovered;
                     boolean mp = !VoxelConstants.getMinecraft().isInSingleplayer();
-                    y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
-                    VoxelConstants.getMinecraft().player.sendCommand("tp " + VoxelConstants.getMinecraft().player.getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+                    y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
+                    VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     if (mp) {
-                        VoxelConstants.getMinecraft().player.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+                        VoxelConstants.getPlayer().sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     } else {
                         VoxelConstants.getMinecraft().setScreen(null);
                     }
                 } else {
                     if (y == 0) {
-                        y = !VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64;
+                        y = !VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64;
                     }
 
-                    VoxelConstants.getMinecraft().player.sendCommand("tp " + VoxelConstants.getMinecraft().player.getName().getString() + " " + x + " " + y + " " + z);
+                    VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + x + " " + y + " " + z);
                     if (!VoxelConstants.getMinecraft().isInSingleplayer()) {
-                        VoxelConstants.getMinecraft().player.sendCommand("tppos " + x + " " + y + " " + z);
+                        VoxelConstants.getPlayer().sendCommand("tppos " + x + " " + y + " " + z);
                     }
                 }
             }
@@ -1239,7 +1239,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (integratedServer.isEmpty()) return true;
 
         try {
-            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getMinecraft().player.getGameProfile());
+            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getPlayer().getGameProfile());
         } catch (Exception exception) {
             return integratedServer.get().getSaveProperties().areCommandsAllowed();
         }

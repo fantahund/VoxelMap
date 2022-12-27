@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 
 import java.io.File;
@@ -48,10 +47,9 @@ public class WorldMatcher {
                 ArrayList<String> knownSubworldNames = new ArrayList<>(WorldMatcher.this.master.getWaypointManager().getKnownSubworldNames());
                 String[] subworldNamesArray = new String[knownSubworldNames.size()];
                 knownSubworldNames.toArray(subworldNamesArray);
-                ClientPlayerEntity player = VoxelConstants.getMinecraft().player;
-                MessageUtils.printDebug("player coords " + player.getX() + " " + player.getZ() + " in world " + WorldMatcher.this.master.getWaypointManager().getCurrentWorldName());
-                this.x = (int) Math.floor(player.getX() / 256.0);
-                this.z = (int) Math.floor(player.getZ() / 256.0);
+                MessageUtils.printDebug("player coords " + VoxelConstants.getPlayer().getX() + " " + VoxelConstants.getPlayer().getZ() + " in world " + WorldMatcher.this.master.getWaypointManager().getCurrentWorldName());
+                this.x = (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0);
+                this.z = (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0);
                 this.loadRegions(subworldNamesArray);
                 int attempts = 0;
 
@@ -64,16 +62,16 @@ public class WorldMatcher {
                         VoxelConstants.getLogger().error(var7);
                     }
 
-                    if (this.x == (int) Math.floor(player.getX() / 256.0) && this.z == (int) Math.floor(player.getZ() / 256.0)) {
+                    if (this.x == (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0) && this.z == (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0)) {
                         if (this.candidateRegions.size() > 0) {
                             MessageUtils.printDebug("going to load current region");
                             this.region.loadCurrent();
                             MessageUtils.printDebug("loaded chunks in local region: " + this.region.getLoadedChunks());
                         }
                     } else {
-                        this.x = (int) Math.floor(player.getX() / 256.0);
-                        this.z = (int) Math.floor(player.getZ() / 256.0);
-                        MessageUtils.printDebug("player coords changed to " + player.getX() + " " + player.getZ() + " in world " + WorldMatcher.this.master.getWaypointManager().getCurrentWorldName());
+                        this.x = (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0);
+                        this.z = (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0);
+                        MessageUtils.printDebug("player coords changed to " + VoxelConstants.getPlayer().getX() + " " + VoxelConstants.getPlayer().getZ() + " in world " + WorldMatcher.this.master.getWaypointManager().getCurrentWorldName());
                         this.loadRegions(subworldNamesArray);
                     }
 

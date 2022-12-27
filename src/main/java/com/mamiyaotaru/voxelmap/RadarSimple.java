@@ -117,7 +117,7 @@ public class RadarSimple implements IRadar {
 
         for (Entity entity : VoxelConstants.getMinecraft().world.getEntities()) {
             try {
-                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getMinecraft().player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
+                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.getPos().getZ();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.getPos().getY();
@@ -143,13 +143,13 @@ public class RadarSimple implements IRadar {
         if (this.isHostile(entity)) {
             return EnumMobs.GENERICHOSTILE;
         } else {
-            return !(entity instanceof TameableEntity) || !((TameableEntity) entity).isTamed() || !VoxelConstants.getMinecraft().isIntegratedServerRunning() && !((TameableEntity) entity).getOwner().equals(VoxelConstants.getMinecraft().player) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
+            return !(entity instanceof TameableEntity) || !((TameableEntity) entity).isTamed() || !VoxelConstants.getMinecraft().isIntegratedServerRunning() && !((TameableEntity) entity).getOwner().equals(VoxelConstants.getPlayer()) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
         }
     }
 
     private boolean isHostile(Entity entity) {
         if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getMinecraft().player);
+            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getPlayer());
         } else if (entity instanceof Monster) {
             return true;
         } else if (entity instanceof BeeEntity beeEntity) {

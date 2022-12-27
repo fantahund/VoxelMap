@@ -22,10 +22,6 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
@@ -34,13 +30,16 @@ import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
-import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
+
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     public static MapSettingsManager mapOptions = null;
@@ -158,9 +157,9 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
                 wIdRequestBuf.writeByte(0);
                 wIdRequestBuf.writeByte(42);
                 wIdRequestBuf.writeByte(0);
-                VoxelConstants.getMinecraft().player.networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
-                VoxelConstants.getMinecraft().player.getSkinTexture();
-                java.util.Map<Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getMinecraft().player.getGameProfile());
+                VoxelConstants.getPlayer().networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
+                VoxelConstants.getPlayer().getSkinTexture();
+                java.util.Map<Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
                 if (skinMap.containsKey(Type.SKIN)) {
                     VoxelConstants.getMinecraft().getSkinProvider().loadSkin(skinMap.get(Type.SKIN), Type.SKIN);
                 }

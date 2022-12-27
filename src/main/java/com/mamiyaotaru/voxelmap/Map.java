@@ -251,8 +251,7 @@ public class Map implements Runnable, IMap {
                     }
                 }
 
-                boolean active;
-                for (active = true; VoxelConstants.getMinecraft().player != null && this.world != null && active; active = false) {
+                for (boolean active = true; this.world != null && active; active = false) {
                     if (!this.options.hide) {
                         try {
                             this.mapCalc(this.doFullRender);
@@ -352,7 +351,7 @@ public class Map implements Runnable, IMap {
 
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
-            double dimensionScale = VoxelConstants.getMinecraft().player.world.getDimension().coordinateScale();
+            double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, this.master, newWaypoint, false));
         }
@@ -550,8 +549,8 @@ public class Map implements Runnable, IMap {
                 }
 
                 float potionEffect = 0.0F;
-                if (VoxelConstants.getMinecraft().player.hasStatusEffect(StatusEffects.NIGHT_VISION)) {
-                    int duration = VoxelConstants.getMinecraft().player.getStatusEffect(StatusEffects.NIGHT_VISION).getDuration();
+                if (VoxelConstants.getPlayer().hasStatusEffect(StatusEffects.NIGHT_VISION)) {
+                    int duration = VoxelConstants.getPlayer().getStatusEffect(StatusEffects.NIGHT_VISION).getDuration();
                     potionEffect = duration > 200 ? 1.0F : 0.7F + MathHelper.sin(((float) duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
                 }
 
@@ -577,7 +576,7 @@ public class Map implements Runnable, IMap {
                     this.needLightmapRefresh = true;
                 }
 
-                boolean aboveHorizon = VoxelConstants.getMinecraft().player.getCameraPosVec(0.0F).y >= this.world.getLevelProperties().getSkyDarknessHeight(this.world);
+                boolean aboveHorizon = VoxelConstants.getPlayer().getCameraPosVec(0.0F).y >= this.world.getLevelProperties().getSkyDarknessHeight(this.world);
                 if (this.world.getRegistryKey().getValue().toString().toLowerCase().contains("ether")) {
                     aboveHorizon = true;
                 }
@@ -667,10 +666,10 @@ public class Map implements Runnable, IMap {
             mapY = 37;
         }
 
-        if (this.options.mapCorner == 1 && VoxelConstants.getMinecraft().player.getStatusEffects().size() > 0) {
+        if (this.options.mapCorner == 1 && VoxelConstants.getPlayer().getStatusEffects().size() > 0) {
             float statusIconOffset = 0.0F;
 
-            for (StatusEffectInstance statusEffectInstance : VoxelConstants.getMinecraft().player.getStatusEffects()) {
+            for (StatusEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getStatusEffects()) {
                 if (statusEffectInstance.shouldShowIcon()) {
                     if (statusEffectInstance.getEffectType().isBeneficial()) {
                         statusIconOffset = Math.max(statusIconOffset, 24.0F);
@@ -819,14 +818,14 @@ public class Map implements Runnable, IMap {
         boolean caves = false;
         boolean netherPlayerInOpen;
         this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
-        if (VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling()) {
+        if (VoxelConstants.getPlayer().world.getDimension().hasCeiling()) {
 
             netherPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             nether = currentY < 126;
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
-        } else if (VoxelConstants.getMinecraft().player.clientWorld.getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getMinecraft().player.clientWorld.getDimension().hasSkyLight()) {
+        } else if (VoxelConstants.getPlayer().clientWorld.getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getPlayer().clientWorld.getDimension().hasSkyLight()) {
             boolean endPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;
@@ -919,13 +918,13 @@ public class Map implements Runnable, IMap {
         boolean netherPlayerInOpen;
         this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
         int currentY = GameVariableAccessShim.yCoord();
-        if (VoxelConstants.getMinecraft().player.world.getDimension().hasCeiling()) {
+        if (VoxelConstants.getPlayer().world.getDimension().hasCeiling()) {
             netherPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             nether = currentY < 126;
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
-        } else if (VoxelConstants.getMinecraft().player.clientWorld.getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getMinecraft().player.clientWorld.getDimension().hasSkyLight()) {
+        } else if (VoxelConstants.getPlayer().clientWorld.getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getPlayer().clientWorld.getDimension().hasSkyLight()) {
             boolean endPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;
