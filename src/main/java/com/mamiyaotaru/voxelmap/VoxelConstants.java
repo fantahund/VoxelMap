@@ -2,6 +2,8 @@ package com.mamiyaotaru.voxelmap;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -24,4 +26,6 @@ public class VoxelConstants {
     public static Logger getLogger() { return LOGGER; }
 
     public static Optional<IntegratedServer> getIntegratedServer() { return Optional.ofNullable(getMinecraft().getServer()); }
+
+    public static Optional<World> getWorldByKey(RegistryKey<World> key) { return getIntegratedServer().map(integratedServer -> integratedServer.getWorld(key)); }
 }

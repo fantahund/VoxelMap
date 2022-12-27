@@ -35,6 +35,7 @@ import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
@@ -286,25 +287,10 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
     }
 
     @Override
-    public String getWorldSeed() {
-        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
-
-        if (integratedServer.isEmpty()) return waypointManager.getWorldSeed();
-
-        try {
-            return Long.toString(integratedServer.get().getWorld(World.OVERWORLD).getSeed());
-        } catch (Exception exception) {
-            return "";
-        }
-    }
+    public String getWorldSeed() { return VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse(""); }
 
     @Override
-    public void setWorldSeed(String newSeed) {
-        if (!VoxelConstants.getMinecraft().isIntegratedServerRunning()) {
-            this.waypointManager.setWorldSeed(newSeed);
-        }
-
-    }
+    public void setWorldSeed(String newSeed) { if (VoxelConstants.getIntegratedServer().isEmpty()) waypointManager.setWorldSeed(newSeed); }
 
     @Override
     public void sendPlayerMessageOnMainThread(String s) {
