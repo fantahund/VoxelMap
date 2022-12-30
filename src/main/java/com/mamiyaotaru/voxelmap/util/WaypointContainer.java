@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
@@ -21,6 +21,7 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.chunk.WorldChunk;
+import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,14 +29,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class WaypointContainer {
-    private List<Waypoint> wayPts = new ArrayList();
+    private final List<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint = null;
-    private MinecraftClient mc;
-    public MapSettingsManager options = null;
-    private final String TARGETFLAG = "*&^TARget%$^";
+    public final MapSettingsManager options;
 
     public WaypointContainer(MapSettingsManager options) {
-        this.mc = MinecraftClient.getInstance();
         this.options = options;
     }
 
@@ -52,23 +50,23 @@ public class WaypointContainer {
     }
 
     private void sortWaypoints() {
-        Collections.sort(this.wayPts, Collections.reverseOrder());
+        this.wayPts.sort(Collections.reverseOrder());
     }
 
     public void renderWaypoints(float partialTicks, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         this.sortWaypoints();
-        Entity cameraEntity = this.options.game.getCameraEntity();
+        Entity cameraEntity = VoxelConstants.getMinecraft().getCameraEntity();
         double renderPosX = GameVariableAccessShim.xCoordDouble();
         double renderPosY = GameVariableAccessShim.yCoordDouble();
         double renderPosZ = GameVariableAccessShim.zCoordDouble();
-        GLShim.glEnable(2884);
+        GLShim.glEnable(GL11.GL_CULL_FACE);
         if (this.options.showBeacons && beacons) {
-            GLShim.glDisable(3553);
-            GLShim.glDisable(2896);
-            GLShim.glEnable(2929);
+            GLShim.glDisable(GL11.GL_TEXTURE_2D);
+            GLShim.glDisable(GL11.GL_LIGHTING);
+            GLShim.glEnable(GL11.GL_DEPTH_TEST);
             GLShim.glDepthMask(false);
-            GLShim.glEnable(3042);
-            GLShim.glBlendFunc(770, 1);
+            GLShim.glEnable(GL11.GL_BLEND);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, 1);
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
             Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
 
@@ -76,24 +74,24 @@ public class WaypointContainer {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
                     int z = pt.getZ();
-                    WorldChunk chunk = this.mc.world.getChunk(x >> 4, z >> 4);
-                    if (chunk != null && !chunk.isEmpty() && this.mc.world.isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = MinecraftClient.getInstance().world.getBottomY() - renderPosY;
+                    WorldChunk chunk = VoxelConstants.getMinecraft().world.getChunk(x >> 4, z >> 4);
+                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(x >> 4, z >> 4)) {
+                        double bottomOfWorld = VoxelConstants.getMinecraft().world.getBottomY() - renderPosY;
                         this.renderBeam(pt, (double) x - renderPosX, bottomOfWorld, (double) z - renderPosZ, 64.0F, matrix4f);
                     }
                 }
             }
 
-            GLShim.glDisable(3042);
-            GLShim.glEnable(2896);
-            GLShim.glEnable(3553);
+            GLShim.glDisable(GL11.GL_BLEND);
+            GLShim.glEnable(GL11.GL_LIGHTING);
+            GLShim.glEnable(GL11.GL_TEXTURE_2D);
             GLShim.glDepthMask(true);
         }
 
         if (this.options.showWaypoints && signs) {
-            GLShim.glDisable(2896);
-            GLShim.glEnable(3042);
-            GLShim.glBlendFuncSeparate(770, 771, 1, 771);
+            GLShim.glDisable(GL11.GL_LIGHTING);
+            GLShim.glEnable(GL11.GL_BLEND);
+            GLShim.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
             for (Waypoint pt : this.wayPts) {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
@@ -101,7 +99,7 @@ public class WaypointContainer {
                     int z = pt.getZ();
                     int y = pt.getY();
                     double distance = Math.sqrt(pt.getDistanceSqToEntity(cameraEntity));
-                    if ((distance < (double) this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !this.options.game.options.hudHidden) {
+                    if ((distance < (double) this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hudHidden) {
                         boolean isPointedAt = this.isPointedAt(pt, distance, cameraEntity, partialTicks);
                         String label = pt.name;
                         this.renderLabel(matrixStack, pt, distance, isPointedAt, label, (double) x - renderPosX, (double) y - renderPosY - 0.5, (double) z - renderPosZ, 64, withDepth, withoutDepth);
@@ -109,7 +107,7 @@ public class WaypointContainer {
                 }
             }
 
-            if (this.highlightedWaypoint != null && !this.options.game.options.hudHidden) {
+            if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hudHidden) {
                 int x = this.highlightedWaypoint.getX();
                 int z = this.highlightedWaypoint.getZ();
                 int y = this.highlightedWaypoint.getY();
@@ -118,9 +116,9 @@ public class WaypointContainer {
                 this.renderLabel(matrixStack, this.highlightedWaypoint, distance, isPointedAt, "*&^TARget%$^", (double) x - renderPosX, (double) y - renderPosY - 0.5, (double) z - renderPosZ, 64, withDepth, withoutDepth);
             }
 
-            GLShim.glEnable(2929);
+            GLShim.glEnable(GL11.GL_DEPTH_TEST);
             GLShim.glDepthMask(true);
-            GLShim.glDisable(3042);
+            GLShim.glDisable(GL11.GL_BLEND);
         }
 
     }
@@ -143,7 +141,7 @@ public class WaypointContainer {
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, float par8, Matrix4f matrix4f) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        int height = MinecraftClient.getInstance().world.getHeight();
+        int height = VoxelConstants.getMinecraft().world.getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;
@@ -189,7 +187,7 @@ public class WaypointContainer {
     }
 
     private void renderLabel(MatrixStack matrixStack, Waypoint pt, double distance, boolean isPointedAt, String name, double baseX, double baseY, double baseZ, int par9, boolean withDepth, boolean withoutDepth) {
-        boolean target = name == "*&^TARget%$^";
+        boolean target = name.equals("*&^TARget%$^");
         if (target) {
             if (pt.red == 2.0F && pt.green == 0.0F && pt.blue == 0.0F) {
                 name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
@@ -199,7 +197,7 @@ public class WaypointContainer {
         }
 
         name = name + " (" + (int) distance + "m)";
-        double maxDistance = GameVariableAccessShim.getMinecraft().options.getSimulationDistance().getValue() * 16.0 * 0.99;
+        double maxDistance = VoxelConstants.getMinecraft().options.getSimulationDistance().getValue() * 16.0 * 0.99;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;
@@ -210,9 +208,9 @@ public class WaypointContainer {
 
         float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
         matrixStack.push();
-        matrixStack.translate((double) ((float) baseX + 0.5F), (double) ((float) baseY + 0.5F), (double) ((float) baseZ + 0.5F));
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-this.mc.getEntityRenderDispatcher().camera.getYaw()));
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(this.mc.getEntityRenderDispatcher().camera.getPitch()));
+        matrixStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
+        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYaw()));
+        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getPitch()));
         matrixStack.scale(-var14, -var14, -var14);
         Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         Tessellator tessellator = Tessellator.getInstance();
@@ -231,20 +229,20 @@ public class WaypointContainer {
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         GLUtils.disp2(textureAtlas.getGlId());
-        GLShim.glEnable(3553);
+        GLShim.glEnable(GL11.GL_TEXTURE_2D);
         if (withDepth) {
             GLShim.glDepthMask(distance < maxDistance);
-            GLShim.glEnable(2929);
+            GLShim.glEnable(GL11.GL_DEPTH_TEST);
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(matrix4f, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, 1.0F * fade).next();
-            vertexBuffer.vertex(matrix4f, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, 1.0F * fade).next();
-            vertexBuffer.vertex(matrix4f, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, 1.0F * fade).next();
-            vertexBuffer.vertex(matrix4f, width, -width, 0.0F).texture(icon.getMaxU(), icon.getMinV()).color(r, g, b, 1.0F * fade).next();
+            vertexBuffer.vertex(matrix4f, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, fade).next();
+            vertexBuffer.vertex(matrix4f, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, fade).next();
+            vertexBuffer.vertex(matrix4f, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, fade).next();
+            vertexBuffer.vertex(matrix4f, width, -width, 0.0F).texture(icon.getMaxU(), icon.getMinV()).color(r, g, b, fade).next();
             tessellator.draw();
         }
 
         if (withoutDepth) {
-            GLShim.glDisable(2929);
+            GLShim.glDisable(GL11.GL_DEPTH_TEST);
             GLShim.glDepthMask(false);
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(matrix4f, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, 0.3F * fade).next();
@@ -254,15 +252,15 @@ public class WaypointContainer {
             tessellator.draw();
         }
 
-        TextRenderer fontRenderer = this.mc.textRenderer;
+        TextRenderer fontRenderer = VoxelConstants.getMinecraft().textRenderer;
         if (isPointedAt && fontRenderer != null) {
             byte elevateBy = -19;
-            GLShim.glDisable(3553);
-            GLShim.glEnable(32823);
+            GLShim.glDisable(GL11.GL_TEXTURE_2D);
+            GLShim.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.getWidth(name) / 2;
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
             if (withDepth) {
-                GLShim.glEnable(2929);
+                GLShim.glEnable(GL11.GL_DEPTH_TEST);
                 GLShim.glDepthMask(distance < maxDistance);
                 GLShim.glPolygonOffset(1.0F, 7.0F);
                 vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -281,7 +279,7 @@ public class WaypointContainer {
             }
 
             if (withoutDepth) {
-                GLShim.glDisable(2929);
+                GLShim.glDisable(GL11.GL_DEPTH_TEST);
                 GLShim.glDepthMask(false);
                 GLShim.glPolygonOffset(1.0F, 11.0F);
                 vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -299,21 +297,21 @@ public class WaypointContainer {
                 tessellator.draw();
             }
 
-            GLShim.glDisable(32823);
+            GLShim.glDisable(GL11.GL_POLYGON_OFFSET_FILL);
             GLShim.glDepthMask(false);
-            GLShim.glEnable(3553);
-            VertexConsumerProvider.Immediate vertexConsumerProvider = this.mc.getBufferBuilders().getEntityVertexConsumers();
+            GLShim.glEnable(GL11.GL_TEXTURE_2D);
+            VertexConsumerProvider.Immediate vertexConsumerProvider = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;
-                GLShim.glDisable(2929);
-                fontRenderer.draw(Text.literal(name), (float) (-fontRenderer.getWidth(name) / 2), (float) elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
+                GLShim.glDisable(GL11.GL_DEPTH_TEST);
+                fontRenderer.draw(Text.literal(name), (float) (-fontRenderer.getWidth(name) / 2), elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
                 vertexConsumerProvider.draw();
-                GLShim.glEnable(2929);
+                GLShim.glEnable(GL11.GL_DEPTH_TEST);
                 textColor = (int) (255.0F * fade) << 24 | 16777215;
-                fontRenderer.draw(matrixStack, name, (float) (-fontRenderer.getWidth(name) / 2), (float) elevateBy, textColor);
+                fontRenderer.draw(matrixStack, name, (float) (-fontRenderer.getWidth(name) / 2), elevateBy, textColor);
             }
 
-            GLShim.glEnable(3042);
+            GLShim.glEnable(GL11.GL_BLEND);
         }
 
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);

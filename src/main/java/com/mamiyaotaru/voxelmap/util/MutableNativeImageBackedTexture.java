@@ -5,9 +5,9 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import org.lwjgl.system.MemoryUtil;
 
 public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
-    private Object bufferLock = new Object();
-    private NativeImage image;
-    private long pointer;
+    private final Object bufferLock = new Object();
+    private final NativeImage image;
+    private final long pointer;
 
     public MutableNativeImageBackedTexture(NativeImage image) {
         super(image);
@@ -23,9 +23,6 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
         String info = this.image.toString();
         String pointerString = info.substring(info.indexOf("@") + 1, info.indexOf("]") - 1);
         this.pointer = Long.parseLong(pointerString);
-    }
-
-    public void blank() {
     }
 
     public void write() {
@@ -48,9 +45,9 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
         synchronized (this.bufferLock) {
             int size = this.image.getHeight() * this.image.getWidth() * 4;
             if (offset > 0) {
-                MemoryUtil.memCopy(this.pointer + (long) (offset * 4), this.pointer, (long) (size - offset * 4));
+                MemoryUtil.memCopy(this.pointer + (offset * 4L), this.pointer, size - offset * 4L);
             } else if (offset < 0) {
-                MemoryUtil.memCopy(this.pointer, this.pointer - (long) (offset * 4), (long) (size + offset * 4));
+                MemoryUtil.memCopy(this.pointer, this.pointer - (offset * 4L), size + offset * 4L);
             }
 
         }
@@ -61,9 +58,9 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
             int size = this.image.getHeight() * this.image.getWidth() * 4;
             int width = this.image.getWidth();
             if (offset > 0) {
-                MemoryUtil.memCopy(this.pointer + (long) (offset * width * 4), this.pointer, (long) (size - offset * width * 4));
+                MemoryUtil.memCopy(this.pointer + ((long) offset * width * 4), this.pointer, size - (long) offset * width * 4);
             } else if (offset < 0) {
-                MemoryUtil.memCopy(this.pointer, this.pointer - (long) (offset * width * 4), (long) (size + offset * width * 4));
+                MemoryUtil.memCopy(this.pointer, this.pointer - ((long) offset * width * 4), size + (long) offset * width * 4);
             }
 
         }
@@ -72,7 +69,7 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
     public void setRGB(int x, int y, int color24) {
         int alpha = color24 >> 24 & 0xFF;
         byte a = -1;
-        byte r = (byte) ((color24 >> 0 & 0xFF) * alpha / 255);
+        byte r = (byte) ((color24 & 0xFF) * alpha / 255);
         byte g = (byte) ((color24 >> 8 & 0xFF) * alpha / 255);
         byte b = (byte) ((color24 >> 16 & 0xFF) * alpha / 255);
         int color = (a & 255) << 24 | (r & 255) << 16 | (g & 255) << 8 | b & 255;

@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -21,12 +21,11 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class GuiButtonRowListPlayers extends EntryListWidget {
-    private final MinecraftClient client = MinecraftClient.getInstance();
+public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPlayers.Row> {
     private final ArrayList<PlayerListEntry> players;
     private ArrayList<?> playersFiltered;
     final GuiSelectPlayer parentGui;
-    Row everyoneRow;
+    final Row everyoneRow;
     final Text ALL = Text.translatable("minimap.waypointshare.all");
     final Text TITLE = Text.translatable("minimap.waypointshare.sharewitheveryone");
     final Text EXPLANATION = Text.translatable("minimap.waypointshare.sharewitheveryone2");
@@ -34,9 +33,9 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     final Text DENY = Text.translatable("gui.cancel");
 
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
-        super(MinecraftClient.getInstance(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
+        super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
         this.parentGui = par1GuiSelectPlayer;
-        ClientPlayNetworkHandler netHandlerPlayClient = MinecraftClient.getInstance().player.networkHandler;
+        ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getPlayer().networkHandler;
         this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
         this.sort();
         ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null) {
@@ -48,7 +47,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     }
 
     private Text getPlayerName(PlayerListEntry ScoreboardEntryIn) {
-        return (Text) (ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName()));
+        return ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName());
     }
 
     private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {
@@ -120,7 +119,6 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
     }
 
     public class Row extends EntryListWidget.Entry<Row> {
-        private final MinecraftClient client = MinecraftClient.getInstance();
         private ButtonWidget button = null;
         private ButtonWidget button1 = null;
         private ButtonWidget button2 = null;
@@ -165,7 +163,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget {
         private void drawIconForButton(MatrixStack matrixStack, ButtonWidget button, int id) {
             PlayerListEntry networkPlayerInfo = (PlayerListEntry) GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
-            PlayerEntity entityPlayer = this.client.world.getPlayerByUuid(gameProfile.getId());
+            PlayerEntity entityPlayer = VoxelConstants.getMinecraft().world.getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             RenderSystem.setShaderTexture(0, networkPlayerInfo.getSkinTexture());
             Screen.drawTexture(matrixStack, button.x + 6, button.y + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);

@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
@@ -22,7 +23,7 @@ import java.util.Iterator;
 
 class GuiSlotMobs extends GuiSlotMinimap {
     private final ArrayList<MobItem> mobs;
-    private ArrayList<?> mobsFiltered;
+    private ArrayList<Entry<?>> mobsFiltered;
     final GuiMobs parentGui;
     final Text ENABLE = Text.translatable("options.minimap.mobs.enable");
     final Text DISABLE = Text.translatable("options.minimap.mobs.disable");
@@ -32,10 +33,11 @@ class GuiSlotMobs extends GuiSlotMinimap {
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
     public GuiSlotMobs(GuiMobs par1GuiMobs) {
-        super(par1GuiMobs.options.game, par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
+        super (par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
+
         this.parentGui = par1GuiMobs;
         RadarSettingsManager options = this.parentGui.options;
-        this.mobs = new ArrayList<MobItem>();
+        this.mobs = new ArrayList<>();
 
         for (EnumMobs mob : EnumMobs.values()) {
             if (mob.isTopLevelUnit && (mob.isHostile && options.showHostiles || mob.isNeutral && options.showNeutrals)) {
@@ -52,7 +54,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
         final Collator collator = I18nUtils.getLocaleAwareCollator();
         this.mobs.sort((mob1, mob2) -> collator.compare(mob1.name, mob2.name));
         this.mobsFiltered = new ArrayList<>(this.mobs);
-        this.mobsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
+        this.mobsFiltered.forEach(this::addEntry);
     }
 
     private static String getTranslatedName(String name) {
@@ -70,7 +72,8 @@ class GuiSlotMobs extends GuiSlotMinimap {
     public void setSelected(MobItem item) {
         super.setSelected(item);
         if (this.getSelectedOrNull() instanceof MobItem) {
-            NarratorManager.INSTANCE.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
+            NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
+            narratorManager.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 
         this.parentGui.setSelectedMob(item.id);
@@ -104,7 +107,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             }
         }
 
-        this.mobsFiltered.forEach(x$0 -> this.addEntry((Entry) x$0));
+        this.mobsFiltered.forEach(this::addEntry);
     }
 
     public class MobItem extends EntryListWidget.Entry<MobItem> {

@@ -3,14 +3,15 @@ package com.mamiyaotaru.voxelmap.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 public class ReflectionUtils {
-    public static Object getPrivateFieldValueByType(Object o, Class objectClasstype, Class fieldClasstype) {
+    public static Object getPrivateFieldValueByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype) {
         return getPrivateFieldValueByType(o, objectClasstype, fieldClasstype, 0);
     }
 
-    public static Object getPrivateFieldValueByType(Object o, Class objectClasstype, Class fieldClasstype, int index) {
-        Class objectClass;
+    public static Object getPrivateFieldValueByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
+        Class<?> objectClass;
         if (o != null) {
             objectClass = o.getClass();
         } else {
@@ -24,14 +25,13 @@ public class ReflectionUtils {
         int counter = 0;
         Field[] fields = objectClass.getDeclaredFields();
 
-        for (int i = 0; i < fields.length; ++i) {
-            if (fieldClasstype.equals(fields[i].getType())) {
+        for (Field field : fields) {
+            if (fieldClasstype.equals(field.getType())) {
                 if (counter == index) {
                     try {
-                        fields[i].setAccessible(true);
-                        return fields[i].get(o);
-                    } catch (IllegalAccessException var9) {
-                    }
+                        field.setAccessible(true);
+                        return field.get(o);
+                    } catch (IllegalAccessException ignored) {}
                 }
 
                 ++counter;
@@ -44,29 +44,28 @@ public class ReflectionUtils {
     public static Object getFieldValueByName(Object o, String fieldName) {
         Field[] fields = o.getClass().getFields();
 
-        for (int i = 0; i < fields.length; ++i) {
-            if (fieldName.equals(fields[i].getName())) {
+        for (Field field : fields) {
+            if (fieldName.equals(field.getName())) {
                 try {
-                    fields[i].setAccessible(true);
-                    return fields[i].get(o);
-                } catch (IllegalAccessException var5) {
-                }
+                    field.setAccessible(true);
+                    return field.get(o);
+                } catch (IllegalAccessException ignored) {}
             }
         }
 
         return null;
     }
 
-    public static ArrayList getFieldsByType(Object o, Class objectClassBaseType, Class fieldClasstype) {
-        ArrayList matches = new ArrayList();
+    public static ArrayList<Field> getFieldsByType(Object o, Class<?> objectClassBaseType, Class<?> fieldClasstype) {
+        ArrayList<Field> matches = new ArrayList<>();
 
-        for (Class objectClass = o.getClass(); !objectClass.equals(objectClassBaseType) && objectClass.getSuperclass() != null; objectClass = objectClass.getSuperclass()) {
+        for (Class<?> objectClass = o.getClass(); !objectClass.equals(objectClassBaseType) && objectClass.getSuperclass() != null; objectClass = objectClass.getSuperclass()) {
             Field[] fields = objectClass.getDeclaredFields();
 
-            for (int i = 0; i < fields.length; ++i) {
-                if (fieldClasstype.isAssignableFrom(fields[i].getType())) {
-                    fields[i].setAccessible(true);
-                    matches.add(fields[i]);
+            for (Field field : fields) {
+                if (fieldClasstype.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    matches.add(field);
                 }
             }
         }
@@ -74,12 +73,12 @@ public class ReflectionUtils {
         return matches;
     }
 
-    public static Field getFieldByType(Object o, Class objectClasstype, Class fieldClasstype) {
+    public static Field getFieldByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype) {
         return getFieldByType(o, objectClasstype, fieldClasstype, 0);
     }
 
-    public static Field getFieldByType(Object o, Class objectClasstype, Class fieldClasstype, int index) {
-        Class objectClass = o.getClass();
+    public static Field getFieldByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
+        Class<?> objectClass = o.getClass();
 
         while (!objectClass.equals(objectClasstype) && objectClass.getSuperclass() != null) {
             objectClass = objectClass.getSuperclass();
@@ -88,11 +87,11 @@ public class ReflectionUtils {
         int counter = 0;
         Field[] fields = objectClass.getDeclaredFields();
 
-        for (int i = 0; i < fields.length; ++i) {
-            if (fieldClasstype.equals(fields[i].getType())) {
+        for (Field field : fields) {
+            if (fieldClasstype.equals(field.getType())) {
                 if (counter == index) {
-                    fields[i].setAccessible(true);
-                    return fields[i];
+                    field.setAccessible(true);
+                    return field;
                 }
 
                 ++counter;
@@ -102,29 +101,23 @@ public class ReflectionUtils {
         return null;
     }
 
-    public static Method getMethodByType(Class objectType, Class returnType, Class... parameterTypes) {
+    public static Method getMethodByType(Class<?> objectType, Class<?> returnType, Class<?>... parameterTypes) {
         return getMethodByType(0, objectType, returnType, parameterTypes);
     }
 
-    public static Method getMethodByType(int index, Class objectType, Class returnType, Class... parameterTypes) {
+    public static Method getMethodByType(int index, Class<?> objectType, Class<?> returnType, Class<?>... parameterTypes) {
         Method[] methods = objectType.getDeclaredMethods();
         int counter = 0;
 
-        for (int i = 0; i < methods.length; ++i) {
-            if (returnType.equals(methods[i].getReturnType())) {
-                Class[] methodParameterTypes = methods[i].getParameterTypes();
+        for (Method method : methods) {
+            if (returnType.equals(method.getReturnType())) {
+                Class<?>[] methodParameterTypes = method.getParameterTypes();
                 if (parameterTypes.length == methodParameterTypes.length) {
-                    boolean match = true;
-
-                    for (int t = 0; t < parameterTypes.length; ++t) {
-                        if (parameterTypes[t] != methodParameterTypes[t]) {
-                            match = false;
-                        }
-                    }
+                    boolean match = IntStream.range(0, parameterTypes.length).noneMatch(t -> parameterTypes[t] != methodParameterTypes[t]);
 
                     if (counter == index && match) {
-                        methods[i].setAccessible(true);
-                        return methods[i];
+                        method.setAccessible(true);
+                        return method;
                     }
                 }
 

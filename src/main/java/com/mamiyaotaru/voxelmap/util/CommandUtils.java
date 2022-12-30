@@ -1,13 +1,12 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
-import com.mamiyaotaru.voxelmap.gui.IGuiWaypoints;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
@@ -21,6 +20,7 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeSet;
@@ -28,20 +28,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommandUtils {
-    private static final String NEW_WAYPOINT_COMMAND = "/newWaypoint ";
     private static final int NEW_WAYPOINT_COMMAND_LENGTH = "/newWaypoint ".length();
-    private static final String TELEPORT_COMMAND = "/ztp ";
     private static final int TELEPORT_COMMAND_LENGTH = "/ztp ".length();
-    private static Random generator = new Random();
-    public static Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", 2);
+    private static final Random generator = new Random();
+    public static final Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
 
-    public static boolean checkForWaypoints(Text chat) {
+    public static boolean checkForWaypoints(Text chat, MessageIndicator indicator) {
+        if (indicator != null && indicator.loggedName() != null && indicator.loggedName().equals("ModifiedbyVoxelMap")) {
+            return true;
+        }
+
+
         String message = chat.getString();
         ArrayList<String> waypointStrings = getWaypointStrings(message);
-        if (waypointStrings.size() <= 0) {
+        if (waypointStrings.size() == 0) {
             return true;
         } else {
-            ArrayList<Text> textComponents = new ArrayList();
+            ArrayList<Text> textComponents = new ArrayList<>();
             int count = 0;
 
             for (String waypointString : waypointStrings) {
@@ -62,7 +65,7 @@ public class CommandUtils {
             }
 
             if (count < message.length() - 1) {
-                textComponents.add(Text.literal(message.substring(count, message.length())));
+                textComponents.add(Text.literal(message.substring(count)));
             }
 
             MutableText finalTextComponent = Text.literal("");
@@ -71,7 +74,7 @@ public class CommandUtils {
                 finalTextComponent.append(textComponent);
             }
 
-            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(finalTextComponent);
+            VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
             return false;
         }
     }
@@ -158,7 +161,7 @@ public class CommandUtils {
             }
 
             if (dimensions.size() == 0) {
-                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(MinecraftClient.getInstance().world));
+                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             }
 
             if (x != null && z != null) {
@@ -170,22 +173,21 @@ public class CommandUtils {
 
                 waypoint = new Waypoint(name, x, z, y, enabled, red, green, blue, suffix, world, dimensions);
             }
-        } catch (NumberFormatException var20) {
-            waypoint = null;
-        }
+        } catch (NumberFormatException ignored) {}
 
         return waypoint;
     }
 
+    // TODO Fix this code
     public static void waypointClicked(String command) {
-        boolean control = InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.left.control").getCode()) || InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.right.control").getCode());
+        boolean control = InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.left.control").getCode()) || InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.right.control").getCode());
         String details = command.substring(NEW_WAYPOINT_COMMAND_LENGTH);
         Waypoint newWaypoint = createWaypointFromChat(details);
         if (newWaypoint != null) {
             for (Waypoint existingWaypoint : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
                 if (newWaypoint.getX() == existingWaypoint.getX() && newWaypoint.getZ() == existingWaypoint.getZ()) {
                     if (control) {
-                        MinecraftClient.getInstance().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
+                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
                     } else {
                         AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
                     }
@@ -195,7 +197,7 @@ public class CommandUtils {
             }
 
             if (control) {
-                MinecraftClient.getInstance().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), newWaypoint, false));
+                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), newWaypoint, false));
             } else {
                 AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
             }
@@ -204,7 +206,7 @@ public class CommandUtils {
     }
 
     public static void sendWaypoint(Waypoint waypoint) {
-        Identifier resourceLocation = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(MinecraftClient.getInstance().world).resourceLocation;
+        Identifier resourceLocation = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world).resourceLocation;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
         StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
@@ -230,12 +232,12 @@ public class CommandUtils {
         }
 
         message = message + "]";
-        MinecraftClient.getInstance().setScreen(new GuiSelectPlayer((Screen) null, AbstractVoxelMap.getInstance(), message, true));
+        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, message, true));
     }
 
     public static void sendCoordinate(int x, int y, int z) {
         String message = String.format("[x:%s, y:%s, z:%s]", x, y, z);
-        MinecraftClient.getInstance().setScreen(new GuiSelectPlayer((Screen) null, AbstractVoxelMap.getInstance(), message, false));
+        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, message, false));
     }
 
     public static void teleport(String command) {
@@ -243,11 +245,11 @@ public class CommandUtils {
 
         for (Waypoint wp : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
-                boolean mp = !MinecraftClient.getInstance().isIntegratedServerRunning();
-                int y = wp.getY() > MinecraftClient.getInstance().world.getBottomY() ? wp.getY() : (!MinecraftClient.getInstance().player.world.getDimension().hasCeiling() ? MinecraftClient.getInstance().world.getTopY() : 64);
-                MinecraftClient.getInstance().player.sendCommand("tp " + MinecraftClient.getInstance().player.getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
+                boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
+                int y = wp.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
+                VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
-                    MinecraftClient.getInstance().player.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
+                    VoxelConstants.getPlayer().sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
                 }
 
                 return;

@@ -6,15 +6,12 @@ import net.minecraft.block.BlockState;
 import java.util.Arrays;
 
 public class BiomeMapData extends AbstractMapData {
-    public static final int DATABITS = 1;
-    public static final int BYTESPERDATUM = 4;
-    private static final int BIOMEIDPOS = 0;
     private int[] data;
 
     public BiomeMapData(int width, int height) {
         this.width = width;
         this.height = height;
-        this.data = new int[width * height * 1];
+        this.data = new int[width * height];
         Arrays.fill(this.data, 0);
     }
 
@@ -104,7 +101,7 @@ public class BiomeMapData extends AbstractMapData {
     }
 
     private int getData(int x, int z, int bit) {
-        int index = (x + z * this.width) * 1 + bit;
+        int index = (x + z * this.width) + bit;
         return this.data[index];
     }
 
@@ -178,7 +175,7 @@ public class BiomeMapData extends AbstractMapData {
     }
 
     private void setData(int x, int z, int bit, int value) {
-        int index = (x + z * this.width) * 1 + bit;
+        int index = (x + z * this.width) + bit;
         this.data[index] = value;
     }
 
@@ -186,9 +183,9 @@ public class BiomeMapData extends AbstractMapData {
     public void moveX(int offset) {
         synchronized (this.dataLock) {
             if (offset > 0) {
-                System.arraycopy(this.data, offset * 1, this.data, 0, this.data.length - offset * 1);
+                System.arraycopy(this.data, offset, this.data, 0, this.data.length - offset);
             } else if (offset < 0) {
-                System.arraycopy(this.data, 0, this.data, -offset * 1, this.data.length + offset * 1);
+                System.arraycopy(this.data, 0, this.data, -offset, this.data.length + offset);
             }
 
         }
@@ -198,9 +195,9 @@ public class BiomeMapData extends AbstractMapData {
     public void moveZ(int offset) {
         synchronized (this.dataLock) {
             if (offset > 0) {
-                System.arraycopy(this.data, offset * this.width * 1, this.data, 0, this.data.length - offset * this.width * 1);
+                System.arraycopy(this.data, offset * this.width, this.data, 0, this.data.length - offset * this.width);
             } else if (offset < 0) {
-                System.arraycopy(this.data, 0, this.data, -offset * this.width * 1, this.data.length + offset * this.width * 1);
+                System.arraycopy(this.data, 0, this.data, -offset * this.width, this.data.length + offset * this.width);
             }
 
         }

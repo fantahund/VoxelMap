@@ -9,7 +9,7 @@ public class GuiOptionSliderMinimap extends SliderWidget {
     private final EnumOptionsMinimap option;
 
     public GuiOptionSliderMinimap(int x, int y, EnumOptionsMinimap optionIn, float sliderValue, ISettingsManager options) {
-        super(x, y, 150, 20, Text.literal(options.getKeyText(optionIn)), (double) sliderValue);
+        super(x, y, 150, 20, Text.literal(options.getKeyText(optionIn)), sliderValue);
         this.options = options;
         this.option = optionIn;
     }

@@ -1,21 +1,19 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +24,9 @@ import java.util.Arrays;
 
 public class ImageUtils {
     public static void saveImage(String name, int glid, int maxMipmapLevel, int width, int height) {
-        Logger logger = LogManager.getLogger();
-        GLShim.glBindTexture(3553, glid);
-        GLShim.glPixelStorei(3333, 1);
-        GLShim.glPixelStorei(3317, 1);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, glid);
+        GLShim.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
+        GLShim.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
 
         for (int mipmapLevel = 0; mipmapLevel <= maxMipmapLevel; ++mipmapLevel) {
             File file = new File(name + "_" + mipmapLevel + ".png");
@@ -38,16 +35,16 @@ public class ImageUtils {
             int numPixels = destWidth * destHeight;
             IntBuffer pixelBuffer = BufferUtils.createIntBuffer(numPixels);
             int[] pixelArray = new int[numPixels];
-            GLShim.glGetTexImage(3553, mipmapLevel, 32993, 33639, pixelBuffer);
+            GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, mipmapLevel, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
             pixelBuffer.get(pixelArray);
             BufferedImage bufferedImage = new BufferedImage(destWidth, destHeight, 2);
             bufferedImage.setRGB(0, 0, destWidth, destHeight, pixelArray, 0, destWidth);
 
             try {
                 ImageIO.write(bufferedImage, "png", file);
-                logger.debug("Exported png to: {}", new Object[]{file.getAbsolutePath()});
+                VoxelConstants.getLogger().debug("Exported png to: {}", new Object[]{file.getAbsolutePath()});
             } catch (IOException var15) {
-                logger.debug("Unable to write: ", var15);
+                VoxelConstants.getLogger().debug("Unable to write: ", var15);
             }
         }
 
@@ -57,7 +54,7 @@ public class ImageUtils {
         if (image.getType() != 6) {
             BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 6);
             Graphics2D g2 = temp.createGraphics();
-            g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), (ImageObserver) null);
+            g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
             g2.dispose();
             image = temp;
         }
@@ -67,13 +64,13 @@ public class ImageUtils {
 
     public static BufferedImage createBufferedImageFromResourceLocation(Identifier resourceLocation) {
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage image = ImageIO.read(is);
             is.close();
             if (image.getType() != 6) {
                 BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 6);
                 Graphics2D g2 = temp.createGraphics();
-                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), (ImageObserver) null);
+                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
                 g2.dispose();
                 image = temp;
             }
@@ -85,20 +82,20 @@ public class ImageUtils {
     }
 
     public static BufferedImage createBufferedImageFromGLID(int id) {
-        GLShim.glBindTexture(3553, id);
-        GL11.glBindTexture(3553, id);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, id);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
         return createBufferedImageFromCurrentGLImage();
     }
 
     public static BufferedImage createBufferedImageFromCurrentGLImage() {
-        int imageWidth = GLShim.glGetTexLevelParameteri(3553, 0, 4096);
-        int imageHeight = GLShim.glGetTexLevelParameteri(3553, 0, 4097);
+        int imageWidth = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TRANSFORM_BIT);
+        int imageHeight = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         long size = (long) imageWidth * (long) imageHeight * 4L;
         BufferedImage image;
         if (size < 2147483647L) {
             image = new BufferedImage(imageWidth, imageHeight, 6);
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(imageWidth * imageHeight * 4).order(ByteOrder.nativeOrder());
-            GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
+            GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
             byteBuffer.position(0);
             byte[] bytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(bytes);
@@ -119,13 +116,13 @@ public class ImageUtils {
                 imageHeight /= 2;
                 size = (long) imageWidth * (long) imageHeight * 4L;
             }
-            int glid = GLShim.glGetInteger(32873);
+            int glid = GLShim.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             image = new BufferedImage(imageWidth, imageHeight, 6);
             int fboWidth = 512;
             int fboHeight = 512;
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4).order(ByteOrder.nativeOrder());
             byte[] bytes = new byte[byteBuffer.remaining()];
-            GLShim.glPushAttrib(4096); //TODO Putt Putt
+            GLShim.glPushAttrib(GL11.GL_TRANSFORM_BIT);
             RenderSystem.backupProjectionMatrix();
             GLShim.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = Matrix4f.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
@@ -138,7 +135,7 @@ public class ImageUtils {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
                     GLUtils.disp(glid);
                     GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-                    GLShim.glClear(16640);
+                    GLShim.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GLUtils.drawPre();
                     GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / (float) imageWidth, (float) startY / (float) imageHeight);
                     GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, (float) startY / (float) imageHeight);
@@ -147,7 +144,7 @@ public class ImageUtils {
                     GLUtils.drawPost();
                     GLUtils.disp(GLUtils.fboTextureID);
                     byteBuffer.position(0);
-                    GLShim.glGetTexImage(3553, 0, 6408, 5121, byteBuffer);
+                    GLShim.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
                     byteBuffer.position(0);
                     byteBuffer.get(bytes);
 
@@ -168,7 +165,7 @@ public class ImageUtils {
             GLUtils.unbindFrameBuffer();
             RenderSystem.restoreProjectionMatrix();
             GLShim.glPopAttrib();
-            GLShim.glViewport(0, 0, MinecraftClient.getInstance().getWindow().getFramebufferWidth(), MinecraftClient.getInstance().getWindow().getFramebufferHeight());
+            GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         }
         return image;
     }
@@ -187,7 +184,7 @@ public class ImageUtils {
 
     public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
-            InputStream is = MinecraftClient.getInstance().getResourceManager().getResource(resourceLocation).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage mobSkin = ImageIO.read(is);
             is.close();
             BufferedImage temp = new BufferedImage(w * mobSkin.getWidth() / imageWidth, h * mobSkin.getWidth() / imageWidth, 6);
@@ -197,8 +194,7 @@ public class ImageUtils {
             g2.dispose();
             return temp;
         } catch (Exception var13) {
-            System.err.println("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage());
-            var13.printStackTrace();
+            VoxelConstants.getLogger().error("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage(), var13);
             return null;
         }
     }
@@ -228,7 +224,7 @@ public class ImageUtils {
         Graphics2D g2 = image.createGraphics();
         g2.setColor(new Color(0, 0, 0, 255));
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setFont(new Font("Arial", 0, image.getHeight()));
+        g2.setFont(new Font("Arial", Font.PLAIN, image.getHeight()));
         FontMetrics fm = g2.getFontMetrics();
         int x = (image.getWidth() - fm.stringWidth("?")) / 2;
         int y = fm.getAscent() + (image.getHeight() - (fm.getAscent() + fm.getDescent())) / 2;
@@ -259,7 +255,7 @@ public class ImageUtils {
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
         } else {
-            System.err.println("Failed getting image: " + resourceLocation.toString());
+            VoxelConstants.getLogger().warn("Failed getting image: " + resourceLocation.toString());
             return null;
         }
     }
@@ -269,7 +265,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scale = (float) (mobSkin.getWidth((ImageObserver) null) / imageWidth);
+        float scale = (float) (mobSkin.getWidth(null) / imageWidth);
         x = (int) ((float) x * scale);
         y = (int) ((float) y * scale);
         w = (int) ((float) w * scale);
@@ -284,7 +280,7 @@ public class ImageUtils {
     public static BufferedImage addImages(BufferedImage base, BufferedImage overlay, float x, float y, int baseWidth, int baseHeight) {
         int scale = base.getWidth() / baseWidth;
         Graphics gfx = base.getGraphics();
-        gfx.drawImage(overlay, (int) (x * (float) scale), (int) (y * (float) scale), (ImageObserver) null);
+        gfx.drawImage(overlay, (int) (x * (float) scale), (int) (y * (float) scale), null);
         gfx.dispose();
         return base;
     }
@@ -302,7 +298,7 @@ public class ImageUtils {
             int newHeight = Math.max(1, (int) ((float) image.getHeight() * scaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
-            g2.drawImage(image, 0, 0, newWidth, newHeight, (ImageObserver) null);
+            g2.drawImage(image, 0, 0, newWidth, newHeight, null);
             g2.dispose();
             return tmp;
         }
@@ -321,7 +317,7 @@ public class ImageUtils {
             int newHeight = Math.max(1, (int) ((float) image.getHeight() * yScaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
-            g2.drawImage(image, 0, 0, newWidth, newHeight, (ImageObserver) null);
+            g2.drawImage(image, 0, 0, newWidth, newHeight, null);
             g2.dispose();
             return tmp;
         }
@@ -329,15 +325,15 @@ public class ImageUtils {
 
     public static BufferedImage flipHorizontal(BufferedImage image) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1.0, 1.0);
-        tx.translate((double) (-image.getWidth((ImageObserver) null)), 0.0);
+        tx.translate(-image.getWidth(null), 0.0);
         AffineTransformOp op = new AffineTransformOp(tx, 1);
-        return op.filter(image, (BufferedImage) null);
+        return op.filter(image, null);
     }
 
     public static BufferedImage into128(BufferedImage base) {
         BufferedImage frame = new BufferedImage(128, 128, base.getType());
         Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, 64 - base.getWidth() / 2, 64 - base.getHeight() / 2, base.getWidth(), base.getHeight(), (ImageObserver) null);
+        gfx.drawImage(base, 64 - base.getWidth() / 2, 64 - base.getHeight() / 2, base.getWidth(), base.getHeight(), null);
         gfx.dispose();
         return frame;
     }
@@ -346,14 +342,14 @@ public class ImageUtils {
         int dim = Math.max(base.getWidth(), base.getHeight());
         int t = 1;
 
-        while (Math.pow(2.0, (double) (t - 1)) < (double) dim) {
+        while (Math.pow(2.0, t - 1) < (double) dim) {
             ++t;
         }
 
-        int size = (int) Math.pow(2.0, (double) t);
+        int size = (int) Math.pow(2.0, t);
         BufferedImage frame = new BufferedImage(size, size, base.getType());
         Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), (ImageObserver) null);
+        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
         gfx.dispose();
         return frame;
     }
@@ -364,7 +360,7 @@ public class ImageUtils {
         int size = dim + outlineWidth * 2;
         BufferedImage frame = new BufferedImage(size, size, base.getType());
         Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), (ImageObserver) null);
+        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
         gfx.dispose();
         return frame;
     }
@@ -388,7 +384,7 @@ public class ImageUtils {
         float armorOutlineFractionVertical = intendedHeight / 2.0F - 1.0F;
         BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         Graphics gfx = temp.getGraphics();
-        gfx.drawImage(image, 0, 0, (ImageObserver) null);
+        gfx.drawImage(image, 0, 0, null);
         gfx.dispose();
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
@@ -408,8 +404,8 @@ public class ImageUtils {
                         } else {
                             int red = newColor >> 16 & 0xFF;
                             int green = newColor >> 8 & 0xFF;
-                            int blue = newColor >> 0 & 0xFF;
-                            newColor = 0 | (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
+                            int blue = newColor & 0xFF;
+                            newColor = (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
                         }
 
                         temp.setRGB(t, s, newColor);
@@ -487,7 +483,7 @@ public class ImageUtils {
         int top = -1;
         int bottom = image.getHeight();
         boolean foundColor = false;
-        int color = 0;
+        int color;
 
         while (!foundColor && left < right - 1) {
             ++left;
@@ -550,7 +546,7 @@ public class ImageUtils {
         int top = -1;
         int bottom = height;
         boolean foundColor = false;
-        int color = 0;
+        int color;
 
         while (!foundColor && left < width / 2 - 1 && top < height / 2 - 1) {
             ++left;
@@ -593,19 +589,19 @@ public class ImageUtils {
     public static BufferedImage colorify(BufferedImage image, float r, float g, float b) {
         BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 3);
         Graphics2D gfx = temp.createGraphics();
-        gfx.drawImage(image, 0, 0, (ImageObserver) null);
+        gfx.drawImage(image, 0, 0, null);
         gfx.dispose();
 
         for (int x = 0; x < temp.getWidth(); ++x) {
             for (int y = 0; y < temp.getHeight(); ++y) {
-                int ax = temp.getColorModel().getAlpha(temp.getRaster().getDataElements(x, y, (Object) null));
-                int rx = temp.getColorModel().getRed(temp.getRaster().getDataElements(x, y, (Object) null));
-                int gx = temp.getColorModel().getGreen(temp.getRaster().getDataElements(x, y, (Object) null));
-                int bx = temp.getColorModel().getBlue(temp.getRaster().getDataElements(x, y, (Object) null));
+                int ax = temp.getColorModel().getAlpha(temp.getRaster().getDataElements(x, y, null));
+                int rx = temp.getColorModel().getRed(temp.getRaster().getDataElements(x, y, null));
+                int gx = temp.getColorModel().getGreen(temp.getRaster().getDataElements(x, y, null));
+                int bx = temp.getColorModel().getBlue(temp.getRaster().getDataElements(x, y, null));
                 rx = (int) ((float) rx * r);
                 gx = (int) ((float) gx * g);
                 bx = (int) ((float) bx * b);
-                temp.setRGB(x, y, ax << 24 | rx << 16 | gx << 8 | bx << 0);
+                temp.setRGB(x, y, ax << 24 | rx << 16 | gx << 8 | bx);
             }
         }
 
@@ -623,7 +619,7 @@ public class ImageUtils {
     public static float percentageOfEdgePixelsThatAreSolid(BufferedImage image) {
         float edgePixels = (float) (image.getWidth() * 2 + image.getHeight() * 2 - 2);
         float edgePixelsWithColor = 0.0F;
-        int color = 0;
+        int color;
 
         for (int t = 0; t < image.getHeight(); ++t) {
             color = image.getRGB(0, t);

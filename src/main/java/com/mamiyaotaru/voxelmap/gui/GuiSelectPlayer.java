@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,7 +14,7 @@ import net.minecraft.text.Text;
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
     private final Screen parentScreen;
     protected Text screenTitle = Text.literal("players");
-    private boolean sharingWaypoint;
+    private final boolean sharingWaypoint;
     private GuiButtonRowListPlayers playerList;
     protected boolean allClicked = false;
     protected TextFieldWidget message;
@@ -26,7 +26,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     final Text SHARE_WAYPOINT = Text.translatable("minimap.waypointshare.title");
     final Text SHARE_COORDINATES = Text.translatable("minimap.waypointshare.titlecoordinate");
 
-    public GuiSelectPlayer(Screen parentScreen, IVoxelMap master, String locInfo, boolean sharingWaypoint) {
+    public GuiSelectPlayer(Screen parentScreen, String locInfo, boolean sharingWaypoint) {
         this.parentScreen = parentScreen;
         this.locInfo = locInfo;
         this.sharingWaypoint = sharingWaypoint;
@@ -39,17 +39,17 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     public void init() {
         this.screenTitle = this.sharingWaypoint ? this.SHARE_WAYPOINT : this.SHARE_COORDINATES;
-        this.getMinecraft().keyboard.setRepeatEvents(true);
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(true);
         this.playerList = new GuiButtonRowListPlayers(this);
         int messageStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypointshare.sharemessage") + ":");
-        this.message = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, (Text) null);
+        this.message = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, null);
         this.message.setMaxLength(78);
         this.addDrawableChild(this.message);
         int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
-        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, (Text) null);
+        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
-        this.addDrawableChild(new ButtonWidget(this.width / 2 - 100, this.height - 27, 150, 20, Text.translatable("gui.cancel"), button -> this.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget(this.width / 2 - 100, this.height - 27, 150, 20, Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)));
         this.setFocused(this.filter);
         this.filter.setTextFieldFocused(true);
     }
@@ -96,15 +96,15 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
             if (par1) {
                 String combined = this.message.getText() + " " + this.locInfo;
                 if (combined.length() > 100) {
-                    this.client.player.sendChatMessage(this.message.getText());
-                    this.client.player.sendChatMessage(this.locInfo);
+                    VoxelConstants.getPlayer().sendChatMessage(this.message.getText(), null);
+                    VoxelConstants.getPlayer().sendChatMessage(this.locInfo, null);
                 } else {
-                    this.client.player.sendChatMessage(combined);
+                    VoxelConstants.getPlayer().sendChatMessage(combined, null);
                 }
 
-                this.getMinecraft().setScreen(this.parentScreen);
+                VoxelConstants.getMinecraft().setScreen(this.parentScreen);
             } else {
-                this.getMinecraft().setScreen(this);
+                VoxelConstants.getMinecraft().setScreen(this);
             }
         }
 
@@ -113,13 +113,13 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected void sendMessageToPlayer(String name) {
         String combined = "msg " + name + " " + this.message.getText() + " " + this.locInfo;
         if (combined.length() > 100) {
-            this.getMinecraft().player.sendCommand("msg " + name + " " + this.message.getText());
-            this.getMinecraft().player.sendCommand("msg " + name + " " + this.locInfo);
+            VoxelConstants.getPlayer().sendCommand("msg " + name + " " + this.message.getText());
+            VoxelConstants.getPlayer().sendCommand("msg " + name + " " + this.locInfo);
         } else {
-            this.getMinecraft().player.sendCommand(combined);
+            VoxelConstants.getPlayer().sendCommand(combined);
         }
 
-        this.getMinecraft().setScreen(this.parentScreen);
+        VoxelConstants.getMinecraft().setScreen(this.parentScreen);
     }
 
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
@@ -145,6 +145,6 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     @Override
     public void removed() {
-        this.getMinecraft().keyboard.setRepeatEvents(false);
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
     }
 }

@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -11,88 +11,26 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class GLShim {
-    public static final int GL_ALL_ATTRIB_BITS = 1048575;
-    public static final int GL_BLEND = 3042;
-    public static final int GL_CLAMP = 10496;
-    public static final int GL_CLAMP_TO_EDGE = 33071;
-    public static final int GL_COLOR_BUFFER_BIT = 16384;
-    public static final int GL_COLOR_CLEAR_VALUE = 3106;
-    public static final int GL_CULL_FACE = 2884;
-    public static final int GL_DEPTH_BUFFER_BIT = 256;
-    public static final int GL_DST_ALPHA = 772;
-    public static final int GL_DST_COLOR = 774;
-    public static final int GL_DEPTH_TEST = 2929;
-    public static final int GL_FLAT = 7424;
-    public static final int GL_GREATER = 516;
-    public static final int GL_LIGHTING = 2896;
-    public static final int GL_LINEAR = 9729;
-    public static final int GL_LINES = 1;
-    public static final int GL_LINEAR_MIPMAP_LINEAR = 9987;
-    public static final int GL_LINEAR_MIPMAP_NEAREST = 9985;
-    public static final int GL_MODELVIEW = 5888;
-    public static final int GL_MODULATE = 8448;
-    public static final int GL_NEAREST = 9728;
-    public static final int GL_NEAREST_MIPMAP_LINEAR = 9986;
-    public static final int GL_NEAREST_MIPMAP_NEAREST = 9984;
-    public static final int GL_ONE = 1;
-    public static final int GL_ONE_MINUS_DST_ALPHA = 773;
-    public static final int GL_ONE_MINUS_DST_COLOR = 775;
-    public static final int GL_ONE_MINUS_SRC_ALPHA = 771;
-    public static final int GL_ONE_MINUS_SRC_COLOR = 769;
-    public static final int GL_PACK_ALIGNMENT = 3333;
-    public static final int GL_POLYGON_OFFSET_FILL = 32823;
-    public static final int GL_PROJECTION = 5889;
-    public static final int GL_PROJECTION_MATRIX = 2983;
-    public static final int GL_QUADS = 7;
-    public static final int GL_RGBA = 6408;
-    public static final int GL_SMOOTH = 7425;
-    public static final int GL_SCISSOR_TEST = 3089;
-    public static final int GL_SRC_ALPHA = 770;
-    public static final int GL_TEXTURE_2D = 3553;
-    public static final int GL_TEXTURE_BINDING_2D = 32873;
-    public static final int GL_TEXTURE_ENV = 8960;
-    public static final int GL_TEXTURE_ENV_MODE = 8704;
-    public static final int GL_TEXTURE_HEIGHT = 4097;
-    public static final int GL_TEXTURE_MAG_FILTER = 10240;
-    public static final int GL_TEXTURE_MIN_FILTER = 10241;
-    public static final int GL_TEXTURE_WIDTH = 4096;
-    public static final int GL_TEXTURE_WRAP_S = 10242;
-    public static final int GL_TEXTURE_WRAP_T = 10243;
-    public static final int GL_TRIANGLE_STRIP = 5;
-    public static final int GL_TRUE = 1;
-    public static final int GL_TRANSFORM_BIT = 4096;
-    public static final int GL_UNPACK_ALIGNMENT = 3317;
-    public static final int GL_UNPACK_ROW_LENGTH = 3314;
-    public static final int GL_UNPACK_SKIP_PIXELS = 3316;
-    public static final int GL_UNPACK_SKIP_ROWS = 3315;
-    public static final int GL_UNSIGNED_BYTE = 5121;
-    public static final int GL_VIEWPORT_BIT = 2048;
-    public static final int GL_ZERO = 0;
-    public static final int GL_BGRA = 32993;
-    public static final int GL_RESCALE_NORMAL = 32826;
-    public static final int GL_UNSIGNED_INT_8_8_8_8 = 32821;
-    public static final int GL_UNSIGNED_INT_8_8_8_8_REV = 33639;
-
     public static void glEnable(int attrib) {
         switch (attrib) {
-            case 2884 -> RenderSystem.enableCull();
-            case 2929 -> RenderSystem.enableDepthTest();
-            case 3042 -> RenderSystem.enableBlend();
-            case 3089 -> GL11.glEnable(3089);
-            case 3553 -> RenderSystem.enableTexture();
-            case 32823 -> RenderSystem.enablePolygonOffset();
+            case GL11.GL_CULL_FACE -> RenderSystem.enableCull();
+            case GL11.GL_DEPTH_TEST -> RenderSystem.enableDepthTest();
+            case GL11.GL_BLEND -> RenderSystem.enableBlend();
+            case GL11.GL_SCISSOR_TEST -> GL11.glEnable(GL11.GL_SCISSOR_TEST);
+            case GL11.GL_TEXTURE_2D -> RenderSystem.enableTexture();
+            case GL11.GL_POLYGON_OFFSET_FILL -> RenderSystem.enablePolygonOffset();
         }
 
     }
 
     public static void glDisable(int attrib) {
         switch (attrib) {
-            case 2884 -> RenderSystem.disableCull();
-            case 2929 -> RenderSystem.disableDepthTest();
-            case 3042 -> RenderSystem.disableBlend();
-            case 3089 -> GL11.glDisable(3089);
-            case 3553 -> RenderSystem.disableTexture();
-            case 32823 -> RenderSystem.disablePolygonOffset();
+            case GL11.GL_CULL_FACE -> RenderSystem.disableCull();
+            case GL11.GL_DEPTH_TEST -> RenderSystem.disableDepthTest();
+            case GL11.GL_BLEND -> RenderSystem.disableBlend();
+            case GL11.GL_SCISSOR_TEST -> GL11.glDisable(GL11.GL_SCISSOR_TEST);
+            case GL11.GL_TEXTURE_2D -> RenderSystem.disableTexture();
+            case GL11.GL_POLYGON_OFFSET_FILL -> RenderSystem.disablePolygonOffset();
         }
 
     }
@@ -106,7 +44,7 @@ public class GLShim {
     }
 
     public static void glClear(int mask) {
-        RenderSystem.clear(mask, MinecraftClient.IS_SYSTEM_MAC);
+        RenderSystem.clear(mask, VoxelConstants.isSystemMacOS());
     }
 
     public static void glClearColor(float red, float green, float blue, float alpha) {
@@ -194,7 +132,7 @@ public class GLShim {
     }
 
     public static void glBindTexture(int target, int texture) {
-        if (target == 3553) {
+        if (target == GL11.GL_TEXTURE_2D) {
             RenderSystem.bindTexture(texture);
         } else {
             GL11.glBindTexture(target, texture);

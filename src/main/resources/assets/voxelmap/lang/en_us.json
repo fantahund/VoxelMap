@@ -50,6 +50,7 @@
   "options.minimap.radar.showplayerhelmets": "Show Player Helmets",
   "options.minimap.radar.showmobhelmets": "Show Mob Helmets",
   "options.minimap.radar.showplayernames": "Show Player Names",
+  "options.minimap.radar.showmobnames": "Show Mob Names",
   "options.minimap.radar.randomobs": "Randomobs",
   "options.minimap.radar.showfacing": "Look Direction",
   "options.minimap.radar.selectmobs": "Mobs to Display...",

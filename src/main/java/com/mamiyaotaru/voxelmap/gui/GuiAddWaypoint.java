@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.IPopupGuiScreen;
 import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
@@ -15,7 +16,6 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
@@ -25,11 +25,12 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.lwjgl.opengl.GL11;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    IVoxelMap master;
-    IWaypointManager waypointManager;
-    IColorManager colorManager;
+    final IVoxelMap master;
+    final IWaypointManager waypointManager;
+    final IColorManager colorManager;
     private final IGuiWaypoints parentGui;
     private PopupGuiButton doneButton;
     private GuiSlotDimensions dimensionList;
@@ -40,7 +41,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private TextFieldWidget waypointZ;
     private TextFieldWidget waypointY;
     private PopupGuiButton buttonEnabled;
-    protected Waypoint waypoint;
+    protected final Waypoint waypoint;
     private boolean choosingColor = false;
     private boolean choosingIcon = false;
     private final float red;
@@ -48,7 +49,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final float blue;
     private final String suffix;
     private final boolean enabled;
-    private boolean editing = false;
+    private final boolean editing;
     private final Identifier pickerResourceLocation = new Identifier("voxelmap", "images/colorpicker.png");
     private final Identifier blank = new Identifier("textures/misc/white.png");
 
@@ -74,10 +75,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void init() {
-        if (this.getMinecraft() == null) {
-            return;
-        }
-        this.getMinecraft().keyboard.setRepeatEvents(true);
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(true);
         this.clearChildren();
         this.waypointName = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
         this.waypointName.setText(this.waypoint.name);
@@ -109,10 +107,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     @Override
     public void removed() {
-        if (this.getMinecraft() == null) {
+        if (VoxelConstants.getMinecraft() == null) {
             return;
         }
-        this.getMinecraft().keyboard.setRepeatEvents(false);
+        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
     }
 
     protected void cancelWaypoint() {
@@ -124,10 +122,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         if (this.parentGui != null) {
             this.parentGui.accept(false);
         } else {
-            if (this.getMinecraft() == null) {
+            if (VoxelConstants.getMinecraft() == null) {
                 return;
             }
-            this.getMinecraft().setScreen(null);
+            VoxelConstants.getMinecraft().setScreen(null);
         }
 
     }
@@ -145,10 +143,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             } else {
                 this.waypointManager.addWaypoint(this.waypoint);
             }
-            if (this.getMinecraft() == null) {
+            if (VoxelConstants.getMinecraft() == null) {
                 return;
             }
-            this.getMinecraft().setScreen(null);
+            VoxelConstants.getMinecraft().setScreen(null);
         }
 
     }
@@ -213,21 +211,21 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 this.choosingColor = false;
             }
         } else if (this.choosingIcon) {
-            if (this.getMinecraft() != null) {
-                float scScale = (float) this.getMinecraft().getWindow().getScaleFactor();
+            if (VoxelConstants.getMinecraft() != null) {
+                float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
                 TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
                 float scale = scScale / 2.0F;
                 float displayWidthFloat = (float) chooser.getWidth() / scale;
                 float displayHeightFloat = (float) chooser.getHeight() / scale;
-                if (displayWidthFloat > (float) this.getMinecraft().getWindow().getFramebufferWidth()) {
-                    float adj = displayWidthFloat / (float) this.getMinecraft().getWindow().getFramebufferWidth();
+                if (displayWidthFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
+                    float adj = displayWidthFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
                     scale *= adj;
                     displayWidthFloat /= adj;
                     displayHeightFloat /= adj;
                 }
 
-                if (displayHeightFloat > (float) this.getMinecraft().getWindow().getFramebufferHeight()) {
-                    float adj = displayHeightFloat / (float) this.getMinecraft().getWindow().getFramebufferHeight();
+                if (displayHeightFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
+                    float adj = displayHeightFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
                     scale *= adj;
                     displayWidthFloat /= adj;
                     displayHeightFloat /= adj;
@@ -285,11 +283,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        if (this.getMinecraft() == null) {
+        if (VoxelConstants.getMinecraft() == null) {
             return;
         }
         super.drawMap(matrixStack);
-        float scScale = (float) this.getMinecraft().getWindow().getScaleFactor();
+        float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
         this.tooltip = null;
         this.buttonEnabled.setMessage(Text.literal(I18nUtils.getString("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18nUtils.getString("options.on") : I18nUtils.getString("options.off"))));
         if (!this.choosingColor && !this.choosingIcon) {
@@ -309,14 +307,14 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         GLShim.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-        GLShim.glDisable(3553);
+        GLShim.glDisable(GL11.GL_TEXTURE_2D);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, this.blank);
         this.drawTexture(matrixStack, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10);
         TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         GLUtils.disp2(chooser.getGlId());
-        GLShim.glTexParameteri(3553, 10241, 9729);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
         this.drawTexturedModalRect((float) (this.getWidth() / 2 - 25), (float) (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         if (this.choosingColor || this.choosingIcon) {
@@ -326,7 +324,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         if (this.choosingColor) {
             GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(this.pickerResourceLocation);
-            GLShim.glTexParameteri(3553, 10241, 9728);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
             this.drawTexture(matrixStack, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256);
         }
 
@@ -334,14 +332,14 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             float scale = scScale / 2.0F;
             float displayWidthFloat = (float) chooser.getWidth() / scale;
             float displayHeightFloat = (float) chooser.getHeight() / scale;
-            if (displayWidthFloat > (float) this.getMinecraft().getWindow().getFramebufferWidth()) {
-                float adj = displayWidthFloat / (float) this.getMinecraft().getWindow().getFramebufferWidth();
+            if (displayWidthFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
+                float adj = displayWidthFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
 
-            if (displayHeightFloat > (float) this.getMinecraft().getWindow().getFramebufferHeight()) {
-                float adj = displayHeightFloat / (float) this.getMinecraft().getWindow().getFramebufferHeight();
+            if (displayHeightFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
+                float adj = displayHeightFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
@@ -350,16 +348,16 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             int displayHeight = (int) displayHeightFloat;
             RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
             RenderSystem.setShaderTexture(0, this.blank);
-            GLShim.glTexParameteri(3553, 10241, 9728);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
             GLShim.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
             this.drawTexture(matrixStack, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2);
             GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             this.drawTexture(matrixStack, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight);
             GLShim.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-            GLShim.glEnable(3042);
+            GLShim.glEnable(GL11.GL_BLEND);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
             GLUtils.disp2(chooser.getGlId());
-            GLShim.glTexParameteri(3553, 10241, 9729);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
             drawTexture(matrixStack, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, displayWidth, displayHeight, 0.0F, 0.0F, chooser.getWidth(), chooser.getHeight(), chooser.getImageWidth(), chooser.getImageHeight());
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
                 float x = (float) (mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
@@ -370,8 +368,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 }
             }
 
-            GLShim.glDisable(3042);
-            GLShim.glTexParameteri(3553, 10241, 9728);
+            GLShim.glDisable(GL11.GL_BLEND);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         }
 
         if (this.tooltip != null) {
@@ -385,7 +383,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void toggleDimensionSelected() {
-        if (this.waypoint.dimensions.size() > 1 && this.waypoint.dimensions.contains(this.selectedDimension) && this.selectedDimension != this.master.getDimensionManager().getDimensionContainerByWorld(MinecraftClient.getInstance().world)) {
+        if (this.waypoint.dimensions.size() > 1 && this.waypoint.dimensions.contains(this.selectedDimension) && this.selectedDimension != this.master.getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world)) {
             this.waypoint.dimensions.remove(this.selectedDimension);
         } else
             this.waypoint.dimensions.add(this.selectedDimension);

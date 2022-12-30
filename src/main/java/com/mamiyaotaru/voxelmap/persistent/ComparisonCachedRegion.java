@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
@@ -9,7 +10,7 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.WorldChunk;
@@ -18,25 +19,26 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ComparisonCachedRegion {
-    private IPersistentMap persistentMap;
-    private String key;
-    private ClientWorld world;
-    private String worldName;
-    private String subworldName;
-    private String worldNamePathPart;
+    private final IPersistentMap persistentMap;
+    private final String key;
+    private final ClientWorld world;
+    private final String subworldName;
+    private final String worldNamePathPart;
     private String subworldNamePathPart;
-    private String dimensionNamePathPart;
-    private boolean underground;
-    private int x;
-    private int z;
-    private CompressibleMapData data;
-    MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
+    private final String dimensionNamePathPart;
+    private final boolean underground;
+    private final int x;
+    private final int z;
+    private final CompressibleMapData data;
+    final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     private int loadedChunks = 0;
     private boolean loaded = false;
     private boolean empty = true;
@@ -46,17 +48,16 @@ public class ComparisonCachedRegion {
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;
-        this.worldName = worldName;
         this.subworldName = subworldName;
         this.worldNamePathPart = TextUtils.scrubNameFile(worldName);
-        if (subworldName != "") {
+        if (!Objects.equals(subworldName, "")) {
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
 
         String dimensionName = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
         boolean knownUnderground = false;
-        this.underground = !world.getDimensionEffects().shouldBrightenLighting() && !world.getDimension().hasSkyLight() || world.getDimension().hasCeiling() || knownUnderground;
+        this.underground = !world.getDimensionEffects().shouldBrightenLighting() && !world.getDimension().hasSkyLight() || world.getDimension().hasCeiling();
         this.x = x;
         this.z = z;
     }
@@ -77,15 +78,8 @@ public class ComparisonCachedRegion {
     }
 
     private boolean isChunkEmpty(ClientWorld world, WorldChunk chunk) {
-        for (int t = 0; t < 16; ++t) {
-            for (int s = 0; s < 16; ++s) {
-                if (chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, t, s) != 0) {
-                    return false;
-                }
-            }
-        }
 
-        return true;
+        return IntStream.range(0, 16).noneMatch(t -> IntStream.range(0, 16).anyMatch(s -> chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, t, s) != 0));
     }
 
     private void loadChunkData(WorldChunk chunk, int chunkX, int chunkZ) {
@@ -99,14 +93,14 @@ public class ComparisonCachedRegion {
 
     public void loadStored() {
         try {
-            File cachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
                 FileInputStream fis = new FileInputStream(cachedRegionFile);
                 ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
                 Scanner sc = new Scanner(zis);
-                BiMap stateToInt = null;
+                BiMap<BlockState, Integer> stateToInt = null;
                 int version = 1;
                 int total = 0;
 
@@ -148,7 +142,7 @@ public class ComparisonCachedRegion {
                     this.empty = false;
                     this.loaded = true;
                 } else {
-                    System.out.println("failed to load data from " + cachedRegionFile.getPath());
+                    VoxelConstants.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
                 }
 
                 sc.close();
@@ -156,8 +150,7 @@ public class ComparisonCachedRegion {
                 fis.close();
             }
         } catch (IOException var15) {
-            System.err.println("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
-            var15.printStackTrace();
+            VoxelConstants.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, var15);
         }
 
     }

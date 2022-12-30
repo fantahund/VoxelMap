@@ -1,22 +1,22 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 
 public class MapChunkCache {
-    private int width;
-    private int height;
+    private final int width;
+    private final int height;
     private WorldChunk lastCenterChunk = null;
-    private MapChunk[] mapChunks;
+    private final MapChunk[] mapChunks;
     private int left = 0;
     private int right = 0;
     private int top = 0;
     private int bottom = 0;
     private boolean loaded = false;
-    private IChangeObserver changeObserver;
+    private final IChangeObserver changeObserver;
 
     public MapChunkCache(int width, int height, IChangeObserver changeObserver) {
         this.width = width;
@@ -26,7 +26,7 @@ public class MapChunkCache {
     }
 
     public void centerChunks(BlockPos blockPos) {
-        WorldChunk currentChunk = MinecraftClient.getInstance().world.getWorldChunk(blockPos);
+        WorldChunk currentChunk = VoxelConstants.getMinecraft().world.getWorldChunk(blockPos);
         if (currentChunk != this.lastCenterChunk) {
             if (this.lastCenterChunk == null) {
                 this.fillAllChunks(blockPos);
@@ -67,7 +67,7 @@ public class MapChunkCache {
     }
 
     private void fillAllChunks(BlockPos blockPos) {
-        Chunk currentChunk = MinecraftClient.getInstance().world.getChunk(blockPos);
+        Chunk currentChunk = VoxelConstants.getMinecraft().world.getChunk(blockPos);
         int middleX = this.width / 2;
         int middleZ = this.height / 2;
 
@@ -133,7 +133,7 @@ public class MapChunkCache {
                 mapChunk.setModified(true);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            VoxelConstants.getLogger().error(e);
         }
     }
 

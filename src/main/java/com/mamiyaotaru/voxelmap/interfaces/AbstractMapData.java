@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
-import net.minecraft.client.MinecraftClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,14 +41,14 @@ public abstract class AbstractMapData implements IMapData {
                     if (!this.points[x][z].inSegment) {
                         long startTime = System.nanoTime();
                         if (this.points[x][z].biomeID == -1) {
-                            System.out.println("no biome segment!");
+                            VoxelConstants.getLogger().warn("no biome segment!");
                         }
 
                         Segment segment = new Segment(this.points[x][z]);
                         this.segments.add(segment);
                         segment.flood();
                         if (this.points[x][z].biomeID == -1) {
-                            System.out.println("created in " + (System.nanoTime() - startTime));
+                            VoxelConstants.getLogger().warn("created in " + (System.nanoTime() - startTime));
                         }
                     }
                 }
@@ -85,7 +85,7 @@ public abstract class AbstractMapData implements IMapData {
         }
     }
 
-    public ArrayList<?> getBiomeLabels() {
+    public ArrayList<BiomeLabel> getBiomeLabels() {
         synchronized (this.labelLock) {
             return new ArrayList<>(this.labels);
         }
@@ -100,12 +100,12 @@ public abstract class AbstractMapData implements IMapData {
     }
 
     private static class Point {
-        public int x;
-        public int z;
+        public final int x;
+        public final int z;
         public boolean inSegment = false;
         public boolean isCandidate = false;
         public int layer = -1;
-        public int biomeID = -1;
+        public final int biomeID;
 
         public Point(int x, int z, int biomeID) {
             this.x = x;
@@ -120,9 +120,9 @@ public abstract class AbstractMapData implements IMapData {
     }
 
     public class Segment {
-        public ArrayList<Point> memberPoints;
+        public final ArrayList<Point> memberPoints;
         ArrayList<Point> currentShell;
-        public int biomeID;
+        public final int biomeID;
         public String name = null;
         public int centerX = 0;
         public int centerZ = 0;
@@ -135,7 +135,7 @@ public abstract class AbstractMapData implements IMapData {
 
             this.memberPoints = new ArrayList<>();
             this.memberPoints.add(point);
-            this.currentShell = new ArrayList<Point>();
+            this.currentShell = new ArrayList<>();
         }
 
         public void flood() {
@@ -253,7 +253,7 @@ public abstract class AbstractMapData implements IMapData {
         }
 
         public void morphologicallyErode(boolean horizontalBias) {
-            float labelWidth = (float) (MinecraftClient.getInstance().textRenderer.getWidth(this.name) + 8);
+            float labelWidth = (float) (VoxelConstants.getMinecraft().textRenderer.getWidth(this.name) + 8);
             float multi = (float) (AbstractMapData.this.width / 32);
             float shellWidth = 2.0F;
             float labelPadding = labelWidth / 16.0F * multi / shellWidth;
@@ -280,7 +280,7 @@ public abstract class AbstractMapData implements IMapData {
         public ArrayList<Point> getNextShell(List<Point> pointsToCheck, int layer, boolean horizontalBias) {
             int layerWidth = horizontalBias ? 2 : 1;
             int layerHeight = horizontalBias ? 1 : 2;
-            ArrayList<Point> nextShell = new ArrayList<Point>();
+            ArrayList<Point> nextShell = new ArrayList<>();
 
             for (Point point : pointsToCheck) {
                 if (point.x < AbstractMapData.this.width - layerWidth) {
@@ -344,13 +344,11 @@ public abstract class AbstractMapData implements IMapData {
                 }
             }
 
-            if (nextShell.size() > 0) {
-                return nextShell;
-            } else {
+            if (nextShell.size() == 0) {
                 this.calculateCenterOfMass(pointsToCheck);
                 this.calculateClosestPointToCenter(pointsToCheck);
-                return nextShell;
             }
+            return nextShell;
         }
     }
 }

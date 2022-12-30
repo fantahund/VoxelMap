@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
@@ -18,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +25,7 @@ public class MapSettingsManager implements ISettingsManager {
     private File settingsFile;
     public boolean showUnderMenus;
     private final int availableProcessors = Runtime.getRuntime().availableProcessors();
-    public boolean multicore = this.availableProcessors > 1;
+    public final boolean multicore = this.availableProcessors > 1;
     public boolean hide = false;
     public boolean coords = true;
     protected boolean showCaves = true;
@@ -57,22 +55,20 @@ public class MapSettingsManager implements ISettingsManager {
     public Boolean cavesAllowed = true;
     public int sort = 1;
     protected boolean realTimeTorches = false;
-    public KeyBinding keyBindZoom = new KeyBinding("key.minimap.zoom", InputUtil.fromTranslationKey("key.keyboard.z").getCode(), "controls.minimap.title");
-    public KeyBinding keyBindFullscreen = new KeyBinding("key.minimap.togglefullscreen", InputUtil.fromTranslationKey("key.keyboard.x").getCode(), "controls.minimap.title");
-    public KeyBinding keyBindMenu = new KeyBinding("key.minimap.voxelmapmenu", InputUtil.fromTranslationKey("key.keyboard.m").getCode(), "controls.minimap.title");
-    public KeyBinding keyBindWaypointMenu = new KeyBinding("key.minimap.waypointmenu", -1, "controls.minimap.title");
-    public KeyBinding keyBindWaypoint = new KeyBinding("key.minimap.waypointhotkey", InputUtil.fromTranslationKey("key.keyboard.n").getCode(), "controls.minimap.title");
-    public KeyBinding keyBindMobToggle = new KeyBinding("key.minimap.togglemobs", -1, "controls.minimap.title");
-    public KeyBinding keyBindWaypointToggle = new KeyBinding("key.minimap.toggleingamewaypoints", -1, "controls.minimap.title");
-    public KeyBinding[] keyBindings;
-    public MinecraftClient game;
+    public final KeyBinding keyBindZoom = new KeyBinding("key.minimap.zoom", InputUtil.fromTranslationKey("key.keyboard.z").getCode(), "controls.minimap.title");
+    public final KeyBinding keyBindFullscreen = new KeyBinding("key.minimap.togglefullscreen", InputUtil.fromTranslationKey("key.keyboard.x").getCode(), "controls.minimap.title");
+    public final KeyBinding keyBindMenu = new KeyBinding("key.minimap.voxelmapmenu", InputUtil.fromTranslationKey("key.keyboard.m").getCode(), "controls.minimap.title");
+    public final KeyBinding keyBindWaypointMenu = new KeyBinding("key.minimap.waypointmenu", -1, "controls.minimap.title");
+    public final KeyBinding keyBindWaypoint = new KeyBinding("key.minimap.waypointhotkey", InputUtil.fromTranslationKey("key.keyboard.n").getCode(), "controls.minimap.title");
+    public final KeyBinding keyBindMobToggle = new KeyBinding("key.minimap.togglemobs", -1, "controls.minimap.title");
+    public final KeyBinding keyBindWaypointToggle = new KeyBinding("key.minimap.toggleingamewaypoints", -1, "controls.minimap.title");
+    public final KeyBinding[] keyBindings;
     private boolean somethingChanged;
     public static MapSettingsManager instance;
     private final List<ISubSettingsManager> subSettingsManagers = new ArrayList<>();
 
     public MapSettingsManager() {
         instance = this;
-        this.game = MinecraftClient.getInstance();
         this.keyBindings = new KeyBinding[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle};
     }
 
@@ -81,7 +77,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public void loadAll() {
-        this.settingsFile = new File(this.game.runDirectory, "config/voxelmap.properties");
+        this.settingsFile = new File(VoxelConstants.getMinecraft().runDirectory, "config/voxelmap.properties");
 
         try {
             if (this.settingsFile.exists()) {
@@ -143,13 +139,13 @@ public class MapSettingsManager implements ISettingsManager {
         try {
             keyBinding.setBoundKey(InputUtil.fromTranslationKey(id));
         } catch (Exception var4) {
-            System.err.println(id + " is not a valid keybinding");
+            VoxelConstants.getLogger().warn(id + " is not a valid keybinding");
         }
 
     }
 
     public void saveAll() {
-        File settingsFileDir = new File(this.game.runDirectory, "/config/");
+        File settingsFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/config/");
         if (!settingsFileDir.exists()) {
             settingsFileDir.mkdirs();
         }
@@ -157,32 +153,32 @@ public class MapSettingsManager implements ISettingsManager {
         this.settingsFile = new File(settingsFileDir, "voxelmap.properties");
 
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), Charset.forName("UTF-8").newEncoder())));
-            out.println("Zoom Level:" + Integer.toString(this.zoom));
-            out.println("Hide Minimap:" + Boolean.toString(this.hide));
-            out.println("Show Coordinates:" + Boolean.toString(this.coords));
-            out.println("Enable Cave Mode:" + Boolean.toString(this.showCaves));
-            out.println("Dynamic Lighting:" + Boolean.toString(this.lightmap));
-            out.println("Height Map:" + Boolean.toString(this.heightmap));
-            out.println("Slope Map:" + Boolean.toString(this.slopemap));
-            out.println("Blur:" + Boolean.toString(this.filtering));
-            out.println("Water Transparency:" + Boolean.toString(this.waterTransparency));
-            out.println("Block Transparency:" + Boolean.toString(this.blockTransparency));
-            out.println("Biomes:" + Boolean.toString(this.biomes));
-            out.println("Biome Overlay:" + Integer.toString(this.biomeOverlay));
-            out.println("Chunk Grid:" + Boolean.toString(this.chunkGrid));
-            out.println("Slime Chunks:" + Boolean.toString(this.slimeChunks));
-            out.println("Square Map:" + Boolean.toString(this.squareMap));
-            out.println("Rotation:" + Boolean.toString(this.rotates));
-            out.println("Old North:" + Boolean.toString(this.oldNorth));
-            out.println("Waypoint Beacons:" + Boolean.toString(this.showBeacons));
-            out.println("Waypoint Signs:" + Boolean.toString(this.showWaypoints));
-            out.println("Deathpoints:" + Integer.toString(this.deathpoints));
-            out.println("Waypoint Max Distance:" + Integer.toString(this.maxWaypointDisplayDistance));
-            out.println("Waypoint Sort By:" + Integer.toString(this.sort));
-            out.println("Welcome Message:" + Boolean.toString(this.welcome));
-            out.println("Map Corner:" + Integer.toString(this.mapCorner));
-            out.println("Map Size:" + Integer.toString(this.sizeModifier));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8.newEncoder())));
+            out.println("Zoom Level:" + this.zoom);
+            out.println("Hide Minimap:" + this.hide);
+            out.println("Show Coordinates:" + this.coords);
+            out.println("Enable Cave Mode:" + this.showCaves);
+            out.println("Dynamic Lighting:" + this.lightmap);
+            out.println("Height Map:" + this.heightmap);
+            out.println("Slope Map:" + this.slopemap);
+            out.println("Blur:" + this.filtering);
+            out.println("Water Transparency:" + this.waterTransparency);
+            out.println("Block Transparency:" + this.blockTransparency);
+            out.println("Biomes:" + this.biomes);
+            out.println("Biome Overlay:" + this.biomeOverlay);
+            out.println("Chunk Grid:" + this.chunkGrid);
+            out.println("Slime Chunks:" + this.slimeChunks);
+            out.println("Square Map:" + this.squareMap);
+            out.println("Rotation:" + this.rotates);
+            out.println("Old North:" + this.oldNorth);
+            out.println("Waypoint Beacons:" + this.showBeacons);
+            out.println("Waypoint Signs:" + this.showWaypoints);
+            out.println("Deathpoints:" + this.deathpoints);
+            out.println("Waypoint Max Distance:" + this.maxWaypointDisplayDistance);
+            out.println("Waypoint Sort By:" + this.sort);
+            out.println("Welcome Message:" + this.welcome);
+            out.println("Map Corner:" + this.mapCorner);
+            out.println("Map Size:" + this.sizeModifier);
             out.println("Zoom Key:" + this.keyBindZoom.getBoundKeyTranslationKey());
             out.println("Fullscreen Key:" + this.keyBindFullscreen.getBoundKeyTranslationKey());
             out.println("Menu Key:" + this.keyBindMenu.getBoundKeyTranslationKey());
@@ -256,7 +252,7 @@ public class MapSettingsManager implements ISettingsManager {
 
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {
         switch (par1EnumOptions) {
-            case TERRAIN:
+            case TERRAIN -> {
                 if (this.slopemap && this.heightmap) {
                     return I18nUtils.getString("options.minimap.terrain.both");
                 } else if (this.heightmap) {
@@ -268,7 +264,8 @@ public class MapSettingsManager implements ISettingsManager {
 
                     return I18nUtils.getString("options.off");
                 }
-            case BEACONS:
+            }
+            case BEACONS -> {
                 if (this.showBeacons && this.showWaypoints) {
                     return I18nUtils.getString("options.minimap.ingamewaypoints.both");
                 } else if (this.showBeacons) {
@@ -280,7 +277,8 @@ public class MapSettingsManager implements ISettingsManager {
 
                     return I18nUtils.getString("options.off");
                 }
-            case LOCATION:
+            }
+            case LOCATION -> {
                 if (this.mapCorner == 0) {
                     return I18nUtils.getString("options.minimap.location.topleft");
                 } else if (this.mapCorner == 1) {
@@ -294,7 +292,8 @@ public class MapSettingsManager implements ISettingsManager {
 
                     return "Error";
                 }
-            case SIZE:
+            }
+            case SIZE -> {
                 if (this.sizeModifier == -1) {
                     return I18nUtils.getString("options.minimap.size.small");
                 } else if (this.sizeModifier == 0) {
@@ -312,7 +311,8 @@ public class MapSettingsManager implements ISettingsManager {
 
                     return "error";
                 }
-            case BIOMEOVERLAY:
+            }
+            case BIOMEOVERLAY -> {
                 if (this.biomeOverlay == 0) {
                     return I18nUtils.getString("options.off");
                 } else if (this.biomeOverlay == 1) {
@@ -324,7 +324,8 @@ public class MapSettingsManager implements ISettingsManager {
 
                     return "error";
                 }
-            case DEATHPOINTS:
+            }
+            case DEATHPOINTS -> {
                 if (this.deathpoints == 0) {
                     return I18nUtils.getString("options.off");
                 } else if (this.deathpoints == 1) {
@@ -336,8 +337,9 @@ public class MapSettingsManager implements ISettingsManager {
 
                     return "error";
                 }
-            default:
-                throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
+            }
+            default ->
+                    throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
         }
     }
 
@@ -357,49 +359,21 @@ public class MapSettingsManager implements ISettingsManager {
 
     public void setOptionValue(EnumOptionsMinimap par1EnumOptions) {
         switch (par1EnumOptions) {
-            case COORDS:
-                this.coords = !this.coords;
-                break;
-            case HIDE:
-                this.hide = !this.hide;
-                break;
-            case CAVEMODE:
-                this.showCaves = !this.showCaves;
-                break;
-            case LIGHTING:
-                this.lightmap = !this.lightmap;
-                break;
-            case SQUARE:
-                this.squareMap = !this.squareMap;
-                break;
-            case ROTATES:
-                this.rotates = !this.rotates;
-                break;
-            case OLDNORTH:
-                this.oldNorth = !this.oldNorth;
-                break;
-            case WELCOME:
-                this.welcome = !this.welcome;
-                break;
-            case FILTERING:
-                this.filtering = !this.filtering;
-                break;
-            case WATERTRANSPARENCY:
-                this.waterTransparency = !this.waterTransparency;
-                break;
-            case BLOCKTRANSPARENCY:
-                this.blockTransparency = !this.blockTransparency;
-                break;
-            case BIOMES:
-                this.biomes = !this.biomes;
-                break;
-            case CHUNKGRID:
-                this.chunkGrid = !this.chunkGrid;
-                break;
-            case SLIMECHUNKS:
-                this.slimeChunks = !this.slimeChunks;
-                break;
-            case TERRAIN:
+            case COORDS -> this.coords = !this.coords;
+            case HIDE -> this.hide = !this.hide;
+            case CAVEMODE -> this.showCaves = !this.showCaves;
+            case LIGHTING -> this.lightmap = !this.lightmap;
+            case SQUARE -> this.squareMap = !this.squareMap;
+            case ROTATES -> this.rotates = !this.rotates;
+            case OLDNORTH -> this.oldNorth = !this.oldNorth;
+            case WELCOME -> this.welcome = !this.welcome;
+            case FILTERING -> this.filtering = !this.filtering;
+            case WATERTRANSPARENCY -> this.waterTransparency = !this.waterTransparency;
+            case BLOCKTRANSPARENCY -> this.blockTransparency = !this.blockTransparency;
+            case BIOMES -> this.biomes = !this.biomes;
+            case CHUNKGRID -> this.chunkGrid = !this.chunkGrid;
+            case SLIMECHUNKS -> this.slimeChunks = !this.slimeChunks;
+            case TERRAIN -> {
                 if (this.slopemap && this.heightmap) {
                     this.slopemap = false;
                     this.heightmap = false;
@@ -408,13 +382,11 @@ public class MapSettingsManager implements ISettingsManager {
                     this.heightmap = true;
                 } else if (this.heightmap) {
                     this.slopemap = true;
-                    this.heightmap = true;
                 } else {
                     this.slopemap = true;
-                    this.heightmap = false;
                 }
-                break;
-            case BEACONS:
+            }
+            case BEACONS -> {
                 if (this.showBeacons && this.showWaypoints) {
                     this.showBeacons = false;
                     this.showWaypoints = false;
@@ -422,33 +394,27 @@ public class MapSettingsManager implements ISettingsManager {
                     this.showBeacons = false;
                     this.showWaypoints = true;
                 } else if (this.showWaypoints) {
-                    this.showWaypoints = true;
                     this.showBeacons = true;
                 } else {
                     this.showBeacons = true;
-                    this.showWaypoints = false;
                 }
-                break;
-            case LOCATION:
-                this.mapCorner = this.mapCorner >= 3 ? 0 : this.mapCorner + 1;
-                break;
-            case SIZE:
-                this.sizeModifier = this.sizeModifier >= 4 ? -1 : this.sizeModifier + 1;
-                break;
-            case BIOMEOVERLAY:
+            }
+            case LOCATION -> this.mapCorner = this.mapCorner >= 3 ? 0 : this.mapCorner + 1;
+            case SIZE -> this.sizeModifier = this.sizeModifier >= 4 ? -1 : this.sizeModifier + 1;
+            case BIOMEOVERLAY -> {
                 ++this.biomeOverlay;
                 if (this.biomeOverlay > 2) {
                     this.biomeOverlay = 0;
                 }
-                break;
-            case DEATHPOINTS:
+            }
+            case DEATHPOINTS -> {
                 ++this.deathpoints;
                 if (this.deathpoints > 2) {
                     this.deathpoints = 0;
                 }
-                break;
-            default:
-                throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
+            }
+            default ->
+                    throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
         }
 
         this.somethingChanged = true;

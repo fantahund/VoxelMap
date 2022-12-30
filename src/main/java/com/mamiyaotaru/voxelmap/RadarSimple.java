@@ -12,7 +12,6 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -28,34 +27,27 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3f;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
 
 public class RadarSimple implements IRadar {
-    private MinecraftClient game;
     private LayoutVariables layoutVariables = null;
-    public MapSettingsManager minimapOptions = null;
-    public RadarSettingsManager options = null;
-    private TextureAtlas textureAtlas;
-    private boolean enabled = true;
+    public final MapSettingsManager minimapOptions;
+    public final RadarSettingsManager options;
+    private final TextureAtlas textureAtlas;
     private boolean completedLoading = false;
     private int timer = 500;
     private float direction = 0.0F;
-    private ArrayList<Contact> contacts = new ArrayList(40);
-    UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
-
-    private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
+    private final ArrayList<Contact> contacts = new ArrayList<>(40);
+    final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 
     public RadarSimple(IVoxelMap master) {
         this.minimapOptions = master.getMapOptions();
         this.options = master.getRadarOptions();
-        this.game = MinecraftClient.getInstance();
         this.textureAtlas = new TextureAtlas("pings");
         this.textureAtlas.setFilter(false, false);
     }
@@ -82,19 +74,14 @@ public class RadarSimple implements IRadar {
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var4) {
-            System.err.println("Failed getting mobs " + var4.getLocalizedMessage());
-            var4.printStackTrace();
+            VoxelConstants.getLogger().error("Failed getting mobs " + var4.getLocalizedMessage(), var4);
         }
 
     }
 
     @Override
-    public void onTickInGame(MatrixStack matrixStack, MinecraftClient mc, LayoutVariables layoutVariables) {
+    public void onTickInGame(MatrixStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
-            if (this.game == null) {
-                this.game = mc;
-            }
-
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
                 this.timer = 500;
@@ -110,19 +97,17 @@ public class RadarSimple implements IRadar {
                 this.direction += 360.0F;
             }
 
-            if (this.enabled) {
-                if (this.completedLoading && this.timer > 95) {
-                    this.calculateMobs();
-                    this.timer = 0;
-                }
-
-                ++this.timer;
-                if (this.completedLoading) {
-                    this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
-                }
-
-                GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            if (this.completedLoading && this.timer > 95) {
+                this.calculateMobs();
+                this.timer = 0;
             }
+
+            ++this.timer;
+            if (this.completedLoading) {
+                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+            }
+
+            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
     }
@@ -130,13 +115,13 @@ public class RadarSimple implements IRadar {
     public void calculateMobs() {
         this.contacts.clear();
 
-        for (Entity entity : this.game.world.getEntities()) {
+        for (Entity entity : VoxelConstants.getMinecraft().world.getEntities()) {
             try {
-                if (entity != null && !entity.isInvisibleTo(this.game.player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
+                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.getPos().getZ();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.getPos().getY();
-                    double hypot = (double) (wayX * wayX + wayZ * wayZ + wayY * wayY);
+                    double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
                     if (hypot < 961.0) {
                         Contact contact = new Contact(entity, this.getUnknownMobNeutrality(entity));
@@ -147,51 +132,41 @@ public class RadarSimple implements IRadar {
                     }
                 }
             } catch (Exception var11) {
-                System.err.println(var11.getLocalizedMessage());
-                var11.printStackTrace();
+                VoxelConstants.getLogger().error(var11.getLocalizedMessage(), var11);
             }
         }
 
-        Collections.sort(this.contacts, new Comparator<Contact>() {
-            public int compare(Contact contact1, Contact contact2) {
-                return contact1.y - contact2.y;
-            }
-        });
+        this.contacts.sort(Comparator.comparingInt(contact -> contact.y));
     }
 
     private EnumMobs getUnknownMobNeutrality(Entity entity) {
         if (this.isHostile(entity)) {
             return EnumMobs.GENERICHOSTILE;
         } else {
-            return !(entity instanceof TameableEntity) || !((TameableEntity) entity).isTamed() || !this.game.isIntegratedServerRunning() && !((TameableEntity) entity).getOwner().equals(this.game.player) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
+            return !(entity instanceof TameableEntity) || !((TameableEntity) entity).isTamed() || !VoxelConstants.getMinecraft().isIntegratedServerRunning() && !((TameableEntity) entity).getOwner().equals(VoxelConstants.getPlayer()) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
         }
     }
 
     private boolean isHostile(Entity entity) {
-        if (entity instanceof ZombifiedPiglinEntity) {
-            ZombifiedPiglinEntity zombifiedPiglinEntity = (ZombifiedPiglinEntity) entity;
-            return zombifiedPiglinEntity.isAngryAt(this.game.player);
+        if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
+            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getPlayer());
         } else if (entity instanceof Monster) {
             return true;
-        } else if (entity instanceof BeeEntity) {
-            BeeEntity beeEntity = (BeeEntity) entity;
+        } else if (entity instanceof BeeEntity beeEntity) {
             return beeEntity.hasAngerTime();
         } else {
-            if (entity instanceof PolarBearEntity) {
-                PolarBearEntity polarBearEntity = (PolarBearEntity) entity;
+            if (entity instanceof PolarBearEntity polarBearEntity) {
 
-                for (Object object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
-                    if (((PolarBearEntity) object).isBaby()) {
+                for (PolarBearEntity object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
+                    if (object.isBaby()) {
                         return true;
                     }
                 }
             }
 
-            if (entity instanceof RabbitEntity) {
-                RabbitEntity rabbitEntity = (RabbitEntity) entity;
+            if (entity instanceof RabbitEntity rabbitEntity) {
                 return rabbitEntity.getRabbitType() == 99;
-            } else if (entity instanceof WolfEntity) {
-                WolfEntity wolfEntity = (WolfEntity) entity;
+            } else if (entity instanceof WolfEntity wolfEntity) {
                 return wolfEntity.hasAngerTime();
             } else {
                 return false;
@@ -223,16 +198,16 @@ public class RadarSimple implements IRadar {
             double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
             double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
             int wayY = GameVariableAccessShim.yCoord() - contactY;
-            double adjustedDiff = max - (double) Math.max(Math.abs(wayY) - 0, 0);
+            double adjustedDiff = max - (double) Math.max(Math.abs(wayY), 0);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
-            GLShim.glBlendFunc(770, 771);
+            GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
             if (wayY < 0) {
                 GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
-                GLShim.glColor3f(1.0F * contact.brightness, 1.0F * contact.brightness, 1.0F * contact.brightness);
+                GLShim.glColor3f(contact.brightness, contact.brightness, contact.brightness);
             }
 
             if (this.minimapOptions.rotates) {
@@ -241,11 +216,11 @@ public class RadarSimple implements IRadar {
                 contact.angle -= 90.0F;
             }
 
-            boolean inRange = false;
+            boolean inRange;
             if (!this.minimapOptions.squareMap) {
                 inRange = contact.distance < 31.0;
             } else {
-                double radLocate = Math.toRadians((double) contact.angle);
+                double radLocate = Math.toRadians(contact.angle);
                 double dispX = contact.distance * Math.cos(radLocate);
                 double dispY = contact.distance * Math.sin(radLocate);
                 inRange = Math.abs(dispX) <= 28.5 && Math.abs(dispY) <= 28.5;
@@ -261,11 +236,11 @@ public class RadarSimple implements IRadar {
                         contactFacing += 90.0F;
                     }
 
-                    matrixStack.translate((double) x, (double) y, 0.0);
+                    matrixStack.translate(x, y, 0.0);
                     matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-contact.angle));
                     matrixStack.translate(0.0, -contact.distance, 0.0);
                     matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(contact.angle + contactFacing));
-                    matrixStack.translate((double) (-x), (double) (-y), 0.0);
+                    matrixStack.translate(-x, -y, 0.0);
                     RenderSystem.applyModelViewMatrix();
                     if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
                         Sprite icon = this.textureAtlas.getAtlasSprite("glow");
@@ -286,8 +261,7 @@ public class RadarSimple implements IRadar {
                         GLUtils.drawPost();
                     }
                 } catch (Exception e) {
-                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
-                    logger.log(Level.ERROR, e);
+                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();
@@ -299,13 +273,13 @@ public class RadarSimple implements IRadar {
 
     private void applyFilteringParameters() {
         if (this.options.filtering) {
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
-            GLShim.glTexParameteri(3553, 10242, 10496);
-            GLShim.glTexParameteri(3553, 10243, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, 10496);
         } else {
-            GLShim.glTexParameteri(3553, 10241, 9728);
-            GLShim.glTexParameteri(3553, 10240, 9728);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         }
 
     }

@@ -12,7 +12,7 @@ public class GuiButtonText extends ButtonWidget {
 
     public GuiButtonText(TextRenderer fontRenderer, int x, int y, int widthIn, int heightIn, Text buttonText, ButtonWidget.PressAction action) {
         super(x, y, widthIn, heightIn, buttonText, action);
-        this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, widthIn - 2, heightIn - 2, (Text) null);
+        this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, widthIn - 2, heightIn - 2, null);
     }
 
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {

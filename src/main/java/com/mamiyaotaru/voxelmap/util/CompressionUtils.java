@@ -22,8 +22,7 @@ public class CompressionUtils {
 
         outputStream.close();
         deflater.end();
-        byte[] output = outputStream.toByteArray();
-        return output;
+        return outputStream.toByteArray();
     }
 
     public static byte[] decompress(byte[] dataToDecompress) throws IOException, DataFormatException {
@@ -39,7 +38,6 @@ public class CompressionUtils {
 
         outputStream.close();
         inflater.end();
-        byte[] output = outputStream.toByteArray();
-        return output;
+        return outputStream.toByteArray();
     }
 }

@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Dilation;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -79,6 +78,7 @@ import net.minecraft.client.render.entity.model.SpiderEntityModel;
 import net.minecraft.client.render.entity.model.SquidEntityModel;
 import net.minecraft.client.render.entity.model.StriderEntityModel;
 import net.minecraft.client.render.entity.model.VillagerResemblingModel;
+import net.minecraft.client.render.entity.model.WardenEntityModel;
 import net.minecraft.client.render.entity.model.WolfEntityModel;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -88,16 +88,23 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.IllagerEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.entity.mob.PhantomEntity;
+import net.minecraft.entity.mob.ShulkerEntity;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
+import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.entity.passive.HorseMarking;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraft.entity.passive.PufferfishEntity;
 import net.minecraft.entity.passive.RabbitEntity;
 import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.StriderEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -127,8 +134,7 @@ import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerDataContainer;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -143,73 +149,61 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
-    private MinecraftClient game;
-    private IVoxelMap master = null;
+    private final IVoxelMap master;
     private LayoutVariables layoutVariables = null;
-    public MapSettingsManager minimapOptions = null;
-    public RadarSettingsManager options = null;
-    private FontRendererWithAtlas fontRenderer;
-    private TextureAtlas textureAtlas;
+    public final MapSettingsManager minimapOptions;
+    public final RadarSettingsManager options;
+    private final FontRendererWithAtlas fontRenderer;
+    private final TextureAtlas textureAtlas;
     private boolean newMobs = false;
-    private boolean enabled = true;
     private boolean completedLoading = false;
     private int timer = 500;
     private float direction = 0.0F;
-    private ArrayList<Contact> contacts = new ArrayList(40);
-    public HashMap mpContactsSkinGetTries = new HashMap();
-    public HashMap contactsSkinGetTries = new HashMap();
+    private final ArrayList<Contact> contacts = new ArrayList<>(40);
+    public final HashMap<String, Integer> mpContactsSkinGetTries = new HashMap<>();
+    public final HashMap<String, Integer> contactsSkinGetTries = new HashMap<>();
     private Sprite clothIcon = null;
-    private static final int CLOTH = 0;
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
-    private String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
-    private final float iconScale = 4.0F;
-    private boolean randomobsOptifine = false;
-    private Class randomEntitiesClass = null;
-    private Field mapPropertiesField = null;
-    private java.util.Map mapProperties = null;
-    private Field randomEntityField = null;
+    private final String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
+    private boolean randomobsOptifine;
+    private Map<String, Object> mapProperties = null;
     private Object randomEntity = null;
-    private Class iRandomEntityClass = null;
-    private Class randomEntityClass = null;
+    private Class<?> randomEntityClass = null;
     private Method setEntityMethod = null;
-    private Class randomEntitiesPropertiesClass = null;
+    private Class<?> randomEntitiesPropertiesClass = null;
     private Method getEntityTextureMethod = null;
-    private boolean hasCustomNPCs = false;
-    private Class entityCustomNpcClass = null;
-    private Class modelDataClass = null;
-    private Class entityNPCInterfaceClass = null;
+    private boolean hasCustomNPCs;
+    private Class<?> entityCustomNpcClass = null;
     private Field modelDataField = null;
     private Method getEntityMethod = null;
     private boolean lastOutlines = true;
-    UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
     private SkullEntityModel playerSkullModel;
-    private BipedEntityModel bipedArmorModel;
-    private SkeletonEntityModel strayOverlayModel;
-    private DrownedEntityModel drownedOverlayModel;
-    private BipedEntityModel piglinArmorModel;
+    private BipedEntityModel<LivingEntity> bipedArmorModel;
+    private SkeletonEntityModel<net.minecraft.entity.boss.WitherEntity> strayOverlayModel;
+    private DrownedEntityModel<net.minecraft.entity.mob.ZombieEntity> drownedOverlayModel;
+    private BipedEntityModel<LivingEntity> piglinArmorModel;
     private NativeImageBackedTexture nativeBackedTexture = new NativeImageBackedTexture(2, 2, false);
     private final Identifier nativeBackedTextureLocation = new Identifier("voxelmap", "tempimage");
     private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
+    private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
 
-    private static final HashMap<EnumMobs, BufferedImage> entityIconMap = new HashMap<>();
-
-    private final Logger logger = org.apache.logging.log4j.LogManager.getLogger();
-
-    private static final Int2ObjectMap LEVEL_TO_ID = (Int2ObjectMap) Util.make(new Int2ObjectOpenHashMap(), int2ObjectOpenHashMap -> {
+    private static final Int2ObjectMap<Identifier> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
         int2ObjectOpenHashMap.put(1, new Identifier("stone"));
         int2ObjectOpenHashMap.put(2, new Identifier("iron"));
         int2ObjectOpenHashMap.put(3, new Identifier("gold"));
         int2ObjectOpenHashMap.put(4, new Identifier("emerald"));
         int2ObjectOpenHashMap.put(5, new Identifier("diamond"));
     });
-    private static final java.util.Map TEXTURES = (java.util.Map) Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
-        enumMap.put(HorseMarking.NONE, (Object) null);
+    private static final Map<HorseMarking, Object> TEXTURES = Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
+        enumMap.put(HorseMarking.NONE, null);
         enumMap.put(HorseMarking.WHITE, new Identifier("textures/entity/horse/horse_markings_white.png"));
         enumMap.put(HorseMarking.WHITE_FIELD, new Identifier("textures/entity/horse/horse_markings_whitefield.png"));
         enumMap.put(HorseMarking.WHITE_DOTS, new Identifier("textures/entity/horse/horse_markings_whitedots.png"));
@@ -220,53 +214,39 @@ public class Radar implements IRadar {
         this.master = master;
         this.minimapOptions = master.getMapOptions();
         this.options = master.getRadarOptions();
-        this.game = MinecraftClient.getInstance();
-        this.fontRenderer = new FontRendererWithAtlas(this.game.getTextureManager(), new Identifier("textures/font/ascii.png"));
+        this.fontRenderer = new FontRendererWithAtlas(VoxelConstants.getMinecraft().getTextureManager(), new Identifier("textures/font/ascii.png"));
         this.textureAtlas = new TextureAtlas("mobs");
         this.textureAtlas.setFilter(false, false);
 
         try {
-            this.randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
-            this.mapPropertiesField = this.randomEntitiesClass.getDeclaredField("mapProperties");
-            this.mapPropertiesField.setAccessible(true);
-            this.mapProperties = (java.util.Map) this.mapPropertiesField.get((Object) null);
-            this.randomEntityField = this.randomEntitiesClass.getDeclaredField("randomEntity");
-            this.randomEntityField.setAccessible(true);
-            this.randomEntity = this.randomEntityField.get((Object) null);
-            this.iRandomEntityClass = Class.forName("net.optifine.IRandomEntity");
+            Class<?> randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
+            Field mapPropertiesField = randomEntitiesClass.getDeclaredField("mapProperties");
+            mapPropertiesField.setAccessible(true);
+            this.mapProperties = (java.util.Map) mapPropertiesField.get(null);
+            Field randomEntityField = randomEntitiesClass.getDeclaredField("randomEntity");
+            randomEntityField.setAccessible(true);
+            this.randomEntity = randomEntityField.get(null);
+            Class<?> iRandomEntityClass = Class.forName("net.optifine.IRandomEntity");
             this.randomEntityClass = Class.forName("net.optifine.RandomEntity");
-            Class[] argClasses1 = new Class[]{Entity.class};
+            Class<?>[] argClasses1 = new Class[]{Entity.class};
             this.setEntityMethod = this.randomEntityClass.getDeclaredMethod("setEntity", argClasses1);
             this.randomEntitiesPropertiesClass = Class.forName("net.optifine.RandomEntityProperties");
-            Class[] argClasses2 = new Class[]{Identifier.class, this.iRandomEntityClass};
+            Class<?>[] argClasses2 = new Class[]{Identifier.class, iRandomEntityClass};
             this.getEntityTextureMethod = this.randomEntitiesPropertiesClass.getDeclaredMethod("getTextureLocation", argClasses2);
             this.randomobsOptifine = true;
-        } catch (ClassNotFoundException var7) {
-            this.randomobsOptifine = false;
-        } catch (NoSuchMethodException var8) {
-            this.randomobsOptifine = false;
-        } catch (NoSuchFieldException var9) {
-            this.randomobsOptifine = false;
-        } catch (SecurityException var10) {
-            this.randomobsOptifine = false;
-        } catch (IllegalArgumentException var11) {
-            this.randomobsOptifine = false;
-        } catch (IllegalAccessException var12) {
+        } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | SecurityException |
+                 IllegalArgumentException | IllegalAccessException var7) {
             this.randomobsOptifine = false;
         }
 
         try {
             this.entityCustomNpcClass = Class.forName("noppes.npcs.entity.EntityCustomNpc");
-            this.modelDataClass = Class.forName("noppes.npcs.ModelData");
+            Class<?> modelDataClass = Class.forName("noppes.npcs.ModelData");
             this.modelDataField = this.entityCustomNpcClass.getField("modelData");
-            this.entityNPCInterfaceClass = Class.forName("noppes.npcs.entity.EntityNPCInterface");
-            this.getEntityMethod = this.modelDataClass.getMethod("getEntity", this.entityNPCInterfaceClass);
+            Class<?> entityNPCInterfaceClass = Class.forName("noppes.npcs.entity.EntityNPCInterface");
+            this.getEntityMethod = modelDataClass.getMethod("getEntity", entityNPCInterfaceClass);
             this.hasCustomNPCs = true;
-        } catch (ClassNotFoundException var4) {
-            this.hasCustomNPCs = false;
-        } catch (NoSuchFieldException var5) {
-            this.hasCustomNPCs = false;
-        } catch (NoSuchMethodException var6) {
+        } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException var4) {
             this.hasCustomNPCs = false;
         }
 
@@ -291,16 +271,16 @@ public class Radar implements IRadar {
             Dilation ARMOR_DILATION = new Dilation(1.0F);
             TexturedModelData texturedModelData2 = TexturedModelData.of(BipedEntityModel.getModelData(ARMOR_DILATION, 0.0F), 64, 32);
             ModelPart bipedArmorModelPart = texturedModelData2.createModel();
-            this.bipedArmorModel = new BipedEntityModel(bipedArmorModelPart);
+            this.bipedArmorModel = new BipedEntityModel<>(bipedArmorModelPart);
             TexturedModelData strayModelData = TexturedModelData.of(BipedEntityModel.getModelData(new Dilation(0.25F), 0.0F), 64, 32);
             ModelPart strayOverlayModelPart = strayModelData.createModel();
-            this.strayOverlayModel = new SkeletonEntityModel(strayOverlayModelPart);
+            this.strayOverlayModel = new SkeletonEntityModel<>(strayOverlayModelPart);
             TexturedModelData drownedModelData = DrownedEntityModel.getTexturedModelData(new Dilation(0.25F));
             ModelPart drownedOverlayModelPart = drownedModelData.createModel();
-            this.drownedOverlayModel = new DrownedEntityModel(drownedOverlayModelPart);
+            this.drownedOverlayModel = new DrownedEntityModel<>(drownedOverlayModelPart);
             TexturedModelData texturedModelData3 = TexturedModelData.of(BipedEntityModel.getModelData(new Dilation(1.02F), 0.0F), 64, 32);
             ModelPart piglinArmorModelPart = texturedModelData3.createModel();
-            this.piglinArmorModel = new BipedEntityModel(piglinArmorModelPart);
+            this.piglinArmorModel = new BipedEntityModel<>(piglinArmorModelPart);
             if (ReflectionUtils.classExists("com.prupe.mcpatcher.mob.MobOverlay") && ImageUtils.loadImage(new Identifier("mcpatcher/mob/cow/mooshroom_overlay.png"), 0, 0, 1, 1) != null) {
                 EnumMobs.MOOSHROOM.secondaryResourceLocation = new Identifier("mcpatcher/mob/cow/mooshroom_overlay.png");
             } else {
@@ -319,7 +299,7 @@ public class Radar implements IRadar {
                 } else {
                     this.textureAtlas.registerFailedIcon(identifier + "custom");
                     if ((double) EnumMobs.values()[t].expectedWidth > 0.5) {
-                        mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, (Entity) null);
+                        mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
                         if (mobImage != null) {
                             float scale = (float) mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
                             mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
@@ -365,7 +345,7 @@ public class Radar implements IRadar {
             scale = (float) creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
             creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
-            BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, (Identifier) null, (Entity) null);
+            BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
             scale = (float) dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
             dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
@@ -373,7 +353,7 @@ public class Radar implements IRadar {
             scale = (float) sheepFur.getWidth() / 6.0F;
             sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
             int chop = (int) Math.max(1.0F, 2.0F);
-            sheepFur = ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
+            ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
             sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
             this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
             BufferedImage crown = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/crown.png"), 0, 0, 16, 16, 16, 16);
@@ -396,12 +376,10 @@ public class Radar implements IRadar {
             BufferedImage blankImage = ImageUtils.loadImage(blankResourceLocation, 0, 0, 8, 8, 8, 8);
             Sprite blankSprite = this.textureAtlas.registerIconForBufferedImage(blankResourceLocation.toString(), blankImage);
             this.fontRenderer.setSprites(fontSprite, blankSprite);
-            this.fontRenderer.setFontRef(this.textureAtlas.getGlId());
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var30) {
-            System.err.println("Failed getting mobs " + var30.getLocalizedMessage());
-            var30.printStackTrace();
+            VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
         }
 
     }
@@ -423,55 +401,34 @@ public class Radar implements IRadar {
     private BufferedImage createImageFromTypeAndImages(EnumMobs type, BufferedImage mobImage, BufferedImage mobImageSecondary, Entity entity) {
         BufferedImage image = null;
         switch (type) {
-            case GENERICHOSTILE:
-                image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
-                break;
-            case GENERICNEUTRAL:
-                image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
-                break;
-            case GENERICTAME:
-                image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
-                break;
-            case BAT:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 64, 64), ImageUtils.loadImage(mobImage, 25, 1, 3, 4), 0.0F, 0.0F, 8, 12), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 25, 1, 3, 4)), 5.0F, 0.0F, 8, 12), ImageUtils.loadImage(mobImage, 6, 6, 6, 6), 1.0F, 3.0F, 8, 12);
-                break;
-            case CHICKEN:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 2, 3, 6, 6), ImageUtils.loadImage(mobImage, 16, 2, 4, 2), 1.0F, 2.0F, 6, 6), ImageUtils.loadImage(mobImage, 16, 6, 2, 2), 2.0F, 4.0F, 6, 6);
-                break;
-            case COD:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 5, 32, 32), ImageUtils.loadImage(mobImage, 15, 3, 1, 3, 32, 32), 1.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 16, 3, 3, 4, 32, 32), 2.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 9, 7, 7, 4, 32, 32), 5.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 26, 7, 4, 4, 32, 32), 12.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 26, 0, 6, 1, 32, 32), 4.0F, 0.0F, 16, 5);
-                break;
-            case ENDERDRAGON:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 20, 256, 256), ImageUtils.loadImage(mobImage, 128, 46, 16, 16, 256, 256), 0.0F, 4.0F, 16, 16), ImageUtils.loadImage(mobImage, 192, 60, 12, 5, 256, 256), 2.0F, 11.0F, 16, 16), ImageUtils.loadImage(mobImage, 192, 81, 12, 4, 256, 256), 2.0F, 16.0F, 16, 16), ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256), 3.0F, 0.0F, 16, 16), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256)), 11.0F, 0.0F, 16, 16);
-                break;
-            case GHAST:
-                image = ImageUtils.loadImage(mobImage, 16, 16, 16, 16);
-                break;
-            case GHASTATTACKING:
-                image = ImageUtils.loadImage(mobImage, 16, 16, 16, 16);
-                break;
-            case GUARDIAN:
-                image = ImageUtils.scaleImage(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12), 0.5F);
-                break;
-            case GUARDIANELDER:
-                image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12);
-                break;
-            case HORSE:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 24, 64, 64), ImageUtils.loadImage(mobImage, 56, 38, 2, 16, 64, 64), 1.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 42, 7, 12, 64, 64), 3.0F, 12.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 20, 7, 5, 64, 64), 3.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 30, 5, 5, 64, 64), 10.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 19, 17, 1, 3, 64, 64), 3.0F, 4.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 13, 1, 7, 64, 64), 3.0F, 0.0F, 16, 24);
-                break;
-            case IRONGOLEM:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 128, 128), ImageUtils.loadImage(mobImage, 8, 8, 8, 10, 128, 128), 0.0F, 1.0F, 8, 12), ImageUtils.loadImage(mobImage, 26, 2, 2, 4, 128, 128), 3.0F, 8.0F, 8, 12);
-                break;
-            case LLAMA:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 14, 128, 64), ImageUtils.loadImage(mobImage, 6, 20, 8, 8, 128, 64), 0.0F, 3.0F, 8, 14), ImageUtils.loadImage(mobImage, 9, 9, 4, 4, 128, 64), 2.0F, 5.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 0.0F, 0.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 5.0F, 0.0F, 8, 14);
-                break;
-            case LLAMATRADER:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 14, 128, 64), ImageUtils.loadImage(mobImage, 6, 20, 8, 8, 128, 64), 0.0F, 3.0F, 8, 14), ImageUtils.loadImage(mobImage, 9, 9, 4, 4, 128, 64), 2.0F, 5.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 0.0F, 0.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 5.0F, 0.0F, 8, 14);
-                break;
-            case MAGMA:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 8, 8, 8, 8), ImageUtils.loadImage(mobImage, 32, 18, 8, 1), 0.0F, 3.0F, 8, 8), ImageUtils.loadImage(mobImage, 32, 27, 8, 1), 0.0F, 4.0F, 8, 8);
-                break;
-            case MOOSHROOM:
+            case GENERICHOSTILE ->
+                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
+            case GENERICNEUTRAL ->
+                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
+            case GENERICTAME ->
+                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
+            case BAT ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 64, 64), ImageUtils.loadImage(mobImage, 25, 1, 3, 4), 0.0F, 0.0F, 8, 12), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 25, 1, 3, 4)), 5.0F, 0.0F, 8, 12), ImageUtils.loadImage(mobImage, 6, 6, 6, 6), 1.0F, 3.0F, 8, 12);
+            case CHICKEN ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 2, 3, 6, 6), ImageUtils.loadImage(mobImage, 16, 2, 4, 2), 1.0F, 2.0F, 6, 6), ImageUtils.loadImage(mobImage, 16, 6, 2, 2), 2.0F, 4.0F, 6, 6);
+            case COD ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 5, 32, 32), ImageUtils.loadImage(mobImage, 15, 3, 1, 3, 32, 32), 1.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 16, 3, 3, 4, 32, 32), 2.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 9, 7, 7, 4, 32, 32), 5.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 26, 7, 4, 4, 32, 32), 12.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 26, 0, 6, 1, 32, 32), 4.0F, 0.0F, 16, 5);
+            case ENDERDRAGON ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 20, 256, 256), ImageUtils.loadImage(mobImage, 128, 46, 16, 16, 256, 256), 0.0F, 4.0F, 16, 16), ImageUtils.loadImage(mobImage, 192, 60, 12, 5, 256, 256), 2.0F, 11.0F, 16, 16), ImageUtils.loadImage(mobImage, 192, 81, 12, 4, 256, 256), 2.0F, 16.0F, 16, 16), ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256), 3.0F, 0.0F, 16, 16), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256)), 11.0F, 0.0F, 16, 16);
+            case GHAST, GHASTATTACKING -> image = ImageUtils.loadImage(mobImage, 16, 16, 16, 16);
+            case GUARDIAN ->
+                    image = ImageUtils.scaleImage(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12), 0.5F);
+            case GUARDIANELDER ->
+                    image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12);
+            case HORSE ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 24, 64, 64), ImageUtils.loadImage(mobImage, 56, 38, 2, 16, 64, 64), 1.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 42, 7, 12, 64, 64), 3.0F, 12.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 20, 7, 5, 64, 64), 3.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 30, 5, 5, 64, 64), 10.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 19, 17, 1, 3, 64, 64), 3.0F, 4.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 13, 1, 7, 64, 64), 3.0F, 0.0F, 16, 24);
+            case IRONGOLEM ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 128, 128), ImageUtils.loadImage(mobImage, 8, 8, 8, 10, 128, 128), 0.0F, 1.0F, 8, 12), ImageUtils.loadImage(mobImage, 26, 2, 2, 4, 128, 128), 3.0F, 8.0F, 8, 12);
+            case LLAMA, LLAMATRADER ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 14, 128, 64), ImageUtils.loadImage(mobImage, 6, 20, 8, 8, 128, 64), 0.0F, 3.0F, 8, 14), ImageUtils.loadImage(mobImage, 9, 9, 4, 4, 128, 64), 2.0F, 5.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 0.0F, 0.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 5.0F, 0.0F, 8, 14);
+            case MAGMA ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 8, 8, 8, 8), ImageUtils.loadImage(mobImage, 32, 18, 8, 1), 0.0F, 3.0F, 8, 8), ImageUtils.loadImage(mobImage, 32, 27, 8, 1), 0.0F, 4.0F, 8, 8);
+            case MOOSHROOM -> {
                 image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 40, 40), ImageUtils.loadImage(mobImage, 6, 6, 8, 8), 16.0F, 16.0F, 40, 40), ImageUtils.loadImage(mobImage, 23, 1, 1, 3), 15.0F, 15.0F, 40, 40), ImageUtils.loadImage(mobImage, 23, 1, 1, 3), 24.0F, 15.0F, 40, 40);
                 if (mobImageSecondary != null) {
                     BufferedImage mushroomImage;
@@ -488,68 +445,51 @@ public class Radar implements IRadar {
                         mushroomImage = ImageUtils.scaleImage(mushroomImage, ratio / 2.5F);
                     }
 
-                    image = ImageUtils.addImages(image, mushroomImage, 12.0F, 0.0F, 40, 40);
+                    ImageUtils.addImages(image, mushroomImage, 12.0F, 0.0F, 40, 40);
                 }
-                break;
-            case PARROT:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8, 32, 32), ImageUtils.loadImage(mobImage, 2, 22, 3, 5, 32, 32), 1.0F, 0.0F, 8, 8), ImageUtils.loadImage(mobImage, 10, 4, 4, 1, 32, 32), 2.0F, 4.0F, 8, 8), ImageUtils.loadImage(mobImage, 2, 4, 2, 3, 32, 32), 2.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 11, 8, 1, 2, 32, 32), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 16, 8, 1, 2, 32, 32), 5.0F, 5.0F, 8, 8);
-                break;
-            case PHANTOM:
-                image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 5, 5, 7, 3, 64, 64), ImageUtils.loadImage(mobImageSecondary, 5, 5, 7, 3, 64, 64), 0.0F, 0.0F, 7, 3);
-                break;
-            case PUFFERFISH:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 3, 3, 32, 32), ImageUtils.loadImage(mobImage, 3, 30, 3, 2, 32, 32), 0.0F, 1.0F, 3, 3), ImageUtils.loadImage(mobImage, 3, 29, 1, 1, 32, 32), 0.0F, 0.0F, 3, 3), ImageUtils.loadImage(mobImage, 5, 29, 1, 1, 32, 32), 2.0F, 0.0F, 3, 3);
-                break;
-            case PUFFERFISHHALF:
-                image = ImageUtils.loadImage(mobImage, 17, 27, 5, 5, 32, 32);
-                break;
-            case PUFFERFISHFULL:
-                image = ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 32, 32);
-                break;
-            case SALMON:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 26, 7, 32, 32), ImageUtils.loadImage(mobImage, 27, 3, 3, 4, 32, 32), 1.0F, 2.5F, 26, 7), ImageUtils.loadImage(mobImage, 11, 8, 8, 5, 32, 32), 4.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 11, 21, 8, 5, 32, 32), 12.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 26, 16, 6, 5, 32, 32), 20.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 0, 0, 2, 2, 32, 32), 10.0F, 0.0F, 26, 7), ImageUtils.loadImage(mobImage, 5, 6, 3, 2, 32, 32), 12.0F, 0.0F, 26, 7);
-                break;
-            case SLIME:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-                break;
-            case TROPICALFISHA:
+            }
+            case PARROT ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8, 32, 32), ImageUtils.loadImage(mobImage, 2, 22, 3, 5, 32, 32), 1.0F, 0.0F, 8, 8), ImageUtils.loadImage(mobImage, 10, 4, 4, 1, 32, 32), 2.0F, 4.0F, 8, 8), ImageUtils.loadImage(mobImage, 2, 4, 2, 3, 32, 32), 2.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 11, 8, 1, 2, 32, 32), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 16, 8, 1, 2, 32, 32), 5.0F, 5.0F, 8, 8);
+            case PHANTOM ->
+                    image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 5, 5, 7, 3, 64, 64), ImageUtils.loadImage(mobImageSecondary, 5, 5, 7, 3, 64, 64), 0.0F, 0.0F, 7, 3);
+            case PUFFERFISH ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 3, 3, 32, 32), ImageUtils.loadImage(mobImage, 3, 30, 3, 2, 32, 32), 0.0F, 1.0F, 3, 3), ImageUtils.loadImage(mobImage, 3, 29, 1, 1, 32, 32), 0.0F, 0.0F, 3, 3), ImageUtils.loadImage(mobImage, 5, 29, 1, 1, 32, 32), 2.0F, 0.0F, 3, 3);
+            case PUFFERFISHHALF -> image = ImageUtils.loadImage(mobImage, 17, 27, 5, 5, 32, 32);
+            case PUFFERFISHFULL -> image = ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 32, 32);
+            case SALMON ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 26, 7, 32, 32), ImageUtils.loadImage(mobImage, 27, 3, 3, 4, 32, 32), 1.0F, 2.5F, 26, 7), ImageUtils.loadImage(mobImage, 11, 8, 8, 5, 32, 32), 4.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 11, 21, 8, 5, 32, 32), 12.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 26, 16, 6, 5, 32, 32), 20.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 0, 0, 2, 2, 32, 32), 10.0F, 0.0F, 26, 7), ImageUtils.loadImage(mobImage, 5, 6, 3, 2, 32, 32), 12.0F, 0.0F, 26, 7);
+            case SLIME ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
+            case TROPICALFISHA -> {
                 float[] primaryColorsA = new float[]{0.9765F, 0.502F, 0.1137F};
                 float[] secondaryColorsA = new float[]{0.9765F, 1.0F, 0.9961F};
-                if (entity != null && entity instanceof TropicalFishEntity) {
-                    TropicalFishEntity fish = (TropicalFishEntity) entity;
+                if (entity instanceof TropicalFishEntity fish) {
                     primaryColorsA = fish.getBaseColorComponents();
                     secondaryColorsA = fish.getPatternColorComponents();
                 }
-
                 BufferedImage baseA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 10, 6, 32, 32), ImageUtils.loadImage(mobImage, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImage, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImage, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), primaryColorsA[0], primaryColorsA[1], primaryColorsA[2]);
                 BufferedImage patternA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 10, 6, 32, 32), ImageUtils.loadImage(mobImageSecondary, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), secondaryColorsA[0], secondaryColorsA[1], secondaryColorsA[2]);
                 image = ImageUtils.addImages(baseA, patternA, 0.0F, 0.0F, 10, 6);
                 baseA.flush();
                 patternA.flush();
-                break;
-            case TROPICALFISHB:
+            }
+            case TROPICALFISHB -> {
                 float[] primaryColorsB = new float[]{0.5373F, 0.1961F, 0.7216F};
                 float[] secondaryColorsB = new float[]{0.9961F, 0.8471F, 0.2392F};
-                if (entity != null && entity instanceof TropicalFishEntity) {
-                    TropicalFishEntity fish = (TropicalFishEntity) entity;
+                if (entity instanceof TropicalFishEntity fish) {
                     primaryColorsB = fish.getBaseColorComponents();
                     secondaryColorsB = fish.getPatternColorComponents();
                 }
-
                 BufferedImage baseB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 12, 12, 32, 32), ImageUtils.loadImage(mobImage, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), primaryColorsB[0], primaryColorsB[1], primaryColorsB[2]);
                 BufferedImage patternB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 12, 12, 32, 32), ImageUtils.loadImage(mobImageSecondary, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), secondaryColorsB[0], secondaryColorsB[1], secondaryColorsB[2]);
                 image = ImageUtils.addImages(baseB, patternB, 0.0F, 0.0F, 12, 12);
                 baseB.flush();
                 patternB.flush();
-                break;
-            case WITHER:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 24, 10, 64, 64), ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 64, 64), 8.0F, 0.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 0.0F, 2.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 18.0F, 2.0F, 24, 10);
-                break;
-            case WITHERINVULNERABLE:
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 24, 10, 64, 64), ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 64, 64), 8.0F, 0.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 0.0F, 2.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 18.0F, 2.0F, 24, 10);
-                break;
-            default:
-                image = null;
+            }
+            case WITHER, WITHERINVULNERABLE ->
+                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 24, 10, 64, 64), ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 64, 64), 8.0F, 0.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 0.0F, 2.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 18.0F, 2.0F, 24, 10);
+            default -> {
+            }
         }
 
         mobImage.flush();
@@ -561,12 +501,8 @@ public class Radar implements IRadar {
     }
 
     @Override
-    public void onTickInGame(MatrixStack matrixStack, MinecraftClient mc, LayoutVariables layoutVariables) {
+    public void onTickInGame(MatrixStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
-            if (this.game == null) {
-                this.game = mc;
-            }
-
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
                 this.timer = 500;
@@ -586,48 +522,41 @@ public class Radar implements IRadar {
                 this.direction += 360.0F;
             }
 
-            if (this.enabled) {
-                if (this.completedLoading && this.timer > 95) {
-                    this.calculateMobs();
-                    this.timer = 0;
-                }
-
-                ++this.timer;
-                if (this.completedLoading) {
-                    this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
-                }
-
-                GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            if (this.completedLoading && this.timer > 95) {
+                this.calculateMobs();
+                this.timer = 0;
             }
+
+            ++this.timer;
+            if (this.completedLoading) {
+                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+            }
+
+            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
     }
 
-    private int chkLen(String paramStr) {
-        return this.fontRenderer.getStringWidth(paramStr);
-    }
-
     private void write(String paramStr, float x, float y, int color) {
-        GLShim.glTexParameteri(3553, 10241, 9728);
-        GLShim.glTexParameteri(3553, 10240, 9728);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         this.fontRenderer.drawStringWithShadow(paramStr, x, y, color);
 
     }
 
     private boolean isEntityShown(Entity entity) {
-        return entity != null && !entity.isInvisibleTo(this.game.player) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
+        return entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
     }
 
     public void calculateMobs() {
         this.contacts.clear();
-
-        for (Entity entity : this.game.world.getEntities()) {
+        for (Entity entity : VoxelConstants.getMinecraft().world.getEntities()) {
             try {
                 if (this.isEntityShown(entity)) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.getPos().getZ();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.getPos().getY();
-                    double hypot = (double) (wayX * wayX + wayZ * wayZ + wayY * wayY);
+                    double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
                     if (hypot < 961.0) {
                         if (this.hasCustomNPCs) {
@@ -639,7 +568,7 @@ public class Radar implements IRadar {
                                         entity = wrappedEntity;
                                     }
                                 }
-                            } catch (Exception var15) {
+                            } catch (Exception ignored) {
                             }
                         }
 
@@ -684,7 +613,7 @@ public class Radar implements IRadar {
                             }
 
                             String scrubbedName = TextUtils.scrubCodes(contact.entity.getName().getString());
-                            if (scrubbedName != null && (scrubbedName.equals("Dinnerbone") || scrubbedName.equals("Grumm")) && (!(contact.entity instanceof PlayerEntity) || ((PlayerEntity) contact.entity).isPartVisible(PlayerModelPart.CAPE))) {
+                            if ((scrubbedName.equals("Dinnerbone") || scrubbedName.equals("Grumm")) && (!(contact.entity instanceof PlayerEntity) || ((PlayerEntity) contact.entity).isPartVisible(PlayerModelPart.CAPE))) {
                                 contact.setRotationFactor(contact.rotationFactor + 180);
                             }
 
@@ -697,8 +626,7 @@ public class Radar implements IRadar {
                     }
                 }
             } catch (Exception var16) {
-                System.err.println(var16.getLocalizedMessage());
-                var16.printStackTrace();
+                VoxelConstants.getLogger().error(var16.getLocalizedMessage(), var16);
             }
         }
 
@@ -706,17 +634,13 @@ public class Radar implements IRadar {
             try {
                 this.textureAtlas.stitchNew();
             } catch (StitcherException var14) {
-                System.err.println("Stitcher exception!  Resetting mobs texture atlas.");
+                VoxelConstants.getLogger().warn("Stitcher exception!  Resetting mobs texture atlas.");
                 this.loadTexturePackIcons();
             }
         }
 
         this.newMobs = false;
-        Collections.sort(this.contacts, new Comparator<Contact>() {
-            public int compare(Contact contact1, Contact contact2) {
-                return contact1.y - contact2.y;
-            }
-        });
+        this.contacts.sort(Comparator.comparingInt(contact -> contact.y));
     }
 
     private void tryCustomIcon(Contact contact) {
@@ -739,7 +663,6 @@ public class Radar implements IRadar {
             contact.custom = true;
             contact.icon = icon;
         }
-
     }
 
     private BufferedImage getCustomMobImage(String identifier, String identifierSimple) {
@@ -751,18 +674,16 @@ public class Radar implements IRadar {
             InputStream is = null;
 
             try {
-                is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-            } catch (IOException var15) {
-                is = null;
+                is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+            } catch (IOException ignored) {
             }
 
             if (is == null) {
                 fullPath = ("textures/icons/" + identifierSimple + ".png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var14) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -770,9 +691,8 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "8.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var13) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -780,9 +700,8 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "8.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var12) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -791,9 +710,8 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "16.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var11) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -801,9 +719,8 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "16.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var10) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -812,9 +729,8 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "32.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var9) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -822,9 +738,8 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "32.png").toLowerCase();
 
                 try {
-                    is = this.game.getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
-                } catch (IOException var8) {
-                    is = null;
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                } catch (IOException ignored) {
                 }
             }
 
@@ -843,7 +758,7 @@ public class Radar implements IRadar {
     }
 
     private void tryAutoIcon(Contact contact) {
-        EntityRenderer render = this.game.getEntityRenderDispatcher().getRenderer(contact.entity);
+        EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
         Identifier resourceLocation = render.getTexture(contact.entity);
         resourceLocation = this.getRandomizedResourceLocationForEntity(resourceLocation, contact.entity);
         Identifier resourceLocationSecondary = null;
@@ -854,25 +769,20 @@ public class Radar implements IRadar {
             if (contact.type == EnumMobs.MOOSHROOM) {
                 if (!((MooshroomEntity) contact.entity).isBaby()) {
                     resourceLocationSecondary = EnumMobs.MOOSHROOM.secondaryResourceLocation;
-                } else {
-                    resourceLocationSecondary = null;
                 }
             } else if (contact.type != EnumMobs.TROPICALFISHA && contact.type != EnumMobs.TROPICALFISHB) {
                 label166:
                 {
                     if (contact.type == EnumMobs.HORSE) {
                         Entity var22 = contact.entity;
-                        if (var22 instanceof HorseEntity) {
-                            HorseEntity horse = (HorseEntity) var22;
+                        if (var22 instanceof HorseEntity horse) {
                             resourceLocationSecondary = (Identifier) TEXTURES.get(horse.getMarking());
                             ItemStack itemStack = horse.getArmorType();
                             if (this.options.showHelmetsMobs) {
                                 Item var30 = itemStack.getItem();
-                                if (var30 instanceof HorseArmorItem) {
-                                    HorseArmorItem horseArmorItem = (HorseArmorItem) var30;
+                                if (var30 instanceof HorseArmorItem horseArmorItem) {
                                     resourceLocationTertiary = horseArmorItem.getEntityTexture();
-                                    if (horseArmorItem instanceof DyeableHorseArmorItem) {
-                                        DyeableHorseArmorItem dyableHorseArmorItem = (DyeableHorseArmorItem) horseArmorItem;
+                                    if (horseArmorItem instanceof DyeableHorseArmorItem dyableHorseArmorItem) {
                                         contact.armorColor = dyableHorseArmorItem.getColor(itemStack);
                                     }
                                 }
@@ -894,7 +804,7 @@ public class Radar implements IRadar {
                             resourceLocationTertiary = Registry.VILLAGER_PROFESSION.getId(villagerProfession);
                             resourceLocationTertiary = new Identifier(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
                             if (villagerProfession != VillagerProfession.NITWIT) {
-                                resourceLocationQuaternary = (Identifier) LEVEL_TO_ID.get(MathHelper.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
+                                resourceLocationQuaternary = LEVEL_TO_ID.get(MathHelper.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
                                 resourceLocationQuaternary = new Identifier(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
                             }
                         }
@@ -910,19 +820,19 @@ public class Radar implements IRadar {
             } else {
                 TropicalFishEntity fish = (TropicalFishEntity) contact.entity;
                 resourceLocationSecondary = fish.getVarietyId();
-                color = fish.getBaseColorComponents() + " " + fish.getPatternColorComponents();
+                color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
             }
 
             if (resourceLocationSecondary != null) {
-                resourceLocationSecondary = this.getRandomizedResourceLocationForEntity(resourceLocationSecondary, (LivingEntity) contact.entity);
+                resourceLocationSecondary = this.getRandomizedResourceLocationForEntity(resourceLocationSecondary, contact.entity);
             }
 
             if (resourceLocationTertiary != null) {
-                resourceLocationTertiary = this.getRandomizedResourceLocationForEntity(resourceLocationTertiary, (LivingEntity) contact.entity);
+                resourceLocationTertiary = this.getRandomizedResourceLocationForEntity(resourceLocationTertiary, contact.entity);
             }
 
             if (resourceLocationQuaternary != null) {
-                resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, (LivingEntity) contact.entity);
+                resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, contact.entity);
             }
         }
 
@@ -933,7 +843,7 @@ public class Radar implements IRadar {
         String name = entityName + color + resourceLocationString;
         Sprite icon = this.textureAtlas.getAtlasSprite(name);
         if (icon == this.textureAtlas.getMissingImage()) {
-            Integer checkCount = (Integer) this.contactsSkinGetTries.get(name);
+            Integer checkCount = this.contactsSkinGetTries.get(name);
             if (checkCount == null) {
                 checkCount = 0;
             }
@@ -941,14 +851,14 @@ public class Radar implements IRadar {
             BufferedImage mobImage = null;
             if (contact.type == EnumMobs.HORSE) {
                 BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
-                if (resourceLocationSecondary != null) {
+                if (resourceLocationSecondary != null && base != null) {
                     BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
                     pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / (float) pattern.getWidth(), (float) base.getHeight() / (float) pattern.getHeight());
                     base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                     pattern.flush();
                 }
 
-                if (resourceLocationTertiary != null) {
+                if (resourceLocationTertiary != null && base != null) {
                     BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
                     armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / (float) armor.getWidth(), (float) base.getHeight() / (float) armor.getHeight());
                     armor = ImageUtils.colorify(armor, contact.armorColor);
@@ -956,7 +866,7 @@ public class Radar implements IRadar {
                     armor.flush();
                 }
 
-                mobImage = this.createImageFromTypeAndImages(contact.type, base, (BufferedImage) null, contact.entity);
+                mobImage = this.createImageFromTypeAndImages(contact.type, base, null, contact.entity);
                 base.flush();
             } else if ((double) contact.type.expectedWidth > 0.5) {
                 mobImage = this.createImageFromTypeAndResourceLocations(contact.type, resourceLocation, resourceLocationSecondary, contact.entity);
@@ -1002,7 +912,7 @@ public class Radar implements IRadar {
         VillagerResourceMetadata.HatType hatType = VillagerResourceMetadata.HatType.NONE;
         if (resourceLocation != null) {
             try {
-                Optional<Resource> resource = this.game.getResourceManager().getResource(resourceLocation);
+                Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation);
                 if (resource.isPresent()) {
                     VillagerResourceMetadata villagerResourceMetadata = (VillagerResourceMetadata) resource.get().getMetadata();
                     if (villagerResourceMetadata != null) {
@@ -1019,27 +929,30 @@ public class Radar implements IRadar {
         return hatType;
     }
 
-    private BufferedImage createAutoIconImageFromResourceLocations(Contact contact, EntityRenderer render, Identifier... resourceLocations) {
-        BufferedImage headImage = null;
-        EntityModel model = null;
-        if (render instanceof LivingEntityRenderer) {
-            if (entityIconMap.containsKey(contact.type)) {
-                return entityIconMap.get(contact.type);
-            }
+    private BufferedImage createAutoIconImageFromResourceLocations(Contact contact, EntityRenderer<Entity> entityRenderer, Identifier... resourceLocations) {
+        if (contact.type != EnumMobs.UNKNOWN && entityIconMap.containsKey(contact.entity.getUuid())) {
+            return entityIconMap.get(contact.entity.getUuid());
+        }
 
+        if (contact.type == EnumMobs.UNKNOWN) {
+            VoxelConstants.getLogger().info("Unknown Entity: " + contact.entity.getType());
+        }
+
+        BufferedImage headImage = null;
+        Model model = null;
+        if (entityRenderer instanceof LivingEntityRenderer<?, ?> render) {
             try {
-                model = ((LivingEntityRenderer) render).getModel();
+                model = render.getModel();
                 ArrayList<Field> submodels = ReflectionUtils.getFieldsByType(model, Model.class, ModelPart.class);
                 ArrayList<Field> submodelArrays = ReflectionUtils.getFieldsByType(model, Model.class, ModelPart[].class);
                 ModelPart[] headBits = null;
-                ArrayList headPartsWithResourceLocationList = new ArrayList();
+                ArrayList<ModelPartWithResourceLocation> headPartsWithResourceLocationList = new ArrayList<>();
                 Properties properties = new Properties();
                 String fullName = contact.vanillaType ? "minecraft." + contact.type.id : contact.entity.getClass().getName();
                 String simpleName = contact.vanillaType ? contact.type.id : contact.entity.getClass().getSimpleName();
                 String fullPath = ("textures/icons/" + fullName + ".properties").toLowerCase();
-                //InputStream is = null;
 
-                ResourceManager resourceManager = this.game.getResourceManager();
+                ResourceManager resourceManager = VoxelConstants.getMinecraft().getResourceManager();
                 Optional<Resource> resource = resourceManager.getResource(new Identifier(fullPath));
 
                 if (resource.isEmpty()) {
@@ -1052,19 +965,16 @@ public class Radar implements IRadar {
                         is.close();
                         String subModelNames = properties.getProperty("models", "").toLowerCase();
                         String[] submodelNamesArray = subModelNames.split(",");
-                        List subModelNamesList = Arrays.asList(submodelNamesArray);
-                        HashSet subModelNamesSet = new HashSet();
-                        subModelNamesSet.addAll(subModelNamesList);
-                        ArrayList headPartsArrayList = new ArrayList();
+                        List<String> subModelNamesList = Arrays.asList(submodelNamesArray);
+                        HashSet<String> subModelNamesSet = new HashSet<>(subModelNamesList);
+                        ArrayList<ModelPart> headPartsArrayList = new ArrayList<>();
 
                         for (Field submodelArray : submodelArrays) {
                             String name = submodelArray.getName().toLowerCase();
                             if (subModelNamesSet.contains(name) || subModelNames.equals("all")) {
                                 ModelPart[] submodelArrayValue = (ModelPart[]) submodelArray.get(model);
                                 if (submodelArrayValue != null) {
-                                    for (int t = 0; t < submodelArrayValue.length; ++t) {
-                                        headPartsArrayList.add(submodelArrayValue[t]);
-                                    }
+                                    Collections.addAll(headPartsArrayList, submodelArrayValue);
                                 }
                             }
                         }
@@ -1072,12 +982,15 @@ public class Radar implements IRadar {
                         for (Field submodel : submodels) {
                             String name = submodel.getName().toLowerCase();
                             if ((subModelNamesSet.contains(name) || subModelNames.equals("all")) && submodel.get(model) != null) {
-                                headPartsArrayList.add((ModelPart) submodel.get(model));
+                                Object modelPartObjekt = submodel.get(model);
+                                if (modelPartObjekt instanceof ModelPart modelPart) {
+                                    headPartsArrayList.add(modelPart);
+                                }
                             }
                         }
 
                         if (headPartsArrayList.size() > 0) {
-                            headBits = (ModelPart[]) headPartsArrayList.toArray(new ModelPart[headPartsArrayList.size()]);
+                            headBits = headPartsArrayList.toArray(new ModelPart[0]);
                         }
                     }
 
@@ -1085,126 +998,104 @@ public class Radar implements IRadar {
                     if (model instanceof PlayerEntityModel) {
                         boolean showHat = true;
                         Entity var39 = contact.entity;
-                        if (var39 instanceof PlayerEntity) {
-                            PlayerEntity player = (PlayerEntity) var39;
+                        if (var39 instanceof PlayerEntity player) {
                             showHat = player.isPartVisible(PlayerModelPart.HAT);
                         }
 
                         if (showHat) {
-                            headBits = new ModelPart[]{((PlayerEntityModel) model).head, ((PlayerEntityModel) model).hat};
+                            headBits = new ModelPart[]{((PlayerEntityModel<?>) model).head, ((PlayerEntityModel<?>) model).hat};
                         } else {
-                            headBits = new ModelPart[]{((PlayerEntityModel) model).head};
+                            headBits = new ModelPart[]{((PlayerEntityModel<?>) model).head};
                         }
                     } else if (contact.type == EnumMobs.STRAY) {
-                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonEntityModel) model).head, resourceLocations[0]));
-                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonEntityModel) model).hat, resourceLocations[0]));
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonEntityModel<?>) model).head, resourceLocations[0]));
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonEntityModel<?>) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.strayOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.strayOverlayModel.hat, resourceLocations[1]));
                     } else if (contact.type == EnumMobs.DROWNED) {
-                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedEntityModel) model).head, resourceLocations[0]));
-                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedEntityModel) model).hat, resourceLocations[0]));
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedEntityModel<?>) model).head, resourceLocations[0]));
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedEntityModel<?>) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.hat, resourceLocations[1]));
                     } else if (model instanceof AxolotlEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, AxolotlEntityModel.class, ModelPart.class, 6)};
-                    } else if (model instanceof BatEntityModel) {
-                        BatEntityModel batEntityModel = (BatEntityModel) model;
+                    } else if (model instanceof BatEntityModel batEntityModel) {
                         headBits = new ModelPart[]{batEntityModel.getPart().getChild("head")};
                     } else if (model instanceof BeeEntityModel) {
                         headBits = new ModelPart[]{((ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, BeeEntityModel.class, ModelPart.class, 0)).getChild("body")};
-                    } else if (model instanceof BipedEntityModel) {
-                        BipedEntityModel bipedEntityModel = (BipedEntityModel) model;
+                    } else if (model instanceof BipedEntityModel<? extends LivingEntity> bipedEntityModel) {
                         headBits = new ModelPart[]{bipedEntityModel.head, bipedEntityModel.hat};
-                    } else if (model instanceof BlazeEntityModel) {
-                        BlazeEntityModel blazeEntityModel = (BlazeEntityModel) model;
+                    } else if (model instanceof BlazeEntityModel<? extends Entity> blazeEntityModel) {
                         headBits = new ModelPart[]{blazeEntityModel.getPart().getChild("head")};
                     } else if (model instanceof ChickenEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, ChickenEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof CreeperEntityModel) {
-                        CreeperEntityModel creeperEntityModel = (CreeperEntityModel) model;
+                    } else if (model instanceof CreeperEntityModel<? extends Entity> creeperEntityModel) {
                         headBits = new ModelPart[]{creeperEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof DolphinEntityModel) {
-                        DolphinEntityModel dolphinEntityModel = (DolphinEntityModel) model;
+                    } else if (model instanceof DolphinEntityModel<? extends Entity> dolphinEntityModel) {
                         headBits = new ModelPart[]{dolphinEntityModel.getPart().getChild("body").getChild("head")};
-                    } else if (model instanceof EndermiteEntityModel) {
-                        EndermiteEntityModel endermiteEntityModel = (EndermiteEntityModel) model;
+                    } else if (model instanceof EndermiteEntityModel<? extends Entity> endermiteEntityModel) {
                         headBits = new ModelPart[]{endermiteEntityModel.getPart().getChild("segment0"), endermiteEntityModel.getPart().getChild("segment1")};
-                    } else if (model instanceof GhastEntityModel) {
-                        GhastEntityModel ghastEntityModel = (GhastEntityModel) model;
+                    } else if (model instanceof GhastEntityModel<? extends Entity> ghastEntityModel) {
                         headBits = new ModelPart[]{ghastEntityModel.getPart()};
-                    } else if (model instanceof GuardianEntityModel) {
-                        GuardianEntityModel guardianEntityModel = (GuardianEntityModel) model;
+                    } else if (model instanceof GuardianEntityModel guardianEntityModel) {
                         headBits = new ModelPart[]{guardianEntityModel.getPart().getChild("head")};
                     } else if (model instanceof HoglinEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, HoglinEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof HorseEntityModel) {
-                        HorseEntityModel horseEntityModel = (HorseEntityModel) model;
-                        headBits = (ModelPart[]) StreamSupport.stream(horseEntityModel.getHeadParts().spliterator(), false).toArray(x$0 -> new ModelPart[x$0]);
-                    } else if (model instanceof IllagerEntityModel) {
-                        IllagerEntityModel illagerEntityModel = (IllagerEntityModel) model;
+                    } else if (model instanceof HorseEntityModel<? extends AbstractHorseEntity> horseEntityModel) {
+                        headBits = StreamSupport.stream(horseEntityModel.getHeadParts().spliterator(), false).toArray(ModelPart[]::new);
+                    } else if (model instanceof IllagerEntityModel<? extends IllagerEntity> illagerEntityModel) {
                         headBits = new ModelPart[]{illagerEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof IronGolemEntityModel) {
-                        IronGolemEntityModel ironGolemEntityModel = (IronGolemEntityModel) model;
+                    } else if (model instanceof IronGolemEntityModel<? extends IronGolemEntity> ironGolemEntityModel) {
                         headBits = new ModelPart[]{ironGolemEntityModel.getPart().getChild("head")};
                     } else if (model instanceof MagmaCubeEntityModel) {
                         headBits = (ModelPart[]) ReflectionUtils.getPrivateFieldValueByType(model, MagmaCubeEntityModel.class, ModelPart[].class);
                     } else if (model instanceof OcelotEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, OcelotEntityModel.class, ModelPart.class, 6)};
-                    } else if (model instanceof PhantomEntityModel) {
-                        PhantomEntityModel phantomEntityModel = (PhantomEntityModel) model;
+                    } else if (model instanceof PhantomEntityModel<? extends PhantomEntity> phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.getPart().getChild("body")};
                     } else if (model instanceof RabbitEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 7), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 8), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 9), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 11)};
-                    } else if (model instanceof RavagerEntityModel) {
-                        RavagerEntityModel ravagerEntityModel = (RavagerEntityModel) model;
+                    } else if (model instanceof RavagerEntityModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.getPart().getChild("neck").getChild("head")};
-                    } else if (model instanceof ShulkerEntityModel) {
-                        ShulkerEntityModel shulkerEntityModel = (ShulkerEntityModel) model;
+                    } else if (model instanceof ShulkerEntityModel<? extends ShulkerEntity> shulkerEntityModel) {
                         headBits = new ModelPart[]{shulkerEntityModel.getHead()};
-                    } else if (model instanceof SilverfishEntityModel) {
-                        SilverfishEntityModel silverFishEntityModel = (SilverfishEntityModel) model;
+                    } else if (model instanceof SilverfishEntityModel<? extends Entity> silverFishEntityModel) {
                         headBits = new ModelPart[]{silverFishEntityModel.getPart().getChild("segment0"), silverFishEntityModel.getPart().getChild("segment1")};
-                    } else if (model instanceof SlimeEntityModel) {
-                        SlimeEntityModel slimeEntityModel = (SlimeEntityModel) model;
+                    } else if (model instanceof SlimeEntityModel<? extends Entity> slimeEntityModel) {
                         headBits = new ModelPart[]{slimeEntityModel.getPart()};
-                    } else if (model instanceof SnowGolemEntityModel) {
-                        SnowGolemEntityModel snowGolemEntityModel = (SnowGolemEntityModel) model;
+                    } else if (model instanceof SnowGolemEntityModel<? extends Entity> snowGolemEntityModel) {
                         headBits = new ModelPart[]{snowGolemEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof SpiderEntityModel) {
-                        SpiderEntityModel spiderEntityModel = (SpiderEntityModel) model;
+                    } else if (model instanceof SpiderEntityModel<? extends Entity> spiderEntityModel) {
                         headBits = new ModelPart[]{spiderEntityModel.getPart().getChild("head"), spiderEntityModel.getPart().getChild("body0")};
-                    } else if (model instanceof SquidEntityModel) {
-                        SquidEntityModel squidEntityModel = (SquidEntityModel) model;
+                    } else if (model instanceof SquidEntityModel<? extends Entity> squidEntityModel) {
                         headBits = new ModelPart[]{squidEntityModel.getPart().getChild("body")};
-                    } else if (model instanceof StriderEntityModel) {
-                        StriderEntityModel striderEntityModel = (StriderEntityModel) model;
+                    } else if (model instanceof WardenEntityModel<? extends WardenEntity> wardenEntityModel) {
+                        headBits = new ModelPart[]{wardenEntityModel.getPart().getChild("bone").getChild("body").getChild("head")};
+                    } else if (model instanceof StriderEntityModel<? extends StriderEntity> striderEntityModel) {
                         headBits = new ModelPart[]{striderEntityModel.getPart().getChild("body")};
-                    } else if (model instanceof VillagerResemblingModel) {
-                        VillagerResemblingModel villagerResemblingModel = (VillagerResemblingModel) model;
+                    } else if (model instanceof VillagerResemblingModel<? extends Entity> villagerResemblingModel) {
                         headBits = new ModelPart[]{villagerResemblingModel.getHead()};
                     } else if (model instanceof WolfEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, WolfEntityModel.class, ModelPart.class)};
                     } else if (model instanceof QuadrupedEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, QuadrupedEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof SinglePartEntityModel) {
-                        SinglePartEntityModel singlePartEntityModel = (SinglePartEntityModel) model;
-
+                    } else if (model instanceof SinglePartEntityModel<? extends Entity> singlePartEntityModel) {
                         try {
                             headBits = new ModelPart[]{singlePartEntityModel.getPart().getChild("head")};
-                        } catch (Exception var41) {
+                        } catch (Exception ignored) {
                         }
                     }
                 }
 
                 if (headBits == null) {
-                    ArrayList<ModelPart> headPartsArrayList = new ArrayList();
-                    ArrayList purge = new ArrayList();
+                    ArrayList<ModelPart> headPartsArrayList = new ArrayList<>();
+                    ArrayList<ModelPart> purge = new ArrayList<>();
 
                     for (Field submodelArray : submodelArrays) {
                         String name = submodelArray.getName().toLowerCase();
                         if (name.contains("head") | name.contains("eye") | name.contains("mouth") | name.contains("teeth") | name.contains("tooth") | name.contains("tusk") | name.contains("jaw") | name.contains("mand") | name.contains("nose") | name.contains("beak") | name.contains("snout") | name.contains("muzzle") | (!name.contains("rear") && name.contains("ear")) | name.contains("trunk") | name.contains("mane") | name.contains("horn") | name.contains("antler")) {
                             ModelPart[] submodelArrayValue = (ModelPart[]) submodelArray.get(model);
-                            if (submodelArrayValue != null && submodelArrayValue.length >= 0) {
+                            if (submodelArrayValue != null) {
                                 headPartsArrayList.add(submodelArrayValue[0]);
                             }
                         }
@@ -1221,11 +1112,11 @@ public class Radar implements IRadar {
                     if (headPartsArrayList.size() == 0) {
                         int pos = model instanceof SinglePartEntityModel ? 1 : 0;
                         if (submodels.size() > pos) {
-                            if (((Field) submodels.get(pos)).get(model) != null) {
-                                headPartsArrayList.add((ModelPart) ((Field) submodels.get(pos)).get(model));
+                            if (submodels.get(pos).get(model) != null) {
+                                headPartsArrayList.add((ModelPart) submodels.get(pos).get(model));
                             }
-                        } else if (submodelArrays.size() > 0 && ((Field) submodelArrays.get(0)).get(model) != null) {
-                            ModelPart[] submodelArrayValue = (ModelPart[]) ((Field) submodelArrays.get(0)).get(model);
+                        } else if (submodelArrays.size() > 0 && submodelArrays.get(0).get(model) != null) {
+                            ModelPart[] submodelArrayValue = (ModelPart[]) submodelArrays.get(0).get(model);
                             if (submodelArrayValue.length > 0) {
                                 headPartsArrayList.add(submodelArrayValue[0]);
                             }
@@ -1236,18 +1127,18 @@ public class Radar implements IRadar {
                         try {
                             Object childrenObj = ReflectionUtils.getPrivateFieldValueByType(bit, ModelPart.class, ObjectList.class, 1);
                             if (childrenObj != null) {
-                                List children = (List) childrenObj;
+                                List<ModelPart> children = (List<ModelPart>) childrenObj;
                                 purge.addAll(children);
                             }
-                        } catch (Exception var40) {
+                        } catch (Exception ignored) {
                         }
                     }
 
                     headPartsArrayList.removeAll(purge);
-                    headBits = (ModelPart[]) headPartsArrayList.toArray(new ModelPart[headPartsArrayList.size()]);
+                    headBits = headPartsArrayList.toArray(new ModelPart[0]);
                 }
 
-                if (contact.entity != null && model != null && (headBits != null && headBits.length > 0 || headPartsWithResourceLocationList.size() > 0) && resourceLocations[0] != null) {
+                if ((headBits.length > 0 || headPartsWithResourceLocationList.size() > 0) && resourceLocations[0] != null) {
                     String scaleString = properties.getProperty("scale", "1");
                     float scale = Float.parseFloat(scaleString);
                     Direction facing = Direction.NORTH;
@@ -1259,30 +1150,27 @@ public class Radar implements IRadar {
                     }
 
                     Identifier resourceLocation = this.combineResourceLocations(resourceLocations);
-                    if (headBits != null) {
-                        for (int t = 0; t < headBits.length; ++t) {
-                            headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(headBits[t], resourceLocation));
-                        }
+                    for (ModelPart headBit : headBits) {
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(headBit, resourceLocation));
                     }
 
-                    ModelPartWithResourceLocation[] headBitsWithLocations = (ModelPartWithResourceLocation[]) headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[headPartsWithResourceLocationList.size()]);
+                    ModelPartWithResourceLocation[] headBitsWithLocations = headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[0]);
                     boolean success = this.drawModel(scale, 1000, (LivingEntity) contact.entity, facing, model, headBitsWithLocations);
                     ImageUtils.saveImage(contact.type.id, GLUtils.fboTextureID, 0, 512, 512);
                     if (success) {
                         headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
                     }
                 }
-            } catch (Exception var44) {
-                headImage = null;
-                var44.printStackTrace();
+            } catch (Exception exception) {
+                VoxelConstants.getLogger().error(exception);
             }
         }
 
         if (headImage != null) {
-            headImage = this.trimAndOutlineImage(contact, headImage, true, model != null && model instanceof BipedEntityModel);
+            headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof BipedEntityModel);
         }
 
-        entityIconMap.put(contact.type, headImage);
+        entityIconMap.put(contact.entity.getUuid(), headImage);
         return headImage;
     }
 
@@ -1308,7 +1196,7 @@ public class Radar implements IRadar {
                             overlay = ImageUtils.scaleImage(overlay, xScale, yScale);
                         }
 
-                        base = ImageUtils.addImages(base, overlay, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                        ImageUtils.addImages(base, overlay, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                         overlay.flush();
                     }
                 }
@@ -1322,7 +1210,7 @@ public class Radar implements IRadar {
                     resourceLocation = this.nativeBackedTextureLocation;
                 }
             } catch (Exception var9) {
-                var9.printStackTrace();
+                VoxelConstants.getLogger().warn(var9);
             }
         }
 
@@ -1332,10 +1220,10 @@ public class Radar implements IRadar {
     private boolean drawModel(float scale, int captureDepth, LivingEntity livingEntity, Direction facing, Model model, ModelPartWithResourceLocation[] headBits) {
         boolean failed = false;
         float size = 64.0F * scale;
-        GLShim.glBindTexture(3553, GLUtils.fboTextureID);
-        int width = GLShim.glGetTexLevelParameteri(3553, 0, 4096);
-        int height = GLShim.glGetTexLevelParameteri(3553, 0, 4097);
-        GLShim.glBindTexture(3553, 0);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, GLUtils.fboTextureID);
+        int width = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TRANSFORM_BIT);
+        int height = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
+        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
@@ -1347,16 +1235,16 @@ public class Radar implements IRadar {
         RenderSystem.applyModelViewMatrix();
         GLUtils.bindFrameBuffer();
         GLShim.glDepthMask(true);
-        GLShim.glEnable(2929);
-        GLShim.glEnable(3553);
-        GLShim.glEnable(3042);
-        GLShim.glDisable(2884);
+        GLShim.glEnable(GL11.GL_DEPTH_TEST);
+        GLShim.glEnable(GL11.GL_TEXTURE_2D);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glDisable(GL11.GL_CULL_FACE);
         GLShim.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
         GLShim.glClearDepth(1.0);
-        GLShim.glClear(16640);
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         matrixStack.push();
-        matrixStack.translate((double) (width / 2), (double) (height / 2), 0.0);
+        matrixStack.translate(width / 2f, height / 2f, 0.0);
         matrixStack.scale(size, size, size);
         matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180.0F));
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
@@ -1374,18 +1262,18 @@ public class Radar implements IRadar {
 
         try {
             MatrixStack newMatrixStack = new MatrixStack();
-            VertexConsumerProvider.Immediate immediate = this.game.getBufferBuilders().getEntityVertexConsumers();
+            VertexConsumerProvider.Immediate immediate = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
             float offsetByY = model instanceof EndermanEntityModel ? 8.0F : (!(model instanceof BipedEntityModel) && !(model instanceof SkullEntityModel) ? 0.0F : 4.0F);
             float maxY = 0.0F;
             float minY = 0.0F;
 
-            for (int t = 0; t < headBits.length; ++t) {
-                if (headBits[t].modelPart.pivotY < minY) {
-                    minY = headBits[t].modelPart.pivotY;
+            for (ModelPartWithResourceLocation headBit : headBits) {
+                if (headBit.modelPart.pivotY < minY) {
+                    minY = headBit.modelPart.pivotY;
                 }
 
-                if (headBits[t].modelPart.pivotY > maxY) {
-                    maxY = headBits[t].modelPart.pivotY;
+                if (headBit.modelPart.pivotY > maxY) {
+                    maxY = headBit.modelPart.pivotY;
                 }
             }
 
@@ -1395,34 +1283,32 @@ public class Radar implements IRadar {
                 offsetByY = 25.0F - maxY;
             }
 
-            for (int t = 0; t < headBits.length; ++t) {
-                VertexConsumer vertexConsumer = immediate.getBuffer(model.getLayer(headBits[t].resourceLocation));
-                if (model instanceof EntityModel) {
-                    EntityModel entityModel = (EntityModel) model;
+            for (ModelPartWithResourceLocation headBit : headBits) {
+                VertexConsumer vertexConsumer = immediate.getBuffer(model.getLayer(headBit.resourceLocation));
+                if (model instanceof EntityModel entityModel) {
                     entityModel.setAngles(livingEntity, 0.0F, 0.0F, 163.0F, 360.0F, 0.0F);
                 }
 
-                float y = headBits[t].modelPart.pivotY;
-                headBits[t].modelPart.pivotY += offsetByY;
-                headBits[t].modelPart.render(newMatrixStack, vertexConsumer, 15728880, OverlayTexture.DEFAULT_UV);
-                headBits[t].modelPart.pivotY = y;
+                float y = headBit.modelPart.pivotY;
+                headBit.modelPart.pivotY += offsetByY;
+                headBit.modelPart.render(newMatrixStack, vertexConsumer, 15728880, OverlayTexture.DEFAULT_UV);
+                headBit.modelPart.pivotY = y;
                 immediate.draw();
             }
         } catch (Exception var25) {
-            System.out.println("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName());
-            var25.printStackTrace();
+            VoxelConstants.getLogger().warn("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName(), var25);
             failed = true;
         }
 
         matrixStack.pop();
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
-        GLShim.glEnable(2884);
-        GLShim.glDisable(2929);
+        GLShim.glEnable(GL11.GL_CULL_FACE);
+        GLShim.glDisable(GL11.GL_DEPTH_TEST);
         GLShim.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
-        GLShim.glViewport(0, 0, this.game.getWindow().getFramebufferWidth(), this.game.getWindow().getFramebufferHeight());
+        GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         return !failed;
     }
 
@@ -1441,7 +1327,7 @@ public class Radar implements IRadar {
                     resourceLocation = (Identifier) this.getEntityTextureMethod.invoke(this.randomEntitiesPropertiesClass.cast(randomEntitiesProperties), resourceLocation, this.randomEntityClass.cast(this.randomEntity));
                 }
             }
-        } catch (Exception var4) {
+        } catch (Exception ignored) {
         }
 
         return resourceLocation;
@@ -1471,15 +1357,15 @@ public class Radar implements IRadar {
         contact.setUUID(uuid);
         String playerName = this.scrubCodes(gameProfile.getName());
         Sprite icon = this.textureAtlas.getAtlasSprite(playerName);
-        Integer checkCount = 0;
+        Integer checkCount;
         if (icon == this.textureAtlas.getMissingImage()) {
-            checkCount = (Integer) this.mpContactsSkinGetTries.get(playerName);
+            checkCount = this.mpContactsSkinGetTries.get(playerName);
             if (checkCount == null) {
                 checkCount = 0;
             }
 
             if (checkCount < 5) {
-                PlayerSkinTexture imageData = null;
+                PlayerSkinTexture imageData;
 
                 try {
                     if (player.getSkinTexture() == DefaultSkinHelper.getTexture(player.getUuid())) {
@@ -1487,12 +1373,12 @@ public class Radar implements IRadar {
                     }
 
                     AbstractClientPlayerEntity.loadSkin(player.getSkinTexture(), player.getName().getString());
-                    imageData = (PlayerSkinTexture) MinecraftClient.getInstance().getTextureManager().getTexture(player.getSkinTexture());
+                    imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(player.getSkinTexture());
                     if (imageData == null) {
                         throw new Exception("failed to get skin: image data was null");
                     }
 
-                    EntityRenderer render = this.game.getEntityRenderDispatcher().getRenderer(contact.entity);
+                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                     BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, player.getSkinTexture(), null);
                     icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
                     this.newMobs = true;
@@ -1546,7 +1432,7 @@ public class Radar implements IRadar {
                     } else if (nbttagcompound.contains("SkullOwner", 8)) {
                         String name = nbttagcompound.getString("SkullOwner");
                         if (name != null && !name.equals("")) {
-                            gameProfile = new GameProfile((UUID) null, name);
+                            gameProfile = new GameProfile(null, name);
                             nbttagcompound.remove("SkullOwner");
                             SkullBlockEntity.loadProperties(gameProfile, gameProfilex -> nbttagcompound.put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), gameProfilex)));
                         }
@@ -1555,9 +1441,9 @@ public class Radar implements IRadar {
 
                 Identifier resourceLocation = DefaultSkinHelper.getTexture();
                 if (gameProfile != null) {
-                    java.util.Map map = this.game.getSkinProvider().getTextures(gameProfile);
+                    java.util.Map<Type, MinecraftProfileTexture> map = VoxelConstants.getMinecraft().getSkinProvider().getTextures(gameProfile);
                     if (map.containsKey(Type.SKIN)) {
-                        resourceLocation = this.game.getSkinProvider().loadSkin((MinecraftProfileTexture) map.get(Type.SKIN), Type.SKIN);
+                        resourceLocation = VoxelConstants.getMinecraft().getSkinProvider().loadSkin(map.get(Type.SKIN), Type.SKIN);
                     }
                 }
 
@@ -1569,13 +1455,12 @@ public class Radar implements IRadar {
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
-                        headImage = this.trimAndOutlineImage(new Contact(this.game.player, EnumMobs.PLAYER), headImage, true, true);
-                        icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head", headImage);
+                        headImage = this.trimAndOutlineImage(new Contact(VoxelConstants.getPlayer(), EnumMobs.PLAYER), headImage, true, true);
+                        icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation + "head", headImage);
                         this.newMobs = true;
                     }
                 }
-            } else if (helmet instanceof ArmorItem) {
-                ArmorItem helmetArmor = (ArmorItem) helmet;
+            } else if (helmet instanceof ArmorItem helmetArmor) {
                 int armorType = this.getArmorType(helmetArmor);
                 if (armorType != UNKNOWN) {
                     icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[armorType]);
@@ -1589,12 +1474,10 @@ public class Radar implements IRadar {
                     }
                 }
 
-                if (helmetArmor instanceof DyeableArmorItem) {
-                    DyeableArmorItem dyeableHelmetArmor = (DyeableArmorItem) helmetArmor;
+                if (helmetArmor instanceof DyeableArmorItem dyeableHelmetArmor) {
                     contact.setArmorColor(dyeableHelmetArmor.getColor(stack));
                 }
-            } else if (helmet instanceof BlockItem) {
-                BlockItem blockItem = (BlockItem) helmet;
+            } else if (helmet instanceof BlockItem blockItem) {
                 Block block = blockItem.getBlock();
                 BlockState blockState = block.getDefaultState();
                 int stateID = Block.getRawIdFromState(blockState);
@@ -1604,10 +1487,10 @@ public class Radar implements IRadar {
                     if (blockImage != null) {
                         int width = blockImage.getWidth();
                         int height = blockImage.getHeight();
-                        blockImage = ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
+                        ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
                         BufferedImage blockImageFront = this.master.getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
                         blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
-                        blockImage = ImageUtils.addImages(blockImage, blockImageFront, (float) (width / 2 - 15), (float) (height / 2 - 15), width, height);
+                        ImageUtils.addImages(blockImage, blockImageFront, (float) (width / 2 - 15), (float) (height / 2 - 15), width, height);
                         blockImageFront.flush();
                         blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
                         icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
@@ -1625,11 +1508,11 @@ public class Radar implements IRadar {
         boolean isPiglin = contact.type == EnumMobs.PIGLIN || contact.type == EnumMobs.PIGLINZOMBIE;
         Method m = null;
 
+        // TODO Remove this. net.minecraftforge only applies to Forge. We're a Fabric mod xD // Algo
         try {
-            Class c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
+            Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
             m = c.getMethod("getArmorTexture", Entity.class, ItemStack.class, String.class, EquipmentSlot.class, String.class);
-        } catch (Exception var19) {
-        }
+        } catch (Exception ignored) {}
 
         Method getResourceLocation = m;
         Identifier resourceLocation = null;
@@ -1643,34 +1526,32 @@ public class Radar implements IRadar {
                 materialName = materialName.substring(sep + 1);
             }
 
-            String suffix = null;
-            suffix = suffix == null ? "" : "_" + suffix;
+            String suffix;
+            suffix = "";
             String resourcePath = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, materialName, 1, suffix);
             if (getResourceLocation != null) {
-                resourcePath = (String) getResourceLocation.invoke((Object) null, contact.entity, stack, resourcePath, EquipmentSlot.HEAD, null);
+                resourcePath = (String) getResourceLocation.invoke(null, contact.entity, stack, resourcePath, EquipmentSlot.HEAD, null);
             }
 
             resourceLocation = new Identifier(resourcePath);
-        } catch (Exception var18) {
-        }
+        } catch (Exception ignored) {}
 
         m = null;
 
+        // TODO Idem // Algo
         try {
-            Class c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
+            Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
             m = c.getMethod("getArmorModel", LivingEntity.class, ItemStack.class, EquipmentSlot.class, BipedEntityModel.class);
-        } catch (Exception var17) {
-        }
+        } catch (Exception ignored) {}
 
         Method getModel = m;
-        BipedEntityModel modelBiped = null;
+        BipedEntityModel<LivingEntity> modelBiped = null;
 
         try {
             if (getModel != null) {
-                modelBiped = (BipedEntityModel) getModel.invoke((Object) null, contact.entity, stack, EquipmentSlot.HEAD, null);
+                modelBiped = (BipedEntityModel<LivingEntity>) getModel.invoke(null, contact.entity, stack, EquipmentSlot.HEAD, null);
             }
-        } catch (Exception var16) {
-        }
+        } catch (Exception ignored) {}
 
         float intendedWidth = 9.0F;
         float intendedHeight = 9.0F;
@@ -1700,12 +1581,12 @@ public class Radar implements IRadar {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
                     float scale = (float) armorTexture.getWidth() / 8.0F;
                     BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
-                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation.toString(), armorImage);
+                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation, armorImage);
                 } else {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
                     float scale = (float) armorTexture.getWidth() / 8.0F;
                     BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 47.0F, 37.6F, 2);
-                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation.toString() + "_piglin", armorImage);
+                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation + "_piglin", armorImage);
                 }
 
                 this.newMobs = true;
@@ -1713,7 +1594,7 @@ public class Radar implements IRadar {
         }
 
         if (icon == null) {
-            System.out.println("can't get texture for custom armor type: " + helmet.getClass());
+            VoxelConstants.getLogger().warn("can't get texture for custom armor type: " + helmet.getClass());
             this.textureAtlas.registerFailedIcon("armor " + helmet.getTranslationKey() + helmet.getClass().getName());
         }
 
@@ -1728,9 +1609,8 @@ public class Radar implements IRadar {
         if (this.isHostile(entity)) {
             return EnumMobs.GENERICHOSTILE;
         } else {
-            if (entity instanceof TameableEntity) {
-                TameableEntity tameableEntity = (TameableEntity) entity;
-                if (tameableEntity.isTamed() && (this.game.isIntegratedServerRunning() || tameableEntity.getOwner().equals(this.game.player))) {
+            if (entity instanceof TameableEntity tameableEntity) {
+                if (tameableEntity.isTamed() && (VoxelConstants.getMinecraft().isIntegratedServerRunning() || tameableEntity.getOwner().equals(VoxelConstants.getPlayer()))) {
                     return EnumMobs.GENERICTAME;
                 }
             }
@@ -1750,8 +1630,8 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         GLUtils.disp2(this.textureAtlas.getGlId());
-        GLShim.glEnable(3042);
-        GLShim.glBlendFunc(770, 771);
+        GLShim.glEnable(GL11.GL_BLEND);
+        GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         for (Contact contact : this.contacts) {
             RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -1810,30 +1690,28 @@ public class Radar implements IRadar {
                         yOffset = -4.0F;
                     }
 
-                    if (contact.type == EnumMobs.GHAST || contact.type == EnumMobs.GHASTATTACKING || contact.type == EnumMobs.WITHER || contact.type == EnumMobs.WITHERINVULNERABLE || contact.type == EnumMobs.VEX || contact.type == EnumMobs.VEXCHARGING || contact.type == EnumMobs.PUFFERFISH || contact.type == EnumMobs.PUFFERFISHHALF || contact.type == EnumMobs.PUFFERFISHFULL) {
+                    if (Stream.of(EnumMobs.GHAST, EnumMobs.GHASTATTACKING, EnumMobs.WITHER, EnumMobs.WITHERINVULNERABLE, EnumMobs.VEX, EnumMobs.VEXCHARGING, EnumMobs.PUFFERFISH, EnumMobs.PUFFERFISHHALF, EnumMobs.PUFFERFISHFULL).anyMatch(enumMobs -> contact.type == enumMobs)) {
                         if (contact.type != EnumMobs.GHAST && contact.type != EnumMobs.GHASTATTACKING) {
                             if (contact.type != EnumMobs.WITHER && contact.type != EnumMobs.WITHERINVULNERABLE) {
                                 if (contact.type != EnumMobs.VEX && contact.type != EnumMobs.VEXCHARGING) {
-                                    if (contact.type == EnumMobs.PUFFERFISH || contact.type == EnumMobs.PUFFERFISHHALF || contact.type == EnumMobs.PUFFERFISHFULL) {
-                                        int size = ((PufferfishEntity) contact.entity).getPuffState();
-                                        switch (size) {
-                                            case 0 -> contact.type = EnumMobs.PUFFERFISH;
-                                            case 1 -> contact.type = EnumMobs.PUFFERFISHHALF;
-                                            case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
-                                        }
+                                    int size = ((PufferfishEntity) contact.entity).getPuffState();
+                                    switch (size) {
+                                        case 0 -> contact.type = EnumMobs.PUFFERFISH;
+                                        case 1 -> contact.type = EnumMobs.PUFFERFISHHALF;
+                                        case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
                                     }
                                 } else {
-                                    EntityRenderer render = this.game.getEntityRenderDispatcher().getRenderer(contact.entity);
+                                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                                     String path = render.getTexture(contact.entity).getPath();
                                     contact.type = path.endsWith("vex_charging.png") ? EnumMobs.VEXCHARGING : EnumMobs.VEX;
                                 }
                             } else {
-                                EntityRenderer render = this.game.getEntityRenderDispatcher().getRenderer(contact.entity);
+                                EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                                 String path = render.getTexture(contact.entity).getPath();
                                 contact.type = path.endsWith("wither_invulnerable.png") ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER;
                             }
                         } else {
-                            EntityRenderer render = this.game.getEntityRenderDispatcher().getRenderer(contact.entity);
+                            EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                             String path = render.getTexture(contact.entity).getPath();
                             contact.type = path.endsWith("ghast_fire.png") ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST;
                         }
@@ -1844,7 +1722,7 @@ public class Radar implements IRadar {
                             try {
                                 this.textureAtlas.stitchNew();
                             } catch (StitcherException var45) {
-                                System.err.println("Stitcher exception in render method!  Resetting mobs texture atlas.");
+                                VoxelConstants.getLogger().warn("Stitcher exception in render method!  Resetting mobs texture atlas.");
                                 this.loadTexturePackIcons();
                             }
 
@@ -1854,7 +1732,7 @@ public class Radar implements IRadar {
                         this.newMobs = false;
                     }
 
-                    if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
+                    if (contact.uuid != null) {
                         Sprite icon = this.textureAtlas.getAtlasSprite("glow");
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
@@ -1880,7 +1758,7 @@ public class Radar implements IRadar {
                         if (contact.armorColor != -1) {
                             red = (float) (contact.armorColor >> 16 & 0xFF) / 255.0F;
                             green = (float) (contact.armorColor >> 8 & 0xFF) / 255.0F;
-                            blue = (float) (contact.armorColor >> 0 & 0xFF) / 255.0F;
+                            blue = (float) (contact.armorColor & 0xFF) / 255.0F;
                             if (contact.type == EnumMobs.SHEEP) {
                                 SheepEntity sheepEntity = (SheepEntity) contact.entity;
                                 if (sheepEntity.hasCustomName() && "jeb_".equals(sheepEntity.getName().getString())) {
@@ -1888,7 +1766,7 @@ public class Radar implements IRadar {
                                     int numDyeColors = DyeColor.values().length;
                                     int colorID1 = semiRandom % numDyeColors;
                                     int colorID2 = (semiRandom + 1) % numDyeColors;
-                                    float lerpVal = ((float) (sheepEntity.age % 25) + this.game.getTickDelta()) / 25.0F;
+                                    float lerpVal = ((float) (sheepEntity.age % 25) + VoxelConstants.getMinecraft().getTickDelta()) / 25.0F;
                                     float[] sheepColors1 = SheepEntity.getRgbColor(DyeColor.byId(colorID1));
                                     float[] sheepColors2 = SheepEntity.getRgbColor(DyeColor.byId(colorID2));
                                     red = sheepColors1[0] * (1.0F - lerpVal) + sheepColors2[0] * lerpVal;
@@ -1940,7 +1818,7 @@ public class Radar implements IRadar {
                             GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
                         }
-                    } else if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
+                    } else if (contact.uuid != null && contact.uuid.equals(UUID.fromString("677f5375-2034-40f6-8fb6-389dd81ad0cb"))) { //UUID from fantahund :>
                         Sprite icon = this.textureAtlas.getAtlasSprite("crown");
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
@@ -1949,21 +1827,18 @@ public class Radar implements IRadar {
                     }
 
                     if (contact.name != null && (this.options.showPlayerNames && contact.type == EnumMobs.PLAYER || this.options.showMobNames && contact.type != EnumMobs.PLAYER)) {
-                        if (contact.entity.hasCustomName() || contact.type == EnumMobs.PLAYER) {
-                            float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
-                            matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
-                            RenderSystem.applyModelViewMatrix();
 
-                            String name = contact.entity.getDisplayName().getString();
-                            int m = this.fontRenderer.getWidth(name) / 2;
+                        float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
+                        matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        RenderSystem.applyModelViewMatrix();
 
-                            this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
-                        }
+                        String name = contact.entity.getDisplayName().getString();
+                        int m = this.fontRenderer.getWidth(name) / 2;
+
+                        this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
                     }
                 } catch (Exception e) {
-                    System.err.println("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type);
-                    logger.log(Level.ERROR, e);
-                    //e.printStackTrace(); //this is way better for debugging
+                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();
@@ -1974,42 +1849,37 @@ public class Radar implements IRadar {
 
     private void applyFilteringParameters() {
         if (this.options.filtering) {
-            GLShim.glTexParameteri(3553, 10241, 9729);
-            GLShim.glTexParameteri(3553, 10240, 9729);
-            GLShim.glTexParameteri(3553, 10242, 10496);
-            GLShim.glTexParameteri(3553, 10243, 10496);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
         } else {
-            GLShim.glTexParameteri(3553, 10241, 9728);
-            GLShim.glTexParameteri(3553, 10240, 9728);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         }
 
     }
 
     private boolean isHostile(Entity entity) {
-        if (entity instanceof ZombifiedPiglinEntity) {
-            ZombifiedPiglinEntity zombifiedPiglinEntity = (ZombifiedPiglinEntity) entity;
-            return zombifiedPiglinEntity.isAngryAt(this.game.player);
+        if (entity instanceof ZombifiedPiglinEntity zombifiedPiglinEntity) {
+            return zombifiedPiglinEntity.isAngryAt(VoxelConstants.getPlayer());
         } else if (entity instanceof Monster) {
             return true;
-        } else if (entity instanceof BeeEntity) {
-            BeeEntity beeEntity = (BeeEntity) entity;
+        } else if (entity instanceof BeeEntity beeEntity) {
             return beeEntity.hasAngerTime();
         } else {
-            if (entity instanceof PolarBearEntity) {
-                PolarBearEntity polarBearEntity = (PolarBearEntity) entity;
+            if (entity instanceof PolarBearEntity polarBearEntity) {
 
-                for (Object object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
-                    if (((PolarBearEntity) object).isBaby()) {
+                for (PolarBearEntity object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
+                    if (object.isBaby()) {
                         return true;
                     }
                 }
             }
 
-            if (entity instanceof RabbitEntity) {
-                RabbitEntity rabbitEntity = (RabbitEntity) entity;
+            if (entity instanceof RabbitEntity rabbitEntity) {
                 return rabbitEntity.getRabbitType() == 99;
-            } else if (entity instanceof WolfEntity) {
-                WolfEntity wolfEntity = (WolfEntity) entity;
+            } else if (entity instanceof WolfEntity wolfEntity) {
                 return wolfEntity.hasAngerTime();
             } else {
                 return false;
@@ -2029,13 +1899,5 @@ public class Radar implements IRadar {
         }
     }
 
-    private class ModelPartWithResourceLocation {
-        ModelPart modelPart;
-        Identifier resourceLocation;
-
-        public ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {
-            this.modelPart = modelPart;
-            this.resourceLocation = resourceLocation;
-        }
-    }
+    private record ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {}
 }

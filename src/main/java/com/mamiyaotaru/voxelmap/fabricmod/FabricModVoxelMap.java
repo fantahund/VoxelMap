@@ -1,17 +1,20 @@
 package com.mamiyaotaru.voxelmap.fabricmod;
 
+import com.google.gson.Gson;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Map.Entry;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.text.Text;
-
-import java.nio.charset.StandardCharsets;
 
 public class FabricModVoxelMap implements ClientModInitializer {
     public static FabricModVoxelMap instance;
@@ -29,9 +32,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
         Runtime.getRuntime().addShutdownHook(new Thread(FabricModVoxelMap.this::onShutDown));
     }
 
-    public void clientTick(MinecraftClient client) {
+    public void clientTick() {
         if (!this.initialized) {
-            boolean OK = MinecraftClient.getInstance() != null && client.getResourceManager() != null && client.getTextureManager() != null;
+            boolean OK = VoxelConstants.getMinecraft().getResourceManager() != null && VoxelConstants.getMinecraft().getTextureManager() != null;
 
             if (OK) {
                 this.lateInit();
@@ -39,7 +42,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         if (this.initialized) {
-            this.master.onTick(client);
+            this.master.onTick();
         }
 
     }
@@ -49,18 +52,20 @@ public class FabricModVoxelMap implements ClientModInitializer {
             this.lateInit();
         }
 
-        this.master.onTickInGame(matrixStack, MinecraftClient.getInstance());
+        try {
+            this.master.onTickInGame(matrixStack);
+        } catch (Exception ignore) {}
     }
 
-    public boolean onChat(Text chat) {
-        return CommandUtils.checkForWaypoints(chat);
+    public boolean onChat(Text chat, MessageIndicator indicator) {
+        return CommandUtils.checkForWaypoints(chat, indicator);
     }
 
     public boolean onSendChatMessage(String message) {
-        if (message.startsWith("/newWaypoint")) {
+        if (message.startsWith("newWaypoint")) {
             CommandUtils.waypointClicked(message);
             return false;
-        } else if (message.startsWith("/ztp")) {
+        } else if (message.startsWith("ztp")) {
             CommandUtils.teleport(message);
             return false;
         } else {
@@ -84,28 +89,63 @@ public class FabricModVoxelMap implements ClientModInitializer {
         long shutdownTime = System.currentTimeMillis();
 
         while (ThreadManager.executorService.getQueue().size() + ThreadManager.executorService.getActiveCount() > 0 && System.currentTimeMillis() - shutdownTime < 10000L) {
-            System.out.print(".");
 
             try {
                 Thread.sleep(200L);
             } catch (InterruptedException ignored) {
             }
         }
-
-        System.out.println();
     }
 
     public boolean handleCustomPayload(CustomPayloadS2CPacket packet) {
         if (packet != null && packet.getChannel() != null) {
-            String channel = packet.getChannel().getPath();
             PacketByteBuf buffer = packet.getData();
-            if (channel.equals("world_info") || channel.equals("world_id")) {
-                buffer.readByte();
-                byte length = buffer.readByte();
+            String channelName = packet.getChannel().toString();
+            if (channelName.equals("worldinfo:world_id")) {
+                buffer.readByte(); // ignore
+                int length;
+                int b = buffer.readByte();
+                if (b == 42) {
+                    // "new" packet
+                    length = buffer.readByte();
+                } else if (b == 0) {
+                    // length == 0 ?
+                    VoxelConstants.getLogger().warn("Received unknown world_id packet");
+                    return true;
+                } else {
+                    // probably "legacy" packet
+                    VoxelConstants.getLogger().warn("Assuming legacy world_id packet. " +
+                            "The support might be removed in the future versions.");
+                    length = b;
+                }
                 byte[] bytes = new byte[length];
                 buffer.readBytes(bytes);
                 String subWorldName = new String(bytes, StandardCharsets.UTF_8);
                 this.master.newSubWorldName(subWorldName, true);
+                return true;
+            } else if (channelName.equals("voxelmap:settings")) {
+                buffer.readByte(); // ignore
+                Map<String, Object> settings = new Gson().fromJson(buffer.readString(), Map.class);
+                for (Entry<String, Object> entry : settings.entrySet()) {
+                    String setting = entry.getKey();
+                    Object value = entry.getValue();
+                    switch (setting) {
+                        case "worldName" -> {
+                            if (value != null) {
+                                this.master.newSubWorldName((String) value, true);
+                            }
+                        }
+                        case "radarAllowed" ->
+                                this.master.getRadarOptions().radarAllowed = (Boolean) value;
+                        case "radarMobsAllowed" ->
+                                this.master.getRadarOptions().radarMobsAllowed = (Boolean) value;
+                        case "radarPlayersAllowed" ->
+                                this.master.getRadarOptions().radarPlayersAllowed = (Boolean) value;
+                        case "cavesAllowed" ->
+                                this.master.getMapOptions().cavesAllowed = (Boolean) value;
+                        default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
+                    }
+                }
                 return true;
             }
         }

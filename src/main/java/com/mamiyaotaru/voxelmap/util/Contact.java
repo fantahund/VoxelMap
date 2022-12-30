@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 
 import java.util.UUID;
@@ -15,13 +15,12 @@ public class Contact {
     public double distance;
     public float brightness;
     public EnumMobs type;
-    public boolean vanillaType;
+    public final boolean vanillaType;
     public boolean custom = false;
     public UUID uuid = null;
     public String name = "_";
     public int rotationFactor = 0;
-    public String skinURL = "";
-    public Entity entity = null;
+    public final Entity entity;
     public Sprite icon = null;
     public Sprite armorIcon = null;
     public int armorColor = -1;
@@ -49,8 +48,8 @@ public class Contact {
     }
 
     public void updateLocation() {
-        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * (double) MinecraftClient.getInstance().getTickDelta();
+        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * (double) VoxelConstants.getMinecraft().getTickDelta();
         this.y = (int) this.entity.getY() + this.yFudge;
-        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * (double) MinecraftClient.getInstance().getTickDelta();
+        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * (double) VoxelConstants.getMinecraft().getTickDelta();
     }
 }

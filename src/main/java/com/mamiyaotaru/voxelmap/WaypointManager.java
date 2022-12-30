@@ -16,18 +16,18 @@ import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionTypes;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -49,17 +49,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class WaypointManager implements IWaypointManager {
-    IVoxelMap master;
-    private MinecraftClient game;
-    public MapSettingsManager options;
-    TextureAtlas textureAtlas;
-    TextureAtlas textureAtlasChooser;
+    final IVoxelMap master;
+    public final MapSettingsManager options;
+    final TextureAtlas textureAtlas;
+    final TextureAtlas textureAtlasChooser;
     private boolean loaded = false;
     private boolean needSave = false;
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
@@ -75,7 +75,7 @@ public class WaypointManager implements IWaypointManager {
     private final HashSet<String> oldNorthWorldNames = new HashSet<>();
     private final HashMap<String, String> worldSeeds = new HashMap<>();
     private BackgroundImageInfo backgroundImageInfo = null;
-    private WaypointContainer waypointContainer = null;
+    private WaypointContainer waypointContainer;
     private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
@@ -94,20 +94,19 @@ public class WaypointManager implements IWaypointManager {
     public void onResourceManagerReload(ResourceManager resourceManager) {
         final List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {
-            MinecraftClient mc = MinecraftClient.getInstance();
 
-            Map<Identifier, Resource> resourceMap = mc.getResourceManager().findResources("images", asset -> asset.getPath().endsWith(".png"));
+            Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().findResources("images", asset -> asset.getPath().endsWith(".png"));
             for (Identifier candidate : resourceMap.keySet()) { //TODO 1.19
                 if (candidate.getNamespace().equals("voxelmap") && candidate.getPath().contains("images/waypoints")) {
                     images.add(candidate);
                 }
             }
 
-            Sprite markerIcon = textureAtlas.registerIconForResource(new Identifier("voxelmap", "images/waypoints/marker.png"), MinecraftClient.getInstance().getResourceManager());
-            Sprite markerIconSmall = textureAtlas.registerIconForResource(new Identifier("voxelmap", "images/waypoints/markersmall.png"), MinecraftClient.getInstance().getResourceManager());
+            Sprite markerIcon = textureAtlas.registerIconForResource(new Identifier("voxelmap", "images/waypoints/marker.png"), VoxelConstants.getMinecraft().getResourceManager());
+            Sprite markerIconSmall = textureAtlas.registerIconForResource(new Identifier("voxelmap", "images/waypoints/markersmall.png"), VoxelConstants.getMinecraft().getResourceManager());
 
             for (Identifier resourceLocation : images) {
-                Sprite icon = textureAtlas.registerIconForResource(resourceLocation, MinecraftClient.getInstance().getResourceManager());
+                Sprite icon = textureAtlas.registerIconForResource(resourceLocation, VoxelConstants.getMinecraft().getResourceManager());
                 String name = resourceLocation.toString();
                 if (name.toLowerCase().contains("waypoints/waypoint") && !name.toLowerCase().contains("small")) {
                     textureAtlas.registerMaskedIcon(name.replace(".png", "Small.png"), icon);
@@ -120,8 +119,8 @@ public class WaypointManager implements IWaypointManager {
 
         };
         this.textureAtlas.loadTextureAtlas(iconCreator);
-        GLShim.glTexParameteri(3553, 10241, 9729);
-        GLShim.glTexParameteri(3553, 10240, 9729);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         this.textureAtlasChooser.reset();
         int expectedSize = 32;
 
@@ -136,7 +135,7 @@ public class WaypointManager implements IWaypointManager {
                     bufferedImage = ImageUtils.scaleImage(bufferedImage, scale);
                     this.textureAtlasChooser.registerIconForBufferedImage(name, bufferedImage);
                 } catch (IOException var11) {
-                    this.textureAtlasChooser.registerIconForResource(resourceLocation, MinecraftClient.getInstance().getResourceManager());
+                    this.textureAtlasChooser.registerIconForResource(resourceLocation, VoxelConstants.getMinecraft().getResourceManager());
                 }
             }
         }
@@ -164,9 +163,8 @@ public class WaypointManager implements IWaypointManager {
         if (world == null) {
             this.currentDimension = null;
         } else {
-            this.game = MinecraftClient.getInstance();
             String mapName;
-            if (this.game.isIntegratedServerRunning()) {
+            if (VoxelConstants.getMinecraft().isIntegratedServerRunning()) {
                 mapName = this.getMapName();
             } else {
                 mapName = this.getServerName();
@@ -191,34 +189,42 @@ public class WaypointManager implements IWaypointManager {
     }
 
     public String getMapName() {
-        return this.game.getServer().getSavePath(WorldSavePath.ROOT).normalize().toFile().getName();
+        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
+
+        if (integratedServer.isEmpty()) {
+            String error = "Tried fetching map name on a non-integrated server!";
+
+            VoxelConstants.getLogger().fatal(error);
+            throw new IllegalStateException(error);
+        }
+
+        return integratedServer.get().getSavePath(WorldSavePath.ROOT).normalize().toFile().getName();
     }
 
     public String getServerName() {
         String serverName = "";
 
         try {
-            ServerInfo serverData = this.game.getCurrentServerEntry();
+            ServerInfo serverData = VoxelConstants.getMinecraft().getCurrentServerEntry();
             if (serverData != null) {
                 boolean isOnLAN = serverData.isLocal();
                 if (isOnLAN) {
-                    System.out.println("LAN server detected!");
+                    VoxelConstants.getLogger().warn("LAN server detected!");
                     serverName = serverData.name;
                 } else {
                     serverName = serverData.address;
                 }
-            } else if (this.game.isConnectedToRealms()) {
-                System.out.println("REALMS server detected!");
+            } else if (VoxelConstants.getMinecraft().isConnectedToRealms()) {
+                VoxelConstants.getLogger().warn("REALMS server detected!");
                 serverName = "Realms";
             } else {
-                ClientPlayNetworkHandler netHandler = this.game.getNetworkHandler();
+                ClientPlayNetworkHandler netHandler = VoxelConstants.getMinecraft().getNetworkHandler();
                 ClientConnection networkManager = netHandler.getConnection();
                 InetSocketAddress socketAddress = (InetSocketAddress) networkManager.getAddress();
                 serverName = socketAddress.getHostString() + ":" + socketAddress.getPort();
             }
         } catch (Exception var6) {
-            System.err.println("error getting ServerData");
-            var6.printStackTrace();
+            VoxelConstants.getLogger().error("error getting ServerData", var6);
         }
 
         return serverName;
@@ -231,7 +237,7 @@ public class WaypointManager implements IWaypointManager {
 
     @Override
     public void handleDeath() {
-        HashSet<Waypoint> toDel = new HashSet();
+        HashSet<Waypoint> toDel = new HashSet<>();
 
         for (Waypoint pt : this.wayPts) {
             if (pt.name.equals("Latest Death")) {
@@ -246,9 +252,7 @@ public class WaypointManager implements IWaypointManager {
                         if (pt.name.length() > 15) {
                             num = Integer.parseInt(pt.name.substring(15));
                         }
-                    } catch (Exception var6) {
-                        num = 0;
-                    }
+                    } catch (Exception ignored) {}
 
                     pt.red -= (pt.red - 0.5F) / 8.0F;
                     pt.green -= (pt.green - 0.5F) / 8.0F;
@@ -267,10 +271,9 @@ public class WaypointManager implements IWaypointManager {
         }
 
         if (this.options.deathpoints != 0) {
-            ClientPlayerEntity thePlayer = MinecraftClient.getInstance().player;
-            TreeSet dimensions = new TreeSet();
-            dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(MinecraftClient.getInstance().world));
-            double dimensionScale = thePlayer.world.getDimension().coordinateScale();
+            TreeSet<DimensionContainer> dimensions = new TreeSet<>();
+            dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+            double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             this.addWaypoint(new Waypoint("Latest Death", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord() - 1, true, 1.0F, 1.0F, 1.0F, "Skull", this.getCurrentSubworldDescriptor(false), dimensions));
         }
 
@@ -287,11 +290,7 @@ public class WaypointManager implements IWaypointManager {
             this.waypointContainer = new WaypointContainer(this.options);
 
             for (Waypoint pt : this.wayPts) {
-                if (pt.dimensions.size() != 0 && !pt.dimensions.contains(dimension)) {
-                    pt.inDimension = false;
-                } else {
-                    pt.inDimension = true;
-                }
+                pt.inDimension = pt.dimensions.size() == 0 || pt.dimensions.contains(dimension);
 
                 this.waypointContainer.addWaypoint(pt);
             }
@@ -304,7 +303,7 @@ public class WaypointManager implements IWaypointManager {
 
     @Override
     public void setOldNorth(boolean oldNorth) {
-        String oldNorthWorldName = "";
+        String oldNorthWorldName;
         if (this.knownSubworldNames.size() == 0) {
             oldNorthWorldName = "all";
         } else {
@@ -321,7 +320,7 @@ public class WaypointManager implements IWaypointManager {
     }
 
     @Override
-    public TreeSet getKnownSubworldNames() {
+    public TreeSet<String> getKnownSubworldNames() {
         return this.knownSubworldNames;
     }
 
@@ -332,7 +331,7 @@ public class WaypointManager implements IWaypointManager {
 
     @Override
     public boolean isMultiworld() {
-        return this.multiworld || this.game.isConnectedToRealms();
+        return this.multiworld || VoxelConstants.getMinecraft().isConnectedToRealms();
     }
 
     @Override
@@ -345,7 +344,7 @@ public class WaypointManager implements IWaypointManager {
                 }
 
                 if (!name.equals(this.currentSubWorldName)) {
-                    System.out.println("New world name: " + TextUtils.scrubCodes(name));
+                    VoxelConstants.getLogger().warn("New world name: " + TextUtils.scrubCodes(name));
                 }
 
                 this.lastNewWorldNameTime = System.currentTimeMillis();
@@ -378,11 +377,7 @@ public class WaypointManager implements IWaypointManager {
         String currentSubWorldDescriptorScrubbed = TextUtils.scrubName(this.currentSubworldDescriptorNoCodes);
         synchronized (this.waypointLock) {
             for (Waypoint pt : this.wayPts) {
-                if (currentSubWorldDescriptorScrubbed != "" && pt.world != "" && !currentSubWorldDescriptorScrubbed.equals(pt.world)) {
-                    pt.inWorld = false;
-                } else {
-                    pt.inWorld = true;
-                }
+                pt.inWorld = currentSubWorldDescriptorScrubbed.equals("") || Objects.equals(pt.world, "") || currentSubWorldDescriptorScrubbed.equals(pt.world);
             }
         }
 
@@ -428,13 +423,13 @@ public class WaypointManager implements IWaypointManager {
             String worldName = this.getCurrentWorldName();
             String worldNamePathPart = TextUtils.scrubNameFile(worldName);
             String subWorldNamePathPart = TextUtils.scrubNameFile(oldName) + "/";
-            File oldCachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
+            File oldCachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
             if (oldCachedRegionFileDir.exists() && oldCachedRegionFileDir.isDirectory()) {
                 subWorldNamePathPart = TextUtils.scrubNameFile(newName) + "/";
-                File newCachedRegionFileDir = new File(MinecraftClient.getInstance().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
+                File newCachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
                 boolean success = oldCachedRegionFileDir.renameTo(newCachedRegionFileDir);
                 if (!success) {
-                    System.out.println("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
+                    VoxelConstants.getLogger().warn("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
                 }
             }
 
@@ -482,7 +477,7 @@ public class WaypointManager implements IWaypointManager {
             key = this.getCurrentSubworldDescriptor(false);
         }
 
-        String seed = (String) this.worldSeeds.get(key);
+        String seed = this.worldSeeds.get(key);
         if (seed == null) {
             seed = "";
         }
@@ -512,7 +507,7 @@ public class WaypointManager implements IWaypointManager {
         }
 
         worldNameSave = TextUtils.scrubNameFile(worldNameSave);
-        File saveDir = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/");
+        File saveDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/");
         if (!saveDir.exists()) {
             saveDir.mkdirs();
         }
@@ -521,48 +516,36 @@ public class WaypointManager implements IWaypointManager {
 
         try {
             PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8));
-            String knownSubworldsString = "";
-
-            for (String subworldName : this.knownSubworldNames) {
-                knownSubworldsString = knownSubworldsString + TextUtils.scrubName(subworldName) + ",";
-            }
+            String knownSubworldsString = this.knownSubworldNames.stream().map(subworldName -> TextUtils.scrubName(subworldName) + ",").collect(Collectors.joining());
 
             out.println("subworlds:" + knownSubworldsString);
-            String oldNorthWorldsString = "";
-
-            for (String oldNorthWorldName : this.oldNorthWorldNames) {
-                oldNorthWorldsString = oldNorthWorldsString + TextUtils.scrubName(oldNorthWorldName) + ",";
-            }
+            String oldNorthWorldsString = this.oldNorthWorldNames.stream().map(oldNorthWorldName -> TextUtils.scrubName(oldNorthWorldName) + ",").collect(Collectors.joining());
 
             out.println("oldNorthWorlds:" + oldNorthWorldsString);
-            String seedsString = "";
-
-            for (Entry entry : this.worldSeeds.entrySet()) {
-                seedsString = seedsString + TextUtils.scrubName((String) entry.getKey()) + "#" + (String) entry.getValue() + ",";
-            }
+            String seedsString = this.worldSeeds.entrySet().stream().map(entry -> TextUtils.scrubName(entry.getKey()) + "#" + entry.getValue() + ",").collect(Collectors.joining());
 
             out.println("seeds:" + seedsString);
 
             for (Waypoint pt : this.wayPts) {
                 if (!pt.name.startsWith("^")) {
-                    String dimensionsString = "";
+                    StringBuilder dimensionsString = new StringBuilder();
 
                     for (DimensionContainer dimension : pt.dimensions) {
-                        dimensionsString = dimensionsString + dimension.getStorageName() + "#";
+                        dimensionsString.append(dimension.getStorageName()).append("#");
                     }
 
-                    if (dimensionsString.equals("")) {
-                        dimensionsString = dimensionsString + AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName();
+                    if (dimensionsString.toString().equals("")) {
+                        dimensionsString.append(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName());
                     }
 
-                    out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + Boolean.toString(pt.enabled) + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
+                    out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + pt.enabled + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
                 }
             }
 
             out.close();
         } catch (Exception var12) {
             MessageUtils.chatInfo("§EError Saving Waypoints");
-            var12.printStackTrace();
+            VoxelConstants.getLogger().error(var12);
         }
 
     }
@@ -577,8 +560,8 @@ public class WaypointManager implements IWaypointManager {
         this.oldNorthWorldNames.clear();
         this.worldSeeds.clear();
         synchronized (this.waypointLock) {
-            boolean loaded = false;
-            this.wayPts = new ArrayList();
+            boolean loaded;
+            this.wayPts = new ArrayList<>();
             String worldNameStandard = this.getCurrentWorldName();
             if (worldNameStandard.endsWith(":25565")) {
                 int portSepLoc = worldNameStandard.lastIndexOf(":");
@@ -604,8 +587,8 @@ public class WaypointManager implements IWaypointManager {
     }
 
     private boolean loadWaypointsExtensible(String worldNameStandard) {
-        File settingsFileNew = new File(MinecraftClient.getInstance().runDirectory, "/voxelmap/" + worldNameStandard + ".points");
-        File settingsFileOld = new File(MinecraftClient.getInstance().runDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileNew = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileOld = new File(VoxelConstants.getMinecraft().runDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
         if (!settingsFileOld.exists() && !settingsFileNew.exists()) {
             return false;
         } else {
@@ -672,42 +655,32 @@ public class WaypointManager implements IWaypointManager {
                                 float blue = 0.0F;
                                 String suffix = "";
                                 String world = "";
-                                TreeSet dimensions = new TreeSet();
+                                TreeSet<DimensionContainer> dimensions = new TreeSet<>();
 
                                 for (String pair : pairs) {
                                     int splitIndex = pair.indexOf(":");
                                     if (splitIndex != -1) {
                                         String key = pair.substring(0, splitIndex).toLowerCase().trim();
                                         String value = pair.substring(splitIndex + 1).trim();
-                                        if (key.equals("name")) {
-                                            name = TextUtils.descrubName(value);
-                                        } else if (key.equals("x")) {
-                                            x = Integer.parseInt(value);
-                                        } else if (key.equals("z")) {
-                                            z = Integer.parseInt(value);
-                                        } else if (key.equals("y")) {
-                                            y = Integer.parseInt(value);
-                                        } else if (key.equals("enabled")) {
-                                            enabled = Boolean.parseBoolean(value);
-                                        } else if (key.equals("red")) {
-                                            red = Float.parseFloat(value);
-                                        } else if (key.equals("green")) {
-                                            green = Float.parseFloat(value);
-                                        } else if (key.equals("blue")) {
-                                            blue = Float.parseFloat(value);
-                                        } else if (key.equals("suffix")) {
-                                            suffix = value;
-                                        } else if (key.equals("world")) {
-                                            world = TextUtils.descrubName(value);
-                                        } else if (key.equals("dimensions")) {
-                                            String[] dimensionStrings = value.split("#");
-
-                                            for (String dimensionString : dimensionStrings) {
-                                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
-                                            }
-
-                                            if (dimensions.size() == 0) {
-                                                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
+                                        switch (key) {
+                                            case "name" -> name = TextUtils.descrubName(value);
+                                            case "x" -> x = Integer.parseInt(value);
+                                            case "z" -> z = Integer.parseInt(value);
+                                            case "y" -> y = Integer.parseInt(value);
+                                            case "enabled" -> enabled = Boolean.parseBoolean(value);
+                                            case "red" -> red = Float.parseFloat(value);
+                                            case "green" -> green = Float.parseFloat(value);
+                                            case "blue" -> blue = Float.parseFloat(value);
+                                            case "suffix" -> suffix = value;
+                                            case "world" -> world = TextUtils.descrubName(value);
+                                            case "dimensions" -> {
+                                                String[] dimensionStrings = value.split("#");
+                                                for (String dimensionString : dimensionStrings) {
+                                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                                }
+                                                if (dimensions.size() == 0) {
+                                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
+                                                }
                                             }
                                         }
                                     }
@@ -728,8 +701,7 @@ public class WaypointManager implements IWaypointManager {
                     return true;
                 } catch (Exception var25) {
                     MessageUtils.chatInfo("§EError Loading Waypoints");
-                    System.err.println("waypoint load error: " + var25.getLocalizedMessage());
-                    var25.printStackTrace();
+                    VoxelConstants.getLogger().error("waypoint load error: " + var25.getLocalizedMessage(), var25);
                     return false;
                 }
             } else {
@@ -738,7 +710,7 @@ public class WaypointManager implements IWaypointManager {
         }
     }
 
-    private void loadWaypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet dimensions) {
+    private void loadWaypoint(String name, int x, int z, int y, boolean enabled, float red, float green, float blue, String suffix, String world, TreeSet<DimensionContainer> dimensions) {
         Waypoint newWaypoint = new Waypoint(name, x, z, y, enabled, red, green, blue, suffix, world, dimensions);
         if (!this.wayPts.contains(newWaypoint)) {
             this.wayPts.add(newWaypoint);
@@ -812,14 +784,14 @@ public class WaypointManager implements IWaypointManager {
             }
 
             path = path + "/" + this.currentDimension.getStorageName();
-            InputStream is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.png")).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.png")).get().getInputStream();
             Image image = ImageIO.read(is);
             is.close();
             BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
             Graphics gfx = mapImage.createGraphics();
             gfx.drawImage(image, 0, 0, null);
             gfx.dispose();
-            is = this.game.getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().getInputStream();
+            is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             Properties mapProperties = new Properties();
             mapProperties.load(isr);
@@ -836,8 +808,7 @@ public class WaypointManager implements IWaypointManager {
                 this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
             } else if (left != null && top != null && right != null && bottom != null) {
                 int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
-                int heightInt = Integer.parseInt(right) - Integer.parseInt(left);
-                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, heightInt);
+                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, widthInt);
             }
 
             isr.close();

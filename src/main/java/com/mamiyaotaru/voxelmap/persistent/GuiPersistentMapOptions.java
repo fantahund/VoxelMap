@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
@@ -12,12 +13,10 @@ import net.minecraft.text.Text;
 
 public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final Screen parent;
-    private static EnumOptionsMinimap[] relevantOptions;
     private final PersistentMapSettingsManager options;
     private final Text screenTitle = Text.translatable("options.worldmap.title");
     private final Text cacheSettings = Text.translatable("options.worldmap.cachesettings");
     private final Text warning = Text.translatable("options.worldmap.warning");
-    private static EnumOptionsMinimap[] relevantOptions2;
 
     public GuiPersistentMapOptions(Screen parent, IVoxelMap master) {
         this.parent = parent;
@@ -25,42 +24,38 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     }
 
     public void init() {
-        relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWWAYPOINTS, EnumOptionsMinimap.SHOWWAYPOINTNAMES};
+        EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWWAYPOINTS, EnumOptionsMinimap.SHOWWAYPOINTNAMES};
         int var2 = 0;
 
-        for (int t = 0; t < relevantOptions.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions[t];
-            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
+        for (EnumOptionsMinimap option : relevantOptions) {
+            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
             ++var2;
         }
 
-        relevantOptions2 = new EnumOptionsMinimap[]{EnumOptionsMinimap.MINZOOM, EnumOptionsMinimap.MAXZOOM, EnumOptionsMinimap.CACHESIZE};
+        EnumOptionsMinimap[] relevantOptions2 = new EnumOptionsMinimap[]{EnumOptionsMinimap.MINZOOM, EnumOptionsMinimap.MAXZOOM, EnumOptionsMinimap.CACHESIZE};
         var2 += 2;
 
-        for (int t = 0; t < relevantOptions2.length; ++t) {
-            EnumOptionsMinimap option = relevantOptions2[t];
+        for (EnumOptionsMinimap option : relevantOptions2) {
             if (option.isFloat()) {
                 float sValue = this.options.getOptionFloatValue(option);
-                float fValue = 0.0F;
 
                 this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, switch (option) {
-                    case MINZOOM -> (sValue - -3.0F) / (float) (5 - -3);
-                    case MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
+                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (float) (5 + 3);
                     case CACHESIZE -> sValue / 5000.0F;
-                    default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
+                    default ->
+                            throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 }, this.options));
             } else {
-                this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), buttonx -> this.optionClicked(buttonx)));
+                this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
             }
 
             ++var2;
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> this.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)));
 
         for (Object buttonObj : this.getButtonList()) {
-            if (buttonObj instanceof GuiOptionButtonMinimap) {
-                GuiOptionButtonMinimap button = (GuiOptionButtonMinimap) buttonObj;
+            if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWWAYPOINTNAMES)) {
                     button.active = this.options.showWaypoints;
                 }
@@ -75,8 +70,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
 
         for (Object buttonObj : this.getButtonList()) {
-            if (buttonObj instanceof GuiOptionButtonMinimap) {
-                GuiOptionButtonMinimap button = (GuiOptionButtonMinimap) buttonObj;
+            if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWWAYPOINTNAMES)) {
                     button.active = this.options.showWaypoints;
                 }
@@ -87,15 +81,13 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     public void render(MatrixStack matrixStack, int par1, int par2, float par3) {
         for (Object buttonObj : this.getButtonList()) {
-            if (buttonObj instanceof GuiOptionSliderMinimap) {
-                GuiOptionSliderMinimap slider = (GuiOptionSliderMinimap) buttonObj;
+            if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
                 float sValue = this.options.getOptionFloatValue(option);
-                float fValue = 0.0F;
+                float fValue;
 
                 fValue = switch (option) {
-                    case MINZOOM -> (sValue - -3.0F) / (float) (5 - -3);
-                    case MAXZOOM -> (sValue - -3.0F) / (float) (5 - -3);
+                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (float) (5 + 3);
                     case CACHESIZE -> sValue / 5000.0F;
                     default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 };

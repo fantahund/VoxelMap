@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -30,32 +30,31 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private final Perspective thirdPersonViewOrig;
     private String[] worlds;
     private final Screen parent;
-    ClientPlayerEntity thePlayer;
-    ClientPlayerEntity camera;
+    final ClientPlayerEntity thePlayer;
+    final ClientPlayerEntity camera;
     private final IVoxelMap master;
     private final IWaypointManager waypointManager;
 
     public GuiSubworldsSelect(Screen parent, IVoxelMap master) {
-        this.client = MinecraftClient.getInstance();
         this.parent = parent;
-        this.thePlayer = this.getMinecraft().player;
-        this.camera = new ClientPlayerEntity(this.getMinecraft(), this.getMinecraft().world, this.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
-        this.camera.input = new KeyboardInput(this.getMinecraft().options);
+        this.thePlayer = VoxelConstants.getPlayer();
+        this.camera = new ClientPlayerEntity(VoxelConstants.getMinecraft(), VoxelConstants.getMinecraft().world, VoxelConstants.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
+        this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
         this.camera.refreshPositionAndAngles(this.thePlayer.getX(), this.thePlayer.getY() - this.thePlayer.getHeightOffset(), this.thePlayer.getZ(), this.thePlayer.getYaw(), 0.0F);
         this.yaw = this.thePlayer.getYaw();
-        this.thirdPersonViewOrig = this.getMinecraft().options.getPerspective();
+        this.thirdPersonViewOrig = VoxelConstants.getMinecraft().options.getPerspective();
         this.master = master;
         this.waypointManager = master.getWaypointManager();
     }
 
     public void init() {
-        ArrayList<String> knownSubworldNames = new ArrayList(this.waypointManager.getKnownSubworldNames());
-        if (!this.multiworld && !this.waypointManager.isMultiworld() && !this.getMinecraft().isConnectedToRealms()) {
+        ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
+        if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.getMinecraft().isConnectedToRealms()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Text.translatable("worldmap.multiworld.isthismultiworld"), Text.translatable("worldmap.multiworld.explanation"), Text.translatable("gui.yes"), Text.translatable("gui.no"));
-            this.getMinecraft().setScreen(confirmScreen);
+            VoxelConstants.getMinecraft().setScreen(confirmScreen);
         } else {
-            this.getMinecraft().options.setPerspective(Perspective.FIRST_PERSON);
-            this.getMinecraft().setCameraEntity(this.camera);
+            VoxelConstants.getMinecraft().options.setPerspective(Perspective.FIRST_PERSON);
+            VoxelConstants.getMinecraft().setCameraEntity(this.camera);
         }
 
         this.title = Text.translatable("worldmap.multiworld.title");
@@ -69,7 +68,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
         int buttonWidth = this.width / buttonsPerRow - 5;
         int xSpacing = (this.width - buttonsPerRow * buttonWidth) / 2;
-        ButtonWidget cancelBtn = new ButtonWidget(centerX - 100, this.height - 30, 200, 20, Text.translatable("gui.cancel"), button -> this.getMinecraft().setScreen(null));
+        ButtonWidget cancelBtn = new ButtonWidget(centerX - 100, this.height - 30, 200, 20, Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(null));
         this.addDrawableChild(cancelBtn);
         final Collator collator = I18nUtils.getLocaleAwareCollator();
         knownSubworldNames.sort((name1, name2) -> -collator.compare(name1, name2));
@@ -88,30 +87,32 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
             this.worlds[t] = knownSubworldNames.get(t);
             int tt = t;
-            selectButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - t / buttonsPerRow * 21, buttonWidth - 32, 20, Text.literal(this.worlds[t]), button -> this.worldSelected(this.worlds[tt]));
-            editButtons[t] = new ButtonWidget((buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth + xSpacing + buttonWidth - 32, this.height - 60 - t / buttonsPerRow * 21, 30, 20, Text.literal("⚒"), button -> this.editWorld(this.worlds[tt]));
+            int i = (buttonsPerRow - shiftBy - t % buttonsPerRow) * buttonWidth;
+            selectButtons[t] = new ButtonWidget(i + xSpacing, this.height - 60 - t / buttonsPerRow * 21, buttonWidth - 32, 20, Text.literal(this.worlds[t]), button -> this.worldSelected(this.worlds[tt]));
+            editButtons[t] = new ButtonWidget(i + xSpacing + buttonWidth - 32, this.height - 60 - t / buttonsPerRow * 21, 30, 20, Text.literal("⚒"), button -> this.editWorld(this.worlds[tt]));
             this.addDrawableChild(selectButtons[t]);
             this.addDrawableChild(editButtons[t]);
         }
 
         int numButtons = selectButtons.length - 1;
+        int i = (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth;
         if (!this.newWorld) {
-            selectButtons[numButtons] = new ButtonWidget((buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20, Text.literal("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
+            selectButtons[numButtons] = new ButtonWidget(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20, Text.literal("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
                 this.newWorld = true;
                 this.newNameField.setTextFieldFocused(true);
             });
             this.addDrawableChild(selectButtons[numButtons]);
         }
 
-        this.newNameField = new TextFieldWidget(this.getFontRenderer(), (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
+        this.newNameField = new TextFieldWidget(this.getFontRenderer(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
     public void accept(boolean par1) {
         if (!par1) {
-            this.getMinecraft().setScreen(this.parent);
+            VoxelConstants.getMinecraft().setScreen(this.parent);
         } else {
             this.multiworld = true;
-            this.getMinecraft().setScreen(this);
+            VoxelConstants.getMinecraft().setScreen(this);
         }
 
     }
@@ -184,16 +185,16 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     @Override
     public void removed() {
         super.removed();
-        this.getMinecraft().options.setPerspective(this.thirdPersonViewOrig);
-        this.getMinecraft().setCameraEntity(this.thePlayer);
+        VoxelConstants.getMinecraft().options.setPerspective(this.thirdPersonViewOrig);
+        VoxelConstants.getMinecraft().setCameraEntity(this.thePlayer);
     }
 
     private void worldSelected(String selectedSubworldName) {
         this.waypointManager.setSubworldName(selectedSubworldName, false);
-        this.getMinecraft().setScreen(this.parent);
+        VoxelConstants.getMinecraft().setScreen(this.parent);
     }
 
     private void editWorld(String subworldNameToEdit) {
-        this.getMinecraft().setScreen(new GuiSubworldEdit(this, this.master, subworldNameToEdit));
+        VoxelConstants.getMinecraft().setScreen(new GuiSubworldEdit(this, this.master, subworldNameToEdit));
     }
 }
