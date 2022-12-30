@@ -3,11 +3,11 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
 public class PersistentMap implements IPersistentMap, IChangeObserver {
-    final IVoxelMap master;
+    final AbstractVoxelMap master;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final IColorManager colorManager;
     final MapSettingsManager mapOptions;
@@ -85,7 +85,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     private MapChunkCache chunkCache;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
 
-    public PersistentMap(IVoxelMap master) {
+    public PersistentMap(AbstractVoxelMap master) {
         this.master = master;
         this.colorManager = master.getColorManager();
         mapOptions = master.getMapOptions();

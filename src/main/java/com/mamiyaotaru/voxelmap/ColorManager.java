@@ -2,8 +2,8 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
@@ -85,7 +85,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ColorManager implements IColorManager {
-    private final IVoxelMap master;
+    private final AbstractVoxelMap master;
     private boolean resourcePacksChanged = false;
     private ClientWorld world = null;
     private BufferedImage terrainBuff = null;
@@ -112,7 +112,7 @@ public class ColorManager implements IColorManager {
     private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
     private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedstoneWireBlock.getWireColor(blockState.get(RedstoneWireBlock.POWER));
 
-    public ColorManager(IVoxelMap master) {
+    public ColorManager(AbstractVoxelMap master) {
         this.master = master;
         this.optifineInstalled = false;
         Field ofProfiler = null;

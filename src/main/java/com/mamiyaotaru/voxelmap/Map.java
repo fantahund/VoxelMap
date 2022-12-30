@@ -7,7 +7,6 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -96,7 +95,7 @@ public class Map implements Runnable, IMap {
     private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
     private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
     private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
-    private final IVoxelMap master;
+    private final AbstractVoxelMap master;
     private ClientWorld world = null;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
@@ -163,7 +162,7 @@ public class Map implements Runnable, IMap {
     private double zoomScaleAdjusted = 1.0;
     private int mapImageInt = -1;
 
-    public Map(IVoxelMap master) {
+    public Map(AbstractVoxelMap master) {
         this.master = master;
         this.options = master.getMapOptions();
         this.colorManager = master.getColorManager();

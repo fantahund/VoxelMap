@@ -6,7 +6,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiButtonText;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -20,9 +20,9 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     private final Screen parentScreen;
     protected String screenTitle = "Details / Performance";
     private final MapSettingsManager options;
-    final IVoxelMap master;
+    final AbstractVoxelMap master;
 
-    public GuiMinimapPerformance(Screen par1GuiScreen, IVoxelMap master) {
+    public GuiMinimapPerformance(Screen par1GuiScreen, AbstractVoxelMap master) {
         this.parentScreen = par1GuiScreen;
         this.options = master.getMapOptions();
         this.master = master;

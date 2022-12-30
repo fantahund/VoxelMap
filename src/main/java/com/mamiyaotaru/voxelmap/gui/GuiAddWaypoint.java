@@ -5,8 +5,8 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.IPopupGuiScreen;
 import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -28,7 +28,7 @@ import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    final IVoxelMap master;
+    final AbstractVoxelMap master;
     final IWaypointManager waypointManager;
     final IColorManager colorManager;
     private final IGuiWaypoints parentGui;
@@ -53,7 +53,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final Identifier pickerResourceLocation = new Identifier("voxelmap", "images/colorpicker.png");
     private final Identifier blank = new Identifier("textures/misc/white.png");
 
-    public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, IVoxelMap master, Waypoint par2Waypoint, boolean editing) {
+    public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, AbstractVoxelMap master, Waypoint par2Waypoint, boolean editing) {
         this.master = master;
         this.waypointManager = master.getWaypointManager();
         this.colorManager = master.getColorManager();

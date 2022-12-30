@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -56,7 +55,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class WaypointManager implements IWaypointManager {
-    final IVoxelMap master;
+    final AbstractVoxelMap master;
     public final MapSettingsManager options;
     final TextureAtlas textureAtlas;
     final TextureAtlas textureAtlasChooser;
@@ -80,7 +79,7 @@ public class WaypointManager implements IWaypointManager {
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
 
-    public WaypointManager(IVoxelMap master) {
+    public WaypointManager(AbstractVoxelMap master) {
         this.master = master;
         this.options = master.getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");

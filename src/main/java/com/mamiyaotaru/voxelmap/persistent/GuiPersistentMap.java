@@ -13,7 +13,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -62,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();
-    private final IVoxelMap master;
+    private final AbstractVoxelMap master;
     private final IPersistentMap persistentMap;
     private final IWaypointManager waypointManager;
     private final Screen parent;
@@ -143,7 +142,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     Waypoint newWaypoint;
     Waypoint selectedWaypoint;
 
-    public GuiPersistentMap(Screen parent, IVoxelMap master) {
+    public GuiPersistentMap(Screen parent, AbstractVoxelMap master) {
         this.parent = parent;
         this.master = master;
         this.waypointManager = master.getWaypointManager();

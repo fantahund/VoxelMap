@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
@@ -25,7 +24,7 @@ import java.util.TreeSet;
 
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private final Screen parentScreen;
-    private final IVoxelMap master;
+    private final AbstractVoxelMap master;
     protected final MapSettingsManager options;
     protected final IWaypointManager waypointManager;
     protected Text screenTitle;
@@ -50,7 +49,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private final Random generator = new Random();
     private boolean changedSort = false;
 
-    public GuiWaypoints(Screen parentScreen, IVoxelMap master) {
+    public GuiWaypoints(Screen parentScreen, AbstractVoxelMap master) {
         this.master = master;
         this.parentScreen = parentScreen;
         this.options = master.getMapOptions();

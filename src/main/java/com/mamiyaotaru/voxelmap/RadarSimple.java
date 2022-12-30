@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
-import com.mamiyaotaru.voxelmap.interfaces.IVoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
@@ -45,7 +45,7 @@ public class RadarSimple implements IRadar {
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
     final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 
-    public RadarSimple(IVoxelMap master) {
+    public RadarSimple(AbstractVoxelMap master) {
         this.minimapOptions = master.getMapOptions();
         this.options = master.getRadarOptions();
         this.textureAtlas = new TextureAtlas("pings");
