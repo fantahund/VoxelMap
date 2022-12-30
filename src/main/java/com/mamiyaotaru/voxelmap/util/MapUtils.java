@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 
 import java.util.Random;
 
@@ -14,7 +13,7 @@ public class MapUtils {
     private static boolean isSlimeChunk = false;
 
     public static void reset() {
-        AbstractVoxelMap master = VoxelMap.getInstance();
+        VoxelMap master = VoxelMap.getInstance();
         options = master.getMapOptions();
         slimeRandom = null;
         lastSlimeX = -120000;

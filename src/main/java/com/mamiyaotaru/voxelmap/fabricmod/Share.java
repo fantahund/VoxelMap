@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.fabricmod;
 
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 
 public class Share {
     public static boolean isOldNorth() {
-        return AbstractVoxelMap.getInstance().getMapOptions().oldNorth;
+        return VoxelMap.getInstance().getMapOptions().oldNorth;
     }
 }

@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -18,7 +18,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final Text cacheSettings = Text.translatable("options.worldmap.cachesettings");
     private final Text warning = Text.translatable("options.worldmap.warning");
 
-    public GuiPersistentMapOptions(Screen parent, AbstractVoxelMap master) {
+    public GuiPersistentMapOptions(Screen parent, VoxelMap master) {
         this.parent = parent;
         this.options = master.getPersistentMapOptions();
     }

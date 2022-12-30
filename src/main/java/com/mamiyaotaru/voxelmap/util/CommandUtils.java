@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.hud.MessageIndicator;
@@ -144,11 +144,11 @@ public class CommandUtils {
                             case "dimensions" -> {
                                 String[] dimensionStrings = value.split("#");
                                 for (String dimensionString : dimensionStrings) {
-                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                    dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
                                 }
                             }
                             case "dimension", "dim" ->
-                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(value));
+                                    dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(value));
                         }
                     } else {
                         suffix = value;
@@ -157,11 +157,11 @@ public class CommandUtils {
             }
 
             if (world.equals("")) {
-                world = AbstractVoxelMap.getInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
+                world = VoxelMap.getInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
             }
 
             if (dimensions.size() == 0) {
-                dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+                dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             }
 
             if (x != null && z != null) {
@@ -184,12 +184,12 @@ public class CommandUtils {
         String details = command.substring(NEW_WAYPOINT_COMMAND_LENGTH);
         Waypoint newWaypoint = createWaypointFromChat(details);
         if (newWaypoint != null) {
-            for (Waypoint existingWaypoint : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
+            for (Waypoint existingWaypoint : VoxelMap.getInstance().getWaypointManager().getWaypoints()) {
                 if (newWaypoint.getX() == existingWaypoint.getX() && newWaypoint.getZ() == existingWaypoint.getZ()) {
                     if (control) {
-                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), existingWaypoint, true));
+                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, VoxelMap.getInstance(), existingWaypoint, true));
                     } else {
-                        AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
+                        VoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
                     }
 
                     return;
@@ -197,16 +197,16 @@ public class CommandUtils {
             }
 
             if (control) {
-                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, AbstractVoxelMap.getInstance(), newWaypoint, false));
+                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, VoxelMap.getInstance(), newWaypoint, false));
             } else {
-                AbstractVoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
+                VoxelMap.getInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
             }
         }
 
     }
 
     public static void sendWaypoint(Waypoint waypoint) {
-        Identifier resourceLocation = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world).resourceLocation;
+        Identifier resourceLocation = VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world).resourceLocation;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
         StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
@@ -215,7 +215,7 @@ public class CommandUtils {
         }
 
         hexColor.insert(0, "#");
-        String world = AbstractVoxelMap.getInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
+        String world = VoxelMap.getInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
         if (waypoint.world != null && !waypoint.world.equals("")) {
             world = waypoint.world;
         }
@@ -243,7 +243,7 @@ public class CommandUtils {
     public static void teleport(String command) {
         String details = command.substring(TELEPORT_COMMAND_LENGTH);
 
-        for (Waypoint wp : AbstractVoxelMap.getInstance().getWaypointManager().getWaypoints()) {
+        for (Waypoint wp : VoxelMap.getInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
                 boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
                 int y = wp.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);

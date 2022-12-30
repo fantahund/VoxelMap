@@ -2,10 +2,10 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -18,7 +18,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
     private final RadarSettingsManager options;
     protected Text screenTitle;
 
-    public GuiRadarOptions(Screen parent, AbstractVoxelMap master) {
+    public GuiRadarOptions(Screen parent, VoxelMap master) {
         this.parent = parent;
         this.options = master.getRadarOptions();
     }

@@ -2,10 +2,10 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
@@ -15,11 +15,11 @@ import net.minecraft.text.Text;
 
 public class GuiMinimapOptions extends GuiScreenMinimap {
     private final Screen parent;
-    private final AbstractVoxelMap master;
+    private final VoxelMap master;
     private final MapSettingsManager options;
     protected String screenTitle = "Minimap Options";
 
-    public GuiMinimapOptions(Screen parent, AbstractVoxelMap master) {
+    public GuiMinimapOptions(Screen parent, VoxelMap master) {
         this.parent = parent;
         this.master = master;
         this.options = master.getMapOptions();

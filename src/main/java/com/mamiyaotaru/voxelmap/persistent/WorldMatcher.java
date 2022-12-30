@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class WorldMatcher {
-    private final AbstractVoxelMap master;
+    private final VoxelMap master;
     private final IPersistentMap map;
     private final ClientWorld world;
     private boolean cancelled = false;
 
-    public WorldMatcher(AbstractVoxelMap master, IPersistentMap map, ClientWorld world) {
+    public WorldMatcher(VoxelMap master, IPersistentMap map, ClientWorld world) {
         this.master = master;
         this.map = map;
         this.world = world;

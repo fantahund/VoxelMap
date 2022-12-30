@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
@@ -41,7 +40,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
+public class VoxelMap implements ResourceReloader {
+    public static VoxelMap instance = null;
     public static MapSettingsManager mapOptions = null;
     public static RadarSettingsManager radarOptions = null;
     private PersistentMapSettingsManager persistentMapOptions = null;
@@ -206,32 +206,26 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
 
     }
 
-    @Override
     public MapSettingsManager getMapOptions() {
         return mapOptions;
     }
 
-    @Override
     public RadarSettingsManager getRadarOptions() {
         return radarOptions;
     }
 
-    @Override
     public PersistentMapSettingsManager getPersistentMapOptions() {
         return this.persistentMapOptions;
     }
 
-    @Override
     public IMap getMap() {
         return this.map;
     }
 
-    @Override
     public ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
         return this.settingsAndLightingChangeNotifier;
     }
 
-    @Override
     public IRadar getRadar() {
         if (radarOptions.showRadar) {
             if (radarOptions.radarMode == 1) {
@@ -246,27 +240,22 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         return null;
     }
 
-    @Override
     public IColorManager getColorManager() {
         return this.colorManager;
     }
 
-    @Override
     public IWaypointManager getWaypointManager() {
         return this.waypointManager;
     }
 
-    @Override
     public IDimensionManager getDimensionManager() {
         return this.dimensionManager;
     }
 
-    @Override
     public IPersistentMap getPersistentMap() {
         return this.persistentMap;
     }
 
-    @Override
     public void setPermissions(boolean hasFullRadarPermission, boolean hasPlayersOnRadarPermission, boolean hasMobsOnRadarPermission, boolean hasCavemodePermission) {
         radarOptions.radarAllowed = hasFullRadarPermission;
         radarOptions.radarPlayersAllowed = hasPlayersOnRadarPermission;
@@ -274,30 +263,26 @@ public class VoxelMap extends AbstractVoxelMap implements ResourceReloader {
         mapOptions.cavesAllowed = hasCavemodePermission;
     }
 
-    @Override
     public synchronized void newSubWorldName(String name, boolean fromServer) {
         this.waypointManager.setSubworldName(name, fromServer);
         this.map.newWorldName();
     }
 
-    @Override
     public synchronized void newSubWorldHash(String hash) {
         this.waypointManager.setSubworldHash(hash);
     }
 
-    @Override
     public String getWorldSeed() { return VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse(""); }
 
-    @Override
     public void setWorldSeed(String newSeed) { if (VoxelConstants.getIntegratedServer().isEmpty()) waypointManager.setWorldSeed(newSeed); }
 
-    @Override
     public void sendPlayerMessageOnMainThread(String s) {
         VoxelMap.passMessage = s;
     }
 
-    @Override
     public WorldUpdateListener getWorldUpdateListener() {
         return this.worldUpdateListener;
     }
+
+    public static VoxelMap getInstance() { return instance; }
 }

@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeListener;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
@@ -111,7 +111,7 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
 
-        String dimensionName = AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
+        String dimensionName = VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
         boolean knownUnderground;
         knownUnderground = dimensionName.toLowerCase().contains("erebus");

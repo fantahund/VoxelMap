@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -55,7 +54,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class WaypointManager implements IWaypointManager {
-    final AbstractVoxelMap master;
+    final VoxelMap master;
     public final MapSettingsManager options;
     final TextureAtlas textureAtlas;
     final TextureAtlas textureAtlasChooser;
@@ -79,7 +78,7 @@ public class WaypointManager implements IWaypointManager {
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
 
-    public WaypointManager(AbstractVoxelMap master) {
+    public WaypointManager(VoxelMap master) {
         this.master = master;
         this.options = master.getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");
@@ -271,7 +270,7 @@ public class WaypointManager implements IWaypointManager {
 
         if (this.options.deathpoints != 0) {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+            dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             this.addWaypoint(new Waypoint("Latest Death", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord() - 1, true, 1.0F, 1.0F, 1.0F, "Skull", this.getCurrentSubworldDescriptor(false), dimensions));
         }
@@ -534,7 +533,7 @@ public class WaypointManager implements IWaypointManager {
                     }
 
                     if (dimensionsString.toString().equals("")) {
-                        dimensionsString.append(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName());
+                        dimensionsString.append(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName());
                     }
 
                     out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + pt.enabled + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
@@ -675,10 +674,10 @@ public class WaypointManager implements IWaypointManager {
                                             case "dimensions" -> {
                                                 String[] dimensionStrings = value.split("#");
                                                 for (String dimensionString : dimensionStrings) {
-                                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                                    dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
                                                 }
                                                 if (dimensions.size() == 0) {
-                                                    dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
+                                                    dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
                                                 }
                                             }
                                         }

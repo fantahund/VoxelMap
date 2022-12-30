@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.Maps;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.FontRendererWithAtlas;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -157,7 +156,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
-    private final AbstractVoxelMap master;
+    private final VoxelMap master;
     private LayoutVariables layoutVariables = null;
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
@@ -210,7 +209,7 @@ public class Radar implements IRadar {
         enumMap.put(HorseMarking.BLACK_DOTS, new Identifier("textures/entity/horse/horse_markings_blackdots.png"));
     });
 
-    public Radar(AbstractVoxelMap master) {
+    public Radar(VoxelMap master) {
         this.master = master;
         this.minimapOptions = master.getMapOptions();
         this.options = master.getRadarOptions();

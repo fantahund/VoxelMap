@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractVoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
@@ -95,7 +94,7 @@ public class Map implements Runnable, IMap {
     private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
     private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
     private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
-    private final AbstractVoxelMap master;
+    private final VoxelMap master;
     private ClientWorld world = null;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
@@ -162,7 +161,7 @@ public class Map implements Runnable, IMap {
     private double zoomScaleAdjusted = 1.0;
     private int mapImageInt = -1;
 
-    public Map(AbstractVoxelMap master) {
+    public Map(VoxelMap master) {
         this.master = master;
         this.options = master.getMapOptions();
         this.colorManager = master.getColorManager();
@@ -349,7 +348,7 @@ public class Map implements Runnable, IMap {
             }
 
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(AbstractVoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+            dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, this.master, newWaypoint, false));
