@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -12,7 +11,7 @@ import net.minecraft.world.dimension.DimensionType;
 import java.text.Collator;
 import java.util.ArrayList;
 
-public class DimensionManager implements IDimensionManager {
+public class DimensionManager {
     final VoxelMap master;
     public final ArrayList<DimensionContainer> dimensions;
     private final ArrayList<RegistryKey<World>> vanillaWorlds = new ArrayList<>();
@@ -25,12 +24,10 @@ public class DimensionManager implements IDimensionManager {
         this.vanillaWorlds.add(World.END);
     }
 
-    @Override
     public ArrayList<DimensionContainer> getDimensions() {
         return this.dimensions;
     }
 
-    @Override
     public void populateDimensions(World world) {
         this.dimensions.clear();
         Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getNetworkHandler().getRegistryManager().get(Registry.DIMENSION_TYPE_KEY);
@@ -45,7 +42,6 @@ public class DimensionManager implements IDimensionManager {
         this.sort();
     }
 
-    @Override
     public void enteredWorld(World world) {
         Identifier resourceLocation = world.getRegistryKey().getValue();
         DimensionContainer dim = this.getDimensionContainerByResourceLocation(resourceLocation);
@@ -76,7 +72,6 @@ public class DimensionManager implements IDimensionManager {
         });
     }
 
-    @Override
     public DimensionContainer getDimensionContainerByWorld(World world) {
         Identifier resourceLocation = world.getRegistryKey().getValue();
         DimensionContainer dim = this.getDimensionContainerByResourceLocation(resourceLocation);
@@ -89,7 +84,6 @@ public class DimensionManager implements IDimensionManager {
         return dim;
     }
 
-    @Override
     public DimensionContainer getDimensionContainerByIdentifier(String ident) {
         DimensionContainer dim;
         Identifier resourceLocation = new Identifier(ident);
@@ -103,7 +97,6 @@ public class DimensionManager implements IDimensionManager {
         return dim;
     }
 
-    @Override
     public DimensionContainer getDimensionContainerByResourceLocation(Identifier resourceLocation) {
         return this.dimensions.stream().filter(dim -> resourceLocation.equals(dim.resourceLocation)).findFirst().orElse(null);
     }

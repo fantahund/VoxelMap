@@ -2,8 +2,8 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import net.minecraft.client.gui.DrawableHelper;
@@ -28,7 +28,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         this.setRenderSelection(false);
         this.setShowTopBottomBG(false);
         this.setShowSlotBG(false);
-        IDimensionManager dimensionManager = this.parentGui.master.getDimensionManager();
+        DimensionManager dimensionManager = this.parentGui.master.getDimensionManager();
         this.dimensions = new ArrayList<>();
         DimensionItem first = null;
 

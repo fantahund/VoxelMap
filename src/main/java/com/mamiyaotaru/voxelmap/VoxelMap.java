@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
@@ -52,7 +51,7 @@ public class VoxelMap implements ResourceReloader {
     private WorldUpdateListener worldUpdateListener = null;
     private ColorManager colorManager = null;
     private IWaypointManager waypointManager = null;
-    private IDimensionManager dimensionManager = null;
+    private DimensionManager dimensionManager = null;
     private ClientWorld world;
     private String worldName = "";
     private static String passMessage = null;
@@ -247,7 +246,7 @@ public class VoxelMap implements ResourceReloader {
         return this.waypointManager;
     }
 
-    public IDimensionManager getDimensionManager() {
+    public DimensionManager getDimensionManager() {
         return this.dimensionManager;
     }
 
