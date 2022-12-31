@@ -1,13 +1,15 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
+import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
+
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public interface ISettingsAndLightingChangeNotifier {
-    CopyOnWriteArraySet<ISettingsAndLightingChangeListener> listeners = new CopyOnWriteArraySet<>();
+    CopyOnWriteArraySet<CachedRegion> listeners = new CopyOnWriteArraySet<>();
 
-    void addObserver(ISettingsAndLightingChangeListener var1);
+    void addObserver(CachedRegion var1);
 
-    void removeObserver(ISettingsAndLightingChangeListener var1);
+    void removeObserver(CachedRegion var1);
 
     void notifyOfChanges();
 }

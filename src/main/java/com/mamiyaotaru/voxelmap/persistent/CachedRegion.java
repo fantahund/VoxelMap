@@ -5,7 +5,6 @@ import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
-import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeListener;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -54,7 +53,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-public class CachedRegion implements IThreadCompleteListener, ISettingsAndLightingChangeListener {
+public class CachedRegion implements IThreadCompleteListener {
     public static final EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
     private long mostRecentView = 0L;
     private long mostRecentChange = 0L;
@@ -168,7 +167,6 @@ public class CachedRegion implements IThreadCompleteListener, ISettingsAndLighti
         this.liveChunkUpdateQueued[index] = true;
     }
 
-    @Override
     public void notifyOfActionableChange(ISettingsAndLightingChangeNotifier notifier) {
         this.displayOptionsChanged = true;
     }
