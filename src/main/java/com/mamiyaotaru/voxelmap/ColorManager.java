@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
@@ -83,7 +82,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ColorManager implements IColorManager {
+public class ColorManager {
     private final VoxelMap master;
     private boolean resourcePacksChanged = false;
     private ClientWorld world = null;
@@ -136,22 +135,18 @@ public class ColorManager implements IColorManager {
         ++this.sizeOfBiomeArray;
     }
 
-    @Override
     public int getAirColor() {
         return this.blockColors[BlockRepository.airID];
     }
 
-    @Override
     public BufferedImage getColorPicker() {
         return this.colorPicker;
     }
 
-    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.resourcePacksChanged = true;
     }
 
-    @Override
     public boolean checkForChanges() {
         boolean biomesChanged = false;
         if (VoxelConstants.getMinecraft().world != null && VoxelConstants.getMinecraft().world != this.world) {
@@ -221,7 +216,6 @@ public class ColorManager implements IColorManager {
         this.loaded = true;
     }
 
-    @Override
     public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, World world, float iconScale, float captureDepth) {
         try {
             BakedModel model = VoxelConstants.getMinecraft().getItemRenderer().getModel(stack, world, null, 0);
@@ -320,7 +314,6 @@ public class ColorManager implements IColorManager {
 
     }
 
-    @Override
     public void setSkyColor(int skyColor) {
         this.blockColors[BlockRepository.airID] = skyColor;
         this.blockColors[BlockRepository.voidAirID] = skyColor;
@@ -356,7 +349,6 @@ public class ColorManager implements IColorManager {
 
     }
 
-    @Override
     public final int getBlockColorWithDefaultTint(MutableBlockPos blockPos, int blockStateID) {
         if (this.loaded) {
             int col = 452984832;
@@ -371,7 +363,6 @@ public class ColorManager implements IColorManager {
         }
     }
 
-    @Override
     public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, int biomeID) {
         if (this.loaded) {
             if (this.optifineInstalled && this.biomeTextureAvailable.contains(blockStateID)) {
@@ -597,7 +588,6 @@ public class ColorManager implements IColorManager {
         return -1;
     }
 
-    @Override
     public int getBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         Chunk chunk = world.getChunk(blockPos);
         boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);

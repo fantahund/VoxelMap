@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
-import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -49,7 +49,7 @@ import java.util.stream.IntStream;
 public class PersistentMap implements IPersistentMap, IChangeObserver {
     final VoxelMap master;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
-    final IColorManager colorManager;
+    final ColorManager colorManager;
     final MapSettingsManager mapOptions;
     final PersistentMapSettingsManager options;
     WorldMatcher worldMatcher;

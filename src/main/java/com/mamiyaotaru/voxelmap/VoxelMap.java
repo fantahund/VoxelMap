@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IDimensionManager;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
@@ -51,7 +50,7 @@ public class VoxelMap implements ResourceReloader {
     private PersistentMap persistentMap = null;
     private ISettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier = null;
     private WorldUpdateListener worldUpdateListener = null;
-    private IColorManager colorManager = null;
+    private ColorManager colorManager = null;
     private IWaypointManager waypointManager = null;
     private IDimensionManager dimensionManager = null;
     private ClientWorld world;
@@ -240,7 +239,7 @@ public class VoxelMap implements ResourceReloader {
         return null;
     }
 
-    public IColorManager getColorManager() {
+    public ColorManager getColorManager() {
         return this.colorManager;
     }
 

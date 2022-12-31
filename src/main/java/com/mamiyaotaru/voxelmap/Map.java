@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import com.mamiyaotaru.voxelmap.interfaces.IColorManager;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
@@ -98,7 +97,7 @@ public class Map implements Runnable, IMap {
     private ClientWorld world = null;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
-    private final IColorManager colorManager;
+    private final ColorManager colorManager;
     private final IWaypointManager waypointManager;
     private final int availableProcessors = Runtime.getRuntime().availableProcessors();
     private final boolean multicore = this.availableProcessors > 1;
