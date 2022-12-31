@@ -4,18 +4,18 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public abstract class AbstractNotifyingRunnable implements Runnable {
-    private final Set<IThreadCompleteListener> listeners = new CopyOnWriteArraySet<>();
+    private final Set<CachedRegion> listeners = new CopyOnWriteArraySet<>();
 
-    public final void addListener(IThreadCompleteListener listener) {
+    public final void addListener(CachedRegion listener) {
         this.listeners.add(listener);
     }
 
-    public final void removeListener(IThreadCompleteListener listener) {
+    public final void removeListener(CachedRegion listener) {
         this.listeners.remove(listener);
     }
 
     private void notifyListeners() {
-        for (IThreadCompleteListener listener : this.listeners) {
+        for (CachedRegion listener : this.listeners) {
             listener.notifyOfThreadComplete(this);
         }
 

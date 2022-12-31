@@ -53,7 +53,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-public class CachedRegion implements IThreadCompleteListener {
+public class CachedRegion {
     public static final EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
     private long mostRecentView = 0L;
     private long mostRecentChange = 0L;
@@ -202,7 +202,6 @@ public class CachedRegion implements IThreadCompleteListener {
         }
     }
 
-    @Override
     public void notifyOfThreadComplete(AbstractNotifyingRunnable runnable) {
     }
 
