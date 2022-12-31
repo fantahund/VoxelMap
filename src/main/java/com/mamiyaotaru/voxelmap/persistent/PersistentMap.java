@@ -2,12 +2,12 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
-import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
@@ -210,7 +210,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
     }
 
     @Override
-    public ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
+    public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
         return this.master.getSettingsAndLightingChangeNotifier();
     }
 

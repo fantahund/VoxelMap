@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
+import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
@@ -12,7 +13,7 @@ public interface IPersistentMap extends IChangeObserver {
 
     void onTick();
 
-    ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier();
+    SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier();
 
     void setLightMapArray(int[] var1);
 

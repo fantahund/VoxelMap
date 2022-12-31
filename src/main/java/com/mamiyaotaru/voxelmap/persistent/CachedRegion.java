@@ -2,10 +2,10 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
-import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -167,7 +167,7 @@ public class CachedRegion implements IThreadCompleteListener {
         this.liveChunkUpdateQueued[index] = true;
     }
 
-    public void notifyOfActionableChange(ISettingsAndLightingChangeNotifier notifier) {
+    public void notifyOfActionableChange(SettingsAndLightingChangeNotifier notifier) {
         this.displayOptionsChanged = true;
     }
 

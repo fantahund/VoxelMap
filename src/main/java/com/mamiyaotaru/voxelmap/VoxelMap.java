@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
-import com.mamiyaotaru.voxelmap.interfaces.ISettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
@@ -47,7 +46,7 @@ public class VoxelMap implements ResourceReloader {
     private IRadar radar = null;
     private IRadar radarSimple = null;
     private PersistentMap persistentMap = null;
-    private ISettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier = null;
+    private SettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier = null;
     private WorldUpdateListener worldUpdateListener = null;
     private ColorManager colorManager = null;
     private IWaypointManager waypointManager = null;
@@ -220,7 +219,7 @@ public class VoxelMap implements ResourceReloader {
         return this.map;
     }
 
-    public ISettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
+    public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
         return this.settingsAndLightingChangeNotifier;
     }
 
