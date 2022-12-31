@@ -2,11 +2,15 @@ package com.mamiyaotaru.voxelmap.interfaces;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
+import net.minecraft.block.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractMapData implements IMapData {
+public abstract class AbstractMapData {
+    public static int DATABITS = 17;
+    public static int BYTESPERDATUM = 4;
+
     protected int width;
     protected int height;
     protected final Object dataLock = new Object();
@@ -15,12 +19,10 @@ public abstract class AbstractMapData implements IMapData {
     public ArrayList<Segment> segments;
     private final ArrayList<BiomeLabel> labels = new ArrayList<>();
 
-    @Override
     public int getWidth() {
         return this.width;
     }
 
-    @Override
     public int getHeight() {
         return this.height;
     }
@@ -90,6 +92,78 @@ public abstract class AbstractMapData implements IMapData {
             return new ArrayList<>(this.labels);
         }
     }
+
+    public abstract int getHeight(int x, int z);
+
+    public abstract BlockState getBlockstate(int x, int z);
+
+    public abstract int getBiomeTint(int x, int z);
+
+    public abstract int getLight(int x, int z);
+
+    public abstract int getOceanFloorHeight(int x, int z);
+
+    public abstract BlockState getOceanFloorBlockstate(int x, int z);
+
+    public abstract int getOceanFloorBiomeTint(int x, int z);
+
+    public abstract int getOceanFloorLight(int x, int z);
+
+    public abstract int getTransparentHeight(int x, int z);
+
+    public abstract BlockState getTransparentBlockstate(int x, int z);
+
+    public abstract int getTransparentBiomeTint(int x, int z);
+
+    public abstract int getTransparentLight(int x, int z);
+
+    public abstract int getFoliageHeight(int x, int z);
+
+    public abstract BlockState getFoliageBlockstate(int x, int z);
+
+    public abstract int getFoliageBiomeTint(int x, int z);
+
+    public abstract int getFoliageLight(int x, int z);
+
+    public abstract int getBiomeID(int x, int z);
+
+    public abstract void setHeight(int x, int z, int height);
+
+    public abstract void setBlockstate(int x, int z, BlockState state);
+
+    public abstract void setBiomeTint(int x, int z, int tint);
+
+    public abstract void setLight(int x, int z, int light);
+
+    public abstract void setOceanFloorHeight(int x, int z, int height);
+
+    public abstract void setOceanFloorBlockstate(int x, int z, BlockState state);
+
+    public abstract void setOceanFloorBiomeTint(int x, int z, int tint);
+
+    public abstract void setOceanFloorLight(int x, int z, int light);
+
+    public abstract void setTransparentHeight(int x, int z, int height);
+
+    public abstract void setTransparentBlockstate(int x, int z, BlockState state);
+
+    public abstract void setTransparentBiomeTint(int x, int z, int tint);
+
+    public abstract void setTransparentLight(int x, int z, int light);
+
+    public abstract void setFoliageHeight(int x, int z, int height);
+
+    public abstract void setFoliageBlockstate(int x, int z, BlockState state);
+
+    public abstract void setFoliageBiomeTint(int x, int z, int tint);
+
+    public abstract void setFoliageLight(int x, int z, int light);
+
+    public abstract void setBiomeID(int x, int z, int id);
+
+    public abstract void moveX(int x);
+
+    public abstract void moveZ(int z);
 
     public static class BiomeLabel {
         public int biomeID = -1;
