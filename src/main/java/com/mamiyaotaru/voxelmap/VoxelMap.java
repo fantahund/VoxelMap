@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
-import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -49,7 +48,7 @@ public class VoxelMap implements ResourceReloader {
     private SettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier = null;
     private WorldUpdateListener worldUpdateListener = null;
     private ColorManager colorManager = null;
-    private IWaypointManager waypointManager = null;
+    private WaypointManager waypointManager = null;
     private DimensionManager dimensionManager = null;
     private ClientWorld world;
     private String worldName = "";
@@ -241,7 +240,7 @@ public class VoxelMap implements ResourceReloader {
         return this.colorManager;
     }
 
-    public IWaypointManager getWaypointManager() {
+    public WaypointManager getWaypointManager() {
         return this.waypointManager;
     }
 

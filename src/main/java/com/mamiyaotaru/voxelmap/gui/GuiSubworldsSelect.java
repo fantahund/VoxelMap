@@ -2,8 +2,8 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.gui.screen.ConfirmScreen;
@@ -33,7 +33,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     final ClientPlayerEntity thePlayer;
     final ClientPlayerEntity camera;
     private final VoxelMap master;
-    private final IWaypointManager waypointManager;
+    private final WaypointManager waypointManager;
 
     public GuiSubworldsSelect(Screen parent, VoxelMap master) {
         this.parent = parent;

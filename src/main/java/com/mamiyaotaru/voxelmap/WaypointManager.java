@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.IWaypointManager;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -53,7 +52,7 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class WaypointManager implements IWaypointManager {
+public class WaypointManager {
     final VoxelMap master;
     public final MapSettingsManager options;
     final TextureAtlas textureAtlas;
@@ -88,7 +87,6 @@ public class WaypointManager implements IWaypointManager {
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
-    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         final List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {
@@ -141,22 +139,18 @@ public class WaypointManager implements IWaypointManager {
         this.textureAtlasChooser.stitch();
     }
 
-    @Override
     public TextureAtlas getTextureAtlas() {
         return this.textureAtlas;
     }
 
-    @Override
     public TextureAtlas getTextureAtlasChooser() {
         return this.textureAtlasChooser;
     }
 
-    @Override
     public ArrayList<Waypoint> getWaypoints() {
         return this.wayPts;
     }
 
-    @Override
     public void newWorld(World world) {
         if (world == null) {
             this.currentDimension = null;
@@ -228,12 +222,10 @@ public class WaypointManager implements IWaypointManager {
         return serverName;
     }
 
-    @Override
     public String getCurrentWorldName() {
         return this.worldName;
     }
 
-    @Override
     public void handleDeath() {
         HashSet<Waypoint> toDel = new HashSet<>();
 
@@ -299,7 +291,6 @@ public class WaypointManager implements IWaypointManager {
         this.loadBackgroundMapImage();
     }
 
-    @Override
     public void setOldNorth(boolean oldNorth) {
         String oldNorthWorldName;
         if (this.knownSubworldNames.size() == 0) {
@@ -317,22 +308,18 @@ public class WaypointManager implements IWaypointManager {
         this.saveWaypoints();
     }
 
-    @Override
     public TreeSet<String> getKnownSubworldNames() {
         return this.knownSubworldNames;
     }
 
-    @Override
     public boolean receivedAutoSubworldName() {
         return this.gotAutoSubworldName;
     }
 
-    @Override
     public boolean isMultiworld() {
         return this.multiworld || VoxelConstants.getMinecraft().isConnectedToRealms();
     }
 
-    @Override
     public synchronized void setSubworldName(String name, boolean fromServer) {
         boolean notNull = !name.equals("");
         if (notNull || System.currentTimeMillis() - this.lastNewWorldNameTime > 2000L) {
@@ -354,7 +341,6 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public synchronized void setSubworldHash(String hash) {
         if (this.currentSubWorldName.equals("")) {
             this.setSubWorldDescriptor(hash);
@@ -405,7 +391,6 @@ public class WaypointManager implements IWaypointManager {
         this.loadBackgroundMapImage();
     }
 
-    @Override
     public void changeSubworldName(String oldName, String newName) {
         if (!newName.equals(oldName) && this.knownSubworldNames.remove(oldName)) {
             this.knownSubworldNames.add(newName);
@@ -440,7 +425,6 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public void deleteSubworld(String name) {
         if (this.knownSubworldNames.remove(name)) {
             synchronized (this.waypointLock) {
@@ -463,12 +447,10 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public String getCurrentSubworldDescriptor(boolean withCodes) {
         return withCodes ? this.currentSubworldDescriptor : this.currentSubworldDescriptorNoCodes;
     }
 
-    @Override
     public String getWorldSeed() {
         String key = "all";
         if (this.knownSubworldNames.size() > 0) {
@@ -483,7 +465,6 @@ public class WaypointManager implements IWaypointManager {
         return seed;
     }
 
-    @Override
     public void setWorldSeed(String newSeed) {
         String worldName = "all";
         if (this.knownSubworldNames.size() > 0) {
@@ -494,7 +475,6 @@ public class WaypointManager implements IWaypointManager {
         this.saveWaypoints();
     }
 
-    @Override
     public void saveWaypoints() {
         String worldNameSave = this.getCurrentWorldName();
         if (worldNameSave.endsWith(":25565")) {
@@ -716,7 +696,6 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public void deleteWaypoint(Waypoint point) {
         this.waypointContainer.removeWaypoint(point);
         this.wayPts.remove(point);
@@ -727,7 +706,6 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public void addWaypoint(Waypoint newWaypoint) {
         this.wayPts.add(newWaypoint);
         this.waypointContainer.addWaypoint(newWaypoint);
@@ -738,7 +716,6 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public void setHighlightedWaypoint(Waypoint waypoint, boolean toggle) {
         if (toggle && waypoint == this.highlightedWaypoint) {
             this.highlightedWaypoint = null;
@@ -755,12 +732,10 @@ public class WaypointManager implements IWaypointManager {
         this.waypointContainer.setHighlightedWaypoint(this.highlightedWaypoint);
     }
 
-    @Override
     public Waypoint getHighlightedWaypoint() {
         return this.highlightedWaypoint;
     }
 
-    @Override
     public void renderWaypoints(float partialTicks, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         if (this.waypointContainer != null) {
             this.waypointContainer.renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
@@ -815,7 +790,6 @@ public class WaypointManager implements IWaypointManager {
 
     }
 
-    @Override
     public BackgroundImageInfo getBackgroundImageInfo() {
         return this.backgroundImageInfo;
     }
