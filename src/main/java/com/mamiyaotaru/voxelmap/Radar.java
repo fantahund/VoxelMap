@@ -355,9 +355,6 @@ public class Radar implements IRadar {
             ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
             sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
             this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
-            BufferedImage crown = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/crown.png"), 0, 0, 16, 16, 16, 16);
-            crown = ImageUtils.fillOutline(ImageUtils.scaleImage(crown, 2.0F), this.options.outlines, true, 32.0F, 32.0F, 2);
-            this.textureAtlas.registerIconForBufferedImage("crown", crown);
             BufferedImage glow = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/glow.png"), 0, 0, 16, 16, 16, 16);
             glow = ImageUtils.fillOutline(glow, this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("glow", glow);
@@ -929,12 +926,15 @@ public class Radar implements IRadar {
     }
 
     private BufferedImage createAutoIconImageFromResourceLocations(Contact contact, EntityRenderer<Entity> entityRenderer, Identifier... resourceLocations) {
-        if (contact.type != EnumMobs.UNKNOWN && entityIconMap.containsKey(contact.entity.getUuid())) {
-            return entityIconMap.get(contact.entity.getUuid());
+        Entity entity = contact.entity;
+        EnumMobs type = contact.type;
+        UUID entityUUID = contact.uuid;
+        if (type != EnumMobs.UNKNOWN && entityIconMap.containsKey(entityUUID)) {
+            return entityIconMap.get(entityUUID);
         }
 
-        if (contact.type == EnumMobs.UNKNOWN) {
-            VoxelConstants.getLogger().info("Unknown Entity: " + contact.entity.getType());
+        if (type == EnumMobs.UNKNOWN) {
+            VoxelConstants.getLogger().info("Unknown Entity: " + entity.getType());
         }
 
         BufferedImage headImage = null;
@@ -947,8 +947,8 @@ public class Radar implements IRadar {
                 ModelPart[] headBits = null;
                 ArrayList<ModelPartWithResourceLocation> headPartsWithResourceLocationList = new ArrayList<>();
                 Properties properties = new Properties();
-                String fullName = contact.vanillaType ? "minecraft." + contact.type.id : contact.entity.getClass().getName();
-                String simpleName = contact.vanillaType ? contact.type.id : contact.entity.getClass().getSimpleName();
+                String fullName = contact.vanillaType ? "minecraft." + type.id : entity.getClass().getName();
+                String simpleName = contact.vanillaType ? type.id : entity.getClass().getSimpleName();
                 String fullPath = ("textures/icons/" + fullName + ".properties").toLowerCase();
 
                 ResourceManager resourceManager = VoxelConstants.getMinecraft().getResourceManager();
@@ -996,7 +996,7 @@ public class Radar implements IRadar {
                 if (headBits == null) {
                     if (model instanceof PlayerEntityModel) {
                         boolean showHat = true;
-                        Entity var39 = contact.entity;
+                        Entity var39 = entity;
                         if (var39 instanceof PlayerEntity player) {
                             showHat = player.isPartVisible(PlayerModelPart.HAT);
                         }
@@ -1006,12 +1006,12 @@ public class Radar implements IRadar {
                         } else {
                             headBits = new ModelPart[]{((PlayerEntityModel<?>) model).head};
                         }
-                    } else if (contact.type == EnumMobs.STRAY) {
+                    } else if (type == EnumMobs.STRAY) {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonEntityModel<?>) model).head, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonEntityModel<?>) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.strayOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.strayOverlayModel.hat, resourceLocations[1]));
-                    } else if (contact.type == EnumMobs.DROWNED) {
+                    } else if (type == EnumMobs.DROWNED) {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedEntityModel<?>) model).head, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedEntityModel<?>) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.head, resourceLocations[1]));
@@ -1154,8 +1154,8 @@ public class Radar implements IRadar {
                     }
 
                     ModelPartWithResourceLocation[] headBitsWithLocations = headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[0]);
-                    boolean success = this.drawModel(scale, 1000, (LivingEntity) contact.entity, facing, model, headBitsWithLocations);
-                    ImageUtils.saveImage(contact.type.id, GLUtils.fboTextureID, 0, 512, 512);
+                    boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
+                    ImageUtils.saveImage(type.id, GLUtils.fboTextureID, 0, 512, 512);
                     if (success) {
                         headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
                     }
@@ -1169,7 +1169,7 @@ public class Radar implements IRadar {
             headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof BipedEntityModel);
         }
 
-        entityIconMap.put(contact.entity.getUuid(), headImage);
+        entityIconMap.put(entityUUID, headImage);
         return headImage;
     }
 
@@ -1511,7 +1511,8 @@ public class Radar implements IRadar {
         try {
             Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
             m = c.getMethod("getArmorTexture", Entity.class, ItemStack.class, String.class, EquipmentSlot.class, String.class);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Method getResourceLocation = m;
         Identifier resourceLocation = null;
@@ -1533,7 +1534,8 @@ public class Radar implements IRadar {
             }
 
             resourceLocation = new Identifier(resourcePath);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         m = null;
 
@@ -1541,7 +1543,8 @@ public class Radar implements IRadar {
         try {
             Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
             m = c.getMethod("getArmorModel", LivingEntity.class, ItemStack.class, EquipmentSlot.class, BipedEntityModel.class);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         Method getModel = m;
         BipedEntityModel<LivingEntity> modelBiped = null;
@@ -1550,7 +1553,8 @@ public class Radar implements IRadar {
             if (getModel != null) {
                 modelBiped = (BipedEntityModel<LivingEntity>) getModel.invoke(null, contact.entity, stack, EquipmentSlot.HEAD, null);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         float intendedWidth = 9.0F;
         float intendedHeight = 9.0F;
@@ -1731,7 +1735,7 @@ public class Radar implements IRadar {
                         this.newMobs = false;
                     }
 
-                    if (contact.uuid != null) {
+                    if (contact.uuid == null) {
                         Sprite icon = this.textureAtlas.getAtlasSprite("glow");
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
@@ -1817,12 +1821,6 @@ public class Radar implements IRadar {
                             GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
                         }
-                    } else if (contact.uuid != null && contact.uuid.equals(UUID.fromString("677f5375-2034-40f6-8fb6-389dd81ad0cb"))) { //UUID from fantahund :>
-                        Sprite icon = this.textureAtlas.getAtlasSprite("crown");
-                        this.applyFilteringParameters();
-                        GLUtils.drawPre();
-                        GLUtils.setMap(icon, (float) x, (float) y + yOffset, (float) icon.getIconWidth() / 4.0F);
-                        GLUtils.drawPost();
                     }
 
                     if (contact.name != null && (this.options.showPlayerNames && contact.type == EnumMobs.PLAYER || this.options.showMobNames && contact.type != EnumMobs.PLAYER)) {
@@ -1898,5 +1896,6 @@ public class Radar implements IRadar {
         }
     }
 
-    private record ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {}
+    private record ModelPartWithResourceLocation(ModelPart modelPart, Identifier resourceLocation) {
+    }
 }

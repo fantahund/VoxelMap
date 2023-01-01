@@ -17,7 +17,7 @@ public class Contact {
     public EnumMobs type;
     public final boolean vanillaType;
     public boolean custom = false;
-    public UUID uuid = null;
+    public UUID uuid;
     public String name = "_";
     public int rotationFactor = 0;
     public final Entity entity;
@@ -28,6 +28,7 @@ public class Contact {
     public Contact(Entity entity, EnumMobs type) {
         this.entity = entity;
         this.type = type;
+        this.uuid = entity.getUuid();
         this.vanillaType = type != EnumMobs.GENERICNEUTRAL && type != EnumMobs.GENERICHOSTILE && type != EnumMobs.GENERICTAME && type != EnumMobs.UNKNOWN;
     }
 

@@ -4,6 +4,7 @@ import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.entity.mob.CaveSpiderEntity;
 import net.minecraft.entity.mob.CreeperEntity;
@@ -88,6 +89,7 @@ public enum EnumMobs {
     GENERICTAME(null, "Unknown_Tame", false, 8.0F, "textures/entity/wolf/wolf.png", "", false, true),
     AXOLOTL(AxolotlEntity.class, "Axolotl", true, 0.0F, "textures/entity/axolotl/axolotl_blue.png", "", false, true),
     ALLAY(AllayEntity.class, "Allay", true, 4.0F, "textures/entity/allay/allay.png", "", false, true),
+    ARMOR_STAND(ArmorStandEntity.class, "Armor_Stand", true, 0.0F, "textures/entity/armorstand/wood.png", "", true, true),
     BAT(BatEntity.class, "Bat", true, 4.0F, "textures/entity/bat.png", "", false, true),
     BEE(BeeEntity.class, "Bee", true, 0.0F, "textures/entity/bee/bee.png", "", true, true),
     BLAZE(BlazeEntity.class, "Blaze", true, 0.0F, "textures/entity/blaze.png", "", true, false),
