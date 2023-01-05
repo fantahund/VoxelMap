@@ -250,7 +250,7 @@ public class ColorManager {
         GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, (float) width, (float) height, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
