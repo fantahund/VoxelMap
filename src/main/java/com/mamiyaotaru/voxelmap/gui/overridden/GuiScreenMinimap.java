@@ -11,47 +11,34 @@ import net.minecraft.text.Text;
 import java.util.List;
 
 public class GuiScreenMinimap extends Screen {
-    protected GuiScreenMinimap() {
-        this(Text.literal(""));
-    }
+    protected GuiScreenMinimap() { this (Text.literal("")); }
 
-    protected GuiScreenMinimap(Text textComponent_1) {
-        super(textComponent_1);
-        this.setZOffset(0);
+    protected GuiScreenMinimap(Text title) {
+        super (title);
+        setZOffset(0);
     }
 
     public void drawMap(MatrixStack matrixStack) {
-        if (!VoxelMap.instance.getMapOptions().showUnderMenus) {
-            VoxelMap.instance.getMap().drawMinimap(matrixStack);
-            GLShim.glClear(256);
-        }
+        if (VoxelMap.instance.getMapOptions().showUnderMenus) return;
 
+        VoxelMap.instance.getMap().drawMinimap(matrixStack);
+        GLShim.glClear(256);
     }
 
-    public void removed() {
-        MapSettingsManager.instance.saveAll();
+    public void removed() { MapSettingsManager.instance.saveAll(); }
+
+    public void renderTooltip(MatrixStack matrices, Text text, int x, int y) {
+        if (!(text != null && text.getString() != null && !text.getString().isEmpty())) return;
+        super.renderTooltip(matrices, text, x, y);
     }
 
-    public void renderTooltip(MatrixStack matrixStack, Text text, int x, int y) {
-        if (text != null && text.getString() != null && !text.getString().equals("")) {
-            super.renderTooltip(matrixStack, text, x, y);
-        }
+    public final void setZOffset(int zOffset) { super.setZOffset(zOffset); }
 
-    }
+    public int getWidth() { return width; }
 
-    public int getWidth() {
-        return this.width;
-    }
+    public int getHeight() { return height; }
 
-    public int getHeight() {
-        return this.height;
-    }
+    public List<?> getButtonList() { return children(); }
 
-    public List<?> getButtonList() {
-        return this.children();
-    }
-
-    public TextRenderer getFontRenderer() {
-        return this.textRenderer;
-    }
+    public TextRenderer getFontRenderer() { return textRenderer; }
 }

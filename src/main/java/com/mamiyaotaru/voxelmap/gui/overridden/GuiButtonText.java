@@ -7,81 +7,57 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class GuiButtonText extends ButtonWidget {
-    private boolean editing = false;
+    private boolean editing;
     private final TextFieldWidget textField;
 
-    public GuiButtonText(TextRenderer fontRenderer, int x, int y, int widthIn, int heightIn, Text buttonText, ButtonWidget.PressAction action) {
-        super(x, y, widthIn, heightIn, buttonText, action, DEFAULT_NARRATION_SUPPLIER);
-        this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, widthIn - 2, heightIn - 2, null);
+    public GuiButtonText(TextRenderer fontRenderer, int x, int y, int width, int height, Text message, ButtonWidget.PressAction onPress) {
+        super (x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
+        this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, width - 2, height - 2, null);
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        if (!this.editing) {
-            super.render(matrixStack, mouseX, mouseY, partialTicks);
-        } else {
-            this.textField.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        if (editing) {
+            textField.render(matrices, mouseX, mouseY, delta);
+            return;
         }
 
+        super.render(matrices, mouseX, mouseY, delta);
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        boolean pressed = super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean pressed = super.mouseClicked(mouseX, mouseY, button);
         this.setEditing(pressed);
         return pressed;
     }
 
     public void setEditing(boolean editing) {
         this.editing = editing;
-        if (editing) {
-            this.setFocused(true);
-        }
+        if (editing) this.setFocused(true);
 
-        this.textField.setTextFieldFocused(editing);
+        textField.setTextFieldFocused(editing);
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
-        boolean ok = false;
-        if (this.editing) {
-            if (keysm != 257 && keysm != 335 && keysm != 258) {
-                ok = this.textField.keyPressed(keysm, scancode, b);
-            } else {
-                this.setEditing(false);
-            }
-        } else {
-            ok = super.keyPressed(keysm, scancode, b);
-        }
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (!(editing)) return super.keyPressed(keyCode, scanCode, modifiers);
+        if (keyCode != 257 && keyCode != 335 && keyCode != 258) return textField.keyPressed(keyCode, scanCode, modifiers);
 
-        return ok;
+        setEditing(false);
+        return false;
     }
 
-    public boolean charTyped(char character, int keycode) {
-        boolean ok = false;
-        if (this.editing) {
-            if (character == '\r') {
-                this.setEditing(false);
-            } else {
-                ok = this.textField.charTyped(character, keycode);
-            }
-        } else {
-            ok = super.charTyped(character, keycode);
-        }
+    public boolean charTyped(char chr, int modifiers) {
+        if (!(editing)) return super.charTyped(chr, modifiers);
+        if (chr != '\r') return textField.charTyped(chr, modifiers);
 
-        return ok;
+        setEditing(false);
+        return false;
     }
 
-    public boolean isEditing() {
-        return this.editing;
-    }
+    public boolean isEditing() { return editing; }
 
-    public void tick() {
-        this.textField.tick();
-    }
+    public void tick() { textField.tick(); }
 
-    public void setText(String textIn) {
-        this.textField.setText(textIn);
-    }
+    public void setText(String text) { textField.setText(text); }
 
-    public String getText() {
-        return this.textField.getText();
-    }
+    public String getText() { return textField.getText(); }
 }

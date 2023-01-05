@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
@@ -23,64 +23,72 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     protected long lastClicked = 0L;
     public boolean doubleclick = false;
 
-    public GuiSlotMinimap(int width, int height, int y1, int y2, int slotHeight) {
-        super(VoxelConstants.getMinecraft(), width, height, y1, y2, slotHeight);
+    protected GuiSlotMinimap(int width, int height, int top, int bottom, int itemHeight) {
+        super (VoxelConstants.getMinecraft(), width, height, top, bottom, itemHeight);
         this.setZOffset(0);
     }
 
-    public void setShowTopBottomBG(boolean showTopBottomBG) {
-        this.showTopBottomBG = showTopBottomBG;
-    }
+    public final void setZOffset(int zOffset) { super.setZOffset(zOffset); }
 
-    public void setShowSlotBG(boolean showSlotBG) {
-        this.showSlotBG = showSlotBG;
-    }
+    public void setShowTopBottomBG(boolean showTopBottomBG) { this.showTopBottomBG = showTopBottomBG; }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(matrixStack);
-        int scrollBarLeft = this.getScrollbarPositionX();
+    public void setShowSlotBG(boolean showSlotBG) { this.showSlotBG = showSlotBG; }
+
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        renderBackground(matrices);
+
+        int scrollBarLeft = getScrollbarPositionX();
         int scrollBarRight = scrollBarLeft + 6;
-        this.setScrollAmount(this.getScrollAmount());
+
+        setScrollAmount(getScrollAmount());
+
         GLShim.glDisable(GL11.GL_LIGHTING);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
+
         if (this.showSlotBG) {
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-            RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            float f = 32.0F;
+            RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+            float f = 32.0f;
+
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(this.left, this.bottom, 0.0).texture((float) this.left / f, (float) (this.bottom + (int) this.getScrollAmount()) / f).color(32, 32, 32, 255).next();
-            vertexBuffer.vertex(this.right, this.bottom, 0.0).texture((float) this.right / f, (float) (this.bottom + (int) this.getScrollAmount()) / f).color(32, 32, 32, 255).next();
-            vertexBuffer.vertex(this.right, this.top, 0.0).texture((float) this.right / f, (float) (this.top + (int) this.getScrollAmount()) / f).color(32, 32, 32, 255).next();
-            vertexBuffer.vertex(this.left, this.top, 0.0).texture((float) this.left / f, (float) (this.top + (int) this.getScrollAmount()) / f).color(32, 32, 32, 255).next();
+            vertexBuffer.vertex(left, bottom, 0.0).texture(left / f, (bottom + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
+            vertexBuffer.vertex(right, bottom, 0.0).texture(right / f, (bottom + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
+            vertexBuffer.vertex(right, top, 0.0).texture(right / f, (top + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
+            vertexBuffer.vertex(left, top, 0.0).texture(left / f, (top + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
+
             tessellator.draw();
         }
 
-        int leftEdge = this.left + this.width / 2 - this.getRowWidth() / 2 + 2;
-        int topOfListYPos = this.top + 4 - (int) this.getScrollAmount();
-        if (this.hasListHeader) {
-            this.renderHeader(matrixStack, leftEdge, topOfListYPos, tessellator);
-        }
+        int leftEdge = left + width / 2 - getRowWidth() / 2 + 2;
+        int topOfListYPos = top + 4 - (int) getScrollAmount();
 
-        this.renderList(matrixStack, mouseX, mouseY, partialTicks);
+        if (this.hasListHeader) renderHeader(matrices, leftEdge, topOfListYPos, tessellator);
+
+        renderList(matrices, mouseX, mouseY, delta);
         GLShim.glDisable(GL11.GL_DEPTH_TEST);
+
         byte topBottomFadeHeight = 4;
+
         if (this.showTopBottomBG) {
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-            RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
+            RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_ALWAYS);
+
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(this.left, this.top, -100.0).texture(0.0F, (float) this.top / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left + this.width, this.top, -100.0).texture((float) this.width / 32.0F, (float) this.top / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left + this.width, 0.0, -100.0).texture((float) this.width / 32.0F, 0.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left, 0.0, -100.0).texture(0.0F, 0.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left, this.height, -100.0).texture(0.0F, (float) this.height / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left + this.width, this.height, -100.0).texture((float) this.width / 32.0F, (float) this.height / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left + this.width, this.bottom, -100.0).texture((float) this.width / 32.0F, (float) this.bottom / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.left, this.bottom, -100.0).texture(0.0F, (float) this.bottom / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left, top, -100.0).texture(0.0F, top / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left + width, top, -100.0).texture(width / 32.0F, top / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left + width, 0.0, -100.0).texture(width / 32.0F, 0.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left, 0.0, -100.0).texture(0.0F, 0.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left, height, -100.0).texture(0.0F, height / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left + width, height, -100.0).texture(width / 32.0F, height / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left + width, bottom, -100.0).texture(width / 32.0F, bottom / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(left, bottom, -100.0).texture(0.0F, bottom / 32.0F).color(64, 64, 64, 255).next();
+
             tessellator.draw();
+
             RenderSystem.depthFunc(GL11.GL_LEQUAL);
             RenderSystem.disableDepthTest();
             GLShim.glEnable(GL11.GL_BLEND);
@@ -88,35 +96,37 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             GLShim.glDisable(GL11.GL_TEXTURE_2D);
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
+
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(this.left, this.top + topBottomFadeHeight, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 0).next();
-            vertexBuffer.vertex(this.right, this.top + topBottomFadeHeight, 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 0).next();
-            vertexBuffer.vertex(this.right, this.top, 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.left, this.top, 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.left, this.bottom, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.right, this.bottom, 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.right, this.bottom - topBottomFadeHeight, 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 0).next();
-            vertexBuffer.vertex(this.left, this.bottom - topBottomFadeHeight, 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 0).next();
+            vertexBuffer.vertex(left, top + topBottomFadeHeight, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 0).next();
+            vertexBuffer.vertex(right, top + topBottomFadeHeight, 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 0).next();
+            vertexBuffer.vertex(right, top, 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(left, top, 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(left, bottom, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(right, bottom, 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(right, bottom - topBottomFadeHeight, 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 0).next();
+            vertexBuffer.vertex(left, bottom - topBottomFadeHeight, 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 0).next();
+
             tessellator.draw();
         }
 
-        int maxScroll = this.getMaxScroll();
+        int maxScroll = getMaxScroll();
+
         if (maxScroll > 0) {
             GLShim.glDisable(GL11.GL_TEXTURE_2D);
             RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-            int k1 = (this.bottom - this.top) * (this.bottom - this.top) / this.getMaxPosition();
-            k1 = MathHelper.clamp(k1, 32, this.bottom - this.top - 8);
-            int l1 = (int) this.getScrollAmount() * (this.bottom - this.top - k1) / maxScroll + this.top;
-            if (l1 < this.top) {
-                l1 = this.top;
-            }
+
+            int k1 = MathHelper.clamp((bottom - top) * (bottom - top) / getMaxPosition(), 32, bottom - top - 8);
+            int l1 = (int) getScrollAmount() * (bottom - top - k1) / maxScroll + top;
+
+            if (l1 < top) l1 = top;
 
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-            vertexBuffer.vertex(scrollBarLeft, this.bottom, 0.0).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(scrollBarRight, this.bottom, 0.0).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(scrollBarRight, this.top, 0.0).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(scrollBarLeft, this.top, 0.0).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(scrollBarLeft, bottom, 0.0).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(scrollBarRight, bottom, 0.0).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(scrollBarRight, top, 0.0).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(scrollBarLeft, top, 0.0).color(0, 0, 0, 255).next();
             vertexBuffer.vertex(scrollBarLeft, l1 + k1, 0.0).color(128, 128, 128, 255).next();
             vertexBuffer.vertex(scrollBarRight, l1 + k1, 0.0).color(128, 128, 128, 255).next();
             vertexBuffer.vertex(scrollBarRight, l1, 0.0).color(128, 128, 128, 255).next();
@@ -125,37 +135,32 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             vertexBuffer.vertex(scrollBarRight - 1, l1 + k1 - 1, 0.0).color(192, 192, 192, 255).next();
             vertexBuffer.vertex(scrollBarRight - 1, l1, 0.0).color(192, 192, 192, 255).next();
             vertexBuffer.vertex(scrollBarLeft, l1, 0.0).color(192, 192, 192, 255).next();
+
             tessellator.draw();
         }
 
-        this.renderDecorations(matrixStack, mouseX, mouseY);
+        renderDecorations(matrices, mouseX, mouseY);
+
         GLShim.glEnable(GL11.GL_TEXTURE_2D);
         GLShim.glDisable(GL11.GL_BLEND);
     }
 
-    public int getRowWidth() {
-        return this.slotWidth;
+    public int getRowWidth() { return slotWidth; }
+
+    public void setSlotWidth(int slotWidth) { this.slotWidth = slotWidth; }
+
+    protected int getScrollbarPositionX() { return slotWidth >= 220 ? width / 2 + 124 : right - 6; }
+
+    public void setLeftPos(int left) {
+        this.left = left;
+        this.right = left + width;
     }
 
-    public void setSlotWidth(int slotWidth) {
-        this.slotWidth = slotWidth;
-    }
-
-    protected int getScrollbarPositionX() {
-        return this.slotWidth >= 220 ? this.width / 2 + 124 : this.right - 6;
-    }
-
-    public void setLeftPos(int x1) {
-        this.left = x1;
-        this.right = x1 + this.width;
-    }
-
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         this.doubleclick = System.currentTimeMillis() - this.lastClicked < 250L;
         this.lastClicked = System.currentTimeMillis();
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public void appendNarrations(NarrationMessageBuilder builder) {
-    }
+    public void appendNarrations(NarrationMessageBuilder builder) {}
 }
