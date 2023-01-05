@@ -7,7 +7,7 @@ public class GuiOptionButtonMinimap extends ButtonWidget {
     private final EnumOptionsMinimap enumOptions;
 
     public GuiOptionButtonMinimap(int x, int y, EnumOptionsMinimap par4EnumOptions, Text buttonText, ButtonWidget.PressAction press) {
-        super(x, y, 150, 20, buttonText, press);
+        super(x, y, 150, 20, buttonText, press, DEFAULT_NARRATION_SUPPLIER);
         this.enumOptions = par4EnumOptions;
     }
 

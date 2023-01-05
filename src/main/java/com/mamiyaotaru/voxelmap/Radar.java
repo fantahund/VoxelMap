@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
+import com.mamiyaotaru.voxelmap.util.MathUtils;
 import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.authlib.GameProfile;
@@ -118,6 +119,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.Registries;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.DyeColor;
@@ -125,14 +127,14 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerDataContainer;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
@@ -191,7 +193,7 @@ public class Radar implements IRadar {
     private BipedEntityModel<LivingEntity> piglinArmorModel;
     private NativeImageBackedTexture nativeBackedTexture = new NativeImageBackedTexture(2, 2, false);
     private final Identifier nativeBackedTextureLocation = new Identifier("voxelmap", "tempimage");
-    private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
+    private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
 
     private static final Int2ObjectMap<Identifier> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
@@ -355,9 +357,6 @@ public class Radar implements IRadar {
             ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
             sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
             this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
-            BufferedImage glow = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/glow.png"), 0, 0, 16, 16, 16, 16);
-            glow = ImageUtils.fillOutline(glow, this.options.outlines, true, 32.0F, 32.0F, 2);
-            this.textureAtlas.registerIconForBufferedImage("glow", glow);
             Identifier fontResourceLocation = new Identifier("textures/font/ascii.png");
             BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
             if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
@@ -460,8 +459,8 @@ public class Radar implements IRadar {
                 float[] primaryColorsA = new float[]{0.9765F, 0.502F, 0.1137F};
                 float[] secondaryColorsA = new float[]{0.9765F, 1.0F, 0.9961F};
                 if (entity instanceof TropicalFishEntity fish) {
-                    primaryColorsA = fish.getBaseColorComponents();
-                    secondaryColorsA = fish.getPatternColorComponents();
+                    primaryColorsA = fish.getBaseColorComponents().getColorComponents();
+                    secondaryColorsA = fish.getPatternColorComponents().getColorComponents();
                 }
                 BufferedImage baseA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 10, 6, 32, 32), ImageUtils.loadImage(mobImage, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImage, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImage, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), primaryColorsA[0], primaryColorsA[1], primaryColorsA[2]);
                 BufferedImage patternA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 10, 6, 32, 32), ImageUtils.loadImage(mobImageSecondary, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), secondaryColorsA[0], secondaryColorsA[1], secondaryColorsA[2]);
@@ -473,8 +472,8 @@ public class Radar implements IRadar {
                 float[] primaryColorsB = new float[]{0.5373F, 0.1961F, 0.7216F};
                 float[] secondaryColorsB = new float[]{0.9961F, 0.8471F, 0.2392F};
                 if (entity instanceof TropicalFishEntity fish) {
-                    primaryColorsB = fish.getBaseColorComponents();
-                    secondaryColorsB = fish.getPatternColorComponents();
+                    primaryColorsB = fish.getBaseColorComponents().getColorComponents();
+                    secondaryColorsB = fish.getPatternColorComponents().getColorComponents();
                 }
                 BufferedImage baseB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 12, 12, 32, 32), ImageUtils.loadImage(mobImage, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), primaryColorsB[0], primaryColorsB[1], primaryColorsB[2]);
                 BufferedImage patternB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 12, 12, 32, 32), ImageUtils.loadImage(mobImageSecondary, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), secondaryColorsB[0], secondaryColorsB[1], secondaryColorsB[2]);
@@ -794,10 +793,10 @@ public class Radar implements IRadar {
                         VillagerData villagerData = ((VillagerDataContainer) contact.entity).getVillagerData();
                         VillagerType villagerType = villagerData.getType();
                         VillagerProfession villagerProfession = villagerData.getProfession();
-                        resourceLocationSecondary = Registry.VILLAGER_TYPE.getId(villagerType);
+                        resourceLocationSecondary = Registries.VILLAGER_TYPE.getId(villagerType);
                         resourceLocationSecondary = new Identifier(resourceLocationSecondary.getNamespace(), "textures/entity/" + zombie + "villager/type/" + resourceLocationSecondary.getPath() + ".png");
                         if (villagerProfession != VillagerProfession.NONE && !((LivingEntity) contact.entity).isBaby()) {
-                            resourceLocationTertiary = Registry.VILLAGER_PROFESSION.getId(villagerProfession);
+                            resourceLocationTertiary = Registries.VILLAGER_PROFESSION.getId(villagerProfession);
                             resourceLocationTertiary = new Identifier(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
                             if (villagerProfession != VillagerProfession.NITWIT) {
                                 resourceLocationQuaternary = LEVEL_TO_ID.get(MathHelper.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
@@ -815,8 +814,9 @@ public class Radar implements IRadar {
                 }
             } else {
                 TropicalFishEntity fish = (TropicalFishEntity) contact.entity;
-                resourceLocationSecondary = fish.getVarietyId();
-                color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
+                // TODO 1.19.3
+                //resourceLocationSecondary = fish.getVarietyId();
+                //color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
             }
 
             if (resourceLocationSecondary != null) {
@@ -1225,7 +1225,7 @@ public class Radar implements IRadar {
         GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
@@ -1245,18 +1245,18 @@ public class Radar implements IRadar {
         matrixStack.push();
         matrixStack.translate(width / 2f, height / 2f, 0.0);
         matrixStack.scale(size, size, size);
-        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180.0F));
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
         if (facing == Direction.EAST) {
-            matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-90.0F));
+            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90.0F));
         } else if (facing == Direction.UP) {
-            matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90.0F));
+            matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
         }
 
         RenderSystem.applyModelViewMatrix();
-        Vector4f fullbright2 = new Vector4f(this.fullbright);
-        fullbright2.transform(matrixStack.peek().getPositionMatrix());
-        Vec3f fullbright3 = new Vec3f(fullbright2);
+        Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
+        fullbright2 = MathUtils.transform(fullbright2, matrixStack.peek().getPositionMatrix());
+        Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
 
         try {
@@ -1631,13 +1631,13 @@ public class Radar implements IRadar {
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
         int lastY = GameVariableAccessShim.yCoord();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(this.textureAtlas.getGlId());
         GLShim.glEnable(GL11.GL_BLEND);
         GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         for (Contact contact : this.contacts) {
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             contact.updateLocation();
             double contactX = contact.x;
             double contactZ = contact.z;
@@ -1677,9 +1677,9 @@ public class Radar implements IRadar {
                     matrixStack.push();
                     if (this.options.filtering) {
                         matrixStack.translate(x, y, 0.0);
-                        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-contact.angle));
+                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
                         matrixStack.translate(0.0, -contact.distance, 0.0);
-                        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(contact.angle + (float) contact.rotationFactor));
+                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + (float) contact.rotationFactor));
                         matrixStack.translate((-x), (-y), 0.0);
                     } else {
                         wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
@@ -1733,14 +1733,6 @@ public class Radar implements IRadar {
                         }
 
                         this.newMobs = false;
-                    }
-
-                    if (contact.uuid == null) {
-                        Sprite icon = this.textureAtlas.getAtlasSprite("glow");
-                        this.applyFilteringParameters();
-                        GLUtils.drawPre();
-                        GLUtils.setMap(icon, (float) x, (float) y + yOffset, (float) ((int) ((float) icon.getIconWidth() / 2.0F)));
-                        GLUtils.drawPost();
                     }
 
                     this.applyFilteringParameters();
@@ -1875,7 +1867,7 @@ public class Radar implements IRadar {
             }
 
             if (entity instanceof RabbitEntity rabbitEntity) {
-                return rabbitEntity.getRabbitType() == 99;
+                return rabbitEntity.getVariant().getId() == 99;
             } else if (entity instanceof WolfEntity wolfEntity) {
                 return wolfEntity.hasAngerTime();
             } else {

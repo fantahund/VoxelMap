@@ -91,7 +91,7 @@ public class Popup {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         GLShim.glDisable(GL11.GL_DEPTH_TEST);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var6 = 32.0F;
@@ -103,7 +103,7 @@ public class Popup {
         tessellator.draw();
         GLShim.glEnable(GL11.GL_BLEND);
         GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         GLShim.glDisable(GL11.GL_TEXTURE_2D);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         vertexBuffer.vertex(this.x, this.y + 4, 0.0).color(0, 0, 0, 0).next();
@@ -130,7 +130,7 @@ public class Popup {
         vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
         tessellator.draw();
         GLShim.glEnable(GL11.GL_TEXTURE_2D);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLShim.glDisable(GL11.GL_BLEND);
 
         for (int t = 0; t < this.entries.length; ++t) {

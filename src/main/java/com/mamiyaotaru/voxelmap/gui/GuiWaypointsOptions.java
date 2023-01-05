@@ -42,7 +42,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
             ++var2;
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
     }
 
     protected void optionClicked(ButtonWidget par1GuiButton) {

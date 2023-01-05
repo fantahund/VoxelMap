@@ -38,7 +38,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getPlayer().networkHandler;
         this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
         this.sort();
-        ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null) {
+        ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null, null) {
             public void onPress() {
             }
         };
@@ -55,8 +55,8 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             return null;
         } else {
             Text name = this.getPlayerName(ScoreboardEntry);
-            return new ButtonWidget(x, y, 150, 20, name, button -> {
-            });
+            return new ButtonWidget.Builder(name, button -> {
+            }).dimensions(x, y, 150, 20).build();
         }
     }
 
@@ -146,7 +146,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
 
         private void drawButton(MatrixStack matrixStack, ButtonWidget button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
             if (button != null) {
-                button.y = y;
+                button.setY(y);
                 button.render(matrixStack, mouseX, mouseY, partialTicks);
                 if (id != -1) {
                     this.drawIconForButton(matrixStack, button, id);
@@ -164,11 +164,11 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             PlayerListEntry networkPlayerInfo = (PlayerListEntry) GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             PlayerEntity entityPlayer = VoxelConstants.getMinecraft().world.getPlayerByUuid(gameProfile.getId());
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderTexture(0, networkPlayerInfo.getSkinTexture());
-            Screen.drawTexture(matrixStack, button.x + 6, button.y + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
+            Screen.drawTexture(matrixStack, button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
             if (entityPlayer != null && entityPlayer.isPartVisible(PlayerModelPart.HAT)) {
-                Screen.drawTexture(matrixStack, button.x + 6, button.y + 6, 8, 8, 40.0F, 8.0F, 8, 8, 64, 64);
+                Screen.drawTexture(matrixStack, button.getX() + 6, button.getY() + 6, 8, 8, 40.0F, 8.0F, 8, 8, 64, 64);
             }
 
         }

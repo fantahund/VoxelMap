@@ -17,10 +17,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.chunk.WorldChunk;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class WaypointContainer {
             GLShim.glDepthMask(false);
             GLShim.glEnable(GL11.GL_BLEND);
             GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, 1);
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
 
             for (Waypoint pt : this.wayPts) {
@@ -209,8 +209,8 @@ public class WaypointContainer {
         float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
         matrixStack.push();
         matrixStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYaw()));
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getPitch()));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYaw()));
+        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getPitch()));
         matrixStack.scale(-var14, -var14, -var14);
         Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         Tessellator tessellator = Tessellator.getInstance();
@@ -227,7 +227,7 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         GLUtils.disp2(textureAtlas.getGlId());
         GLShim.glEnable(GL11.GL_TEXTURE_2D);
         if (withDepth) {
@@ -258,7 +258,7 @@ public class WaypointContainer {
             GLShim.glDisable(GL11.GL_TEXTURE_2D);
             GLShim.glEnable(GL11.GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.getWidth(name) / 2;
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             if (withDepth) {
                 GLShim.glEnable(GL11.GL_DEPTH_TEST);
                 GLShim.glDepthMask(distance < maxDistance);

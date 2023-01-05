@@ -48,7 +48,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -204,7 +204,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.passEvents = true;
         this.oldNorth = mapOptions.oldNorth;
         this.centerAt(this.options.mapX, this.options.mapZ);
-        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(true);
         if (VoxelConstants.getMinecraft().currentScreen == this) {
             this.closed = false;
         }
@@ -637,11 +636,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         GLShim.glColor3f(1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.translate((float) this.centerX - this.mapCenterX * this.mapToGui, (float) (this.top + this.centerY) - this.mapCenterZ * this.mapToGui, 0.0);
         if (this.oldNorth) {
-            modelViewMatrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(90.0F));
+            modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90.0F));
         }
 
         RenderSystem.applyModelViewMatrix();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
             GLUtils.disp2(this.backGroundImageInfo.glid);
@@ -684,7 +683,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - (float) this.centerY * this.guiToMap);
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         if (this.options.showWaypoints) {
             for (Waypoint pt : this.waypointManager.getWaypoints()) {
                 this.drawWaypoint(matrixStack, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
@@ -696,7 +695,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(playerGLID);
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
@@ -705,7 +704,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (this.oldNorth) {
             modelViewMatrixStack.push();
             modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0);
-            modelViewMatrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
+            modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
             modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0);
             RenderSystem.applyModelViewMatrix();
         }
@@ -716,7 +715,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         if (this.oldNorth) {
-            modelViewMatrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
+            modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
         }
 
         modelViewMatrixStack.translate(-((float) this.centerX - this.mapCenterX * this.mapToGui), -((float) (this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0);
@@ -807,7 +806,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int scWidth = VoxelConstants.getMinecraft().getWindow().getScaledWidth();
             int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(775, 769, 1, 0);
@@ -873,7 +872,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 ptZ += 0.5F;
                 boolean hover = cursorCoordX > ptX - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordX < ptX + 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ > ptZ - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ < ptZ + 18.0F * this.guiToMap / this.guiToDirectMouse;
                 boolean target = false;
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShader(GameRenderer::getPositionTexProgram);
                 TextureAtlas atlas = this.master.getWaypointManager().getTextureAtlas();
                 GLUtils.disp2(atlas.getGlId());
                 if (icon == null) {
@@ -892,7 +891,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (this.oldNorth) {
                     matrixStack.push();
                     matrixStack.translate(ptX * this.mapToGui, ptZ * this.mapToGui, 0.0);
-                    matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
+                    matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
                     matrixStack.translate(-(ptX * this.mapToGui), -(ptZ * this.mapToGui), 0.0);
                     RenderSystem.applyModelViewMatrix();
                 }
@@ -910,7 +909,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     matrixStack.scale(fontScale, fontScale, 1.0F);
                     if (this.oldNorth) {
                         matrixStack.translate(ptX * this.mapToGui / fontScale, ptZ * this.mapToGui / fontScale, 0.0);
-                        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-90.0F));
+                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
                         matrixStack.translate(-(ptX * this.mapToGui / fontScale), -(ptZ * this.mapToGui / fontScale), 0.0);
                         RenderSystem.applyModelViewMatrix();
                     }
@@ -952,7 +951,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -981,7 +980,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.keyBindSprint.setBoundKey(this.nullInput);
         KeyBinding.updateKeysByCode();
         KeyBinding.unpressAll();
-        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
         synchronized (this.closedLock) {
             this.closed = true;
             this.persistentMap.getRegions(0, -1, 0, -1);
@@ -1160,9 +1158,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     this.selectedWaypoint = hovered;
                     boolean mp = !VoxelConstants.getMinecraft().isInSingleplayer();
                     y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
-                    VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+                    VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     if (mp) {
-                        VoxelConstants.getPlayer().sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
+                        VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     } else {
                         VoxelConstants.getMinecraft().setScreen(null);
                     }
@@ -1171,9 +1169,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         y = !VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64;
                     }
 
-                    VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + x + " " + y + " " + z);
+                    VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + x + " " + y + " " + z);
                     if (!VoxelConstants.getMinecraft().isInSingleplayer()) {
-                        VoxelConstants.getPlayer().sendCommand("tppos " + x + " " + y + " " + z);
+                        VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + x + " " + y + " " + z);
                     }
                 }
             }

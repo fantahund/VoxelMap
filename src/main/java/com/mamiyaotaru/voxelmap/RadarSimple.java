@@ -25,7 +25,7 @@ import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
@@ -67,9 +67,6 @@ public class RadarSimple implements IRadar {
             BufferedImage facing = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/contact_facing.png"), 0, 0, 32, 32, 32, 32);
             facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
-            BufferedImage glow = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/glow.png"), 0, 0, 16, 16, 16, 16);
-            glow = ImageUtils.fillOutline(glow, false, true, 16.0F, 16.0F, 0);
-            this.textureAtlas.registerIconForBufferedImage("glow", glow);
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var4) {
@@ -164,7 +161,7 @@ public class RadarSimple implements IRadar {
             }
 
             if (entity instanceof RabbitEntity rabbitEntity) {
-                return rabbitEntity.getRabbitType() == 99;
+                return rabbitEntity.getVariant().getId() == 99;
             } else if (entity instanceof WolfEntity wolfEntity) {
                 return wolfEntity.hasAngerTime();
             } else {
@@ -236,18 +233,11 @@ public class RadarSimple implements IRadar {
                     }
 
                     matrixStack.translate(x, y, 0.0);
-                    matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-contact.angle));
+                    matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
                     matrixStack.translate(0.0, -contact.distance, 0.0);
-                    matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(contact.angle + contactFacing));
+                    matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + contactFacing));
                     matrixStack.translate(-x, -y, 0.0);
                     RenderSystem.applyModelViewMatrix();
-                    if (contact.uuid != null && contact.uuid.equals(this.devUUID)) {
-                        Sprite icon = this.textureAtlas.getAtlasSprite("glow");
-                        this.applyFilteringParameters();
-                        GLUtils.drawPre();
-                        GLUtils.setMap(icon, (float) x, (float) y, (float) ((int) ((float) icon.getIconWidth() / 2.0F)));
-                        GLUtils.drawPost();
-                    }
 
                     this.applyFilteringParameters();
                     GLUtils.drawPre();

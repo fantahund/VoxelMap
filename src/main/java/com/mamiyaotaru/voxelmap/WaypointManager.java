@@ -386,9 +386,9 @@ public class WaypointManager {
                     this.needSave = true;
                 }
             }
-        }
 
-        this.loadBackgroundMapImage();
+            this.loadBackgroundMapImage();
+        }
     }
 
     public void changeSubworldName(String oldName, String newName) {
@@ -612,7 +612,8 @@ public class WaypointManager {
                     }
 
                     fr.close();
-                } catch (IOException ignored) {
+                } catch (IOException exception) {
+                    VoxelConstants.getLogger().error(exception);
                 }
 
                 try {
@@ -671,7 +672,8 @@ public class WaypointManager {
                                     }
                                 }
                             }
-                        } catch (Exception ignored) {
+                        } catch (Exception exception) {
+                            VoxelConstants.getLogger().error(exception);
                         }
                     }
 
@@ -757,7 +759,9 @@ public class WaypointManager {
             }
 
             path = path + "/" + this.currentDimension.getStorageName();
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.png")).get().getInputStream();
+            String tempPath = "images/backgroundmaps/" + path + "/map.png";
+            Identifier identifier = new Identifier("voxelmap", tempPath);
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(identifier).get().getInputStream();
             Image image = ImageIO.read(is);
             is.close();
             BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
@@ -785,7 +789,8 @@ public class WaypointManager {
             }
 
             isr.close();
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            VoxelConstants.getLogger().error("Exception loading Background Map Image", exception);
         }
 
     }

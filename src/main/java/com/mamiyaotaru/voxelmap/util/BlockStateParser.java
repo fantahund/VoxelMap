@@ -4,9 +4,9 @@ import com.google.common.collect.BiMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.Optional;
 
@@ -36,7 +36,7 @@ public class BlockStateParser {
             resourceLocation = new Identifier(resourceStringParts[0], resourceStringParts[1]);
         }
 
-        Block block = Registry.BLOCK.get(resourceLocation);
+        Block block = Registries.BLOCK.get(resourceLocation);
         if (block != Blocks.AIR || resourceString.equals("minecraft:air")) {
             blockState = block.getDefaultState();
             if (bracketIndex != -1) {

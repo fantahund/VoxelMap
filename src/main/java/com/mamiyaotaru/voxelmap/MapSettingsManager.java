@@ -130,7 +130,8 @@ public class MapSettingsManager implements ISettingsManager {
             }
 
             this.saveAll();
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            VoxelConstants.getLogger().error(exception);
         }
 
     }

@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -125,7 +125,7 @@ public class ImageUtils {
             GLShim.glPushAttrib(GL11.GL_TRANSFORM_BIT);
             RenderSystem.backupProjectionMatrix();
             GLShim.glViewport(0, 0, fboWidth, fboHeight);
-            Matrix4f matrix4f = Matrix4f.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
+            Matrix4f matrix4f = MathUtils.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
             RenderSystem.setProjectionMatrix(matrix4f);
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.loadIdentity();

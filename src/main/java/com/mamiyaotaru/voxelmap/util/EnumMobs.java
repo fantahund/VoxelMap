@@ -45,6 +45,7 @@ import net.minecraft.entity.passive.AllayEntity;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.entity.passive.BatEntity;
 import net.minecraft.entity.passive.BeeEntity;
+import net.minecraft.entity.passive.CamelEntity;
 import net.minecraft.entity.passive.CatEntity;
 import net.minecraft.entity.passive.ChickenEntity;
 import net.minecraft.entity.passive.CodEntity;
@@ -94,6 +95,7 @@ public enum EnumMobs {
     BEE(BeeEntity.class, "Bee", true, 0.0F, "textures/entity/bee/bee.png", "", true, true),
     BLAZE(BlazeEntity.class, "Blaze", true, 0.0F, "textures/entity/blaze.png", "", true, false),
     CAT(CatEntity.class, "Cat", true, 0.0F, "textures/entity/cat/siamese.png", "", false, true),
+    CAMEL(CamelEntity.class, "Camel", true, 0.0F, "textures/entity/camel/camel.png", "", false, true),
     CAVESPIDER(CaveSpiderEntity.class, "Cave_Spider", true, 0.0F, "textures/entity/spider/cave_spider.png", "", true, false),
     CHICKEN(ChickenEntity.class, "Chicken", true, 6.0F, "textures/entity/chicken.png", "", false, true),
     COD(CodEntity.class, "Cod", true, 8.0F, "textures/entity/fish/cod.png", "", false, true),
@@ -186,7 +188,7 @@ public enum EnumMobs {
     public static EnumMobs getMobTypeByEntity(Entity entity) {
         Class<? extends Entity> clazz = entity.getClass();
         if (clazz.equals(TropicalFishEntity.class)) {
-            return ((TropicalFishEntity) entity).getShape() == 0 ? TROPICALFISHA : TROPICALFISHB;
+            return ((TropicalFishEntity) entity).getVariant().getId() == 0 ? TROPICALFISHA : TROPICALFISHB;
         } else {
             return getMobTypeByClass(clazz);
         }

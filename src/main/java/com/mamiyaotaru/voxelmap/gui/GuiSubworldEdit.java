@@ -38,24 +38,22 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void init() {
-        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(true);
         this.clearChildren();
         this.subworldNameField = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
         this.setFocused(this.subworldNameField);
         this.subworldNameField.setTextFieldFocused(true);
         this.subworldNameField.setText(this.originalSubworldName);
         this.addDrawableChild(this.subworldNameField);
-        this.addDrawableChild(this.doneButton = new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.done"), button -> this.changeNameClicked()));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(this.doneButton = new ButtonWidget.Builder(Text.translatable("gui.done"), button -> this.changeNameClicked()).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20).build());
         int buttonListY = this.getHeight() / 6 + 82 + 6;
-        this.addDrawableChild(this.deleteButton = new ButtonWidget(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20, Text.translatable("selectServer.delete"), button -> this.deleteClicked()));
+        this.addDrawableChild(this.deleteButton = new ButtonWidget.Builder(Text.translatable("selectServer.delete"), button -> this.deleteClicked()).dimensions(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20).build());
         this.doneButton.active = this.isNameAcceptable();
         this.deleteButton.active = this.originalSubworldName.equals(this.subworldNameField.getText());
     }
 
     @Override
     public void removed() {
-        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
     }
 
     private void changeNameClicked() {

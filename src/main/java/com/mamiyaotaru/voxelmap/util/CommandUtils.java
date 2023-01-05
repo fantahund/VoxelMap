@@ -247,9 +247,9 @@ public class CommandUtils {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
                 boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
                 int y = wp.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
-                VoxelConstants.getPlayer().sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
+                VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
-                    VoxelConstants.getPlayer().sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
+                    VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
                 }
 
                 return;

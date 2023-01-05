@@ -7,7 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.PistonExtensionBlock;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -98,7 +98,7 @@ public class BlockRepository {
         shapedBlocksArray = new Block[]{ladder, vine};
         shapedBlocks = new HashSet<>(Arrays.asList(shapedBlocksArray));
 
-        for (Block block : Registry.BLOCK) {
+        for (Block block : Registries.BLOCK) {
             if (block instanceof DoorBlock || block instanceof AbstractSignBlock) {
                 shapedBlocks.add(block);
             }

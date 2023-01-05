@@ -26,8 +26,8 @@ import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.Heightmap;
@@ -242,7 +242,7 @@ public class PersistentMap implements IPersistentMap, IChangeObserver {
         blockPos = blockPos.withXYZ(startX + imageX, 64, startZ + imageY);
         int biomeID;
         if (!chunk.isEmpty()) {
-            biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(blockPos).value());
+            biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(blockPos).value());
         } else {
             biomeID = -1;
         }

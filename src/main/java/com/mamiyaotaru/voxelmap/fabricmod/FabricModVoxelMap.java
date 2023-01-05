@@ -54,7 +54,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
         try {
             this.master.onTickInGame(matrixStack);
-        } catch (Exception ignore) {}
+        } catch (Exception exception) {
+            VoxelConstants.getLogger().error(exception);
+        }
     }
 
     public boolean onChat(Text chat, MessageIndicator indicator) {
@@ -76,7 +78,8 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public static void onRenderHand(float partialTicks, long timeSlice, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
             instance.master.getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            VoxelConstants.getLogger().error(exception);
         }
 
     }
@@ -92,7 +95,8 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
             try {
                 Thread.sleep(200L);
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException exception) {
+                VoxelConstants.getLogger().error(exception);
             }
         }
     }

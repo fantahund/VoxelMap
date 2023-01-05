@@ -37,7 +37,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.gui.screen.OutOfMemoryScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.option.AoMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.BackgroundRenderer;
@@ -55,20 +54,20 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -242,7 +241,8 @@ public class Map implements Runnable, IMap {
                     synchronized (this.zCalc) {
                         try {
                             this.zCalc.wait(0L);
-                        } catch (InterruptedException ignored) {
+                        } catch (InterruptedException exception) {
+                            VoxelConstants.getLogger().error(exception);
                         }
                     }
                 }
@@ -255,7 +255,8 @@ public class Map implements Runnable, IMap {
                                 this.chunkCache[this.zoom].centerChunks(this.blockPos.withXYZ(this.lastX, 0, this.lastZ));
                                 this.chunkCache[this.zoom].checkIfChunksChanged();
                             }
-                        } catch (Exception ignored) {
+                        } catch (Exception exception) {
+                            VoxelConstants.getLogger().error(exception);
                         }
                     }
 
@@ -267,7 +268,8 @@ public class Map implements Runnable, IMap {
                 synchronized (this.zCalc) {
                     try {
                         this.zCalc.wait(0L);
-                    } catch (InterruptedException ignored) {
+                    } catch (InterruptedException exception) {
+                        VoxelConstants.getLogger().error(exception);
                     }
                 }
             }
@@ -582,7 +584,7 @@ public class Map implements Runnable, IMap {
                     this.lastAboveHorizon = aboveHorizon;
                 }
 
-                int biomeID = this.world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(this.world.getBiome(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), GameVariableAccessShim.yCoord(), GameVariableAccessShim.zCoord())).value());
+                int biomeID = this.world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(this.world.getBiome(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), GameVariableAccessShim.yCoord(), GameVariableAccessShim.zCoord())).value());
                 if (biomeID != this.lastBiome) {
                     this.needSkyColor = true;
                     this.lastBiome = biomeID;
@@ -641,7 +643,7 @@ public class Map implements Runnable, IMap {
         this.scWidth = MathHelper.ceil(scaledWidthD);
         this.scHeight = MathHelper.ceil(scaledHeightD);
         RenderSystem.backupProjectionMatrix();
-        Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, (float) scaledWidthD, 0.0F, (float) scaledHeightD, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0f, (float) scaledWidthD, (float) scaledHeightD, 0.0f, 1000.0f, 3000.0f);
         RenderSystem.setProjectionMatrix(matrix4f);
         MatrixStack modelViewMatrixStack = RenderSystem.getModelViewStack();
         modelViewMatrixStack.loadIdentity();
@@ -980,7 +982,7 @@ public class Map implements Runnable, IMap {
         int biomeID;
         if (needBiome) {
             if (world.isChunkLoaded(this.blockPos)) {
-                biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(this.blockPos).value());
+                biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(this.blockPos).value());
             } else {
                 biomeID = -1;
             }
@@ -1208,11 +1210,13 @@ public class Map implements Runnable, IMap {
                     Material materialAbove = blockStateAbove.getMaterial();
                     if (this.options.lightmap && materialAbove == Material.ICE) {
                         int multiplier = 255;
-                        if (VoxelConstants.getMinecraft().options.getAo().getValue() == AoMode.MIN) {
-                            multiplier = 200;
-                        } else if (VoxelConstants.getMinecraft().options.getAo().getValue() == AoMode.MAX) {
-                            multiplier = 120;
-                        }
+                        // I'm not sure if this will be a 100% correct fix, but we'll see // Algo
+                        //if (this.game.options.getAo().getValue() == AoMode.MIN) {
+                        //    multiplier = 200;
+                        //} else if (this.game.options.getAo().getValue() == AoMode.MAX) {
+                        //    multiplier = 120;
+                        //}
+                        multiplier = (VoxelConstants.getMinecraft().options.getAo().getValue()) ? 200 : 120;
 
                         seafloorLight = ColorUtils.colorMultiplier(seafloorLight, 0xFF000000 | multiplier << 16 | multiplier << 8 | multiplier);
                     }
@@ -1549,7 +1553,7 @@ public class Map implements Runnable, IMap {
         }
 
         if (GLUtils.hasAlphaBits) {
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             GLShim.glColorMask(false, false, false, true);
             GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
             GLShim.glClear(16384);
@@ -1577,7 +1581,7 @@ public class Map implements Runnable, IMap {
             GLUtils.disp2(this.mapImages[this.zoom].getIndex());
             matrixStack.push();
             matrixStack.translate(x, y, 0.0);
-            matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(!this.options.rotates ? (float) this.northRotate : -this.direction));
+            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(!this.options.rotates ? (float) this.northRotate : -this.direction));
             matrixStack.translate(-x, -y, 0.0);
             matrixStack.translate(-this.percentX, -this.percentY, 0.0);
             RenderSystem.applyModelViewMatrix();
@@ -1586,8 +1590,8 @@ public class Map implements Runnable, IMap {
         } else {
             GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
             Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
-            Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, 512.0F, 0.0F, 512.0F, 1000.0F, 3000.0F);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
             RenderSystem.setProjectionMatrix(matrix4f);
             GLUtils.bindFrameBuffer();
             GLShim.glViewport(0, 0, 512, 512);
@@ -1607,7 +1611,8 @@ public class Map implements Runnable, IMap {
             GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
             GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
             BufferBuilder bb = Tessellator.getInstance().getBuffer();
-            BufferRenderer.drawWithShader(bb.end());
+            //BufferRenderer.drawWithShader(bb.end());
+            BufferRenderer.drawWithGlobalProgram(bb.end());
             GLShim.glBlendFuncSeparate(1, 0, 774, 0);
             synchronized (this.coordinateLock) {
                 if (this.imageChanged) {
@@ -1629,9 +1634,9 @@ public class Map implements Runnable, IMap {
             matrixStack.push();
             matrixStack.translate(256.0, 256.0, 0.0);
             if (!this.options.rotates) {
-                matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion((float) (-this.northRotate)));
+                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) (-this.northRotate)));
             } else {
-                matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.direction));
+                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.direction));
             }
 
             matrixStack.translate(-256.0, -256.0, 0.0);
@@ -1763,10 +1768,10 @@ public class Map implements Runnable, IMap {
                 matrixStack.push();
                 GLShim.glColor4f(r, g, b, !pt.enabled && !target ? 0.3F : 1.0F);
                 matrixStack.translate(x, y, 0.0);
-                matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-locate));
+                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-locate));
                 if (uprightIcon) {
                     matrixStack.translate(0.0, -hypot, 0.0);
-                    matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(locate));
+                    matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(locate));
                     matrixStack.translate(-x, -y, 0.0);
                 } else {
                     matrixStack.translate(-x, -y, 0.0);
@@ -1807,9 +1812,9 @@ public class Map implements Runnable, IMap {
 
                 matrixStack.push();
                 GLShim.glColor4f(r, g, b, !pt.enabled && !target ? 0.3F : 1.0F);
-                matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-locate));
+                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-locate));
                 matrixStack.translate(0.0, -hypot, 0.0);
-                matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(-(-locate)));
+                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-(-locate)));
                 RenderSystem.applyModelViewMatrix();
                 GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
                 GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
@@ -1828,7 +1833,7 @@ public class Map implements Runnable, IMap {
 
     private void drawArrow(MatrixStack matrixStack, int x, int y) {
         try {
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             matrixStack.push();
             GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -1836,7 +1841,7 @@ public class Map implements Runnable, IMap {
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
             matrixStack.translate(x, y, 0.0);
-            matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + (float) this.northRotate));
+            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + (float) this.northRotate));
             matrixStack.translate(-x, -y, 0.0);
             RenderSystem.applyModelViewMatrix();
             GLUtils.drawPre();
@@ -1861,13 +1866,13 @@ public class Map implements Runnable, IMap {
             }
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(this.mapImages[this.zoom].getIndex());
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         matrixStack.push();
         matrixStack.translate((float) scWidth / 2.0F, (float) scHeight / 2.0F, -0.0);
-        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion((float) this.northRotate));
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) this.northRotate));
         matrixStack.translate(-((float) scWidth / 2.0F), -((float) scHeight / 2.0F), -0.0);
         RenderSystem.applyModelViewMatrix();
         GLShim.glDisable(GL11.GL_DEPTH_TEST);

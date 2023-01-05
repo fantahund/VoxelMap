@@ -45,7 +45,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         if (this.showSlotBG) {
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             float f = 32.0F;
@@ -67,7 +67,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         GLShim.glDisable(GL11.GL_DEPTH_TEST);
         byte topBottomFadeHeight = 4;
         if (this.showTopBottomBG) {
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(GL11.GL_ALWAYS);
@@ -86,7 +86,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             GLShim.glEnable(GL11.GL_BLEND);
             RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 0, 1);
             GLShim.glDisable(GL11.GL_TEXTURE_2D);
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(this.left, this.top + topBottomFadeHeight, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 0).next();
@@ -104,7 +104,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         if (maxScroll > 0) {
             GLShim.glDisable(GL11.GL_TEXTURE_2D);
             RenderSystem.disableTexture();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
             int k1 = (this.bottom - this.top) * (this.bottom - this.top) / this.getMaxPosition();
             k1 = MathHelper.clamp(k1, 32, this.bottom - this.top - 8);
             int l1 = (int) this.getScrollAmount() * (this.bottom - this.top - k1) / maxScroll + this.top;

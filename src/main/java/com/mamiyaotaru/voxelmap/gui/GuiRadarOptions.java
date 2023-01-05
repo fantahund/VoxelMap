@@ -64,10 +64,10 @@ public class GuiRadarOptions extends GuiScreenMinimap {
         }
 
         if (this.options.radarMode == 2) {
-            this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20, Text.translatable("options.minimap.radar.selectmobs"), buttonx -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, this.options))));
+            this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.radar.selectmobs"), buttonx -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, this.options))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20).build());
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
     }
 
     protected void optionClicked(ButtonWidget buttonClicked) {

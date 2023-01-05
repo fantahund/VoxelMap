@@ -34,7 +34,6 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
 
     public void init() {
         this.screenTitle = I18nUtils.getString("options.minimap.detailsperformance");
-        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(true);
         int leftBorder = this.getLeftBorder();
         int var2 = 0;
 
@@ -64,12 +63,11 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.worldSeedButton.active = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
         this.addDrawableChild(this.worldSeedButton);
         ++var2;
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
     }
 
     @Override
     public void removed() {
-        VoxelConstants.getMinecraft().keyboard.setRepeatEvents(false);
     }
 
     protected void optionClicked(ButtonWidget par1GuiButton) {

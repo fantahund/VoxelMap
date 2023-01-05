@@ -2,9 +2,10 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 
@@ -30,10 +31,10 @@ public class DimensionManager {
 
     public void populateDimensions(World world) {
         this.dimensions.clear();
-        Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getNetworkHandler().getRegistryManager().get(Registry.DIMENSION_TYPE_KEY);
+        Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getNetworkHandler().getRegistryManager().get(RegistryKeys.DIMENSION_TYPE);
 
         for (RegistryKey<World> vanillaWorldKey : this.vanillaWorlds) {
-            RegistryKey<DimensionType> typeKey = RegistryKey.of(Registry.DIMENSION_TYPE_KEY, vanillaWorldKey.getValue());
+            RegistryKey<DimensionType> typeKey = RegistryKey.of(RegistryKeys.DIMENSION_TYPE, vanillaWorldKey.getValue());
             DimensionType dimensionType = dimensionTypeRegistry.get(typeKey);
             DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.getValue().getPath(), vanillaWorldKey.getValue());
             this.dimensions.add(dimensionContainer);

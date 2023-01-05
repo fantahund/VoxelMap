@@ -11,7 +11,7 @@ public class GuiButtonText extends ButtonWidget {
     private final TextFieldWidget textField;
 
     public GuiButtonText(TextRenderer fontRenderer, int x, int y, int widthIn, int heightIn, Text buttonText, ButtonWidget.PressAction action) {
-        super(x, y, widthIn, heightIn, buttonText, action);
+        super(x, y, widthIn, heightIn, buttonText, action, DEFAULT_NARRATION_SUPPLIER);
         this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, widthIn - 2, heightIn - 2, null);
     }
 

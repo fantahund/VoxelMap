@@ -40,13 +40,13 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             ++var2;
         }
 
-        ButtonWidget radarOptionsButton = new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20, Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this, this.master)));
+        ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this, this.master))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20).build();
         radarOptionsButton.active = this.master.getRadarOptions().radarAllowed || this.master.getRadarOptions().radarMobsAllowed || this.master.getRadarOptions().radarPlayersAllowed;
         this.addDrawableChild(radarOptionsButton);
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 120 - 6, 150, 20, Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this, this.master))));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20, Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this, this.master))));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 + 5, this.getHeight() / 6 + 144 - 6, 150, 20, Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this, this.master))));
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)));
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this, this.master))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 120 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this, this.master))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this, this.master))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 144 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
     }
 
     protected void optionClicked(ButtonWidget par1GuiButton) {

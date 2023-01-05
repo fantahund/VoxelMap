@@ -181,7 +181,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
 
     public int drawString(String text, float x, float y, int color, boolean shadow) {
         this.resetStyles();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         this.vertexBuffer.reset();
         this.vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         int var6;
@@ -192,7 +192,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             var6 = this.renderString(text, x, y, color, false);
         }
 
-        BufferRenderer.drawWithShader(this.vertexBuffer.end());
+        BufferRenderer.drawWithGlobalProgram(this.vertexBuffer.end());
         return var6;
     }
 

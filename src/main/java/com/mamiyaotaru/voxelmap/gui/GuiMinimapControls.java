@@ -33,10 +33,10 @@ public class GuiMinimapControls extends GuiScreenMinimap {
 
         for (int t = 0; t < this.options.keyBindings.length; ++t) {
             int id = t;
-            this.addDrawableChild(new ButtonWidget(left + t % 2 * 160, this.getHeight() / 6 + 24 * (t >> 1), 70, 20, this.options.getKeybindDisplayString(t), button -> this.controlButtonClicked(id)));
+            this.addDrawableChild(new ButtonWidget.Builder(this.options.getKeybindDisplayString(t), button -> this.controlButtonClicked(id)).dimensions(left + t % 2 * 160, this.getHeight() / 6 + 24 * (t >> 1), 70, 20).build());
         }
 
-        this.addDrawableChild(new ButtonWidget(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20, Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)));
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
         this.screenTitle = I18nUtils.getString("controls.minimap.title");
     }
 

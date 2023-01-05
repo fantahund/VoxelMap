@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.MathUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -37,6 +38,8 @@ import net.minecraft.client.texture.TextureManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -46,16 +49,15 @@ import net.minecraft.util.InvalidIdentifierException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
+import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.BuiltinRegistries;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
@@ -102,7 +104,7 @@ public class ColorManager {
     private final Random random = Random.create();
     private boolean loaded = false;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ());
-    private final Vec3f fullbright = new Vec3f(1.0F, 1.0F, 1.0F);
+    private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getSpruceColor();
     private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getBirchColor();
     private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt(blockPos.getX(), blockPos.getZ());
@@ -125,12 +127,13 @@ public class ColorManager {
 
         }
 
-        for (Biome biome : BuiltinRegistries.BIOME) {
+        // TODO 1.19.3
+        /*for (Biome biome : BuiltinRegistries.BIOME) {
             int biomeID = BuiltinRegistries.BIOME.getRawId(biome);
             if (biomeID > this.sizeOfBiomeArray) {
                 this.sizeOfBiomeArray = biomeID;
             }
-        }
+        }*/
 
         ++this.sizeOfBiomeArray;
     }
@@ -153,8 +156,8 @@ public class ColorManager {
             this.world = VoxelConstants.getMinecraft().world;
             int largestBiomeID = 0;
 
-            for (Biome biome : this.world.getRegistryManager().get(Registry.BIOME_KEY)) {
-                int biomeID = this.world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(biome);
+            for (Biome biome : this.world.getRegistryManager().get(RegistryKeys.BIOME)) {
+                int biomeID = this.world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(biome);
                 if (biomeID > largestBiomeID) {
                     largestBiomeID = biomeID;
                 }
@@ -233,21 +236,21 @@ public class ColorManager {
         float size = 8.0F * scale;
         ModelTransformation transforms = model.getTransformation();
         Transformation headTransforms = transforms.head;
-        Vec3f translations = headTransforms.translation;
-        float transX = -translations.getX() * size + 0.5F * size;
-        float transY = translations.getY() * size + 0.5F * size;
-        float transZ = -translations.getZ() * size + 0.5F * size;
-        Vec3f rotations = headTransforms.rotation;
-        float rotX = rotations.getX();
-        float rotY = rotations.getY();
-        float rotZ = rotations.getZ();
+        Vector3f translations = headTransforms.translation;
+        float transX = -translations.x() * size + 0.5F * size;
+        float transY = translations.y() * size + 0.5F * size;
+        float transZ = -translations.z() * size + 0.5F * size;
+        Vector3f rotations = headTransforms.rotation;
+        float rotX = rotations.x();
+        float rotY = rotations.y();
+        float rotZ = rotations.z();
         GLShim.glBindTexture(GL11.GL_TEXTURE_2D, GLUtils.fboTextureID);
         int width = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TRANSFORM_BIT);
         int height = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
         GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        Matrix4f matrix4f = Matrix4f.projectionMatrix(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, (float) width, 0.0F, (float) height, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
@@ -271,18 +274,18 @@ public class ColorManager {
         matrixStack.scale(size, size, size);
         VoxelConstants.getMinecraft().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
         GLUtils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rotY));
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(rotX));
-        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(rotZ));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotY));
+        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(rotX));
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotZ));
         if (facing == Direction.UP) {
-            matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90.0F));
+            matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
         }
 
         RenderSystem.applyModelViewMatrix();
-        Vector4f fullbright2 = new Vector4f(this.fullbright);
-        fullbright2.transform(matrixStack.peek().getPositionMatrix());
-        Vec3f fullbright3 = new Vec3f(fullbright2);
+        Vector4f fullbright2 = new Vector4f(this.fullbright.x, fullbright.y, fullbright.z, 0);
+        fullbright2 = MathUtils.transform(fullbright2, matrixStack.peek().getPositionMatrix());
+        Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
         MatrixStack newMatrixStack = new MatrixStack();
         VertexConsumerProvider.Immediate immediate = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
@@ -557,7 +560,7 @@ public class ColorManager {
     private void checkForBiomeTinting(MutableBlockPos blockPos, BlockState blockState, int color) {
         try {
             Block block = blockState.getBlock();
-            String blockName = Registry.BLOCK.getId(block) + "";
+            String blockName = Registries.BLOCK.getId(block) + "";
             if (BlockRepository.biomeBlocks.contains(block) || !blockName.startsWith("minecraft:")) {
                 int tint;
                 MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
@@ -605,7 +608,7 @@ public class ColorManager {
                         for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
                             int biomeID;
                             if (live) {
-                                biomeID = world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value());
+                                biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value());
                             } else {
                                 int dataX = t - startX;
                                 int dataZ = s - startZ;
@@ -691,7 +694,7 @@ public class ColorManager {
                     dataZ = Math.max(dataZ, 0);
                     dataZ = Math.min(dataZ, 255);
                     int biomeID = mapData.getBiomeID(dataX, dataZ);
-                    Biome biome = world.getRegistryManager().get(Registry.BIOME_KEY).get(biomeID);
+                    Biome biome = world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
                     if (biome == null) {
                         MessageUtils.printDebug("Null biome ID! " + biomeID + " at " + t + "," + s);
                         MessageUtils.printDebug("block: " + mapData.getBlockstate(dataX, dataZ) + ", height: " + mapData.getHeight(dataX, dataZ));
@@ -855,10 +858,10 @@ public class ColorManager {
 
                     Identifier matchID = new Identifier(matchTiles);
                     Sprite compareIcon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(matchID);
-                    if (compareIcon.getId() != MissingSprite.getMissingSpriteId()) {
+                    if (compareIcon.getAtlasId() != MissingSprite.getMissingSpriteId()) {
                         ArrayList<BlockState> tmpList = new ArrayList<>();
 
-                        for (Block testBlock : Registry.BLOCK) {
+                        for (Block testBlock : Registries.BLOCK) {
 
                             for (BlockState blockState : testBlock.getStateManager().getStates()) {
                                 try {
@@ -941,7 +944,7 @@ public class ColorManager {
                             }
                         }
                     } catch (IOException var40) {
-                        VoxelConstants.getLogger().error("error getting CTM block from " + propertiesFile.getPath() + ": " + filePath + " " + Registry.BLOCK.getId(blockStates.iterator().next().getBlock()) + " " + tilePath, var40);
+                        VoxelConstants.getLogger().error("error getting CTM block from " + propertiesFile.getPath() + ": " + filePath + " " + Registries.BLOCK.getId(blockStates.iterator().next().getBlock()) + " " + tilePath, var40);
                     }
                 }
 
@@ -1084,8 +1087,8 @@ public class ColorManager {
     }
 
     private int parseBiomeName(String name) {
-        Biome biome = this.world.getRegistryManager().get(Registry.BIOME_KEY).get(new Identifier(name));
-        return biome != null ? this.world.getRegistryManager().get(Registry.BIOME_KEY).getRawId(biome) : -1;
+        Biome biome = this.world.getRegistryManager().get(RegistryKeys.BIOME).get(new Identifier(name));
+        return biome != null ? this.world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(biome) : -1;
     }
 
     private List<Identifier> findResources(String namespace, String directory, String suffixMaybeNull, boolean recursive, boolean directories, boolean sortByFilename) {
@@ -1126,7 +1129,8 @@ public class ColorManager {
                 properties.load(input);
                 input.close();
             }
-        } catch (IOException ignored) {
+        } catch (IOException exception) {
+            VoxelConstants.getLogger().error(exception);
         }
 
         BlockState blockState = BlockRepository.lilypad.getDefaultState();
@@ -1268,7 +1272,7 @@ public class ColorManager {
         int numBiomesToCheck = grid ? Math.min(tintColorsBuff.getWidth(), this.sizeOfBiomeArray) : this.sizeOfBiomeArray;
 
         for (int t = 0; t < numBiomesToCheck; ++t) {
-            Biome biome = this.world.getRegistryManager().get(Registry.BIOME_KEY).get(t);
+            Biome biome = this.world.getRegistryManager().get(RegistryKeys.BIOME).get(t);
             if (biome != null) {
                 int tintMult;
                 int heightMultiplier = tintColorsBuff.getHeight() / 32;
@@ -1336,7 +1340,7 @@ public class ColorManager {
     private Block getBlockFromName(String name) {
         try {
             Identifier resourceLocation = new Identifier(name);
-            return Registry.BLOCK.containsId(resourceLocation) ? Registry.BLOCK.get(resourceLocation) : null;
+            return Registries.BLOCK.containsId(resourceLocation) ? Registries.BLOCK.get(resourceLocation) : null;
         } catch (InvalidIdentifierException | NumberFormatException var3) {
             return null;
         }
