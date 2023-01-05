@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
-import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
@@ -28,7 +27,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 import org.lwjgl.opengl.GL11;
 
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.UUID;
