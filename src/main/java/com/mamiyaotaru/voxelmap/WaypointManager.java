@@ -751,7 +751,7 @@ public class WaypointManager {
             this.backgroundImageInfo = null;
         }
 
-        /*try {
+        try {
             String path = this.getCurrentWorldName();
             String subworldDescriptor = this.getCurrentSubworldDescriptor(false);
             if (subworldDescriptor != null && !subworldDescriptor.equals("")) {
@@ -789,10 +789,7 @@ public class WaypointManager {
             }
 
             isr.close();
-        } catch (Exception exception) {
-            VoxelConstants.getLogger().error("Exception loading Background Map Image", exception);
-        }*/
-
+        } catch (Exception ignore) {}
     }
 
     public BackgroundImageInfo getBackgroundImageInfo() {
