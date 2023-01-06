@@ -24,6 +24,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
     }
 
     public void init() {
+        clearChildren();
         this.getButtonList().clear();
         this.children().clear();
         int var2 = 0;
