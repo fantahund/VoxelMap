@@ -29,6 +29,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.dimension.DimensionType;
+import org.apache.logging.log4j.Level;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -810,7 +811,8 @@ public class CachedRegion {
                 int chunkX = this.chunk.getPos().x - CachedRegion.this.x * 16;
                 int chunkZ = this.chunk.getPos().z - CachedRegion.this.z * 16;
                 CachedRegion.this.loadChunkData(this.chunk, chunkX, chunkZ);
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                VoxelConstants.getLogger().log(Level.ERROR, "Error in FillChunkRunnable", ex);
             } finally {
                 CachedRegion.this.threadLock.unlock();
                 CachedRegion.this.chunkUpdateQueued[this.index] = false;
