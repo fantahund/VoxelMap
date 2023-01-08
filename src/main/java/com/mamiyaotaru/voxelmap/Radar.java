@@ -1505,16 +1505,7 @@ public class Radar implements IRadar {
     private Sprite createUnknownArmorIcons(Contact contact, ItemStack stack, Item helmet) {
         Sprite icon = null;
         boolean isPiglin = contact.type == EnumMobs.PIGLIN || contact.type == EnumMobs.PIGLINZOMBIE;
-        Method m = null;
 
-        // TODO Remove this. net.minecraftforge only applies to Forge. We're a Fabric mod xD // Algo
-        try {
-            Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
-            m = c.getMethod("getArmorTexture", Entity.class, ItemStack.class, String.class, EquipmentSlot.class, String.class);
-        } catch (Exception ignored) {
-        }
-
-        Method getResourceLocation = m;
         Identifier resourceLocation = null;
 
         try {
@@ -1529,46 +1520,24 @@ public class Radar implements IRadar {
             String suffix;
             suffix = "";
             String resourcePath = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, materialName, 1, suffix);
-            if (getResourceLocation != null) {
-                resourcePath = (String) getResourceLocation.invoke(null, contact.entity, stack, resourcePath, EquipmentSlot.HEAD, null);
-            }
 
             resourceLocation = new Identifier(resourcePath);
-        } catch (Exception ignored) {
-        }
+        } catch (RuntimeException ignored) {}
 
-        m = null;
-
-        // TODO Idem // Algo
-        try {
-            Class<?> c = Class.forName("net.minecraftforge.client.ForgeHooksClient");
-            m = c.getMethod("getArmorModel", LivingEntity.class, ItemStack.class, EquipmentSlot.class, BipedEntityModel.class);
-        } catch (Exception ignored) {
-        }
-
-        Method getModel = m;
-        BipedEntityModel<LivingEntity> modelBiped = null;
-
-        try {
-            if (getModel != null) {
-                modelBiped = (BipedEntityModel<LivingEntity>) getModel.invoke(null, contact.entity, stack, EquipmentSlot.HEAD, null);
-            }
-        } catch (Exception ignored) {
-        }
+        BipedEntityModel<LivingEntity> modelBiped;
 
         float intendedWidth = 9.0F;
         float intendedHeight = 9.0F;
-        if (modelBiped == null) {
-            if (!isPiglin) {
-                modelBiped = this.bipedArmorModel;
-            } else {
-                modelBiped = this.piglinArmorModel;
-                intendedWidth = 11.5F;
-            }
+
+        if (isPiglin) {
+            modelBiped = this.piglinArmorModel;
+            intendedWidth = 11.5F;
+        } else {
+            modelBiped = this.bipedArmorModel;
         }
 
         if (modelBiped != null && resourceLocation != null) {
-            ModelPartWithResourceLocation[] headBitsWithResourceLocation = new ModelPartWithResourceLocation[]{new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation)};
+            ModelPartWithResourceLocation[] headBitsWithResourceLocation = { new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation) };
             this.drawModel(1.0F, 2, (LivingEntity) contact.entity, Direction.NORTH, modelBiped, headBitsWithResourceLocation);
             BufferedImage armorImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
             armorImage = armorImage.getSubimage(200, 200, 112, 112);
