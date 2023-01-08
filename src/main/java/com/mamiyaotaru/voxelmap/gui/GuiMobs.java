@@ -148,9 +148,4 @@ public class GuiMobs extends GuiScreenMinimap {
     static void setTooltip(GuiMobs par0GuiWaypoints, Text par1Str) {
         par0GuiWaypoints.tooltip = par1Str;
     }
-
-    @Override
-    public void removed() {
-        super.removed();
-    }
 }

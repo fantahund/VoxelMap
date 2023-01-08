@@ -13,7 +13,6 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.TickCounter;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -36,21 +35,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class VoxelMap implements ResourceReloader {
-    public static MapSettingsManager mapOptions = null;
-    public static RadarSettingsManager radarOptions = null;
-    private PersistentMapSettingsManager persistentMapOptions = null;
-    private Map map = null;
-    private IRadar radar = null;
-    private IRadar radarSimple = null;
-    private PersistentMap persistentMap = null;
-    private SettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier = null;
+    public static MapSettingsManager mapOptions;
+    public static RadarSettingsManager radarOptions;
+    private PersistentMapSettingsManager persistentMapOptions;
+    private Map map;
+    private IRadar radar;
+    private IRadar radarSimple;
+    private PersistentMap persistentMap;
+    private SettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier;
     private WorldUpdateListener worldUpdateListener = null;
-    private ColorManager colorManager = null;
-    private WaypointManager waypointManager = null;
-    private DimensionManager dimensionManager = null;
+    private ColorManager colorManager;
+    private WaypointManager waypointManager;
+    private DimensionManager dimensionManager;
     private ClientWorld world;
     private String worldName = "";
-    private static String passMessage = null;
+    private static String passMessage;
 
     VoxelMap() {}
 
@@ -81,7 +80,7 @@ public class VoxelMap implements ResourceReloader {
                 this.radar = new Radar(this);
                 this.radarSimple = new RadarSimple(this);
             }
-        } catch (Exception var4) {
+        } catch (RuntimeException var4) {
             VoxelConstants.getLogger().error("Failed creating radar " + var4.getLocalizedMessage(), var4);
             radarOptions.radarAllowed = false;
             radarOptions.radarMobsAllowed = false;
@@ -106,8 +105,8 @@ public class VoxelMap implements ResourceReloader {
     }
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager resourceManager, Profiler loadProfiler, Profiler applyProfiler, Executor loadExecutor, Executor applyExecutor) {
-        return synchronizer.whenPrepared((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(resourceManager), applyExecutor);
+    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
+        return synchronizer.whenPrepared((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(manager), applyExecutor);
     }
 
     private void apply(ResourceManager resourceManager) {
@@ -125,9 +124,9 @@ public class VoxelMap implements ResourceReloader {
 
     public void onTickInGame(MatrixStack matrixStack) {
         this.map.onTickInGame(matrixStack);
-        if (VoxelMap.passMessage != null) {
-            VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(Text.literal(VoxelMap.passMessage));
-            VoxelMap.passMessage = null;
+        if (passMessage != null) {
+            VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(Text.literal(passMessage));
+            passMessage = null;
         }
 
     }
@@ -151,9 +150,9 @@ public class VoxelMap implements ResourceReloader {
                 wIdRequestBuf.writeByte(0);
                 VoxelConstants.getPlayer().networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
                 VoxelConstants.getPlayer().getSkinTexture();
-                java.util.Map<Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
-                if (skinMap.containsKey(Type.SKIN)) {
-                    VoxelConstants.getMinecraft().getSkinProvider().loadSkin(skinMap.get(Type.SKIN), Type.SKIN);
+                java.util.Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
+                if (skinMap.containsKey(MinecraftProfileTexture.Type.SKIN)) {
+                    VoxelConstants.getMinecraft().getSkinProvider().loadSkin(skinMap.get(MinecraftProfileTexture.Type.SKIN), MinecraftProfileTexture.Type.SKIN);
                 }
 
                 if (!this.worldName.equals(this.waypointManager.getCurrentWorldName())) {

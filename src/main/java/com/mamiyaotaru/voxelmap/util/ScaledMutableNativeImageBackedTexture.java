@@ -16,11 +16,6 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
     }
 
     @Override
-    public void write() {
-        this.upload();
-    }
-
-    @Override
     public int getWidth() {
         return this.image.getHeight();
     }
@@ -28,11 +23,6 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
     @Override
     public int getHeight() {
         return this.image.getHeight();
-    }
-
-    @Override
-    public int getIndex() {
-        return this.getGlId();
     }
 
     @Override

@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
-public class PersistentMap implements IPersistentMap, IChangeObserver {
+public class PersistentMap implements IPersistentMap {
     final VoxelMap master;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final ColorManager colorManager;

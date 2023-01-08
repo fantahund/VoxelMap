@@ -4,10 +4,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.dimension.DimensionType;
 
 import java.text.Collator;
+import java.util.Objects;
 
 public class DimensionContainer implements Comparable<DimensionContainer> {
     public DimensionType type;
-    public String name;
+    public final String name;
     public final Identifier resourceLocation;
     private static final Collator collator = I18nUtils.getLocaleAwareCollator();
 
@@ -18,25 +19,17 @@ public class DimensionContainer implements Comparable<DimensionContainer> {
     }
 
     public String getStorageName() {
-        String storageName;
-        if (this.resourceLocation != null) {
-            if (this.resourceLocation.getNamespace().equals("minecraft")) {
-                storageName = this.resourceLocation.getPath();
-            } else {
-                storageName = this.resourceLocation.toString();
-            }
-        } else {
-            storageName = "UNKNOWN";
-        }
-
-        return storageName;
+        if (resourceLocation == null) return "UNKNOWN";
+        return resourceLocation.getNamespace().equals("minecraft") ? resourceLocation.getPath() : resourceLocation.toString();
     }
 
-    public String getDisplayName() {
-        return TextUtils.prettify(this.name);
-    }
+    public String getDisplayName() { return TextUtils.prettify(this.name); }
 
-    public int compareTo(DimensionContainer other) {
-        return collator.compare(this.name, other.name);
-    }
+    public int compareTo(DimensionContainer o) { return collator.compare(this.name, o.name); }
+
+    @Override
+    public boolean equals(Object obj) { return obj instanceof DimensionContainer container && compareTo(container) == 0; }
+
+    @Override
+    public int hashCode() { return Objects.hash(name, resourceLocation); }
 }

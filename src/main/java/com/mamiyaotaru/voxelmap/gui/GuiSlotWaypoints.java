@@ -61,11 +61,6 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
         this.parentGui.setSelectedWaypoint(item.waypoint);
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
-    }
-
     protected boolean isSelectedEntry(int par1) {
         return ((WaypointItem) this.waypointsFiltered.get(par1)).waypoint.equals(this.parentGui.selectedWaypoint);
     }

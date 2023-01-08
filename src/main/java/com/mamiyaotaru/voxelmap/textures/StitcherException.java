@@ -4,9 +4,7 @@ import java.io.Serial;
 
 public class StitcherException extends RuntimeException {
     @Serial
-    private static final long serialVersionUID = -7466680150055757059L;
+    private static final long serialVersionUID = 2593319073559447986L;
 
-    public StitcherException(Stitcher.Holder holder, String message) {
-        super(message);
-    }
+    public StitcherException(String message) { super (message); }
 }

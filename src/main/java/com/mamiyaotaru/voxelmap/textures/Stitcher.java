@@ -86,7 +86,7 @@ public class Stitcher {
         for (Holder holder : stitchHoldersArray) {
             if (!this.allocateSlot(holder)) {
                 String errorString = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", holder.getAtlasSprite().getIconName(), holder.getAtlasSprite().getIconWidth(), holder.getAtlasSprite().getIconHeight());
-                throw new StitcherException(holder, errorString);
+                throw new StitcherException(errorString);
             }
         }
 
@@ -102,7 +102,7 @@ public class Stitcher {
         for (Holder holder : stitchHoldersArray) {
             if (!this.allocateSlot(holder)) {
                 String errorString = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", holder.getAtlasSprite().getIconName(), holder.getAtlasSprite().getIconWidth(), holder.getAtlasSprite().getIconHeight());
-                throw new StitcherException(holder, errorString);
+                throw new StitcherException(errorString);
             }
         }
 

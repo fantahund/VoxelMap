@@ -17,10 +17,6 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public void notifyOfThreadComplete(AbstractNotifyingRunnable runnable) {
-    }
-
-    @Override
     public long getMostRecentView() {
         return 0L;
     }
