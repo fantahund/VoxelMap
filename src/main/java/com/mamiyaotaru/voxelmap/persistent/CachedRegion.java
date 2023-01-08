@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -32,8 +31,7 @@ import net.minecraft.world.dimension.DimensionType;
 import org.apache.logging.log4j.Level;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
+import java.awt.image.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -111,7 +109,7 @@ public class CachedRegion {
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
 
-        String dimensionName = VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
+        String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
         boolean knownUnderground;
         knownUnderground = dimensionName.toLowerCase().contains("erebus");

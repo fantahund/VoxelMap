@@ -261,7 +261,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         }
 
         TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-        dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+        dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
         double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
         this.newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
         VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, this.newWaypoint, false));

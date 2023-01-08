@@ -262,7 +262,7 @@ public class WaypointManager {
 
         if (this.options.deathpoints != 0) {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             this.addWaypoint(new Waypoint("Latest Death", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord() - 1, true, 1.0F, 1.0F, 1.0F, "Skull", this.getCurrentSubworldDescriptor(false), dimensions));
         }
@@ -513,7 +513,7 @@ public class WaypointManager {
                     }
 
                     if (dimensionsString.toString().equals("")) {
-                        dimensionsString.append(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName());
+                        dimensionsString.append(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()).getStorageName());
                     }
 
                     out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + pt.enabled + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
@@ -655,10 +655,10 @@ public class WaypointManager {
                                             case "dimensions" -> {
                                                 String[] dimensionStrings = value.split("#");
                                                 for (String dimensionString : dimensionStrings) {
-                                                    dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                                    dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
                                                 }
                                                 if (dimensions.size() == 0) {
-                                                    dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
+                                                    dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
                                                 }
                                             }
                                         }

@@ -11,8 +11,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class VoxelConstants {
+public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
+    private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
 
     private VoxelConstants() {}
 
@@ -45,4 +46,7 @@ public class VoxelConstants {
 
         return player;
     }
+
+    @NotNull
+    public static VoxelMap getVoxelMapInstance() { return VOXELMAP_INSTANCE; }
 }

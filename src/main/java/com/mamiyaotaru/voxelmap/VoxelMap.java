@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.IMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
@@ -37,11 +36,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class VoxelMap implements ResourceReloader {
-    public static VoxelMap instance = null;
     public static MapSettingsManager mapOptions = null;
     public static RadarSettingsManager radarOptions = null;
     private PersistentMapSettingsManager persistentMapOptions = null;
-    private IMap map = null;
+    private Map map = null;
     private IRadar radar = null;
     private IRadar radarSimple = null;
     private PersistentMap persistentMap = null;
@@ -54,9 +52,7 @@ public class VoxelMap implements ResourceReloader {
     private String worldName = "";
     private static String passMessage = null;
 
-    public VoxelMap() {
-        instance = this;
-    }
+    VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
         GLUtils.textureManager = VoxelConstants.getMinecraft().getTextureManager();
@@ -214,7 +210,7 @@ public class VoxelMap implements ResourceReloader {
         return this.persistentMapOptions;
     }
 
-    public IMap getMap() {
+    public Map getMap() {
         return this.map;
     }
 
@@ -273,12 +269,10 @@ public class VoxelMap implements ResourceReloader {
     public void setWorldSeed(String newSeed) { if (VoxelConstants.getIntegratedServer().isEmpty()) waypointManager.setWorldSeed(newSeed); }
 
     public void sendPlayerMessageOnMainThread(String s) {
-        VoxelMap.passMessage = s;
+        passMessage = s;
     }
 
     public WorldUpdateListener getWorldUpdateListener() {
         return this.worldUpdateListener;
     }
-
-    public static VoxelMap getInstance() { return instance; }
 }

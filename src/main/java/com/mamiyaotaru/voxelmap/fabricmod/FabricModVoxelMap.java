@@ -2,13 +2,9 @@ package com.mamiyaotaru.voxelmap.fabricmod;
 
 import com.google.gson.Gson;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Map.Entry;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
@@ -16,19 +12,21 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.text.Text;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class FabricModVoxelMap implements ClientModInitializer {
     public static FabricModVoxelMap instance;
     private boolean initialized = false;
-    private VoxelMap master = null;
 
     public void onInitializeClient() {
         instance = this;
-        this.master = new VoxelMap();
     }
 
     public void lateInit() {
         this.initialized = true;
-        this.master.lateInit(true, false);
+        VoxelConstants.getVoxelMapInstance().lateInit(true, false);
         Runtime.getRuntime().addShutdownHook(new Thread(FabricModVoxelMap.this::onShutDown));
     }
 
@@ -42,7 +40,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         if (this.initialized) {
-            this.master.onTick();
+            VoxelConstants.getVoxelMapInstance().onTick();
         }
 
     }
@@ -53,7 +51,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         try {
-            this.master.onTickInGame(matrixStack);
+            VoxelConstants.getVoxelMapInstance().onTickInGame(matrixStack);
         } catch (Exception exception) {
             VoxelConstants.getLogger().error(exception);
         }
@@ -77,7 +75,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
     public static void onRenderHand(float partialTicks, long timeSlice, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
-            instance.master.getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
+            VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
         } catch (Exception exception) {
             VoxelConstants.getLogger().error(exception);
         }
@@ -85,9 +83,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
     }
 
     public void onShutDown() {
-        System.out.print("Saving all world maps");
-        instance.master.getPersistentMap().purgeCachedRegions();
-        instance.master.getMapOptions().saveAll();
+        VoxelConstants.getLogger().info("Saving all world maps");
+        VoxelConstants.getVoxelMapInstance().getPersistentMap().purgeCachedRegions();
+        VoxelConstants.getVoxelMapInstance().getMapOptions().saveAll();
         BiomeRepository.saveBiomeColors();
         long shutdownTime = System.currentTimeMillis();
 
@@ -125,7 +123,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
                 byte[] bytes = new byte[length];
                 buffer.readBytes(bytes);
                 String subWorldName = new String(bytes, StandardCharsets.UTF_8);
-                this.master.newSubWorldName(subWorldName, true);
+                VoxelConstants.getVoxelMapInstance().newSubWorldName(subWorldName, true);
                 return true;
             } else if (channelName.equals("voxelmap:settings")) {
                 buffer.readByte(); // ignore
@@ -136,17 +134,17 @@ public class FabricModVoxelMap implements ClientModInitializer {
                     switch (setting) {
                         case "worldName" -> {
                             if (value != null) {
-                                this.master.newSubWorldName((String) value, true);
+                                VoxelConstants.getVoxelMapInstance().newSubWorldName((String) value, true);
                             }
                         }
                         case "radarAllowed" ->
-                                this.master.getRadarOptions().radarAllowed = (Boolean) value;
+                                VoxelConstants.getVoxelMapInstance().getRadarOptions().radarAllowed = (Boolean) value;
                         case "radarMobsAllowed" ->
-                                this.master.getRadarOptions().radarMobsAllowed = (Boolean) value;
+                                VoxelConstants.getVoxelMapInstance().getRadarOptions().radarMobsAllowed = (Boolean) value;
                         case "radarPlayersAllowed" ->
-                                this.master.getRadarOptions().radarPlayersAllowed = (Boolean) value;
+                                VoxelConstants.getVoxelMapInstance().getRadarOptions().radarPlayersAllowed = (Boolean) value;
                         case "cavesAllowed" ->
-                                this.master.getMapOptions().cavesAllowed = (Boolean) value;
+                                VoxelConstants.getVoxelMapInstance().getMapOptions().cavesAllowed = (Boolean) value;
                         default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
                     }
                 }

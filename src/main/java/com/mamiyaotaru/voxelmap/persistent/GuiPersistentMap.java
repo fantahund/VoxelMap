@@ -1130,7 +1130,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     b = this.generator.nextFloat();
                 }
                 TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-                dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
                 this.newWaypoint = new Waypoint("", (int) ((double) x * dimensionScale), (int) ((double) z * dimensionScale), y, true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
                 VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, this.newWaypoint, false));
             }
@@ -1140,7 +1140,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 } else {
                     y = y > VoxelConstants.getPlayer().world.getBottomY() ? y : 64;
                     TreeSet<DimensionContainer> dimensions2 = new TreeSet<>();
-                    dimensions2.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+                    dimensions2.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
                     Waypoint fakePoint = new Waypoint("", (int) ((double) x * dimensionScale), (int) ((double) z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
                     this.waypointManager.setHighlightedWaypoint(fakePoint, true);
                 }

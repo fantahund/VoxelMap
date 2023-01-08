@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(WorldRenderer.class)
 public class ONMixinWorldRenderer {
-    @Redirect(method = {"renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lorg/joml/Quaternionf;)V"))
+    @Redirect(method = "renderSky(Lnet/minecraft/client/util/math/MatrixStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/render/Camera;ZLjava/lang/Runnable;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lorg/joml/Quaternionf;)V"))
     private void onRotate(MatrixStack matrixStack, Quaternionf quat) {
         if (Share.isOldNorth()) {
             if (quat.equals(RotationAxis.POSITIVE_X.rotationDegrees(90.0F))) return;

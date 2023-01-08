@@ -1,19 +1,13 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 
-public class MessageUtils {
-    private final static boolean debug = false;
+public final class MessageUtils {
+    private static final boolean debug = false;
 
-    public static void chatInfo(String s) {
-        VoxelMap.getInstance().sendPlayerMessageOnMainThread(s);
-    }
+    private MessageUtils() {}
 
-    public static void printDebug(String line) {
-        if (debug) {
-            VoxelConstants.getLogger().warn(line);
-        }
+    public static void chatInfo(String s) { VoxelConstants.getVoxelMapInstance().sendPlayerMessageOnMainThread(s); }
 
-    }
+    public static void printDebug(String line) { if (debug) VoxelConstants.getLogger().warn(line); }
 }

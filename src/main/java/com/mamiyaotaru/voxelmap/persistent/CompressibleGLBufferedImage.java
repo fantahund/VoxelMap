@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
-import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IGLBufferedImage;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import com.mamiyaotaru.voxelmap.util.GLShim;
@@ -30,7 +30,7 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         this.width = width;
         this.height = height;
         this.bytes = new byte[width * height * 4];
-        this.compressNotDelete = VoxelMap.getInstance().getPersistentMapOptions().outputImages;
+        this.compressNotDelete = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages;
     }
 
     public byte[] getData() {

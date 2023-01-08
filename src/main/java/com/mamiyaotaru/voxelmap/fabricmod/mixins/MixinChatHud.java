@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ChatHud.class)
-public abstract class MixinChatHud {
+public class MixinChatHud {
 
     @Inject(method = "addMessage(Lnet/minecraft/text/Text;)V", at = @At("HEAD"))
     private void addMessage(Text message, CallbackInfo ci) {

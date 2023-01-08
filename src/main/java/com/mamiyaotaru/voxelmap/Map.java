@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import com.mamiyaotaru.voxelmap.interfaces.IMap;
+import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -73,7 +73,7 @@ import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.awt.image.*;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -84,7 +84,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeSet;
 
-public class Map implements Runnable, IMap {
+public class Map implements Runnable, IChangeObserver {
     private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
     private final Identifier arrowResourceLocation = new Identifier("voxelmap", "images/mmarrow.png");
@@ -218,22 +218,20 @@ public class Map implements Runnable, IMap {
         this.setZoomScale();
     }
 
-    @Override
     public void forceFullRender(boolean forceFullRender) {
         this.doFullRender = forceFullRender;
         this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
     }
 
-    @Override
     public float getPercentX() {
         return this.percentX;
     }
 
-    @Override
     public float getPercentY() {
         return this.percentY;
     }
 
+    @Override
     public void run() {
         if (VoxelConstants.getMinecraft() != null) {
             while (true) {
@@ -277,7 +275,6 @@ public class Map implements Runnable, IMap {
 
     }
 
-    @Override
     public void newWorld(ClientWorld world) {
         this.world = world;
         this.lightmapTexture = this.getLightmapTexture();
@@ -286,7 +283,6 @@ public class Map implements Runnable, IMap {
         this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
     }
 
-    @Override
     public void newWorldName() {
         String subworldName = this.waypointManager.getCurrentSubworldDescriptor(true);
         StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18nUtils.getString("worldmap.multiworld.newworld")).append(":").append(" ");
@@ -299,7 +295,6 @@ public class Map implements Runnable, IMap {
         this.error = subworldNameBuilder.toString();
     }
 
-    @Override
     public void onTickInGame(MatrixStack matrixStack) {
         this.northRotate = this.options.oldNorth ? 90 : 0;
 
@@ -348,7 +343,7 @@ public class Map implements Runnable, IMap {
             }
 
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, this.master, newWaypoint, false));
@@ -624,12 +619,10 @@ public class Map implements Runnable, IMap {
         }
     }
 
-    @Override
     public int[] getLightmapArray() {
         return this.lightmapColors;
     }
 
-    @Override
     public void drawMinimap(MatrixStack matrixStack) {
         int scScaleOrig = 1;
 

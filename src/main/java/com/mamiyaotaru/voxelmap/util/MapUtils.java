@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 
 import java.util.Random;
 
@@ -13,8 +13,7 @@ public class MapUtils {
     private static boolean isSlimeChunk = false;
 
     public static void reset() {
-        VoxelMap master = VoxelMap.getInstance();
-        options = master.getMapOptions();
+        options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         slimeRandom = null;
         lastSlimeX = -120000;
         lastSlimeZ = 10000;
@@ -42,7 +41,7 @@ public class MapUtils {
     public static boolean isSlimeChunk(int mcX, int mcZ) {
         int xPosition = mcX >> 4;
         int zPosition = mcZ >> 4;
-        String seedString = VoxelMap.getInstance().getWorldSeed();
+        String seedString = VoxelConstants.getVoxelMapInstance().getWorldSeed();
         if (!seedString.equals("")) {
             long seed;
 

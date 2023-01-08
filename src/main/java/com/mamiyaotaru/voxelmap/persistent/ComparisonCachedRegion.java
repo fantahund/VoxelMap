@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -54,7 +53,7 @@ public class ComparisonCachedRegion {
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
 
-        String dimensionName = VoxelMap.getInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
+        String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
         boolean knownUnderground = false;
         this.underground = !world.getDimensionEffects().shouldBrightenLighting() && !world.getDimension().hasSkyLight() || world.getDimension().hasCeiling();

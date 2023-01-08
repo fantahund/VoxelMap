@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -221,7 +220,7 @@ public class WaypointContainer {
         float r = target ? 1.0F : pt.red;
         float g = target ? 0.0F : pt.green;
         float b = target ? 0.0F : pt.blue;
-        TextureAtlas textureAtlas = VoxelMap.getInstance().getWaypointManager().getTextureAtlas();
+        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         Sprite icon = target ? textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png") : textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
         if (icon == textureAtlas.getMissingImage()) {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
