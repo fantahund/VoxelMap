@@ -20,7 +20,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
     final Text APPLIES = Text.translatable("minimap.waypoints.dimension.applies");
     final Text NOT_APPLIES = Text.translatable("minimap.waypoints.dimension.notapplies");
 
-    public GuiSlotDimensions(GuiAddWaypoint par1GuiWaypoints) {
+    GuiSlotDimensions(GuiAddWaypoint par1GuiWaypoints) {
         super(101, par1GuiWaypoints.getHeight(), par1GuiWaypoints.getHeight() / 6 + 82 + 6, par1GuiWaypoints.getHeight() / 6 + 164 + 3, 18);
         this.parentGui = par1GuiWaypoints;
         this.setSlotWidth(88);

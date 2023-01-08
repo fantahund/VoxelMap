@@ -996,8 +996,7 @@ public class Radar implements IRadar {
                 if (headBits == null) {
                     if (model instanceof PlayerEntityModel) {
                         boolean showHat = true;
-                        Entity var39 = entity;
-                        if (var39 instanceof PlayerEntity player) {
+                        if (entity instanceof PlayerEntity player) {
                             showHat = player.isPartVisible(PlayerModelPart.HAT);
                         }
 

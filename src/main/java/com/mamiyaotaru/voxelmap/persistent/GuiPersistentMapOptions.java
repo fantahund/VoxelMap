@@ -24,39 +24,40 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     }
 
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.SHOWWAYPOINTS, EnumOptionsMinimap.SHOWWAYPOINTNAMES};
-        int var2 = 0;
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOWWAYPOINTS, EnumOptionsMinimap.SHOWWAYPOINTNAMES };
+
+        int counter = 0;
 
         for (EnumOptionsMinimap option : relevantOptions) {
-            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
-            ++var2;
+            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
+            counter++;
         }
 
-        EnumOptionsMinimap[] relevantOptions2 = new EnumOptionsMinimap[]{EnumOptionsMinimap.MINZOOM, EnumOptionsMinimap.MAXZOOM, EnumOptionsMinimap.CACHESIZE};
-        var2 += 2;
+        EnumOptionsMinimap[] relevantOptions2 = { EnumOptionsMinimap.MINZOOM, EnumOptionsMinimap.MAXZOOM, EnumOptionsMinimap.CACHESIZE };
+        counter += 2;
 
         for (EnumOptionsMinimap option : relevantOptions2) {
             if (option.isFloat()) {
                 float sValue = this.options.getOptionFloatValue(option);
 
-                this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, switch (option) {
-                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (float) (5 + 3);
+                this.addDrawableChild(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, switch (option) {
+                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (5 + 3);
                     case CACHESIZE -> sValue / 5000.0F;
                     default ->
                             throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 }, this.options));
             } else {
-                this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
+                this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
             }
 
-            ++var2;
+            counter++;
         }
 
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
 
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
-                if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWWAYPOINTNAMES)) {
+                if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
                     button.active = this.options.showWaypoints;
                 }
             }
@@ -71,7 +72,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
-                if (button.returnEnumOptions().equals(EnumOptionsMinimap.SHOWWAYPOINTNAMES)) {
+                if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
                     button.active = this.options.showWaypoints;
                 }
             }
@@ -79,7 +80,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     }
 
-    public void render(MatrixStack matrixStack, int par1, int par2, float par3) {
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
@@ -87,7 +88,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
                 float fValue;
 
                 fValue = switch (option) {
-                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (float) (5 + 3);
+                    case MINZOOM, MAXZOOM -> (sValue + 3.0F) / (5 + 3);
                     case CACHESIZE -> sValue / 5000.0F;
                     default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + option.getName() + ". (possibly not a float value applicable to persistent map)");
                 };
@@ -97,11 +98,11 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             }
         }
 
-        super.drawMap(matrixStack);
-        this.renderBackground(matrixStack);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
-        super.render(matrixStack, par1, par2, par3);
+        drawMap(matrices);
+        this.renderBackground(matrices);
+        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawCenteredText(matrices, this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
+        drawCenteredText(matrices, this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 }

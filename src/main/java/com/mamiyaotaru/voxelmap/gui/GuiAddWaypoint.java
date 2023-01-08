@@ -105,11 +105,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    public void removed() {
-        if (VoxelConstants.getMinecraft() == null) {
-            return;
-        }
-    }
+    public void removed() {}
 
     protected void cancelWaypoint() {
         this.waypoint.red = this.red;

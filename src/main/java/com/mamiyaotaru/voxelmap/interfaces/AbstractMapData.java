@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractMapData {
-    public static int DATABITS = 17;
-    public static int BYTESPERDATUM = 4;
-
     protected int width;
     protected int height;
     protected final Object dataLock = new Object();
@@ -173,17 +170,18 @@ public abstract class AbstractMapData {
         public int z = 0;
     }
 
-    private static class Point {
+    private static final class Point {
         public final int x;
         public final int z;
-        public boolean inSegment = false;
-        public boolean isCandidate = false;
+        public boolean inSegment;
+        public boolean isCandidate;
         public int layer = -1;
         public final int biomeID;
 
-        public Point(int x, int z, int biomeID) {
+        private Point(int x, int z, int biomeID) {
             this.x = x;
             this.z = z;
+
             if (biomeID == 255 || biomeID == -1) {
                 biomeID = -1;
                 this.inSegment = true;
@@ -418,7 +416,7 @@ public abstract class AbstractMapData {
                 }
             }
 
-            if (nextShell.size() == 0) {
+            if (nextShell.isEmpty()) {
                 this.calculateCenterOfMass(pointsToCheck);
                 this.calculateClosestPointToCenter(pointsToCheck);
             }

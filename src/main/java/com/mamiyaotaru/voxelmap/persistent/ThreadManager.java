@@ -28,16 +28,12 @@ public class ThreadManager {
         executorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Calculation Thread"));
     }
 
-    private static class NamedThreadFactory implements ThreadFactory {
+    private static final class NamedThreadFactory implements ThreadFactory {
         private final String name;
         private final AtomicInteger threadCount = new AtomicInteger(1);
 
-        public NamedThreadFactory(String name) {
-            this.name = name;
-        }
+        private NamedThreadFactory(String name) { this.name = name; }
 
-        public Thread newThread(@NotNull Runnable runnable) {
-            return new Thread(runnable, this.name + " " + this.threadCount.getAndIncrement());
-        }
+        public Thread newThread(@NotNull Runnable r) { return new Thread(r, this.name + " " + this.threadCount.getAndIncrement()); }
     }
 }

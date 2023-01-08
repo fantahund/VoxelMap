@@ -32,7 +32,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
-    public GuiSlotMobs(GuiMobs par1GuiMobs) {
+    GuiSlotMobs(GuiMobs par1GuiMobs) {
         super (par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
 
         this.parentGui = par1GuiMobs;

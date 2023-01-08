@@ -46,7 +46,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
             GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(text), this::optionClicked);
             this.addDrawableChild(optionButton);
             ++var2;
-            if (optionButton.returnEnumOptions().equals(EnumOptionsMinimap.SLIMECHUNKS)) {
+            if (optionButton.returnEnumOptions() == EnumOptionsMinimap.SLIMECHUNKS) {
                 this.slimeChunksButton = optionButton;
                 this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !this.master.getWorldSeed().equals("");
             }

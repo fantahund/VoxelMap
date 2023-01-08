@@ -787,11 +787,11 @@ public class CachedRegion {
 
     }
 
-    private class FillChunkRunnable implements Runnable {
+    private final class FillChunkRunnable implements Runnable {
         private final WorldChunk chunk;
         private final int index;
 
-        public FillChunkRunnable(WorldChunk chunk) {
+        private FillChunkRunnable(WorldChunk chunk) {
             this.chunk = chunk;
             int chunkX = chunk.getPos().x - CachedRegion.this.x * 16;
             int chunkZ = chunk.getPos().z - CachedRegion.this.z * 16;
@@ -819,10 +819,10 @@ public class CachedRegion {
         }
     }
 
-    private class RefreshRunnable extends AbstractNotifyingRunnable {
+    private final class RefreshRunnable extends AbstractNotifyingRunnable {
         private final boolean forceCompress;
 
-        public RefreshRunnable(boolean forceCompress) {
+        private RefreshRunnable(boolean forceCompress) {
             this.forceCompress = forceCompress;
         }
 

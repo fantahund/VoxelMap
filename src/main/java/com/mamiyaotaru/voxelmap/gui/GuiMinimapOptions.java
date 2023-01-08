@@ -26,18 +26,15 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE};
-        int var2 = 0;
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE };
         this.screenTitle = I18nUtils.getString("options.minimap.title");
 
-        for (EnumOptionsMinimap option : relevantOptions) {
-            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked);
+        for (int i = 0; i < relevantOptions.length; i++) {
+            EnumOptionsMinimap option = relevantOptions[i];
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(getWidth() / 2 - 155 + i % 2 * 160, getHeight() / 6 + 24 * (i >> 1), option, Text.literal(options.getKeyText(option)), this::optionClicked);
             this.addDrawableChild(optionButton);
-            if (option.equals(EnumOptionsMinimap.CAVEMODE)) {
-                optionButton.active = this.options.cavesAllowed;
-            }
 
-            ++var2;
+            if (option == EnumOptionsMinimap.CAVEMODE) optionButton.active = this.options.cavesAllowed;
         }
 
         ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this, this.master))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20).build();
@@ -59,10 +56,10 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.drawMap(matrixStack);
-        this.renderBackground(matrixStack);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
+        this.renderBackground(matrices);
+        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 }

@@ -36,7 +36,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
-    public GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
+    GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
         super(par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
         this.parentGui = par1GuiWaypoints;
         this.waypoints = new ArrayList<>();
