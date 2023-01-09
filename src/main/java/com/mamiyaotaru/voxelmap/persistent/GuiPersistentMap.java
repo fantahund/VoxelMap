@@ -1029,32 +1029,24 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - (float) this.centerY * this.guiToMap);
         }
 
-        int x = (int) Math.floor(cursorCoordX);
-        int z = (int) Math.floor(cursorCoordZ);
-        boolean canTeleport = this.canTeleport();
-        canTeleport = canTeleport && (this.persistentMap.isGroundAt(x, z) || this.backGroundImageInfo != null && this.backGroundImageInfo.isGroundAt(x, z));
         Waypoint hovered = this.getHovered(cursorCoordX, cursorCoordZ);
+        Popup.PopupEntry entry;
         if (hovered != null && this.waypointManager.getWaypoints().contains(hovered)) {
-            Popup.PopupEntry entry = new Popup.PopupEntry(I18nUtils.getString("selectServer.edit"), 4, true, true);
+            entry = new Popup.PopupEntry(I18nUtils.getString("selectServer.edit"), 4, true, true);
             entries.add(entry);
             entry = new Popup.PopupEntry(I18nUtils.getString("selectServer.delete"), 5, true, true);
             entries.add(entry);
             entry = new Popup.PopupEntry(I18nUtils.getString(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
-            entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.teleportto"), 3, true, canTeleport);
-            entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.share"), 2, true, true);
-            entries.add(entry);
         } else {
-            Popup.PopupEntry entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.newwaypoint"), 0, true, true);
+            entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.newwaypoint"), 0, true, true);
             entries.add(entry);
             entry = new Popup.PopupEntry(I18nUtils.getString(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
-            entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.teleportto"), 3, true, canTeleport);
-            entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.share"), 2, true, true);
-            entries.add(entry);
         }
+        entries.add(entry);
+        entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.teleportto"), 3, true, true);
+        entries.add(entry);
+        entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.share"), 2, true, true);
+        entries.add(entry);
 
         this.createPopup(mouseX, mouseY, mouseDirectX, mouseDirectY, entries);
     }
@@ -1156,19 +1148,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             case 3 -> {
                 if (hovered != null) {
                     this.selectedWaypoint = hovered;
-                    boolean mp = !VoxelConstants.getMinecraft().isInSingleplayer();
                     y = this.selectedWaypoint.getY() > VoxelConstants.getMinecraft().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64);
                     VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-                    if (mp) {
-                        VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-                    } else {
-                        VoxelConstants.getMinecraft().setScreen(null);
+                    if (!VoxelConstants.getMinecraft().isInSingleplayer()) {
+                        VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
                     }
                 } else {
                     if (y == 0) {
                         y = !VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getMinecraft().world.getTopY() : 64;
                     }
-
                     VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + x + " " + y + " " + z);
                     if (!VoxelConstants.getMinecraft().isInSingleplayer()) {
                         VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + x + " " + y + " " + z);
@@ -1228,18 +1216,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         VoxelConstants.getMinecraft().setScreen(this);
-    }
-
-    public boolean canTeleport() {
-        Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
-
-        if (integratedServer.isEmpty()) return true;
-
-        try {
-            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getPlayer().getGameProfile());
-        } catch (Exception exception) {
-            return integratedServer.get().getSaveProperties().areCommandsAllowed();
-        }
     }
 
     private int chkLen(String string) {
