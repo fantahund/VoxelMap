@@ -199,9 +199,6 @@ public class CachedRegion {
         }
     }
 
-    public void notifyOfThreadComplete(AbstractNotifyingRunnable runnable) {
-    }
-
     private void load() {
         this.data = new CompressibleMapData(256, 256);
         this.image = new CompressibleGLBufferedImage(256, 256, 6);
@@ -787,15 +784,13 @@ public class CachedRegion {
         }
     }
 
-    private final class RefreshRunnable extends AbstractNotifyingRunnable {
+    private final class RefreshRunnable implements Runnable {
         private final boolean forceCompress;
 
-        private RefreshRunnable(boolean forceCompress) {
-            this.forceCompress = forceCompress;
-        }
+        private RefreshRunnable(boolean forceCompress) { this.forceCompress = forceCompress; }
 
         @Override
-        public void doRun() {
+        public void run() {
             CachedRegion.this.threadLock.lock();
             CachedRegion.this.mostRecentChange = System.currentTimeMillis();
 
