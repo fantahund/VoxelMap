@@ -272,41 +272,11 @@ public class CachedRegion {
     }
 
     private boolean isChunkEmptyOrUnlit(WorldChunk chunk) {
-        if (!this.closed && chunk.getStatus().isAtLeast(ChunkStatus.FULL)) {
-            boolean overworld = this.world.getDimension().hasSkyLight();
-
-            for (int t = 0; t < 16; ++t) {
-                for (int s = 0; s < 16; ++s) {
-                    if (overworld) {
-                        if (chunk.getWorld().getLightLevel(LightType.SKY, this.blockPos.withXYZ(chunk.getPos().x * 16 + t, chunk.getHighestNonEmptySectionYOffset() + 15, chunk.getPos().z * 16 + s)) != 0) {
-                            return false;
-                        }
-                    } else if (chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, t, s) != 0) {
-                        return false;
-                    }
-                }
-            }
-
-        }
-        return true;
+        return this.closed || chunk.isEmpty() || !chunk.getStatus().isAtLeast(ChunkStatus.FULL);
     }
 
     private boolean isChunkEmpty(WorldChunk chunk) {
-        if (!this.closed && !chunk.isEmpty() && chunk.getStatus().isAtLeast(ChunkStatus.FULL)) {
-            for (int t = 0; t < 16; ++t) {
-                for (int s = 0; s < 16; ++s) {
-                    if (chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, t, s) != 0) {
-                        return false;
-                    }
-
-                    if (chunk.getWorld().getLightLevel(LightType.SKY, this.blockPos.withXYZ(chunk.getPos().x * 16 + t, chunk.getHighestNonEmptySectionYOffset() + 15, chunk.getPos().z * 16 + s)) != 0) {
-                        return false;
-                    }
-                }
-            }
-
-        }
-        return true;
+        return this.closed || chunk.isEmpty() || !chunk.getStatus().isAtLeast(ChunkStatus.FULL);
     }
 
     public boolean isSurroundedByLoaded(WorldChunk chunk) {
