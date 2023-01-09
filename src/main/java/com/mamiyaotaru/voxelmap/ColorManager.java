@@ -1346,7 +1346,8 @@ public class ColorManager {
         }
     }
 
+    @FunctionalInterface
     private interface ColorResolver {
-        int getColorAtPos(BlockState var1, Biome var2, BlockPos var3);
+        int getColorAtPos(BlockState state, Biome biome, BlockPos pos);
     }
 }
