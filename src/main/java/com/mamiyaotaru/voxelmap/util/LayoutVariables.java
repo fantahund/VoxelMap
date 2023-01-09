@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.util;
 
 public class LayoutVariables {
-    public int scScale = 0;
-    public int mapX = 0;
-    public int mapY = 0;
-    public double zoomScale = 0.0;
-    public double zoomScaleAdjusted = 0.0;
+    public int scScale;
+    public int mapX;
+    public int mapY;
+    public double zoomScale;
+    public double zoomScaleAdjusted;
 
     public void updateVars(int scScale, int mapX, int mapY, double zoomScale, double zoomScaleAdjusted) {
         this.scScale = scScale;

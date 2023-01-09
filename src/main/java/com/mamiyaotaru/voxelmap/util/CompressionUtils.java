@@ -6,7 +6,9 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-public class CompressionUtils {
+public final class CompressionUtils {
+    private CompressionUtils() {}
+
     public static byte[] compress(byte[] dataToCompress) throws IOException {
         Deflater deflater = new Deflater();
         deflater.setLevel(1);
@@ -31,7 +33,7 @@ public class CompressionUtils {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToDecompress.length);
         byte[] buffer = new byte[1024];
 
-        while (!inflater.finished()) {
+        while (!(inflater.finished())) {
             int count = inflater.inflate(buffer);
             outputStream.write(buffer, 0, count);
         }

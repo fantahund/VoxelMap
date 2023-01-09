@@ -1,6 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
-public class ColorUtils {
+public final class ColorUtils {
+    private ColorUtils() {}
+
     public static int colorMultiplier(int color1, int color2) {
         int alpha1 = color1 >> 24 & 0xFF;
         int red1 = color1 >> 16 & 0xFF;
@@ -18,14 +20,14 @@ public class ColorUtils {
     }
 
     public static int colorAdder(int color1, int color2) {
-        float topAlpha = (float) (color1 >> 24 & 0xFF) / 255.0F;
-        float red1 = (float) (color1 >> 16 & 0xFF) * topAlpha;
-        float green1 = (float) (color1 >> 8 & 0xFF) * topAlpha;
-        float blue1 = (float) (color1 & 0xFF) * topAlpha;
-        float bottomAlpha = (float) (color2 >> 24 & 0xFF) / 255.0F;
-        float red2 = (float) (color2 >> 16 & 0xFF) * bottomAlpha * (1.0F - topAlpha);
-        float green2 = (float) (color2 >> 8 & 0xFF) * bottomAlpha * (1.0F - topAlpha);
-        float blue2 = (float) (color2 & 0xFF) * bottomAlpha * (1.0F - topAlpha);
+        float topAlpha = (color1 >> 24 & 0xFF) / 255.0F;
+        float red1 = (color1 >> 16 & 0xFF) * topAlpha;
+        float green1 = (color1 >> 8 & 0xFF) * topAlpha;
+        float blue1 = (color1 & 0xFF) * topAlpha;
+        float bottomAlpha = (color2 >> 24 & 0xFF) / 255.0F;
+        float red2 = (color2 >> 16 & 0xFF) * bottomAlpha * (1.0F - topAlpha);
+        float green2 = (color2 >> 8 & 0xFF) * bottomAlpha * (1.0F - topAlpha);
+        float blue2 = (color2 & 0xFF) * bottomAlpha * (1.0F - topAlpha);
         float alpha = topAlpha + bottomAlpha * (1.0F - topAlpha);
         float red = (red1 + red2) / alpha;
         float green = (green1 + green2) / alpha;

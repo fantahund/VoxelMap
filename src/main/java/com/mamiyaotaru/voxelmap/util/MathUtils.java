@@ -3,7 +3,9 @@ package com.mamiyaotaru.voxelmap.util;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-public class MathUtils {
+public final class MathUtils {
+    private MathUtils() {}
+
     public static Vector4f transform(Vector4f source, Matrix4f matrix) {
         Vector4f returns = new Vector4f();
         float x = source.x;
