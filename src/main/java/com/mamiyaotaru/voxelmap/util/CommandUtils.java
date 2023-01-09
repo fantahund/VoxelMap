@@ -134,9 +134,9 @@ public class CommandUtils {
                         blue = Float.parseFloat(value);
                     } else if (key.equals("color")) {
                         int color = Integer.decode(value);
-                        red = (float) (color >> 16 & 0xFF) / 255.0F;
-                        green = (float) (color >> 8 & 0xFF) / 255.0F;
-                        blue = (float) (color & 0xFF) / 255.0F;
+                        red = (color >> 16 & 0xFF) / 255.0F;
+                        green = (color >> 8 & 0xFF) / 255.0F;
+                        blue = (color & 0xFF) / 255.0F;
                     } else if (!key.equals("suffix") && !key.equals("icon")) {
                         switch (key) {
                             case "world" -> world = TextUtils.descrubName(value);

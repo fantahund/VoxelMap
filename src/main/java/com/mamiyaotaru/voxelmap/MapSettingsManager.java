@@ -225,9 +225,9 @@ public class MapSettingsManager implements ISettingsManager {
     @Override
     public float getOptionFloatValue(EnumOptionsMinimap par1EnumOptions) {
         if (par1EnumOptions == EnumOptionsMinimap.ZOOM) {
-            return (float) this.zoom;
+            return this.zoom;
         } else {
-            return par1EnumOptions == EnumOptionsMinimap.WAYPOINTDISTANCE ? (float) this.maxWaypointDisplayDistance : 0.0F;
+            return par1EnumOptions == EnumOptionsMinimap.WAYPOINTDISTANCE ? this.maxWaypointDisplayDistance : 0.0F;
         }
     }
 

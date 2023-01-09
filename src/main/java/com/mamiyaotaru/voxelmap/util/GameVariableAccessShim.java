@@ -27,15 +27,15 @@ public class GameVariableAccessShim {
     }
 
     public static double xCoordDouble() {
-        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getX() : VoxelConstants.getMinecraft().getCameraEntity().prevX + (VoxelConstants.getMinecraft().getCameraEntity().getX() - VoxelConstants.getMinecraft().getCameraEntity().prevX) * (double) VoxelConstants.getMinecraft().getTickDelta();
+        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getX() : VoxelConstants.getMinecraft().getCameraEntity().prevX + (VoxelConstants.getMinecraft().getCameraEntity().getX() - VoxelConstants.getMinecraft().getCameraEntity().prevX) * VoxelConstants.getMinecraft().getTickDelta();
     }
 
     public static double zCoordDouble() {
-        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getZ() : VoxelConstants.getMinecraft().getCameraEntity().prevZ + (VoxelConstants.getMinecraft().getCameraEntity().getZ() - VoxelConstants.getMinecraft().getCameraEntity().prevZ) * (double) VoxelConstants.getMinecraft().getTickDelta();
+        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getZ() : VoxelConstants.getMinecraft().getCameraEntity().prevZ + (VoxelConstants.getMinecraft().getCameraEntity().getZ() - VoxelConstants.getMinecraft().getCameraEntity().prevZ) * VoxelConstants.getMinecraft().getTickDelta();
     }
 
     public static double yCoordDouble() {
-        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getY() : VoxelConstants.getMinecraft().getCameraEntity().prevY + (VoxelConstants.getMinecraft().getCameraEntity().getY() - VoxelConstants.getMinecraft().getCameraEntity().prevY) * (double) VoxelConstants.getMinecraft().getTickDelta();
+        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getY() : VoxelConstants.getMinecraft().getCameraEntity().prevY + (VoxelConstants.getMinecraft().getCameraEntity().getY() - VoxelConstants.getMinecraft().getCameraEntity().prevY) * VoxelConstants.getMinecraft().getTickDelta();
     }
 
     public static float rotationYaw() {

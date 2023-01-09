@@ -63,11 +63,11 @@ public class Popup {
     }
 
     public boolean clickedMe(double mouseX, double mouseY) {
-        boolean clicked = mouseX > (double) this.x && mouseX < (double) (this.x + this.w) && mouseY > (double) this.y && mouseY < (double) (this.y + this.h);
+        boolean clicked = mouseX > this.x && mouseX < (this.x + this.w) && mouseY > this.y && mouseY < (this.y + this.h);
         if (clicked) {
             for (int t = 0; t < this.entries.length; ++t) {
                 if (this.entries[t].enabled) {
-                    boolean entryClicked = mouseX >= (double) this.x && mouseX <= (double) (this.x + this.w) && mouseY >= (double) (this.y + t * 20) && mouseY <= (double) (this.y + (t + 1) * 20);
+                    boolean entryClicked = mouseX >= this.x && mouseX <= (this.x + this.w) && mouseY >= (this.y + t * 20) && mouseY <= (this.y + (t + 1) * 20);
                     if (entryClicked) {
                         this.shouldClose = this.entries[t].causesClose;
                         this.parentGui.popupAction(this, this.entries[t].action);
@@ -96,10 +96,10 @@ public class Popup {
         GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var6 = 32.0F;
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        vertexBuffer.vertex(this.x, this.y + this.h, 0.0).texture((float) this.x / var6, (float) this.y / var6).color(64, 64, 64, 255).next();
-        vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).texture((float) (this.x + this.w) / var6, (float) this.y / var6).color(64, 64, 64, 255).next();
-        vertexBuffer.vertex(this.x + this.w, this.y, 0.0).texture((float) (this.x + this.w) / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
-        vertexBuffer.vertex(this.x, this.y, 0.0).texture((float) this.x / var6, (float) (this.y + this.h) / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x, this.y + this.h, 0.0).texture(this.x / var6, this.y / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).texture((this.x + this.w) / var6, this.y / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x + this.w, this.y, 0.0).texture((this.x + this.w) / var6, (this.y + this.h) / var6).color(64, 64, 64, 255).next();
+        vertexBuffer.vertex(this.x, this.y, 0.0).texture(this.x / var6, (this.y + this.h) / var6).color(64, 64, 64, 255).next();
         tessellator.draw();
         GLShim.glEnable(GL11.GL_BLEND);
         GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -135,7 +135,7 @@ public class Popup {
 
         for (int t = 0; t < this.entries.length; ++t) {
             int color = !this.entries[t].enabled ? 10526880 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 16777120 : 14737632);
-            this.fontRendererObj.drawWithShadow(matrixStack, this.entries[t].name, (float) (this.x + this.padding), (float) (this.y + this.padding + t * 20), color);
+            this.fontRendererObj.drawWithShadow(matrixStack, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);
         }
 
     }

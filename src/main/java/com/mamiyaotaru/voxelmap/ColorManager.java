@@ -250,12 +250,12 @@ public class ColorManager {
         GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, (float) width, (float) height, 0.0F, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
         matrixStack.loadIdentity();
-        matrixStack.translate(0.0, 0.0, -3000.0 + (double) (captureDepth * scale));
+        matrixStack.translate(0.0, 0.0, -3000.0 + (captureDepth * scale));
         RenderSystem.applyModelViewMatrix();
         GLUtils.bindFrameBuffer();
         GLShim.glDepthMask(true);
@@ -270,7 +270,7 @@ public class ColorManager {
         GLShim.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         matrixStack.push();
-        matrixStack.translate((float) (width / 2) - size / 2.0F + transX, (float) (height / 2) - size / 2.0F + transY, 0.0F + transZ);
+        matrixStack.translate((width / 2) - size / 2.0F + transX, (height / 2) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
         VoxelConstants.getMinecraft().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
         GLUtils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
@@ -520,10 +520,10 @@ public class ColorManager {
     private int getColorForCoordinatesAndImage(float[] uv, BufferedImage imageBuff) {
         int color = 452984832;
         if (uv[0] != this.failedToLoadX || uv[2] != this.failedToLoadY) {
-            int left = (int) (uv[0] * (float) imageBuff.getWidth());
-            int right = (int) Math.ceil(uv[1] * (float) imageBuff.getWidth());
-            int top = (int) (uv[2] * (float) imageBuff.getHeight());
-            int bottom = (int) Math.ceil(uv[3] * (float) imageBuff.getHeight());
+            int left = (int) (uv[0] * imageBuff.getWidth());
+            int right = (int) Math.ceil(uv[1] * imageBuff.getWidth());
+            int top = (int) (uv[2] * imageBuff.getHeight());
+            int bottom = (int) Math.ceil(uv[3] * imageBuff.getHeight());
 
             try {
                 BufferedImage blockTexture = imageBuff.getSubimage(left, top, right - left, bottom - top);
@@ -953,10 +953,10 @@ public class ColorManager {
     }
 
     private boolean similarEnough(float a, float b, float c, float d, float one, float two, float three, float four) {
-        boolean similar = (double) Math.abs(a - one) < 1.0E-4;
-        similar = similar && (double) Math.abs(b - two) < 1.0E-4;
-        similar = similar && (double) Math.abs(c - three) < 1.0E-4;
-        return similar && (double) Math.abs(d - four) < 1.0E-4;
+        boolean similar = Math.abs(a - one) < 1.0E-4;
+        similar = similar && Math.abs(b - two) < 1.0E-4;
+        similar = similar && Math.abs(c - three) < 1.0E-4;
+        return similar && Math.abs(d - four) < 1.0E-4;
     }
 
     private int processRenderPassThree(int rgb) {
@@ -964,11 +964,11 @@ public class ColorManager {
             int red = rgb >> 16 & 0xFF;
             int green = rgb >> 8 & 0xFF;
             int blue = rgb & 0xFF;
-            float colorAverage = (float) (red + blue + green) / 3.0F;
+            float colorAverage = (red + blue + green) / 3.0F;
             float lighteningFactor = (colorAverage - 127.5F) * 2.0F;
-            red += (int) ((float) red * (lighteningFactor / 255.0F));
-            blue += (int) ((float) red * (lighteningFactor / 255.0F));
-            green += (int) ((float) red * (lighteningFactor / 255.0F));
+            red += (int) (red * (lighteningFactor / 255.0F));
+            blue += (int) (red * (lighteningFactor / 255.0F));
+            green += (int) (red * (lighteningFactor / 255.0F));
             int newAlpha = (int) Math.abs(lighteningFactor);
             rgb = newAlpha << 24 | (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
         }
@@ -1286,7 +1286,7 @@ public class ColorManager {
                         var2 *= var1;
                         var1 = 1.0 - var1;
                         var2 = 1.0 - var2;
-                        tintMult = tintColorsBuff.getRGB((int) ((double) (tintColorsBuff.getWidth() - 1) * var1), (int) ((double) (tintColorsBuff.getHeight() - 1) * var2)) & 16777215;
+                        tintMult = tintColorsBuff.getRGB((int) ((tintColorsBuff.getWidth() - 1) * var1), (int) ((tintColorsBuff.getHeight() - 1) * var2)) & 16777215;
                     }
 
                     if (tintMult != 0 && (!swamp || biome == BiomeRepository.SWAMP || biome == BiomeRepository.SWAMP_HILLS)) {

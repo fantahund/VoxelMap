@@ -325,13 +325,13 @@ public abstract class AbstractMapData {
         }
 
         public void morphologicallyErode(boolean horizontalBias) {
-            float labelWidth = (float) (VoxelConstants.getMinecraft().textRenderer.getWidth(this.name) + 8);
-            float multi = (float) (AbstractMapData.this.width / 32);
+            float labelWidth = (VoxelConstants.getMinecraft().textRenderer.getWidth(this.name) + 8);
+            float multi = (AbstractMapData.this.width / 32);
             float shellWidth = 2.0F;
             float labelPadding = labelWidth / 16.0F * multi / shellWidth;
 
             int layer;
-            for (layer = 0; this.currentShell.size() > 0 && (float) layer < labelPadding; this.currentShell = this.getNextShell(this.currentShell, layer, horizontalBias)) {
+            for (layer = 0; this.currentShell.size() > 0 && layer < labelPadding; this.currentShell = this.getNextShell(this.currentShell, layer, horizontalBias)) {
                 ++layer;
             }
 

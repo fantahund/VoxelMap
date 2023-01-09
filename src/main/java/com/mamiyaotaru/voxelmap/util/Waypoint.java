@@ -48,11 +48,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public int getX() {
-        return (int) ((double) this.x / VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        return (int) (this.x / VoxelConstants.getPlayer().world.getDimension().coordinateScale());
     }
 
     public int getZ() {
-        return (int) ((double) this.z / VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        return (int) (this.z / VoxelConstants.getPlayer().world.getDimension().coordinateScale());
     }
 
     public int getY() {
@@ -60,11 +60,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public void setX(int x) {
-        this.x = (int) ((double) x * VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        this.x = (int) (x * VoxelConstants.getPlayer().world.getDimension().coordinateScale());
     }
 
     public void setZ(int z) {
-        this.z = (int) ((double) z * VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        this.z = (int) (z * VoxelConstants.getPlayer().world.getDimension().coordinateScale());
     }
 
     public void setY(int y) {
@@ -78,9 +78,9 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public double getDistanceSqToEntity(Entity par1Entity) {
-        double var2 = (double) this.getX() + 0.5 - par1Entity.getX();
-        double var4 = (double) this.getY() + 0.5 - par1Entity.getY();
-        double var6 = (double) this.getZ() + 0.5 - par1Entity.getZ();
+        double var2 = this.getX() + 0.5 - par1Entity.getX();
+        double var4 = this.getY() + 0.5 - par1Entity.getY();
+        double var6 = this.getZ() + 0.5 - par1Entity.getZ();
         return var2 * var2 + var4 * var4 + var6 * var6;
     }
 

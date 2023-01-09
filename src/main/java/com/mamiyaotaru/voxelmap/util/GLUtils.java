@@ -133,15 +133,15 @@ public class GLUtils {
     }
 
     public static void setMap(int x, int y) {
-        setMap((float) x, (float) y, 128);
+        setMap(x, y, 128);
     }
 
     public static void setMapWithScale(int x, int y, float scale) {
-        setMap((float) x, (float) y, (int) (128.0F * scale));
+        setMap(x, y, (int) (128.0F * scale));
     }
 
     public static void setMap(float x, float y, int imageSize) {
-        float scale = (float) imageSize / 4.0F;
+        float scale = imageSize / 4.0F;
         ldrawthree(x - scale, y + scale, 1.0, 0.0F, 1.0F);
         ldrawthree(x + scale, y + scale, 1.0, 1.0F, 1.0F);
         ldrawthree(x + scale, y - scale, 1.0, 1.0F, 0.0F);

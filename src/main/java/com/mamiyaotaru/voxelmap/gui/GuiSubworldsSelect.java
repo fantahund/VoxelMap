@@ -73,8 +73,8 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         final Collator collator = I18nUtils.getLocaleAwareCollator();
         knownSubworldNames.sort((name1, name2) -> -collator.compare(name1, name2));
         int numKnownSubworlds = knownSubworldNames.size();
-        int completeRows = (int) Math.floor((float) (numKnownSubworlds + 1) / (float) buttonsPerRow);
-        int lastRowShiftBy = (int) (Math.ceil((float) (numKnownSubworlds + 1) / (float) buttonsPerRow) * (double) buttonsPerRow - (double) (numKnownSubworlds + 1));
+        int completeRows = (int) Math.floor((float) (numKnownSubworlds + 1) / buttonsPerRow);
+        int lastRowShiftBy = (int) (Math.ceil((float) (numKnownSubworlds + 1) / buttonsPerRow) * buttonsPerRow - (numKnownSubworlds + 1));
         this.worlds = new String[numKnownSubworlds];
         ButtonWidget[] selectButtons = new ButtonWidget[numKnownSubworlds + 1];
         ButtonWidget[] editButtons = new ButtonWidget[numKnownSubworlds + 1];
@@ -170,11 +170,11 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.camera.setYaw(this.yaw);
         float var4 = 0.475F;
         this.camera.lastRenderY = this.camera.prevY = this.thePlayer.getY();
-        this.camera.lastRenderX = this.camera.prevX = this.thePlayer.getX() - (double) var4 * Math.sin((double) this.yaw / 180.0 * Math.PI);
-        this.camera.lastRenderZ = this.camera.prevZ = this.thePlayer.getZ() + (double) var4 * Math.cos((double) this.yaw / 180.0 * Math.PI);
+        this.camera.lastRenderX = this.camera.prevX = this.thePlayer.getX() - var4 * Math.sin(this.yaw / 180.0 * Math.PI);
+        this.camera.lastRenderZ = this.camera.prevZ = this.thePlayer.getZ() + var4 * Math.cos(this.yaw / 180.0 * Math.PI);
         this.camera.setPos(this.camera.prevX, this.camera.prevY, this.camera.prevZ);
         float var5 = 1.0F;
-        this.yaw = (float) ((double) this.yaw + (double) var5 * (1.0 + 0.7F * Math.cos((double) (this.yaw + 45.0F) / 45.0 * Math.PI)));
+        this.yaw = (float) (this.yaw + var5 * (1.0 + 0.7F * Math.cos((this.yaw + 45.0F) / 45.0 * Math.PI)));
         super.render(matrixStack, mouseX, mouseY, partialTicks);
         if (this.newWorld) {
             this.newNameField.render(matrixStack, mouseX, mouseY, partialTicks);

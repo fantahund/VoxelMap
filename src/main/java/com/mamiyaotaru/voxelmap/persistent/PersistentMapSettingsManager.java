@@ -45,12 +45,12 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         } catch (Exception ignored) {}
 
         for (int power = -3; power <= 5; ++power) {
-            if (Math.pow(2.0, power) == (double) this.minZoom) {
-                this.minZoomPower = (float) power;
+            if (Math.pow(2.0, power) == this.minZoom) {
+                this.minZoomPower = power;
             }
 
-            if (Math.pow(2.0, power) == (double) this.maxZoom) {
-                this.maxZoomPower = (float) power;
+            if (Math.pow(2.0, power) == this.maxZoom) {
+                this.maxZoomPower = power;
             }
         }
 
@@ -101,7 +101,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         } else if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
             return this.maxZoomPower;
         } else {
-            return par1EnumOptions == EnumOptionsMinimap.CACHESIZE ? (float) this.cacheSize : 0.0F;
+            return par1EnumOptions == EnumOptionsMinimap.CACHESIZE ? this.cacheSize : 0.0F;
         }
     }
 
@@ -116,14 +116,14 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     @Override
     public void setOptionFloatValue(EnumOptionsMinimap par1EnumOptions, float par2) {
         if (par1EnumOptions == EnumOptionsMinimap.MINZOOM) {
-            this.minZoomPower = (float) ((int) (par2 * 8.0F) - 3);
+            this.minZoomPower = ((int) (par2 * 8.0F) - 3);
             this.minZoom = (float) Math.pow(2.0, this.minZoomPower);
             if (this.maxZoom < this.minZoom) {
                 this.maxZoom = this.minZoom;
                 this.maxZoomPower = this.minZoomPower;
             }
         } else if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
-            this.maxZoomPower = (float) ((int) (par2 * 8.0F) - 3);
+            this.maxZoomPower = ((int) (par2 * 8.0F) - 3);
             this.maxZoom = (float) Math.pow(2.0, this.maxZoomPower);
             if (this.minZoom > this.maxZoom) {
                 this.minZoom = this.maxZoom;

@@ -72,8 +72,8 @@ public class Stitcher {
             if (allSameSize) {
                 int nextPowerOfTwo = MathHelper.smallestEncompassingPowerOfTwo(stitcherHoldersArrayLength);
                 int power = Integer.numberOfTrailingZeros(nextPowerOfTwo);
-                int width = (int) Math.pow(2.0, Math.ceil((double) power / 2.0)) * iconWidth;
-                int height = (int) Math.pow(2.0, Math.floor((double) power / 2.0)) * iconHeight;
+                int width = (int) Math.pow(2.0, Math.ceil(power / 2.0)) * iconWidth;
+                int height = (int) Math.pow(2.0, Math.floor(power / 2.0)) * iconHeight;
                 this.currentWidth = width;
                 this.currentHeight = height;
                 this.currentWidthToPowerOfTwo = width;
@@ -198,16 +198,16 @@ public class Stitcher {
         }
 
         public int getWidth() {
-            return (int) ((float) this.width * this.scaleFactor);
+            return (int) (this.width * this.scaleFactor);
         }
 
         public int getHeight() {
-            return (int) ((float) this.height * this.scaleFactor);
+            return (int) (this.height * this.scaleFactor);
         }
 
         public void setNewDimension(int newDimension) {
             if (this.width > newDimension && this.height > newDimension) {
-                this.scaleFactor = (float) newDimension / (float) Math.min(this.width, this.height);
+                this.scaleFactor = (float) newDimension / Math.min(this.width, this.height);
             }
 
         }

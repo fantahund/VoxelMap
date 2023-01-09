@@ -168,7 +168,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public Sprite getIconAt(float x, float y) {
-        return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= (float) icon.originX && x < (float) (icon.originX + icon.width) && y >= (float) icon.originY && y < (float) (icon.originY + icon.height)).findFirst().orElse(this.missingImage);
+        return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= icon.originX && x < (icon.originX + icon.width) && y >= icon.originY && y < (icon.originY + icon.height)).findFirst().orElse(this.missingImage);
     }
 
     public Sprite getAtlasSprite(String name) {

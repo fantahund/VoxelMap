@@ -34,10 +34,10 @@ public class Sprite {
         this.originY = originY;
         float var6 = (float) (0.01F / (double) sheetWidth);
         float var7 = (float) (0.01F / (double) sheetHeight);
-        this.minU = (float) originX / (float) ((double) sheetWidth) + var6;
-        this.maxU = (float) (originX + this.width) / (float) ((double) sheetWidth) - var6;
-        this.minV = (float) originY / (float) sheetHeight + var7;
-        this.maxV = (float) (originY + this.height) / (float) sheetHeight - var7;
+        this.minU = originX / (float) ((double) sheetWidth) + var6;
+        this.maxU = (originX + this.width) / (float) ((double) sheetWidth) - var6;
+        this.minV = (float) originY / sheetHeight + var7;
+        this.maxV = (float) (originY + this.height) / sheetHeight - var7;
     }
 
     public void copyFrom(Sprite sourceSprite) {

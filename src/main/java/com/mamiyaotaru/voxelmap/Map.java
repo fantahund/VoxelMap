@@ -345,7 +345,7 @@ public class Map implements Runnable, IChangeObserver {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
-            Waypoint newWaypoint = new Waypoint("", (int) ((double) GameVariableAccessShim.xCoord() * dimensionScale), (int) ((double) GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
+            Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, this.master, newWaypoint, false));
         }
 
@@ -535,7 +535,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 float sunBrightness = this.world.getStarBrightness(1.0F);
-                if ((double) Math.abs(this.lastSunBrightness - sunBrightness) > 0.01 || (double) sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness || (double) sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {
+                if (Math.abs(this.lastSunBrightness - sunBrightness) > 0.01 || sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness || sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {
                     lightChanged = true;
                     this.needSkyColor = true;
                     this.lastSunBrightness = sunBrightness;
@@ -544,7 +544,7 @@ public class Map implements Runnable, IChangeObserver {
                 float potionEffect = 0.0F;
                 if (VoxelConstants.getPlayer().hasStatusEffect(StatusEffects.NIGHT_VISION)) {
                     int duration = VoxelConstants.getPlayer().getStatusEffect(StatusEffects.NIGHT_VISION).getDuration();
-                    potionEffect = duration > 200 ? 1.0F : 0.7F + MathHelper.sin(((float) duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
+                    potionEffect = duration > 200 ? 1.0F : 0.7F + MathHelper.sin((duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
                 }
 
                 if (this.lastPotion != potionEffect) {
@@ -553,8 +553,8 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 int lastLightningBolt = this.world.getLightningTicksLeft();
-                if (this.lastLightning != (float) lastLightningBolt) {
-                    this.lastLightning = (float) lastLightningBolt;
+                if (this.lastLightning != lastLightningBolt) {
+                    this.lastLightning = lastLightningBolt;
                     lightChanged = true;
                 }
 
@@ -631,8 +631,8 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         int scScale = scScaleOrig + (this.fullscreenMap ? 0 : this.options.sizeModifier);
-        double scaledWidthD = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / (double) scScale;
-        double scaledHeightD = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / (double) scScale;
+        double scaledWidthD = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / scScale;
+        double scaledHeightD = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / scScale;
         this.scWidth = MathHelper.ceil(scaledWidthD);
         this.scHeight = MathHelper.ceil(scaledHeightD);
         RenderSystem.backupProjectionMatrix();
@@ -671,7 +671,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
-            float resFactor = (float) this.scHeight / (float) scHeight;
+            float resFactor = (float) this.scHeight / scHeight;
             mapY += (int) (statusIconOffset * resFactor);
         }
 
@@ -1429,7 +1429,7 @@ public class Map implements Runnable, IChangeObserver {
             double sc = 0.0;
             if (!this.options.slopemap) {
                 diff = height - this.lastY;
-                sc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 1.8;
+                sc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
                 if (diff < 0) {
                     sc = 0.0 - sc;
                 }
@@ -1495,7 +1495,7 @@ public class Map implements Runnable, IChangeObserver {
 
                 if (this.options.heightmap) {
                     diff = height - this.lastY;
-                    double heightsc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 3.0;
+                    double heightsc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
                     sc = diff > 0 ? sc + heightsc : sc - heightsc;
                 }
             }
@@ -1505,14 +1505,14 @@ public class Map implements Runnable, IChangeObserver {
             int g = color24 >> 8 & 0xFF;
             int b = color24 & 0xFF;
             if (sc > 0.0) {
-                r += (int) (sc * (double) (255 - r));
-                g += (int) (sc * (double) (255 - g));
-                b += (int) (sc * (double) (255 - b));
+                r += (int) (sc * (255 - r));
+                g += (int) (sc * (255 - g));
+                b += (int) (sc * (255 - b));
             } else if (sc < 0.0) {
                 sc = Math.abs(sc);
-                r -= (int) (sc * (double) r);
-                g -= (int) (sc * (double) g);
-                b -= (int) (sc * (double) b);
+                r -= (int) (sc * r);
+                g -= (int) (sc * g);
+                b -= (int) (sc * b);
             }
 
             color24 = alpha * 16777216 + r * 65536 + g * 256 + b;
@@ -1554,7 +1554,7 @@ public class Map implements Runnable, IChangeObserver {
             GLShim.glColorMask(true, true, true, true);
             GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
             GLUtils.drawPre();
-            GLUtils.setMap((float) x, (float) y, 128);
+            GLUtils.setMap(x, y, 128);
             GLUtils.drawPost();
             GLShim.glBlendFunc(772, 773);
             synchronized (this.coordinateLock) {
@@ -1567,14 +1567,14 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             float multi = (float) (1.0 / this.zoomScaleAdjusted);
-            this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - (double) this.lastImageX);
-            this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - (double) this.lastImageZ);
+            this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
+            this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
             this.percentX *= multi;
             this.percentY *= multi;
             GLUtils.disp2(this.mapImages[this.zoom].getIndex());
             matrixStack.push();
             matrixStack.translate(x, y, 0.0);
-            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(!this.options.rotates ? (float) this.northRotate : -this.direction));
+            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(!this.options.rotates ? this.northRotate : -this.direction));
             matrixStack.translate(-x, -y, 0.0);
             matrixStack.translate(-this.percentX, -this.percentY, 0.0);
             RenderSystem.applyModelViewMatrix();
@@ -1617,8 +1617,8 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             float multi = (float) (1.0 / this.zoomScale);
-            this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - (double) this.lastImageX);
-            this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - (double) this.lastImageZ);
+            this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
+            this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
             this.percentX *= multi;
             this.percentY *= multi;
             GLUtils.disp2(this.mapImages[this.zoom].getIndex());
@@ -1627,7 +1627,7 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.push();
             matrixStack.translate(256.0, 256.0, 0.0);
             if (!this.options.rotates) {
-                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) (-this.northRotate)));
+                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((-this.northRotate)));
             } else {
                 matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.direction));
             }
@@ -1654,9 +1654,9 @@ public class Map implements Runnable, IChangeObserver {
             GLUtils.disp2(GLUtils.fboTextureID);
         }
 
-        double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / (double) this.scWidth;
+        double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / this.scWidth;
         GLShim.glEnable(3089);
-        GLShim.glScissor((int) (guiScale * (double) (x - 32)), (int) (guiScale * ((double) (this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
+        GLShim.glScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
         GLUtils.drawPre();
         GLUtils.setMapWithScale(x, y, scale);
         GLUtils.drawPost();
@@ -1683,7 +1683,7 @@ public class Map implements Runnable, IChangeObserver {
         for (Waypoint pt : this.waypointManager.getWaypoints()) {
             if (pt.isActive() || pt == highlightedPoint) {
                 double distanceSq = pt.getDistanceSqToEntity(VoxelConstants.getMinecraft().getCameraEntity());
-                if (distanceSq < (double) (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
+                if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
                     this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
                 }
             }
@@ -1710,15 +1710,15 @@ public class Map implements Runnable, IChangeObserver {
             b = pt.blue;
         }
 
-        double wayX = lastXDouble - (double) pt.getX() - 0.5;
-        double wayY = lastZDouble - (double) pt.getZ() - 0.5;
+        double wayX = lastXDouble - pt.getX() - 0.5;
+        double wayY = lastZDouble - pt.getZ() - 0.5;
         float locate = (float) Math.toDegrees(Math.atan2(wayX, wayY));
         double hypot = Math.sqrt(wayX * wayX + wayY * wayY);
         boolean far;
         if (this.options.rotates) {
             locate += this.direction;
         } else {
-            locate -= (float) this.northRotate;
+            locate -= this.northRotate;
         }
 
         hypot /= this.zoomScaleAdjusted;
@@ -1775,7 +1775,7 @@ public class Map implements Runnable, IChangeObserver {
                 GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
                 GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                 GLUtils.drawPre();
-                GLUtils.setMap(icon, (float) x, (float) y, 16.0F);
+                GLUtils.setMap(icon, x, y, 16.0F);
                 GLUtils.drawPost();
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
@@ -1812,7 +1812,7 @@ public class Map implements Runnable, IChangeObserver {
                 GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
                 GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
                 GLUtils.drawPre();
-                GLUtils.setMap(icon, (float) x, (float) y, 16.0F);
+                GLUtils.setMap(icon, x, y, 16.0F);
                 GLUtils.drawPost();
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
@@ -1834,11 +1834,11 @@ public class Map implements Runnable, IChangeObserver {
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
             matrixStack.translate(x, y, 0.0);
-            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + (float) this.northRotate));
+            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
             matrixStack.translate(-x, -y, 0.0);
             RenderSystem.applyModelViewMatrix();
             GLUtils.drawPre();
-            GLUtils.setMap((float) x, (float) y, 16);
+            GLUtils.setMap(x, y, 16);
             GLUtils.drawPost();
         } catch (Exception var8) {
             this.error = "Error: minimap arrow not found!";
@@ -1864,9 +1864,9 @@ public class Map implements Runnable, IChangeObserver {
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         matrixStack.push();
-        matrixStack.translate((float) scWidth / 2.0F, (float) scHeight / 2.0F, -0.0);
-        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float) this.northRotate));
-        matrixStack.translate(-((float) scWidth / 2.0F), -((float) scHeight / 2.0F), -0.0);
+        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.northRotate));
+        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
         RenderSystem.applyModelViewMatrix();
         GLShim.glDisable(GL11.GL_DEPTH_TEST);
         GLUtils.drawPre();
@@ -1893,12 +1893,12 @@ public class Map implements Runnable, IChangeObserver {
                 if (o.segmentSize > minimumSize) {
                     String name = o.name;
                     int nameWidth = this.chkLen(name);
-                    float x = (float) ((double) o.x * factor);
-                    float z = (float) ((double) o.z * factor);
+                    float x = (float) (o.x * factor);
+                    float z = (float) (o.z * factor);
                     if (this.options.oldNorth) {
-                        this.write(matrixStack, name, (float) (left + 256) - z - (float) (nameWidth / 2), (float) top + x - 3.0F, 16777215);
+                        this.write(matrixStack, name, (left + 256) - z - (nameWidth / 2), top + x - 3.0F, 16777215);
                     } else {
-                        this.write(matrixStack, name, (float) left + x - (float) (nameWidth / 2), (float) top + z - 3.0F, 16777215);
+                        this.write(matrixStack, name, left + x - (nameWidth / 2), top + z - 3.0F, 16777215);
                     }
                 }
             }
@@ -1918,7 +1918,7 @@ public class Map implements Runnable, IChangeObserver {
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, 10496);
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, 10496);
             GLUtils.drawPre();
-            GLUtils.setMap((float) x, (float) y, 128);
+            GLUtils.setMap(x, y, 128);
             GLUtils.drawPost();
         } catch (Exception var4) {
             this.error = "error: minimap overlay not found!";
@@ -1962,7 +1962,7 @@ public class Map implements Runnable, IChangeObserver {
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
             GLUtils.drawPre();
-            GLUtils.setMap((float) x, (float) y, 128);
+            GLUtils.setMap(x, y, 128);
             GLUtils.drawPost();
         } catch (Exception var4) {
             this.error = "Error: minimap overlay not found!";
@@ -1975,7 +1975,7 @@ public class Map implements Runnable, IChangeObserver {
         float scale = unicode ? 0.65F : 0.5F;
         float rotate;
         if (this.options.rotates) {
-            rotate = -this.direction - 90.0F - (float) this.northRotate;
+            rotate = -this.direction - 90.0F - this.northRotate;
         } else {
             rotate = -90.0F;
         }
@@ -1985,7 +1985,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.rotates) {
                 float tempdir = this.direction % 90.0F;
                 tempdir = 45.0F - Math.abs(45.0F - tempdir);
-                distance = (float) (33.5 / (double) scale / Math.cos(Math.toRadians(tempdir)));
+                distance = (float) (33.5 / scale / Math.cos(Math.toRadians(tempdir)));
             } else {
                 distance = 33.5F / scale;
             }
@@ -1995,23 +1995,23 @@ public class Map implements Runnable, IChangeObserver {
 
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-((double) rotate - 90.0))), (double) distance * Math.cos(Math.toRadians(-((double) rotate - 90.0))), 100.0);
-        this.write(matrixStack, "N", (float) x / scale - 2.0F, (float) y / scale - 4.0F, 16777215);
+        matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate - 90.0))), distance * Math.cos(Math.toRadians(-(rotate - 90.0))), 100.0);
+        this.write(matrixStack, "N", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-rotate)), (double) distance * Math.cos(Math.toRadians(-rotate)), 10.0);
-        this.write(matrixStack, "E", (float) x / scale - 2.0F, (float) y / scale - 4.0F, 16777215);
+        matrixStack.translate(distance * Math.sin(Math.toRadians(-rotate)), distance * Math.cos(Math.toRadians(-rotate)), 10.0);
+        this.write(matrixStack, "E", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-((double) rotate + 90.0))), (double) distance * Math.cos(Math.toRadians(-((double) rotate + 90.0))), 10.0);
-        this.write(matrixStack, "S", (float) x / scale - 2.0F, (float) y / scale - 4.0F, 16777215);
+        matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 90.0))), distance * Math.cos(Math.toRadians(-(rotate + 90.0))), 10.0);
+        this.write(matrixStack, "S", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate((double) distance * Math.sin(Math.toRadians(-((double) rotate + 180.0))), (double) distance * Math.cos(Math.toRadians(-((double) rotate + 180.0))), 10.0);
-        this.write(matrixStack, "W", (float) x / scale - 2.0F, (float) y / scale - 4.0F, 16777215);
+        matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 180.0))), distance * Math.cos(Math.toRadians(-(rotate + 180.0))), 10.0);
+        this.write(matrixStack, "W", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
     }
 
@@ -2030,28 +2030,28 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.scale(scale, scale, 1.0F);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.chkLen(xy) / 2;
-            this.write(matrixStack, xy, (float) x / scale - (float) m, (float) textStart / scale, 16777215); //X, Z
+            this.write(matrixStack, xy, x / scale - m, textStart / scale, 16777215); //X, Z
             xy = Integer.toString(GameVariableAccessShim.yCoord());
             m = this.chkLen(xy) / 2;
-            this.write(matrixStack, xy, (float) x / scale - (float) m, (float) textStart / scale + 10.0F, 16777215); //Y
+            this.write(matrixStack, xy, x / scale - m, textStart / scale + 10.0F, 16777215); //Y
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(matrixStack, this.error, (float) x / scale - (float) m, (float) textStart / scale + 19.0F, 16777215); //WORLD NAME
+                this.write(matrixStack, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); //WORLD NAME
             }
 
             matrixStack.pop();
         } else {
-            int heading = (int) (this.direction + (float) this.northRotate);
+            int heading = (int) (this.direction + this.northRotate);
             if (heading > 360) {
                 heading -= 360;
             }
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "'";
             int m = this.chkLen(stats) / 2;
-            this.write(matrixStack, stats, (float) (this.scWidth / 2 - m), 5.0F, 16777215);
+            this.write(matrixStack, stats, (this.scWidth / 2 - m), 5.0F, 16777215);
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(matrixStack, this.error, (float) (this.scWidth / 2 - m), 15.0F, 16777215);
+                this.write(matrixStack, this.error, (this.scWidth / 2 - m), 15.0F, 16777215);
             }
         }
 
@@ -2107,35 +2107,35 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         int title = this.chkLen(head);
-        int centerX = (int) ((double) (scWidth + 5) / 2.0);
-        int centerY = (int) ((double) (scHeight + 5) / 2.0);
+        int centerX = (int) ((scWidth + 5) / 2.0);
+        int centerY = (int) ((scHeight + 5) / 2.0);
         Text hide = this.welcomeText[this.welcomeText.length - 1];
         int footer = this.chkLen(hide);
         GLShim.glDisable(GL11.GL_TEXTURE_2D);
         GLShim.glColor4f(0.0F, 0.0F, 0.0F, 0.7F);
-        double leftX = (double) centerX - (double) title / 2.0 - (double) border;
-        double rightX = (double) centerX + (double) title / 2.0 + (double) border;
-        double topY = (double) centerY - (double) (height - 1) / 2.0 * 10.0 - (double) border - 20.0;
-        double botY = (double) centerY - (double) (height - 1) / 2.0 * 10.0 + (double) border - 10.0;
+        double leftX = centerX - title / 2.0 - border;
+        double rightX = centerX + title / 2.0 + border;
+        double topY = centerY - (height - 1) / 2.0 * 10.0 - border - 20.0;
+        double botY = centerY - (height - 1) / 2.0 * 10.0 + border - 10.0;
         this.drawBox(leftX, rightX, topY, botY);
-        leftX = (double) centerX - (double) maxSize / 2.0 - (double) border;
-        rightX = (double) centerX + (double) maxSize / 2.0 + (double) border;
-        topY = (double) centerY - (double) (height - 1) / 2.0 * 10.0 - (double) border;
-        botY = (double) centerY + (double) (height - 1) / 2.0 * 10.0 + (double) border;
+        leftX = centerX - maxSize / 2.0 - border;
+        rightX = centerX + maxSize / 2.0 + border;
+        topY = centerY - (height - 1) / 2.0 * 10.0 - border;
+        botY = centerY + (height - 1) / 2.0 * 10.0 + border;
         this.drawBox(leftX, rightX, topY, botY);
-        leftX = (double) centerX - (double) footer / 2.0 - (double) border;
-        rightX = (double) centerX + (double) footer / 2.0 + (double) border;
-        topY = (double) centerY + (double) (height - 1) / 2.0 * 10.0 - (double) border + 10.0;
-        botY = (double) centerY + (double) (height - 1) / 2.0 * 10.0 + (double) border + 20.0;
+        leftX = centerX - footer / 2.0 - border;
+        rightX = centerX + footer / 2.0 + border;
+        topY = centerY + (height - 1) / 2.0 * 10.0 - border + 10.0;
+        botY = centerY + (height - 1) / 2.0 * 10.0 + border + 20.0;
         this.drawBox(leftX, rightX, topY, botY);
         GLShim.glEnable(GL11.GL_TEXTURE_2D);
-        this.write(matrixStack, head, (float) (centerX - title / 2), (float) (centerY - (height - 1) * 10 / 2 - 19), 16777215);
+        this.write(matrixStack, head, (centerX - title / 2), (centerY - (height - 1) * 10 / 2 - 19), 16777215);
 
         for (int n = 1; n < height; ++n) {
-            this.write(matrixStack, this.welcomeText[n], (float) (centerX - maxSize / 2), (float) (centerY - (height - 1) * 10 / 2 + n * 10 - 9), 16777215);
+            this.write(matrixStack, this.welcomeText[n], (centerX - maxSize / 2), (centerY - (height - 1) * 10 / 2 + n * 10 - 9), 16777215);
         }
 
-        this.write(matrixStack, hide, (float) (centerX - footer / 2), (float) ((scHeight + 5) / 2 + (height - 1) * 10 / 2 + 11), 16777215);
+        this.write(matrixStack, hide, (centerX - footer / 2), ((scHeight + 5) / 2 + (height - 1) * 10 / 2 + 11), 16777215);
     }
 
     private void drawBox(double leftX, double rightX, double topY, double botY) {

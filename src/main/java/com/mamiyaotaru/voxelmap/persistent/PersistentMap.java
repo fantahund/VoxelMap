@@ -632,7 +632,7 @@ public class PersistentMap implements IPersistentMap {
                 boolean invert = false;
                 if (!mapOptions.slopemap) {
                     diff = height - 80;
-                    sc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 1.8;
+                    sc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
                     if (diff < 0) {
                         sc = 0.0 - sc;
                     }
@@ -710,7 +710,7 @@ public class PersistentMap implements IPersistentMap {
 
                     if (mapOptions.heightmap) {
                         diff = height - 80;
-                        double heightsc = Math.log10((double) Math.abs(diff) / 8.0 + 1.0) / 3.0;
+                        double heightsc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
                         sc = diff > 0 ? sc + heightsc : sc - heightsc;
                     }
                 }
@@ -720,14 +720,14 @@ public class PersistentMap implements IPersistentMap {
                 int g = color24 >> 8 & 0xFF;
                 int b = color24 & 0xFF;
                 if (sc > 0.0) {
-                    r += (int) (sc * (double) (255 - r));
-                    g += (int) (sc * (double) (255 - g));
-                    b += (int) (sc * (double) (255 - b));
+                    r += (int) (sc * (255 - r));
+                    g += (int) (sc * (255 - g));
+                    b += (int) (sc * (255 - b));
                 } else if (sc < 0.0) {
                     sc = Math.abs(sc);
-                    r -= (int) (sc * (double) r);
-                    g -= (int) (sc * (double) g);
-                    b -= (int) (sc * (double) b);
+                    r -= (int) (sc * r);
+                    g -= (int) (sc * g);
+                    b -= (int) (sc * b);
                 }
 
                 color24 = alpha * 16777216 + r * 65536 + g * 256 + b;
@@ -866,8 +866,8 @@ public class PersistentMap implements IPersistentMap {
 
             int chunkX = chunk.getPos().x;
             int chunkZ = chunk.getPos().z;
-            int regionX = (int) Math.floor((double) chunkX / 16.0);
-            int regionZ = (int) Math.floor((double) chunkZ / 16.0);
+            int regionX = (int) Math.floor(chunkX / 16.0);
+            int regionZ = (int) Math.floor(chunkZ / 16.0);
             String key = "" + regionX + "," + regionZ;
             CachedRegion cachedRegion;
             synchronized (this.cachedRegions) {
@@ -907,24 +907,24 @@ public class PersistentMap implements IPersistentMap {
 
     @Override
     public boolean isRegionLoaded(int blockX, int blockZ) {
-        int x = (int) Math.floor((float) blockX / 256.0F);
-        int z = (int) Math.floor((float) blockZ / 256.0F);
+        int x = (int) Math.floor(blockX / 256.0F);
+        int z = (int) Math.floor(blockZ / 256.0F);
         CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
         return cachedRegion != null && cachedRegion.isLoaded();
     }
 
     @Override
     public boolean isGroundAt(int blockX, int blockZ) {
-        int x = (int) Math.floor((float) blockX / 256.0F);
-        int z = (int) Math.floor((float) blockZ / 256.0F);
+        int x = (int) Math.floor(blockX / 256.0F);
+        int z = (int) Math.floor(blockZ / 256.0F);
         CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
         return cachedRegion != null && cachedRegion.isGroundAt(blockX, blockZ);
     }
 
     @Override
     public int getHeightAt(int blockX, int blockZ) {
-        int x = (int) Math.floor((float) blockX / 256.0F);
-        int z = (int) Math.floor((float) blockZ / 256.0F);
+        int x = (int) Math.floor(blockX / 256.0F);
+        int z = (int) Math.floor(blockZ / 256.0F);
         CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
         return cachedRegion == null ? 64 : cachedRegion.getHeightAt(blockX, blockZ);
     }

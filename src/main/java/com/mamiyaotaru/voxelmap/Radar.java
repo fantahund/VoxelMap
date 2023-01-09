@@ -299,10 +299,10 @@ public class Radar implements IRadar {
                     this.textureAtlas.registerMaskedIcon(spriteName, sprite);
                 } else {
                     this.textureAtlas.registerFailedIcon(identifier + "custom");
-                    if ((double) EnumMobs.values()[t].expectedWidth > 0.5) {
+                    if (EnumMobs.values()[t].expectedWidth > 0.5) {
                         mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
                         if (mobImage != null) {
-                            float scale = (float) mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
+                            float scale = mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
                             mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
                             this.textureAtlas.registerIconForBufferedImage(spriteName, mobImage);
                         }
@@ -313,7 +313,7 @@ public class Radar implements IRadar {
             BufferedImage[] armorImages = new BufferedImage[]{ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8)};
 
             for (int t = 0; t < armorImages.length; ++t) {
-                float scale = (float) armorImages[t].getWidth() / 8.0F;
+                float scale = armorImages[t].getWidth() / 8.0F;
                 armorImages[t] = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorImages[t], 4.0F / scale * 47.0F / 38.0F)), this.options.outlines && t != 2 && t != 3, true, 37.6F, 37.6F, 2);
                 Sprite icon = this.textureAtlas.registerIconForBufferedImage("armor " + this.armorNames[t], armorImages[t]);
                 if (t == 0) {
@@ -322,36 +322,36 @@ public class Radar implements IRadar {
             }
 
             BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
-            float scale = (float) zombie.getWidth() / 8.0F;
+            float scale = zombie.getWidth() / 8.0F;
             zombie = ImageUtils.scaleImage(zombie, 4.0F / scale * 47.0F / 38.0F);
             BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64);
             zombieHat = ImageUtils.scaleImage(zombieHat, 4.0F / scale * 47.0F / 35.0F);
-            zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (float) (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (float) (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8), zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
+            zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8), zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
             zombieHat.flush();
             zombie = ImageUtils.fillOutline(ImageUtils.pad(zombie), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head", zombie);
             BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32);
-            scale = (float) skeleton.getWidth() / 8.0F;
+            scale = skeleton.getWidth() / 8.0F;
             skeleton = ImageUtils.scaleImage(skeleton, 4.0F / scale * 47.0F / 38.0F);
             skeleton = ImageUtils.addImages(new BufferedImage(skeleton.getWidth(), skeleton.getHeight() + 8, 6), skeleton, 0.0F, 0.0F, skeleton.getWidth(), skeleton.getHeight() + 8);
             skeleton = ImageUtils.fillOutline(ImageUtils.pad(skeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head", skeleton);
             BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32);
-            scale = (float) witherSkeleton.getWidth() / 8.0F;
+            scale = witherSkeleton.getWidth() / 8.0F;
             witherSkeleton = ImageUtils.scaleImage(witherSkeleton, 4.0F / scale * 47.0F / 38.0F);
             witherSkeleton = ImageUtils.addImages(new BufferedImage(witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8, 6), witherSkeleton, 0.0F, 0.0F, witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8);
             witherSkeleton = ImageUtils.fillOutline(ImageUtils.pad(witherSkeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head", witherSkeleton);
             BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8), 0.0F, 0.0F, 8, 10);
-            scale = (float) creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
+            scale = creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
             creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
             BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
-            scale = (float) dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
+            scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
             dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
             BufferedImage sheepFur = ImageUtils.loadImage(new Identifier("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
-            scale = (float) sheepFur.getWidth() / 6.0F;
+            scale = sheepFur.getWidth() / 6.0F;
             sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
             int chop = (int) Math.max(1.0F, 2.0F);
             ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
@@ -361,7 +361,7 @@ public class Radar implements IRadar {
             BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
             if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
                 int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
-                float scaleBy = 512.0F / (float) maxDim;
+                float scaleBy = 512.0F / maxDim;
                 fontImage = ImageUtils.scaleImage(fontImage, scaleBy);
             }
 
@@ -433,10 +433,10 @@ public class Radar implements IRadar {
                         mushroomImage = ImageUtils.loadImage(mobImageSecondary, 0, 0, 16, 16, 16, 16);
                     }
 
-                    float ratio = (float) image.getWidth() / (float) mushroomImage.getWidth();
-                    if ((double) ratio < 2.5) {
+                    float ratio = (float) image.getWidth() / mushroomImage.getWidth();
+                    if (ratio < 2.5) {
                         image = ImageUtils.scaleImage(image, 2.5F / ratio);
-                    } else if ((double) ratio > 2.5) {
+                    } else if (ratio > 2.5) {
                         mushroomImage = ImageUtils.scaleImage(mushroomImage, ratio / 2.5F);
                     }
 
@@ -742,7 +742,7 @@ public class Radar implements IRadar {
                 mobSkin = ImageIO.read(is);
                 is.close();
                 mobSkin = ImageUtils.validateImage(mobSkin);
-                float scale = (float) mobSkin.getWidth() / (float) intendedSize;
+                float scale = (float) mobSkin.getWidth() / intendedSize;
                 mobSkin = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobSkin, 4.0F / scale)), this.options.outlines, 2);
             }
         } catch (Exception var16) {
@@ -849,14 +849,14 @@ public class Radar implements IRadar {
                 BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
                 if (resourceLocationSecondary != null && base != null) {
                     BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
-                    pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / (float) pattern.getWidth(), (float) base.getHeight() / (float) pattern.getHeight());
+                    pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / pattern.getWidth(), (float) base.getHeight() / pattern.getHeight());
                     base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                     pattern.flush();
                 }
 
                 if (resourceLocationTertiary != null && base != null) {
                     BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
-                    armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / (float) armor.getWidth(), (float) base.getHeight() / (float) armor.getHeight());
+                    armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / armor.getWidth(), (float) base.getHeight() / armor.getHeight());
                     armor = ImageUtils.colorify(armor, contact.armorColor);
                     base = ImageUtils.addImages(base, armor, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                     armor.flush();
@@ -864,7 +864,7 @@ public class Radar implements IRadar {
 
                 mobImage = this.createImageFromTypeAndImages(contact.type, base, null, contact.entity);
                 base.flush();
-            } else if ((double) contact.type.expectedWidth > 0.5) {
+            } else if (contact.type.expectedWidth > 0.5) {
                 mobImage = this.createImageFromTypeAndResourceLocations(contact.type, resourceLocation, resourceLocationSecondary, contact.entity);
             }
 
@@ -1188,8 +1188,8 @@ public class Radar implements IRadar {
 
                         hasAdditional = true;
                         BufferedImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]);
-                        float xScale = (float) (base.getWidth() / overlay.getWidth());
-                        float yScale = (float) (base.getHeight() / overlay.getHeight());
+                        float xScale = (base.getWidth() / overlay.getWidth());
+                        float yScale = (base.getHeight() / overlay.getHeight());
                         if (xScale != 1.0F || yScale != 1.0F) {
                             overlay = ImageUtils.scaleImage(overlay, xScale, yScale);
                         }
@@ -1224,12 +1224,12 @@ public class Radar implements IRadar {
         GLShim.glBindTexture(GL11.GL_TEXTURE_2D, 0);
         GLShim.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, (float) width, (float) height, 0.0F, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
         matrixStack.loadIdentity();
-        matrixStack.translate(0.0, 0.0, -3000.0 + (double) captureDepth);
+        matrixStack.translate(0.0, 0.0, -3000.0 + captureDepth);
         RenderSystem.applyModelViewMatrix();
         GLUtils.bindFrameBuffer();
         GLShim.glDepthMask(true);
@@ -1340,10 +1340,10 @@ public class Radar implements IRadar {
             }
 
             int maxDimension = Math.max(image.getWidth(), image.getHeight());
-            float scale = (float) Math.ceil((double) maxDimension / acceptableMax);
+            float scale = (float) Math.ceil(maxDimension / acceptableMax);
             return ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(image, 1.0F / scale)), this.options.outlines, 2);
         } else {
-            float scale = (float) image.getWidth() / contact.type.expectedWidth;
+            float scale = image.getWidth() / contact.type.expectedWidth;
             return ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(image, 4.0F / scale)), this.options.outlines, 2);
         }
     }
@@ -1488,7 +1488,7 @@ public class Radar implements IRadar {
                         ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
                         BufferedImage blockImageFront = this.master.getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
                         blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
-                        ImageUtils.addImages(blockImage, blockImageFront, (float) (width / 2 - 15), (float) (height / 2 - 15), width, height);
+                        ImageUtils.addImages(blockImage, blockImageFront, (width / 2 - 15), (height / 2 - 15), width, height);
                         blockImageFront.flush();
                         blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
                         icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
@@ -1550,12 +1550,12 @@ public class Radar implements IRadar {
             if (armorTexture != null) {
                 if (!isPiglin) {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-                    float scale = (float) armorTexture.getWidth() / 8.0F;
+                    float scale = armorTexture.getWidth() / 8.0F;
                     BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
                     icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation, armorImage);
                 } else {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-                    float scale = (float) armorTexture.getWidth() / 8.0F;
+                    float scale = armorTexture.getWidth() / 8.0F;
                     BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 47.0F, 37.6F, 2);
                     icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation + "_piglin", armorImage);
                 }
@@ -1613,7 +1613,7 @@ public class Radar implements IRadar {
             double wayX = lastX - contactX;
             double wayZ = lastZ - contactZ;
             int wayY = lastY - contactY;
-            double adjustedDiff = max - (double) Math.max(Math.abs(wayY), 0);
+            double adjustedDiff = max - Math.max(Math.abs(wayY), 0);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
@@ -1647,12 +1647,12 @@ public class Radar implements IRadar {
                         matrixStack.translate(x, y, 0.0);
                         matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
                         matrixStack.translate(0.0, -contact.distance, 0.0);
-                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + (float) contact.rotationFactor));
+                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + contact.rotationFactor));
                         matrixStack.translate((-x), (-y), 0.0);
                     } else {
                         wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
                         wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                        matrixStack.translate((double) Math.round(-wayX * (double) this.layoutVariables.scScale) / (double) this.layoutVariables.scScale, (double) Math.round(-wayZ * (double) this.layoutVariables.scScale) / (double) this.layoutVariables.scScale, 0.0);
+                        matrixStack.translate((double) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (double) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0);
                     }
 
                     RenderSystem.applyModelViewMatrix();
@@ -1705,7 +1705,7 @@ public class Radar implements IRadar {
 
                     this.applyFilteringParameters();
                     GLUtils.drawPre();
-                    GLUtils.setMap(contact.icon, (float) x, (float) y + yOffset, (float) ((int) ((float) contact.icon.getIconWidth() / 4.0F)));
+                    GLUtils.setMap(contact.icon, x, y + yOffset, ((int) (contact.icon.getIconWidth() / 4.0F)));
                     GLUtils.drawPost();
                     if ((this.options.showHelmetsPlayers && contact.type == EnumMobs.PLAYER || this.options.showHelmetsMobs && contact.type != EnumMobs.PLAYER || contact.type == EnumMobs.SHEEP) && contact.armorIcon != null) {
                         Sprite icon = contact.armorIcon;
@@ -1719,9 +1719,9 @@ public class Radar implements IRadar {
                         float green = 1.0F;
                         float blue = 1.0F;
                         if (contact.armorColor != -1) {
-                            red = (float) (contact.armorColor >> 16 & 0xFF) / 255.0F;
-                            green = (float) (contact.armorColor >> 8 & 0xFF) / 255.0F;
-                            blue = (float) (contact.armorColor & 0xFF) / 255.0F;
+                            red = (contact.armorColor >> 16 & 0xFF) / 255.0F;
+                            green = (contact.armorColor >> 8 & 0xFF) / 255.0F;
+                            blue = (contact.armorColor & 0xFF) / 255.0F;
                             if (contact.type == EnumMobs.SHEEP) {
                                 SheepEntity sheepEntity = (SheepEntity) contact.entity;
                                 if (sheepEntity.hasCustomName() && "jeb_".equals(sheepEntity.getName().getString())) {
@@ -1729,7 +1729,7 @@ public class Radar implements IRadar {
                                     int numDyeColors = DyeColor.values().length;
                                     int colorID1 = semiRandom % numDyeColors;
                                     int colorID2 = (semiRandom + 1) % numDyeColors;
-                                    float lerpVal = ((float) (sheepEntity.age % 25) + VoxelConstants.getMinecraft().getTickDelta()) / 25.0F;
+                                    float lerpVal = ((sheepEntity.age % 25) + VoxelConstants.getMinecraft().getTickDelta()) / 25.0F;
                                     float[] sheepColors1 = SheepEntity.getRgbColor(DyeColor.byId(colorID1));
                                     float[] sheepColors2 = SheepEntity.getRgbColor(DyeColor.byId(colorID2));
                                     red = sheepColors1[0] * (1.0F - lerpVal) + sheepColors2[0] * lerpVal;
@@ -1749,7 +1749,7 @@ public class Radar implements IRadar {
 
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
-                        GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) ((int) ((float) icon.getIconWidth() / 4.0F * armorScale)));
+                        GLUtils.setMap(icon, x, y + yOffset + armorOffset, ((int) (icon.getIconWidth() / 4.0F * armorScale)));
                         GLUtils.drawPost();
                         if (icon == this.clothIcon) {
                             if (wayY < 0) {
@@ -1761,7 +1761,7 @@ public class Radar implements IRadar {
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[2]);
                             this.applyFilteringParameters();
                             GLUtils.drawPre();
-                            GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale);
+                            GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
                             GLUtils.drawPost();
                             if (wayY < 0) {
                                 GLShim.glColor4f(red, green, blue, contact.brightness);
@@ -1772,27 +1772,27 @@ public class Radar implements IRadar {
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[1]);
                             this.applyFilteringParameters();
                             GLUtils.drawPre();
-                            GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
+                            GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
                             GLShim.glColor3f(1.0F, 1.0F, 1.0F);
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[3]);
                             this.applyFilteringParameters();
                             GLUtils.drawPre();
-                            GLUtils.setMap(icon, (float) x, (float) y + yOffset + armorOffset, (float) icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
+                            GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
                         }
                     }
 
                     if (contact.name != null && (this.options.showPlayerNames && contact.type == EnumMobs.PLAYER || this.options.showMobNames && contact.type != EnumMobs.PLAYER)) {
 
-                        float scaleFactor = (float) this.layoutVariables.scScale / this.options.fontScale;
+                        float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
                         RenderSystem.applyModelViewMatrix();
 
                         String name = contact.entity.getDisplayName().getString();
                         int m = this.fontRenderer.getWidth(name) / 2;
 
-                        this.write(name, (float) x * scaleFactor - (float) m, (float) (y + 3) * scaleFactor, 16777215);
+                        this.write(name, x * scaleFactor - m, (y + 3) * scaleFactor, 16777215);
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);

@@ -165,7 +165,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;
             byte padding = 3;
             int width = 215;
-            if (mouseX >= (double) (leftEdge + width - 16 - padding) && mouseX <= (double) (leftEdge + width + padding)) {
+            if (mouseX >= (leftEdge + width - 16 - padding) && mouseX <= (leftEdge + width + padding)) {
                 this.parentGui.toggleMobVisibility();
             } else if (GuiSlotMobs.this.doubleclick) {
                 this.parentGui.toggleMobVisibility();

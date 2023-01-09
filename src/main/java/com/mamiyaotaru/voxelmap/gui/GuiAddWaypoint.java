@@ -197,11 +197,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             this.waypointZ.mouseClicked(mouseX, mouseY, mouseButton);
             this.waypointY.mouseClicked(mouseX, mouseY, mouseButton);
         } else if (this.choosingColor) {
-            if (mouseX >= (double) (this.getWidth() / 2 - 128) && mouseX < (double) (this.getWidth() / 2 + 128) && mouseY >= (double) (this.getHeight() / 2 - 128) && mouseY < (double) (this.getHeight() / 2 + 128)) {
+            if (mouseX >= (this.getWidth() / 2 - 128) && mouseX < (this.getWidth() / 2 + 128) && mouseY >= (this.getHeight() / 2 - 128) && mouseY < (this.getHeight() / 2 + 128)) {
                 int color = this.colorManager.getColorPicker().getRGB((int) mouseX - (this.getWidth() / 2 - 128), (int) mouseY - (this.getHeight() / 2 - 128));
-                this.waypoint.red = (float) (color >> 16 & 0xFF) / 255.0F;
-                this.waypoint.green = (float) (color >> 8 & 0xFF) / 255.0F;
-                this.waypoint.blue = (float) (color & 0xFF) / 255.0F;
+                this.waypoint.red = (color >> 16 & 0xFF) / 255.0F;
+                this.waypoint.green = (color >> 8 & 0xFF) / 255.0F;
+                this.waypoint.blue = (color & 0xFF) / 255.0F;
                 this.choosingColor = false;
             }
         } else if (this.choosingIcon) {
@@ -209,17 +209,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
                 TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
                 float scale = scScale / 2.0F;
-                float displayWidthFloat = (float) chooser.getWidth() / scale;
-                float displayHeightFloat = (float) chooser.getHeight() / scale;
-                if (displayWidthFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
-                    float adj = displayWidthFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
+                float displayWidthFloat = chooser.getWidth() / scale;
+                float displayHeightFloat = chooser.getHeight() / scale;
+                if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
+                    float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
                     scale *= adj;
                     displayWidthFloat /= adj;
                     displayHeightFloat /= adj;
                 }
 
-                if (displayHeightFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
-                    float adj = displayHeightFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
+                if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
+                    float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
                     scale *= adj;
                     displayWidthFloat /= adj;
                     displayHeightFloat /= adj;
@@ -227,9 +227,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
                 int displayWidth = (int) displayWidthFloat;
                 int displayHeight = (int) displayHeightFloat;
-                if (mouseX >= (double) (this.getWidth() / 2 - displayWidth / 2) && mouseX < (double) (this.getWidth() / 2 + displayWidth / 2) && mouseY >= (double) (this.getHeight() / 2 - displayHeight / 2) && mouseY < (double) (this.getHeight() / 2 + displayHeight / 2)) {
-                    float x = ((float) mouseX - (float) (this.getWidth() / 2 - displayWidth / 2)) * scale;
-                    float y = ((float) mouseY - (float) (this.getHeight() / 2 - displayHeight / 2)) * scale;
+                if (mouseX >= (this.getWidth() / 2 - displayWidth / 2) && mouseX < (this.getWidth() / 2 + displayWidth / 2) && mouseY >= (this.getHeight() / 2 - displayHeight / 2) && mouseY < (this.getHeight() / 2 + displayHeight / 2)) {
+                    float x = ((float) mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
+                    float y = ((float) mouseY - (this.getHeight() / 2 - displayHeight / 2)) * scale;
                     Sprite icon = chooser.getIconAt(x, y);
                     if (icon != chooser.getMissingImage()) {
                         this.waypoint.imageSuffix = icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
@@ -310,7 +310,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         GLUtils.disp2(chooser.getGlId());
         GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
-        this.drawTexturedModalRect((float) (this.getWidth() / 2 - 25), (float) (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
+        this.drawTexturedModalRect((this.getWidth() / 2 - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         if (this.choosingColor || this.choosingIcon) {
             this.renderBackground(matrixStack);
         }
@@ -324,16 +324,16 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
         if (this.choosingIcon) {
             float scale = scScale / 2.0F;
-            float displayWidthFloat = (float) chooser.getWidth() / scale;
-            float displayHeightFloat = (float) chooser.getHeight() / scale;
-            if (displayWidthFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
-                float adj = displayWidthFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
+            float displayWidthFloat = chooser.getWidth() / scale;
+            float displayHeightFloat = chooser.getHeight() / scale;
+            if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
+                float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
 
-            if (displayHeightFloat > (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
-                float adj = displayHeightFloat / (float) VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
+            if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
+                float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
@@ -354,8 +354,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
             drawTexture(matrixStack, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, displayWidth, displayHeight, 0.0F, 0.0F, chooser.getWidth(), chooser.getHeight(), chooser.getImageWidth(), chooser.getImageHeight());
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
-                float x = (float) (mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
-                float y = (float) (mouseY - (this.getHeight() / 2 - displayHeight / 2)) * scale;
+                float x = (mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
+                float y = (mouseY - (this.getHeight() / 2 - displayHeight / 2)) * scale;
                 icon = chooser.getIconAt(x, y);
                 if (icon != chooser.getMissingImage()) {
                     this.tooltip = Text.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));

@@ -64,7 +64,7 @@ public class GLShim {
     }
 
     public static void glColor3ub(int red, int green, int blue) {
-        RenderSystem.setShaderColor((float) red / 255.0F, (float) green / 255.0F, (float) blue / 255.0F, 1.0F);
+        RenderSystem.setShaderColor(red / 255.0F, green / 255.0F, blue / 255.0F, 1.0F);
     }
 
     public static void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {

@@ -103,7 +103,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             byte padding = 4;
             byte iconWidth = 16;
             int width = GuiSlotDimensions.this.slotWidth;
-            if (mouseX >= (double) (leftEdge + width - iconWidth - padding) && mouseX <= (double) (leftEdge + width)) {
+            if (mouseX >= (leftEdge + width - iconWidth - padding) && mouseX <= (leftEdge + width)) {
                 this.parentGui.toggleDimensionSelected();
             } else if (GuiSlotDimensions.this.doubleclick) {
                 this.parentGui.toggleDimensionSelected();

@@ -90,7 +90,7 @@ public class ImageUtils {
     public static BufferedImage createBufferedImageFromCurrentGLImage() {
         int imageWidth = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TRANSFORM_BIT);
         int imageHeight = GLShim.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
-        long size = (long) imageWidth * (long) imageHeight * 4L;
+        long size = (long) imageWidth * imageHeight * 4L;
         BufferedImage image;
         if (size < 2147483647L) {
             image = new BufferedImage(imageWidth, imageHeight, 6);
@@ -114,7 +114,7 @@ public class ImageUtils {
             while (size > 2147483647L) {
                 imageWidth /= 2;
                 imageHeight /= 2;
-                size = (long) imageWidth * (long) imageHeight * 4L;
+                size = (long) imageWidth * imageHeight * 4L;
             }
             int glid = GLShim.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             image = new BufferedImage(imageWidth, imageHeight, 6);
@@ -125,7 +125,7 @@ public class ImageUtils {
             GLShim.glPushAttrib(GL11.GL_TRANSFORM_BIT);
             RenderSystem.backupProjectionMatrix();
             GLShim.glViewport(0, 0, fboWidth, fboHeight);
-            Matrix4f matrix4f = MathUtils.projectionMatrix((float) fboWidth, (float) (-fboHeight), 1000.0F, 3000.0F);
+            Matrix4f matrix4f = MathUtils.projectionMatrix(fboWidth, (-fboHeight), 1000.0F, 3000.0F);
             RenderSystem.setProjectionMatrix(matrix4f);
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.loadIdentity();
@@ -137,10 +137,10 @@ public class ImageUtils {
                     GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
                     GLShim.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
                     GLUtils.drawPre();
-                    GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / (float) imageWidth, (float) startY / (float) imageHeight);
-                    GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, (float) startY / (float) imageHeight);
-                    GLUtils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + (float) fboWidth) / (float) imageWidth, ((float) startY + (float) fboHeight) / (float) imageHeight);
-                    GLUtils.ldrawthree(0.0, 0.0, 1.0, (float) startX / (float) imageWidth, ((float) startY + (float) fboHeight) / (float) imageHeight);
+                    GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / imageWidth, (float) startY / imageHeight);
+                    GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + fboWidth) / imageWidth, (float) startY / imageHeight);
+                    GLUtils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + fboWidth) / imageWidth, ((float) startY + fboHeight) / imageHeight);
+                    GLUtils.ldrawthree(0.0, 0.0, 1.0, (float) startX / imageWidth, ((float) startY + fboHeight) / imageHeight);
                     GLUtils.drawPost();
                     GLUtils.disp(GLUtils.fboTextureID);
                     byteBuffer.position(0);
@@ -234,12 +234,12 @@ public class ImageUtils {
     }
 
     public static BufferedImage eraseArea(BufferedImage image, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scaleX = (float) (image.getWidth(null) / imageWidth);
-        float scaleY = (float) (image.getHeight(null) / imageHeight);
-        x = (int) ((float) x * scaleX);
-        y = (int) ((float) y * scaleY);
-        w = (int) ((float) w * scaleX);
-        h = (int) ((float) h * scaleY);
+        float scaleX = (image.getWidth(null) / imageWidth);
+        float scaleY = (image.getHeight(null) / imageHeight);
+        x = (int) (x * scaleX);
+        y = (int) (y * scaleY);
+        w = (int) (w * scaleX);
+        h = (int) (h * scaleY);
         int[] blankPixels = new int[w * h];
         Arrays.fill(blankPixels, 0);
         image.setRGB(x, y, w, h, blankPixels, 0, w);
@@ -265,11 +265,11 @@ public class ImageUtils {
     }
 
     public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scale = (float) (mobSkin.getWidth(null) / imageWidth);
-        x = (int) ((float) x * scale);
-        y = (int) ((float) y * scale);
-        w = (int) ((float) w * scale);
-        h = (int) ((float) h * scale);
+        float scale = (mobSkin.getWidth(null) / imageWidth);
+        x = (int) (x * scale);
+        y = (int) (y * scale);
+        w = (int) (w * scale);
+        h = (int) (h * scale);
         w = Math.max(1, w);
         h = Math.max(1, h);
         x = Math.min(mobSkin.getWidth(null) - w, x);
@@ -280,7 +280,7 @@ public class ImageUtils {
     public static BufferedImage addImages(BufferedImage base, BufferedImage overlay, float x, float y, int baseWidth, int baseHeight) {
         int scale = base.getWidth() / baseWidth;
         Graphics gfx = base.getGraphics();
-        gfx.drawImage(overlay, (int) (x * (float) scale), (int) (y * (float) scale), null);
+        gfx.drawImage(overlay, (int) (x * scale), (int) (y * scale), null);
         gfx.dispose();
         return base;
     }
@@ -294,8 +294,8 @@ public class ImageUtils {
                 type = 6;
             }
 
-            int newWidth = Math.max(1, (int) ((float) image.getWidth() * scaleBy));
-            int newHeight = Math.max(1, (int) ((float) image.getHeight() * scaleBy));
+            int newWidth = Math.max(1, (int) (image.getWidth() * scaleBy));
+            int newHeight = Math.max(1, (int) (image.getHeight() * scaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
             g2.drawImage(image, 0, 0, newWidth, newHeight, null);
@@ -313,8 +313,8 @@ public class ImageUtils {
                 type = 6;
             }
 
-            int newWidth = Math.max(1, (int) ((float) image.getWidth() * xScaleBy));
-            int newHeight = Math.max(1, (int) ((float) image.getHeight() * yScaleBy));
+            int newWidth = Math.max(1, (int) (image.getWidth() * xScaleBy));
+            int newHeight = Math.max(1, (int) (image.getHeight() * yScaleBy));
             BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
             Graphics2D g2 = tmp.createGraphics();
             g2.drawImage(image, 0, 0, newWidth, newHeight, null);
@@ -342,7 +342,7 @@ public class ImageUtils {
         int dim = Math.max(base.getWidth(), base.getHeight());
         int t = 1;
 
-        while (Math.pow(2.0, t - 1) < (double) dim) {
+        while (Math.pow(2.0, t - 1) < dim) {
             ++t;
         }
 
@@ -396,7 +396,7 @@ public class ImageUtils {
                     int newColor = sampleNonTransparentNeighborPixel(t, s, image);
                     if (newColor != -420) {
                         if (solid) {
-                            if (armor && !((float) t <= (float) (imageWidth / 2) - armorOutlineFractionHorizontal) && !((float) t >= (float) (imageWidth / 2) + armorOutlineFractionHorizontal - 1.0F) && !((float) s <= (float) (imageHeight / 2) - armorOutlineFractionVertical) && !((float) s >= (float) (imageHeight / 2) + armorOutlineFractionVertical - 1.0F)) {
+                            if (armor && !(t <= (imageWidth / 2) - armorOutlineFractionHorizontal) && !(t >= (imageWidth / 2) + armorOutlineFractionHorizontal - 1.0F) && !(s <= (imageHeight / 2) - armorOutlineFractionVertical) && !(s >= (imageHeight / 2) + armorOutlineFractionVertical - 1.0F)) {
                                 newColor = 0;
                             } else {
                                 newColor = -16777216;
@@ -598,9 +598,9 @@ public class ImageUtils {
                 int rx = temp.getColorModel().getRed(temp.getRaster().getDataElements(x, y, null));
                 int gx = temp.getColorModel().getGreen(temp.getRaster().getDataElements(x, y, null));
                 int bx = temp.getColorModel().getBlue(temp.getRaster().getDataElements(x, y, null));
-                rx = (int) ((float) rx * r);
-                gx = (int) ((float) gx * g);
-                bx = (int) ((float) bx * b);
+                rx = (int) (rx * r);
+                gx = (int) (gx * g);
+                bx = (int) (bx * b);
                 temp.setRGB(x, y, ax << 24 | rx << 16 | gx << 8 | bx);
             }
         }
@@ -609,7 +609,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage colorify(BufferedImage image, int r, int g, int b) {
-        return colorify(image, (float) r / 255.0F, (float) g / 255.0F, (float) b / 255.0F);
+        return colorify(image, r / 255.0F, g / 255.0F, b / 255.0F);
     }
 
     public static BufferedImage colorify(BufferedImage image, int rgb) {
@@ -617,7 +617,7 @@ public class ImageUtils {
     }
 
     public static float percentageOfEdgePixelsThatAreSolid(BufferedImage image) {
-        float edgePixels = (float) (image.getWidth() * 2 + image.getHeight() * 2 - 2);
+        float edgePixels = (image.getWidth() * 2 + image.getHeight() * 2 - 2);
         float edgePixelsWithColor = 0.0F;
         int color;
 

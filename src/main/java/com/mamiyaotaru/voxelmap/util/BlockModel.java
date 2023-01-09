@@ -51,10 +51,10 @@ public class BlockModel {
     }
 
     public BufferedImage getImage(BufferedImage terrainImage) {
-        float terrainImageAspectRatio = (float) terrainImage.getWidth() / (float) terrainImage.getHeight();
+        float terrainImageAspectRatio = (float) terrainImage.getWidth() / terrainImage.getHeight();
         float longestSideUV = Math.max(Math.abs(this.longestSide[0].u - this.longestSide[1].u), Math.abs(this.longestSide[0].v - this.longestSide[1].v) / terrainImageAspectRatio);
         float modelImageWidthUV = longestSideUV / Math.max(Math.abs(this.longestSide[0].x - this.longestSide[1].x), Math.abs(this.longestSide[0].z - this.longestSide[1].z));
-        int modelImageWidth = Math.round(modelImageWidthUV * (float) terrainImage.getWidth());
+        int modelImageWidth = Math.round(modelImageWidthUV * terrainImage.getWidth());
         BufferedImage modelImage = new BufferedImage(modelImageWidth, modelImageWidth, 6);
         Graphics2D g2 = modelImage.createGraphics();
         g2.setColor(new Color(0, 0, 0, 0));
@@ -74,10 +74,10 @@ public class BlockModel {
                 return null;
             }
 
-            int faceImageX = Math.round(minX * (float) modelImage.getWidth());
-            int faceImageY = Math.round(minZ * (float) modelImage.getHeight());
-            int faceImageWidth = Math.round(maxX * (float) modelImage.getWidth()) - faceImageX;
-            int faceImageHeight = Math.round(maxZ * (float) modelImage.getHeight()) - faceImageY;
+            int faceImageX = Math.round(minX * modelImage.getWidth());
+            int faceImageY = Math.round(minZ * modelImage.getHeight());
+            int faceImageWidth = Math.round(maxX * modelImage.getWidth()) - faceImageX;
+            int faceImageHeight = Math.round(maxZ * modelImage.getHeight()) - faceImageY;
             if (faceImageWidth == 0) {
                 if (faceImageX > modelImageWidth - 1) {
                     faceImageX = modelImageWidth - 1;
@@ -94,10 +94,10 @@ public class BlockModel {
                 faceImageHeight = 1;
             }
 
-            int faceImageU = Math.round(minU * (float) terrainImage.getWidth());
-            int faceImageV = Math.round(minV * (float) terrainImage.getHeight());
-            int faceImageUVWidth = Math.round(maxU * (float) terrainImage.getWidth()) - faceImageU;
-            int faceImageUVHeight = Math.round(maxV * (float) terrainImage.getHeight()) - faceImageV;
+            int faceImageU = Math.round(minU * terrainImage.getWidth());
+            int faceImageV = Math.round(minV * terrainImage.getHeight());
+            int faceImageUVWidth = Math.round(maxU * terrainImage.getWidth()) - faceImageU;
+            int faceImageUVHeight = Math.round(maxV * terrainImage.getHeight()) - faceImageV;
             if (faceImageUVWidth == 0) {
                 faceImageUVWidth = 1;
             }
@@ -134,8 +134,8 @@ public class BlockModel {
     }
 
     private boolean similarEnough(float a, float b, float one, float two) {
-        boolean similar = (double) Math.abs(a - one) < 1.0E-4;
-        return similar && (double) Math.abs(b - two) < 1.0E-4;
+        boolean similar = Math.abs(a - one) < 1.0E-4;
+        return similar && Math.abs(b - two) < 1.0E-4;
     }
 
     public static class BlockFace implements Comparable<BlockFace> {
@@ -212,7 +212,7 @@ public class BlockModel {
                 sum += vertex.y;
             }
 
-            return sum / (float) this.vertices.length;
+            return sum / this.vertices.length;
         }
 
         private BlockVertex[] getLongestSide() {

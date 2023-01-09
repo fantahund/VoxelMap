@@ -193,7 +193,7 @@ public class RadarSimple implements IRadar {
             double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
             double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
             int wayY = GameVariableAccessShim.yCoord() - contactY;
-            double adjustedDiff = max - (double) Math.max(Math.abs(wayY), 0);
+            double adjustedDiff = max - Math.max(Math.abs(wayY), 0);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
@@ -240,12 +240,12 @@ public class RadarSimple implements IRadar {
 
                     this.applyFilteringParameters();
                     GLUtils.drawPre();
-                    GLUtils.setMap(this.textureAtlas.getAtlasSprite("contact"), (float) x, (float) y, 16.0F);
+                    GLUtils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
                     GLUtils.drawPost();
                     if (this.options.showFacing) {
                         this.applyFilteringParameters();
                         GLUtils.drawPre();
-                        GLUtils.setMap(this.textureAtlas.getAtlasSprite("facing"), (float) x, (float) y, 16.0F);
+                        GLUtils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
                         GLUtils.drawPost();
                     }
                 } catch (Exception e) {
