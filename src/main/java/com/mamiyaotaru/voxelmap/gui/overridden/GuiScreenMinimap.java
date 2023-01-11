@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -38,7 +39,7 @@ public class GuiScreenMinimap extends Screen {
 
     public int getHeight() { return height; }
 
-    public List<?> getButtonList() { return children(); }
+    public List<? extends Element> getButtonList() { return children(); }
 
     public TextRenderer getFontRenderer() { return textRenderer; }
 }

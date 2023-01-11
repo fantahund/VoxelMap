@@ -37,7 +37,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             if (option == EnumOptionsMinimap.CAVEMODE) optionButton.active = this.options.cavesAllowed;
         }
 
-        ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this, this.master))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20).build();
+        ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20).build();
         radarOptionsButton.active = this.master.getRadarOptions().radarAllowed || this.master.getRadarOptions().radarMobsAllowed || this.master.getRadarOptions().radarPlayersAllowed;
         this.addDrawableChild(radarOptionsButton);
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this, this.master))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 120 - 6, 150, 20).build());
