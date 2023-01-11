@@ -145,8 +145,8 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void setHeight(int x, int z, int value) {
-        this.setData(x, z, 0, value);
+    public void setHeight(int x, int z, int height) {
+        this.setData(x, z, 0, height);
     }
 
     public void setBlockstateID(int x, int z, int id) {
@@ -154,23 +154,23 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void setBlockstate(int x, int z, BlockState blockState) {
-        this.setData(x, z, 1, this.getIDFromState(blockState));
+    public void setBlockstate(int x, int z, BlockState state) {
+        this.setData(x, z, 1, this.getIDFromState(state));
     }
 
     @Override
-    public void setBiomeTint(int x, int z, int value) {
-        this.setData(x, z, 2, value);
+    public void setBiomeTint(int x, int z, int tint) {
+        this.setData(x, z, 2, tint);
     }
 
     @Override
-    public void setLight(int x, int z, int value) {
-        this.setData(x, z, 3, value);
+    public void setLight(int x, int z, int light) {
+        this.setData(x, z, 3, light);
     }
 
     @Override
-    public void setOceanFloorHeight(int x, int z, int value) {
-        this.setData(x, z, 4, value);
+    public void setOceanFloorHeight(int x, int z, int height) {
+        this.setData(x, z, 4, height);
     }
 
     public void setOceanFloorBlockstateID(int x, int z, int id) {
@@ -178,23 +178,23 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void setOceanFloorBlockstate(int x, int z, BlockState blockState) {
-        this.setData(x, z, 5, this.getIDFromState(blockState));
+    public void setOceanFloorBlockstate(int x, int z, BlockState state) {
+        this.setData(x, z, 5, this.getIDFromState(state));
     }
 
     @Override
-    public void setOceanFloorBiomeTint(int x, int z, int value) {
-        this.setData(x, z, 6, value);
+    public void setOceanFloorBiomeTint(int x, int z, int tint) {
+        this.setData(x, z, 6, tint);
     }
 
     @Override
-    public void setOceanFloorLight(int x, int z, int value) {
-        this.setData(x, z, 7, value);
+    public void setOceanFloorLight(int x, int z, int light) {
+        this.setData(x, z, 7, light);
     }
 
     @Override
-    public void setTransparentHeight(int x, int z, int value) {
-        this.setData(x, z, 8, value);
+    public void setTransparentHeight(int x, int z, int height) {
+        this.setData(x, z, 8, height);
     }
 
     public void setTransparentBlockstateID(int x, int z, int id) {
@@ -202,23 +202,23 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void setTransparentBlockstate(int x, int z, BlockState blockState) {
-        this.setData(x, z, 9, this.getIDFromState(blockState));
+    public void setTransparentBlockstate(int x, int z, BlockState state) {
+        this.setData(x, z, 9, this.getIDFromState(state));
     }
 
     @Override
-    public void setTransparentBiomeTint(int x, int z, int value) {
-        this.setData(x, z, 10, value);
+    public void setTransparentBiomeTint(int x, int z, int tint) {
+        this.setData(x, z, 10, tint);
     }
 
     @Override
-    public void setTransparentLight(int x, int z, int value) {
-        this.setData(x, z, 11, value);
+    public void setTransparentLight(int x, int z, int light) {
+        this.setData(x, z, 11, light);
     }
 
     @Override
-    public void setFoliageHeight(int x, int z, int value) {
-        this.setData(x, z, 12, value);
+    public void setFoliageHeight(int x, int z, int height) {
+        this.setData(x, z, 12, height);
     }
 
     public void setFoliageBlockstateID(int x, int z, int id) {
@@ -226,23 +226,23 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void setFoliageBlockstate(int x, int z, BlockState blockState) {
-        this.setData(x, z, 13, this.getIDFromState(blockState));
+    public void setFoliageBlockstate(int x, int z, BlockState state) {
+        this.setData(x, z, 13, this.getIDFromState(state));
     }
 
     @Override
-    public void setFoliageBiomeTint(int x, int z, int value) {
-        this.setData(x, z, 14, value);
+    public void setFoliageBiomeTint(int x, int z, int tint) {
+        this.setData(x, z, 14, tint);
     }
 
     @Override
-    public void setFoliageLight(int x, int z, int value) {
-        this.setData(x, z, 15, value);
+    public void setFoliageLight(int x, int z, int light) {
+        this.setData(x, z, 15, light);
     }
 
     @Override
-    public void setBiomeID(int x, int z, int value) {
-        this.setData(x, z, 16, value);
+    public void setBiomeID(int x, int z, int id) {
+        this.setData(x, z, 16, id);
     }
 
     private void setData(int x, int z, int bit, int value) {
@@ -251,24 +251,24 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void moveX(int offset) {
+    public void moveX(int x) {
         synchronized (this.dataLock) {
-            if (offset > 0) {
-                System.arraycopy(this.data, offset * 17, this.data, 0, this.data.length - offset * 17);
-            } else if (offset < 0) {
-                System.arraycopy(this.data, 0, this.data, -offset * 17, this.data.length + offset * 17);
+            if (x > 0) {
+                System.arraycopy(this.data, x * 17, this.data, 0, this.data.length - x * 17);
+            } else if (x < 0) {
+                System.arraycopy(this.data, 0, this.data, -x * 17, this.data.length + x * 17);
             }
 
         }
     }
 
     @Override
-    public void moveZ(int offset) {
+    public void moveZ(int z) {
         synchronized (this.dataLock) {
-            if (offset > 0) {
-                System.arraycopy(this.data, offset * this.width * 17, this.data, 0, this.data.length - offset * this.width * 17);
-            } else if (offset < 0) {
-                System.arraycopy(this.data, 0, this.data, -offset * this.width * 17, this.data.length + offset * this.width * 17);
+            if (z > 0) {
+                System.arraycopy(this.data, z * this.width * 17, this.data, 0, this.data.length - z * this.width * 17);
+            } else if (z < 0) {
+                System.arraycopy(this.data, 0, this.data, -z * this.width * 17, this.data.length + z * this.width * 17);
             }
 
         }

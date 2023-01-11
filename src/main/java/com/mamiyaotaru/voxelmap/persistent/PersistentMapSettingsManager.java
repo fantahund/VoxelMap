@@ -69,25 +69,25 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public String getKeyText(EnumOptionsMinimap par1EnumOptions) {
-        String s = I18nUtils.getString(par1EnumOptions.getName()) + ": ";
-        if (par1EnumOptions.isFloat()) {
-            float f = this.getOptionFloatValue(par1EnumOptions);
-            if (par1EnumOptions == EnumOptionsMinimap.MINZOOM) {
+    public String getKeyText(EnumOptionsMinimap options) {
+        String s = I18nUtils.getString(options.getName()) + ": ";
+        if (options.isFloat()) {
+            float f = this.getOptionFloatValue(options);
+            if (options == EnumOptionsMinimap.MINZOOM) {
                 return s + (float) Math.pow(2.0, f) + "x";
             }
 
-            if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
+            if (options == EnumOptionsMinimap.MAXZOOM) {
                 return s + (float) Math.pow(2.0, f) + "x";
             }
 
-            if (par1EnumOptions == EnumOptionsMinimap.CACHESIZE) {
+            if (options == EnumOptionsMinimap.CACHESIZE) {
                 return s + (int) f;
             }
         }
 
-        if (par1EnumOptions.isBoolean()) {
-            boolean flag = this.getOptionBooleanValue(par1EnumOptions);
+        if (options.isBoolean()) {
+            boolean flag = this.getOptionBooleanValue(options);
             return flag ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
         } else {
             return s;
@@ -95,13 +95,13 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public float getOptionFloatValue(EnumOptionsMinimap par1EnumOptions) {
-        if (par1EnumOptions == EnumOptionsMinimap.MINZOOM) {
+    public float getOptionFloatValue(EnumOptionsMinimap options) {
+        if (options == EnumOptionsMinimap.MINZOOM) {
             return this.minZoomPower;
-        } else if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
+        } else if (options == EnumOptionsMinimap.MAXZOOM) {
             return this.maxZoomPower;
         } else {
-            return par1EnumOptions == EnumOptionsMinimap.CACHESIZE ? this.cacheSize : 0.0F;
+            return options == EnumOptionsMinimap.CACHESIZE ? this.cacheSize : 0.0F;
         }
     }
 
@@ -114,23 +114,23 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public void setOptionFloatValue(EnumOptionsMinimap par1EnumOptions, float par2) {
-        if (par1EnumOptions == EnumOptionsMinimap.MINZOOM) {
-            this.minZoomPower = ((int) (par2 * 8.0F) - 3);
+    public void setOptionFloatValue(EnumOptionsMinimap options, float value) {
+        if (options == EnumOptionsMinimap.MINZOOM) {
+            this.minZoomPower = ((int) (value * 8.0F) - 3);
             this.minZoom = (float) Math.pow(2.0, this.minZoomPower);
             if (this.maxZoom < this.minZoom) {
                 this.maxZoom = this.minZoom;
                 this.maxZoomPower = this.minZoomPower;
             }
-        } else if (par1EnumOptions == EnumOptionsMinimap.MAXZOOM) {
-            this.maxZoomPower = ((int) (par2 * 8.0F) - 3);
+        } else if (options == EnumOptionsMinimap.MAXZOOM) {
+            this.maxZoomPower = ((int) (value * 8.0F) - 3);
             this.maxZoom = (float) Math.pow(2.0, this.maxZoomPower);
             if (this.minZoom > this.maxZoom) {
                 this.minZoom = this.maxZoom;
                 this.minZoomPower = this.maxZoomPower;
             }
-        } else if (par1EnumOptions == EnumOptionsMinimap.CACHESIZE) {
-            this.cacheSize = (int) (par2 * 5000.0F);
+        } else if (options == EnumOptionsMinimap.CACHESIZE) {
+            this.cacheSize = (int) (value * 5000.0F);
             this.cacheSize = Math.max(this.cacheSize, 30);
 
             for (int minCacheSize = (int) ((1600.0F / this.minZoom / 256.0F + 4.0F) * (1100.0F / this.minZoom / 256.0F + 3.0F) * 1.35F); this.cacheSize < minCacheSize; minCacheSize = (int) ((1600.0F / this.minZoom / 256.0F + 4.0F) * (1100.0F / this.minZoom / 256.0F + 3.0F) * 1.35F)) {

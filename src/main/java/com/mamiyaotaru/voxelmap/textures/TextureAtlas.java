@@ -53,7 +53,7 @@ public class TextureAtlas extends AbstractTexture {
         this.failedImage.setTextureData(missingTextureData);
     }
 
-    public void load(ResourceManager resourceManager) {
+    public void load(ResourceManager manager) {
         if (this.iconCreator != null) {
             this.loadTextureAtlas(this.iconCreator);
         }

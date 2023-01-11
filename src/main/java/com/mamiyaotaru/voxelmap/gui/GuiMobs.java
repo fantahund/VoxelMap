@@ -50,8 +50,8 @@ public class GuiMobs extends GuiScreenMinimap {
         this.buttonDisable.active = isSomethingSelected;
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
-        boolean OK = super.keyPressed(keysm, scancode, b);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         if (this.filter.isFocused()) {
             this.mobsList.updateFilter(this.filter.getText().toLowerCase());
         }
@@ -59,8 +59,8 @@ public class GuiMobs extends GuiScreenMinimap {
         return OK;
     }
 
-    public boolean charTyped(char character, int keycode) {
-        boolean OK = super.charTyped(character, keycode);
+    public boolean charTyped(char chr, int modifiers) {
+        boolean OK = super.charTyped(chr, modifiers);
         if (this.filter.isFocused()) {
             this.mobsList.updateFilter(this.filter.getText().toLowerCase());
         }
@@ -68,18 +68,18 @@ public class GuiMobs extends GuiScreenMinimap {
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        this.mobsList.mouseClicked(mouseX, mouseY, mouseButton);
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        this.mobsList.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
-        this.mobsList.mouseReleased(mouseX, mouseY, mouseButton);
-        return super.mouseReleased(mouseX, mouseY, mouseButton);
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.mobsList.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    public boolean mouseDragged(double mouseX, double mouseY, int mouseEvent, double deltaX, double deltaY) {
-        return this.mobsList.mouseDragged(mouseX, mouseY, mouseEvent, deltaX, deltaY);
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return this.mobsList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
@@ -128,19 +128,19 @@ public class GuiMobs extends GuiScreenMinimap {
 
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialticks) {
-        super.drawMap(matrixStack);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
         this.tooltip = null;
-        this.mobsList.render(matrixStack, mouseX, mouseY, partialticks);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        this.mobsList.render(matrices, mouseX, mouseY, delta);
+        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         boolean isSomethingSelected = this.selectedMobId != null;
         this.buttonEnable.active = isSomethingSelected && !this.isMobEnabled(this.selectedMobId);
         this.buttonDisable.active = isSomethingSelected && this.isMobEnabled(this.selectedMobId);
-        super.render(matrixStack, mouseX, mouseY, partialticks);
-        drawStringWithShadow(matrixStack, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 10526880);
-        this.filter.render(matrixStack, mouseX, mouseY, partialticks);
+        super.render(matrices, mouseX, mouseY, delta);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 10526880);
+        this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
-            this.renderTooltip(matrixStack, this.tooltip, mouseX, mouseY);
+            this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
         }
 
     }

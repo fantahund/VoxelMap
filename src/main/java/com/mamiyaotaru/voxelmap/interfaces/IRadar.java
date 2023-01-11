@@ -5,7 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.ResourceManager;
 
 public interface IRadar {
-    void onResourceManagerReload(ResourceManager var1);
+    void onResourceManagerReload(ResourceManager resourceManager);
 
-    void onTickInGame(MatrixStack var1, LayoutVariables var3);
+    void onTickInGame(MatrixStack matrixStack, LayoutVariables layoutVariables);
 }

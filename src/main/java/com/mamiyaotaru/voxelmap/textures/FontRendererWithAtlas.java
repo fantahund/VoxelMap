@@ -30,7 +30,7 @@ import java.util.concurrent.Executor;
 
 public class FontRendererWithAtlas extends TextRenderer implements ResourceReloader {
     private final int[] charWidthArray = new int[256];
-    public final int FONT_HEIGHT = 9;
+    public static final int FONT_HEIGHT = 9;
     public final Random fontRandom = new Random();
     private final Identifier locationFontTexture;
     private Sprite fontIcon = null;
@@ -350,7 +350,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         }
     }
 
-    public CompletableFuture<Void> reload(ResourceReloader.Synchronizer var1, ResourceManager var2, Profiler var3, Profiler var4, Executor var5, Executor var6) {
+    public CompletableFuture<Void> reload(ResourceReloader.Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
         return null;
     }
 }

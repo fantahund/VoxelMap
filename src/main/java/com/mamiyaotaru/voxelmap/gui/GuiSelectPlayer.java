@@ -21,10 +21,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected TextFieldWidget filter;
     private Text tooltip = null;
     private final String locInfo;
-    final MutableText SHARE_MESSAGE = (Text.translatable("minimap.waypointshare.sharemessage")).append(":");
-    final Text SHARE_WITH = Text.translatable("minimap.waypointshare.sharewith");
-    final Text SHARE_WAYPOINT = Text.translatable("minimap.waypointshare.title");
-    final Text SHARE_COORDINATES = Text.translatable("minimap.waypointshare.titlecoordinate");
+    static final MutableText SHARE_MESSAGE = (Text.translatable("minimap.waypointshare.sharemessage")).append(":");
+    static final Text SHARE_WITH = Text.translatable("minimap.waypointshare.sharewith");
+    static final Text SHARE_WAYPOINT = Text.translatable("minimap.waypointshare.title");
+    static final Text SHARE_COORDINATES = Text.translatable("minimap.waypointshare.titlecoordinate");
 
     public GuiSelectPlayer(Screen parentScreen, String locInfo, boolean sharingWaypoint) {
         this.parentScreen = parentScreen;
@@ -53,8 +53,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.filter.setTextFieldFocused(true);
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
-        boolean OK = super.keyPressed(keysm, scancode, b);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         if (this.filter.isFocused()) {
             this.playerList.updateFilter(this.filter.getText().toLowerCase());
         }
@@ -62,8 +62,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
-    public boolean charTyped(char character, int keycode) {
-        boolean OK = super.charTyped(character, keycode);
+    public boolean charTyped(char chr, int modifiers) {
+        boolean OK = super.charTyped(chr, modifiers);
         if (this.filter.isFocused()) {
             this.playerList.updateFilter(this.filter.getText().toLowerCase());
         }
@@ -71,28 +71,28 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        this.playerList.mouseClicked(mouseX, mouseY, mouseButton);
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        this.playerList.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
-        this.playerList.mouseReleased(mouseX, mouseY, mouseButton);
-        return super.mouseReleased(mouseX, mouseY, mouseButton);
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.playerList.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    public boolean mouseDragged(double mouseX, double mouseY, int mouseEvent, double deltaX, double deltaY) {
-        return this.playerList.mouseDragged(mouseX, mouseY, mouseEvent, deltaX, deltaY);
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return this.playerList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         return this.playerList.mouseScrolled(mouseX, mouseY, amount);
     }
 
-    public void accept(boolean par1) {
+    public void accept(boolean b) {
         if (this.allClicked) {
             this.allClicked = false;
-            if (par1) {
+            if (b) {
                 String combined = this.message.getText() + " " + this.locInfo;
                 if (combined.length() > 100) {
                     VoxelConstants.getPlayer().sendMessage(Text.of(this.message.getText()));
@@ -121,19 +121,19 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(this.parentScreen);
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.drawMap(matrixStack);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
         this.tooltip = null;
-        this.playerList.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawTextWithShadow(matrixStack, this.getFontRenderer(), this.SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
-        this.message.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.SHARE_WITH, this.getWidth() / 2, 75, 16777215);
-        drawStringWithShadow(matrixStack, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
-        this.filter.render(matrixStack, mouseX, mouseY, partialTicks);
+        this.playerList.render(matrices, mouseX, mouseY, delta);
+        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(matrices, mouseX, mouseY, delta);
+        drawTextWithShadow(matrices, this.getFontRenderer(), this.SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
+        this.message.render(matrices, mouseX, mouseY, delta);
+        drawCenteredText(matrices, this.getFontRenderer(), this.SHARE_WITH, this.getWidth() / 2, 75, 16777215);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
+        this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
-            this.renderTooltip(matrixStack, this.tooltip, mouseX, mouseY);
+            this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
         }
 
     }

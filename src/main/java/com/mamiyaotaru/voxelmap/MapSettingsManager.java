@@ -200,22 +200,22 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     @Override
-    public String getKeyText(EnumOptionsMinimap par1EnumOptions) {
-        String s = I18nUtils.getString(par1EnumOptions.getName()) + ": ";
-        if (par1EnumOptions.isFloat()) {
-            float f = this.getOptionFloatValue(par1EnumOptions);
-            if (par1EnumOptions == EnumOptionsMinimap.ZOOM) {
+    public String getKeyText(EnumOptionsMinimap options) {
+        String s = I18nUtils.getString(options.getName()) + ": ";
+        if (options.isFloat()) {
+            float f = this.getOptionFloatValue(options);
+            if (options == EnumOptionsMinimap.ZOOM) {
                 return s + (int) f;
-            } else if (par1EnumOptions == EnumOptionsMinimap.WAYPOINTDISTANCE) {
+            } else if (options == EnumOptionsMinimap.WAYPOINTDISTANCE) {
                 return f < 0.0F ? s + I18nUtils.getString("options.minimap.waypoints.infinite") : s + (int) f;
             } else {
                 return f == 0.0F ? s + I18nUtils.getString("options.off") : s + (int) f + "%";
             }
-        } else if (par1EnumOptions.isBoolean()) {
-            boolean flag = this.getOptionBooleanValue(par1EnumOptions);
+        } else if (options.isBoolean()) {
+            boolean flag = this.getOptionBooleanValue(options);
             return flag ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
-        } else if (par1EnumOptions.isList()) {
-            String state = this.getOptionListValue(par1EnumOptions);
+        } else if (options.isList()) {
+            String state = this.getOptionListValue(options);
             return s + state;
         } else {
             return s;
@@ -223,11 +223,11 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     @Override
-    public float getOptionFloatValue(EnumOptionsMinimap par1EnumOptions) {
-        if (par1EnumOptions == EnumOptionsMinimap.ZOOM) {
+    public float getOptionFloatValue(EnumOptionsMinimap options) {
+        if (options == EnumOptionsMinimap.ZOOM) {
             return this.zoom;
         } else {
-            return par1EnumOptions == EnumOptionsMinimap.WAYPOINTDISTANCE ? this.maxWaypointDisplayDistance : 0.0F;
+            return options == EnumOptionsMinimap.WAYPOINTDISTANCE ? this.maxWaypointDisplayDistance : 0.0F;
         }
     }
 
@@ -345,9 +345,9 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     @Override
-    public void setOptionFloatValue(EnumOptionsMinimap par1EnumOptions, float par2) {
-        if (par1EnumOptions == EnumOptionsMinimap.WAYPOINTDISTANCE) {
-            float distance = par2 * 9951.0F + 50.0F;
+    public void setOptionFloatValue(EnumOptionsMinimap options, float value) {
+        if (options == EnumOptionsMinimap.WAYPOINTDISTANCE) {
+            float distance = value * 9951.0F + 50.0F;
             if (distance > 10000.0F) {
                 distance = -1.0F;
             }

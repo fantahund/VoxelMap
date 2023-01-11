@@ -74,10 +74,10 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(confirmScreen);
     }
 
-    public void accept(boolean par1) {
+    public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (par1) {
+            if (b) {
                 this.waypointManager.deleteSubworld(this.originalSubworldName);
             }
 
@@ -86,42 +86,42 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
-        boolean OK = super.keyPressed(keysm, scancode, b);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         boolean acceptable = this.isNameAcceptable();
         this.doneButton.active = this.isNameAcceptable();
         this.deleteButton.active = this.originalSubworldName.equals(this.subworldNameField.getText());
-        if ((keysm == 257 || keysm == 335) && acceptable) {
+        if ((keyCode == 257 || keyCode == 335) && acceptable) {
             this.changeNameClicked();
         }
 
         return OK;
     }
 
-    public boolean charTyped(char character, int keycode) {
-        boolean OK = super.charTyped(character, keycode);
+    public boolean charTyped(char chr, int modifiers) {
+        boolean OK = super.charTyped(chr, modifiers);
         boolean acceptable = this.isNameAcceptable();
         this.doneButton.active = this.isNameAcceptable();
         this.deleteButton.active = this.originalSubworldName.equals(this.subworldNameField.getText());
-        if (character == '\r' && acceptable) {
+        if (chr == '\r' && acceptable) {
             this.changeNameClicked();
         }
 
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int par3) {
-        this.subworldNameField.mouseClicked(mouseX, mouseY, par3);
-        return super.mouseClicked(mouseX, mouseY, par3);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        this.subworldNameField.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.drawMap(matrixStack);
-        this.renderBackground(matrixStack);
-        drawCenteredText(matrixStack, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
-        drawStringWithShadow(matrixStack, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
-        this.subworldNameField.render(matrixStack, mouseX, mouseY, partialTicks);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
+        this.renderBackground(matrices);
+        drawCenteredText(matrices, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
+        this.subworldNameField.render(matrices, mouseX, mouseY, delta);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 
     private boolean isNameAcceptable() {

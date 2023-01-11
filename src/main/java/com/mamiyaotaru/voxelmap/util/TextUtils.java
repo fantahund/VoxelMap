@@ -94,7 +94,7 @@ public class TextUtils {
         List<Text> stream = new ArrayList<>();
         stream.add(text);
 
-        for (Text sibling : text.getSiblings()) {
+        for (@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Text sibling : text.getSiblings()) {
             stream.addAll(stream(sibling));
         }
 

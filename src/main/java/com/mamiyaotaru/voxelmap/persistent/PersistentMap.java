@@ -214,14 +214,14 @@ public class PersistentMap implements IPersistentMap {
     }
 
     @Override
-    public void setLightMapArray(int[] lightmapColors) {
+    public void setLightMapArray(int[] lights) {
         boolean changed;
         int torchOffset = 0;
         int skylightMultiplier = 16;
 
-        changed = IntStream.range(0, 16).anyMatch(t -> lightmapColors[t * skylightMultiplier + torchOffset] != this.lightmapColors[t * skylightMultiplier + torchOffset]);
+        changed = IntStream.range(0, 16).anyMatch(t -> lights[t * skylightMultiplier + torchOffset] != this.lightmapColors[t * skylightMultiplier + torchOffset]);
 
-        System.arraycopy(lightmapColors, 0, this.lightmapColors, 0, 256);
+        System.arraycopy(lights, 0, this.lightmapColors, 0, 256);
         if (changed) {
             this.getSettingsAndLightingChangeNotifier().notifyOfChanges();
         }
@@ -229,7 +229,7 @@ public class PersistentMap implements IPersistentMap {
     }
 
     @Override
-    public void getAndStoreData(AbstractMapData mapData, World world, WorldChunk chunk, MutableBlockPos blockPos, boolean underground, int startX, int startZ, int imageX, int imageY) {
+    public void getAndStoreData(AbstractMapData mapData, World world, WorldChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
         int surfaceHeight;
         int seafloorHeight = 0;
         int transparentHeight = 0;
@@ -238,10 +238,10 @@ public class PersistentMap implements IPersistentMap {
         BlockState transparentBlockState = BlockRepository.air.getDefaultState();
         BlockState foliageBlockState = BlockRepository.air.getDefaultState();
         BlockState seafloorBlockState = BlockRepository.air.getDefaultState();
-        blockPos = blockPos.withXYZ(startX + imageX, 64, startZ + imageY);
+        pos = pos.withXYZ(startX + imageX, 64, startZ + imageY);
         int biomeID;
         if (!chunk.isEmpty()) {
-            biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(blockPos).value());
+            biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(pos).value());
         } else {
             biomeID = -1;
         }
@@ -251,19 +251,19 @@ public class PersistentMap implements IPersistentMap {
             boolean solid = false;
             if (underground) {
                 surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY);
-                surfaceBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
+                surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                 if (surfaceHeight != -1) {
                     foliageHeight = surfaceHeight + 1;
-                    blockPos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
-                    foliageBlockState = chunk.getBlockState(blockPos);
+                    pos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
+                    foliageBlockState = chunk.getBlockState(pos);
                     Material material = foliageBlockState.getMaterial();
                     if (material == Material.SNOW_LAYER || material == Material.AIR || material == Material.LAVA || material == Material.WATER) {
                         foliageHeight = 0;
                     }
                 }
             } else {
-                transparentHeight = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) + 1;
-                transparentBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, transparentHeight - 1, startZ + imageY));
+                transparentHeight = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, pos.getX() & 15, pos.getZ() & 15) + 1;
+                transparentBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, transparentHeight - 1, startZ + imageY));
                 FluidState fluidState = transparentBlockState.getFluidState();
                 if (fluidState != Fluids.EMPTY.getDefaultState()) {
                     transparentBlockState = fluidState.getBlockState();
@@ -272,28 +272,28 @@ public class PersistentMap implements IPersistentMap {
                 surfaceHeight = transparentHeight;
                 surfaceBlockState = transparentBlockState;
                 VoxelShape voxelShape;
-                boolean hasOpacity = transparentBlockState.getOpacity(world, blockPos) > 0;
+                boolean hasOpacity = transparentBlockState.getOpacity(world, pos) > 0;
                 if (!hasOpacity && transparentBlockState.isOpaque() && transparentBlockState.hasSidedTransparency()) {
-                    voxelShape = transparentBlockState.getCullingFace(world, blockPos, Direction.DOWN);
+                    voxelShape = transparentBlockState.getCullingFace(world, pos, Direction.DOWN);
                     hasOpacity = VoxelShapes.unionCoversFullCube(voxelShape, VoxelShapes.empty());
-                    voxelShape = transparentBlockState.getCullingFace(world, blockPos, Direction.UP);
+                    voxelShape = transparentBlockState.getCullingFace(world, pos, Direction.UP);
                     hasOpacity = hasOpacity || VoxelShapes.unionCoversFullCube(VoxelShapes.empty(), voxelShape);
                 }
 
                 while (!hasOpacity && surfaceHeight > 0) {
                     foliageBlockState = surfaceBlockState;
                     --surfaceHeight;
-                    surfaceBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
+                    surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                     fluidState = surfaceBlockState.getFluidState();
                     if (fluidState != Fluids.EMPTY.getDefaultState()) {
                         surfaceBlockState = fluidState.getBlockState();
                     }
 
-                    hasOpacity = surfaceBlockState.getOpacity(world, blockPos) > 0;
+                    hasOpacity = surfaceBlockState.getOpacity(world, pos) > 0;
                     if (!hasOpacity && surfaceBlockState.isOpaque() && surfaceBlockState.hasSidedTransparency()) {
-                        voxelShape = surfaceBlockState.getCullingFace(world, blockPos, Direction.DOWN);
+                        voxelShape = surfaceBlockState.getCullingFace(world, pos, Direction.DOWN);
                         hasOpacity = VoxelShapes.unionCoversFullCube(voxelShape, VoxelShapes.empty());
-                        voxelShape = surfaceBlockState.getCullingFace(world, blockPos, Direction.UP);
+                        voxelShape = surfaceBlockState.getCullingFace(world, pos, Direction.UP);
                         hasOpacity = hasOpacity || VoxelShapes.unionCoversFullCube(VoxelShapes.empty(), voxelShape);
                     }
                 }
@@ -301,7 +301,7 @@ public class PersistentMap implements IPersistentMap {
                 if (surfaceHeight == transparentHeight) {
                     transparentHeight = 0;
                     transparentBlockState = BlockRepository.air.getDefaultState();
-                    foliageBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
+                    foliageBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                 }
 
                 if (foliageBlockState.getMaterial() == Material.SNOW_LAYER) {
@@ -323,7 +323,7 @@ public class PersistentMap implements IPersistentMap {
                 if (material == Material.WATER || material == Material.ICE) {
                     seafloorHeight = surfaceHeight;
 
-                    for (seafloorBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, blockPos) < 5 && seafloorBlockState.getMaterial() != Material.LEAVES && seafloorHeight > 1; seafloorBlockState = chunk.getBlockState(blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && seafloorBlockState.getMaterial() != Material.LEAVES && seafloorHeight > 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                         material = seafloorBlockState.getMaterial();
                         if (transparentHeight == 0 && material != Material.ICE && material != Material.WATER && material.blocksMovement()) {
                             transparentHeight = seafloorHeight;
@@ -363,25 +363,25 @@ public class PersistentMap implements IPersistentMap {
 
             int light = solid ? 0 : 255;
             if (!solid) {
-                light = this.getLight(surfaceBlockState, world, blockPos, startX + imageX, startZ + imageY, surfaceHeight, solid);
+                light = this.getLight(surfaceBlockState, world, pos, startX + imageX, startZ + imageY, surfaceHeight, solid);
             }
 
             mapData.setLight(imageX, imageY, light);
             int seafloorLight = 0;
             if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.getDefaultState()) {
-                seafloorLight = this.getLight(seafloorBlockState, world, blockPos, startX + imageX, startZ + imageY, seafloorHeight, solid);
+                seafloorLight = this.getLight(seafloorBlockState, world, pos, startX + imageX, startZ + imageY, seafloorHeight, solid);
             }
 
             mapData.setOceanFloorLight(imageX, imageY, seafloorLight);
             int transparentLight = 0;
             if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
-                transparentLight = this.getLight(transparentBlockState, world, blockPos, startX + imageX, startZ + imageY, transparentHeight, solid);
+                transparentLight = this.getLight(transparentBlockState, world, pos, startX + imageX, startZ + imageY, transparentHeight, solid);
             }
 
             mapData.setTransparentLight(imageX, imageY, transparentLight);
             int foliageLight = 0;
             if (foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
-                foliageLight = this.getLight(foliageBlockState, world, blockPos, startX + imageX, startZ + imageY, foliageHeight, solid);
+                foliageLight = this.getLight(foliageBlockState, world, pos, startX + imageX, startZ + imageY, foliageHeight, solid);
             }
 
             mapData.setFoliageLight(imageX, imageY, foliageLight);

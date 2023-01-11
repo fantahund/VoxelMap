@@ -17,8 +17,8 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
         this.pointer = Long.parseLong(pointerString);
     }
 
-    public MutableNativeImageBackedTexture(int width, int height, boolean b) {
-        super(width, height, b);
+    public MutableNativeImageBackedTexture(int width, int height, boolean useStb) {
+        super(width, height, useStb);
         this.image = this.getImage();
         String info = this.image.toString();
         String pointerString = info.substring(info.indexOf("@") + 1, info.indexOf("]") - 1);

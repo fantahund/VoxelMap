@@ -212,21 +212,21 @@ public class Stitcher {
 
         }
 
-        public int compareTo(Holder compareTo) {
+        public int compareTo(Holder o) {
             int var2;
-            if (this.getHeight() == compareTo.getHeight()) {
-                if (this.getWidth() == compareTo.getWidth()) {
+            if (this.getHeight() == o.getHeight()) {
+                if (this.getWidth() == o.getWidth()) {
                     if (this.icon.getIconName() == null) {
-                        return compareTo.icon.getIconName() == null ? 0 : -1;
+                        return o.icon.getIconName() == null ? 0 : -1;
                     }
 
                     Collator collator = I18nUtils.getLocaleAwareCollator();
-                    return collator.compare(this.icon.getIconName(), compareTo.icon.getIconName());
+                    return collator.compare(this.icon.getIconName(), o.icon.getIconName());
                 }
 
-                var2 = this.getWidth() < compareTo.getWidth() ? 1 : -1;
+                var2 = this.getWidth() < o.getWidth() ? 1 : -1;
             } else {
-                var2 = this.getHeight() < compareTo.getHeight() ? 1 : -1;
+                var2 = this.getHeight() < o.getHeight() ? 1 : -1;
             }
 
             return var2;

@@ -6,8 +6,8 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
     private final NativeImage image;
     private final int scale;
 
-    public ScaledMutableNativeImageBackedTexture(int width, int height, boolean b) {
-        super(512, 512, b);
+    public ScaledMutableNativeImageBackedTexture(int width, int height, boolean useStb) {
+        super(512, 512, useStb);
         this.scale = 512 / width;
         this.image = this.getImage();
         String info = this.image.toString();

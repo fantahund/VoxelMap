@@ -26,11 +26,11 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     private ArrayList<?> playersFiltered;
     final GuiSelectPlayer parentGui;
     final Row everyoneRow;
-    final Text ALL = Text.translatable("minimap.waypointshare.all");
-    final Text TITLE = Text.translatable("minimap.waypointshare.sharewitheveryone");
-    final Text EXPLANATION = Text.translatable("minimap.waypointshare.sharewitheveryone2");
-    final Text AFFIRM = Text.translatable("gui.yes");
-    final Text DENY = Text.translatable("gui.cancel");
+    static final Text ALL = Text.translatable("minimap.waypointshare.all");
+    static final Text TITLE = Text.translatable("minimap.waypointshare.sharewitheveryone");
+    static final Text EXPLANATION = Text.translatable("minimap.waypointshare.sharewitheveryone2");
+    static final Text AFFIRM = Text.translatable("gui.yes");
+    static final Text DENY = Text.translatable("gui.cancel");
 
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
         super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), 89, par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
@@ -38,7 +38,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getPlayer().networkHandler;
         this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
         this.sort();
-        ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, this.ALL, null, null) {
+        ButtonWidget everyoneButton = new ButtonWidget(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, ALL, null, null) {
             public void onPress() {
             }
         };
@@ -138,10 +138,10 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             this.id2 = id2;
         }
 
-        public void render(MatrixStack matrixStack, int slotIndex, int y, int x, int listWidth, int itemHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
-            this.drawButton(matrixStack, this.button, this.id, slotIndex, x, y, listWidth, itemHeight, mouseX, mouseY, isSelected, partialTicks);
-            this.drawButton(matrixStack, this.button1, this.id1, slotIndex, x, y, listWidth, itemHeight, mouseX, mouseY, isSelected, partialTicks);
-            this.drawButton(matrixStack, this.button2, this.id2, slotIndex, x, y, listWidth, itemHeight, mouseX, mouseY, isSelected, partialTicks);
+        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            this.drawButton(matrices, this.button, this.id, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(matrices, this.button1, this.id1, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(matrices, this.button2, this.id2, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
         }
 
         private void drawButton(MatrixStack matrixStack, ButtonWidget button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
@@ -173,14 +173,14 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
 
         }
 
-        public boolean mouseClicked(double mouseX, double mouseY, int mouseEvent) {
-            if (this.button != null && this.button.mouseClicked(mouseX, mouseY, mouseEvent)) {
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (this.button != null && this.button.mouseClicked(mouseX, mouseY, button)) {
                 GuiButtonRowListPlayers.this.buttonClicked(this.id);
                 return true;
-            } else if (this.button1 != null && this.button1.mouseClicked(mouseX, mouseY, mouseEvent)) {
+            } else if (this.button1 != null && this.button1.mouseClicked(mouseX, mouseY, button)) {
                 GuiButtonRowListPlayers.this.buttonClicked(this.id1);
                 return true;
-            } else if (this.button2 != null && this.button2.mouseClicked(mouseX, mouseY, mouseEvent)) {
+            } else if (this.button2 != null && this.button2.mouseClicked(mouseX, mouseY, button)) {
                 GuiButtonRowListPlayers.this.buttonClicked(this.id2);
                 return true;
             } else {
@@ -188,15 +188,15 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             }
         }
 
-        public boolean mouseReleased(double mouseX, double mouseY, int mouseEvent) {
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
             if (this.button != null) {
-                this.button.mouseReleased(mouseX, mouseY, mouseEvent);
+                this.button.mouseReleased(mouseX, mouseY, button);
                 return true;
             } else if (this.button1 != null) {
-                this.button1.mouseReleased(mouseX, mouseY, mouseEvent);
+                this.button1.mouseReleased(mouseX, mouseY, button);
                 return true;
             } else if (this.button2 != null) {
-                this.button2.mouseReleased(mouseX, mouseY, mouseEvent);
+                this.button2.mouseReleased(mouseX, mouseY, button);
                 return true;
             } else {
                 return false;

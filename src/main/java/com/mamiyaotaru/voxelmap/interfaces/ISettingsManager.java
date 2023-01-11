@@ -3,9 +3,9 @@ package com.mamiyaotaru.voxelmap.interfaces;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 
 public interface ISettingsManager {
-    String getKeyText(EnumOptionsMinimap var1);
+    String getKeyText(EnumOptionsMinimap options);
 
-    void setOptionFloatValue(EnumOptionsMinimap var1, float var2);
+    void setOptionFloatValue(EnumOptionsMinimap options, float value);
 
-    float getOptionFloatValue(EnumOptionsMinimap var1);
+    float getOptionFloatValue(EnumOptionsMinimap options);
 }

@@ -116,12 +116,12 @@ public class RadarSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public String getKeyText(EnumOptionsMinimap par1EnumOptions) {
-        String s = I18nUtils.getString(par1EnumOptions.getName()) + ": ";
-        if (par1EnumOptions.isBoolean()) {
-            return this.getOptionBooleanValue(par1EnumOptions) ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
-        } else if (par1EnumOptions.isList()) {
-            String state = this.getOptionListValue(par1EnumOptions);
+    public String getKeyText(EnumOptionsMinimap options) {
+        String s = I18nUtils.getString(options.getName()) + ": ";
+        if (options.isBoolean()) {
+            return this.getOptionBooleanValue(options) ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
+        } else if (options.isList()) {
+            String state = this.getOptionListValue(options);
             return s + state;
         } else {
             return s;
@@ -157,7 +157,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public void setOptionFloatValue(EnumOptionsMinimap idFloat, float sliderValue) {
+    public void setOptionFloatValue(EnumOptionsMinimap options, float value) {
     }
 
     public void setOptionValue(EnumOptionsMinimap par1EnumOptions) {
@@ -197,7 +197,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public float getOptionFloatValue(EnumOptionsMinimap option) {
+    public float getOptionFloatValue(EnumOptionsMinimap options) {
         return 0.0F;
     }
 }

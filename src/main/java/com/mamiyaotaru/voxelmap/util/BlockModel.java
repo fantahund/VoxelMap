@@ -328,11 +328,11 @@ public class BlockModel {
             return maxV;
         }
 
-        public int compareTo(BlockFace compareTo) {
-            if (this.yLevel > compareTo.yLevel) {
+        public int compareTo(BlockFace o) {
+            if (this.yLevel > o.yLevel) {
                 return 1;
             } else {
-                return this.yLevel < compareTo.yLevel ? -1 : 0;
+                return this.yLevel < o.yLevel ? -1 : 0;
             }
         }
     }

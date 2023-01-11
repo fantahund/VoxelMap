@@ -81,21 +81,21 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         par1GuiButton.setMessage(Text.literal(perfBomb + this.options.getKeyText(option)));
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
-        if (keysm == 258) {
-            this.worldSeedButton.keyPressed(keysm, scancode, b);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == 258) {
+            this.worldSeedButton.keyPressed(keyCode, scanCode, modifiers);
         }
 
-        if ((keysm == 257 || keysm == 335) && this.worldSeedButton.isEditing()) {
+        if ((keyCode == 257 || keyCode == 335) && this.worldSeedButton.isEditing()) {
             this.newSeed();
         }
 
-        return super.keyPressed(keysm, scancode, b);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    public boolean charTyped(char character, int keycode) {
-        boolean OK = super.charTyped(character, keycode);
-        if (character == '\r' && this.worldSeedButton.isEditing()) {
+    public boolean charTyped(char chr, int modifiers) {
+        boolean OK = super.charTyped(chr, modifiers);
+        if (chr == '\r' && this.worldSeedButton.isEditing()) {
             this.newSeed();
         }
 
@@ -117,11 +117,11 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !this.master.getWorldSeed().equals("");
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.drawMap(matrixStack);
-        this.renderBackground(matrixStack);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
+        this.renderBackground(matrices);
+        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 
     public void tick() {

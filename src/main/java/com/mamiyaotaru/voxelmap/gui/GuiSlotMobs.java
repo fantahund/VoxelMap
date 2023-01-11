@@ -25,10 +25,10 @@ class GuiSlotMobs extends GuiSlotMinimap {
     private final ArrayList<MobItem> mobs;
     private ArrayList<Entry<?>> mobsFiltered;
     final GuiMobs parentGui;
-    final Text ENABLE = Text.translatable("options.minimap.mobs.enable");
-    final Text DISABLE = Text.translatable("options.minimap.mobs.disable");
-    final Text ENABLED = Text.translatable("options.minimap.mobs.enabled");
-    final Text DISABLED = Text.translatable("options.minimap.mobs.disabled");
+    static final Text ENABLE = Text.translatable("options.minimap.mobs.enable");
+    static final Text DISABLE = Text.translatable("options.minimap.mobs.disable");
+    static final Text ENABLED = Text.translatable("options.minimap.mobs.enabled");
+    static final Text DISABLED = Text.translatable("options.minimap.mobs.disabled");
     final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
     final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
 
@@ -69,26 +69,26 @@ class GuiSlotMobs extends GuiSlotMinimap {
         return TextUtils.scrubCodes(name);
     }
 
-    public void setSelected(MobItem item) {
-        super.setSelected(item);
+    public void setSelected(MobItem entry) {
+        super.setSelected(entry);
         if (this.getSelectedOrNull() instanceof MobItem) {
             NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((MobItem) this.getSelectedOrNull()).name)).getString());
         }
 
-        this.parentGui.setSelectedMob(item.id);
+        this.parentGui.setSelectedMob(entry.id);
     }
 
-    protected boolean isSelectedEntry(int par1) {
-        return ((MobItem) this.mobsFiltered.get(par1)).id.equals(this.parentGui.selectedMobId);
+    protected boolean isSelectedEntry(int index) {
+        return ((MobItem) this.mobsFiltered.get(index)).id.equals(this.parentGui.selectedMobId);
     }
 
     protected int getMaxPosition() {
         return this.getEntryCount() * this.itemHeight;
     }
 
-    public void renderBackground(MatrixStack matrixStack) {
-        this.parentGui.renderBackground(matrixStack);
+    public void renderBackground(MatrixStack matrices) {
+        this.parentGui.renderBackground(matrices);
     }
 
     protected void updateFilter(String filterString) {
@@ -121,7 +121,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             this.name = GuiSlotMobs.getTranslatedName(id);
         }
 
-        public void render(MatrixStack matrixStack, int slotIndex, int slotYPos, int leftEdge, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean mouseOver, float partialTicks) {
+        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             boolean isHostile = false;
             boolean isNeutral = false;
             boolean isEnabled = true;
@@ -142,11 +142,11 @@ class GuiSlotMobs extends GuiSlotMinimap {
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
             int color = -16777216 + (red << 16) + (green << 8);
-            DrawableHelper.drawCenteredText(matrixStack, this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, slotYPos + 3, color);
+            DrawableHelper.drawCenteredText(matrices, this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, y + 3, color);
             byte padding = 3;
-            if (mouseX >= leftEdge - padding && mouseY >= slotYPos && mouseX <= leftEdge + 215 + padding && mouseY <= slotYPos + GuiSlotMobs.this.itemHeight) {
+            if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {
                 Text tooltip;
-                if (mouseX >= leftEdge + 215 - 16 - padding && mouseX <= leftEdge + 215 + padding) {
+                if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
                     tooltip = isEnabled ? GuiSlotMobs.this.DISABLE : GuiSlotMobs.this.ENABLE;
                 } else {
                     tooltip = isEnabled ? GuiSlotMobs.this.ENABLED : GuiSlotMobs.this.DISABLED;
@@ -157,10 +157,10 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
             GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
-            DrawableHelper.drawTexture(matrixStack, leftEdge + 198, slotYPos - 2, GuiSlotMobs.this.getZOffset(), 0.0F, 0.0F, 18, 18, 18, 18);
+            DrawableHelper.drawTexture(matrices, x + 198, y - 2, GuiSlotMobs.this.getZOffset(), 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
-        public boolean mouseClicked(double mouseX, double mouseY, int mouseEvent) {
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
             GuiSlotMobs.this.setSelected(this);
             int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;
             byte padding = 3;

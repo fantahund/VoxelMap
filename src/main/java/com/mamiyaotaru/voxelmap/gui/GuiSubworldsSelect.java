@@ -107,8 +107,8 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.newNameField = new TextFieldWidget(this.getFontRenderer(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
-    public void accept(boolean par1) {
-        if (!par1) {
+    public void accept(boolean b) {
+        if (!b) {
             VoxelConstants.getMinecraft().setScreen(this.parent);
         } else {
             this.multiworld = true;
@@ -117,18 +117,18 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.newWorld) {
-            this.newNameField.mouseClicked(mouseX, mouseY, mouseButton);
+            this.newNameField.mouseClicked(mouseX, mouseY, button);
         }
 
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.newNameField.isFocused()) {
-            this.newNameField.keyPressed(keysm, scancode, b);
-            if ((keysm == 257 || keysm == 335) && this.newNameField.isFocused()) {
+            this.newNameField.keyPressed(keyCode, scanCode, modifiers);
+            if ((keyCode == 257 || keyCode == 335) && this.newNameField.isFocused()) {
                 String newName = this.newNameField.getText();
                 if (newName != null && !newName.isEmpty()) {
                     this.worldSelected(newName);
@@ -136,13 +136,13 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             }
         }
 
-        return super.keyPressed(keysm, scancode, b);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    public boolean charTyped(char typedChar, int keyCode) {
+    public boolean charTyped(char chr, int modifiers) {
         if (this.newNameField.isFocused()) {
-            this.newNameField.charTyped(typedChar, keyCode);
-            if (keyCode == 28) {
+            this.newNameField.charTyped(chr, modifiers);
+            if (modifiers == 28) {
                 String newName = this.newNameField.getText();
                 if (newName != null && !newName.isEmpty()) {
                     this.worldSelected(newName);
@@ -150,7 +150,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             }
         }
 
-        return super.charTyped(typedChar, keyCode);
+        return super.charTyped(chr, modifiers);
     }
 
     public void tick() {
@@ -158,12 +158,12 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         super.tick();
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         int titleStringWidth = this.getFontRenderer().getWidth(this.title);
         titleStringWidth = Math.max(titleStringWidth, this.getFontRenderer().getWidth(this.select));
-        fill(matrixStack, this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.title, this.width / 2, 5, 16777215);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.select, this.width / 2, 15, 16711680);
+        fill(matrices, this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
+        drawCenteredText(matrices, this.getFontRenderer(), this.title, this.width / 2, 5, 16777215);
+        drawCenteredText(matrices, this.getFontRenderer(), this.select, this.width / 2, 15, 16711680);
         this.camera.prevPitch = 0.0F;
         this.camera.setPitch(0.0F);
         this.camera.prevYaw = this.yaw;
@@ -175,9 +175,9 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.camera.setPos(this.camera.prevX, this.camera.prevY, this.camera.prevZ);
         float var5 = 1.0F;
         this.yaw = (float) (this.yaw + var5 * (1.0 + 0.7F * Math.cos((this.yaw + 45.0F) / 45.0 * Math.PI)));
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        super.render(matrices, mouseX, mouseY, delta);
         if (this.newWorld) {
-            this.newNameField.render(matrixStack, mouseX, mouseY, partialTicks);
+            this.newNameField.render(matrices, mouseX, mouseY, delta);
         }
 
     }

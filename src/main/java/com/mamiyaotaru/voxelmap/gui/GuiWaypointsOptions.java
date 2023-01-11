@@ -51,10 +51,10 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.drawMap(matrixStack);
-        this.renderBackground(matrixStack);
-        drawCenteredText(matrixStack, this.textRenderer, this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
+        this.renderBackground(matrices);
+        drawCenteredText(matrices, this.textRenderer, this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(matrices, mouseX, mouseY, delta);
     }
 }

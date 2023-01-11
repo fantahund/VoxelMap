@@ -124,93 +124,93 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     @Override
-    public void setHeight(int x, int z, int value) {
-        this.setData(x, z, 0, (byte) value);
+    public void setHeight(int x, int z, int height) {
+        this.setData(x, z, 0, (byte) height);
     }
 
     @Override
-    public void setBlockstate(int x, int z, BlockState blockState) {
-        int id = this.getIDFromState(blockState);
+    public void setBlockstate(int x, int z, BlockState state) {
+        int id = this.getIDFromState(state);
         this.setData(x, z, 1, (byte) (id >> 8));
         this.setData(x, z, 2, (byte) id);
     }
 
     @Override
-    public void setBiomeTint(int x, int z, int value) {
+    public void setBiomeTint(int x, int z, int tint) {
     }
 
     @Override
-    public void setLight(int x, int z, int value) {
-        this.setData(x, z, 3, (byte) value);
+    public void setLight(int x, int z, int light) {
+        this.setData(x, z, 3, (byte) light);
     }
 
     @Override
-    public void setOceanFloorHeight(int x, int z, int value) {
-        this.setData(x, z, 4, (byte) value);
+    public void setOceanFloorHeight(int x, int z, int height) {
+        this.setData(x, z, 4, (byte) height);
     }
 
     @Override
-    public void setOceanFloorBlockstate(int x, int z, BlockState blockState) {
-        int id = this.getIDFromState(blockState);
+    public void setOceanFloorBlockstate(int x, int z, BlockState state) {
+        int id = this.getIDFromState(state);
         this.setData(x, z, 5, (byte) (id >> 8));
         this.setData(x, z, 6, (byte) id);
     }
 
     @Override
-    public void setOceanFloorBiomeTint(int x, int z, int value) {
+    public void setOceanFloorBiomeTint(int x, int z, int tint) {
     }
 
     @Override
-    public void setOceanFloorLight(int x, int z, int value) {
-        this.setData(x, z, 7, (byte) value);
+    public void setOceanFloorLight(int x, int z, int light) {
+        this.setData(x, z, 7, (byte) light);
     }
 
     @Override
-    public void setTransparentHeight(int x, int z, int value) {
-        this.setData(x, z, 8, (byte) value);
+    public void setTransparentHeight(int x, int z, int height) {
+        this.setData(x, z, 8, (byte) height);
     }
 
     @Override
-    public void setTransparentBlockstate(int x, int z, BlockState blockState) {
-        int id = this.getIDFromState(blockState);
+    public void setTransparentBlockstate(int x, int z, BlockState state) {
+        int id = this.getIDFromState(state);
         this.setData(x, z, 9, (byte) (id >> 8));
         this.setData(x, z, 10, (byte) id);
     }
 
     @Override
-    public void setTransparentBiomeTint(int x, int z, int value) {
+    public void setTransparentBiomeTint(int x, int z, int tint) {
     }
 
     @Override
-    public void setTransparentLight(int x, int z, int value) {
-        this.setData(x, z, 11, (byte) value);
+    public void setTransparentLight(int x, int z, int light) {
+        this.setData(x, z, 11, (byte) light);
     }
 
     @Override
-    public void setFoliageHeight(int x, int z, int value) {
-        this.setData(x, z, 12, (byte) value);
+    public void setFoliageHeight(int x, int z, int height) {
+        this.setData(x, z, 12, (byte) height);
     }
 
     @Override
-    public void setFoliageBlockstate(int x, int z, BlockState blockState) {
-        int id = this.getIDFromState(blockState);
+    public void setFoliageBlockstate(int x, int z, BlockState state) {
+        int id = this.getIDFromState(state);
         this.setData(x, z, 13, (byte) (id >> 8));
         this.setData(x, z, 14, (byte) id);
     }
 
     @Override
-    public void setFoliageBiomeTint(int x, int z, int value) {
+    public void setFoliageBiomeTint(int x, int z, int tint) {
     }
 
     @Override
-    public void setFoliageLight(int x, int z, int value) {
-        this.setData(x, z, 15, (byte) value);
+    public void setFoliageLight(int x, int z, int light) {
+        this.setData(x, z, 15, (byte) light);
     }
 
     @Override
-    public void setBiomeID(int x, int z, int value) {
-        this.setData(x, z, 16, (byte) (value >> 8));
-        this.setData(x, z, 17, (byte) value);
+    public void setBiomeID(int x, int z, int id) {
+        this.setData(x, z, 16, (byte) (id >> 8));
+        this.setData(x, z, 17, (byte) id);
     }
 
     private synchronized void setData(int x, int z, int bit, byte value) {
@@ -223,24 +223,24 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     @Override
-    public void moveX(int offset) {
+    public void moveX(int x) {
         synchronized (this.dataLock) {
-            if (offset > 0) {
-                System.arraycopy(this.data, offset * 18, this.data, 0, this.data.length - offset * 18);
-            } else if (offset < 0) {
-                System.arraycopy(this.data, 0, this.data, -offset * 18, this.data.length + offset * 18);
+            if (x > 0) {
+                System.arraycopy(this.data, x * 18, this.data, 0, this.data.length - x * 18);
+            } else if (x < 0) {
+                System.arraycopy(this.data, 0, this.data, -x * 18, this.data.length + x * 18);
             }
 
         }
     }
 
     @Override
-    public void moveZ(int offset) {
+    public void moveZ(int z) {
         synchronized (this.dataLock) {
-            if (offset > 0) {
-                System.arraycopy(this.data, offset * this.width * 18, this.data, 0, this.data.length - offset * this.width * 18);
-            } else if (offset < 0) {
-                System.arraycopy(this.data, 0, this.data, -offset * this.width * 18, this.data.length + offset * this.width * 18);
+            if (z > 0) {
+                System.arraycopy(this.data, z * this.width * 18, this.data, 0, this.data.length - z * this.width * 18);
+            } else if (z < 0) {
+                System.arraycopy(this.data, 0, this.data, -z * this.width * 18, this.data.length + z * this.width * 18);
             }
 
         }

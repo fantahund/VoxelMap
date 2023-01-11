@@ -17,8 +17,8 @@ import java.util.ArrayList;
 class GuiSlotDimensions extends GuiSlotMinimap {
     final GuiAddWaypoint parentGui;
     private final ArrayList<DimensionItem> dimensions;
-    final Text APPLIES = Text.translatable("minimap.waypoints.dimension.applies");
-    final Text NOT_APPLIES = Text.translatable("minimap.waypoints.dimension.notapplies");
+    static final Text APPLIES = Text.translatable("minimap.waypoints.dimension.applies");
+    static final Text NOT_APPLIES = Text.translatable("minimap.waypoints.dimension.notapplies");
 
     GuiSlotDimensions(GuiAddWaypoint par1GuiWaypoints) {
         super(101, par1GuiWaypoints.getHeight(), par1GuiWaypoints.getHeight() / 6 + 82 + 6, par1GuiWaypoints.getHeight() / 6 + 164 + 3, 18);
@@ -47,21 +47,21 @@ class GuiSlotDimensions extends GuiSlotMinimap {
 
     }
 
-    public void setSelected(DimensionItem item) {
-        super.setSelected(item);
+    public void setSelected(DimensionItem entry) {
+        super.setSelected(entry);
         if (this.getSelectedOrNull() instanceof DimensionItem) {
             NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
             narratorManager.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
         }
 
-        this.parentGui.setSelectedDimension(item.dim);
+        this.parentGui.setSelectedDimension(entry.dim);
     }
 
-    protected boolean isSelectedEntry(int par1) {
-        return this.dimensions.get(par1).dim.equals(this.parentGui.selectedDimension);
+    protected boolean isSelectedEntry(int index) {
+        return this.dimensions.get(index).dim.equals(this.parentGui.selectedDimension);
     }
 
-    public void renderBackground(MatrixStack matrixStack) {
+    public void renderBackground(MatrixStack matrices) {
     }
 
     public class DimensionItem extends EntryListWidget.Entry<DimensionItem> {
@@ -73,15 +73,15 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             this.dim = dim;
         }
 
-        public void render(MatrixStack matrixStack, int slotIndex, int slotYPos, int leftEdge, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean mouseOver, float partialTicks) {
-            DrawableHelper.drawCenteredText(matrixStack, this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.slotWidth / 2, slotYPos + 3, 16777215);
+        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            DrawableHelper.drawCenteredText(matrices, this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.slotWidth / 2, y + 3, 16777215);
             byte padding = 4;
             byte iconWidth = 16;
-            leftEdge = this.parentGui.getWidth() / 2;
+            x = this.parentGui.getWidth() / 2;
             int width = GuiSlotDimensions.this.slotWidth;
-            if (mouseX >= leftEdge + padding && mouseY >= slotYPos && mouseX <= leftEdge + width + padding && mouseY <= slotYPos + GuiSlotDimensions.this.itemHeight) {
+            if (mouseX >= x + padding && mouseY >= y && mouseX <= x + width + padding && mouseY <= y + GuiSlotDimensions.this.itemHeight) {
                 Text tooltip;
-                if (this.parentGui.popupOpen() && mouseX >= leftEdge + width - iconWidth - padding && mouseX <= leftEdge + width) {
+                if (this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
                     tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? GuiSlotDimensions.this.APPLIES : GuiSlotDimensions.this.NOT_APPLIES;
                 } else {
                     tooltip = null;
@@ -94,10 +94,10 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             GLUtils.img2("textures/gui/container/beacon.png");
             int xOffset = this.parentGui.waypoint.dimensions.contains(this.dim) ? 91 : 113;
             int yOffset = 222;
-            this.parentGui.drawTexture(matrixStack, leftEdge + width - iconWidth, slotYPos - 2, xOffset, yOffset, 16, 16);
+            this.parentGui.drawTexture(matrices, x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
         }
 
-        public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
             GuiSlotDimensions.this.setSelected(this);
             int leftEdge = this.parentGui.getWidth() / 2;
             byte padding = 4;

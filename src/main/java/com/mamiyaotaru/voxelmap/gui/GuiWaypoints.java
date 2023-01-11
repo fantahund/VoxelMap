@@ -149,8 +149,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.sort();
     }
 
-    public boolean keyPressed(int keysm, int scancode, int b) {
-        boolean OK = super.keyPressed(keysm, scancode, b);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         if (this.filter.isFocused()) {
             this.waypointList.updateFilter(this.filter.getText().toLowerCase());
         }
@@ -158,8 +158,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return OK;
     }
 
-    public boolean charTyped(char character, int keycode) {
-        boolean OK = super.charTyped(character, keycode);
+    public boolean charTyped(char chr, int modifiers) {
+        boolean OK = super.charTyped(chr, modifiers);
         if (this.filter.isFocused()) {
             this.waypointList.updateFilter(this.filter.getText().toLowerCase());
         }
@@ -167,18 +167,18 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        this.waypointList.mouseClicked(mouseX, mouseY, mouseButton);
-        return super.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        this.waypointList.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
-        this.waypointList.mouseReleased(mouseX, mouseY, mouseButton);
-        return super.mouseReleased(mouseX, mouseY, mouseButton);
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        this.waypointList.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    public boolean mouseDragged(double mouseX, double mouseY, int mouseEvent, double deltaX, double deltaY) {
-        return this.waypointList.mouseDragged(mouseX, mouseY, mouseEvent, deltaX, deltaY);
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return this.waypointList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
@@ -190,10 +190,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return this.editClicked;
     }
 
-    public void accept(boolean par1) {
+    public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (par1) {
+            if (b) {
                 this.waypointManager.deleteWaypoint(this.selectedWaypoint);
                 this.selectedWaypoint = null;
             }
@@ -203,7 +203,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.editClicked) {
             this.editClicked = false;
-            if (par1) {
+            if (b) {
                 this.waypointManager.saveWaypoints();
             }
 
@@ -212,7 +212,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.addClicked) {
             this.addClicked = false;
-            if (par1) {
+            if (b) {
                 this.waypointManager.addWaypoint(this.newWaypoint);
                 this.setSelectedWaypoint(this.newWaypoint);
             }
@@ -272,16 +272,16 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.waypointManager.saveWaypoints();
     }
 
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        super.drawMap(matrixStack);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        super.drawMap(matrices);
         this.tooltip = null;
-        this.waypointList.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawCenteredText(matrixStack, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
-        drawStringWithShadow(matrixStack, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
-        this.filter.render(matrixStack, mouseX, mouseY, partialTicks);
+        this.waypointList.render(matrices, mouseX, mouseY, delta);
+        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(matrices, mouseX, mouseY, delta);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
+        this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
-            this.renderTooltip(matrixStack, this.tooltip, mouseX, mouseY);
+            this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
         }
 
     }

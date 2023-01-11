@@ -140,8 +140,8 @@ public class GLShim {
 
     }
 
-    public static void glGenerateMipmap(int glTexture2d) {
-        GL30.glGenerateMipmap(glTexture2d);
+    public static void glGenerateMipmap(int target) {
+        GL30.glGenerateMipmap(target);
     }
 
     public static boolean glGetBoolean(int pname) {
@@ -176,8 +176,8 @@ public class GLShim {
         GL11.glScissor(x, y, width, height);
     }
 
-    public static void glTexImage2D(int glTexture2d, int level, int glRgba, int width, int height, int border, int format, int type, ByteBuffer pixels) {
-        GL11.glTexImage2D(glTexture2d, level, glRgba, width, height, border, format, type, pixels);
+    public static void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format, int type, ByteBuffer pixels) {
+        GL11.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
     }
 
     public static void glTexSubImage2D(int target, int level, int xoffset, int yoffset, int width, int height, int format, int type, IntBuffer pixels) {

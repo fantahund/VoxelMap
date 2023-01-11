@@ -416,27 +416,27 @@ public class ColorManager {
 
     }
 
-    private int getColor(MutableBlockPos blockPos, BlockState blockState) {
+    private int getColor(MutableBlockPos blockPos, BlockState state) {
         try {
-            int color = this.getColorForBlockPosBlockStateAndFacing(blockPos, blockState, Direction.UP);
+            int color = this.getColorForBlockPosBlockStateAndFacing(blockPos, state, Direction.UP);
             if (color == 452984832) {
                 BlockRenderManager blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderManager();
-                color = this.getColorForTerrainSprite(blockState, blockRendererDispatcher);
+                color = this.getColorForTerrainSprite(state, blockRendererDispatcher);
             }
 
-            Block block = blockState.getBlock();
+            Block block = state.getBlock();
             if (block == BlockRepository.cobweb) {
                 color |= -16777216;
             }
 
             if (block == BlockRepository.redstone) {
-                color = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
+                color = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(state, null, null, 0) | 0xFF000000);
             }
 
             if (BlockRepository.biomeBlocks.contains(block)) {
-                this.applyDefaultBuiltInShading(blockState, color);
+                this.applyDefaultBuiltInShading(state, color);
             } else {
-                this.checkForBiomeTinting(blockPos, blockState, color);
+                this.checkForBiomeTinting(blockPos, state, color);
             }
 
             if (BlockRepository.shapedBlocks.contains(block)) {
@@ -449,7 +449,7 @@ public class ColorManager {
 
             return color;
         } catch (Exception var5) {
-            VoxelConstants.getLogger().error("failed getting color: " + blockState.getBlock().getName().getString(), var5);
+            VoxelConstants.getLogger().error("failed getting color: " + state.getBlock().getName().getString(), var5);
             return 452984832;
         }
     }
@@ -1091,19 +1091,19 @@ public class ColorManager {
         return biome != null ? this.world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(biome) : -1;
     }
 
-    private List<Identifier> findResources(String namespace, String directory, String suffixMaybeNull, boolean recursive, boolean directories, boolean sortByFilename) {
-        if (directory == null) {
-            directory = "";
+    private List<Identifier> findResources(String namespace, String startingPath, String suffixMaybeNull, boolean recursive, boolean directories, boolean sortByFilename) {
+        if (startingPath == null) {
+            startingPath = "";
         }
 
-        if (directory.startsWith("/")) {
-            directory = directory.substring(1);
+        if (startingPath.startsWith("/")) {
+            startingPath = startingPath.substring(1);
         }
 
         String suffix = suffixMaybeNull == null ? "" : suffixMaybeNull;
         ArrayList<Identifier> resources;
 
-        Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().findResources(directory, asset -> asset.getPath().endsWith(suffix));
+        Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().findResources(startingPath, asset -> asset.getPath().endsWith(suffix));
         resources = resourceMap.keySet().stream().filter(candidate -> candidate.getNamespace().equals(namespace)).collect(Collectors.toCollection(ArrayList::new));
 
         if (sortByFilename) {

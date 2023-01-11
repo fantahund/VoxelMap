@@ -13,9 +13,9 @@ public interface IGLBufferedImage {
 
     void blank();
 
-    void setRGB(int var1, int var2, int var3);
+    void setRGB(int x, int y, int color);
 
-    void moveX(int var1);
+    void moveX(int x);
 
-    void moveY(int var1);
+    void moveY(int y);
 }

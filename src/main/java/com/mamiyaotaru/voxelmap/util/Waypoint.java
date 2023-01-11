@@ -71,9 +71,9 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
         this.y = y;
     }
 
-    public int compareTo(Waypoint arg0) {
+    public int compareTo(Waypoint o) {
         double myDistance = this.getDistanceSqToEntity(VoxelConstants.getPlayer());
-        double comparedDistance = arg0.getDistanceSqToEntity(VoxelConstants.getPlayer());
+        double comparedDistance = o.getDistanceSqToEntity(VoxelConstants.getPlayer());
         return Double.compare(myDistance, comparedDistance);
     }
 
@@ -84,10 +84,10 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
         return var2 * var2 + var4 * var4 + var6 * var6;
     }
 
-    public boolean equals(Object otherObject) {
-        if (this == otherObject) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
-        } else if (!(otherObject instanceof Waypoint otherWaypoint)) {
+        } else if (!(obj instanceof Waypoint otherWaypoint)) {
             return false;
         } else {
             return this.name.equals(otherWaypoint.name) && this.imageSuffix.equals(otherWaypoint.imageSuffix) && this.world.equals(otherWaypoint.world) && this.x == otherWaypoint.x && this.y == otherWaypoint.y && this.z == otherWaypoint.z && this.red == otherWaypoint.red && this.green == otherWaypoint.green && this.blue == otherWaypoint.blue && this.dimensions.equals(otherWaypoint.dimensions);

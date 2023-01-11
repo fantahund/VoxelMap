@@ -67,35 +67,35 @@ public class GLBufferedImage extends BufferedImage implements IGLBufferedImage {
     }
 
     @Override
-    public void setRGB(int x, int y, int color24) {
+    public void setRGB(int x, int y, int rgb) {
         int index = (x + y * this.getWidth()) * 4;
         synchronized (this.bufferLock) {
-            this.bytes[index] = (byte) (color24 >> 24);
-            this.bytes[index + 1] = (byte) (color24);
-            this.bytes[index + 2] = (byte) (color24 >> 8);
-            this.bytes[index + 3] = (byte) (color24 >> 16);
+            this.bytes[index] = (byte) (rgb >> 24);
+            this.bytes[index + 1] = (byte) (rgb);
+            this.bytes[index + 2] = (byte) (rgb >> 8);
+            this.bytes[index + 3] = (byte) (rgb >> 16);
         }
     }
 
     @Override
-    public void moveX(int offset) {
+    public void moveX(int x) {
         synchronized (this.bufferLock) {
-            if (offset > 0) {
-                System.arraycopy(this.bytes, offset * 4, this.bytes, 0, this.bytes.length - offset * 4);
-            } else if (offset < 0) {
-                System.arraycopy(this.bytes, 0, this.bytes, -offset * 4, this.bytes.length + offset * 4);
+            if (x > 0) {
+                System.arraycopy(this.bytes, x * 4, this.bytes, 0, this.bytes.length - x * 4);
+            } else if (x < 0) {
+                System.arraycopy(this.bytes, 0, this.bytes, -x * 4, this.bytes.length + x * 4);
             }
 
         }
     }
 
     @Override
-    public void moveY(int offset) {
+    public void moveY(int y) {
         synchronized (this.bufferLock) {
-            if (offset > 0) {
-                System.arraycopy(this.bytes, offset * this.getWidth() * 4, this.bytes, 0, this.bytes.length - offset * this.getWidth() * 4);
-            } else if (offset < 0) {
-                System.arraycopy(this.bytes, 0, this.bytes, -offset * this.getWidth() * 4, this.bytes.length + offset * this.getWidth() * 4);
+            if (y > 0) {
+                System.arraycopy(this.bytes, y * this.getWidth() * 4, this.bytes, 0, this.bytes.length - y * this.getWidth() * 4);
+            } else if (y < 0) {
+                System.arraycopy(this.bytes, 0, this.bytes, -y * this.getWidth() * 4, this.bytes.length + y * this.getWidth() * 4);
             }
 
         }
