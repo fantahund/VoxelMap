@@ -54,7 +54,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class WaypointManager {
-    final VoxelMap master;
     public final MapSettingsManager options;
     final TextureAtlas textureAtlas;
     final TextureAtlas textureAtlasChooser;
@@ -78,9 +77,8 @@ public class WaypointManager {
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
 
-    public WaypointManager(VoxelMap master) {
-        this.master = master;
-        this.options = master.getMapOptions();
+    public WaypointManager() {
+        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");
         this.textureAtlas.setFilter(false, false);
         this.textureAtlasChooser = new TextureAtlas("chooser");
@@ -169,12 +167,12 @@ public class WaypointManager {
             if (!this.worldName.equals(mapName) && mapName != null && !mapName.isEmpty()) {
                 this.currentDimension = null;
                 this.worldName = mapName;
-                this.master.getDimensionManager().populateDimensions(world);
+                VoxelConstants.getVoxelMapInstance().getDimensionManager().populateDimensions(world);
                 this.loadWaypoints();
             }
 
-            this.master.getDimensionManager().enteredWorld(world);
-            DimensionContainer dim = this.master.getDimensionManager().getDimensionContainerByWorld(world);
+            VoxelConstants.getVoxelMapInstance().getDimensionManager().enteredWorld(world);
+            DimensionContainer dim = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world);
             this.enteredDimension(dim);
             this.setSubWorldDescriptor("");
         }
@@ -374,7 +372,7 @@ public class WaypointManager {
             }
         }
 
-        this.master.getMapOptions().oldNorth = this.oldNorthWorldNames.contains(this.currentSubworldDescriptorNoCodes);
+        VoxelConstants.getVoxelMapInstance().getMapOptions().oldNorth = this.oldNorthWorldNames.contains(this.currentSubworldDescriptorNoCodes);
     }
 
     private void newSubworldName(String name) {
@@ -403,7 +401,7 @@ public class WaypointManager {
                 }
             }
 
-            this.master.getPersistentMap().renameSubworld(oldName, newName);
+            VoxelConstants.getVoxelMapInstance().getPersistentMap().renameSubworld(oldName, newName);
             String worldName = this.getCurrentWorldName();
             String worldNamePathPart = TextUtils.scrubNameFile(worldName);
             String subWorldNamePathPart = TextUtils.scrubNameFile(oldName) + "/";

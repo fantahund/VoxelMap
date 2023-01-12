@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
@@ -59,7 +58,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();
-    private final VoxelMap master;
     private final IPersistentMap persistentMap;
     private final WaypointManager waypointManager;
     private final Screen parent;
@@ -140,17 +138,16 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     Waypoint newWaypoint;
     Waypoint selectedWaypoint;
 
-    public GuiPersistentMap(Screen parent, VoxelMap master) {
+    public GuiPersistentMap(Screen parent) {
         this.parent = parent;
-        this.master = master;
-        this.waypointManager = master.getWaypointManager();
-        mapOptions = master.getMapOptions();
-        this.persistentMap = master.getPersistentMap();
-        this.options = master.getPersistentMapOptions();
+        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.persistentMap = VoxelConstants.getVoxelMapInstance().getPersistentMap();
+        this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
         this.zoom = this.options.zoom;
         this.zoomStart = this.options.zoom;
         this.zoomGoal = this.options.zoom;
-        this.persistentMap.setLightMapArray(master.getMap().getLightmapArray());
+        this.persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
         if (!gotSkin && skinTries < 5) {
             this.getSkin();
         }
@@ -213,16 +210,16 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.buttonCount = 5;
         this.buttonSeparation = 4;
         this.buttonWidth = (this.width - this.sideMargin * 2 - this.buttonSeparation * (this.buttonCount - 1)) / this.buttonCount;
-        this.addDrawableChild(new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(this, this.master)), this));
+        this.addDrawableChild(new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(this)), this));
         this.multiworldButtonName = Text.translatable(VoxelConstants.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld");
         this.multiworldButtonNameRed = (Text.translatable(VoxelConstants.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
-        if (!VoxelConstants.getMinecraft().isIntegratedServerRunning() && !this.master.getWaypointManager().receivedAutoSubworldName()) {
-            this.addDrawableChild(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiSubworldsSelect(this, this.master)), this));
+        if (!VoxelConstants.getMinecraft().isIntegratedServerRunning() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
+            this.addDrawableChild(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiSubworldsSelect(this)), this));
         }
 
         this.addDrawableChild(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("menu.options"), null, this) {
             public void onPress() {
-                VoxelConstants.getMinecraft().setScreen(new GuiMinimapOptions(GuiPersistentMap.this, GuiPersistentMap.this.master));
+                VoxelConstants.getMinecraft().setScreen(new GuiMinimapOptions(GuiPersistentMap.this));
             }
         });
         this.addDrawableChild(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("gui.done"), null, this) {
@@ -280,9 +277,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         });
 
         StringBuilder worldNameBuilder = (new StringBuilder("§r")).append(worldName.get());
-        String subworldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(true);
+        String subworldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true);
         this.subworldName = subworldName;
-        if ((subworldName == null || subworldName.equals("")) && this.master.getWaypointManager().isMultiworld()) {
+        if ((subworldName == null || subworldName.equals("")) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
             subworldName = "???";
         }
 
@@ -430,7 +427,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        if (this.master.getMapOptions().keyBindMenu.matchesKey(keyCode, scanCode)) {
+        if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matchesKey(keyCode, scanCode)) {
             keyCode = 256;
             scanCode = -1;
             modifiers = -1;
@@ -454,7 +451,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        if (this.master.getMapOptions().keyBindMenu.matchesKey(modifiers, -1)) {
+        if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matchesKey(modifiers, -1)) {
             super.keyPressed(256, -1, -1);
         }
 
@@ -688,7 +685,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             if (this.waypointManager.getHighlightedWaypoint() != null) {
-                this.drawWaypoint(matrices, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, this.master.getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+                this.drawWaypoint(matrices, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
             }
         }
 
@@ -819,7 +816,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
         int x = (int) Math.floor(cursorCoordX);
         int z = (int) Math.floor(cursorCoordZ);
-        if (this.master.getMapOptions().coords) {
+        if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
             if (!this.editingCoordinates) {
                 drawStringWithShadow(matrices, this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
                 drawStringWithShadow(matrices, this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
@@ -828,13 +825,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        if (this.subworldName != null && !this.subworldName.equals(this.master.getWaypointManager().getCurrentSubworldDescriptor(true)) || this.master.getWaypointManager().getCurrentSubworldDescriptor(true) != null && !this.master.getWaypointManager().getCurrentSubworldDescriptor(true).equals(this.subworldName)) {
+        if (this.subworldName != null && !this.subworldName.equals(VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true)) || VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true) != null && !VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true).equals(this.subworldName)) {
             this.buildWorldName();
         }
 
         drawStringWithShadow(matrices, this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
         if (this.buttonMultiworld != null) {
-            if ((this.subworldName == null || this.subworldName.equals("")) && this.master.getWaypointManager().isMultiworld()) {
+            if ((this.subworldName == null || this.subworldName.equals("")) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
                 if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {
                     this.buttonMultiworld.setMessage(this.multiworldButtonNameRed);
                 } else {
@@ -871,7 +868,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 boolean hover = cursorCoordX > ptX - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordX < ptX + 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ > ptZ - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ < ptZ + 18.0F * this.guiToMap / this.guiToDirectMouse;
                 boolean target = false;
                 RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-                TextureAtlas atlas = this.master.getWaypointManager().getTextureAtlas();
+                TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
                 GLUtils.disp2(atlas.getGlId());
                 if (icon == null) {
                     icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
@@ -1121,8 +1118,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
                 TreeSet<DimensionContainer> dimensions = new TreeSet<>();
                 dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
-                this.newWaypoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
-                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, this.newWaypoint, false));
+                this.newWaypoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
+                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
             }
             case 1 -> {
                 if (hovered != null) {
@@ -1131,7 +1128,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     y = y > VoxelConstants.getPlayer().world.getBottomY() ? y : 64;
                     TreeSet<DimensionContainer> dimensions2 = new TreeSet<>();
                     dimensions2.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
-                    Waypoint fakePoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
+                    Waypoint fakePoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
                     this.waypointManager.setHighlightedWaypoint(fakePoint, true);
                 }
             }
@@ -1165,7 +1162,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.editClicked = true;
                     this.selectedWaypoint = hovered;
-                    VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, hovered, true));
+                    VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, hovered, true));
                 }
             }
             case 5 -> {

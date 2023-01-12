@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -46,7 +45,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
 public class PersistentMap implements IPersistentMap {
-    final VoxelMap master;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final ColorManager colorManager;
     final MapSettingsManager mapOptions;
@@ -84,11 +82,10 @@ public class PersistentMap implements IPersistentMap {
     private MapChunkCache chunkCache;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
 
-    public PersistentMap(VoxelMap master) {
-        this.master = master;
-        this.colorManager = master.getColorManager();
-        mapOptions = master.getMapOptions();
-        this.options = master.getPersistentMapOptions();
+    public PersistentMap() {
+        this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
+        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
         this.lightmapColors = new int[256];
         Arrays.fill(this.lightmapColors, -16777216);
     }
@@ -127,7 +124,7 @@ public class PersistentMap implements IPersistentMap {
     }
 
     private void newWorldStuff() {
-        String worldName = TextUtils.scrubNameFile(this.master.getWaypointManager().getCurrentWorldName());
+        String worldName = TextUtils.scrubNameFile(VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName());
         File oldCacheDir = new File(VoxelConstants.getMinecraft().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
         if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
             File newCacheDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + worldName + "/");
@@ -140,8 +137,8 @@ public class PersistentMap implements IPersistentMap {
             }
         }
 
-        if (this.master.getWaypointManager().isMultiworld() && !VoxelConstants.getMinecraft().isInSingleplayer() && !this.master.getWaypointManager().receivedAutoSubworldName()) {
-            this.worldMatcher = new WorldMatcher(this.master, this, this.world);
+        if (VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld() && !VoxelConstants.getMinecraft().isInSingleplayer() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
+            this.worldMatcher = new WorldMatcher(this, this.world);
             this.worldMatcher.findMatch();
         }
 
@@ -155,8 +152,8 @@ public class PersistentMap implements IPersistentMap {
             this.options.mapZ = GameVariableAccessShim.zCoord();
         }
 
-        if (!this.master.getWaypointManager().getCurrentSubworldDescriptor(false).equals(this.subworldName)) {
-            this.subworldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(false);
+        if (!VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false).equals(this.subworldName)) {
+            this.subworldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
             if (this.worldMatcher != null && !this.subworldName.equals("")) {
                 this.worldMatcher.cancel();
             }
@@ -210,7 +207,7 @@ public class PersistentMap implements IPersistentMap {
 
     @Override
     public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
-        return this.master.getSettingsAndLightingChangeNotifier();
+        return VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier();
     }
 
     @Override
@@ -748,8 +745,8 @@ public class PersistentMap implements IPersistentMap {
         } else {
             ThreadManager.emptyQueue();
             CachedRegion[] visibleCachedRegionsArray = new CachedRegion[(right - left + 1) * (bottom - top + 1)];
-            String worldName = this.master.getWaypointManager().getCurrentWorldName();
-            String subWorldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(false);
+            String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
+            String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
             List<RegionCoordinates> regionsToDisplay = new ArrayList<>();
 
             for (int t = left; t <= right; ++t) {
@@ -873,8 +870,8 @@ public class PersistentMap implements IPersistentMap {
             synchronized (this.cachedRegions) {
                 cachedRegion = this.cachedRegions.get(key);
                 if (cachedRegion == null || cachedRegion == CachedRegion.emptyRegion) {
-                    String worldName = this.master.getWaypointManager().getCurrentWorldName();
-                    String subWorldName = this.master.getWaypointManager().getCurrentSubworldDescriptor(false);
+                    String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
+                    String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
                     cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, regionX, regionZ);
                     this.cachedRegions.put(key, cachedRegion);
                     synchronized (this.cachedRegionsPool) {

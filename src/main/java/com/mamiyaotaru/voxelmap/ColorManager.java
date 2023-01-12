@@ -85,7 +85,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ColorManager {
-    private final VoxelMap master;
     private boolean resourcePacksChanged = false;
     private ClientWorld world = null;
     private BufferedImage terrainBuff = null;
@@ -112,8 +111,7 @@ public class ColorManager {
     private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
     private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedstoneWireBlock.getWireColor(blockState.get(RedstoneWireBlock.POWER));
 
-    public ColorManager(VoxelMap master) {
-        this.master = master;
+    public ColorManager() {
         this.optifineInstalled = false;
         Field ofProfiler = null;
 
@@ -211,7 +209,7 @@ public class ColorManager {
                 }
             }
 
-            this.master.getMap().forceFullRender(true);
+            VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
         } catch (Exception var5) {
             VoxelConstants.getLogger().error("error loading pack", var5);
         }

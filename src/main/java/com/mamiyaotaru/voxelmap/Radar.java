@@ -158,7 +158,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
-    private final VoxelMap master;
     private LayoutVariables layoutVariables = null;
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
@@ -211,10 +210,9 @@ public class Radar implements IRadar {
         enumMap.put(HorseMarking.BLACK_DOTS, new Identifier("textures/entity/horse/horse_markings_blackdots.png"));
     });
 
-    public Radar(VoxelMap master) {
-        this.master = master;
-        this.minimapOptions = master.getMapOptions();
-        this.options = master.getRadarOptions();
+    public Radar() {
+        this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.fontRenderer = new FontRendererWithAtlas(VoxelConstants.getMinecraft().getTextureManager(), new Identifier("textures/font/ascii.png"));
         this.textureAtlas = new TextureAtlas("mobs");
         this.textureAtlas.setFilter(false, false);
@@ -1481,12 +1479,12 @@ public class Radar implements IRadar {
                 int stateID = Block.getRawIdFromState(blockState);
                 icon = this.textureAtlas.getAtlasSprite("blockArmor " + stateID);
                 if (icon == this.textureAtlas.getMissingImage()) {
-                    BufferedImage blockImage = this.master.getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, -8.0F);
+                    BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, -8.0F);
                     if (blockImage != null) {
                         int width = blockImage.getWidth();
                         int height = blockImage.getHeight();
                         ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
-                        BufferedImage blockImageFront = this.master.getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
+                        BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
                         blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
                         ImageUtils.addImages(blockImage, blockImageFront, (width / 2 - 15), (height / 2 - 15), width, height);
                         blockImageFront.flush();

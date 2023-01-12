@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
@@ -18,9 +17,9 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final Text cacheSettings = Text.translatable("options.worldmap.cachesettings");
     private final Text warning = Text.translatable("options.worldmap.warning");
 
-    public GuiPersistentMapOptions(Screen parent, VoxelMap master) {
+    public GuiPersistentMapOptions(Screen parent) {
         this.parent = parent;
-        this.options = master.getPersistentMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
     }
 
     public void init() {

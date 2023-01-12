@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -24,7 +23,6 @@ import java.util.TreeSet;
 
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private final Screen parentScreen;
-    private final VoxelMap master;
     protected final MapSettingsManager options;
     protected final WaypointManager waypointManager;
     protected Text screenTitle;
@@ -49,11 +47,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private final Random generator = new Random();
     private boolean changedSort = false;
 
-    public GuiWaypoints(Screen parentScreen, VoxelMap master) {
-        this.master = master;
+    public GuiWaypoints(Screen parentScreen) {
         this.parentScreen = parentScreen;
-        this.options = master.getMapOptions();
-        this.waypointManager = master.getWaypointManager();
+        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.highlightedWaypoint = this.waypointManager.getHighlightedWaypoint();
     }
 
@@ -242,7 +239,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     protected void editWaypoint(Waypoint waypoint) {
         this.editClicked = true;
-        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, waypoint, true));
+        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, waypoint, true));
     }
 
     protected void addWaypoint() {
@@ -263,8 +260,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         TreeSet<DimensionContainer> dimensions = new TreeSet<>();
         dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
         double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
-        this.newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
-        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.master, this.newWaypoint, false));
+        this.newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
+        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
     }
 
     protected void toggleWaypointVisibility() {

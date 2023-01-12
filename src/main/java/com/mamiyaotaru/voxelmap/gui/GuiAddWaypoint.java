@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.IPopupGuiScreen;
@@ -28,7 +27,6 @@ import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    final VoxelMap master;
     final WaypointManager waypointManager;
     final ColorManager colorManager;
     private final IGuiWaypoints parentGui;
@@ -53,10 +51,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final Identifier pickerResourceLocation = new Identifier("voxelmap", "images/colorpicker.png");
     private final Identifier blank = new Identifier("textures/misc/white.png");
 
-    public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, VoxelMap master, Waypoint par2Waypoint, boolean editing) {
-        this.master = master;
-        this.waypointManager = master.getWaypointManager();
-        this.colorManager = master.getColorManager();
+    public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, Waypoint par2Waypoint, boolean editing) {
+        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+        this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
         this.parentGui = par1GuiScreen;
         this.waypoint = par2Waypoint;
         this.red = this.waypoint.red;
@@ -377,7 +374,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void toggleDimensionSelected() {
-        if (this.waypoint.dimensions.size() > 1 && this.waypoint.dimensions.contains(this.selectedDimension) && this.selectedDimension != this.master.getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world)) {
+        if (this.waypoint.dimensions.size() > 1 && this.waypoint.dimensions.contains(this.selectedDimension) && this.selectedDimension != VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world)) {
             this.waypoint.dimensions.remove(this.selectedDimension);
         } else
             this.waypoint.dimensions.add(this.selectedDimension);

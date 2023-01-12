@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
@@ -19,9 +18,9 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     private final MapSettingsManager options;
     public KeyBinding buttonId = null;
 
-    public GuiMinimapControls(Screen par1GuiScreen, VoxelMap master) {
+    public GuiMinimapControls(Screen par1GuiScreen) {
         this.parentScreen = par1GuiScreen;
-        this.options = master.getMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
     private int getLeftBorder() {

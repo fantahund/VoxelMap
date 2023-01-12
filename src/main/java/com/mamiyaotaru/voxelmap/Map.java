@@ -91,7 +91,6 @@ public class Map implements Runnable, IChangeObserver {
     private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
     private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
     private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
-    private final VoxelMap master;
     private ClientWorld world = null;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
@@ -158,11 +157,10 @@ public class Map implements Runnable, IChangeObserver {
     private double zoomScaleAdjusted = 1.0;
     private int mapImageInt = -1;
 
-    public Map(VoxelMap master) {
-        this.master = master;
-        this.options = master.getMapOptions();
-        this.colorManager = master.getColorManager();
-        this.waypointManager = master.getWaypointManager();
+    public Map() {
+        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
+        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.layoutVariables = new LayoutVariables();
         ArrayList<KeyBinding> tempBindings = new ArrayList<>();
         tempBindings.addAll(Arrays.asList(VoxelConstants.getMinecraft().options.allKeys));
@@ -219,7 +217,7 @@ public class Map implements Runnable, IChangeObserver {
 
     public void forceFullRender(boolean forceFullRender) {
         this.doFullRender = forceFullRender;
-        this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
+        VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
     }
 
     public float getPercentX() {
@@ -279,7 +277,7 @@ public class Map implements Runnable, IChangeObserver {
         this.lightmapTexture = this.getLightmapTexture();
         this.mapData[this.zoom].blank();
         this.doFullRender = true;
-        this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
+        VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
     }
 
     public void newWorldName() {
@@ -308,7 +306,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.options.saveAll();
             }
 
-            VoxelConstants.getMinecraft().setScreen(new GuiPersistentMap(null, this.master));
+            VoxelConstants.getMinecraft().setScreen(new GuiPersistentMap(null));
         }
 
         if (VoxelConstants.getMinecraft().currentScreen == null && this.options.keyBindWaypointMenu.wasPressed()) {
@@ -318,7 +316,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.options.saveAll();
             }
 
-            VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(null, this.master));
+            VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(null));
         }
 
         if (VoxelConstants.getMinecraft().currentScreen == null && this.options.keyBindWaypoint.wasPressed()) {
@@ -344,12 +342,12 @@ public class Map implements Runnable, IChangeObserver {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
-            Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", this.master.getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
-            VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, this.master, newWaypoint, false));
+            Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
+            VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
         }
 
         if (VoxelConstants.getMinecraft().currentScreen == null && this.options.keyBindMobToggle.wasPressed()) {
-            this.master.getRadarOptions().setOptionValue(EnumOptionsMinimap.SHOWRADAR);
+            VoxelConstants.getVoxelMapInstance().getRadarOptions().setOptionValue(EnumOptionsMinimap.SHOWRADAR);
             this.options.saveAll();
         }
 
@@ -689,9 +687,9 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             GLShim.glDisable(GL11.GL_DEPTH_TEST);
-            if (this.master.getRadar() != null && !this.fullscreenMap) {
+            if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
                 this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
-                this.master.getRadar().onTickInGame(modelViewMatrixStack, this.layoutVariables);
+                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(modelViewMatrixStack, this.layoutVariables);
             }
 
             if (!this.fullscreenMap) {
@@ -753,7 +751,7 @@ public class Map implements Runnable, IChangeObserver {
 
         if (changed) {
             this.doFullRender = true;
-            this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
+            VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
         }
 
     }
@@ -886,7 +884,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (needLight || skyColorChanged) {
-            this.master.getSettingsAndLightingChangeNotifier().notifyOfChanges();
+            VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
         }
 
     }
@@ -1675,7 +1673,7 @@ public class Map implements Runnable, IChangeObserver {
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
-        TextureAtlas textureAtlas = this.master.getWaypointManager().getTextureAtlas();
+        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         GLUtils.disp2(textureAtlas.getGlId());
         GLShim.glEnable(GL11.GL_BLEND);
         GLShim.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

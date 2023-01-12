@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
@@ -32,10 +31,9 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private final Screen parent;
     final ClientPlayerEntity thePlayer;
     final ClientPlayerEntity camera;
-    private final VoxelMap master;
     private final WaypointManager waypointManager;
 
-    public GuiSubworldsSelect(Screen parent, VoxelMap master) {
+    public GuiSubworldsSelect(Screen parent) {
         this.parent = parent;
         this.thePlayer = VoxelConstants.getPlayer();
         this.camera = new ClientPlayerEntity(VoxelConstants.getMinecraft(), VoxelConstants.getMinecraft().world, VoxelConstants.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
@@ -43,8 +41,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.camera.refreshPositionAndAngles(this.thePlayer.getX(), this.thePlayer.getY() - this.thePlayer.getHeightOffset(), this.thePlayer.getZ(), this.thePlayer.getYaw(), 0.0F);
         this.yaw = this.thePlayer.getYaw();
         this.thirdPersonViewOrig = VoxelConstants.getMinecraft().options.getPerspective();
-        this.master = master;
-        this.waypointManager = master.getWaypointManager();
+        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
     }
 
     public void init() {
@@ -195,6 +192,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     private void editWorld(String subworldNameToEdit) {
-        VoxelConstants.getMinecraft().setScreen(new GuiSubworldEdit(this, this.master, subworldNameToEdit));
+        VoxelConstants.getMinecraft().setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
     }
 }

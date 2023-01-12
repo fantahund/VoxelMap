@@ -62,10 +62,10 @@ public class VoxelMap implements ResourceReloader {
         this.persistentMapOptions = new PersistentMapSettingsManager();
         mapOptions.addSecondaryOptionsManager(this.persistentMapOptions);
         BiomeRepository.loadBiomeColors();
-        this.colorManager = new ColorManager(this);
-        this.waypointManager = new WaypointManager(this);
-        this.dimensionManager = new DimensionManager(this);
-        this.persistentMap = new PersistentMap(this);
+        this.colorManager = new ColorManager();
+        this.waypointManager = new WaypointManager();
+        this.dimensionManager = new DimensionManager();
+        this.persistentMap = new PersistentMap();
         mapOptions.loadAll();
 
         try {
@@ -77,8 +77,8 @@ public class VoxelMap implements ResourceReloader {
                 radarOptions.radarAllowed = true;
                 radarOptions.radarMobsAllowed = true;
                 radarOptions.radarPlayersAllowed = true;
-                this.radar = new Radar(this);
-                this.radarSimple = new RadarSimple(this);
+                this.radar = new Radar();
+                this.radarSimple = new RadarSimple();
             }
         } catch (RuntimeException var4) {
             VoxelConstants.getLogger().error("Failed creating radar " + var4.getLocalizedMessage(), var4);
@@ -94,7 +94,7 @@ public class VoxelMap implements ResourceReloader {
             radarOptions.radarMobsAllowed = true;
             mapOptions.cavesAllowed = true;
         });
-        this.map = new Map(this);
+        this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);

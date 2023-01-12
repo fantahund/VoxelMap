@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
@@ -26,9 +25,9 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private ButtonWidget deleteButton;
     private boolean deleteClicked = false;
 
-    public GuiSubworldEdit(Screen parent, VoxelMap master, String subworldName) {
+    public GuiSubworldEdit(Screen parent, String subworldName) {
         this.parent = parent;
-        this.waypointManager = master.getWaypointManager();
+        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.originalSubworldName = subworldName;
         this.knownSubworldNames = new ArrayList<Object>(this.waypointManager.getKnownSubworldNames());
     }

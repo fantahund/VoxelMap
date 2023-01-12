@@ -20,12 +20,10 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     private final Screen parentScreen;
     protected String screenTitle = "Details / Performance";
     private final MapSettingsManager options;
-    final VoxelMap master;
 
-    public GuiMinimapPerformance(Screen par1GuiScreen, VoxelMap master) {
+    public GuiMinimapPerformance(Screen par1GuiScreen) {
         this.parentScreen = par1GuiScreen;
-        this.options = master.getMapOptions();
-        this.master = master;
+        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
     private int getLeftBorder() {
@@ -48,18 +46,18 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
             ++var2;
             if (optionButton.returnEnumOptions() == EnumOptionsMinimap.SLIMECHUNKS) {
                 this.slimeChunksButton = optionButton;
-                this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !this.master.getWorldSeed().equals("");
+                this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().equals("");
             }
         }
 
-        String worldSeedDisplay = this.master.getWorldSeed();
+        String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
         if (worldSeedDisplay.equals("")) {
             worldSeedDisplay = I18nUtils.getString("selectWorld.versionUnknown");
         }
 
         String buttonText = I18nUtils.getString("options.minimap.worldseed") + ": " + worldSeedDisplay;
         this.worldSeedButton = new GuiButtonText(this.getFontRenderer(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, Text.literal(buttonText), button -> this.worldSeedButton.setEditing(true));
-        this.worldSeedButton.setText(this.master.getWorldSeed());
+        this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
         this.worldSeedButton.active = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
         this.addDrawableChild(this.worldSeedButton);
         ++var2;
@@ -104,17 +102,17 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
 
     private void newSeed() {
         String newSeed = this.worldSeedButton.getText();
-        this.master.setWorldSeed(newSeed);
-        String worldSeedDisplay = this.master.getWorldSeed();
+        VoxelConstants.getVoxelMapInstance().setWorldSeed(newSeed);
+        String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
         if (worldSeedDisplay.equals("")) {
             worldSeedDisplay = I18nUtils.getString("selectWorld.versionUnknown");
         }
 
         String buttonText = I18nUtils.getString("options.minimap.worldseed") + ": " + worldSeedDisplay;
         this.worldSeedButton.setMessage(Text.literal(buttonText));
-        this.worldSeedButton.setText(this.master.getWorldSeed());
-        this.master.getMap().forceFullRender(true);
-        this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !this.master.getWorldSeed().equals("");
+        this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
+        VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
+        this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().equals("");
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {

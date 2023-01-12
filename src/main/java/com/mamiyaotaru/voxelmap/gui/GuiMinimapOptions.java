@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
@@ -15,14 +14,12 @@ import net.minecraft.text.Text;
 
 public class GuiMinimapOptions extends GuiScreenMinimap {
     private final Screen parent;
-    private final VoxelMap master;
     private final MapSettingsManager options;
     protected String screenTitle = "Minimap Options";
 
-    public GuiMinimapOptions(Screen parent, VoxelMap master) {
+    public GuiMinimapOptions(Screen parent) {
         this.parent = parent;
-        this.master = master;
-        this.options = master.getMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
     public void init() {
@@ -38,11 +35,11 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
 
         ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20).build();
-        radarOptionsButton.active = this.master.getRadarOptions().radarAllowed || this.master.getRadarOptions().radarMobsAllowed || this.master.getRadarOptions().radarPlayersAllowed;
+        radarOptionsButton.active = VoxelConstants.getVoxelMapInstance().getRadarOptions().radarAllowed || VoxelConstants.getVoxelMapInstance().getRadarOptions().radarMobsAllowed || VoxelConstants.getVoxelMapInstance().getRadarOptions().radarPlayersAllowed;
         this.addDrawableChild(radarOptionsButton);
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this, this.master))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 120 - 6, 150, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this, this.master))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this, this.master))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 144 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 120 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 144 - 6, 150, 20).build());
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
     }
 
@@ -51,7 +48,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         this.options.setOptionValue(option);
         par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
         if (option == EnumOptionsMinimap.OLDNORTH) {
-            this.master.getWaypointManager().setOldNorth(this.options.oldNorth);
+            VoxelConstants.getVoxelMapInstance().getWaypointManager().setOldNorth(this.options.oldNorth);
         }
 
     }

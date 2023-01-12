@@ -186,7 +186,7 @@ public class CommandUtils {
             for (Waypoint existingWaypoint : VoxelConstants.getVoxelMapInstance().getWaypointManager().getWaypoints()) {
                 if (newWaypoint.getX() == existingWaypoint.getX() && newWaypoint.getZ() == existingWaypoint.getZ()) {
                     if (control) {
-                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, VoxelConstants.getVoxelMapInstance(), existingWaypoint, true));
+                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, existingWaypoint, true));
                     } else {
                         VoxelConstants.getVoxelMapInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
                     }
@@ -196,7 +196,7 @@ public class CommandUtils {
             }
 
             if (control) {
-                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, VoxelConstants.getVoxelMapInstance(), newWaypoint, false));
+                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
             } else {
                 VoxelConstants.getVoxelMapInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
             }

@@ -28,7 +28,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         this.setRenderSelection(false);
         this.setShowTopBottomBG(false);
         this.setShowSlotBG(false);
-        DimensionManager dimensionManager = this.parentGui.master.getDimensionManager();
+        DimensionManager dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
         this.dimensions = new ArrayList<>();
         DimensionItem first = null;
 

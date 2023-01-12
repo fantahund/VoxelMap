@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -13,12 +12,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 
 public class DimensionManager {
-    final VoxelMap master;
     public final ArrayList<DimensionContainer> dimensions;
     private final ArrayList<RegistryKey<World>> vanillaWorlds = new ArrayList<>();
 
-    public DimensionManager(VoxelMap master) {
-        this.master = master;
+    public DimensionManager() {
         this.dimensions = new ArrayList<>();
         this.vanillaWorlds.add(World.OVERWORLD);
         this.vanillaWorlds.add(World.NETHER);

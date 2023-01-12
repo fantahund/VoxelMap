@@ -43,9 +43,9 @@ public class RadarSimple implements IRadar {
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
     final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 
-    public RadarSimple(VoxelMap master) {
-        this.minimapOptions = master.getMapOptions();
-        this.options = master.getRadarOptions();
+    public RadarSimple() {
+        this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("pings");
         this.textureAtlas.setFilter(false, false);
     }
