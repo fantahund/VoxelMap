@@ -185,7 +185,6 @@ public class Map implements Runnable, IChangeObserver {
 
         this.showWelcomeScreen = this.options.welcome;
         this.zCalc.start();
-        this.zCalc.setPriority(5);
         this.mapData[0] = new FullMapData(32, 32);
         this.mapData[1] = new FullMapData(64, 64);
         this.mapData[2] = new FullMapData(128, 128);
@@ -393,7 +392,6 @@ public class Map implements Runnable, IChangeObserver {
         if (this.threading) {
             if (!this.zCalc.isAlive()) {
                 this.zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
-                this.zCalc.setPriority(5);
                 this.zCalc.start();
             }
 
@@ -401,7 +399,11 @@ public class Map implements Runnable, IChangeObserver {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
-                    this.zCalc.stop();
+                    try {
+                        this.zCalc.join();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else {
                     synchronized (this.zCalc) {
                         this.zCalc.notify();

@@ -357,10 +357,7 @@ public class CachedRegion {
                             }, this.executor);
 
                             while (!this.closed && !loadFuture.isDone()) {
-                                try {
-                                    Thread.sleep(3L);
-                                } catch (InterruptedException ignored) {
-                                }
+                                Thread.onSpinWait();
                             }
 
                             loadFuture.cancel(false);
@@ -392,10 +389,7 @@ public class CachedRegion {
                                         CompletableFuture<Chunk> lightFuture = this.chunkProvider.getLightingProvider().light(loadedChunk, false);
 
                                         while (!this.closed && !lightFuture.isDone()) {
-                                            try {
-                                                Thread.sleep(3L);
-                                            } catch (InterruptedException ignored) {
-                                            }
+                                            Thread.onSpinWait();
                                         }
 
                                         loadedChunk = (WorldChunk) lightFuture.getNow(loadedChunk);
@@ -435,10 +429,7 @@ public class CachedRegion {
                             }
 
                             while (!this.closed && !tickFuture.isDone()) {
-                                try {
-                                    Thread.sleep(3L);
-                                } catch (InterruptedException ignored) {
-                                }
+                                Thread.onSpinWait();
                             }
 
                             if (debug) {
