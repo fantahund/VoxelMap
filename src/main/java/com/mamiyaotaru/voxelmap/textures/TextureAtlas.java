@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.Resource;
@@ -12,7 +13,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -127,7 +127,7 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitchNew();
 
         if (oldWidth == this.stitcher.getCurrentImageWidth() && oldHeight == this.stitcher.getCurrentImageHeight()) {
-            GLShim.glBindTexture(GL11.GL_TEXTURE_2D, this.glId);
+            GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
         } else {
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
             TextureUtilLegacy.allocateTextureImpl(this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
@@ -261,7 +261,7 @@ public class TextureAtlas extends AbstractTexture {
                     icon.bufferedImageToIntData(bufferedImage);
 
                     try {
-                        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, this.glId);
+                        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
                         TextureUtilLegacy.uploadTextureMipmap(new int[][]{icon.getTextureData()}, icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY(), false, false);
                     } catch (Throwable var7) {
                         CrashReport crashReport = CrashReport.create(var7, "Stitching texture atlas");

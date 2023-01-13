@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.GLShim;
+import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -13,7 +14,6 @@ import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.opengl.GL11;
 
 public abstract class GuiSlotMinimap extends EntryListWidget {
     protected int slotWidth = 220;
@@ -42,7 +42,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         setScrollAmount(getScrollAmount());
 
-        GLShim.glDisable(GL11.GL_LIGHTING);
+        GLShim.glDisable(OpenGL.GL11_GL_LIGHTING);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
 
@@ -67,7 +67,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         if (this.hasListHeader) renderHeader(matrices, leftEdge, topOfListYPos, tessellator);
 
         renderList(matrices, mouseX, mouseY, delta);
-        GLShim.glDisable(GL11.GL_DEPTH_TEST);
+        GLShim.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
 
         byte topBottomFadeHeight = 4;
 
@@ -75,7 +75,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, DrawableHelper.OPTIONS_BACKGROUND_TEXTURE);
             RenderSystem.enableDepthTest();
-            RenderSystem.depthFunc(GL11.GL_ALWAYS);
+            RenderSystem.depthFunc(OpenGL.GL11_GL_ALWAYS);
 
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(left, top, -100.0).texture(0.0F, top / 32.0F).color(64, 64, 64, 255).next();
@@ -89,11 +89,11 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
             tessellator.draw();
 
-            RenderSystem.depthFunc(GL11.GL_LEQUAL);
+            RenderSystem.depthFunc(OpenGL.GL11_GL_LEQUAL);
             RenderSystem.disableDepthTest();
-            GLShim.glEnable(GL11.GL_BLEND);
-            RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 0, 1);
-            GLShim.glDisable(GL11.GL_TEXTURE_2D);
+            GLShim.glEnable(OpenGL.GL11_GL_BLEND);
+            RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
+            GLShim.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
 
@@ -113,7 +113,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         int maxScroll = getMaxScroll();
 
         if (maxScroll > 0) {
-            GLShim.glDisable(GL11.GL_TEXTURE_2D);
+            GLShim.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
             RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
@@ -141,8 +141,8 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         renderDecorations(matrices, mouseX, mouseY);
 
-        GLShim.glEnable(GL11.GL_TEXTURE_2D);
-        GLShim.glDisable(GL11.GL_BLEND);
+        GLShim.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
+        GLShim.glDisable(OpenGL.GL11_GL_BLEND);
     }
 
     public int getRowWidth() { return slotWidth; }

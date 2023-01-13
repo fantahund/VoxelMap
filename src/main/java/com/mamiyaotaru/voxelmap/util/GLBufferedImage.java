@@ -1,8 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.interfaces.IGLBufferedImage;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -49,15 +47,15 @@ public class GLBufferedImage extends BufferedImage implements IGLBufferedImage {
         }
 
         this.buffer.position(0).limit(this.bytes.length);
-        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, this.index);
-        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-        GLShim.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
-        GLShim.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
-        GLShim.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
-        GLShim.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, this.getWidth(), this.getHeight(), 0, GL11.GL_RGBA, GL12.GL_UNSIGNED_INT_8_8_8_8, this.buffer);
+        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.index);
+        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
+        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
+        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
+        GLShim.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, this.getWidth(), this.getHeight(), 0, OpenGL.GL11_GL_RGBA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8, this.buffer);
     }
 
     @Override
