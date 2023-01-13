@@ -830,7 +830,7 @@ public class ColorManager {
             }
 
             String[] biomesArray = biomes.split(" ");
-            if (blockStates.size() == 0) {
+            if (blockStates.isEmpty()) {
                 Block block;
                 Pattern pattern = Pattern.compile(".*/block_(.+).properties");
                 Matcher matcher = pattern.matcher(filePath);
@@ -838,15 +838,15 @@ public class ColorManager {
                     block = this.getBlockFromName(matcher.group(1));
                     if (block != null) {
                         Set<BlockState> matching = this.parseBlockMetadata(block, metadata);
-                        if (matching.size() == 0) {
+                        if (matching.isEmpty()) {
                             matching.addAll(block.getStateManager().getStates());
                         }
 
                         blockStates.addAll(matching);
                     }
                 } else {
-                    if (matchTiles.equals("")) {
-                        matchTiles = filePath.substring(filePath.lastIndexOf("/") + 1, filePath.lastIndexOf(".properties"));
+                    if (matchTiles.isEmpty()) {
+                        matchTiles = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.lastIndexOf(".properties"));
                     }
 
                     if (!matchTiles.contains(":")) {
@@ -890,8 +890,8 @@ public class ColorManager {
                 }
             }
 
-            if (blockStates.size() != 0) {
-                if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.length() == 0)) {
+            if (!blockStates.isEmpty()) {
+                if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.isEmpty())) {
                     try {
                         Identifier pngResource = new Identifier(propertiesFile.getNamespace(), tilePath);
                         InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource).get().getInputStream();
@@ -990,7 +990,7 @@ public class ColorManager {
                     for (int i = min; i <= max; ++i) {
                         tmpList.add(i + "");
                     }
-                } else if (!token.equals("")) {
+                } else if (!token.isEmpty()) {
                     tmpList.add(token);
                 }
             } catch (NumberFormatException ignored) {}
@@ -1036,12 +1036,12 @@ public class ColorManager {
 
     private Set<BlockState> parseBlockMetadata(Block block, String metadataList) {
         Set<BlockState> blockStates = new HashSet<>();
-        if (metadataList.equals("")) {
+        if (metadataList.isEmpty()) {
             blockStates.addAll(block.getStateManager().getStates());
         } else {
             Set<String> valuePairs = Arrays.stream(metadataList.split(":")).map(String::trim).filter(metadata -> metadata.contains("=")).collect(Collectors.toSet());
 
-            if (valuePairs.size() > 0) {
+            if (!valuePairs.isEmpty()) {
 
                 for (BlockState blockState : block.getStateManager().getStates()) {
                     boolean matches = true;
@@ -1093,7 +1093,7 @@ public class ColorManager {
             startingPath = "";
         }
 
-        if (startingPath.startsWith("/")) {
+        if (!startingPath.isEmpty() && startingPath.charAt(0) == '/') {
             startingPath = startingPath.substring(1);
         }
 
@@ -1174,7 +1174,7 @@ public class ColorManager {
             String names = colorProperties.getProperty("blocks");
             if (names == null) {
                 String name = resource.getPath();
-                name = name.substring(name.lastIndexOf("/") + 1, name.lastIndexOf(".properties"));
+                name = name.substring(name.lastIndexOf('/') + 1, name.lastIndexOf(".properties"));
                 names = name;
             }
 

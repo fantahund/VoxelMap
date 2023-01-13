@@ -40,7 +40,7 @@ public class CommandUtils {
 
         String message = chat.getString();
         ArrayList<String> waypointStrings = getWaypointStrings(message);
-        if (waypointStrings.size() == 0) {
+        if (waypointStrings.isEmpty()) {
             return true;
         } else {
             ArrayList<Text> textComponents = new ArrayList<>();
@@ -155,11 +155,11 @@ public class CommandUtils {
                 }
             }
 
-            if (world.equals("")) {
+            if (world.isEmpty()) {
                 world = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
             }
 
-            if (dimensions.size() == 0) {
+            if (dimensions.isEmpty()) {
                 dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
             }
 
@@ -215,18 +215,18 @@ public class CommandUtils {
 
         hexColor.insert(0, "#");
         String world = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-        if (waypoint.world != null && !waypoint.world.equals("")) {
+        if (waypoint.world != null && !waypoint.world.isEmpty()) {
             world = waypoint.world;
         }
 
         String suffix = waypoint.imageSuffix;
         Object[] args = { TextUtils.scrubNameRegex(waypoint.name), waypoint.getX(), waypoint.getY(), waypoint.getZ(), resourceLocation.toString() };
         String message = String.format("[name:%s, x:%s, y:%s, z:%s, dim:%s", args);
-        if (world != null && !world.equals("")) {
+        if (world != null && !world.isEmpty()) {
             message = message + ", world:" + world;
         }
 
-        if (suffix != null && !suffix.equals("")) {
+        if (suffix != null && !suffix.isEmpty()) {
             message = message + ", icon:" + suffix;
         }
 

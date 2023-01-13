@@ -94,7 +94,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.doneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("addServer.add"), button -> this.acceptWaypoint(), this);
         this.addDrawableChild(this.doneButton);
         this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> this.cancelWaypoint(), this));
-        this.doneButton.active = this.waypointName.getText().length() > 0;
+        this.doneButton.active = !this.waypointName.getText().isEmpty();
         this.setFocused(this.waypointName);
         this.waypointName.setTextFieldFocused(true);
         this.dimensionList = new GuiSlotDimensions(this);
@@ -145,7 +145,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         boolean OK = false;
         if (this.popupOpen()) {
             OK = super.keyPressed(keyCode, scanCode, modifiers);
-            boolean acceptable = this.waypointName.getText().length() > 0;
+            boolean acceptable = !this.waypointName.getText().isEmpty();
 
             try {
                 Integer.parseInt(this.waypointX.getText());
@@ -168,7 +168,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         boolean OK = false;
         if (this.popupOpen()) {
             OK = super.charTyped(chr, modifiers);
-            boolean acceptable = this.waypointName.getText().length() > 0;
+            boolean acceptable = !this.waypointName.getText().isEmpty();
 
             try {
                 Integer.parseInt(this.waypointX.getText());

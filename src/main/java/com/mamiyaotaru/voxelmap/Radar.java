@@ -985,7 +985,7 @@ public class Radar implements IRadar {
                             }
                         }
 
-                        if (headPartsArrayList.size() > 0) {
+                        if (!headPartsArrayList.isEmpty()) {
                             headBits = headPartsArrayList.toArray(new ModelPart[0]);
                         }
                     }
@@ -1104,13 +1104,13 @@ public class Radar implements IRadar {
                         }
                     }
 
-                    if (headPartsArrayList.size() == 0) {
+                    if (headPartsArrayList.isEmpty()) {
                         int pos = model instanceof SinglePartEntityModel ? 1 : 0;
                         if (submodels.size() > pos) {
                             if (submodels.get(pos).get(model) != null) {
                                 headPartsArrayList.add((ModelPart) submodels.get(pos).get(model));
                             }
-                        } else if (submodelArrays.size() > 0 && submodelArrays.get(0).get(model) != null) {
+                        } else if (!submodelArrays.isEmpty() && submodelArrays.get(0).get(model) != null) {
                             ModelPart[] submodelArrayValue = (ModelPart[]) submodelArrays.get(0).get(model);
                             if (submodelArrayValue.length > 0) {
                                 headPartsArrayList.add(submodelArrayValue[0]);
@@ -1133,7 +1133,7 @@ public class Radar implements IRadar {
                     headBits = headPartsArrayList.toArray(new ModelPart[0]);
                 }
 
-                if ((headBits.length > 0 || headPartsWithResourceLocationList.size() > 0) && resourceLocations[0] != null) {
+                if ((headBits.length > 0 || !headPartsWithResourceLocationList.isEmpty()) && resourceLocations[0] != null) {
                     String scaleString = properties.getProperty("scale", "1");
                     float scale = Float.parseFloat(scaleString);
                     Direction facing = Direction.NORTH;

@@ -655,7 +655,7 @@ public class WaypointManager {
                                                 for (String dimensionString : dimensionStrings) {
                                                     dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
                                                 }
-                                                if (dimensions.size() == 0) {
+                                                if (dimensions.isEmpty()) {
                                                     dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
                                                 }
                                             }

@@ -214,7 +214,7 @@ public abstract class AbstractMapData {
             ArrayList<Point> candidatePoints = new ArrayList<>();
             candidatePoints.add(this.memberPoints.remove(0));
 
-            while (candidatePoints.size() > 0) {
+            while (!candidatePoints.isEmpty()) {
                 Point point = candidatePoints.remove(0);
                 point.isCandidate = false;
                 if (point.biomeID == this.biomeID) {
@@ -331,11 +331,11 @@ public abstract class AbstractMapData {
             float labelPadding = labelWidth / 16.0F * multi / shellWidth;
 
             int layer;
-            for (layer = 0; this.currentShell.size() > 0 && layer < labelPadding; this.currentShell = this.getNextShell(this.currentShell, layer, horizontalBias)) {
+            for (layer = 0; !this.currentShell.isEmpty() && layer < labelPadding; this.currentShell = this.getNextShell(this.currentShell, layer, horizontalBias)) {
                 ++layer;
             }
 
-            if (this.currentShell.size() > 0) {
+            if (!this.currentShell.isEmpty()) {
                 ArrayList<Point> remainingPoints = new ArrayList<>();
 
                 for (Point point : this.memberPoints) {

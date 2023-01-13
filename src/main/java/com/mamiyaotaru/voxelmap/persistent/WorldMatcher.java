@@ -50,7 +50,7 @@ public class WorldMatcher {
                 this.loadRegions(subworldNamesArray);
                 int attempts = 0;
 
-                while (!WorldMatcher.this.cancelled && (this.candidateRegions.size() == 0 || this.region.getLoadedChunks() < 5) && attempts < 5) {
+                while (!WorldMatcher.this.cancelled && (this.candidateRegions.isEmpty() || this.region.getLoadedChunks() < 5) && attempts < 5) {
                     ++attempts;
 
                     try {
@@ -60,7 +60,7 @@ public class WorldMatcher {
                     }
 
                     if (this.x == (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0) && this.z == (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0)) {
-                        if (this.candidateRegions.size() > 0) {
+                        if (!this.candidateRegions.isEmpty()) {
                             MessageUtils.printDebug("going to load current region");
                             this.region.loadCurrent();
                             MessageUtils.printDebug("loaded chunks in local region: " + this.region.getLoadedChunks());
@@ -73,7 +73,7 @@ public class WorldMatcher {
                     }
 
                     if (attempts >= 5) {
-                        if (this.candidateRegions.size() == 0) {
+                        if (this.candidateRegions.isEmpty()) {
                             MessageUtils.printDebug("no candidate regions at current coordinates, bailing");
                         } else {
                             MessageUtils.printDebug("took too long to load local region, bailing");

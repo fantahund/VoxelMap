@@ -1106,7 +1106,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float r;
                 float g;
                 float b;
-                if (this.waypointManager.getWaypoints().size() == 0) {
+                if (this.waypointManager.getWaypoints().isEmpty()) {
                     r = 0.0F;
                     g = 1.0F;
                     b = 0.0F;

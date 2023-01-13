@@ -126,7 +126,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private boolean isNameAcceptable() {
         boolean acceptable;
         this.currentSubworldName = this.subworldNameField.getText();
-        acceptable = this.currentSubworldName.length() > 0;
+        acceptable = !this.currentSubworldName.isEmpty();
         return acceptable && (this.currentSubworldName.equals(this.originalSubworldName) || !this.knownSubworldNames.contains(this.currentSubworldName));
     }
 }
