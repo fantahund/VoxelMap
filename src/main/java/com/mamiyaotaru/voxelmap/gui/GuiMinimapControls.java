@@ -16,7 +16,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     private final Screen parentScreen;
     protected String screenTitle = "Controls";
     private final MapSettingsManager options;
-    public KeyBinding buttonId = null;
+    public KeyBinding buttonId;
 
     public GuiMinimapControls(Screen par1GuiScreen) {
         this.parentScreen = par1GuiScreen;

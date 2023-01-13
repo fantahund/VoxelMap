@@ -14,7 +14,7 @@ import java.util.Iterator;
 public class WorldMatcher {
     private final IPersistentMap map;
     private final ClientWorld world;
-    private boolean cancelled = false;
+    private boolean cancelled;
 
     public WorldMatcher(IPersistentMap map, ClientWorld world) {
         this.map = map;

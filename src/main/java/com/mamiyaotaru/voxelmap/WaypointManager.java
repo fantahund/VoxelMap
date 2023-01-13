@@ -70,7 +70,7 @@ public class WaypointManager {
     private final TreeSet<String> knownSubworldNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final HashSet<String> oldNorthWorldNames = new HashSet<>();
     private final HashMap<String, String> worldSeeds = new HashMap<>();
-    private BackgroundImageInfo backgroundImageInfo = null;
+    private BackgroundImageInfo backgroundImageInfo;
     private WaypointContainer waypointContainer;
     private File settingsFile;
     private Long lastNewWorldNameTime = 0L;

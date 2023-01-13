@@ -33,8 +33,8 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
     public static final int FONT_HEIGHT = 9;
     public final Random fontRandom = new Random();
     private final Identifier locationFontTexture;
-    private Sprite fontIcon = null;
-    private Sprite blankIcon = null;
+    private Sprite fontIcon;
+    private Sprite blankIcon;
     private float posX;
     private float posY;
     private float red;

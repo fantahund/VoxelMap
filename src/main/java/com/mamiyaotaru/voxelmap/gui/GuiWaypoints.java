@@ -28,9 +28,9 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     protected Text screenTitle;
     private GuiSlotWaypoints waypointList;
     private ButtonWidget buttonEdit;
-    private boolean editClicked = false;
+    private boolean editClicked;
     private ButtonWidget buttonDelete;
-    private boolean deleteClicked = false;
+    private boolean deleteClicked;
     private ButtonWidget buttonHighlight;
     private ButtonWidget buttonShare;
     private ButtonWidget buttonTeleport;
@@ -39,13 +39,13 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private ButtonWidget buttonSortDistance;
     private ButtonWidget buttonSortColor;
     protected TextFieldWidget filter;
-    private boolean addClicked = false;
-    private Text tooltip = null;
-    protected Waypoint selectedWaypoint = null;
+    private boolean addClicked;
+    private Text tooltip;
+    protected Waypoint selectedWaypoint;
     protected Waypoint highlightedWaypoint;
-    protected Waypoint newWaypoint = null;
+    protected Waypoint newWaypoint;
     private final Random generator = new Random();
-    private boolean changedSort = false;
+    private boolean changedSort;
 
     public GuiWaypoints(Screen parentScreen) {
         this.parentScreen = parentScreen;

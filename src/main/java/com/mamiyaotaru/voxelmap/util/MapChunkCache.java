@@ -9,13 +9,13 @@ import net.minecraft.world.chunk.WorldChunk;
 public class MapChunkCache {
     private final int width;
     private final int height;
-    private WorldChunk lastCenterChunk = null;
+    private WorldChunk lastCenterChunk;
     private final MapChunk[] mapChunks;
-    private int left = 0;
-    private int right = 0;
-    private int top = 0;
-    private int bottom = 0;
-    private boolean loaded = false;
+    private int left;
+    private int right;
+    private int top;
+    private int bottom;
+    private boolean loaded;
     private final IChangeObserver changeObserver;
 
     public MapChunkCache(int width, int height, IChangeObserver changeObserver) {

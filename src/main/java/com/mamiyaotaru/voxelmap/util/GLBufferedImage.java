@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class GLBufferedImage extends BufferedImage implements IGLBufferedImage {
     protected final ByteBuffer buffer;
     protected final byte[] bytes;
-    protected int index = 0;
+    protected int index;
     protected final Object bufferLock = new Object();
 
     public GLBufferedImage(int width, int height, int imageType) {

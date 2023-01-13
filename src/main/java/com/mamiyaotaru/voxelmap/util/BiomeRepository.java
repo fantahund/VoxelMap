@@ -28,7 +28,7 @@ public class BiomeRepository {
     private static final Random generator = new Random();
     private static final HashMap<Integer, Integer> IDtoColor = new HashMap<>(256);
     private static final TreeMap<String, Integer> nameToColor = new TreeMap<>();
-    private static boolean dirty = false;
+    private static boolean dirty;
 
     public static void getBiomes() {
         DEFAULT = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.OCEAN);

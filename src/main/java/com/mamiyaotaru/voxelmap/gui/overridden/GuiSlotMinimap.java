@@ -19,8 +19,8 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     private boolean showTopBottomBG = true;
     private boolean showSlotBG = true;
     private boolean hasListHeader;
-    protected long lastClicked = 0L;
-    public boolean doubleclick = false;
+    protected long lastClicked;
+    public boolean doubleclick;
 
     protected GuiSlotMinimap(int width, int height, int top, int bottom, int itemHeight) {
         super (VoxelConstants.getMinecraft(), width, height, top, bottom, itemHeight);

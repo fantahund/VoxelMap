@@ -18,7 +18,7 @@ import java.util.Map.Entry;
 
 public class FabricModVoxelMap implements ClientModInitializer {
     public static FabricModVoxelMap instance;
-    private boolean initialized = false;
+    private boolean initialized;
 
     public void onInitializeClient() {
         instance = this;

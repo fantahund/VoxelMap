@@ -23,7 +23,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private TextFieldWidget subworldNameField;
     private ButtonWidget doneButton;
     private ButtonWidget deleteButton;
-    private boolean deleteClicked = false;
+    private boolean deleteClicked;
 
     public GuiSubworldEdit(Screen parent, String subworldName) {
         this.parent = parent;

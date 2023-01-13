@@ -16,10 +16,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected Text screenTitle = Text.literal("players");
     private final boolean sharingWaypoint;
     private GuiButtonRowListPlayers playerList;
-    protected boolean allClicked = false;
+    protected boolean allClicked;
     protected TextFieldWidget message;
     protected TextFieldWidget filter;
-    private Text tooltip = null;
+    private Text tooltip;
     private final String locInfo;
     static final MutableText SHARE_MESSAGE = (Text.translatable("minimap.waypointshare.sharemessage")).append(":");
     static final Text SHARE_WITH = Text.translatable("minimap.waypointshare.sharewith");

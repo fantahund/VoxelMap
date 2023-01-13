@@ -21,8 +21,8 @@ public class GuiMobs extends GuiScreenMinimap {
     private ButtonWidget buttonEnable;
     private ButtonWidget buttonDisable;
     protected TextFieldWidget filter;
-    private Text tooltip = null;
-    protected String selectedMobId = null;
+    private Text tooltip;
+    protected String selectedMobId;
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
         this.parentScreen = parentScreen;

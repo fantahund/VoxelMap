@@ -220,7 +220,7 @@ public class CommandUtils {
         }
 
         String suffix = waypoint.imageSuffix;
-        Object[] args = new Object[]{TextUtils.scrubNameRegex(waypoint.name), waypoint.getX(), waypoint.getY(), waypoint.getZ(), resourceLocation.toString()};
+        Object[] args = { TextUtils.scrubNameRegex(waypoint.name), waypoint.getX(), waypoint.getY(), waypoint.getZ(), resourceLocation.toString() };
         String message = String.format("[name:%s, x:%s, y:%s, z:%s, dim:%s", args);
         if (world != null && !world.equals("")) {
             message = message + ", world:" + world;

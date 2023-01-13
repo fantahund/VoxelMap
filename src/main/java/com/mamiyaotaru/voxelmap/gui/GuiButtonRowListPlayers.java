@@ -119,12 +119,12 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     }
 
     public class Row extends EntryListWidget.Entry<Row> {
-        private ButtonWidget button = null;
-        private ButtonWidget button1 = null;
-        private ButtonWidget button2 = null;
-        private int id = 0;
-        private int id1 = 0;
-        private int id2 = 0;
+        private ButtonWidget button;
+        private ButtonWidget button1;
+        private ButtonWidget button2;
+        private int id;
+        private int id1;
+        private int id2;
 
         public Row(ButtonWidget button, int id) {
             this.button = button;

@@ -15,11 +15,11 @@ import java.util.zip.DataFormatException;
 
 public class CompressibleGLBufferedImage implements IGLBufferedImage {
     private byte[] bytes;
-    private int index = 0;
+    private int index;
     private final int width;
     private final int height;
     private final Object bufferLock = new Object();
-    private boolean isCompressed = false;
+    private boolean isCompressed;
     private static final HashMap<Integer, ByteBuffer> byteBuffers = new HashMap<>(4);
     private static final ByteBuffer defaultSizeBuffer = ByteBuffer.allocateDirect(262144).order(ByteOrder.nativeOrder());
     private final boolean compressNotDelete;

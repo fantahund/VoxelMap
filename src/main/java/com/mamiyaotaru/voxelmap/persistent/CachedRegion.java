@@ -52,8 +52,8 @@ import java.util.zip.ZipOutputStream;
 
 public class CachedRegion {
     public static final EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
-    private long mostRecentView = 0L;
-    private long mostRecentChange = 0L;
+    private long mostRecentView;
+    private long mostRecentChange;
     private IPersistentMap persistentMap;
     private String key;
     private ClientWorld world;
@@ -66,12 +66,12 @@ public class CachedRegion {
     private String worldNamePathPart;
     private String subworldNamePathPart = "";
     private String dimensionNamePathPart;
-    private boolean underground = false;
+    private boolean underground;
     private int x;
     private int z;
     private final int width = 256;
     private boolean empty = true;
-    private boolean liveChunksUpdated = false;
+    private boolean liveChunksUpdated;
     boolean remoteWorld;
     private final boolean[] liveChunkUpdateQueued = new boolean[256];
     private final boolean[] chunkUpdateQueued = new boolean[256];
@@ -79,20 +79,20 @@ public class CachedRegion {
     private CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
-    Future<?> future = null;
+    Future<?> future;
     private final ReentrantLock threadLock = new ReentrantLock();
-    boolean displayOptionsChanged = false;
-    boolean imageChanged = false;
-    boolean refreshQueued = false;
-    boolean refreshingImage = false;
-    boolean dataUpdated = false;
-    boolean dataUpdateQueued = false;
-    boolean loaded = false;
-    boolean closed = false;
+    boolean displayOptionsChanged;
+    boolean imageChanged;
+    boolean refreshQueued;
+    boolean refreshingImage;
+    boolean dataUpdated;
+    boolean dataUpdateQueued;
+    boolean loaded;
+    boolean closed;
     private static final Object anvilLock = new Object();
     private static final ReadWriteLock tickLock = new ReentrantReadWriteLock();
-    private static int loadedChunkCount = 0;
-    private boolean queuedToCompress = false;
+    private static int loadedChunkCount;
+    private boolean queuedToCompress;
     final boolean debug = false;
 
     public CachedRegion() {}

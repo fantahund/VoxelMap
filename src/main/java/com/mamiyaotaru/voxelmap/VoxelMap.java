@@ -43,7 +43,7 @@ public class VoxelMap implements ResourceReloader {
     private IRadar radarSimple;
     private PersistentMap persistentMap;
     private SettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier;
-    private WorldUpdateListener worldUpdateListener = null;
+    private WorldUpdateListener worldUpdateListener;
     private ColorManager colorManager;
     private WaypointManager waypointManager;
     private DimensionManager dimensionManager;

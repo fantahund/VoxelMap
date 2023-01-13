@@ -18,7 +18,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     protected float minZoom = 0.5F;
     protected float maxZoom = 16.0F;
     protected int cacheSize = 500;
-    protected boolean outputImages = false;
+    protected boolean outputImages;
     public boolean showWaypoints = true;
     public boolean showWaypointNames = true;
 

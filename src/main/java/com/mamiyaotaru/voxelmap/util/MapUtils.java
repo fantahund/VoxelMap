@@ -6,11 +6,11 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.Random;
 
 public class MapUtils {
-    private static MapSettingsManager options = null;
-    private static Random slimeRandom = null;
-    private static int lastSlimeX = 0;
-    private static int lastSlimeZ = 0;
-    private static boolean isSlimeChunk = false;
+    private static MapSettingsManager options;
+    private static Random slimeRandom;
+    private static int lastSlimeX;
+    private static int lastSlimeZ;
+    private static boolean isSlimeChunk;
 
     public static void reset() {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();

@@ -157,32 +157,32 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
-    private LayoutVariables layoutVariables = null;
+    private LayoutVariables layoutVariables;
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
     private final FontRendererWithAtlas fontRenderer;
     private final TextureAtlas textureAtlas;
-    private boolean newMobs = false;
-    private boolean completedLoading = false;
+    private boolean newMobs;
+    private boolean completedLoading;
     private int timer = 500;
-    private float direction = 0.0F;
+    private float direction;
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
     public final HashMap<String, Integer> mpContactsSkinGetTries = new HashMap<>();
     public final HashMap<String, Integer> contactsSkinGetTries = new HashMap<>();
-    private Sprite clothIcon = null;
+    private Sprite clothIcon;
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
-    private final String[] armorNames = new String[]{"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
+    private final String[] armorNames = { "cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle" };
     private boolean randomobsOptifine;
-    private Map<String, Object> mapProperties = null;
-    private Object randomEntity = null;
-    private Class<?> randomEntityClass = null;
-    private Method setEntityMethod = null;
-    private Class<?> randomEntitiesPropertiesClass = null;
-    private Method getEntityTextureMethod = null;
+    private Map<String, Object> mapProperties;
+    private Object randomEntity;
+    private Class<?> randomEntityClass;
+    private Method setEntityMethod;
+    private Class<?> randomEntitiesPropertiesClass;
+    private Method getEntityTextureMethod;
     private boolean hasCustomNPCs;
-    private Class<?> entityCustomNpcClass = null;
-    private Field modelDataField = null;
-    private Method getEntityMethod = null;
+    private Class<?> entityCustomNpcClass;
+    private Field modelDataField;
+    private Method getEntityMethod;
     private boolean lastOutlines = true;
     private SkullEntityModel playerSkullModel;
     private BipedEntityModel<LivingEntity> bipedArmorModel;
@@ -307,7 +307,7 @@ public class Radar implements IRadar {
                 }
             }
 
-            BufferedImage[] armorImages = new BufferedImage[]{ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8)};
+            BufferedImage[] armorImages = { ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
 
             for (int t = 0; t < armorImages.length; ++t) {
                 float scale = armorImages[t].getWidth() / 8.0F;
@@ -453,8 +453,8 @@ public class Radar implements IRadar {
             case SLIME ->
                     image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
             case TROPICALFISHA -> {
-                float[] primaryColorsA = new float[]{0.9765F, 0.502F, 0.1137F};
-                float[] secondaryColorsA = new float[]{0.9765F, 1.0F, 0.9961F};
+                float[] primaryColorsA = { 0.9765F, 0.502F, 0.1137F };
+                float[] secondaryColorsA = { 0.9765F, 1.0F, 0.9961F };
                 if (entity instanceof TropicalFishEntity fish) {
                     primaryColorsA = fish.getBaseColorComponents().getColorComponents();
                     secondaryColorsA = fish.getPatternColorComponents().getColorComponents();
@@ -466,8 +466,8 @@ public class Radar implements IRadar {
                 patternA.flush();
             }
             case TROPICALFISHB -> {
-                float[] primaryColorsB = new float[]{0.5373F, 0.1961F, 0.7216F};
-                float[] secondaryColorsB = new float[]{0.9961F, 0.8471F, 0.2392F};
+                float[] primaryColorsB = { 0.5373F, 0.1961F, 0.7216F };
+                float[] secondaryColorsB = { 0.9961F, 0.8471F, 0.2392F };
                 if (entity instanceof TropicalFishEntity fish) {
                     primaryColorsB = fish.getBaseColorComponents().getColorComponents();
                     secondaryColorsB = fish.getPatternColorComponents().getColorComponents();
@@ -1446,7 +1446,7 @@ public class Radar implements IRadar {
                 if (icon == this.textureAtlas.getMissingImage()) {
                     ModelPart inner = (ModelPart) ReflectionUtils.getPrivateFieldValueByType(this.playerSkullModel, SkullEntityModel.class, ModelPart.class, 0);
                     ModelPart outer = (ModelPart) ReflectionUtils.getPrivateFieldValueByType(this.playerSkullModel, SkullEntityModel.class, ModelPart.class, 1);
-                    ModelPartWithResourceLocation[] headBits = new ModelPartWithResourceLocation[]{new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation)};
+                    ModelPartWithResourceLocation[] headBits = { new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation) };
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);

@@ -22,9 +22,9 @@ import java.util.ArrayList;
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
     private Text title;
     private Text select;
-    private boolean multiworld = false;
+    private boolean multiworld;
     private TextFieldWidget newNameField;
-    private boolean newWorld = false;
+    private boolean newWorld;
     private float yaw;
     private final Perspective thirdPersonViewOrig;
     private String[] worlds;

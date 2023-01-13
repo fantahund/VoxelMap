@@ -14,7 +14,7 @@ import java.util.zip.DataFormatException;
 public class CompressibleMapData extends AbstractMapData {
     private byte[] data;
     private boolean isCompressed;
-    private BiMap<BlockState, Integer> stateToInt = null;
+    private BiMap<BlockState, Integer> stateToInt;
     int count = 1;
     private static byte[] compressedEmptyData = new byte[1179648];
 

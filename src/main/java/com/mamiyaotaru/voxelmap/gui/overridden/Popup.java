@@ -25,7 +25,7 @@ public class Popup {
     public final int clickedY;
     public final int clickedDirectX;
     public final int clickedDirectY;
-    boolean shouldClose = false;
+    boolean shouldClose;
     final PopupGuiScreen parentGui;
     final int padding = 6;
 

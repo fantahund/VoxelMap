@@ -38,8 +38,8 @@ public class ComparisonCachedRegion {
     private final int z;
     private final CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
-    private int loadedChunks = 0;
-    private boolean loaded = false;
+    private int loadedChunks;
+    private boolean loaded;
     private boolean empty = true;
 
     public ComparisonCachedRegion(IPersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {

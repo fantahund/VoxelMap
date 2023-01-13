@@ -165,9 +165,9 @@ public abstract class AbstractMapData {
     public static class BiomeLabel {
         public int biomeID = -1;
         public String name = "";
-        public int segmentSize = 0;
-        public int x = 0;
-        public int z = 0;
+        public int segmentSize;
+        public int x;
+        public int z;
     }
 
     private static final class Point {
@@ -195,9 +195,9 @@ public abstract class AbstractMapData {
         public final ArrayList<Point> memberPoints;
         ArrayList<Point> currentShell;
         public final int biomeID;
-        public String name = null;
-        public int centerX = 0;
-        public int centerZ = 0;
+        public String name;
+        public int centerX;
+        public int centerZ;
 
         public Segment(Point point) {
             this.biomeID = point.biomeID;

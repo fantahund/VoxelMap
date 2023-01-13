@@ -28,7 +28,7 @@ import java.util.Optional;
 
 public class WaypointContainer {
     private final List<Waypoint> wayPts = new ArrayList<>();
-    private Waypoint highlightedWaypoint = null;
+    private Waypoint highlightedWaypoint;
     public final MapSettingsManager options;
 
     public WaypointContainer(MapSettingsManager options) {

@@ -19,9 +19,9 @@ public class BlockRepository {
     public static Block air = Blocks.AIR;
     public static Block voidAir;
     public static Block caveAir;
-    public static int airID = 0;
-    public static int voidAirID = 0;
-    public static int caveAirID = 0;
+    public static int airID;
+    public static int voidAirID;
+    public static int caveAirID;
     public static PistonExtensionBlock pistonTechBlock;
     public static Block water;
     public static Block lava;
@@ -51,9 +51,9 @@ public class BlockRepository {
     public static Block chorusPlant;
     public static Block chorusFlower;
     public static HashSet<Block> biomeBlocks;
-    public static Block[] biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
+    public static Block[] biomeBlocksArray = { grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water };
     public static HashSet<Block> shapedBlocks;
-    public static Block[] shapedBlocksArray = new Block[]{ladder, vine};
+    public static Block[] shapedBlocksArray = { ladder, vine };
     private static final ConcurrentHashMap<BlockState, Integer> stateToInt = new ConcurrentHashMap<>(1024);
     private static final ReferenceArrayList<BlockState> blockStates = new ReferenceArrayList<>(16384);
     private static int count = 1;

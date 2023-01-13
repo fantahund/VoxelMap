@@ -11,7 +11,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = new EnumOptionsMinimap[]{EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DEATHPOINTS};
+    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DEATHPOINTS };
     private final Screen parent;
     private final MapSettingsManager options;
     protected Text screenTitle;

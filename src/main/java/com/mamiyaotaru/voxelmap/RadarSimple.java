@@ -32,13 +32,13 @@ import java.util.Comparator;
 import java.util.UUID;
 
 public class RadarSimple implements IRadar {
-    private LayoutVariables layoutVariables = null;
+    private LayoutVariables layoutVariables;
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
     private final TextureAtlas textureAtlas;
-    private boolean completedLoading = false;
+    private boolean completedLoading;
     private int timer = 500;
-    private float direction = 0.0F;
+    private float direction;
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
     final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 

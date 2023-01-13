@@ -55,10 +55,10 @@ public class PersistentMap implements IPersistentMap {
     String subworldName = "";
     protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
     protected final ConcurrentHashMap<String, CachedRegion> cachedRegions = new ConcurrentHashMap<>(150, 0.9F, 2);
-    int lastLeft = 0;
-    int lastRight = 0;
-    int lastTop = 0;
-    int lastBottom = 0;
+    int lastLeft;
+    int lastRight;
+    int lastTop;
+    int lastBottom;
     CachedRegion[] lastRegionsArray = new CachedRegion[0];
     final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
         long mostRecentAccess1 = region1.getMostRecentView();
@@ -78,7 +78,7 @@ public class PersistentMap implements IPersistentMap {
         double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
         return Double.compare(distance1sq, distance2sq);
     };
-    private boolean queuedChangedChunks = false;
+    private boolean queuedChangedChunks;
     private MapChunkCache chunkCache;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
 

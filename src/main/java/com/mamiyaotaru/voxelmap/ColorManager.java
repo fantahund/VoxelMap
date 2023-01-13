@@ -84,11 +84,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ColorManager {
-    private boolean resourcePacksChanged = false;
-    private ClientWorld world = null;
-    private BufferedImage terrainBuff = null;
+    private boolean resourcePacksChanged;
+    private ClientWorld world;
+    private BufferedImage terrainBuff;
     private BufferedImage colorPicker;
-    private int sizeOfBiomeArray = 0;
+    private int sizeOfBiomeArray;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
     private final HashSet<Integer> biomeTintsAvailable = new HashSet<>();
@@ -96,11 +96,11 @@ public class ColorManager {
     private final HashMap<Integer, int[][]> blockTintTables = new HashMap<>();
     private final HashSet<Integer> biomeTextureAvailable = new HashSet<>();
     private final HashMap<String, Integer> blockBiomeSpecificColors = new HashMap<>();
-    private float failedToLoadX = 0.0F;
-    private float failedToLoadY = 0.0F;
+    private float failedToLoadX;
+    private float failedToLoadY;
     private String renderPassThreeBlendMode;
     private final Random random = Random.create();
-    private boolean loaded = false;
+    private boolean loaded;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ORIGIN.getX(), BlockPos.ORIGIN.getY(), BlockPos.ORIGIN.getZ());
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getSpruceColor();

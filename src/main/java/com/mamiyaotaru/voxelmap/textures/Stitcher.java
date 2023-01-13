@@ -15,10 +15,10 @@ import java.util.Set;
 public class Stitcher {
     private final Set<Holder> setStitchHolders = Sets.newHashSetWithExpectedSize(256);
     private final List<Slot> stitchSlots = Lists.newArrayListWithCapacity(256);
-    private int currentWidth = 0;
-    private int currentHeight = 0;
-    private int currentWidthToPowerOfTwo = 0;
-    private int currentHeightToPowerOfTwo = 0;
+    private int currentWidth;
+    private int currentHeight;
+    private int currentWidthToPowerOfTwo;
+    private int currentHeightToPowerOfTwo;
     private final int maxWidth;
     private final int maxHeight;
     private final int maxTileDimension;

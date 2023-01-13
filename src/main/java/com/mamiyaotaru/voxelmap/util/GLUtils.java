@@ -32,13 +32,13 @@ public class GLUtils {
     private static final BufferBuilder vertexBuffer = tessellator.getBuffer();
     public static TextureManager textureManager;
     public static Framebuffer frameBuffer;
-    public static int fboID = 0;
-    public static int rboID = 0;
-    public static int fboTextureID = 0;
-    public static int depthTextureID = 0;
-    private static int previousFBOID = 0;
-    private static int previousFBOIDREAD = 0;
-    private static int previousFBOIDDRAW = 0;
+    public static int fboID;
+    public static int rboID;
+    public static int fboTextureID;
+    public static int depthTextureID;
+    private static int previousFBOID;
+    private static int previousFBOIDREAD;
+    private static int previousFBOIDDRAW;
     public static final boolean hasAlphaBits = false;
     private static final IntBuffer dataBuffer = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
 

@@ -19,7 +19,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean showRadar = true;
     public boolean showHostiles = true;
     public boolean showPlayers = true;
-    public boolean showNeutrals = false;
+    public boolean showNeutrals;
     public boolean showPlayerNames = true;
     public boolean showMobNames = true;
     public boolean outlines = true;
