@@ -10,7 +10,6 @@ import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
@@ -525,14 +524,14 @@ public class Radar implements IRadar {
                 this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
             }
 
-            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
     }
 
     private void write(String paramStr, float x, float y, int color) {
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
         this.fontRenderer.drawStringWithShadow(paramStr, x, y, color);
 
     }
@@ -1216,11 +1215,11 @@ public class Radar implements IRadar {
     private boolean drawModel(float scale, int captureDepth, LivingEntity livingEntity, Direction facing, Model model, ModelPartWithResourceLocation[] headBits) {
         boolean failed = false;
         float size = 64.0F * scale;
-        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, GLUtils.fboTextureID);
-        int width = GLShim.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
-        int height = GLShim.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
-        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
-        GLShim.glViewport(0, 0, width, height);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, GLUtils.fboTextureID);
+        int width = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
+        int height = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
+        OpenGL.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
@@ -1230,15 +1229,15 @@ public class Radar implements IRadar {
         matrixStack.translate(0.0, 0.0, -3000.0 + captureDepth);
         RenderSystem.applyModelViewMatrix();
         GLUtils.bindFrameBuffer();
-        GLShim.glDepthMask(true);
-        GLShim.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        GLShim.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
-        GLShim.glEnable(OpenGL.GL11_GL_BLEND);
-        GLShim.glDisable(OpenGL.GL11_GL_CULL_FACE);
-        GLShim.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
-        GLShim.glClearDepth(1.0);
-        GLShim.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
-        GLShim.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        OpenGL.glDepthMask(true);
+        OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
+        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        OpenGL.glDisable(OpenGL.GL11_GL_CULL_FACE);
+        OpenGL.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
+        OpenGL.glClearDepth(1.0);
+        OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
+        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         matrixStack.push();
         matrixStack.translate(width / 2f, height / 2f, 0.0);
         matrixStack.scale(size, size, size);
@@ -1299,12 +1298,12 @@ public class Radar implements IRadar {
         matrixStack.pop();
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
-        GLShim.glEnable(OpenGL.GL11_GL_CULL_FACE);
-        GLShim.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        GLShim.glDepthMask(false);
+        OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
+        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        OpenGL.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
-        GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
+        OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         return !failed;
     }
 
@@ -1599,8 +1598,8 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(this.textureAtlas.getGlId());
-        GLShim.glEnable(OpenGL.GL11_GL_BLEND);
-        GLShim.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
         for (Contact contact : this.contacts) {
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
@@ -1617,9 +1616,9 @@ public class Radar implements IRadar {
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
             if (wayY < 0) {
-                GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
+                OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
-                GLShim.glColor3f(contact.brightness, contact.brightness, contact.brightness);
+                OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
             }
 
             if (this.minimapOptions.rotates) {
@@ -1739,9 +1738,9 @@ public class Radar implements IRadar {
                             }
 
                             if (wayY < 0) {
-                                GLShim.glColor4f(red, green, blue, contact.brightness);
+                                OpenGL.glColor4f(red, green, blue, contact.brightness);
                             } else {
-                                GLShim.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
+                                OpenGL.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
                             }
                         }
 
@@ -1751,9 +1750,9 @@ public class Radar implements IRadar {
                         GLUtils.drawPost();
                         if (icon == this.clothIcon) {
                             if (wayY < 0) {
-                                GLShim.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
+                                OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
                             } else {
-                                GLShim.glColor3f(contact.brightness, contact.brightness, contact.brightness);
+                                OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
                             }
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[2]);
@@ -1762,9 +1761,9 @@ public class Radar implements IRadar {
                             GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
                             GLUtils.drawPost();
                             if (wayY < 0) {
-                                GLShim.glColor4f(red, green, blue, contact.brightness);
+                                OpenGL.glColor4f(red, green, blue, contact.brightness);
                             } else {
-                                GLShim.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
+                                OpenGL.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
                             }
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[1]);
@@ -1772,7 +1771,7 @@ public class Radar implements IRadar {
                             GLUtils.drawPre();
                             GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             GLUtils.drawPost();
-                            GLShim.glColor3f(1.0F, 1.0F, 1.0F);
+                            OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[3]);
                             this.applyFilteringParameters();
                             GLUtils.drawPre();
@@ -1804,13 +1803,13 @@ public class Radar implements IRadar {
 
     private void applyFilteringParameters() {
         if (this.options.filtering) {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL11_GL_CLAMP);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL11_GL_CLAMP);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL11_GL_CLAMP);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL11_GL_CLAMP);
         } else {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
         }
 
     }

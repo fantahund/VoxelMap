@@ -162,16 +162,16 @@ public class GLUtils {
         int height = paramImg.getHeight();
         int[] imageData = new int[width * height];
         paramImg.getRGB(0, 0, width, height, imageData, 0, width);
-        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, glid);
+        OpenGL.glBindTexture(GL11.GL_TEXTURE_2D, glid);
         dataBuffer.clear();
         dataBuffer.put(imageData, 0, width * height);
         dataBuffer.position(0).limit(width * height);
-        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        GLShim.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GLShim.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
-        GLShim.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
-        GLShim.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
-        GLShim.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
+        OpenGL.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        OpenGL.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        OpenGL.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+        OpenGL.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+        OpenGL.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+        OpenGL.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
         return glid;
     }
 
@@ -192,7 +192,7 @@ public class GLUtils {
     }
 
     public static void disp(int paramInt) {
-        GLShim.glBindTexture(GL11.GL_TEXTURE_2D, paramInt);
+        OpenGL.glBindTexture(GL11.GL_TEXTURE_2D, paramInt);
     }
 
     public static void disp2(int paramInt) {
@@ -224,7 +224,7 @@ public class GLUtils {
     }
 
     public static void glah(int g) {
-        GLShim.glDeleteTextures(g);
+        OpenGL.glDeleteTexture(g);
     }
 
     public static void ldrawone(int x, int y, double z, float u, float v) {

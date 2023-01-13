@@ -22,9 +22,9 @@ import java.util.Arrays;
 
 public class ImageUtils {
     public static void saveImage(String name, int glid, int maxMipmapLevel, int width, int height) {
-        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, glid);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_PACK_ALIGNMENT, 1);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_ALIGNMENT, 1);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, glid);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_PACK_ALIGNMENT, 1);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ALIGNMENT, 1);
 
         for (int mipmapLevel = 0; mipmapLevel <= maxMipmapLevel; ++mipmapLevel) {
             File file = new File(name + "_" + mipmapLevel + ".png");
@@ -33,7 +33,7 @@ public class ImageUtils {
             int numPixels = destWidth * destHeight;
             IntBuffer pixelBuffer = BufferUtils.createIntBuffer(numPixels);
             int[] pixelArray = new int[numPixels];
-            GLShim.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, mipmapLevel, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
+            OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, mipmapLevel, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
             pixelBuffer.get(pixelArray);
             BufferedImage bufferedImage = new BufferedImage(destWidth, destHeight, 2);
             bufferedImage.setRGB(0, 0, destWidth, destHeight, pixelArray, 0, destWidth);
@@ -80,19 +80,19 @@ public class ImageUtils {
     }
 
     public static BufferedImage createBufferedImageFromGLID(int id) {
-        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, id);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, id);
         return createBufferedImageFromCurrentGLImage();
     }
 
     public static BufferedImage createBufferedImageFromCurrentGLImage() {
-        int imageWidth = GLShim.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
-        int imageHeight = GLShim.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
+        int imageWidth = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
+        int imageHeight = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
         long size = (long) imageWidth * imageHeight * 4L;
         BufferedImage image;
         if (size < 2147483647L) {
             image = new BufferedImage(imageWidth, imageHeight, 6);
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(imageWidth * imageHeight * 4).order(ByteOrder.nativeOrder());
-            GLShim.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
+            OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
             byteBuffer.position(0);
             byte[] bytes = new byte[byteBuffer.remaining()];
             byteBuffer.get(bytes);
@@ -113,15 +113,15 @@ public class ImageUtils {
                 imageHeight /= 2;
                 size = (long) imageWidth * imageHeight * 4L;
             }
-            int glid = GLShim.glGetInteger(OpenGL.GL11_GL_TEXTURE_BINDING_2D);
+            int glid = OpenGL.glGetInteger(OpenGL.GL11_GL_TEXTURE_BINDING_2D);
             image = new BufferedImage(imageWidth, imageHeight, 6);
             int fboWidth = 512;
             int fboHeight = 512;
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4).order(ByteOrder.nativeOrder());
             byte[] bytes = new byte[byteBuffer.remaining()];
-            GLShim.glPushAttrib(OpenGL.GL11_GL_TRANSFORM_BIT);
+            OpenGL.glPushAttrib(OpenGL.GL11_GL_TRANSFORM_BIT);
             RenderSystem.backupProjectionMatrix();
-            GLShim.glViewport(0, 0, fboWidth, fboHeight);
+            OpenGL.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = MathUtils.projectionMatrix(fboWidth, (-fboHeight), 1000.0F, 3000.0F);
             RenderSystem.setProjectionMatrix(matrix4f);
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
@@ -131,8 +131,8 @@ public class ImageUtils {
             for (int startX = 0; startX + fboWidth < imageWidth; startX += fboWidth) {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
                     GLUtils.disp(glid);
-                    GLShim.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-                    GLShim.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
+                    OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+                    OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
                     GLUtils.drawPre();
                     GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / imageWidth, (float) startY / imageHeight);
                     GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + fboWidth) / imageWidth, (float) startY / imageHeight);
@@ -141,7 +141,7 @@ public class ImageUtils {
                     GLUtils.drawPost();
                     GLUtils.disp(GLUtils.fboTextureID);
                     byteBuffer.position(0);
-                    GLShim.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
+                    OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
                     byteBuffer.position(0);
                     byteBuffer.get(bytes);
 
@@ -161,8 +161,8 @@ public class ImageUtils {
 
             GLUtils.unbindFrameBuffer();
             RenderSystem.restoreProjectionMatrix();
-            GLShim.glPopAttrib();
-            GLShim.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
+            OpenGL.glPopAttrib();
+            OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         }
         return image;
     }

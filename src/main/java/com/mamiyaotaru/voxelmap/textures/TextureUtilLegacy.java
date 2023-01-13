@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import org.apache.commons.io.IOUtils;
 
@@ -16,7 +15,7 @@ public class TextureUtilLegacy {
     private static final IntBuffer DATA_BUFFER = createDirectIntBuffer(4194304);
 
     public static void deleteTexture(int textureId) {
-        GLShim.glDeleteTextures(textureId);
+        OpenGL.glDeleteTexture(textureId);
     }
 
     public static synchronized ByteBuffer createDirectByteBuffer(int capacity) {
@@ -58,17 +57,17 @@ public class TextureUtilLegacy {
     public static void allocateTextureImpl(int glTextureId, int mipmapLevels, int width, int height) {
         bindTexture(glTextureId);
         if (mipmapLevels >= 0) {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, 33085, mipmapLevels);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, 33082, 0);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, 33083, mipmapLevels);
-            GLShim.glTexParameterf(OpenGL.GL11_GL_TEXTURE_2D, 34049, 0.0F);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, 33085, mipmapLevels);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, 33082, 0);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, 33083, mipmapLevels);
+            OpenGL.glTexParameterf(OpenGL.GL11_GL_TEXTURE_2D, 34049, 0.0F);
         }
 
         for (int i = 0; i <= mipmapLevels; ++i) {
-            GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
-            GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
-            GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
-            GLShim.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, i, OpenGL.GL11_GL_RGBA, width >> i, height >> i, 0, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer) null);
+            OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
+            OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
+            OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
+            OpenGL.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, i, OpenGL.GL11_GL_RGBA, width >> i, height >> i, 0, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, (IntBuffer) null);
         }
 
     }
@@ -86,9 +85,9 @@ public class TextureUtilLegacy {
         int[] aint = new int[k * i];
         setTextureBlurred(p_110993_3_);
         setTextureClamped(p_110993_4_);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
 
         for (int l = 0; l < i * j; l += i * k) {
             int i1 = l / i;
@@ -96,7 +95,7 @@ public class TextureUtilLegacy {
             int k1 = i * j1;
             p_110993_0_.getRGB(0, i1, i, j1, aint, 0, i);
             copyToBuffer(aint, k1);
-            GLShim.glTexSubImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, p_110993_1_, p_110993_2_ + i1, i, j1, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
+            OpenGL.glTexSubImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, p_110993_1_, p_110993_2_ + i1, i, j1, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
         }
 
     }
@@ -117,7 +116,7 @@ public class TextureUtilLegacy {
     }
 
     static void bindTexture(int id) {
-        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, id);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, id);
     }
 
     public static void uploadTextureMipmap(int[][] textureData, int width, int height, int originX, int originY, boolean blurred, boolean clamped) {
@@ -130,11 +129,11 @@ public class TextureUtilLegacy {
 
     public static void setTextureClamped(boolean clamped) {
         if (clamped) {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
         } else {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, 10497);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, 10497);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, 10497);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, 10497);
         }
 
     }
@@ -145,11 +144,11 @@ public class TextureUtilLegacy {
 
     public static void setTextureBlurMipmap(boolean blurred, boolean mipmapped) {
         if (blurred) {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, mipmapped ? OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR : OpenGL.GL11_GL_LINEAR);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, mipmapped ? OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR : OpenGL.GL11_GL_LINEAR);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         } else {
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, mipmapped ? 9986 : OpenGL.GL11_GL_NEAREST);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, mipmapped ? 9986 : OpenGL.GL11_GL_NEAREST);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
         }
 
     }
@@ -158,9 +157,9 @@ public class TextureUtilLegacy {
         int maxRows = 4194304 / width;
         setTextureBlurMipmap(blurred, mipmapped);
         setTextureClamped(clamped);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, width);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, width);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
 
         int rowsToCopy;
         for (int pos = 0; pos < width * height; pos += width * rowsToCopy) {
@@ -168,7 +167,7 @@ public class TextureUtilLegacy {
             rowsToCopy = Math.min(maxRows, height - rowsCopied);
             int sizeOfCopy = width * rowsToCopy;
             copyToBufferPos(imageData, pos, sizeOfCopy);
-            GLShim.glTexSubImage2D(OpenGL.GL11_GL_TEXTURE_2D, mipmapLevel, originX, originY + rowsCopied, width, rowsToCopy, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
+            OpenGL.glTexSubImage2D(OpenGL.GL11_GL_TEXTURE_2D, mipmapLevel, originX, originY + rowsCopied, width, rowsToCopy, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
         }
 
     }

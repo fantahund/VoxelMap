@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.textures;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -127,7 +126,7 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitchNew();
 
         if (oldWidth == this.stitcher.getCurrentImageWidth() && oldHeight == this.stitcher.getCurrentImageHeight()) {
-            GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
+            OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
         } else {
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
             TextureUtilLegacy.allocateTextureImpl(this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
@@ -261,7 +260,7 @@ public class TextureAtlas extends AbstractTexture {
                     icon.bufferedImageToIntData(bufferedImage);
 
                     try {
-                        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
+                        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
                         TextureUtilLegacy.uploadTextureMipmap(new int[][]{icon.getTextureData()}, icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY(), false, false);
                     } catch (Throwable var7) {
                         CrashReport crashReport = CrashReport.create(var7, "Stitching texture atlas");

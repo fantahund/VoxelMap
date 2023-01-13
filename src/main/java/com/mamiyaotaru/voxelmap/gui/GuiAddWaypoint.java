@@ -11,7 +11,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -297,15 +296,15 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.waypointY.render(matrices, mouseX, mouseY, delta);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         super.render(matrices, mouseX, mouseY, delta);
-        GLShim.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-        GLShim.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
+        OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
+        OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, this.blank);
         this.drawTexture(matrices, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10);
         TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(chooser.getGlId());
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
         this.drawTexturedModalRect((this.getWidth() / 2 - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         if (this.choosingColor || this.choosingIcon) {
@@ -313,9 +312,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         }
 
         if (this.choosingColor) {
-            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(this.pickerResourceLocation);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             this.drawTexture(matrices, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256);
         }
 
@@ -339,16 +338,16 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             int displayHeight = (int) displayHeightFloat;
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, this.blank);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-            GLShim.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+            OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
             this.drawTexture(matrices, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2);
-            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             this.drawTexture(matrices, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight);
-            GLShim.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-            GLShim.glEnable(OpenGL.GL11_GL_BLEND);
+            OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
+            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             GLUtils.disp2(chooser.getGlId());
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             drawTexture(matrices, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, displayWidth, displayHeight, 0.0F, 0.0F, chooser.getWidth(), chooser.getHeight(), chooser.getImageWidth(), chooser.getImageHeight());
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
                 float x = (mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
@@ -359,8 +358,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 }
             }
 
-            GLShim.glDisable(OpenGL.GL11_GL_BLEND);
-            GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+            OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
         }
 
         if (this.tooltip != null) {

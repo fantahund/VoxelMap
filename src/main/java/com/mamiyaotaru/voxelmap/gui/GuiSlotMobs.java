@@ -6,9 +6,9 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
+import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
@@ -155,7 +155,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
                 GuiMobs.setTooltip(this.parentGui, tooltip);
             }
 
-            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
             DrawableHelper.drawTexture(matrices, x + 198, y - 2, GuiSlotMobs.this.getZOffset(), 0.0F, 0.0F, 18, 18, 18, 18);
         }

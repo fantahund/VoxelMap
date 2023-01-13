@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawableHelper;
@@ -42,7 +41,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         setScrollAmount(getScrollAmount());
 
-        GLShim.glDisable(OpenGL.GL11_GL_LIGHTING);
+        OpenGL.glDisable(OpenGL.GL11_GL_LIGHTING);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
 
@@ -67,7 +66,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         if (this.hasListHeader) renderHeader(matrices, leftEdge, topOfListYPos, tessellator);
 
         renderList(matrices, mouseX, mouseY, delta);
-        GLShim.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
 
         byte topBottomFadeHeight = 4;
 
@@ -91,9 +90,9 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
             RenderSystem.depthFunc(OpenGL.GL11_GL_LEQUAL);
             RenderSystem.disableDepthTest();
-            GLShim.glEnable(OpenGL.GL11_GL_BLEND);
+            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
-            GLShim.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
+            OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
 
@@ -113,7 +112,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         int maxScroll = getMaxScroll();
 
         if (maxScroll > 0) {
-            GLShim.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
+            OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
             RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
@@ -141,8 +140,8 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         renderDecorations(matrices, mouseX, mouseY);
 
-        GLShim.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
-        GLShim.glDisable(OpenGL.GL11_GL_BLEND);
+        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
+        OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
     }
 
     public int getRowWidth() { return slotWidth; }

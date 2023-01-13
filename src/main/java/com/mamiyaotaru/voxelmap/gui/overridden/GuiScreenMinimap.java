@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLShim;
+import com.mamiyaotaru.voxelmap.util.OpenGL;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
@@ -23,7 +23,7 @@ public class GuiScreenMinimap extends Screen {
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().showUnderMenus) return;
 
         VoxelConstants.getVoxelMapInstance().getMap().drawMinimap(matrixStack);
-        GLShim.glClear(256);
+        OpenGL.glClear(256);
     }
 
     public void removed() { MapSettingsManager.instance.saveAll(); }

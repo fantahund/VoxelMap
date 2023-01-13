@@ -4,9 +4,9 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
+import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.DrawableHelper;
@@ -161,13 +161,13 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
                 }
             }
 
-            GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier);
             DrawableHelper.drawTexture(matrices, x + 198, y - 2, GuiSlotWaypoints.this.getZOffset(), 0.0F, 0.0F, 18, 18, 18, 18);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
                 int x1 = x + 199;
                 int y1 = y - 1;
-                GLShim.glColor4f(1.0F, 0.0F, 0.0F, 1.0F);
+                OpenGL.glColor4f(1.0F, 0.0F, 0.0F, 1.0F);
                 TextureAtlas textureAtlas = this.parentGui.waypointManager.getTextureAtlas();
                 GLUtils.disp(textureAtlas.getGlId());
                 Sprite icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png");

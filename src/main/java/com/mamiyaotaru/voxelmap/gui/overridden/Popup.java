@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
@@ -90,10 +89,10 @@ public class Popup {
     public void drawPopup(MatrixStack matrixStack, int mouseX, int mouseY) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        GLShim.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
-        GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var6 = 32.0F;
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         vertexBuffer.vertex(this.x, this.y + this.h, 0.0).texture(this.x / var6, this.y / var6).color(64, 64, 64, 255).next();
@@ -101,10 +100,10 @@ public class Popup {
         vertexBuffer.vertex(this.x + this.w, this.y, 0.0).texture((this.x + this.w) / var6, (this.y + this.h) / var6).color(64, 64, 64, 255).next();
         vertexBuffer.vertex(this.x, this.y, 0.0).texture(this.x / var6, (this.y + this.h) / var6).color(64, 64, 64, 255).next();
         tessellator.draw();
-        GLShim.glEnable(OpenGL.GL11_GL_BLEND);
-        GLShim.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        GLShim.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
+        OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         vertexBuffer.vertex(this.x, this.y + 4, 0.0).color(0, 0, 0, 0).next();
         vertexBuffer.vertex(this.x + this.w, this.y + 4, 0.0).color(0, 0, 0, 0).next();
@@ -129,9 +128,9 @@ public class Popup {
         vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
         vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
         tessellator.draw();
-        GLShim.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
+        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        GLShim.glDisable(OpenGL.GL11_GL_BLEND);
+        OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
 
         for (int t = 0; t < this.entries.length; ++t) {
             int color = !this.entries[t].enabled ? 10526880 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 16777120 : 14737632);

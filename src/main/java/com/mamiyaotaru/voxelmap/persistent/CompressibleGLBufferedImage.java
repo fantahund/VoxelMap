@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IGLBufferedImage;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -60,7 +59,7 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         int currentIndex = this.index;
         this.index = 0;
         if (currentIndex != 0 && RenderSystem.isOnRenderThreadOrInit()) {
-            GLShim.glDeleteTextures(currentIndex);
+            OpenGL.glDeleteTexture(currentIndex);
         }
 
     }
@@ -72,7 +71,7 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         }
 
         if (this.index == 0) {
-            this.index = GLShim.glGenTextures();
+            this.index = OpenGL.glGenTextures();
         }
 
         ByteBuffer buffer = byteBuffers.get(this.width * this.height);
@@ -87,16 +86,16 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         }
 
         buffer.position(0).limit(this.bytes.length);
-        GLShim.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.index);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
-        GLShim.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
-        GLShim.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, this.getWidth(), this.getHeight(), 0, OpenGL.GL11_GL_RGBA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8, buffer);
-        GLShim.glGenerateMipmap(OpenGL.GL11_GL_TEXTURE_2D);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.index);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
+        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
+        OpenGL.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, this.getWidth(), this.getHeight(), 0, OpenGL.GL11_GL_RGBA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8, buffer);
+        OpenGL.glGenerateMipmap(OpenGL.GL11_GL_TEXTURE_2D);
         this.compress();
     }
 

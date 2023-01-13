@@ -19,7 +19,6 @@ import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.BiomeMapData;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.GLShim;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.I18nUtils;
@@ -628,7 +627,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         MatrixStack modelViewMatrixStack = RenderSystem.getModelViewStack();
         modelViewMatrixStack.push();
-        GLShim.glColor3f(1.0F, 1.0F, 1.0F);
+        OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.translate(this.centerX - this.mapCenterX * this.mapToGui, (this.top + this.centerY) - this.mapCenterZ * this.mapToGui, 0.0);
         if (this.oldNorth) {
             modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90.0F));
@@ -647,11 +646,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             if (glid != 0) {
                 GLUtils.disp2(glid);
                 if (mapOptions.filtering) {
-                    GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-                    GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 } else {
-                    GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-                    GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
                 }
 
                 this.drawTexturedModalRect((region.getX() * 256) * this.mapToGui, (region.getZ() * 256) * this.mapToGui, region.getWidth() * this.mapToGui, region.getWidth() * this.mapToGui);
@@ -689,11 +688,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        GLShim.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(playerGLID);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-        GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         float playerX = (float) GameVariableAccessShim.xCoordDouble();
         float playerZ = (float) GameVariableAccessShim.zCoordDouble();
         if (this.oldNorth) {
@@ -780,7 +779,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 int minimumSize = (int) (20.0F * this.scScale / biomeScaleX);
                 minimumSize *= minimumSize;
                 ArrayList<AbstractMapData.BiomeLabel> labels = this.biomeMapData.getBiomeLabels();
-                GLShim.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+                OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
 
                 for (AbstractMapData.BiomeLabel biomeLabel : labels) {
                     if (biomeLabel.segmentSize > minimumSize) {
@@ -791,7 +790,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     }
                 }
 
-                GLShim.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+                OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
             }
         }
 
@@ -880,9 +879,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     target = true;
                 }
 
-                GLShim.glColor4f(r, g, b, !pt.enabled && !target && !hover ? 0.3F : 1.0F);
-                GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-                GLShim.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+                OpenGL.glColor4f(r, g, b, !pt.enabled && !target && !hover ? 0.3F : 1.0F);
+                OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+                OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 if (this.oldNorth) {
                     matrixStack.push();
                     matrixStack.translate(ptX * this.mapToGui, ptZ * this.mapToGui, 0.0);
@@ -912,7 +911,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     this.write(matrixStack, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 1442840575 : 16777215);
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();
-                    GLShim.glEnable(OpenGL.GL11_GL_BLEND);
+                    OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
                 }
             }
         }

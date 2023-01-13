@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.textures;
 
 import com.google.common.collect.Lists;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLShim;
+import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.BlankFont;
 import net.minecraft.client.font.Font;
@@ -231,7 +231,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                     this.strikethroughStyle = false;
                     this.underlineStyle = false;
                     this.italicStyle = false;
-                    GLShim.glColor4f(this.red, this.blue, this.green, this.alpha);
+                    OpenGL.glColor4f(this.red, this.blue, this.green, this.alpha);
                 }
 
                 ++textIndex;
