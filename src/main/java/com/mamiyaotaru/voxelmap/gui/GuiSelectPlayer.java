@@ -50,7 +50,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.addDrawableChild(this.filter);
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.width / 2 - 100, this.height - 27, 150, 20).build());
         this.setFocused(this.filter);
-        this.filter.setTextFieldFocused(true);
+        this.filter.setFocused(true);
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

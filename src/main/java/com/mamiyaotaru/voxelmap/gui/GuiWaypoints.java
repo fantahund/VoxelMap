@@ -78,7 +78,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this, this.options))).dimensions(this.getWidth() / 2 + 2, this.getHeight() - 28, 74, 20).build());
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.getWidth() / 2 + 80, this.getHeight() - 28, 74, 20).build());
         this.setFocused(this.filter);
-        this.filter.setTextFieldFocused(true);
+        this.filter.setFocused(true);
         boolean isSomethingSelected = this.selectedWaypoint != null;
         this.buttonEdit.active = isSomethingSelected;
         this.buttonDelete.active = isSomethingSelected;

@@ -257,7 +257,6 @@ public class ColorManager {
         GLUtils.bindFrameBuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glDisable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
@@ -1279,7 +1278,7 @@ public class ColorManager {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
                         double var1 = MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
-                        double var2 = MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F);
+                        double var2 = 0F;//MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F); //FIXME 1.19.4
                         var2 *= var1;
                         var1 = 1.0 - var1;
                         var2 = 1.0 - var2;

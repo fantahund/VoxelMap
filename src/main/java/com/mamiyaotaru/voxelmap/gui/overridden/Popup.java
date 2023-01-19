@@ -103,7 +103,6 @@ public class Popup {
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         vertexBuffer.vertex(this.x, this.y + 4, 0.0).color(0, 0, 0, 0).next();
         vertexBuffer.vertex(this.x + this.w, this.y + 4, 0.0).color(0, 0, 0, 0).next();
@@ -128,7 +127,6 @@ public class Popup {
         vertexBuffer.vertex(this.x + this.w, this.y + this.h, 0.0).color(0, 0, 0, 255).next();
         vertexBuffer.vertex(this.x + this.w, this.y, 0.0).color(0, 0, 0, 255).next();
         tessellator.draw();
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
 

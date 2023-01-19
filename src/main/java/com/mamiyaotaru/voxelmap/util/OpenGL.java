@@ -18,7 +18,6 @@ public final class OpenGL {
             GL11_GL_SRC_ALPHA            = 0x302,
             GL11_GL_ONE_MINUS_SRC_ALPHA  = 0x303,
             GL11_GL_CULL_FACE            = 0xB44,
-            GL11_GL_LIGHTING             = 0xB50,
             GL11_GL_DEPTH_TEST           = 0xB71,
             GL11_GL_BLEND                = 0xBE2,
             GL11_GL_SCISSOR_TEST         = 0xC11,
@@ -63,9 +62,8 @@ public final class OpenGL {
             case GL11_GL_DEPTH_TEST -> RenderSystem.enableDepthTest();
             case GL11_GL_BLEND -> RenderSystem.enableBlend();
             case GL11_GL_SCISSOR_TEST -> GL11.glEnable(GL11_GL_SCISSOR_TEST);
-            case GL11_GL_TEXTURE_2D -> RenderSystem.enableTexture();
             case GL11_GL_POLYGON_OFFSET_FILL -> RenderSystem.enablePolygonOffset();
-            default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received");
+            default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received by Enable (" + target + ")");
         }
     }
 
@@ -75,9 +73,8 @@ public final class OpenGL {
             case GL11_GL_DEPTH_TEST -> RenderSystem.disableDepthTest();
             case GL11_GL_BLEND -> RenderSystem.disableBlend();
             case GL11_GL_SCISSOR_TEST -> GL11.glDisable(GL11.GL_SCISSOR_TEST);
-            case GL11_GL_TEXTURE_2D -> RenderSystem.disableTexture();
             case GL11_GL_POLYGON_OFFSET_FILL -> RenderSystem.disablePolygonOffset();
-            default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received");
+            default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received by Disable (" + target + ")");
         }
     }
 

@@ -44,7 +44,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.addDrawableChild(this.buttonDisable = new ButtonWidget.Builder(Text.translatable("options.minimap.mobs.disable"), button -> this.setMobEnabled(this.selectedMobId, false)).dimensions(this.getWidth() / 2 - 50, this.getHeight() - 28, 100, 20).build());
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.getWidth() / 2 + 4 + 50, this.getHeight() - 28, 100, 20).build());
         this.setFocused(this.filter);
-        this.filter.setTextFieldFocused(true);
+        this.filter.setFocused(true);
         boolean isSomethingSelected = this.selectedMobId != null;
         this.buttonEnable.active = isSomethingSelected;
         this.buttonDisable.active = isSomethingSelected;

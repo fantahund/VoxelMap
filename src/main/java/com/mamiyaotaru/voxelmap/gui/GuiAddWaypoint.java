@@ -96,7 +96,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> this.cancelWaypoint(), this));
         this.doneButton.active = !this.waypointName.getText().isEmpty();
         this.setFocused(this.waypointName);
-        this.waypointName.setTextFieldFocused(true);
+        this.waypointName.setFocused(true);
         this.dimensionList = new GuiSlotDimensions(this);
     }
 
@@ -297,7 +297,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         super.render(matrices, mouseX, mouseY, delta);
         OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-        OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, this.blank);
         this.drawTexture(matrices, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10);

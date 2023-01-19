@@ -1231,7 +1231,6 @@ public class Radar implements IRadar {
         GLUtils.bindFrameBuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glDisable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);

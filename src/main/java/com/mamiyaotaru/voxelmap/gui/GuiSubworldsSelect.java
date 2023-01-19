@@ -96,7 +96,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         if (!this.newWorld) {
             selectButtons[numButtons] = new ButtonWidget.Builder(Text.literal("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
                 this.newWorld = true;
-                this.newNameField.setTextFieldFocused(true);
+                this.newNameField.setFocused(true);
             }).dimensions(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20).build();
             this.addDrawableChild(selectButtons[numButtons]);
         }

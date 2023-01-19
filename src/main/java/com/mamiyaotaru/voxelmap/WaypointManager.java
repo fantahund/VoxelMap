@@ -209,7 +209,7 @@ public class WaypointManager {
                 serverName = "Realms";
             } else {
                 ClientPlayNetworkHandler netHandler = VoxelConstants.getMinecraft().getNetworkHandler();
-                ClientConnection networkManager = netHandler.getConnection();
+                ClientConnection networkManager = netHandler.method_48296();
                 InetSocketAddress socketAddress = (InetSocketAddress) networkManager.getAddress();
                 serverName = socketAddress.getHostString() + ":" + socketAddress.getPort();
             }

@@ -34,7 +34,7 @@ public class GuiButtonText extends ButtonWidget {
         this.editing = editing;
         if (editing) this.setFocused(true);
 
-        textField.setTextFieldFocused(editing);
+        textField.setFocused(editing);
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

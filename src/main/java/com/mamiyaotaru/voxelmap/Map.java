@@ -675,7 +675,6 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (!this.options.hide) {
@@ -2110,7 +2109,6 @@ public class Map implements Runnable, IChangeObserver {
         int centerY = (int) ((scHeight + 5) / 2.0);
         Text hide = this.welcomeText[this.welcomeText.length - 1];
         int footer = this.chkLen(hide);
-        OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
         OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 0.7F);
         double leftX = centerX - title / 2.0 - border;
         double rightX = centerX + title / 2.0 + border;
@@ -2127,7 +2125,6 @@ public class Map implements Runnable, IChangeObserver {
         topY = centerY + (height - 1) / 2.0 * 10.0 - border + 10.0;
         botY = centerY + (height - 1) / 2.0 * 10.0 + border + 20.0;
         this.drawBox(leftX, rightX, topY, botY);
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         this.write(matrixStack, head, (centerX - title / 2), (centerY - (height - 1) * 10 / 2 - 19), 16777215);
 
         for (int n = 1; n < height; ++n) {

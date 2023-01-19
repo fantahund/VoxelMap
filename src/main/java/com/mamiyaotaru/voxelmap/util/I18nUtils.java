@@ -15,7 +15,7 @@ public final class I18nUtils {
         String mcLocale = "en_US";
 
         try {
-            mcLocale = VoxelConstants.getMinecraft().getLanguageManager().getLanguage().getCode();
+            mcLocale = VoxelConstants.getMinecraft().getLanguageManager().getLanguage();
         } catch (NullPointerException ignored) {}
 
         String[] bits = mcLocale.split("_");

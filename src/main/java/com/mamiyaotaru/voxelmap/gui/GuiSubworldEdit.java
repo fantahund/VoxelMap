@@ -40,7 +40,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.clearChildren();
         this.subworldNameField = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
         this.setFocused(this.subworldNameField);
-        this.subworldNameField.setTextFieldFocused(true);
+        this.subworldNameField.setFocused(true);
         this.subworldNameField.setText(this.originalSubworldName);
         this.addDrawableChild(this.subworldNameField);
         this.addDrawableChild(this.doneButton = new ButtonWidget.Builder(Text.translatable("gui.done"), button -> this.changeNameClicked()).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20).build());

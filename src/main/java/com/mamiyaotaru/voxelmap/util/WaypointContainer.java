@@ -59,8 +59,6 @@ public class WaypointContainer {
         double renderPosZ = GameVariableAccessShim.zCoordDouble();
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         if (this.options.showBeacons && beacons) {
-            OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
-            OpenGL.glDisable(OpenGL.GL11_GL_LIGHTING);
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
             OpenGL.glDepthMask(false);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -81,13 +79,10 @@ public class WaypointContainer {
             }
 
             OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
-            OpenGL.glEnable(OpenGL.GL11_GL_LIGHTING);
-            OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
             OpenGL.glDepthMask(true);
         }
 
         if (this.options.showWaypoints && signs) {
-            OpenGL.glDisable(OpenGL.GL11_GL_LIGHTING);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
@@ -227,7 +222,6 @@ public class WaypointContainer {
 
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         GLUtils.disp2(textureAtlas.getGlId());
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         if (withDepth) {
             OpenGL.glDepthMask(distance < maxDistance);
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -253,7 +247,6 @@ public class WaypointContainer {
         TextRenderer fontRenderer = VoxelConstants.getMinecraft().textRenderer;
         if (isPointedAt && fontRenderer != null) {
             byte elevateBy = -19;
-            OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
             OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.getWidth(name) / 2;
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
@@ -297,7 +290,6 @@ public class WaypointContainer {
 
             OpenGL.glDisable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             OpenGL.glDepthMask(false);
-            OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
             VertexConsumerProvider.Immediate vertexConsumerProvider = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;

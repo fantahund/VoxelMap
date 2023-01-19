@@ -41,7 +41,6 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         setScrollAmount(getScrollAmount());
 
-        OpenGL.glDisable(OpenGL.GL11_GL_LIGHTING);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
 
@@ -63,7 +62,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         int leftEdge = left + width / 2 - getRowWidth() / 2 + 2;
         int topOfListYPos = top + 4 - (int) getScrollAmount();
 
-        if (this.hasListHeader) renderHeader(matrices, leftEdge, topOfListYPos, tessellator);
+        if (this.hasListHeader) renderHeader(matrices, leftEdge, topOfListYPos);
 
         renderList(matrices, mouseX, mouseY, delta);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -92,7 +91,6 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             RenderSystem.disableDepthTest();
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
-            OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
 
@@ -112,8 +110,6 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         int maxScroll = getMaxScroll();
 
         if (maxScroll > 0) {
-            OpenGL.glDisable(OpenGL.GL11_GL_TEXTURE_2D);
-            RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorProgram);
 
             int k1 = MathHelper.clamp((bottom - top) * (bottom - top) / getMaxPosition(), 32, bottom - top - 8);
@@ -140,7 +136,6 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         renderDecorations(matrices, mouseX, mouseY);
 
-        OpenGL.glEnable(OpenGL.GL11_GL_TEXTURE_2D);
         OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
     }
 
