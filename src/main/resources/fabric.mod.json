@@ -24,5 +24,6 @@
   "depends": {
     "fabricloader": ">=0.14.6",
     "fabric": "*"
-  }
+  },
+  "accessWidener": "voxelmap.accesswidener"
 }

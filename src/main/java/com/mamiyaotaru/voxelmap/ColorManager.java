@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
+import com.mamiyaotaru.voxelmap.fabricmod.mixins.BiomeAccessor;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
@@ -1278,7 +1279,8 @@ public class ColorManager {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
                         double var1 = MathHelper.clamp(biome.getTemperature(), 0.0F, 1.0F);
-                        double var2 = 0F;//MathHelper.clamp(biome.getDownfall(), 0.0F, 1.0F); //FIXME 1.19.4
+                        double var2 = MathHelper.clamp(((BiomeAccessor) (Object) biome).getWeather().downfall(), 0.0F, 1.0F);
+
                         var2 *= var1;
                         var1 = 1.0 - var1;
                         var2 = 1.0 - var2;
