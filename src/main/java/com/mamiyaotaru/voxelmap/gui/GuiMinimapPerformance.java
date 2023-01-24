@@ -45,12 +45,12 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
             ++var2;
             if (optionButton.returnEnumOptions() == EnumOptionsMinimap.SLIMECHUNKS) {
                 this.slimeChunksButton = optionButton;
-                this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().equals("");
+                this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
             }
         }
 
         String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
-        if (worldSeedDisplay.equals("")) {
+        if (worldSeedDisplay.isEmpty()) {
             worldSeedDisplay = I18nUtils.getString("selectWorld.versionUnknown");
         }
 
@@ -103,7 +103,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         String newSeed = this.worldSeedButton.getText();
         VoxelConstants.getVoxelMapInstance().setWorldSeed(newSeed);
         String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
-        if (worldSeedDisplay.equals("")) {
+        if (worldSeedDisplay.isEmpty()) {
             worldSeedDisplay = I18nUtils.getString("selectWorld.versionUnknown");
         }
 
@@ -111,7 +111,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.worldSeedButton.setMessage(Text.literal(buttonText));
         this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
         VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
-        this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().equals("");
+        this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {

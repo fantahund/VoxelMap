@@ -927,7 +927,7 @@ public class ColorManager {
                             }
 
                             int blockStateID = BlockRepository.getStateId(blockState);
-                            if (!biomes.equals("")) {
+                            if (!biomes.isEmpty()) {
                                 this.biomeTextureAvailable.add(blockStateID);
 
                                 for (String s : biomesArray) {

@@ -42,7 +42,7 @@ public class MapUtils {
         int xPosition = mcX >> 4;
         int zPosition = mcZ >> 4;
         String seedString = VoxelConstants.getVoxelMapInstance().getWorldSeed();
-        if (!seedString.equals("")) {
+        if (!seedString.isEmpty()) {
             long seed;
 
             try {

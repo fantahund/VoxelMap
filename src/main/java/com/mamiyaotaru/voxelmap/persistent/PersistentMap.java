@@ -152,7 +152,7 @@ public class PersistentMap implements IChangeObserver {
 
         if (!VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false).equals(this.subworldName)) {
             this.subworldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-            if (this.worldMatcher != null && !this.subworldName.equals("")) {
+            if (this.worldMatcher != null && !this.subworldName.isEmpty()) {
                 this.worldMatcher.cancel();
             }
 

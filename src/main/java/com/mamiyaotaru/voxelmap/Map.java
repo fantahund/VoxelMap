@@ -282,9 +282,9 @@ public class Map implements Runnable, IChangeObserver {
     public void newWorldName() {
         String subworldName = this.waypointManager.getCurrentSubworldDescriptor(true);
         StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18nUtils.getString("worldmap.multiworld.newworld")).append(":").append(" ");
-        if (subworldName.equals("") && this.waypointManager.isMultiworld()) {
+        if (subworldName.isEmpty() && this.waypointManager.isMultiworld()) {
             subworldNameBuilder.append("???");
-        } else if (!subworldName.equals("")) {
+        } else if (!subworldName.isEmpty()) {
             subworldNameBuilder.append(subworldName);
         }
 
@@ -431,7 +431,7 @@ public class Map implements Runnable, IChangeObserver {
             this.direction += 360.0F;
         }
 
-        if (!this.error.equals("") && this.ztimer == 0) {
+        if (!this.error.isEmpty() && this.ztimer == 0) {
             this.ztimer = 500;
         }
 
@@ -439,7 +439,7 @@ public class Map implements Runnable, IChangeObserver {
             --this.ztimer;
         }
 
-        if (this.ztimer == 0 && !this.error.equals("")) {
+        if (this.ztimer == 0 && !this.error.isEmpty()) {
             this.error = "";
         }
 

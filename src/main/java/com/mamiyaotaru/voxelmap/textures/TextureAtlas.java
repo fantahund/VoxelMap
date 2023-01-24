@@ -219,7 +219,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public Sprite registerIconForBufferedImage(String name, BufferedImage bufferedImage) {
-        if (name != null && !name.equals("")) {
+        if (name != null && !name.isEmpty()) {
             Sprite icon = this.mapRegisteredSprites.get(name);
             if (icon == null) {
                 icon = Sprite.spriteFromString(name);
@@ -250,7 +250,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void registerOrOverwriteSprite(String name, BufferedImage bufferedImage) {
-        if (name != null && !name.equals("")) {
+        if (name != null && !name.isEmpty()) {
             Sprite icon = this.mapRegisteredSprites.get(name);
             if (icon != null) {
                 icon.bufferedImageToIntData(bufferedImage);

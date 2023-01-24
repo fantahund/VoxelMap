@@ -752,7 +752,7 @@ public class WaypointManager {
         try {
             String path = this.getCurrentWorldName();
             String subworldDescriptor = this.getCurrentSubworldDescriptor(false);
-            if (subworldDescriptor != null && !subworldDescriptor.equals("")) {
+            if (subworldDescriptor != null && !subworldDescriptor.isEmpty()) {
                 path = path + "/" + subworldDescriptor;
             }
 
