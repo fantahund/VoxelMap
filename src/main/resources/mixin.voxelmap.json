@@ -1,21 +1,19 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_17",
-  "package": "com.mamiyaotaru.voxelmap.fabricmod.mixins",
-  "target": "@env(DEFAULT)",
-  "client": [
-    "APIMixinChatListenerHud",
-    "APIMixinClientPlayerEntity",
-    "APIMixinInGameHud",
-    "APIMixinMinecraftClient",
-    "APIMixinNetHandlerPlayClient",
-    "MixinWorldRenderer",
-    "ONMixinBackgroundRenderer",
-    "ONMixinWorldRenderer",
-    "MixinChatHud"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+    "required": true,
+    "minVersion": "0.8",
+    "compatibilityLevel": "JAVA_17",
+    "package": "com.mamiyaotaru.voxelmap.fabricmod.mixins",
+    "target": "@env(DEFAULT)",
+    "client": [
+        "APIMixinChatListenerHud",
+        "APIMixinClientPlayerEntity",
+        "APIMixinInGameHud",
+        "APIMixinMinecraftClient",
+        "APIMixinNetHandlerPlayClient",
+        "MixinChatHud",
+        "MixinWorldRenderer"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
 }
