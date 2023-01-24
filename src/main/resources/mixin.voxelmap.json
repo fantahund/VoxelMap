@@ -11,9 +11,7 @@
         "APIMixinMinecraftClient",
         "APIMixinNetHandlerPlayClient",
         "MixinChatHud",
-        "MixinWorldRenderer",
-        "ONMixinBackgroundRenderer",
-        "ONMixinWorldRenderer"
+        "MixinWorldRenderer"
     ],
     "injectors": {
         "defaultRequire": 1
