@@ -277,11 +277,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         StringBuilder worldNameBuilder = (new StringBuilder("§r")).append(worldName.get());
         String subworldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true);
         this.subworldName = subworldName;
-        if ((subworldName == null || subworldName.equals("")) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
+        if ((subworldName == null || subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
             subworldName = "???";
         }
 
-        if (subworldName != null && !subworldName.equals("")) {
+        if (subworldName != null && !subworldName.isEmpty()) {
             worldNameBuilder.append(" - ").append(subworldName);
         }
 
@@ -292,14 +292,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             worldName.set(worldName.get().substring(0, worldName.get().length() - 1));
             worldNameBuilder = new StringBuilder(worldName.get());
             worldNameBuilder.append("...");
-            if (subworldName != null && !subworldName.equals("")) {
+            if (subworldName != null && !subworldName.isEmpty()) {
                 worldNameBuilder.append(" - ").append(subworldName);
             }
 
             this.worldNameDisplay = worldNameBuilder.toString();
         }
 
-        if (subworldName != null && !subworldName.equals("")) {
+        if (subworldName != null && !subworldName.isEmpty()) {
             while (this.worldNameDisplayLength > this.maxWorldNameDisplayLength && subworldName.length() > 5) {
                 worldNameBuilder = new StringBuilder(worldName.get());
                 worldNameBuilder.append("...");
@@ -829,7 +829,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         drawStringWithShadow(matrices, this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
         if (this.buttonMultiworld != null) {
-            if ((this.subworldName == null || this.subworldName.equals("")) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
+            if ((this.subworldName == null || this.subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
                 if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {
                     this.buttonMultiworld.setMessage(this.multiworldButtonNameRed);
                 } else {

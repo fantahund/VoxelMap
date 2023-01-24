@@ -1426,7 +1426,7 @@ public class Radar implements IRadar {
                         gameProfile = NbtHelper.toGameProfile(nbttagcompound.getCompound("SkullOwner"));
                     } else if (nbttagcompound.contains("SkullOwner", 8)) {
                         String name = nbttagcompound.getString("SkullOwner");
-                        if (name != null && !name.equals("")) {
+                        if (name != null && !name.isEmpty()) {
                             gameProfile = new GameProfile(null, name);
                             nbttagcompound.remove("SkullOwner");
                             SkullBlockEntity.loadProperties(gameProfile, gameProfilex -> nbttagcompound.put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), gameProfilex)));

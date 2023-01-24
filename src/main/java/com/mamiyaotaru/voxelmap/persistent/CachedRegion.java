@@ -514,7 +514,7 @@ public class CachedRegion {
     }
 
     private void saveData(boolean newThread) {
-        if (this.liveChunksUpdated && !this.worldNamePathPart.equals("")) {
+        if (this.liveChunksUpdated && !this.worldNamePathPart.isEmpty()) {
             if (newThread) {
                 ThreadManager.executorService.execute(() -> {
                     CachedRegion.this.threadLock.lock();
