@@ -4,7 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -54,7 +53,7 @@ public class CachedRegion {
     public static final EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
     private long mostRecentView;
     private long mostRecentChange;
-    private IPersistentMap persistentMap;
+    private PersistentMap persistentMap;
     private String key;
     private ClientWorld world;
     private ServerWorld worldServer;
@@ -97,7 +96,7 @@ public class CachedRegion {
 
     public CachedRegion() {}
 
-    public CachedRegion(IPersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
+    public CachedRegion(PersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;

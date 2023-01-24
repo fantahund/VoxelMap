@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
+import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
-public class PersistentMap implements IPersistentMap {
+public class PersistentMap implements IChangeObserver {
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final ColorManager colorManager;
     final MapSettingsManager mapOptions;
@@ -90,7 +90,6 @@ public class PersistentMap implements IPersistentMap {
         Arrays.fill(this.lightmapColors, -16777216);
     }
 
-    @Override
     public void newWorld(ClientWorld world) {
         this.subworldName = "";
         this.purgeCachedRegions();
@@ -145,7 +144,6 @@ public class PersistentMap implements IPersistentMap {
         this.chunkCache = new MapChunkCache(33, 33, this);
     }
 
-    @Override
     public void onTick() {
         if (VoxelConstants.getMinecraft().currentScreen == null) {
             this.options.mapX = GameVariableAccessShim.xCoord();
@@ -177,12 +175,10 @@ public class PersistentMap implements IPersistentMap {
 
     }
 
-    @Override
     public PersistentMapSettingsManager getOptions() {
         return this.options;
     }
 
-    @Override
     public void purgeCachedRegions() {
         synchronized (this.cachedRegionsPool) {
             for (CachedRegion cachedRegion : this.cachedRegionsPool) {
@@ -195,7 +191,6 @@ public class PersistentMap implements IPersistentMap {
         }
     }
 
-    @Override
     public void renameSubworld(String oldName, String newName) {
         synchronized (this.cachedRegionsPool) {
             for (CachedRegion cachedRegion : this.cachedRegionsPool) {
@@ -205,12 +200,10 @@ public class PersistentMap implements IPersistentMap {
         }
     }
 
-    @Override
     public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
         return VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier();
     }
 
-    @Override
     public void setLightMapArray(int[] lights) {
         boolean changed;
         int torchOffset = 0;
@@ -225,7 +218,6 @@ public class PersistentMap implements IPersistentMap {
 
     }
 
-    @Override
     public void getAndStoreData(AbstractMapData mapData, World world, WorldChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
         int surfaceHeight;
         int seafloorHeight = 0;
@@ -432,7 +424,6 @@ public class PersistentMap implements IPersistentMap {
         return i3;
     }
 
-    @Override
     public int getPixelColor(AbstractMapData mapData, ClientWorld world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
@@ -738,7 +729,6 @@ public class PersistentMap implements IPersistentMap {
         return this.lightmapColors[light];
     }
 
-    @Override
     public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
         if (left == this.lastLeft && right == this.lastRight && top == this.lastTop && bottom == this.lastBottom) {
             return this.lastRegionsArray;
@@ -819,7 +809,6 @@ public class PersistentMap implements IPersistentMap {
         }
     }
 
-    @Override
     public void compress() {
         synchronized (this.cachedRegionsPool) {
             for (CachedRegion cachedRegion : this.cachedRegionsPool) {
@@ -831,7 +820,6 @@ public class PersistentMap implements IPersistentMap {
         }
     }
 
-    @Override
     public void handleChangeInWorld(int chunkX, int chunkZ) {
         if (this.world != null) {
             WorldChunk chunk = this.world.getChunk(chunkX, chunkZ);
@@ -844,7 +832,6 @@ public class PersistentMap implements IPersistentMap {
         }
     }
 
-    @Override
     public void processChunk(WorldChunk chunk) {
         this.chunkUpdateQueue.add(new ChunkWithAge(chunk, TickCounter.tickCounter));
     }
@@ -902,7 +889,6 @@ public class PersistentMap implements IPersistentMap {
         return this.chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x, chunk.getPos().z);
     }
 
-    @Override
     public boolean isRegionLoaded(int blockX, int blockZ) {
         int x = (int) Math.floor(blockX / 256.0F);
         int z = (int) Math.floor(blockZ / 256.0F);
@@ -910,7 +896,6 @@ public class PersistentMap implements IPersistentMap {
         return cachedRegion != null && cachedRegion.isLoaded();
     }
 
-    @Override
     public boolean isGroundAt(int blockX, int blockZ) {
         int x = (int) Math.floor(blockX / 256.0F);
         int z = (int) Math.floor(blockZ / 256.0F);
@@ -918,7 +903,6 @@ public class PersistentMap implements IPersistentMap {
         return cachedRegion != null && cachedRegion.isGroundAt(blockX, blockZ);
     }
 
-    @Override
     public int getHeightAt(int blockX, int blockZ) {
         int x = (int) Math.floor(blockX / 256.0F);
         int z = (int) Math.floor(blockZ / 256.0F);

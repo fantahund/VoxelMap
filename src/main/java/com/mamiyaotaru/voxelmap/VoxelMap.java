@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
@@ -243,7 +242,7 @@ public class VoxelMap implements ResourceReloader {
         return this.dimensionManager;
     }
 
-    public IPersistentMap getPersistentMap() {
+    public PersistentMap getPersistentMap() {
         return this.persistentMap;
     }
 
