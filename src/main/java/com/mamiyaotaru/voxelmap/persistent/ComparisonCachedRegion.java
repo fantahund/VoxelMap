@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.interfaces.IPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
@@ -26,7 +25,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class ComparisonCachedRegion {
-    private final IPersistentMap persistentMap;
+    private final PersistentMap persistentMap;
     private final String key;
     private final ClientWorld world;
     private final String subworldName;
@@ -42,7 +41,7 @@ public class ComparisonCachedRegion {
     private boolean loaded;
     private boolean empty = true;
 
-    public ComparisonCachedRegion(IPersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
+    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
         this.data = new CompressibleMapData(256, 256);
         this.persistentMap = persistentMap;
         this.key = key;
