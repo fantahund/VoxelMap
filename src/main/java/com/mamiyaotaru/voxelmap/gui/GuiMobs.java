@@ -6,10 +6,10 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -36,7 +36,7 @@ public class GuiMobs extends GuiScreenMinimap {
     public void init() {
         this.screenTitle = Text.translatable("options.minimap.mobs.title");
         this.mobsList = new GuiSlotMobs(this);
-        int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
+        int filterStringWidth = this.getFontRenderer().getWidth(I18n.translate("minimap.waypoints.filter") + ":");
         this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 56, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
@@ -137,7 +137,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.buttonEnable.active = isSomethingSelected && !this.isMobEnabled(this.selectedMobId);
         this.buttonDisable.active = isSomethingSelected && this.isMobEnabled(this.selectedMobId);
         super.render(matrices, mouseX, mouseY, delta);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 10526880);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 10526880);
         this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);

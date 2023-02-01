@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.hud.MessageIndicator;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
@@ -56,7 +57,7 @@ public class CommandUtils {
                 Style chatStyle = clickableWaypoint.getStyle();
                 chatStyle = chatStyle.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/newWaypoint " + waypointString.substring(1, waypointString.length() - 1)));
                 chatStyle = chatStyle.withColor(Formatting.AQUA);
-                Text hover = Text.literal(I18nUtils.getString("minimap.waypointshare.tooltip1") + "\n" + I18nUtils.getString("minimap.waypointshare.tooltip2"));
+                Text hover = Text.literal(I18n.translate("minimap.waypointshare.tooltip1") + "\n" + I18n.translate("minimap.waypointshare.tooltip2"));
                 chatStyle = chatStyle.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
                 clickableWaypoint.setStyle(chatStyle);
                 textComponents.add(clickableWaypoint);

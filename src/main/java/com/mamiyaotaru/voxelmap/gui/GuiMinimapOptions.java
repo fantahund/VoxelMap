@@ -6,9 +6,9 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -24,7 +24,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     public void init() {
         EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE };
-        this.screenTitle = I18nUtils.getString("options.minimap.title");
+        this.screenTitle = I18n.translate("options.minimap.title");
 
         for (int i = 0; i < relevantOptions.length; i++) {
             EnumOptionsMinimap option = relevantOptions[i];

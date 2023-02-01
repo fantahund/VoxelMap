@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -175,7 +176,7 @@ public class BiomeRepository {
     private static String getName(Biome biome) {
         Identifier resourceLocation = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
         String translationKey = Util.createTranslationKey("biome", resourceLocation);
-        String name = I18nUtils.getString(translationKey);
+        String name = I18n.translate(translationKey);
         if (name.equals(translationKey)) {
             name = TextUtils.prettify(resourceLocation.getPath());
         }

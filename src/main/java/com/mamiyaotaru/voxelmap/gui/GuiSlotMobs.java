@@ -7,11 +7,11 @@ import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.widget.EntryListWidget;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.NarratorManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -51,8 +51,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             }
         }
 
-        final Collator collator = I18nUtils.getLocaleAwareCollator();
-        this.mobs.sort((mob1, mob2) -> collator.compare(mob1.name, mob2.name));
+        this.mobs.sort((mob1, mob2) -> String.CASE_INSENSITIVE_ORDER.compare(mob1.name, mob2.name));
         this.mobsFiltered = new ArrayList<>(this.mobs);
         this.mobsFiltered.forEach(this::addEntry);
     }
@@ -62,7 +61,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             name = "entity.minecraft." + name.toLowerCase();
         }
 
-        name = I18nUtils.getString(name);
+        name = I18n.translate(name);
         name = name.replaceAll("^entity.minecraft.", "");
         name = name.replace("_", " ");
         name = name.substring(0, 1).toUpperCase() + name.substring(1);

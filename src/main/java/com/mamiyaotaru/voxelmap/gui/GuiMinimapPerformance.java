@@ -6,9 +6,9 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiButtonText;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -30,7 +30,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     }
 
     public void init() {
-        this.screenTitle = I18nUtils.getString("options.minimap.detailsperformance");
+        this.screenTitle = I18n.translate("options.minimap.detailsperformance");
         int leftBorder = this.getLeftBorder();
         int var2 = 0;
 
@@ -51,10 +51,10 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
 
         String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
         if (worldSeedDisplay.isEmpty()) {
-            worldSeedDisplay = I18nUtils.getString("selectWorld.versionUnknown");
+            worldSeedDisplay = I18n.translate("selectWorld.versionUnknown");
         }
 
-        String buttonText = I18nUtils.getString("options.minimap.worldseed") + ": " + worldSeedDisplay;
+        String buttonText = I18n.translate("options.minimap.worldseed") + ": " + worldSeedDisplay;
         this.worldSeedButton = new GuiButtonText(this.getFontRenderer(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, Text.literal(buttonText), button -> this.worldSeedButton.setEditing(true));
         this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
         this.worldSeedButton.active = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
@@ -104,10 +104,10 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         VoxelConstants.getVoxelMapInstance().setWorldSeed(newSeed);
         String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
         if (worldSeedDisplay.isEmpty()) {
-            worldSeedDisplay = I18nUtils.getString("selectWorld.versionUnknown");
+            worldSeedDisplay = I18n.translate("selectWorld.versionUnknown");
         }
 
-        String buttonText = I18nUtils.getString("options.minimap.worldseed") + ": " + worldSeedDisplay;
+        String buttonText = I18n.translate("options.minimap.worldseed") + ": " + worldSeedDisplay;
         this.worldSeedButton.setMessage(Text.literal(buttonText));
         this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
         VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);

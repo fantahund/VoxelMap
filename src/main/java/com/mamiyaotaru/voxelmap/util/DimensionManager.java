@@ -58,14 +58,13 @@ public class DimensionManager {
     }
 
     private void sort() {
-        final Collator collator = I18nUtils.getLocaleAwareCollator();
         this.dimensions.sort((dim1, dim2) -> {
             if (dim1.resourceLocation.equals(World.OVERWORLD.getValue())) {
                 return -1;
             } else if (dim1.resourceLocation.equals(World.NETHER.getValue()) && !dim2.resourceLocation.equals(World.OVERWORLD.getValue())) {
                 return -1;
             } else {
-                return dim1.resourceLocation.equals(World.END.getValue()) && !dim2.resourceLocation.equals(World.OVERWORLD.getValue()) && !dim2.resourceLocation.equals(World.NETHER.getValue()) ? -1 : collator.compare(dim1.name, dim2.name);
+                return dim1.resourceLocation.equals(World.END.getValue()) && !dim2.resourceLocation.equals(World.OVERWORLD.getValue()) && !dim2.resourceLocation.equals(World.NETHER.getValue()) ? -1 : String.CASE_INSENSITIVE_ORDER.compare(dim1.name, dim2.name);
             }
         });
     }

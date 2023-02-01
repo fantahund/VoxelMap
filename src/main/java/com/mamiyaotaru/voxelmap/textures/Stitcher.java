@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.textures;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.util.math.MathHelper;
 
 import java.text.Collator;
@@ -220,8 +219,7 @@ public class Stitcher {
                         return o.icon.getIconName() == null ? 0 : -1;
                     }
 
-                    Collator collator = I18nUtils.getLocaleAwareCollator();
-                    return collator.compare(this.icon.getIconName(), o.icon.getIconName());
+                    return String.CASE_INSENSITIVE_ORDER.compare(icon.getIconName(), o.icon.getIconName());
                 }
 
                 var2 = this.getWidth() < o.getWidth() ? 1 : -1;

@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.ConfirmScreen;
@@ -69,11 +68,10 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     }
 
     protected void sort() {
-        final Collator collator = I18nUtils.getLocaleAwareCollator();
         this.players.sort((player1, player2) -> {
             String name1 = GuiButtonRowListPlayers.this.getPlayerName(player1).getString();
             String name2 = GuiButtonRowListPlayers.this.getPlayerName(player2).getString();
-            return collator.compare(name1, name2);
+            return String.CASE_INSENSITIVE_ORDER.compare(name1, name2);
         });
     }
 

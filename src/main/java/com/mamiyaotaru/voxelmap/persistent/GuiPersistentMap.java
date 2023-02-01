@@ -20,7 +20,6 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -37,6 +36,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.entity.PlayerModelPart;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.PlayerSkinTexture;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.InputUtil;
@@ -201,7 +201,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.closed = false;
         }
 
-        this.screenTitle = I18nUtils.getString("worldmap.title");
+        this.screenTitle = I18n.translate("worldmap.title");
         this.buildWorldName();
         this.leftMouseButtonDown = false;
         this.sideMargin = 10;
@@ -1025,20 +1025,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Waypoint hovered = this.getHovered(cursorCoordX, cursorCoordZ);
         Popup.PopupEntry entry;
         if (hovered != null && this.waypointManager.getWaypoints().contains(hovered)) {
-            entry = new Popup.PopupEntry(I18nUtils.getString("selectServer.edit"), 4, true, true);
+            entry = new Popup.PopupEntry(I18n.translate("selectServer.edit"), 4, true, true);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString("selectServer.delete"), 5, true, true);
+            entry = new Popup.PopupEntry(I18n.translate("selectServer.delete"), 5, true, true);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
+            entry = new Popup.PopupEntry(I18n.translate(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
         } else {
-            entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.newwaypoint"), 0, true, true);
+            entry = new Popup.PopupEntry(I18n.translate("minimap.waypoints.newwaypoint"), 0, true, true);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18nUtils.getString(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
+            entry = new Popup.PopupEntry(I18n.translate(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
         }
         entries.add(entry);
-        entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.teleportto"), 3, true, true);
+        entry = new Popup.PopupEntry(I18n.translate("minimap.waypoints.teleportto"), 3, true, true);
         entries.add(entry);
-        entry = new Popup.PopupEntry(I18nUtils.getString("minimap.waypoints.share"), 2, true, true);
+        entry = new Popup.PopupEntry(I18n.translate("minimap.waypoints.share"), 2, true, true);
         entries.add(entry);
 
         this.createPopup(x, y, directX, directY, entries);

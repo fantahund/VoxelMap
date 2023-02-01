@@ -12,7 +12,6 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -21,6 +20,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -89,8 +89,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.addDrawableChild(this.waypointY);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         this.addDrawableChild(this.buttonEnabled = new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY, 100, 20, Text.literal("Enabled: " + (this.waypoint.enabled ? "On" : "Off")), button -> this.waypoint.enabled = !this.waypoint.enabled, this));
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, Text.literal(I18nUtils.getString("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 48, 100, 20, Text.literal(I18nUtils.getString("minimap.waypoints.sortbyicon") + ":     "), button -> this.choosingIcon = true, this));
+        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, Text.literal(I18n.translate("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
+        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 48, 100, 20, Text.literal(I18n.translate("minimap.waypoints.sortbyicon") + ":     "), button -> this.choosingIcon = true, this));
         this.doneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("addServer.add"), button -> this.acceptWaypoint(), this);
         this.addDrawableChild(this.doneButton);
         this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> this.cancelWaypoint(), this));
@@ -279,17 +279,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         super.drawMap(matrices);
         float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
         this.tooltip = null;
-        this.buttonEnabled.setMessage(Text.literal(I18nUtils.getString("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18nUtils.getString("options.on") : I18nUtils.getString("options.off"))));
+        this.buttonEnabled.setMessage(Text.literal(I18n.translate("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.translate("options.on") : I18n.translate("options.off"))));
         if (!this.choosingColor && !this.choosingIcon) {
             this.renderBackground(matrices);
         }
 
         this.dimensionList.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18nUtils.getString("minimap.waypoints.new") : I18nUtils.getString("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
+        drawCenteredText(matrices, this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.translate("minimap.waypoints.new") : I18n.translate("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
         this.waypointName.render(matrices, mouseX, mouseY, delta);
         this.waypointX.render(matrices, mouseX, mouseY, delta);
         this.waypointZ.render(matrices, mouseX, mouseY, delta);

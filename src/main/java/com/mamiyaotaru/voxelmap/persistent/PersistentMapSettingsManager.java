@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
+import net.minecraft.client.resource.language.I18n;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -70,7 +70,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
 
     @Override
     public String getKeyText(EnumOptionsMinimap options) {
-        String s = I18nUtils.getString(options.getName()) + ": ";
+        String s = I18n.translate(options.getName()) + ": ";
         if (options.isFloat()) {
             float f = this.getOptionFloatValue(options);
             if (options == EnumOptionsMinimap.MINZOOM) {
@@ -88,7 +88,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
 
         if (options.isBoolean()) {
             boolean flag = this.getOptionBooleanValue(options);
-            return flag ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
+            return flag ? s + I18n.translate("options.on") : s + I18n.translate("options.off");
         } else {
             return s;
         }

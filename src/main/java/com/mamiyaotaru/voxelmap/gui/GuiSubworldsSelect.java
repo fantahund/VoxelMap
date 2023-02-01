@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -13,6 +12,7 @@ import net.minecraft.client.input.KeyboardInput;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.recipebook.ClientRecipeBook;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -67,8 +67,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         int xSpacing = (this.width - buttonsPerRow * buttonWidth) / 2;
         ButtonWidget cancelBtn = new ButtonWidget.Builder(Text.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(null)).dimensions(centerX - 100, this.height - 30, 200, 20).build();
         this.addDrawableChild(cancelBtn);
-        final Collator collator = I18nUtils.getLocaleAwareCollator();
-        knownSubworldNames.sort((name1, name2) -> -collator.compare(name1, name2));
+        knownSubworldNames.sort((name1, name2) -> -String.CASE_INSENSITIVE_ORDER.compare(name1, name2));
         int numKnownSubworlds = knownSubworldNames.size();
         int completeRows = (int) Math.floor((float) (numKnownSubworlds + 1) / buttonsPerRow);
         int lastRowShiftBy = (int) (Math.ceil((float) (numKnownSubworlds + 1) / buttonsPerRow) * buttonsPerRow - (numKnownSubworlds + 1));
@@ -94,7 +93,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         int numButtons = selectButtons.length - 1;
         int i = (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth;
         if (!this.newWorld) {
-            selectButtons[numButtons] = new ButtonWidget.Builder(Text.literal("< " + I18nUtils.getString("worldmap.multiworld.newname") + " >"), button -> {
+            selectButtons[numButtons] = new ButtonWidget.Builder(Text.literal("< " + I18n.translate("worldmap.multiworld.newname") + " >"), button -> {
                 this.newWorld = true;
                 this.newNameField.setFocused(true);
             }).dimensions(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20).build();

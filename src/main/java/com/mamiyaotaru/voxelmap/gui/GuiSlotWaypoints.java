@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -96,8 +95,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
                 this.waypoints.sort(Collections.reverseOrder());
             }
         } else if (sortKey == 2) {
-            final Collator collator = I18nUtils.getLocaleAwareCollator();
-            this.waypoints.sort((waypointEntry1, waypointEntry2) -> collator.compare(waypointEntry1.waypoint.name, waypointEntry2.waypoint.name) * order);
+            this.waypoints.sort((waypointEntry1, waypointEntry2) -> String.CASE_INSENSITIVE_ORDER.compare(waypointEntry1.waypoint.name, waypointEntry2.waypoint.name) * order);
         } else if (sortKey == 4) {
             this.waypoints.sort((waypointEntry1, waypointEntry2) -> {
                 Waypoint waypoint1 = waypointEntry1.waypoint;

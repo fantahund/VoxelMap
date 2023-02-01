@@ -3,10 +3,10 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -36,7 +36,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         }
 
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
-        this.screenTitle = I18nUtils.getString("controls.minimap.title");
+        this.screenTitle = I18n.translate("controls.minimap.title");
     }
 
     protected void controlButtonClicked(int id) {
@@ -111,8 +111,8 @@ public class GuiMinimapControls extends GuiScreenMinimap {
             drawStringWithShadow(matrices, this.getFontRenderer(), this.options.getKeyBindingDescription(keyCounter), leftBorder + keyCounter % 2 * 160 + 70 + 6, this.getHeight() / 6 + 24 * (keyCounter >> 1) + 7, -1);
         }
 
-        drawCenteredText(matrices, this.getFontRenderer(), I18nUtils.getString("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() / 6 + 115, 16777215);
-        drawCenteredText(matrices, this.getFontRenderer(), I18nUtils.getString("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() / 6 + 129, 16777215);
+        drawCenteredText(matrices, this.getFontRenderer(), I18n.translate("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() / 6 + 115, 16777215);
+        drawCenteredText(matrices, this.getFontRenderer(), I18n.translate("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() / 6 + 129, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
     }
 }

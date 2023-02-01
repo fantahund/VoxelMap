@@ -3,9 +3,9 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 
@@ -201,19 +201,19 @@ public class MapSettingsManager implements ISettingsManager {
 
     @Override
     public String getKeyText(EnumOptionsMinimap options) {
-        String s = I18nUtils.getString(options.getName()) + ": ";
+        String s = I18n.translate(options.getName()) + ": ";
         if (options.isFloat()) {
             float f = this.getOptionFloatValue(options);
             if (options == EnumOptionsMinimap.ZOOM) {
                 return s + (int) f;
             } else if (options == EnumOptionsMinimap.WAYPOINTDISTANCE) {
-                return f < 0.0F ? s + I18nUtils.getString("options.minimap.waypoints.infinite") : s + (int) f;
+                return f < 0.0F ? s + I18n.translate("options.minimap.waypoints.infinite") : s + (int) f;
             } else {
-                return f == 0.0F ? s + I18nUtils.getString("options.off") : s + (int) f + "%";
+                return f == 0.0F ? s + I18n.translate("options.off") : s + (int) f + "%";
             }
         } else if (options.isBoolean()) {
             boolean flag = this.getOptionBooleanValue(options);
-            return flag ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
+            return flag ? s + I18n.translate("options.on") : s + I18n.translate("options.off");
         } else if (options.isList()) {
             String state = this.getOptionListValue(options);
             return s + state;
@@ -255,40 +255,40 @@ public class MapSettingsManager implements ISettingsManager {
         switch (par1EnumOptions) {
             case TERRAIN -> {
                 if (this.slopemap && this.heightmap) {
-                    return I18nUtils.getString("options.minimap.terrain.both");
+                    return I18n.translate("options.minimap.terrain.both");
                 } else if (this.heightmap) {
-                    return I18nUtils.getString("options.minimap.terrain.height");
+                    return I18n.translate("options.minimap.terrain.height");
                 } else {
                     if (this.slopemap) {
-                        return I18nUtils.getString("options.minimap.terrain.slope");
+                        return I18n.translate("options.minimap.terrain.slope");
                     }
 
-                    return I18nUtils.getString("options.off");
+                    return I18n.translate("options.off");
                 }
             }
             case BEACONS -> {
                 if (this.showBeacons && this.showWaypoints) {
-                    return I18nUtils.getString("options.minimap.ingamewaypoints.both");
+                    return I18n.translate("options.minimap.ingamewaypoints.both");
                 } else if (this.showBeacons) {
-                    return I18nUtils.getString("options.minimap.ingamewaypoints.beacons");
+                    return I18n.translate("options.minimap.ingamewaypoints.beacons");
                 } else {
                     if (this.showWaypoints) {
-                        return I18nUtils.getString("options.minimap.ingamewaypoints.signs");
+                        return I18n.translate("options.minimap.ingamewaypoints.signs");
                     }
 
-                    return I18nUtils.getString("options.off");
+                    return I18n.translate("options.off");
                 }
             }
             case LOCATION -> {
                 if (this.mapCorner == 0) {
-                    return I18nUtils.getString("options.minimap.location.topleft");
+                    return I18n.translate("options.minimap.location.topleft");
                 } else if (this.mapCorner == 1) {
-                    return I18nUtils.getString("options.minimap.location.topright");
+                    return I18n.translate("options.minimap.location.topright");
                 } else if (this.mapCorner == 2) {
-                    return I18nUtils.getString("options.minimap.location.bottomright");
+                    return I18n.translate("options.minimap.location.bottomright");
                 } else {
                     if (this.mapCorner == 3) {
-                        return I18nUtils.getString("options.minimap.location.bottomleft");
+                        return I18n.translate("options.minimap.location.bottomleft");
                     }
 
                     return "Error";
@@ -296,18 +296,18 @@ public class MapSettingsManager implements ISettingsManager {
             }
             case SIZE -> {
                 if (this.sizeModifier == -1) {
-                    return I18nUtils.getString("options.minimap.size.small");
+                    return I18n.translate("options.minimap.size.small");
                 } else if (this.sizeModifier == 0) {
-                    return I18nUtils.getString("options.minimap.size.medium");
+                    return I18n.translate("options.minimap.size.medium");
                 } else if (this.sizeModifier == 1) {
-                    return I18nUtils.getString("options.minimap.size.large");
+                    return I18n.translate("options.minimap.size.large");
                 } else if (this.sizeModifier == 2) {
-                    return I18nUtils.getString("options.minimap.size.xl");
+                    return I18n.translate("options.minimap.size.xl");
                 } else if (this.sizeModifier == 3) {
-                    return I18nUtils.getString("options.minimap.size.xxl");
+                    return I18n.translate("options.minimap.size.xxl");
                 } else {
                     if (this.sizeModifier == 4) {
-                        return I18nUtils.getString("options.minimap.size.xxxl");
+                        return I18n.translate("options.minimap.size.xxxl");
                     }
 
                     return "error";
@@ -315,12 +315,12 @@ public class MapSettingsManager implements ISettingsManager {
             }
             case BIOMEOVERLAY -> {
                 if (this.biomeOverlay == 0) {
-                    return I18nUtils.getString("options.off");
+                    return I18n.translate("options.off");
                 } else if (this.biomeOverlay == 1) {
-                    return I18nUtils.getString("options.minimap.biomeoverlay.solid");
+                    return I18n.translate("options.minimap.biomeoverlay.solid");
                 } else {
                     if (this.biomeOverlay == 2) {
-                        return I18nUtils.getString("options.minimap.biomeoverlay.transparent");
+                        return I18n.translate("options.minimap.biomeoverlay.transparent");
                     }
 
                     return "error";
@@ -328,12 +328,12 @@ public class MapSettingsManager implements ISettingsManager {
             }
             case DEATHPOINTS -> {
                 if (this.deathpoints == 0) {
-                    return I18nUtils.getString("options.off");
+                    return I18n.translate("options.off");
                 } else if (this.deathpoints == 1) {
-                    return I18nUtils.getString("options.minimap.waypoints.deathpoints.mostrecent");
+                    return I18n.translate("options.minimap.waypoints.deathpoints.mostrecent");
                 } else {
                     if (this.deathpoints == 2) {
-                        return I18nUtils.getString("options.minimap.waypoints.deathpoints.all");
+                        return I18n.translate("options.minimap.waypoints.deathpoints.all");
                     }
 
                     return "error";
@@ -435,7 +435,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public String getKeyBindingDescription(int keybindIndex) {
-        return this.keyBindings[keybindIndex].getTranslationKey().equals("key.minimap.voxelmapmenu") ? I18nUtils.getString("key.minimap.menu") : I18nUtils.getString(this.keyBindings[keybindIndex].getTranslationKey());
+        return this.keyBindings[keybindIndex].getTranslationKey().equals("key.minimap.voxelmapmenu") ? I18n.translate("key.minimap.menu") : I18n.translate(this.keyBindings[keybindIndex].getTranslationKey());
     }
 
     public Text getKeybindDisplayString(int keybindIndex) {

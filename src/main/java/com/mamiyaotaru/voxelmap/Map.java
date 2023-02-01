@@ -15,7 +15,6 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
@@ -47,6 +46,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
@@ -281,7 +281,7 @@ public class Map implements Runnable, IChangeObserver {
 
     public void newWorldName() {
         String subworldName = this.waypointManager.getCurrentSubworldDescriptor(true);
-        StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18nUtils.getString("worldmap.multiworld.newworld")).append(":").append(" ");
+        StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18n.translate("worldmap.multiworld.newworld")).append(":").append(" ");
         if (subworldName.isEmpty() && this.waypointManager.isMultiworld()) {
             subworldNameBuilder.append("???");
         } else if (!subworldName.isEmpty()) {
@@ -367,15 +367,15 @@ public class Map implements Runnable, IChangeObserver {
         if (VoxelConstants.getMinecraft().currentScreen == null && this.options.keyBindFullscreen.wasPressed()) {
             this.fullscreenMap = !this.fullscreenMap;
             if (this.zoom == 4) {
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (0.25x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (0.25x)";
             } else if (this.zoom == 3) {
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (0.5x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (0.5x)";
             } else if (this.zoom == 2) {
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (1.0x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (1.0x)";
             } else if (this.zoom == 1) {
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (2.0x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (2.0x)";
             } else {
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (4.0x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (4.0x)";
             }
         }
 
@@ -453,23 +453,23 @@ public class Map implements Runnable, IChangeObserver {
     private void cycleZoomLevel() {
         if (this.options.zoom == 4) {
             this.options.zoom = 3;
-            this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (0.5x)";
+            this.error = I18n.translate("minimap.ui.zoomlevel") + " (0.5x)";
         } else if (this.options.zoom == 3) {
             this.options.zoom = 2;
-            this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (1.0x)";
+            this.error = I18n.translate("minimap.ui.zoomlevel") + " (1.0x)";
         } else if (this.options.zoom == 2) {
             this.options.zoom = 1;
-            this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (2.0x)";
+            this.error = I18n.translate("minimap.ui.zoomlevel") + " (2.0x)";
         } else if (this.options.zoom == 1) {
             this.options.zoom = 0;
-            this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (4.0x)";
+            this.error = I18n.translate("minimap.ui.zoomlevel") + " (4.0x)";
         } else if (this.options.zoom == 0) {
             if (this.multicore && VoxelConstants.getMinecraft().options.getSimulationDistance().getValue() > 8) {
                 this.options.zoom = 4;
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (0.25x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (0.25x)";
             } else {
                 this.options.zoom = 3;
-                this.error = I18nUtils.getString("minimap.ui.zoomlevel") + " (0.5x)";
+                this.error = I18n.translate("minimap.ui.zoomlevel") + " (0.5x)";
             }
         }
 

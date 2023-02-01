@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
+import net.minecraft.client.resource.language.I18n;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -117,9 +117,9 @@ public class RadarSettingsManager implements ISubSettingsManager {
 
     @Override
     public String getKeyText(EnumOptionsMinimap options) {
-        String s = I18nUtils.getString(options.getName()) + ": ";
+        String s = I18n.translate(options.getName()) + ": ";
         if (options.isBoolean()) {
-            return this.getOptionBooleanValue(options) ? s + I18nUtils.getString("options.on") : s + I18nUtils.getString("options.off");
+            return this.getOptionBooleanValue(options) ? s + I18n.translate("options.on") : s + I18n.translate("options.off");
         } else if (options.isList()) {
             String state = this.getOptionListValue(options);
             return s + state;
@@ -148,10 +148,10 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {
         if (Objects.requireNonNull(par1EnumOptions) == EnumOptionsMinimap.RADARMODE) {
             if (this.radarMode == 2) {
-                return I18nUtils.getString("options.minimap.radar.radarmode.full");
+                return I18n.translate("options.minimap.radar.radarmode.full");
             }
 
-            return I18nUtils.getString("options.minimap.radar.radarmode.simple");
+            return I18n.translate("options.minimap.radar.radarmode.simple");
         }
         throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
     }

@@ -7,12 +7,12 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.I18nUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.Text;
@@ -65,7 +65,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.addDrawableChild(this.buttonSortDistance = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbydistance"), button -> this.sortClicked(3)).dimensions(this.getWidth() / 2 - 77, 34, 77, 20).build());
         this.addDrawableChild(this.buttonSortCreated = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbycreated"), button -> this.sortClicked(1)).dimensions(this.getWidth() / 2, 34, 77, 20).build());
         this.addDrawableChild(this.buttonSortColor = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbycolor"), button -> this.sortClicked(4)).dimensions(this.getWidth() / 2 + 77, 34, 77, 20).build());
-        int filterStringWidth = this.getFontRenderer().getWidth(I18nUtils.getString("minimap.waypoints.filter") + ":");
+        int filterStringWidth = this.getFontRenderer().getWidth(I18n.translate("minimap.waypoints.filter") + ":");
         this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 80, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addDrawableChild(this.filter);
@@ -94,25 +94,25 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.waypointList.sortBy(sortKey, ascending);
         String arrow = ascending ? "↑" : "↓";
         if (sortKey == 2) {
-            this.buttonSortName.setMessage(Text.literal(arrow + " " + I18nUtils.getString("minimap.waypoints.sortbyname") + " " + arrow));
+            this.buttonSortName.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbyname") + " " + arrow));
         } else {
             this.buttonSortName.setMessage(Text.translatable("minimap.waypoints.sortbyname"));
         }
 
         if (sortKey == 3) {
-            this.buttonSortDistance.setMessage(Text.literal(arrow + " " + I18nUtils.getString("minimap.waypoints.sortbydistance") + " " + arrow));
+            this.buttonSortDistance.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbydistance") + " " + arrow));
         } else {
             this.buttonSortDistance.setMessage(Text.translatable("minimap.waypoints.sortbydistance"));
         }
 
         if (sortKey == 1) {
-            this.buttonSortCreated.setMessage(Text.literal(arrow + " " + I18nUtils.getString("minimap.waypoints.sortbycreated") + " " + arrow));
+            this.buttonSortCreated.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbycreated") + " " + arrow));
         } else {
             this.buttonSortCreated.setMessage(Text.translatable("minimap.waypoints.sortbycreated"));
         }
 
         if (sortKey == 4) {
-            this.buttonSortColor.setMessage(Text.literal(arrow + " " + I18nUtils.getString("minimap.waypoints.sortbycolor") + " " + arrow));
+            this.buttonSortColor.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbycolor") + " " + arrow));
         } else {
             this.buttonSortColor.setMessage(Text.translatable("minimap.waypoints.sortbycolor"));
         }
@@ -275,7 +275,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.waypointList.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18nUtils.getString("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
+        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
         this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
