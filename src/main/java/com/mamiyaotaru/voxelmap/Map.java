@@ -1543,114 +1543,77 @@ public class Map implements Runnable, IChangeObserver {
             scale = 1.4142F;
         }
 
-        if (GLUtils.hasAlphaBits) {
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            OpenGL.glColorMask(false, false, false, true);
-            OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            OpenGL.glClear(16384);
-            OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-            OpenGL.glColorMask(true, true, true, true);
-            GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
-            GLUtils.drawPre();
-            GLUtils.setMap(x, y, 128);
-            GLUtils.drawPost();
-            OpenGL.glBlendFunc(772, 773);
-            synchronized (this.coordinateLock) {
-                if (this.imageChanged) {
-                    this.imageChanged = false;
-                    this.mapImages[this.zoom].write();
-                    this.lastImageX = this.lastX;
-                    this.lastImageZ = this.lastZ;
-                }
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
+        Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
+        RenderSystem.setProjectionMatrix(matrix4f);
+        GLUtils.bindFrameBuffer();
+        OpenGL.glViewport(0, 0, 512, 512);
+        matrixStack.push();
+        matrixStack.loadIdentity();
+        matrixStack.translate(0.0, 0.0, -2000.0);
+        RenderSystem.applyModelViewMatrix();
+        OpenGL.glDepthMask(false);
+        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+        OpenGL.glClear(16384);
+        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
+        GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
+        GLUtils.drawPre();
+        GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
+        GLUtils.ldrawthree( (256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
+        GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
+        GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
+        BufferBuilder bb = Tessellator.getInstance().getBuffer();
+        //BufferRenderer.drawWithShader(bb.end());
+        BufferRenderer.drawWithGlobalProgram(bb.end());
+        OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
+        synchronized (this.coordinateLock) {
+            if (this.imageChanged) {
+                this.imageChanged = false;
+                this.mapImages[this.zoom].write();
+                this.lastImageX = this.lastX;
+                this.lastImageZ = this.lastZ;
             }
-
-            float multi = (float) (1.0 / this.zoomScaleAdjusted);
-            this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
-            this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
-            this.percentX *= multi;
-            this.percentY *= multi;
-            GLUtils.disp2(this.mapImages[this.zoom].getIndex());
-            matrixStack.push();
-            matrixStack.translate(x, y, 0.0);
-            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(!this.options.rotates ? this.northRotate : -this.direction));
-            matrixStack.translate(-x, -y, 0.0);
-            matrixStack.translate(-this.percentX, -this.percentY, 0.0);
-            RenderSystem.applyModelViewMatrix();
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        } else {
-            OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
-            Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
-            RenderSystem.setProjectionMatrix(matrix4f);
-            GLUtils.bindFrameBuffer();
-            OpenGL.glViewport(0, 0, 512, 512);
-            matrixStack.push();
-            matrixStack.loadIdentity();
-            matrixStack.translate(0.0, 0.0, -2000.0);
-            RenderSystem.applyModelViewMatrix();
-            OpenGL.glDepthMask(false);
-            OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-            OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            OpenGL.glClear(16384);
-            OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-            GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
-            GLUtils.drawPre();
-            GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
-            GLUtils.ldrawthree( (256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
-            GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
-            GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
-            BufferBuilder bb = Tessellator.getInstance().getBuffer();
-            //BufferRenderer.drawWithShader(bb.end());
-            BufferRenderer.drawWithGlobalProgram(bb.end());
-            OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
-            synchronized (this.coordinateLock) {
-                if (this.imageChanged) {
-                    this.imageChanged = false;
-                    this.mapImages[this.zoom].write();
-                    this.lastImageX = this.lastX;
-                    this.lastImageZ = this.lastZ;
-                }
-            }
-
-            float multi = (float) (1.0 / this.zoomScale);
-            this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
-            this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
-            this.percentX *= multi;
-            this.percentY *= multi;
-            GLUtils.disp2(this.mapImages[this.zoom].getIndex());
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            matrixStack.push();
-            matrixStack.translate(256.0, 256.0, 0.0);
-            if (!this.options.rotates) {
-                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((-this.northRotate)));
-            } else {
-                matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.direction));
-            }
-
-            matrixStack.translate(-256.0, -256.0, 0.0);
-            matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0);
-            RenderSystem.applyModelViewMatrix();
-            GLUtils.drawPre();
-            GLUtils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
-            GLUtils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
-            GLUtils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
-            GLUtils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
-            GLUtils.drawPost();
-            matrixStack.pop();
-            RenderSystem.applyModelViewMatrix();
-            OpenGL.glDepthMask(true);
-            OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-            GLUtils.unbindFrameBuffer();
-            OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
-            matrixStack.pop();
-            RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
-            matrixStack.push();
-            OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-            GLUtils.disp2(GLUtils.fboTextureID);
         }
+
+        float multi = (float) (1.0 / this.zoomScale);
+        this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
+        this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
+        this.percentX *= multi;
+        this.percentY *= multi;
+        GLUtils.disp2(this.mapImages[this.zoom].getIndex());
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        matrixStack.push();
+        matrixStack.translate(256.0, 256.0, 0.0);
+        if (!this.options.rotates) {
+            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((-this.northRotate)));
+        } else {
+            matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.direction));
+        }
+
+        matrixStack.translate(-256.0, -256.0, 0.0);
+        matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0);
+        RenderSystem.applyModelViewMatrix();
+        GLUtils.drawPre();
+        GLUtils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
+        GLUtils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
+        GLUtils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
+        GLUtils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
+        GLUtils.drawPost();
+        matrixStack.pop();
+        RenderSystem.applyModelViewMatrix();
+        OpenGL.glDepthMask(true);
+        OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        GLUtils.unbindFrameBuffer();
+        OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
+        matrixStack.pop();
+        RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
+        matrixStack.push();
+        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
+        GLUtils.disp2(GLUtils.fboTextureID);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / this.scWidth;
         OpenGL.glEnable(3089);

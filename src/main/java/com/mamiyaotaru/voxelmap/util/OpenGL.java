@@ -30,6 +30,7 @@ public final class OpenGL {
             GL11_GL_TEXTURE_2D           = 0xDE1,
             GL11_GL_TRANSFORM_BIT        = 0x1000,
             GL11_GL_TEXTURE_HEIGHT       = 0x1001,
+            GL11_GL_BYTE                 = 0x1400,
             GL11_GL_UNSIGNED_BYTE        = 0x1401,
             GL11_GL_RGBA                 = 0x1908,
             GL11_GL_NEAREST              = 0x2600,
@@ -51,8 +52,22 @@ public final class OpenGL {
             GL12_GL_UNSIGNED_INT_8_8_8_8_REV = 0x8367;
 
     public static final int
-            GL30_GL_READ_FRAMEBUFFER         = 0x8CA8,
-            GL30_GL_DRAW_FRAMEBUFFER         = 0x8CA9;
+            GL14_GL_DEPTH_COMPONENT24 = 0x81A6;
+
+    public static final int
+            GL30_GL_FRAMEBUFFER_BINDING                       = 0x8CA6,
+            GL30_GL_READ_FRAMEBUFFER_BINDING                  = 0x8CAA,
+            GL30_GL_FRAMEBUFFER                               = 0x8D40,
+            GL30_GL_READ_FRAMEBUFFER                          = 0x8CA8,
+            GL30_GL_DRAW_FRAMEBUFFER                          = 0x8CA9,
+            GL30_GL_FRAMEBUFFER_COMPLETE                      = 0x8CD5,
+            GL30_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT         = 0x8CD6,
+            GL30_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT = 0x8CD7,
+            GL30_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER        = 0x8CDB,
+            GL30_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER        = 0x8CDC,
+            GL30_GL_COLOR_ATTACHMENT0                         = 0x8CE0,
+            GL30_GL_DEPTH_ATTACHMENT                          = 0x8D00,
+            GL30_GL_RENDERBUFFER                              = 0x8D41;
 
     private OpenGL() {}
 
@@ -142,4 +157,20 @@ public final class OpenGL {
     public static void glTexImage2D(int target, int level, int internalformat, int width, int height, int border, int format, int type, ByteBuffer pixels) { GL11.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels); }
 
     public static void glTexSubImage2D(int target, int level, int xoffset, int yoffset, int width, int height, int format, int type, IntBuffer pixels) { GL11.glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels); }
+
+    public static int glGenFramebuffers() { return GL30.glGenFramebuffers(); }
+
+    public static void glFramebufferRenderbuffer(int target, int attachment, int renderbuffertarget, int renderbuffer) { GL30.glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer); }
+
+    public static void glBindFramebuffer(int target, int framebuffer) { GL30.glBindFramebuffer(target, framebuffer); }
+
+    public static void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) { GL30.glFramebufferTexture2D(target, attachment, textarget, texture, level); }
+
+    public static int glGenRenderbuffers() { return GL30.glGenRenderbuffers(); }
+
+    public static void glBindRenderbuffer(int target, int renderbuffer) { GL30.glBindRenderbuffer(target, renderbuffer); }
+
+    public static void glRenderbufferStorage(int target, int internalformat, int width, int height) { GL30.glRenderbufferStorage(target, internalformat, width, height); }
+
+    public static int glCheckFramebufferStatus(int target) { return GL30.glCheckFramebufferStatus(target); }
 }
