@@ -122,7 +122,7 @@ public class ImageUtils {
             OpenGL.glPushAttrib(OpenGL.GL11_GL_TRANSFORM_BIT);
             RenderSystem.backupProjectionMatrix();
             OpenGL.glViewport(0, 0, fboWidth, fboHeight);
-            Matrix4f matrix4f = MathUtils.projectionMatrix(fboWidth, (-fboHeight), 1000.0F, 3000.0F);
+            Matrix4f matrix4f = new Matrix4f().ortho(fboWidth, (-(fboHeight)), 1000.0F, 3000.0F, -1.0f, 1.0f);
             RenderSystem.setProjectionMatrix(matrix4f);
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.loadIdentity();

@@ -14,7 +14,6 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
-import com.mamiyaotaru.voxelmap.util.MathUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -1250,7 +1249,7 @@ public class Radar implements IRadar {
 
         RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
-        fullbright2 = MathUtils.transform(fullbright2, matrixStack.peek().getPositionMatrix());
+        fullbright2.mul(matrixStack.peek().getPositionMatrix());
         Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
 
