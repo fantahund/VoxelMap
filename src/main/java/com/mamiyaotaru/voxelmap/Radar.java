@@ -543,8 +543,7 @@ public class Radar implements IRadar {
     public void calculateMobs() {
         this.contacts.clear();
 
-        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
-        Iterable<Entity> entities = optionalClientWorld.isEmpty() ? new ArrayList<>() : optionalClientWorld.get().getEntities();
+        Iterable<Entity> entities = VoxelConstants.getClientWorld().getEntities();
 
         for (Entity entity : entities) {
             try {

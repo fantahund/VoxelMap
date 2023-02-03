@@ -36,6 +36,9 @@ public final class VoxelConstants {
     public static Optional<World> getWorldByKey(RegistryKey<World> key) { return getIntegratedServer().map(integratedServer -> integratedServer.getWorld(key)); }
 
     @NotNull
+    public static ClientWorld getClientWorld() { return getPlayer().clientWorld; }
+
+    @NotNull
     public static ClientPlayerEntity getPlayer() {
         ClientPlayerEntity player = getMinecraft().player;
 
@@ -48,9 +51,6 @@ public final class VoxelConstants {
 
         return player;
     }
-
-    @NotNull
-    public static Optional<ClientWorld> getClientWorld() { return Optional.ofNullable(getMinecraft().world); }
 
     @NotNull
     public static VoxelMap getVoxelMapInstance() { return VOXELMAP_INSTANCE; }

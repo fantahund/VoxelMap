@@ -111,10 +111,7 @@ public class RadarSimple implements IRadar {
     public void calculateMobs() {
         this.contacts.clear();
 
-        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
-
-        if (optionalClientWorld.isEmpty()) return;
-        for (Entity entity : optionalClientWorld.get().getEntities()) {
+        for (Entity entity : VoxelConstants.getClientWorld().getEntities()) {
             try {
                 if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();

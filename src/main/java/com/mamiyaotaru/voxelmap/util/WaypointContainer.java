@@ -134,11 +134,9 @@ public class WaypointContainer {
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, float par8, Matrix4f matrix4f) {
-        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
-
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        int height = optionalClientWorld.map(WorldView::getHeight).orElse(384);
+        int height = VoxelConstants.getClientWorld().getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;

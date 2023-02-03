@@ -35,16 +35,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private final WaypointManager waypointManager;
 
     public GuiSubworldsSelect(Screen parent) {
-        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
-
-        if (optionalClientWorld.isEmpty()) {
-            String error = "ClientWorld not present while expected to be!";
-
-            VoxelConstants.getLogger().fatal(error);
-            throw new IllegalStateException(error);
-        }
-
-        ClientWorld clientWorld = optionalClientWorld.get();
+        ClientWorld clientWorld = VoxelConstants.getClientWorld();
 
         this.parent = parent;
         this.thePlayer = VoxelConstants.getPlayer();

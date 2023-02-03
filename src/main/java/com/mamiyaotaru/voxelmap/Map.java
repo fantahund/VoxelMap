@@ -813,7 +813,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
-        } else if (VoxelConstants.getPlayer().clientWorld.getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getPlayer().clientWorld.getDimension().hasSkyLight()) {
+        } else if (VoxelConstants.getClientWorld().getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getClientWorld().getDimension().hasSkyLight()) {
             boolean endPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;
@@ -912,7 +912,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
-        } else if (VoxelConstants.getPlayer().clientWorld.getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getPlayer().clientWorld.getDimension().hasSkyLight()) {
+        } else if (VoxelConstants.getClientWorld().getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getClientWorld().getDimension().hasSkyLight()) {
             boolean endPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;

@@ -150,10 +150,9 @@ public class ColorManager {
 
     public boolean checkForChanges() {
         boolean biomesChanged = false;
-        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
 
-        if (optionalClientWorld.isPresent() && optionalClientWorld.get() != this.world) {
-            this.world = optionalClientWorld.get();
+        if (VoxelConstants.getClientWorld() != this.world) {
+            this.world = VoxelConstants.getClientWorld();
             int largestBiomeID = 0;
 
             for (Biome biome : this.world.getRegistryManager().get(RegistryKeys.BIOME)) {
@@ -565,16 +564,7 @@ public class ColorManager {
                 if (blockPos == this.dummyBlockPos) {
                     tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
                 } else {
-                    Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
-
-                    if (optionalClientWorld.isEmpty()) {
-                        String error = "ClientWorld is not present while expected to be!";
-
-                        VoxelConstants.getLogger().fatal(error);
-                        throw new IllegalStateException(error);
-                    }
-
-                    ClientWorld clientWorld = optionalClientWorld.get();
+                    ClientWorld clientWorld = VoxelConstants.getClientWorld();
 
                     Chunk chunk = clientWorld.getChunk(blockPos);
                     if (chunk != null && !((WorldChunk) chunk).isEmpty() && clientWorld.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
