@@ -9,19 +9,11 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
     private final NativeImage image;
     private final long pointer;
 
-    public MutableNativeImageBackedTexture(NativeImage image) {
-        super(image);
-        this.image = image;
-        String info = image.toString();
-        String pointerString = info.substring(info.indexOf("(") + 1, info.indexOf("]") - 1);
-        this.pointer = Long.parseLong(pointerString);
-    }
-
     public MutableNativeImageBackedTexture(int width, int height, boolean useStb) {
         super(width, height, useStb);
         this.image = this.getImage();
         String info = this.image.toString();
-        String pointerString = info.substring(info.indexOf("@") + 1, info.indexOf("]") - 1);
+        String pointerString = info.substring(info.indexOf('@') + 1, info.indexOf(']') - 1);
         this.pointer = Long.parseLong(pointerString);
     }
 

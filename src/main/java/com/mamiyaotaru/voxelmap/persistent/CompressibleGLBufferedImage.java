@@ -100,16 +100,6 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
     }
 
     @Override
-    public void blank() {
-        if (this.isCompressed) {
-            this.decompress();
-        }
-
-        Arrays.fill(this.bytes, (byte) 0);
-        this.write();
-    }
-
-    @Override
     public void setRGB(int x, int y, int color) {
         if (this.isCompressed) {
             this.decompress();
@@ -122,30 +112,6 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
             this.bytes[index + 1] = (byte) ((color & 0xFF) * alpha / 255);
             this.bytes[index + 2] = (byte) ((color >> 8 & 0xFF) * alpha / 255);
             this.bytes[index + 3] = (byte) ((color >> 16 & 0xFF) * alpha / 255);
-        }
-    }
-
-    @Override
-    public void moveX(int x) {
-        synchronized (this.bufferLock) {
-            if (x > 0) {
-                System.arraycopy(this.bytes, x * 4, this.bytes, 0, this.bytes.length - x * 4);
-            } else if (x < 0) {
-                System.arraycopy(this.bytes, 0, this.bytes, -x * 4, this.bytes.length + x * 4);
-            }
-
-        }
-    }
-
-    @Override
-    public void moveY(int y) {
-        synchronized (this.bufferLock) {
-            if (y > 0) {
-                System.arraycopy(this.bytes, y * this.getWidth() * 4, this.bytes, 0, this.bytes.length - y * this.getWidth() * 4);
-            } else if (y < 0) {
-                System.arraycopy(this.bytes, 0, this.bytes, -y * this.getWidth() * 4, this.bytes.length + y * this.getWidth() * 4);
-            }
-
         }
     }
 

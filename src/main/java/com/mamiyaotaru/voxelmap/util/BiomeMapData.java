@@ -202,12 +202,4 @@ public class BiomeMapData extends AbstractMapData {
 
         }
     }
-
-    public void setData(int[] is) {
-        this.data = is;
-    }
-
-    public int[] getData() {
-        return this.data;
-    }
 }

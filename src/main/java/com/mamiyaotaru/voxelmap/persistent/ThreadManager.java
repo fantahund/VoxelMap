@@ -9,10 +9,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ThreadManager {
+public final class ThreadManager {
     static final int concurrentThreads = Math.min(Math.max(Runtime.getRuntime().availableProcessors() - 1, 1), 4);
     static final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     public static final ThreadPoolExecutor executorService = new ThreadPoolExecutor(concurrentThreads, concurrentThreads, 0L, TimeUnit.MILLISECONDS, queue);
+
+    private ThreadManager() {}
 
     public static void emptyQueue() {
         for (Runnable runnable : queue) {

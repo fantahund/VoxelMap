@@ -51,7 +51,7 @@ public class DimensionManager {
         if (dim.type == null) {
             try {
                 dim.type = world.getDimension();
-            } catch (Exception ignored) {}
+            } catch (RuntimeException ignored) {}
         }
 
     }

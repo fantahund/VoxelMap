@@ -27,11 +27,13 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CommandUtils {
+public final class CommandUtils {
     private static final int NEW_WAYPOINT_COMMAND_LENGTH = "/newWaypoint ".length();
     private static final int TELEPORT_COMMAND_LENGTH = "/ztp ".length();
     private static final Random generator = new Random();
     public static final Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
+
+    private CommandUtils() {}
 
     public static boolean checkForWaypoints(Text chat, MessageIndicator indicator) {
         if (indicator != null && indicator.loggedName() != null && indicator.loggedName().equals("ModifiedbyVoxelMap")) {
@@ -113,7 +115,7 @@ public class CommandUtils {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
 
             for (String pair : pairs) {
-                int splitIndex = pair.indexOf(":");
+                int splitIndex = pair.indexOf(':');
                 if (splitIndex != -1) {
                     String key = pair.substring(0, splitIndex).toLowerCase().trim();
                     String value = pair.substring(splitIndex + 1).trim();

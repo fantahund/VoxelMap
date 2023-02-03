@@ -38,7 +38,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void init() {
-        this.screenTitle = this.sharingWaypoint ? this.SHARE_WAYPOINT : this.SHARE_COORDINATES;
+        this.screenTitle = this.sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
         this.playerList = new GuiButtonRowListPlayers(this);
         int messageStringWidth = this.getFontRenderer().getWidth(I18n.translate("minimap.waypointshare.sharemessage") + ":");
         this.message = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, null);
@@ -89,10 +89,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return this.playerList.mouseScrolled(mouseX, mouseY, amount);
     }
 
-    public void accept(boolean b) {
+    public void accept(boolean t) {
         if (this.allClicked) {
             this.allClicked = false;
-            if (b) {
+            if (t) {
                 String combined = this.message.getText() + " " + this.locInfo;
                 if (combined.length() > 100) {
                     VoxelConstants.getPlayer().sendMessage(Text.of(this.message.getText()));
@@ -122,14 +122,14 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.drawMap(matrices);
+        drawMap(matrices);
         this.tooltip = null;
         this.playerList.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
-        drawTextWithShadow(matrices, this.getFontRenderer(), this.SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
+        drawTextWithShadow(matrices, this.getFontRenderer(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
         this.message.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.getFontRenderer(), this.SHARE_WITH, this.getWidth() / 2, 75, 16777215);
+        drawCenteredText(matrices, this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 16777215);
         drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
         this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {

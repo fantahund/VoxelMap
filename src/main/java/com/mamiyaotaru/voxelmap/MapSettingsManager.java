@@ -13,7 +13,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -130,7 +132,7 @@ public class MapSettingsManager implements ISettingsManager {
             }
 
             this.saveAll();
-        } catch (Exception exception) {
+        } catch (IOException exception) {
             VoxelConstants.getLogger().error(exception);
         }
 
@@ -139,7 +141,7 @@ public class MapSettingsManager implements ISettingsManager {
     private void bindKey(KeyBinding keyBinding, String id) {
         try {
             keyBinding.setBoundKey(InputUtil.fromTranslationKey(id));
-        } catch (Exception var4) {
+        } catch (RuntimeException var4) {
             VoxelConstants.getLogger().warn(id + " is not a valid keybinding");
         }
 
@@ -193,7 +195,7 @@ public class MapSettingsManager implements ISettingsManager {
             }
 
             out.close();
-        } catch (Exception var5) {
+        } catch (FileNotFoundException var5) {
             MessageUtils.chatInfo("§EError Saving Settings " + var5.getLocalizedMessage());
         }
 

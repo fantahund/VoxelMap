@@ -107,8 +107,6 @@ public final class OpenGL {
 
     public static void glColor4f(float red, float green, float blue, float alpha) { RenderSystem.setShaderColor(red, green, blue, alpha); }
 
-    public static void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) { RenderSystem.colorMask(red, green, blue, alpha); }
-
     public static void glDeleteTexture(int texture) { RenderSystem.deleteTexture(texture); }
 
     public static void glDepthMask(boolean mask) { RenderSystem.depthMask(mask); }

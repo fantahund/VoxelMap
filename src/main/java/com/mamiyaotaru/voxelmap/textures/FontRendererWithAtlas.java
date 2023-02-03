@@ -261,18 +261,18 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
                     }
 
                     if (this.strikethroughStyle) {
-                        this.vertexBuffer.vertex(this.posX, this.posY + (this.FONT_HEIGHT / 2), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (this.FONT_HEIGHT / 2), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (this.FONT_HEIGHT / 2) - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex(this.posX, this.posY + (this.FONT_HEIGHT / 2) - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX, this.posY + (FONT_HEIGHT / 2f), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (FONT_HEIGHT / 2f), 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + (FONT_HEIGHT / 2f) - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX, this.posY + (FONT_HEIGHT / 2f) - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
                     }
 
                     if (this.underlineStyle) {
                         int l = -1;
-                        this.vertexBuffer.vertex(this.posX + l, this.posY + this.FONT_HEIGHT, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + this.FONT_HEIGHT, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + this.FONT_HEIGHT - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
-                        this.vertexBuffer.vertex(this.posX + l, this.posY + this.FONT_HEIGHT - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + l, this.posY + FONT_HEIGHT, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + FONT_HEIGHT, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + widthOfRenderedChar, this.posY + FONT_HEIGHT - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
+                        this.vertexBuffer.vertex(this.posX + l, this.posY + FONT_HEIGHT - 1.0F, 0.0).texture(u, v).color(this.red, this.blue, this.green, this.alpha).next();
                     }
 
                     this.posX += ((int) widthOfRenderedChar);
@@ -302,40 +302,6 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
             this.posY = y;
             this.renderStringAtPos(text, shadow);
             return (int) this.posX;
-        }
-    }
-
-    public int getStringWidth(String string) {
-        if (string == null) {
-            return 0;
-        } else {
-            int totalWidth = 0;
-            boolean includeSpace = false;
-
-            for (int charIndex = 0; charIndex < string.length(); ++charIndex) {
-                char character = string.charAt(charIndex);
-                float characterWidth = this.getCharWidth(character);
-                if (characterWidth < 0.0F && charIndex < string.length() - 1) {
-                    ++charIndex;
-                    character = string.charAt(charIndex);
-                    if (character != 'l' && character != 'L') {
-                        if (character == 'r' || character == 'R') {
-                            includeSpace = false;
-                        }
-                    } else {
-                        includeSpace = true;
-                    }
-
-                    characterWidth = 0.0F;
-                }
-
-                totalWidth = (int) (totalWidth + characterWidth);
-                if (includeSpace && characterWidth > 0.0F) {
-                    ++totalWidth;
-                }
-            }
-
-            return totalWidth;
         }
     }
 

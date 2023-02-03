@@ -7,6 +7,7 @@ import net.minecraft.client.resource.language.I18n;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 public class PersistentMapSettingsManager implements ISubSettingsManager {
@@ -42,7 +43,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
             }
 
             in.close();
-        } catch (Exception ignored) {}
+        } catch (IOException ignored) {}
 
         for (int power = -3; power <= 5; ++power) {
             if (Math.pow(2.0, power) == this.minZoom) {

@@ -14,7 +14,6 @@ import net.minecraft.text.Text;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class FabricModVoxelMap implements ClientModInitializer {
     public static FabricModVoxelMap instance;
@@ -52,7 +51,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
         try {
             VoxelConstants.getVoxelMapInstance().onTickInGame(matrixStack);
-        } catch (Exception exception) {
+        } catch (RuntimeException exception) {
             VoxelConstants.getLogger().error(exception);
         }
     }
@@ -76,7 +75,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public static void onRenderHand(float partialTicks, long timeSlice, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
             VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-        } catch (Exception exception) {
+        } catch (RuntimeException exception) {
             VoxelConstants.getLogger().error(exception);
         }
 
@@ -122,8 +121,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
                 return true;
             } else if (channelName.equals("voxelmap:settings")) {
                 buffer.readByte(); // ignore
+                @SuppressWarnings("unchecked")
                 Map<String, Object> settings = new Gson().fromJson(buffer.readString(), Map.class);
-                for (Entry<String, Object> entry : settings.entrySet()) {
+                for (Map.Entry<String, Object> entry : settings.entrySet()) {
                     String setting = entry.getKey();
                     Object value = entry.getValue();
                     switch (setting) {

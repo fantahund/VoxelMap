@@ -75,22 +75,12 @@ public class Sprite {
         return this.maxU;
     }
 
-    public float getInterpolatedU(double xPos0to16) {
-        float uWidth = this.maxU - this.minU;
-        return this.minU + uWidth * (float) xPos0to16 / 16.0F;
-    }
-
     public float getMinV() {
         return this.minV;
     }
 
     public float getMaxV() {
         return this.maxV;
-    }
-
-    public float getInterpolatedV(double yPos0to16) {
-        float vHeight = this.maxV - this.minV;
-        return this.minV + vHeight * ((float) yPos0to16 / 16.0F);
     }
 
     public String getIconName() {

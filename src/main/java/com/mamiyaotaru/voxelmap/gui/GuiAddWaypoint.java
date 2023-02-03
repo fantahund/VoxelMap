@@ -104,41 +104,41 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     public void removed() {}
 
     protected void cancelWaypoint() {
-        this.waypoint.red = this.red;
-        this.waypoint.green = this.green;
-        this.waypoint.blue = this.blue;
-        this.waypoint.imageSuffix = this.suffix;
-        this.waypoint.enabled = this.enabled;
-        if (this.parentGui != null) {
-            this.parentGui.accept(false);
-        } else {
-            if (VoxelConstants.getMinecraft() == null) {
-                return;
-            }
-            VoxelConstants.getMinecraft().setScreen(null);
+        waypoint.red = red;
+        waypoint.green = green;
+        waypoint.blue = blue;
+        waypoint.imageSuffix = suffix;
+        waypoint.enabled = enabled;
+
+        if (parentGui != null) {
+            parentGui.accept(false);
+            return;
         }
 
+        VoxelConstants.getMinecraft().setScreen(null);
     }
 
     protected void acceptWaypoint() {
-        this.waypoint.name = this.waypointName.getText();
-        this.waypoint.setX(Integer.parseInt(this.waypointX.getText()));
-        this.waypoint.setZ(Integer.parseInt(this.waypointZ.getText()));
-        this.waypoint.setY(Integer.parseInt(this.waypointY.getText()));
-        if (this.parentGui != null) {
-            this.parentGui.accept(true);
-        } else {
-            if (this.editing) {
-                this.waypointManager.saveWaypoints();
-            } else {
-                this.waypointManager.addWaypoint(this.waypoint);
-            }
-            if (VoxelConstants.getMinecraft() == null) {
-                return;
-            }
-            VoxelConstants.getMinecraft().setScreen(null);
+        waypoint.name = waypointName.getText();
+        waypoint.setX(Integer.parseInt(waypointX.getText()));
+        waypoint.setZ(Integer.parseInt(waypointZ.getText()));
+        waypoint.setY(Integer.parseInt(waypointY.getText()));
+
+        if (parentGui != null) {
+            parentGui.accept(true);
+
+            return;
         }
 
+        if (editing) {
+            waypointManager.saveWaypoints();
+            VoxelConstants.getMinecraft().setScreen(null);
+
+            return;
+        }
+
+        waypointManager.addWaypoint(waypoint);
+        VoxelConstants.getMinecraft().setScreen(null);
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -193,7 +193,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             this.waypointZ.mouseClicked(mouseX, mouseY, button);
             this.waypointY.mouseClicked(mouseX, mouseY, button);
         } else if (this.choosingColor) {
-            if (mouseX >= (this.getWidth() / 2 - 128) && mouseX < (this.getWidth() / 2 + 128) && mouseY >= (this.getHeight() / 2 - 128) && mouseY < (this.getHeight() / 2 + 128)) {
+            if (mouseX >= (this.getWidth() / 2f - 128) && mouseX < (this.getWidth() / 2f + 128) && mouseY >= (this.getHeight() / 2f - 128) && mouseY < (this.getHeight() / 2f + 128)) {
                 int color = this.colorManager.getColorPicker().getRGB((int) mouseX - (this.getWidth() / 2 - 128), (int) mouseY - (this.getHeight() / 2 - 128));
                 this.waypoint.red = (color >> 16 & 0xFF) / 255.0F;
                 this.waypoint.green = (color >> 8 & 0xFF) / 255.0F;
@@ -201,36 +201,34 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 this.choosingColor = false;
             }
         } else if (this.choosingIcon) {
-            if (VoxelConstants.getMinecraft() != null) {
-                float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
-                TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
-                float scale = scScale / 2.0F;
-                float displayWidthFloat = chooser.getWidth() / scale;
-                float displayHeightFloat = chooser.getHeight() / scale;
-                if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
-                    float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
-                    scale *= adj;
-                    displayWidthFloat /= adj;
-                    displayHeightFloat /= adj;
-                }
+            float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
+            TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
+            float scale = scScale / 2.0F;
+            float displayWidthFloat = chooser.getWidth() / scale;
+            float displayHeightFloat = chooser.getHeight() / scale;
+            if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
+                float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
+                scale *= adj;
+                displayWidthFloat /= adj;
+                displayHeightFloat /= adj;
+            }
 
-                if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
-                    float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
-                    scale *= adj;
-                    displayWidthFloat /= adj;
-                    displayHeightFloat /= adj;
-                }
+            if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
+                float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
+                scale *= adj;
+                displayWidthFloat /= adj;
+                displayHeightFloat /= adj;
+            }
 
-                int displayWidth = (int) displayWidthFloat;
-                int displayHeight = (int) displayHeightFloat;
-                if (mouseX >= (this.getWidth() / 2 - displayWidth / 2) && mouseX < (this.getWidth() / 2 + displayWidth / 2) && mouseY >= (this.getHeight() / 2 - displayHeight / 2) && mouseY < (this.getHeight() / 2 + displayHeight / 2)) {
-                    float x = ((float) mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
-                    float y = ((float) mouseY - (this.getHeight() / 2 - displayHeight / 2)) * scale;
-                    Sprite icon = chooser.getIconAt(x, y);
-                    if (icon != chooser.getMissingImage()) {
-                        this.waypoint.imageSuffix = icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
-                        this.choosingIcon = false;
-                    }
+            int displayWidth = (int) displayWidthFloat;
+            int displayHeight = (int) displayHeightFloat;
+            if (mouseX >= (this.getWidth() / 2f - displayWidth / 2f) && mouseX < (this.getWidth() / 2f + displayWidth / 2f) && mouseY >= (this.getHeight() / 2f - displayHeight / 2f) && mouseY < (this.getHeight() / 2f + displayHeight / 2f)) {
+                float x = ((float) mouseX - (this.getWidth() / 2f - displayWidth / 2f)) * scale;
+                float y = ((float) mouseY - (this.getHeight() / 2f - displayHeight / 2f)) * scale;
+                Sprite icon = chooser.getIconAt(x, y);
+                if (icon != chooser.getMissingImage()) {
+                    this.waypoint.imageSuffix = icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
+                    this.choosingIcon = false;
                 }
             }
         }
@@ -273,10 +271,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        if (VoxelConstants.getMinecraft() == null) {
-            return;
-        }
-        super.drawMap(matrices);
+        drawMap(matrices);
         float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
         this.tooltip = null;
         this.buttonEnabled.setMessage(Text.literal(I18n.translate("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.translate("options.on") : I18n.translate("options.off"))));
@@ -305,7 +300,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         GLUtils.disp2(chooser.getGlId());
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
-        this.drawTexturedModalRect((this.getWidth() / 2 - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
+        this.drawTexturedModalRect((this.getWidth() / 2f - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         if (this.choosingColor || this.choosingIcon) {
             this.renderBackground(matrices);
         }
@@ -349,8 +344,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             drawTexture(matrices, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, displayWidth, displayHeight, 0.0F, 0.0F, chooser.getWidth(), chooser.getHeight(), chooser.getImageWidth(), chooser.getImageHeight());
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
-                float x = (mouseX - (this.getWidth() / 2 - displayWidth / 2)) * scale;
-                float y = (mouseY - (this.getHeight() / 2 - displayHeight / 2)) * scale;
+                float x = (mouseX - (this.getWidth() / 2f - displayWidth / 2f)) * scale;
+                float y = (mouseY - (this.getHeight() / 2f - displayHeight / 2f)) * scale;
                 icon = chooser.getIconAt(x, y);
                 if (icon != chooser.getMissingImage()) {
                     this.tooltip = Text.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));

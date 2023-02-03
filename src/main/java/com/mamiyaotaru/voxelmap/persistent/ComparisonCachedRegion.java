@@ -54,7 +54,6 @@ public class ComparisonCachedRegion {
 
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        boolean knownUnderground = false;
         this.underground = !world.getDimensionEffects().shouldBrightenLighting() && !world.getDimension().hasSkyLight() || world.getDimension().hasCeiling();
         this.x = x;
         this.z = z;

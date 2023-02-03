@@ -73,10 +73,10 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(confirmScreen);
     }
 
-    public void accept(boolean b) {
+    public void accept(boolean t) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (b) {
+            if (t) {
                 this.waypointManager.deleteSubworld(this.originalSubworldName);
             }
 
@@ -115,7 +115,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.drawMap(matrices);
+        drawMap(matrices);
         this.renderBackground(matrices);
         drawCenteredText(matrices, this.getFontRenderer(), I18n.translate("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
         drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);

@@ -132,7 +132,7 @@ public class MapChunkCache {
                 MapChunk mapChunk = this.mapChunks[arrayX + arrayZ * this.width];
                 mapChunk.setModified(true);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             VoxelConstants.getLogger().error(e);
         }
     }

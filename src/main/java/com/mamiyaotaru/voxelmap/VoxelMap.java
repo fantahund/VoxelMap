@@ -257,10 +257,6 @@ public class VoxelMap implements ResourceReloader {
         this.map.newWorldName();
     }
 
-    public synchronized void newSubWorldHash(String hash) {
-        this.waypointManager.setSubworldHash(hash);
-    }
-
     public String getWorldSeed() { return VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse(""); }
 
     public void setWorldSeed(String newSeed) { if (VoxelConstants.getIntegratedServer().isEmpty()) waypointManager.setWorldSeed(newSeed); }

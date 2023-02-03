@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -434,7 +434,7 @@ public class CachedRegion {
                             if (debug) {
                                 VoxelConstants.getLogger().warn(Thread.currentThread().getName() + " finished chunk GC tick after " + (System.currentTimeMillis() - tickTime) + " milliseconds");
                             }
-                        } catch (Exception var38) {
+                        } catch (RuntimeException var38) {
                             VoxelConstants.getLogger().warn("error ticking from anvil loading");
                         } finally {
                             tickLock.writeLock().unlock();
@@ -507,7 +507,7 @@ public class CachedRegion {
                     this.liveChunksUpdated = true;
                 }
             }
-        } catch (Exception var17) {
+        } catch (IOException var17) {
             VoxelConstants.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, var17);
         }
 
@@ -558,11 +558,11 @@ public class CachedRegion {
             zos.write(byteArray);
             zos.closeEntry();
             if (stateToInt != null) {
-                Iterator<Entry<BlockState, Integer>> iterator = stateToInt.entrySet().iterator();
+                Iterator<Map.Entry<BlockState, Integer>> iterator = stateToInt.entrySet().iterator();
                 StringBuilder stringBuffer = new StringBuilder();
 
                 while (iterator.hasNext()) {
-                    Entry<BlockState, Integer> entry = iterator.next();
+                    Map.Entry<BlockState, Integer> entry = iterator.next();
                     String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
                     stringBuffer.append(nextLine);
                 }
@@ -612,14 +612,14 @@ public class CachedRegion {
                     CachedRegion.this.threadLock.lock();
 
                     try {
-                        BufferedImage realBufferedImage = new BufferedImage(CachedRegion.this.width, CachedRegion.this.width, 6);
+                        BufferedImage realBufferedImage = new BufferedImage(this.width, this.width, 6);
                         byte[] dstArray = ((DataBufferByte) realBufferedImage.getRaster().getDataBuffer()).getData();
-                        System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, CachedRegion.this.image.getData().length);
+                        System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, this.image.getData().length);
                         ImageIO.write(realBufferedImage, "png", imageFile);
                     } catch (IOException var6) {
                         VoxelConstants.getLogger().error(var6);
                     } finally {
-                        CachedRegion.this.threadLock.unlock();
+                        this.threadLock.unlock();
                     }
 
                 });
@@ -700,16 +700,16 @@ public class CachedRegion {
         if (this.data != null && !this.isCompressed() && !this.queuedToCompress) {
             this.queuedToCompress = true;
             ThreadManager.executorService.execute(() -> {
-                if (CachedRegion.this.threadLock.tryLock()) {
+                if (this.threadLock.tryLock()) {
                     try {
-                        CachedRegion.this.compressData();
-                    } catch (Exception ignored) {
+                        this.compressData();
+                    } catch (RuntimeException ignored) {
                     } finally {
-                        CachedRegion.this.threadLock.unlock();
+                        this.threadLock.unlock();
                     }
                 }
 
-                CachedRegion.this.queuedToCompress = false;
+                this.queuedToCompress = false;
             });
         }
 
@@ -781,8 +781,8 @@ public class CachedRegion {
 
         @Override
         public void run() {
-            CachedRegion.this.threadLock.lock();
             CachedRegion.this.mostRecentChange = System.currentTimeMillis();
+            CachedRegion.this.threadLock.lock();
 
             try {
                 if (!CachedRegion.this.loaded) {

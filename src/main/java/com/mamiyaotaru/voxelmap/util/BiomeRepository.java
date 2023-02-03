@@ -56,7 +56,7 @@ public final class BiomeRepository {
                 }
 
                 br.close();
-            } catch (Exception var12) {
+            } catch (IOException var12) {
                 VoxelConstants.getLogger().error("biome load error: " + var12.getLocalizedMessage(), var12);
             }
         }
@@ -120,7 +120,7 @@ public final class BiomeRepository {
                 }
 
                 out.close();
-            } catch (Exception var8) {
+            } catch (IOException var8) {
                 VoxelConstants.getLogger().error("biome save error: " + var8.getLocalizedMessage(), var8);
             }
         }

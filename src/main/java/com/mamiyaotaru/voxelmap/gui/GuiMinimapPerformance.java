@@ -35,12 +35,12 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         int var2 = 0;
 
         for (EnumOptionsMinimap option : relevantOptions) {
-            String text = this.options.getKeyText(option);
+            StringBuilder text = new StringBuilder().append(this.options.getKeyText(option));
             if ((option == EnumOptionsMinimap.WATERTRANSPARENCY || option == EnumOptionsMinimap.BLOCKTRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !this.options.multicore && this.options.getOptionBooleanValue(option)) {
-                text = "§c" + text;
+                text.append("§c").append(text);
             }
 
-            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(text), this::optionClicked);
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Text.literal(text.toString()), this::optionClicked);
             this.addDrawableChild(optionButton);
             ++var2;
             if (optionButton.returnEnumOptions() == EnumOptionsMinimap.SLIMECHUNKS) {
@@ -115,7 +115,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.drawMap(matrices);
+        drawMap(matrices);
         this.renderBackground(matrices);
         drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(matrices, mouseX, mouseY, delta);

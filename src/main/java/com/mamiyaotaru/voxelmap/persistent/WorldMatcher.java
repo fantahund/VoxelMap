@@ -9,7 +9,6 @@ import net.minecraft.client.world.ClientWorld;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Optional;
 
 public class WorldMatcher {
     private final PersistentMap map;

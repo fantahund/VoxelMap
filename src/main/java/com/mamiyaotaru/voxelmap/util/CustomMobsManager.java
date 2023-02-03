@@ -3,8 +3,10 @@ package com.mamiyaotaru.voxelmap.util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomMobsManager {
+public final class CustomMobsManager {
     public static final List<CustomMob> mobs = new ArrayList<>();
+
+    private CustomMobsManager() {}
 
     public static void add(String type, boolean enabled) {
         CustomMob mob = getCustomMobByType(type);

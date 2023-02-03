@@ -17,7 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Optional;
 
 public class TextureAtlas extends AbstractTexture {
@@ -74,7 +74,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void stitch() {
-        for (Entry<String, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
+        for (Map.Entry<String, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
             Sprite icon = entry.getValue();
             this.stitcher.addSprite(icon);
         }
@@ -115,7 +115,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void stitchNew() {
-        for (Entry<String, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
+        for (Map.Entry<String, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
             Sprite icon = entry.getValue();
             this.stitcher.addSprite(icon);
         }
@@ -167,7 +167,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public Sprite getIconAt(float x, float y) {
-        return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= icon.originX && x < (icon.originX + icon.width) && y >= icon.originY && y < (icon.originY + icon.height)).findFirst().orElse(this.missingImage);
+        return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Map.Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= icon.originX && x < (icon.originX + icon.width) && y >= icon.originY && y < (icon.originY + icon.height)).findFirst().orElse(this.missingImage);
     }
 
     public Sprite getAtlasSprite(String name) {
@@ -244,35 +244,6 @@ public class TextureAtlas extends AbstractTexture {
             }
 
             return icon;
-        } else {
-            throw new IllegalArgumentException("Name cannot be null!");
-        }
-    }
-
-    public void registerOrOverwriteSprite(String name, BufferedImage bufferedImage) {
-        if (name != null && !name.isEmpty()) {
-            Sprite icon = this.mapRegisteredSprites.get(name);
-            if (icon != null) {
-                icon.bufferedImageToIntData(bufferedImage);
-            } else {
-                icon = this.getAtlasSprite(name);
-                if (icon != null) {
-                    icon.bufferedImageToIntData(bufferedImage);
-
-                    try {
-                        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
-                        TextureUtilLegacy.uploadTextureMipmap(new int[][]{icon.getTextureData()}, icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY(), false, false);
-                    } catch (Throwable var7) {
-                        CrashReport crashReport = CrashReport.create(var7, "Stitching texture atlas");
-                        CrashReportSection crashReportCategory = crashReport.addElement("Texture being stitched together");
-                        crashReportCategory.add("Atlas path", this.basePath);
-                        crashReportCategory.add("Sprite", icon);
-                        throw new CrashException(crashReport);
-                    }
-                }
-            }
-
-            bufferedImage.flush();
         } else {
             throw new IllegalArgumentException("Name cannot be null!");
         }

@@ -6,25 +6,6 @@ import net.minecraft.block.BlockState;
 import java.util.Arrays;
 
 public class FullMapData extends AbstractMapData {
-    public static final int DATABITS = 17;
-    public static final int BYTESPERDATUM = 4;
-    private static final int HEIGHTPOS = 0;
-    private static final int BLOCKSTATEPOS = 1;
-    private static final int TINTPOS = 2;
-    private static final int LIGHTPOS = 3;
-    private static final int OCEANFLOORHEIGHTPOS = 4;
-    private static final int OCEANFLOORBLOCKSTATEPOS = 5;
-    private static final int OCEANFLOORTINTPOS = 6;
-    private static final int OCEANFLOORLIGHTPOS = 7;
-    private static final int TRANSPARENTHEIGHTPOS = 8;
-    private static final int TRANSPARENTBLOCKSTATEPOS = 9;
-    private static final int TRANSPARENTTINTPOS = 10;
-    private static final int TRANSPARENTLIGHTPOS = 11;
-    private static final int FOLIAGEHEIGHTPOS = 12;
-    private static final int FOLIAGEBLOCKSTATEPOS = 13;
-    private static final int FOLIAGETINTPOS = 14;
-    private static final int FOLIAGELIGHTPOS = 15;
-    private static final int BIOMEIDPOS = 16;
     private int[] data;
 
     public FullMapData(int width, int height) {
@@ -272,14 +253,6 @@ public class FullMapData extends AbstractMapData {
             }
 
         }
-    }
-
-    public void setData(int[] is) {
-        this.data = is;
-    }
-
-    public int[] getData() {
-        return this.data;
     }
 
     private int getIDFromState(BlockState blockState) {

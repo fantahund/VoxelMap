@@ -326,7 +326,7 @@ public abstract class AbstractMapData {
 
         public void morphologicallyErode(boolean horizontalBias) {
             float labelWidth = (VoxelConstants.getMinecraft().textRenderer.getWidth(this.name) + 8);
-            float multi = (AbstractMapData.this.width / 32);
+            float multi = (AbstractMapData.this.width / 32f);
             float shellWidth = 2.0F;
             float labelPadding = labelWidth / 16.0F * multi / shellWidth;
 

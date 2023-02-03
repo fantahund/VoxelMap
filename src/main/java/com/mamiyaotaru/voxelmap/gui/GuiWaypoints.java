@@ -14,7 +14,6 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.Text;
 
@@ -188,10 +187,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return this.editClicked;
     }
 
-    public void accept(boolean b) {
+    public void accept(boolean t) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (b) {
+            if (t) {
                 this.waypointManager.deleteWaypoint(this.selectedWaypoint);
                 this.selectedWaypoint = null;
             }
@@ -201,7 +200,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.editClicked) {
             this.editClicked = false;
-            if (b) {
+            if (t) {
                 this.waypointManager.saveWaypoints();
             }
 
@@ -210,7 +209,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.addClicked) {
             this.addClicked = false;
-            if (b) {
+            if (t) {
                 this.waypointManager.addWaypoint(this.newWaypoint);
                 this.setSelectedWaypoint(this.newWaypoint);
             }
@@ -271,7 +270,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.drawMap(matrices);
+        drawMap(matrices);
         this.tooltip = null;
         this.waypointList.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
@@ -295,7 +294,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         try {
             return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getPlayer().getGameProfile());
-        } catch (Exception exception) {
+        } catch (RuntimeException exception) {
             return integratedServer.get().getSaveProperties().areCommandsAllowed();
         }
     }

@@ -129,7 +129,7 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.drawMap(matrices);
+        drawMap(matrices);
         this.tooltip = null;
         this.mobsList.render(matrices, mouseX, mouseY, delta);
         drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);

@@ -10,6 +10,7 @@ import net.minecraft.client.resource.language.I18n;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Objects;
 
@@ -59,7 +60,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             }
 
             in.close();
-        } catch (Exception ignored) {}
+        } catch (IOException | ArrayIndexOutOfBoundsException ignored) {}
 
     }
 

@@ -28,14 +28,4 @@ public class BackgroundImageInfo {
     }
 
     public boolean isInRange(int x, int z) { return x >= left && x < right && z >= top && z < bottom; }
-
-    public boolean isGroundAt(int x, int z) {
-        int imageX = (int) ((x - left) / scale);
-        int imageY = (int) ((z - top) / scale);
-
-        if (!(imageX >= 0 && imageX < image.getWidth() && imageY >= 0 && imageY < image.getHeight())) return false;
-
-        int color = image.getRGB(imageX, imageY);
-        return (color >> 24 & 0xFF) > 0;
-    }
 }

@@ -166,7 +166,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
                 imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
-        } catch (Exception ignored) {}
+        } catch (RuntimeException ignored) {}
 
         if (imageData != null) {
             gotSkin = true;
