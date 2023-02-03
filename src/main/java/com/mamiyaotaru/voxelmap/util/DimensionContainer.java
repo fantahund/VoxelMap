@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.util;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.dimension.DimensionType;
 
-import java.text.Collator;
 import java.util.Objects;
 
 public class DimensionContainer implements Comparable<DimensionContainer> {

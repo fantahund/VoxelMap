@@ -6,7 +6,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,26 +17,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-public class BiomeRepository {
-    public static Biome DEFAULT;
-    public static Biome FOREST;
-    public static Biome SWAMP;
-    public static Biome SWAMP_HILLS;
+public final class BiomeRepository {
     private static final Random generator = new Random();
     private static final HashMap<Integer, Integer> IDtoColor = new HashMap<>(256);
     private static final TreeMap<String, Integer> nameToColor = new TreeMap<>();
     private static boolean dirty;
 
-    public static void getBiomes() {
-        DEFAULT = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.OCEAN);
-        FOREST = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.FOREST);
-        SWAMP = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.SWAMP);
-        SWAMP_HILLS = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.SWAMP); //TODO :>
-    }
+    private BiomeRepository() {}
 
     public static void loadBiomeColors() {
         File saveDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/");
@@ -115,7 +106,7 @@ public class BiomeRepository {
             try {
                 PrintWriter out = new PrintWriter(new FileWriter(settingsFile));
 
-                for (Entry<String, Integer> entry : nameToColor.entrySet()) {
+                for (Map.Entry<String, Integer> entry : nameToColor.entrySet()) {
                     String name = entry.getKey();
                     Integer color = entry.getValue();
                     StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
@@ -139,62 +130,63 @@ public class BiomeRepository {
 
     public static int getBiomeColor(int biomeID) {
         Integer color = IDtoColor.get(biomeID);
-        if (color == null) {
-            Biome biome = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
-            if (biome != null) {
-                String identifier = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).toString();
-                color = nameToColor.get(identifier);
-                if (color == null) {
-                    String friendlyName = getName(biome);
-                    color = nameToColor.get(friendlyName);
-                    if (color != null) {
-                        nameToColor.remove(friendlyName);
-                        nameToColor.put(identifier, color);
-                        dirty = true;
-                    }
-                }
 
-                if (color == null) {
-                    int r = generator.nextInt(255);
-                    int g = generator.nextInt(255);
-                    int b = generator.nextInt(255);
-                    color = r << 16 | g << 8 | b;
-                    nameToColor.put(identifier, color);
-                    dirty = true;
-                }
-            } else {
-                VoxelConstants.getLogger().warn("non biome");
-                color = 0;
-            }
+        if (color != null) return color;
 
-            IDtoColor.put(biomeID, color);
+        Biome biome = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
+
+        if (biome == null) {
+            VoxelConstants.getLogger().warn("non biome");
+            IDtoColor.put(biomeID, 0);
+
+            return 0;
         }
 
+        String identifier = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).toString();
+        color = nameToColor.get(identifier);
+
+        if (color == null) {
+            String friendlyName = getName(biome);
+
+            color = nameToColor.get(friendlyName);
+
+            if (color != null) {
+                nameToColor.remove(friendlyName);
+                nameToColor.put(identifier, color);
+                dirty = true;
+            }
+        }
+
+        if (color == null) {
+            int r = generator.nextInt(255);
+            int g = generator.nextInt(255);
+            int b = generator.nextInt(255);
+
+            color = r << 16 | g << 8 | b;
+            nameToColor.put(identifier, color);
+            dirty = true;
+        }
+
+        IDtoColor.put(biomeID, color);
         return color;
     }
 
+    @NotNull
     private static String getName(Biome biome) {
         Identifier resourceLocation = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
         String translationKey = Util.createTranslationKey("biome", resourceLocation);
-        String name = I18n.translate(translationKey);
-        if (name.equals(translationKey)) {
-            name = TextUtils.prettify(resourceLocation.getPath());
-        }
 
+        String name = I18n.translate(translationKey);
+
+        if (name.equals(translationKey)) return TextUtils.prettify(resourceLocation.getPath());
         return name;
     }
 
+    @NotNull
     public static String getName(int biomeID) {
-        String name = null;
         Biome biome = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
-        if (biome != null) {
-            name = getName(biome);
-        }
 
-        if (name == null) {
-            name = "Unknown";
-        }
-
-        return name;
+        if (biome != null) return getName(biome);
+        return "Unknown";
     }
 }

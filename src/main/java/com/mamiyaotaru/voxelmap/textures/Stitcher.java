@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.util.math.MathHelper;
 
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

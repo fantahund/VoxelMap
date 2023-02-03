@@ -8,7 +8,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
 
-import java.text.Collator;
 import java.util.ArrayList;
 
 public class DimensionManager {

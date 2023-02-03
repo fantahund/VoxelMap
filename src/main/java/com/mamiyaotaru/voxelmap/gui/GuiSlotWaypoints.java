@@ -20,7 +20,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import java.awt.*;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;

@@ -178,7 +178,6 @@ public class ColorManager {
     private void loadColors() {
         VoxelConstants.getPlayer().getSkinTexture();
         BlockRepository.getBlocks();
-        BiomeRepository.getBiomes();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
         Sprite missing = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("missingno"));
@@ -543,7 +542,7 @@ public class ColorManager {
         int blockStateID = BlockRepository.getStateId(blockState);
         if (block != BlockRepository.largeFern && block != BlockRepository.tallGrass && block != BlockRepository.reeds) {
             if (block == BlockRepository.water) {
-                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, BiomeRepository.FOREST.getWaterColor() | 0xFF000000);
+                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, 0xFF000000);
             } else {
                 this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
             }
@@ -695,7 +694,6 @@ public class ColorManager {
                         MessageUtils.printDebug("Null biome ID! " + biomeID + " at " + t + "," + s);
                         MessageUtils.printDebug("block: " + mapData.getBlockstate(dataX, dataZ) + ", height: " + mapData.getHeight(dataX, dataZ));
                         MessageUtils.printDebug("Mapdata: " + mapData);
-                        biome = BiomeRepository.FOREST;
                     }
 
                     int biomeTint = colorResolver.getColorAtPos(blockState, biome, loopBlockPos.withXYZ(t, blockPos.getY(), s));
@@ -1286,7 +1284,7 @@ public class ColorManager {
                         tintMult = tintColorsBuff.getRGB((int) ((tintColorsBuff.getWidth() - 1) * var1), (int) ((tintColorsBuff.getHeight() - 1) * var2)) & 16777215;
                     }
 
-                    if (tintMult != 0 && (!swamp || biome == BiomeRepository.SWAMP || biome == BiomeRepository.SWAMP_HILLS)) {
+                    if (tintMult != 0 && !swamp) {
                         tints[t][s] = tintMult;
                     }
                 }

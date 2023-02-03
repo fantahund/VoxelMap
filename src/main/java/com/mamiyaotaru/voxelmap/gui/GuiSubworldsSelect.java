@@ -16,7 +16,6 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-import java.text.Collator;
 import java.util.ArrayList;
 
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
