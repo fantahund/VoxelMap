@@ -84,7 +84,6 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.PlayerSkinTexture;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -1188,8 +1187,8 @@ public class Radar implements IRadar {
 
                         hasAdditional = true;
                         BufferedImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]);
-                        float xScale = (base.getWidth() / overlay.getWidth());
-                        float yScale = (base.getHeight() / overlay.getHeight());
+                        float xScale = ((float) base.getWidth() / overlay.getWidth());
+                        float yScale = ((float) base.getHeight() / overlay.getHeight());
                         if (xScale != 1.0F || yScale != 1.0F) {
                             overlay = ImageUtils.scaleImage(overlay, xScale, yScale);
                         }
@@ -1487,7 +1486,7 @@ public class Radar implements IRadar {
                         ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
                         BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
                         blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
-                        ImageUtils.addImages(blockImage, blockImageFront, (width / 2 - 15), (height / 2 - 15), width, height);
+                        ImageUtils.addImages(blockImage, blockImageFront, (width / 2f - 15), (height / 2f - 15), width, height);
                         blockImageFront.flush();
                         blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
                         icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);

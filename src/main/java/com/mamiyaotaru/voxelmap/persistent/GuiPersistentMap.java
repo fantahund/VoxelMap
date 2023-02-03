@@ -400,8 +400,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.zoomStart = this.zoom;
             this.zoomGoal = this.bindZoom(this.zoomGoal);
             this.timeOfZoom = System.currentTimeMillis();
-            this.zoomDirectX = (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / 2);
-            this.zoomDirectY = (VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() - VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / 2);
+            this.zoomDirectX = (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / 2f);
+            this.zoomDirectY = (VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() - VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / 2f);
             this.switchToKeyboardInput();
         }
 
@@ -662,8 +662,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorX = mouseDirectX;
             cursorY = mouseDirectY - this.top * this.guiToDirectMouse;
         } else {
-            cursorX = (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / 2);
-            cursorY = (VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() - VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / 2) - this.top * this.guiToDirectMouse;
+            cursorX = (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / 2f);
+            cursorY = (VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() - VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / 2f) - this.top * this.guiToDirectMouse;
         }
 
         float cursorCoordZ;
@@ -785,7 +785,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         int nameWidth = this.chkLen(biomeLabel.name);
                         float x = biomeLabel.x * biomeScaleX / this.scScale;
                         float z = biomeLabel.z * biomeScaleY / this.scScale;
-                        this.write(matrices, biomeLabel.name, x - (nameWidth / 2), this.top + z - 3.0F, 16777215);
+                        this.write(matrices, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
                     }
                 }
 

@@ -1856,9 +1856,9 @@ public class Map implements Runnable, IChangeObserver {
                     float x = (float) (o.x * factor);
                     float z = (float) (o.z * factor);
                     if (this.options.oldNorth) {
-                        this.write(matrixStack, name, (left + 256) - z - (nameWidth / 2), top + x - 3.0F, 16777215);
+                        this.write(matrixStack, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
                     } else {
-                        this.write(matrixStack, name, left + x - (nameWidth / 2), top + z - 3.0F, 16777215);
+                        this.write(matrixStack, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
                     }
                 }
             }
@@ -2020,10 +2020,10 @@ public class Map implements Runnable, IChangeObserver {
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
             int m = this.chkLen(stats) / 2;
-            this.write(matrixStack, stats, (this.scWidth / 2 - m), 5.0F, 16777215);
+            this.write(matrixStack, stats, (this.scWidth / 2f - m), 5.0F, 16777215);
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(matrixStack, this.error, (this.scWidth / 2 - m), 15.0F, 16777215);
+                this.write(matrixStack, this.error, (this.scWidth / 2f - m), 15.0F, 16777215);
             }
         }
 
@@ -2099,13 +2099,13 @@ public class Map implements Runnable, IChangeObserver {
         topY = centerY + (height - 1) / 2.0 * 10.0 - border + 10.0;
         botY = centerY + (height - 1) / 2.0 * 10.0 + border + 20.0;
         this.drawBox(leftX, rightX, topY, botY);
-        this.write(matrixStack, head, (centerX - title / 2), (centerY - (height - 1) * 10 / 2 - 19), 16777215);
+        this.write(matrixStack, head, (centerX - title / 2f), (centerY - (height - 1) * 10 / 2f - 19), 16777215);
 
         for (int n = 1; n < height; ++n) {
-            this.write(matrixStack, this.welcomeText[n], (centerX - maxSize / 2), (centerY - (height - 1) * 10 / 2 + n * 10 - 9), 16777215);
+            this.write(matrixStack, this.welcomeText[n], (centerX - maxSize / 2f), (centerY - (height - 1) * 10 / 2f + n * 10 - 9), 16777215);
         }
 
-        this.write(matrixStack, hide, (centerX - footer / 2), ((scHeight + 5) / 2 + (height - 1) * 10 / 2 + 11), 16777215);
+        this.write(matrixStack, hide, (centerX - footer / 2f), ((scHeight + 5) / 2f + (height - 1) * 10 / 2f + 11), 16777215);
     }
 
     private void drawBox(double leftX, double rightX, double topY, double botY) {

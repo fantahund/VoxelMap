@@ -12,7 +12,6 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
@@ -30,7 +29,6 @@ import net.minecraft.util.math.RotationAxis;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Optional;
 import java.util.UUID;
 
 public class RadarSimple implements IRadar {

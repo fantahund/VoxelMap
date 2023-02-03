@@ -231,8 +231,8 @@ public class ImageUtils {
     }
 
     public static BufferedImage eraseArea(BufferedImage image, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scaleX = (image.getWidth(null) / imageWidth);
-        float scaleY = (image.getHeight(null) / imageHeight);
+        float scaleX = ((float) image.getWidth(null) / imageWidth);
+        float scaleY = ((float) image.getHeight(null) / imageHeight);
         x = (int) (x * scaleX);
         y = (int) (y * scaleY);
         w = (int) (w * scaleX);
@@ -262,7 +262,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scale = (mobSkin.getWidth(null) / imageWidth);
+        float scale = ((float) mobSkin.getWidth(null) / imageWidth);
         x = (int) (x * scale);
         y = (int) (y * scale);
         w = (int) (w * scale);
@@ -393,7 +393,7 @@ public class ImageUtils {
                     int newColor = sampleNonTransparentNeighborPixel(t, s, image);
                     if (newColor != -420) {
                         if (solid) {
-                            if (armor && !(t <= (imageWidth / 2) - armorOutlineFractionHorizontal) && !(t >= (imageWidth / 2) + armorOutlineFractionHorizontal - 1.0F) && !(s <= (imageHeight / 2) - armorOutlineFractionVertical) && !(s >= (imageHeight / 2) + armorOutlineFractionVertical - 1.0F)) {
+                            if (armor && !(t <= (imageWidth / 2f) - armorOutlineFractionHorizontal) && !(t >= (imageWidth / 2f) + armorOutlineFractionHorizontal - 1.0F) && !(s <= (imageHeight / 2f) - armorOutlineFractionVertical) && !(s >= (imageHeight / 2f) + armorOutlineFractionVertical - 1.0F)) {
                                 newColor = 0;
                             } else {
                                 newColor = -16777216;

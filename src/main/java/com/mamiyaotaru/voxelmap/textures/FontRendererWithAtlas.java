@@ -160,7 +160,7 @@ public class FontRendererWithAtlas extends TextRenderer implements ResourceReloa
         float fontScaleX = (this.fontIcon.width - 2) / 128.0F;
         float fontScaleY = (this.fontIcon.height - 2) / 128.0F;
         float charXPosInSheet = (charIndex % 16 * 8) * fontScaleX + this.fontIcon.originX + 1.0F;
-        float charYPosInSheet = (charIndex / 16 * 8) * fontScaleY + this.fontIcon.originY + 1.0F;
+        float charYPosInSheet = (charIndex / 16f * 8) * fontScaleY + this.fontIcon.originY + 1.0F;
         float shadowOffset = shadow ? 1.0F : 0.0F;
         float charWidth = this.charWidthArray[charIndex] - 0.01F;
         this.vertexBuffer.vertex(this.posX + shadowOffset, this.posY, 0.0).texture(charXPosInSheet / sheetWidth, charYPosInSheet / sheetHeight).color(this.red, this.blue, this.green, this.alpha).next();

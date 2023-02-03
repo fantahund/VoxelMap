@@ -13,13 +13,11 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.WorldView;
 import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 
@@ -296,11 +294,11 @@ public class WaypointContainer {
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-                fontRenderer.draw(Text.literal(name), (-fontRenderer.getWidth(name) / 2), elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
+                fontRenderer.draw(Text.literal(name), (-fontRenderer.getWidth(name) / 2f), elevateBy, textColor, false, matrix4f, vertexConsumerProvider, true, 0, 15728880);
                 vertexConsumerProvider.draw();
                 OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
                 textColor = (int) (255.0F * fade) << 24 | 16777215;
-                fontRenderer.draw(matrixStack, name, (-fontRenderer.getWidth(name) / 2), elevateBy, textColor);
+                fontRenderer.draw(matrixStack, name, (-fontRenderer.getWidth(name) / 2f), elevateBy, textColor);
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
