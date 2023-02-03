@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.interfaces.IGLBufferedImage;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,11 +8,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.zip.DataFormatException;
 
-public class CompressibleGLBufferedImage implements IGLBufferedImage {
+public class CompressibleGLBufferedImage {
     private byte[] bytes;
     private int index;
     private final int width;
@@ -39,22 +37,18 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         return this.bytes;
     }
 
-    @Override
     public int getIndex() {
         return this.index;
     }
 
-    @Override
     public int getWidth() {
         return this.width;
     }
 
-    @Override
     public int getHeight() {
         return this.height;
     }
 
-    @Override
     public void baleet() {
         int currentIndex = this.index;
         this.index = 0;
@@ -64,7 +58,6 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
 
     }
 
-    @Override
     public void write() {
         if (this.isCompressed) {
             this.decompress();
@@ -99,7 +92,6 @@ public class CompressibleGLBufferedImage implements IGLBufferedImage {
         this.compress();
     }
 
-    @Override
     public void setRGB(int x, int y, int color) {
         if (this.isCompressed) {
             this.decompress();
