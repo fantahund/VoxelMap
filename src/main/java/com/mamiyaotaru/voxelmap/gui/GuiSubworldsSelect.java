@@ -14,9 +14,11 @@ import net.minecraft.client.option.Perspective;
 import net.minecraft.client.recipebook.ClientRecipeBook;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
     private Text title;
@@ -33,9 +35,20 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private final WaypointManager waypointManager;
 
     public GuiSubworldsSelect(Screen parent) {
+        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+
+        if (optionalClientWorld.isEmpty()) {
+            String error = "ClientWorld not present while expected to be!";
+
+            VoxelConstants.getLogger().fatal(error);
+            throw new IllegalStateException(error);
+        }
+
+        ClientWorld clientWorld = optionalClientWorld.get();
+
         this.parent = parent;
         this.thePlayer = VoxelConstants.getPlayer();
-        this.camera = new ClientPlayerEntity(VoxelConstants.getMinecraft(), VoxelConstants.getMinecraft().world, VoxelConstants.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
+        this.camera = new ClientPlayerEntity(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
         this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
         this.camera.refreshPositionAndAngles(this.thePlayer.getX(), this.thePlayer.getY() - this.thePlayer.getHeightOffset(), this.thePlayer.getZ(), this.thePlayer.getYaw(), 0.0F);
         this.yaw = this.thePlayer.getYaw();

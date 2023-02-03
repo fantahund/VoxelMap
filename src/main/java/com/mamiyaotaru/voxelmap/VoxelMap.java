@@ -9,7 +9,6 @@ import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import com.mamiyaotaru.voxelmap.util.TickCounter;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import io.netty.buffer.ByteBuf;
@@ -162,7 +161,7 @@ public class VoxelMap implements ResourceReloader {
             }
         }
 
-        TickCounter.onTick();
+        VoxelConstants.tick();
         this.persistentMap.onTick();
     }
 

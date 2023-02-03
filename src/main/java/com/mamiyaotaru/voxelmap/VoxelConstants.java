@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.world.World;
@@ -14,6 +15,7 @@ import java.util.Optional;
 public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
+    private static int elapsedTicks;
 
     private VoxelConstants() {}
 
@@ -48,5 +50,14 @@ public final class VoxelConstants {
     }
 
     @NotNull
+    public static Optional<ClientWorld> getClientWorld() { return Optional.ofNullable(getMinecraft().world); }
+
+    @NotNull
     public static VoxelMap getVoxelMapInstance() { return VOXELMAP_INSTANCE; }
+
+    static void tick() { elapsedTicks = elapsedTicks == Integer.MAX_VALUE ? 1 : elapsedTicks + 1; }
+
+    public static int getElapsedTicks() { return elapsedTicks; }
+
+    static { elapsedTicks = 0; }
 }

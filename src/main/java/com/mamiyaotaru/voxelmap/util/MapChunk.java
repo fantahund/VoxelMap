@@ -15,8 +15,8 @@ public class MapChunk {
     public MapChunk(int x, int z) {
         this.x = x;
         this.z = z;
-        this.chunk = VoxelConstants.getMinecraft().world.getChunk(x, z);
-        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(x, z);
+        this.chunk = VoxelConstants.getPlayer().world.getChunk(x, z);
+        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(x, z);
         this.isSurroundedByLoaded = false;
         this.isChanged = true;
     }
@@ -32,12 +32,12 @@ public class MapChunk {
     private boolean hasChunkLoadedOrUnloaded() {
         boolean hasChanged = false;
         if (!this.isLoaded) {
-            this.chunk = VoxelConstants.getMinecraft().world.getChunk(this.x, this.z);
-            if (this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(this.x, this.z)) {
+            this.chunk = VoxelConstants.getPlayer().world.getChunk(this.x, this.z);
+            if (this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(this.x, this.z)) {
                 this.isLoaded = true;
                 hasChanged = true;
             }
-        } else if (this.chunk == null || this.chunk.isEmpty() || !VoxelConstants.getMinecraft().world.isChunkLoaded(this.x, this.z)) {
+        } else if (this.chunk == null || this.chunk.isEmpty() || !VoxelConstants.getPlayer().world.isChunkLoaded(this.x, this.z)) {
             this.isLoaded = false;
             hasChanged = true;
         }
@@ -46,8 +46,8 @@ public class MapChunk {
     }
 
     public void checkIfChunkBecameSurroundedByLoaded(IChangeObserver changeObserver) {
-        this.chunk = VoxelConstants.getMinecraft().world.getChunk(this.x, this.z);
-        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(this.x, this.z);
+        this.chunk = VoxelConstants.getPlayer().world.getChunk(this.x, this.z);
+        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(this.x, this.z);
         if (this.isLoaded) {
             boolean formerSurroundedByLoaded = this.isSurroundedByLoaded;
             this.isSurroundedByLoaded = this.isSurroundedByLoaded();
@@ -61,14 +61,14 @@ public class MapChunk {
     }
 
     public boolean isSurroundedByLoaded() {
-        this.chunk = VoxelConstants.getMinecraft().world.getChunk(this.x, this.z);
-        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(this.x, this.z);
+        this.chunk = VoxelConstants.getPlayer().world.getChunk(this.x, this.z);
+        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(this.x, this.z);
         boolean neighborsLoaded = this.isLoaded;
 
         for (int t = this.x - 1; t <= this.x + 1 && neighborsLoaded; ++t) {
             for (int s = this.z - 1; s <= this.z + 1 && neighborsLoaded; ++s) {
-                WorldChunk neighborChunk = VoxelConstants.getMinecraft().world.getChunk(t, s);
-                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(t, s);
+                WorldChunk neighborChunk = VoxelConstants.getPlayer().world.getChunk(t, s);
+                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(t, s);
             }
         }
 

@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
@@ -29,6 +30,7 @@ import net.minecraft.util.math.RotationAxis;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.UUID;
 
 public class RadarSimple implements IRadar {
@@ -109,7 +111,10 @@ public class RadarSimple implements IRadar {
     public void calculateMobs() {
         this.contacts.clear();
 
-        for (Entity entity : VoxelConstants.getMinecraft().world.getEntities()) {
+        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+
+        if (optionalClientWorld.isEmpty()) return;
+        for (Entity entity : optionalClientWorld.get().getEntities()) {
             try {
                 if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();

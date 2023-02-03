@@ -133,7 +133,7 @@ public final class BiomeRepository {
 
         if (color != null) return color;
 
-        Biome biome = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
+        Biome biome = VoxelConstants.getPlayer().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
 
         if (biome == null) {
             VoxelConstants.getLogger().warn("non biome");
@@ -142,7 +142,7 @@ public final class BiomeRepository {
             return 0;
         }
 
-        String identifier = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).toString();
+        String identifier = VoxelConstants.getPlayer().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome).toString();
         color = nameToColor.get(identifier);
 
         if (color == null) {
@@ -173,7 +173,7 @@ public final class BiomeRepository {
 
     @NotNull
     private static String getName(Biome biome) {
-        Identifier resourceLocation = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
+        Identifier resourceLocation = VoxelConstants.getPlayer().world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
         String translationKey = Util.createTranslationKey("biome", resourceLocation);
 
         String name = I18n.translate(translationKey);
@@ -184,7 +184,7 @@ public final class BiomeRepository {
 
     @NotNull
     public static String getName(int biomeID) {
-        Biome biome = VoxelConstants.getMinecraft().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
+        Biome biome = VoxelConstants.getPlayer().world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
 
         if (biome != null) return getName(biome);
         return "Unknown";

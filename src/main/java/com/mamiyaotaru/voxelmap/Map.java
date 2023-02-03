@@ -23,7 +23,6 @@ import com.mamiyaotaru.voxelmap.util.MutableNativeImageBackedTexture;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledMutableNativeImageBackedTexture;
-import com.mamiyaotaru.voxelmap.util.TickCounter;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
@@ -339,7 +338,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getMinecraft().world));
+            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world));
             double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
@@ -499,7 +498,7 @@ public class Map implements Runnable, IChangeObserver {
     public void calculateCurrentLightAndSkyColor() {
         try {
             if (this.world != null) {
-                if (this.needLightmapRefresh && TickCounter.tickCounter != this.tickWithLightChange && !VoxelConstants.getMinecraft().isPaused() || this.options.realTimeTorches) {
+                if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !VoxelConstants.getMinecraft().isPaused() || this.options.realTimeTorches) {
                     GLUtils.disp(this.lightmapTexture.getGlId());
                     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
@@ -564,7 +563,7 @@ public class Map implements Runnable, IChangeObserver {
 
                 boolean scheduledUpdate = (this.timer - 50) % (this.lastLightBrightnessTable[0] == 0.0F ? 250 : 2000) == 0;
                 if (lightChanged || scheduledUpdate) {
-                    this.tickWithLightChange = TickCounter.tickCounter;
+                    this.tickWithLightChange = VoxelConstants.getElapsedTicks();
                     this.needLightmapRefresh = true;
                 }
 

@@ -9,6 +9,7 @@ import net.minecraft.client.world.ClientWorld;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class WorldMatcher {
     private final PersistentMap map;
@@ -119,7 +120,16 @@ public class WorldMatcher {
                     }
                 }
 
-                this.region = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, VoxelConstants.getMinecraft().world, this.worldName, "", this.x, this.z);
+                Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+
+                if (optionalClientWorld.isEmpty()) {
+                    String error = "ClientWorld not present while expected to be present!";
+
+                    VoxelConstants.getLogger().fatal(error);
+                    throw new IllegalStateException(error);
+                }
+
+                this.region = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, optionalClientWorld.get(), this.worldName, "", this.x, this.z);
                 MessageUtils.printDebug("going to load current region");
                 this.region.loadCurrent();
                 MessageUtils.printDebug("loaded chunks in local region: " + this.region.getLoadedChunks());

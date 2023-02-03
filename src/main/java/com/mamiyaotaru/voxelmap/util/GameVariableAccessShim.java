@@ -3,15 +3,9 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.client.world.ClientWorld;
 
-import java.io.File;
-
 public class GameVariableAccessShim {
     public static ClientWorld getWorld() {
         return VoxelConstants.getMinecraft().world;
-    }
-
-    public static File getDataDir() {
-        return VoxelConstants.getMinecraft().runDirectory;
     }
 
     public static int xCoord() {

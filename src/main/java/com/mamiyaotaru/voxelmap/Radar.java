@@ -84,6 +84,7 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.PlayerSkinTexture;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -541,7 +542,11 @@ public class Radar implements IRadar {
 
     public void calculateMobs() {
         this.contacts.clear();
-        for (Entity entity : VoxelConstants.getMinecraft().world.getEntities()) {
+
+        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+        Iterable<Entity> entities = optionalClientWorld.isEmpty() ? new ArrayList<>() : optionalClientWorld.get().getEntities();
+
+        for (Entity entity : entities) {
             try {
                 if (this.isEntityShown(entity)) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.getPos().getX();

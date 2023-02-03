@@ -14,7 +14,6 @@ import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import com.mamiyaotaru.voxelmap.util.TickCounter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -168,7 +167,7 @@ public class PersistentMap implements IChangeObserver {
             this.chunkCache.centerChunks(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), 0, GameVariableAccessShim.zCoord()));
             this.chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            while (!this.chunkUpdateQueue.isEmpty() && Math.abs(TickCounter.tickCounter - this.chunkUpdateQueue.peek().tick) >= 20) {
+            while (!this.chunkUpdateQueue.isEmpty() && Math.abs(VoxelConstants.getElapsedTicks() - this.chunkUpdateQueue.peek().tick) >= 20) {
                 this.doProcessChunk(this.chunkUpdateQueue.remove().chunk);
             }
         }
@@ -833,7 +832,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public void processChunk(WorldChunk chunk) {
-        this.chunkUpdateQueue.add(new ChunkWithAge(chunk, TickCounter.tickCounter));
+        this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
     }
 
     private void doProcessChunk(WorldChunk chunk) {

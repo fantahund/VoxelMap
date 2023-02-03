@@ -13,11 +13,13 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.WorldView;
 import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 
@@ -70,9 +72,9 @@ public class WaypointContainer {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
                     int z = pt.getZ();
-                    WorldChunk chunk = VoxelConstants.getMinecraft().world.getChunk(x >> 4, z >> 4);
-                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = VoxelConstants.getMinecraft().world.getBottomY() - renderPosY;
+                    WorldChunk chunk = VoxelConstants.getPlayer().world.getChunk(x >> 4, z >> 4);
+                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(x >> 4, z >> 4)) {
+                        double bottomOfWorld = VoxelConstants.getPlayer().world.getBottomY() - renderPosY;
                         this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, 64.0F, matrix4f);
                     }
                 }
@@ -132,9 +134,11 @@ public class WaypointContainer {
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, float par8, Matrix4f matrix4f) {
+        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
-        int height = VoxelConstants.getMinecraft().world.getHeight();
+        int height = optionalClientWorld.map(WorldView::getHeight).orElse(384);
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;

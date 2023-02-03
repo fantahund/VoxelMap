@@ -76,6 +76,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -149,8 +150,10 @@ public class ColorManager {
 
     public boolean checkForChanges() {
         boolean biomesChanged = false;
-        if (VoxelConstants.getMinecraft().world != null && VoxelConstants.getMinecraft().world != this.world) {
-            this.world = VoxelConstants.getMinecraft().world;
+        Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+
+        if (optionalClientWorld.isPresent() && optionalClientWorld.get() != this.world) {
+            this.world = optionalClientWorld.get();
             int largestBiomeID = 0;
 
             for (Biome biome : this.world.getRegistryManager().get(RegistryKeys.BIOME)) {
@@ -562,9 +565,20 @@ public class ColorManager {
                 if (blockPos == this.dummyBlockPos) {
                     tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
                 } else {
-                    Chunk chunk = VoxelConstants.getMinecraft().world.getChunk(blockPos);
-                    if (chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
-                        tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, VoxelConstants.getMinecraft().world, blockPos, 1) | 0xFF000000;
+                    Optional<ClientWorld> optionalClientWorld = VoxelConstants.getClientWorld();
+
+                    if (optionalClientWorld.isEmpty()) {
+                        String error = "ClientWorld is not present while expected to be!";
+
+                        VoxelConstants.getLogger().fatal(error);
+                        throw new IllegalStateException(error);
+                    }
+
+                    ClientWorld clientWorld = optionalClientWorld.get();
+
+                    Chunk chunk = clientWorld.getChunk(blockPos);
+                    if (chunk != null && !((WorldChunk) chunk).isEmpty() && clientWorld.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
+                        tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, clientWorld, blockPos, 1) | 0xFF000000;
                     } else {
                         tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
                     }
@@ -588,8 +602,8 @@ public class ColorManager {
 
     public int getBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         Chunk chunk = world.getChunk(blockPos);
-        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
-        live = live && VoxelConstants.getMinecraft().world.isChunkLoaded(blockPos);
+        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
+        live = live && VoxelConstants.getPlayer().world.isChunkLoaded(blockPos);
         int tint = -2;
         if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
