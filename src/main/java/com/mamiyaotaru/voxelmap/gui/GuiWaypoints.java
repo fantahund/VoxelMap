@@ -273,9 +273,9 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         drawMap(matrices);
         this.tooltip = null;
         this.waypointList.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
+        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
         this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);

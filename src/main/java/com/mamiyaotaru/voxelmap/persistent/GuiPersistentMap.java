@@ -811,13 +811,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.overlayBackground(0, this.top, 255, 255);
         this.overlayBackground(this.bottom, this.getHeight(), 255, 255);
-        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
         int x = (int) Math.floor(cursorCoordX);
         int z = (int) Math.floor(cursorCoordZ);
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
             if (!this.editingCoordinates) {
-                drawStringWithShadow(matrices, this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
-                drawStringWithShadow(matrices, this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
+                drawTextWithShadow(matrices, this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
+                drawTextWithShadow(matrices, this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
             } else {
                 this.coordinates.render(matrices, mouseX, mouseY, delta);
             }
@@ -827,7 +827,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.buildWorldName();
         }
 
-        drawStringWithShadow(matrices, this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
+        drawTextWithShadow(matrices, this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
         if (this.buttonMultiworld != null) {
             if ((this.subworldName == null || this.subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
                 if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {

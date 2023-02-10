@@ -280,11 +280,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         }
 
         this.dimensionList.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.translate("minimap.waypoints.new") : I18n.translate("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.translate("minimap.waypoints.new") : I18n.translate("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
+        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
+        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
+        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
+        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
         this.waypointName.render(matrices, mouseX, mouseY, delta);
         this.waypointX.render(matrices, mouseX, mouseY, delta);
         this.waypointZ.render(matrices, mouseX, mouseY, delta);

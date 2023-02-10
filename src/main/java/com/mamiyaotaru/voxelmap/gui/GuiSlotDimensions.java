@@ -74,7 +74,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         }
 
         public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            DrawableHelper.drawCenteredText(matrices, this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.slotWidth / 2, y + 3, 16777215);
+            DrawableHelper.drawCenteredTextWithShadow(matrices, this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.slotWidth / 2, y + 3, 16777215);
             byte padding = 4;
             byte iconWidth = 16;
             x = this.parentGui.getWidth() / 2;

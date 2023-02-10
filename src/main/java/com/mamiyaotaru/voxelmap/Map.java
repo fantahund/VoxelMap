@@ -532,7 +532,7 @@ public class Map implements Runnable, IChangeObserver {
                     }
                 }
 
-                float sunBrightness = this.world.getStarBrightness(1.0F);
+                float sunBrightness = this.world.getSkyBrightness(1.0F);
                 if (Math.abs(this.lastSunBrightness - sunBrightness) > 0.01 || sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness || sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {
                     lightChanged = true;
                     this.needSkyColor = true;

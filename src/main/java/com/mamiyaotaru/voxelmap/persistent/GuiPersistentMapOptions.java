@@ -99,9 +99,9 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         drawMap(matrices);
         this.renderBackground(matrices);
-        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        drawCenteredText(matrices, this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
-        drawCenteredText(matrices, this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
     }
 }

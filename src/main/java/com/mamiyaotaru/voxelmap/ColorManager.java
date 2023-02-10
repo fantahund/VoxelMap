@@ -30,6 +30,7 @@ import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.render.model.json.Transformation;
 import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.Sprite;
@@ -284,7 +285,7 @@ public class ColorManager {
         RenderSystem.setShaderLights(fullbright3, fullbright3);
         MatrixStack newMatrixStack = new MatrixStack();
         VertexConsumerProvider.Immediate immediate = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
-        VoxelConstants.getMinecraft().getItemRenderer().renderItem(stack, ModelTransformation.Mode.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.DEFAULT_UV, model);
+        VoxelConstants.getMinecraft().getItemRenderer().renderItem(stack, ModelTransformationMode.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.DEFAULT_UV, model);
         immediate.draw();
         matrixStack.pop();
         matrixStack.pop();

@@ -77,7 +77,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         super.drawMap(matrices);
         this.renderBackground(matrices);
-        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         int leftBorder = this.getLeftBorder();
 
         for (int keyCounter = 0; keyCounter < this.options.keyBindings.length; ++keyCounter) {
@@ -108,11 +108,11 @@ public class GuiMinimapControls extends GuiScreenMinimap {
                 ((ButtonWidget) this.getButtonList().get(keyCounter)).setMessage(this.options.getKeybindDisplayString(keyCounter));
             }
 
-            drawStringWithShadow(matrices, this.getFontRenderer(), this.options.getKeyBindingDescription(keyCounter), leftBorder + keyCounter % 2 * 160 + 70 + 6, this.getHeight() / 6 + 24 * (keyCounter >> 1) + 7, -1);
+            drawTextWithShadow(matrices, this.getFontRenderer(), this.options.getKeyBindingDescription(keyCounter), leftBorder + keyCounter % 2 * 160 + 70 + 6, this.getHeight() / 6 + 24 * (keyCounter >> 1) + 7, -1);
         }
 
-        drawCenteredText(matrices, this.getFontRenderer(), I18n.translate("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() / 6 + 115, 16777215);
-        drawCenteredText(matrices, this.getFontRenderer(), I18n.translate("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() / 6 + 129, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() / 6 + 115, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() / 6 + 129, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
     }
 }

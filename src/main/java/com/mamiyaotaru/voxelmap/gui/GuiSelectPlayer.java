@@ -125,12 +125,12 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         drawMap(matrices);
         this.tooltip = null;
         this.playerList.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(matrices, mouseX, mouseY, delta);
         drawTextWithShadow(matrices, this.getFontRenderer(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
         this.message.render(matrices, mouseX, mouseY, delta);
-        drawCenteredText(matrices, this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 16777215);
-        drawStringWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
+        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 16777215);
+        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
         this.filter.render(matrices, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);

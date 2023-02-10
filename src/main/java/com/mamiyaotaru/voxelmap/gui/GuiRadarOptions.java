@@ -66,7 +66,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         drawMap(matrices);
         renderBackground(matrices);
-        drawCenteredText(matrices, getFontRenderer(), screenTitle, getWidth() / 2, 20, 16777215);
+        drawCenteredTextWithShadow(matrices, getFontRenderer(), screenTitle, getWidth() / 2, 20, 16777215);
 
         super.render(matrices, mouseX, mouseY, delta);
     }
