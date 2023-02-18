@@ -70,6 +70,7 @@ import net.minecraft.entity.passive.PufferfishEntity;
 import net.minecraft.entity.passive.RabbitEntity;
 import net.minecraft.entity.passive.SalmonEntity;
 import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.SnifferEntity;
 import net.minecraft.entity.passive.SnowGolemEntity;
 import net.minecraft.entity.passive.SquidEntity;
 import net.minecraft.entity.passive.StriderEntity;
@@ -147,6 +148,7 @@ public enum EnumMobs {
     SKELETON(SkeletonEntity.class, "Skeleton", true, 0.0F, "textures/entity/skeleton/skeleton.png", "", true, false),
     SKELETONWITHER(WitherSkeletonEntity.class, "Wither_Skeleton", true, 0.0F, "textures/entity/skeleton/wither_skeleton.png", "", true, false),
     SLIME(SlimeEntity.class, "Slime", true, 8.0F, "textures/entity/slime/slime.png", "", true, false),
+    SNIFFER(SnifferEntity.class, "Sniffer", true, 0.0F, "textures/entity/sniffer/sniffer.png", "", false, true),
     SNOWGOLEM(SnowGolemEntity.class, "Snow_Golem", true, 0.0F, "textures/entity/snow_golem.png", "", false, true),
     SPIDER(SpiderEntity.class, "Spider", true, 0.0F, "textures/entity/spider/spider.png", "", true, false),
     SQUID(SquidEntity.class, "Squid", true, 0.0F, "textures/entity/squid/squid.png", "", false, true),

@@ -72,6 +72,7 @@ import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.render.entity.model.SkeletonEntityModel;
 import net.minecraft.client.render.entity.model.SkullEntityModel;
 import net.minecraft.client.render.entity.model.SlimeEntityModel;
+import net.minecraft.client.render.entity.model.SnifferModel;
 import net.minecraft.client.render.entity.model.SnowGolemEntityModel;
 import net.minecraft.client.render.entity.model.SpiderEntityModel;
 import net.minecraft.client.render.entity.model.SquidEntityModel;
@@ -103,6 +104,7 @@ import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraft.entity.passive.PufferfishEntity;
 import net.minecraft.entity.passive.RabbitEntity;
 import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.SnifferEntity;
 import net.minecraft.entity.passive.StriderEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
@@ -170,7 +172,7 @@ public class Radar implements IRadar {
     public final HashMap<String, Integer> contactsSkinGetTries = new HashMap<>();
     private Sprite clothIcon;
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
-    private final String[] armorNames = { "cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle" };
+    private final String[] armorNames = {"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
     private boolean randomobsOptifine;
     private Map<String, Object> mapProperties;
     private Object randomEntity;
@@ -306,7 +308,7 @@ public class Radar implements IRadar {
                 }
             }
 
-            BufferedImage[] armorImages = { ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
+            BufferedImage[] armorImages = {ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8)};
 
             for (int t = 0; t < armorImages.length; ++t) {
                 float scale = armorImages[t].getWidth() / 8.0F;
@@ -452,8 +454,8 @@ public class Radar implements IRadar {
             case SLIME ->
                     image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
             case TROPICALFISHA -> {
-                float[] primaryColorsA = { 0.9765F, 0.502F, 0.1137F };
-                float[] secondaryColorsA = { 0.9765F, 1.0F, 0.9961F };
+                float[] primaryColorsA = {0.9765F, 0.502F, 0.1137F};
+                float[] secondaryColorsA = {0.9765F, 1.0F, 0.9961F};
                 if (entity instanceof TropicalFishEntity fish) {
                     primaryColorsA = fish.getBaseColorComponents().getColorComponents();
                     secondaryColorsA = fish.getPatternColorComponents().getColorComponents();
@@ -465,8 +467,8 @@ public class Radar implements IRadar {
                 patternA.flush();
             }
             case TROPICALFISHB -> {
-                float[] primaryColorsB = { 0.5373F, 0.1961F, 0.7216F };
-                float[] secondaryColorsB = { 0.9961F, 0.8471F, 0.2392F };
+                float[] primaryColorsB = {0.5373F, 0.1961F, 0.7216F};
+                float[] secondaryColorsB = {0.9961F, 0.8471F, 0.2392F};
                 if (entity instanceof TropicalFishEntity fish) {
                     primaryColorsB = fish.getBaseColorComponents().getColorComponents();
                     secondaryColorsB = fish.getPatternColorComponents().getColorComponents();
@@ -1060,6 +1062,8 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{silverFishEntityModel.getPart().getChild("segment0"), silverFishEntityModel.getPart().getChild("segment1")};
                     } else if (model instanceof SlimeEntityModel<? extends Entity> slimeEntityModel) {
                         headBits = new ModelPart[]{slimeEntityModel.getPart()};
+                    } else if (model instanceof SnifferModel<? extends SnifferEntity> snifferModel) {
+                        headBits = new ModelPart[]{snifferModel.getPart().getChild("bone").getChild("body").getChild("head")};
                     } else if (model instanceof SnowGolemEntityModel<? extends Entity> snowGolemEntityModel) {
                         headBits = new ModelPart[]{snowGolemEntityModel.getPart().getChild("head")};
                     } else if (model instanceof SpiderEntityModel<? extends Entity> spiderEntityModel) {
@@ -1447,7 +1451,7 @@ public class Radar implements IRadar {
                 if (icon == this.textureAtlas.getMissingImage()) {
                     ModelPart inner = (ModelPart) ReflectionUtils.getPrivateFieldValueByType(this.playerSkullModel, SkullEntityModel.class, ModelPart.class, 0);
                     ModelPart outer = (ModelPart) ReflectionUtils.getPrivateFieldValueByType(this.playerSkullModel, SkullEntityModel.class, ModelPart.class, 1);
-                    ModelPartWithResourceLocation[] headBits = { new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation) };
+                    ModelPartWithResourceLocation[] headBits = {new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation)};
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
@@ -1519,7 +1523,8 @@ public class Radar implements IRadar {
             String resourcePath = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, materialName, 1, suffix);
 
             resourceLocation = new Identifier(resourcePath);
-        } catch (RuntimeException ignored) {}
+        } catch (RuntimeException ignored) {
+        }
 
         BipedEntityModel<LivingEntity> modelBiped;
 
@@ -1534,7 +1539,7 @@ public class Radar implements IRadar {
         }
 
         if (modelBiped != null && resourceLocation != null) {
-            ModelPartWithResourceLocation[] headBitsWithResourceLocation = { new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation) };
+            ModelPartWithResourceLocation[] headBitsWithResourceLocation = {new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation)};
             this.drawModel(1.0F, 2, (LivingEntity) contact.entity, Direction.NORTH, modelBiped, headBitsWithResourceLocation);
             BufferedImage armorImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
             armorImage = armorImage.getSubimage(200, 200, 112, 112);
