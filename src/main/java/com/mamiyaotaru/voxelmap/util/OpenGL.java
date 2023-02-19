@@ -1,11 +1,25 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.TextureManager;
+import net.minecraft.client.util.GlAllocationUtils;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
+import java.awt.image.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -171,4 +185,160 @@ public final class OpenGL {
     public static void glRenderbufferStorage(int target, int internalformat, int width, int height) { GL30.glRenderbufferStorage(target, internalformat, width, height); }
 
     public static int glCheckFramebufferStatus(int target) { return GL30.glCheckFramebufferStatus(target); }
+
+    public static final class Utils {
+        private static final Tessellator TESSELLATOR = Tessellator.getInstance();
+        private static final BufferBuilder VERTEX_BUFFER = TESSELLATOR.getBuffer();
+        private static final IntBuffer DATA_BUFFER = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
+
+        private static final TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
+        private static int fboId = -1;
+        private static int fboTextureId = -1;
+        private static int previousFboId = -1;
+        private static int previousFboIdRead = -1;
+        private static int previousFboIdDraw = -1;
+
+        private Utils() {}
+
+        public static int getFboTextureId() { return fboTextureId; }
+
+        public static void setupFramebuffer() {
+            previousFboId = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
+            fboId = glGenFramebuffers();
+            fboTextureId = glGenTextures();
+
+            int width = 512;
+            int height = 512;
+            ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height);
+
+            glBindFramebuffer(GL30_GL_FRAMEBUFFER, fboId);
+            glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_WRAP_S, GL11_GL_CLAMP);
+            glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_WRAP_T, GL11_GL_CLAMP);
+            glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MIN_FILTER, GL11_GL_LINEAR);
+            glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MAG_FILTER, GL11_GL_LINEAR);
+            glTexImage2D(GL11_GL_TEXTURE_2D, 0, GL11_GL_RGBA, width, height, 0, GL11_GL_RGBA, GL11_GL_BYTE, buffer);
+            glFramebufferTexture2D(GL30_GL_FRAMEBUFFER, GL30_GL_COLOR_ATTACHMENT0, GL11_GL_TEXTURE_2D, fboTextureId, 0);
+
+            int rboId = glGenRenderbuffers();
+
+            glBindRenderbuffer(GL30_GL_RENDERBUFFER, rboId);
+            glRenderbufferStorage(GL30_GL_RENDERBUFFER, GL14_GL_DEPTH_COMPONENT24, width, height);
+            glFramebufferRenderbuffer(GL30_GL_FRAMEBUFFER, GL30_GL_DEPTH_ATTACHMENT, GL30_GL_RENDERBUFFER, rboId);
+            glBindRenderbuffer(GL30_GL_DRAW_FRAMEBUFFER, 0);
+
+            checkFramebufferStatus();
+
+            glBindRenderbuffer(GL30_GL_DRAW_FRAMEBUFFER, previousFboId);
+            GlStateManager._bindTexture(0);
+        }
+
+        public static void checkFramebufferStatus() {
+            int status = glCheckFramebufferStatus(GL30_GL_FRAMEBUFFER);
+
+            if (status == GL30_GL_FRAMEBUFFER_COMPLETE) return;
+
+            switch (status) {
+                case GL30_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+                case GL30_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+                case GL30_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+                case GL30_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+                default -> throw new RuntimeException("glCheckFramebufferStatus returned unknown status: " + status);
+            }
+        }
+
+        public static void bindFramebuffer() {
+            previousFboId = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
+            previousFboIdRead = glGetInteger(GL30_GL_READ_FRAMEBUFFER_BINDING);
+            previousFboIdDraw = glGetInteger(GL30_GL_DRAW_FRAMEBUFFER);
+
+            glBindFramebuffer(GL30_GL_FRAMEBUFFER, fboId);
+            glBindFramebuffer(GL30_GL_READ_FRAMEBUFFER, fboId);
+            glBindFramebuffer(GL30_GL_DRAW_FRAMEBUFFER, fboId);
+        }
+
+        public static void unbindFramebuffer() {
+            glBindFramebuffer(GL30_GL_FRAMEBUFFER, previousFboId);
+            glBindFramebuffer(GL30_GL_READ_FRAMEBUFFER, previousFboIdRead);
+            glBindFramebuffer(GL30_GL_DRAW_FRAMEBUFFER, previousFboIdDraw);
+        }
+
+        public static void setMapWithScale(int x, int y, float scale) { setMap(x, y, (int) (128f * scale)); }
+
+        public static void setMap(float x, float y, int imageSize) {
+            float scale = imageSize / 4.0f;
+
+            ldrawthree(x - scale, y + scale, 1.0, 0.0f, 1.0f);
+            ldrawthree(x + scale, y + scale, 1.0, 1.0f, 1.0f);
+            ldrawthree(x + scale, y - scale, 1.0, 1.0f, 0.0f);
+            ldrawthree(x - scale, y - scale, 1.0, 0.0f, 0.0f);
+        }
+
+        public static void setMap(Sprite icon, float x, float y, float imageSize) {
+            float half = imageSize / 4.0f;
+
+            ldrawthree(x - half, y + half, 1.0, icon.getMinU(), icon.getMaxV());
+            ldrawthree(x + half, y + half, 1.0, icon.getMaxU(), icon.getMaxV());
+            ldrawthree(x + half, y - half, 1.0, icon.getMaxU(), icon.getMinV());
+            ldrawthree(x - half, y - half, 1.0, icon.getMinU(), icon.getMinV());
+        }
+
+        public static int tex(BufferedImage image) {
+            int glId = TextureUtil.generateTextureId();
+            int width = image.getWidth();
+            int height = image.getHeight();
+            int[] data = new int[width * height];
+
+            image.getRGB(0, 0, width, height, data, 0, width);
+            glBindTexture(GL11_GL_TEXTURE_2D, glId);
+
+            DATA_BUFFER.clear();
+            DATA_BUFFER.put(data, 0, width * height);
+            DATA_BUFFER.position(0).limit(width * height);
+
+            glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MIN_FILTER, GL11_GL_LINEAR);
+            glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MAG_FILTER, GL11_GL_LINEAR);
+            glPixelStorei(GL11_GL_UNPACK_ROW_LENGTH, 0);
+            glPixelStorei(GL11_GL_UNPACK_SKIP_PIXELS, 0);
+            glPixelStorei(GL11_GL_UNPACK_SKIP_ROWS, 0);
+            glTexImage2D(GL11_GL_TEXTURE_2D, 0, GL11_GL_RGBA, width, height, 0, GL12_GL_BGRA, GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
+
+            return glId;
+        }
+
+        public static void img2(String param) { img2(new Identifier(param)); }
+
+        public static void img(Identifier param) { textureManager.bindTexture(param); }
+
+        public static void img2(Identifier param) { RenderSystem.setShaderTexture(0, param); }
+
+        public static void disp(int param) { glBindTexture(GL11_GL_TEXTURE_2D, param); }
+
+        public static void disp2(int param) { RenderSystem.setShaderTexture(0, param); }
+
+        public static void register(Identifier resource, AbstractTexture image) { textureManager.registerTexture(resource, image); }
+
+        @NotNull
+        public static NativeImage nativeImageFromBufferedImage(BufferedImage image) {
+            int glId = tex(image);
+            NativeImage nativeImage = new NativeImage(image.getWidth(), image.getHeight(), false);
+            RenderSystem.bindTexture(glId);
+            nativeImage.loadFromTextureImage(0, false);
+
+            return nativeImage;
+        }
+
+        public static void drawPre() { drawPre(VertexFormats.POSITION_TEXTURE); }
+
+        public static void drawPre(VertexFormat format) { VERTEX_BUFFER.begin(VertexFormat.DrawMode.QUADS, format); }
+
+        public static void drawPost() { TESSELLATOR.draw(); }
+
+        public static void glah(int g) { glDeleteTexture(g); }
+
+        public static void ldrawone(int x, int y, double z, float u, float v) { VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next(); }
+
+        public static void ldrawtwo(double x, double y, double z) { VERTEX_BUFFER.vertex(x, y, z).next(); }
+
+        public static void ldrawthree(double x, double y, double z, float u, float v) { VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next(); }
+    }
 }
