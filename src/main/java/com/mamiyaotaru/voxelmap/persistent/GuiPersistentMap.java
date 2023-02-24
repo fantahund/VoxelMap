@@ -984,10 +984,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex(x + 0.0F, y + height, this.getZOffset()).texture(0.0F, 1.0F).next();
-        vertexBuffer.vertex(x + width, y + height, this.getZOffset()).texture(1.0F, 1.0F).next();
-        vertexBuffer.vertex(x + width, y + 0.0F, this.getZOffset()).texture(1.0F, 0.0F).next();
-        vertexBuffer.vertex(x + 0.0F, y + 0.0F, this.getZOffset()).texture(0.0F, 0.0F).next();
+        vertexBuffer.vertex(x + 0.0F, y + height, 0).texture(0.0F, 1.0F).next();
+        vertexBuffer.vertex(x + width, y + height, 0).texture(1.0F, 1.0F).next();
+        vertexBuffer.vertex(x + width, y + 0.0F, 0).texture(1.0F, 0.0F).next();
+        vertexBuffer.vertex(x + 0.0F, y + 0.0F, 0).texture(0.0F, 0.0F).next();
         tessellator.draw();
     }
 
@@ -1001,10 +1001,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex(xCoord + 0.0F, yCoord + heightIn, this.getZOffset()).texture(icon.getMinU(), icon.getMaxV()).next();
-        vertexBuffer.vertex(xCoord + widthIn, yCoord + heightIn, this.getZOffset()).texture(icon.getMaxU(), icon.getMaxV()).next();
-        vertexBuffer.vertex(xCoord + widthIn, yCoord + 0.0F, this.getZOffset()).texture(icon.getMaxU(), icon.getMinV()).next();
-        vertexBuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, this.getZOffset()).texture(icon.getMinU(), icon.getMinV()).next();
+        vertexBuffer.vertex(xCoord + 0.0F, yCoord + heightIn, 0).texture(icon.getMinU(), icon.getMaxV()).next();
+        vertexBuffer.vertex(xCoord + widthIn, yCoord + heightIn, 0).texture(icon.getMaxU(), icon.getMaxV()).next();
+        vertexBuffer.vertex(xCoord + widthIn, yCoord + 0.0F, 0).texture(icon.getMaxU(), icon.getMinV()).next();
+        vertexBuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, 0).texture(icon.getMinU(), icon.getMinV()).next();
         tessellator.draw();
     }
 

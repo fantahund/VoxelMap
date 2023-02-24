@@ -155,7 +155,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
-            DrawableHelper.drawTexture(matrices, x + 198, y - 2, GuiSlotMobs.this.getZOffset(), 0.0F, 0.0F, 18, 18, 18, 18);
+            DrawableHelper.drawTexture(matrices, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

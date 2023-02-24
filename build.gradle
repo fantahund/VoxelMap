@@ -86,5 +86,5 @@ modrinth {
 }
 
 boolean isMCVersionNonRelease() {
-    return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$') || project.minecraft_version.matches('\\d+\\.\\d+-(pre|rc)(\\d+)')
+    return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$') || project.minecraft_version.contains('pre') || project.minecraft_version.contains('rc')
 }

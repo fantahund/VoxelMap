@@ -382,10 +382,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexbuffer = tessellator.getBuffer();
         vertexbuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexbuffer.vertex(xCoord + 0.0F, yCoord + heightIn, this.getZOffset()).texture(icon.getMinU(), icon.getMaxV()).next();
-        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, this.getZOffset()).texture(icon.getMaxU(), icon.getMaxV()).next();
-        vertexbuffer.vertex(xCoord + widthIn, yCoord + 0.0F, this.getZOffset()).texture(icon.getMaxU(), icon.getMinV()).next();
-        vertexbuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, this.getZOffset()).texture(icon.getMinU(), icon.getMinV()).next();
+        vertexbuffer.vertex(xCoord + 0.0F, yCoord + heightIn, 0).texture(icon.getMinU(), icon.getMaxV()).next();
+        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 0).texture(icon.getMaxU(), icon.getMaxV()).next();
+        vertexbuffer.vertex(xCoord + widthIn, yCoord + 0.0F, 0).texture(icon.getMaxU(), icon.getMinV()).next();
+        vertexbuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, 0).texture(icon.getMinU(), icon.getMinV()).next();
         tessellator.draw();
     }
 }

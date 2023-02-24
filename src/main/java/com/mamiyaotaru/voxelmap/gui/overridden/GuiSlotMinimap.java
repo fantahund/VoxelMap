@@ -24,10 +24,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
     protected GuiSlotMinimap(int width, int height, int top, int bottom, int itemHeight) {
         super (VoxelConstants.getMinecraft(), width, height, top, bottom, itemHeight);
-        this.setZOffset(0);
     }
-
-    public final void setZOffset(int zOffset) { super.setZOffset(zOffset); }
 
     public void setShowTopBottomBG(boolean showTopBottomBG) { this.showTopBottomBG = showTopBottomBG; }
 

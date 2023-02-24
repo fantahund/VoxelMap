@@ -160,7 +160,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier);
-            DrawableHelper.drawTexture(matrices, x + 198, y - 2, GuiSlotWaypoints.this.getZOffset(), 0.0F, 0.0F, 18, 18, 18, 18);
+            DrawableHelper.drawTexture(matrices, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
                 int x1 = x + 199;
                 int y1 = y - 1;

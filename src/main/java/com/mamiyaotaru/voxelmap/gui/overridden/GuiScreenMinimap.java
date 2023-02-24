@@ -16,7 +16,6 @@ public class GuiScreenMinimap extends Screen {
 
     protected GuiScreenMinimap(Text title) {
         super (title);
-        setZOffset(0);
     }
 
     public void drawMap(MatrixStack matrixStack) {
@@ -32,8 +31,6 @@ public class GuiScreenMinimap extends Screen {
         if (!(text != null && text.getString() != null && !text.getString().isEmpty())) return;
         super.renderTooltip(matrices, text, x, y);
     }
-
-    public final void setZOffset(int zOffset) { super.setZOffset(zOffset); }
 
     public int getWidth() { return width; }
 
