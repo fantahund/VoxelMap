@@ -26,6 +26,8 @@ public final class VoxelConstants {
 
     public static boolean isFabulousGraphicsOrBetter() { return MinecraftClient.isFabulousGraphicsOrBetter(); }
 
+    public static boolean isSinglePlayer() { return MinecraftClient.getInstance().isInSingleplayer(); }
+
     @NotNull
     public static Logger getLogger() { return LOGGER; }
 
