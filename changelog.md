@@ -1,1 +1,2 @@
-- Update to 1.19.4-pre1
+- Fix Teleport Button in Waypoint GUI
+- Update to 1.19.4-pre2
