@@ -1,1 +1,1 @@
-- Update to 1.19.4-rc2
+- Update to 1.19.4
