@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.class_8251;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
@@ -123,7 +124,7 @@ public class ImageUtils {
             RenderSystem.backupProjectionMatrix();
             OpenGL.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = new Matrix4f().ortho(fboWidth, (-(fboHeight)), 1000.0F, 3000.0F, -1.0f, 1.0f);
-            RenderSystem.setProjectionMatrix(matrix4f);
+            RenderSystem.setProjectionMatrix(matrix4f, class_8251.field_43360);
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.loadIdentity();
             matrixStack.translate(0.0, 0.0, -2000.0);

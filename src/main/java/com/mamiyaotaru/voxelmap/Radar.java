@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.SkullBlockEntity;
+import net.minecraft.class_8251;
 import net.minecraft.client.model.Dilation;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -1228,7 +1229,7 @@ public class Radar implements IRadar {
         OpenGL.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f);
+        RenderSystem.setProjectionMatrix(matrix4f, class_8251.field_43360);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
         matrixStack.loadIdentity();
@@ -1307,7 +1308,7 @@ public class Radar implements IRadar {
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
-        RenderSystem.setProjectionMatrix(minimapProjectionMatrix);
+        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, class_8251.field_43360);
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         return !failed;
     }
