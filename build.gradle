@@ -75,7 +75,7 @@ modrinth {
     projectId = project.modrinth_id
     versionNumber = project.mod_version
     versionName = "VoxelMap ${project.mod_version}"
-    versionType = isMCVersionNonRelease() ? "beta" : "release"
+    versionType = "beta"
     changelog = file("changelog.md").text
     uploadFile = remapJar
     gameVersions = [ project.minecraft_version ]
@@ -83,8 +83,4 @@ modrinth {
     dependencies {
         required.project 'fabric-api'
     }
-}
-
-boolean isMCVersionNonRelease() {
-    return project.minecraft_version.matches('^\\d\\dw\\d\\d[a-z]$') || project.minecraft_version.contains('pre') || project.minecraft_version.contains('rc')
 }

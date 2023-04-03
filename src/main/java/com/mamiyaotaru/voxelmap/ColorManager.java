@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -20,7 +21,6 @@ import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.Material;
 import net.minecraft.block.RedstoneWireBlock;
-import net.minecraft.class_8251;
 import net.minecraft.client.color.world.FoliageColors;
 import net.minecraft.client.color.world.GrassColors;
 import net.minecraft.client.option.GameOptions;
@@ -41,6 +41,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -106,9 +107,9 @@ public class ColorManager {
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getSpruceColor();
     private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColors.getBirchColor();
-    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt(blockPos.getX(), blockPos.getZ());
-    private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor();
-    private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
+    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColorAt(RegistryEntry.of(biomex), blockPos.getX(), blockPos.getZ());
+    private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor(RegistryEntry.of(biomex));
+    private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor(RegistryEntry.of(biomex));
     private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedstoneWireBlock.getWireColor(blockState.get(RedstoneWireBlock.POWER));
 
     public ColorManager() {
@@ -249,7 +250,7 @@ public class ColorManager {
         OpenGL.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f, class_8251.field_43360);
+        RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
         matrixStack.loadIdentity();
@@ -295,7 +296,7 @@ public class ColorManager {
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
-        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, class_8251.field_43360);
+        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
     }
 

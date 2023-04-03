@@ -21,13 +21,13 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.SkullBlockEntity;
-import net.minecraft.class_8251;
 import net.minecraft.client.model.Dilation;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -73,7 +73,7 @@ import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.render.entity.model.SkeletonEntityModel;
 import net.minecraft.client.render.entity.model.SkullEntityModel;
 import net.minecraft.client.render.entity.model.SlimeEntityModel;
-import net.minecraft.client.render.entity.model.SnifferModel;
+import net.minecraft.client.render.entity.model.SnifferEntityModel;
 import net.minecraft.client.render.entity.model.SnowGolemEntityModel;
 import net.minecraft.client.render.entity.model.SpiderEntityModel;
 import net.minecraft.client.render.entity.model.SquidEntityModel;
@@ -1063,7 +1063,7 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{silverFishEntityModel.getPart().getChild("segment0"), silverFishEntityModel.getPart().getChild("segment1")};
                     } else if (model instanceof SlimeEntityModel<? extends Entity> slimeEntityModel) {
                         headBits = new ModelPart[]{slimeEntityModel.getPart()};
-                    } else if (model instanceof SnifferModel<? extends SnifferEntity> snifferModel) {
+                    } else if (model instanceof SnifferEntityModel<? extends SnifferEntity> snifferModel) {
                         headBits = new ModelPart[]{snifferModel.getPart().getChild("bone").getChild("body").getChild("head")};
                     } else if (model instanceof SnowGolemEntityModel<? extends Entity> snowGolemEntityModel) {
                         headBits = new ModelPart[]{snowGolemEntityModel.getPart().getChild("head")};
@@ -1229,7 +1229,7 @@ public class Radar implements IRadar {
         OpenGL.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f, class_8251.field_43360);
+        RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
         matrixStack.loadIdentity();
@@ -1308,7 +1308,7 @@ public class Radar implements IRadar {
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
-        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, class_8251.field_43360);
+        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         return !failed;
     }
