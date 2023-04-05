@@ -134,13 +134,14 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void teleportClicked() {
-        int y = this.selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getPlayer().world.getTopY() : 64);
-        if (VoxelConstants.isSinglePlayer()) {
-            VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-        } else {
-            VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-        }
+        int y = selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ?
+                selectedWaypoint.getY() :
+                (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ?
+                        VoxelConstants.getPlayer().world.getTopY() :
+                        64
+                );
 
+        VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), selectedWaypoint.getX(), y, selectedWaypoint.getZ()));
         VoxelConstants.getMinecraft().setScreen(null);
     }
 
