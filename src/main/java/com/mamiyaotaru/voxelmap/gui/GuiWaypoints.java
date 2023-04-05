@@ -191,10 +191,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return this.editClicked;
     }
 
-    public void accept(boolean t) {
+    public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.deleteWaypoint(this.selectedWaypoint);
                 this.selectedWaypoint = null;
             }
@@ -204,7 +204,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.editClicked) {
             this.editClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.saveWaypoints();
             }
 
@@ -213,7 +213,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.addClicked) {
             this.addClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.addWaypoint(this.newWaypoint);
                 this.setSelectedWaypoint(this.newWaypoint);
             }

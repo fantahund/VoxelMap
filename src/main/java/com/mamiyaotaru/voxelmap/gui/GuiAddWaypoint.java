@@ -76,13 +76,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.waypointName.setText(this.waypoint.name);
         this.waypointX = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointX.setMaxLength(128);
-        this.waypointX.setText(this.waypoint.getX() + "");
+        this.waypointX.setText(String.valueOf(this.waypoint.getX()));
         this.waypointZ = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointZ.setMaxLength(128);
-        this.waypointZ.setText(this.waypoint.getZ() + "");
+        this.waypointZ.setText(String.valueOf(this.waypoint.getZ()));
         this.waypointY = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointY.setMaxLength(128);
-        this.waypointY.setText(this.waypoint.getY() + "");
+        this.waypointY.setText(String.valueOf(this.waypoint.getY()));
         this.addDrawableChild(this.waypointName);
         this.addDrawableChild(this.waypointX);
         this.addDrawableChild(this.waypointZ);

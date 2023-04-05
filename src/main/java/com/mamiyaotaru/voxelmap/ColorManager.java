@@ -556,7 +556,7 @@ public class ColorManager {
     private void checkForBiomeTinting(MutableBlockPos blockPos, BlockState blockState, int color) {
         try {
             Block block = blockState.getBlock();
-            String blockName = Registries.BLOCK.getId(block) + "";
+            String blockName = String.valueOf(Registries.BLOCK.getId(block));
             if (BlockRepository.biomeBlocks.contains(block) || !blockName.startsWith("minecraft:")) {
                 int tint;
                 MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
@@ -981,14 +981,14 @@ public class ColorManager {
 
             try {
                 if (token.matches("^\\d+$")) {
-                    tmpList.add(Integer.parseInt(token) + "");
+                    tmpList.add(String.valueOf(Integer.parseInt(token)));
                 } else if (token.matches("^\\d+-\\d+$")) {
                     String[] t = token.split("-");
                     int min = Integer.parseInt(t[0]);
                     int max = Integer.parseInt(t[1]);
 
                     for (int i = min; i <= max; ++i) {
-                        tmpList.add(i + "");
+                        tmpList.add(String.valueOf(i));
                     }
                 } else if (!token.isEmpty()) {
                     tmpList.add(token);

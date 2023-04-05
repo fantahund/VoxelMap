@@ -750,7 +750,7 @@ public class PersistentMap implements IChangeObserver {
             for (RegionCoordinates regionCoordinates : regionsToDisplay) {
                 int x = regionCoordinates.x;
                 int z = regionCoordinates.z;
-                String key = "" + x + "," + z;
+                String key = x + "," + z;
                 CachedRegion cachedRegion;
                 synchronized (this.cachedRegions) {
                     cachedRegion = this.cachedRegions.get(key);
@@ -851,7 +851,7 @@ public class PersistentMap implements IChangeObserver {
             int chunkZ = chunk.getPos().z;
             int regionX = (int) Math.floor(chunkX / 16.0);
             int regionZ = (int) Math.floor(chunkZ / 16.0);
-            String key = "" + regionX + "," + regionZ;
+            String key = regionX + "," + regionZ;
             CachedRegion cachedRegion;
             synchronized (this.cachedRegions) {
                 cachedRegion = this.cachedRegions.get(key);
