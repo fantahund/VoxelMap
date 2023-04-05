@@ -135,7 +135,7 @@ public class PersistentMap implements IChangeObserver {
             }
         }
 
-        if (VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld() && !VoxelConstants.getMinecraft().isInSingleplayer() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
+        if (VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld() && !VoxelConstants.isSinglePlayer() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
             this.worldMatcher = new WorldMatcher(this, this.world);
             this.worldMatcher.findMatch();
         }

@@ -1,1 +1,1 @@
-- Update to 1.19.4
+- Fixed the tppos command not found issue, and other teleportation fixes.

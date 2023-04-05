@@ -1139,22 +1139,23 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
             case 3 -> {
-                if (hovered != null) {
-                    this.selectedWaypoint = hovered;
-                    y = this.selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getPlayer().world.getTopY() : 64);
-                    VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-                    if (!VoxelConstants.getMinecraft().isInSingleplayer()) {
-                        VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-                    }
-                } else {
-                    if (y == 0) {
-                        y = !VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getPlayer().world.getTopY() : 64;
-                    }
-                    VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + x + " " + y + " " + z);
-                    if (!VoxelConstants.getMinecraft().isInSingleplayer()) {
-                        VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + x + " " + y + " " + z);
-                    }
+                if (hovered == null) {
+                    if (y == 0) y = (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ? VoxelConstants.getPlayer().world.getTopY() : 64);
+
+                    VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), x, y, z));
+
+                    break;
                 }
+
+                this.selectedWaypoint = hovered;
+                y = selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ?
+                        selectedWaypoint.getY() :
+                        (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ?
+                                VoxelConstants.getPlayer().world.getTopY() :
+                                64
+                        );
+
+                VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), selectedWaypoint.getX(), y, selectedWaypoint.getZ()));
             }
             case 4 -> {
                 if (hovered != null) {
