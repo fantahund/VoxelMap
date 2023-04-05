@@ -1157,9 +1157,9 @@ public class Radar implements IRadar {
 
                     ModelPartWithResourceLocation[] headBitsWithLocations = headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[0]);
                     boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
-                    ImageUtils.saveImage(type.id, GLUtils.fboTextureID, 0, 512, 512);
+                    ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
                     if (success) {
-                        headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
+                        headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
                     }
                 }
             } catch (Exception exception) {
@@ -1221,7 +1221,7 @@ public class Radar implements IRadar {
     private boolean drawModel(float scale, int captureDepth, LivingEntity livingEntity, Direction facing, Model model, ModelPartWithResourceLocation[] headBits) {
         boolean failed = false;
         float size = 64.0F * scale;
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, GLUtils.fboTextureID);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.Utils.fboTextureId);
         int width = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
         int height = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
         OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
@@ -1454,7 +1454,7 @@ public class Radar implements IRadar {
                     ModelPartWithResourceLocation[] headBits = {new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation)};
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
-                        BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
+                        BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
                         headImage = this.trimAndOutlineImage(new Contact(VoxelConstants.getPlayer(), EnumMobs.PLAYER), headImage, true, true);
                         icon = this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.PLAYER.id + resourceLocation + "head", headImage);
                         this.newMobs = true;
@@ -1541,7 +1541,7 @@ public class Radar implements IRadar {
         if (modelBiped != null && resourceLocation != null) {
             ModelPartWithResourceLocation[] headBitsWithResourceLocation = {new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation)};
             this.drawModel(1.0F, 2, (LivingEntity) contact.entity, Direction.NORTH, modelBiped, headBitsWithResourceLocation);
-            BufferedImage armorImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
+            BufferedImage armorImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
             armorImage = armorImage.getSubimage(200, 200, 112, 112);
             armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(armorImage)), this.options.outlines, true, intendedWidth * 4.0F, intendedHeight * 4.0F, 2);
             icon = this.textureAtlas.registerIconForBufferedImage("armor " + helmet.getTranslationKey() + (isPiglin ? "_piglin" : ""), armorImage);

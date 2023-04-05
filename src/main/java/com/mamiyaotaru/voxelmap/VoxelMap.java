@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -52,7 +51,6 @@ public class VoxelMap implements ResourceReloader {
     VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
-        GLUtils.textureManager = VoxelConstants.getMinecraft().getTextureManager();
         mapOptions = new MapSettingsManager();
         mapOptions.showUnderMenus = showUnderMenus;
         radarOptions = new RadarSettingsManager();

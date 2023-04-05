@@ -4,57 +4,41 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.client.util.GlAllocationUtils;
 import net.minecraft.util.Identifier;
 import org.lwjgl.BufferUtils;
 
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
 @Deprecated
 public class GLUtils {
-    private static final Tessellator tessellator = Tessellator.getInstance();
-    private static final BufferBuilder vertexBuffer = tessellator.getBuffer();
-    public static TextureManager textureManager;
-    public static int fboID;
-    public static int rboID;
-    public static int fboTextureID;
-    private static int previousFBOID;
-    private static int previousFBOIDREAD;
-    private static int previousFBOIDDRAW;
-    private static final IntBuffer dataBuffer = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
-
     @Deprecated
     public static void setupFrameBuffer() {
-        previousFBOID = OpenGL.glGetInteger(OpenGL.GL30_GL_FRAMEBUFFER_BINDING); // unknown
-        fboID = OpenGL.glGenFramebuffers();
-        fboTextureID = OpenGL.glGenTextures();
+        OpenGL.Utils.previousFboId = OpenGL.glGetInteger(OpenGL.GL30_GL_FRAMEBUFFER_BINDING); // unknown
+        OpenGL.Utils.fboId = OpenGL.glGenFramebuffers();
+        OpenGL.Utils.fboTextureId = OpenGL.glGenTextures();
         int width = 512;
         int height = 512;
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, fboID); // unknown
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.Utils.fboId); // unknown
         ByteBuffer byteBuffer = BufferUtils.createByteBuffer(4 * width * height);
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, fboTextureID);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.Utils.fboTextureId);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL11_GL_CLAMP);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL11_GL_CLAMP);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         OpenGL.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, width, height, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_BYTE, byteBuffer);
-        OpenGL.glFramebufferTexture2D(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.GL30_GL_COLOR_ATTACHMENT0, OpenGL.GL11_GL_TEXTURE_2D, fboTextureID, 0);
-        rboID = OpenGL.glGenRenderbuffers();
+        OpenGL.glFramebufferTexture2D(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.GL30_GL_COLOR_ATTACHMENT0, OpenGL.GL11_GL_TEXTURE_2D, OpenGL.Utils.fboTextureId, 0);
+        int rboID = OpenGL.glGenRenderbuffers();
         OpenGL.glBindRenderbuffer(OpenGL.GL30_GL_RENDERBUFFER, rboID);
         OpenGL.glRenderbufferStorage(OpenGL.GL30_GL_RENDERBUFFER, OpenGL.GL14_GL_DEPTH_COMPONENT24, width, height);
         OpenGL.glFramebufferRenderbuffer(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.GL30_GL_DEPTH_ATTACHMENT, OpenGL.GL30_GL_RENDERBUFFER, rboID);
         OpenGL.glBindRenderbuffer(OpenGL.GL30_GL_RENDERBUFFER, 0);
         checkFramebufferStatus();
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, previousFBOID);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.Utils.previousFboId);
         GlStateManager._bindTexture(0);
     }
 
@@ -78,19 +62,19 @@ public class GLUtils {
 
     @Deprecated
     public static void bindFrameBuffer() {
-        previousFBOID = OpenGL.glGetInteger(OpenGL.GL30_GL_FRAMEBUFFER_BINDING);
-        previousFBOIDREAD = OpenGL.glGetInteger(OpenGL.GL30_GL_READ_FRAMEBUFFER_BINDING);
-        previousFBOIDDRAW = OpenGL.glGetInteger(OpenGL.GL30_GL_FRAMEBUFFER_BINDING);
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, fboID);
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, fboID);
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, fboID);
+        OpenGL.Utils.previousFboId = OpenGL.glGetInteger(OpenGL.GL30_GL_FRAMEBUFFER_BINDING);
+        OpenGL.Utils.previousFboIdRead = OpenGL.glGetInteger(OpenGL.GL30_GL_READ_FRAMEBUFFER_BINDING);
+        OpenGL.Utils.previousFboIdDraw = OpenGL.glGetInteger(OpenGL.GL30_GL_FRAMEBUFFER_BINDING);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.Utils.fboId);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, OpenGL.Utils.fboId);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, OpenGL.Utils.fboId);
     }
 
     @Deprecated
     public static void unbindFrameBuffer() {
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, previousFBOID);
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, previousFBOIDREAD);
-        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, previousFBOIDDRAW);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_FRAMEBUFFER, OpenGL.Utils.previousFboId);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, OpenGL.Utils.previousFboIdRead);
+        OpenGL.glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, OpenGL.Utils.previousFboIdDraw);
     }
 
     @Deprecated
@@ -124,15 +108,15 @@ public class GLUtils {
         int[] imageData = new int[width * height];
         paramImg.getRGB(0, 0, width, height, imageData, 0, width);
         OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, glid);
-        dataBuffer.clear();
-        dataBuffer.put(imageData, 0, width * height);
-        dataBuffer.position(0).limit(width * height);
+        OpenGL.Utils.DATA_BUFFER.clear();
+        OpenGL.Utils.DATA_BUFFER.put(imageData, 0, width * height);
+        OpenGL.Utils.DATA_BUFFER.position(0).limit(width * height);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
         OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
         OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
-        OpenGL.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, width, height, 0, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, dataBuffer);
+        OpenGL.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, width, height, 0, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, OpenGL.Utils.DATA_BUFFER);
         return glid;
     }
 
@@ -143,7 +127,7 @@ public class GLUtils {
 
     @Deprecated
     public static void img(Identifier paramResourceLocation) {
-        textureManager.bindTexture(paramResourceLocation);
+        OpenGL.Utils.textureManager.bindTexture(paramResourceLocation);
     }
 
     @Deprecated
@@ -163,7 +147,7 @@ public class GLUtils {
 
     @Deprecated
     public static void register(Identifier resourceLocation, AbstractTexture image) {
-        textureManager.registerTexture(resourceLocation, image);
+        OpenGL.Utils.textureManager.registerTexture(resourceLocation, image);
     }
 
     @Deprecated
@@ -177,17 +161,17 @@ public class GLUtils {
 
     @Deprecated
     public static void drawPre() {
-        vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        OpenGL.Utils.VERTEX_BUFFER.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
     }
 
     @Deprecated
     public static void drawPre(VertexFormat vertexFormat) {
-        vertexBuffer.begin(VertexFormat.DrawMode.QUADS, vertexFormat);
+        OpenGL.Utils.VERTEX_BUFFER.begin(VertexFormat.DrawMode.QUADS, vertexFormat);
     }
 
     @Deprecated
     public static void drawPost() {
-        tessellator.draw();
+        OpenGL.Utils.TESSELLATOR.draw();
     }
 
     @Deprecated
@@ -197,16 +181,16 @@ public class GLUtils {
 
     @Deprecated
     public static void ldrawone(int x, int y, double z, float u, float v) {
-        vertexBuffer.vertex(x, y, z).texture(u, v).next();
+        OpenGL.Utils.VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next();
     }
 
     @Deprecated
     public static void ldrawtwo(double x, double y, double z) {
-        vertexBuffer.vertex(x, y, z).next();
+        OpenGL.Utils.VERTEX_BUFFER.vertex(x, y, z).next();
     }
 
     @Deprecated
     public static void ldrawthree(double x, double y, double z, float u, float v) {
-        vertexBuffer.vertex(x, y, z).texture(u, v).next();
+        OpenGL.Utils.VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next();
     }
 }
