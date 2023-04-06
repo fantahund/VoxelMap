@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
@@ -20,7 +21,6 @@ import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.Material;
 import net.minecraft.block.RedstoneWireBlock;
-import net.minecraft.class_8251;
 import net.minecraft.client.color.world.FoliageColors;
 import net.minecraft.client.color.world.GrassColors;
 import net.minecraft.client.option.GameOptions;
@@ -249,7 +249,7 @@ public class ColorManager {
         OpenGL.glViewport(0, 0, width, height);
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f, class_8251.field_43360);
+        RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
         matrixStack.loadIdentity();
@@ -295,7 +295,7 @@ public class ColorManager {
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
         GLUtils.unbindFrameBuffer();
-        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, class_8251.field_43360);
+        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
     }
 
@@ -486,14 +486,14 @@ public class ColorManager {
             Block block = blockState.getBlock();
             Material material = blockState.getMaterial();
             if (block instanceof FluidBlock) {
-                if (material == Material.WATER) {
+                if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                     icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
-                } else if (material == Material.LAVA) {
+                } else if (material == Material.GENERIC) {
                     icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
                 }
-            } else if (material == Material.WATER) {
+            } else if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                 icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
-            } else if (material == Material.LAVA) {
+            } else if (material == Material.GENERIC) {
                 icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
             }
         }
