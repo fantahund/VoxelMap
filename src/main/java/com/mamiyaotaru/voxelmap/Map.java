@@ -1613,7 +1613,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         matrixStack.push();
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        GLUtils.disp2(GLUtils.fboTextureID);
+        GLUtils.disp2(OpenGL.Utils.fboTextureId);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / this.scWidth;
         OpenGL.glEnable(3089);

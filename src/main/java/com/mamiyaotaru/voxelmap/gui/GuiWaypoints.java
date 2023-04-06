@@ -134,13 +134,14 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void teleportClicked() {
-        int y = this.selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ? this.selectedWaypoint.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getPlayer().world.getTopY() : 64);
-        if (VoxelConstants.isSinglePlayer()) {
-            VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-        } else {
-            VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + this.selectedWaypoint.getX() + " " + y + " " + this.selectedWaypoint.getZ());
-        }
+        int y = selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ?
+                selectedWaypoint.getY() :
+                (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ?
+                        VoxelConstants.getPlayer().world.getTopY() :
+                        64
+                );
 
+        VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), selectedWaypoint.getX(), y, selectedWaypoint.getZ()));
         VoxelConstants.getMinecraft().setScreen(null);
     }
 
@@ -191,10 +192,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return this.editClicked;
     }
 
-    public void accept(boolean t) {
+    public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.deleteWaypoint(this.selectedWaypoint);
                 this.selectedWaypoint = null;
             }
@@ -204,7 +205,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.editClicked) {
             this.editClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.saveWaypoints();
             }
 
@@ -213,7 +214,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
         if (this.addClicked) {
             this.addClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.addWaypoint(this.newWaypoint);
                 this.setSelectedWaypoint(this.newWaypoint);
             }

@@ -89,10 +89,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return this.playerList.mouseScrolled(mouseX, mouseY, amount);
     }
 
-    public void accept(boolean t) {
+    public void accept(boolean b) {
         if (this.allClicked) {
             this.allClicked = false;
-            if (t) {
+            if (b) {
                 String combined = this.message.getText() + " " + this.locInfo;
                 if (combined.length() > 100) {
                     VoxelConstants.getPlayer().sendMessage(Text.of(this.message.getText()));

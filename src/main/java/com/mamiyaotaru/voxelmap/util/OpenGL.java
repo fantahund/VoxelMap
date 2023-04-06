@@ -187,16 +187,16 @@ public final class OpenGL {
     public static int glCheckFramebufferStatus(int target) { return GL30.glCheckFramebufferStatus(target); }
 
     public static final class Utils {
-        private static final Tessellator TESSELLATOR = Tessellator.getInstance();
-        private static final BufferBuilder VERTEX_BUFFER = TESSELLATOR.getBuffer();
-        private static final IntBuffer DATA_BUFFER = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
+        public static final Tessellator TESSELLATOR = Tessellator.getInstance();
+        public static final BufferBuilder VERTEX_BUFFER = TESSELLATOR.getBuffer();
+        public static final IntBuffer DATA_BUFFER = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
 
-        private static final TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
-        private static int fboId = -1;
-        private static int fboTextureId = -1;
-        private static int previousFboId = -1;
-        private static int previousFboIdRead = -1;
-        private static int previousFboIdDraw = -1;
+        public static final TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
+        public static int fboId = -1;
+        public static int fboTextureId = -1;
+        public static int previousFboId = -1;
+        public static int previousFboIdRead = -1;
+        public static int previousFboIdDraw = -1;
 
         private Utils() {}
 
