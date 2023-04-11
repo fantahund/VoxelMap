@@ -140,7 +140,7 @@ public class ImageUtils {
                     GLUtils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + fboWidth) / imageWidth, ((float) startY + fboHeight) / imageHeight);
                     GLUtils.ldrawthree(0.0, 0.0, 1.0, (float) startX / imageWidth, ((float) startY + fboHeight) / imageHeight);
                     GLUtils.drawPost();
-                    GLUtils.disp(GLUtils.fboTextureID);
+                    GLUtils.disp(OpenGL.Utils.fboTextureId);
                     byteBuffer.position(0);
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
                     byteBuffer.position(0);

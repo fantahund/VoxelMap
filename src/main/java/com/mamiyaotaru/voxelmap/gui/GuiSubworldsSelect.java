@@ -105,8 +105,8 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.newNameField = new TextFieldWidget(this.getFontRenderer(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
-    public void accept(boolean t) {
-        if (!t) {
+    public void accept(boolean b) {
+        if (!b) {
             VoxelConstants.getMinecraft().setScreen(this.parent);
         } else {
             this.multiworld = true;

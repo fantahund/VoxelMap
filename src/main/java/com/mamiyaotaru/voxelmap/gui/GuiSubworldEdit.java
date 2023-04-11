@@ -73,10 +73,10 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(confirmScreen);
     }
 
-    public void accept(boolean t) {
+    public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
-            if (t) {
+            if (b) {
                 this.waypointManager.deleteSubworld(this.originalSubworldName);
             }
 

@@ -1037,7 +1037,7 @@ public class Map implements Runnable, IChangeObserver {
                         foliageBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                     }
 
-                    if (foliageBlockState.getMaterial() == Material.SNOW_LAYER) {
+                    if (foliageBlockState.getMaterial() == Material.AGGREGATE) {
                         this.surfaceBlockState = foliageBlockState;
                         foliageBlockState = BlockRepository.air.getDefaultState();
                     }
@@ -1046,24 +1046,24 @@ public class Map implements Runnable, IChangeObserver {
                         foliageBlockState = BlockRepository.air.getDefaultState();
                     }
 
-                    if (foliageBlockState != null && foliageBlockState.getMaterial() != Material.AIR) {
+                    if (foliageBlockState != null && foliageBlockState.getMaterial() != Material.AGGREGATE) {
                         foliageHeight = surfaceHeight + 1;
                     } else {
                         foliageHeight = -1;
                     }
 
                     Material material = this.surfaceBlockState.getMaterial();
-                    if (material == Material.WATER || material == Material.ICE) {
+                    if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT || material == Material.LIGHT_PASSES_THROUGH) {
                         seafloorHeight = surfaceHeight;
 
-                        for (seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, this.blockPos) < 5 && seafloorBlockState.getMaterial() != Material.LEAVES && seafloorHeight > 1; seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                        for (seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, this.blockPos) < 5 && seafloorBlockState.getMaterial() != Material.LIGHT_PASSES_THROUGH && seafloorHeight > 1; seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                             material = seafloorBlockState.getMaterial();
-                            if (transparentHeight == -1 && material != Material.ICE && material != Material.WATER && material.blocksMovement()) {
+                            if (transparentHeight == -1 && material != Material.LIGHT_PASSES_THROUGH && material != Material.NOT_SOLID_ALLOWS_MOVEMENT && material.blocksMovement()) {
                                 transparentHeight = seafloorHeight;
                                 this.transparentBlockState = seafloorBlockState;
                             }
 
-                            if (foliageHeight == -1 && seafloorHeight != transparentHeight && this.transparentBlockState != seafloorBlockState && material != Material.ICE && material != Material.WATER && material != Material.AIR && material != Material.BUBBLE_COLUMN) {
+                            if (foliageHeight == -1 && seafloorHeight != transparentHeight && this.transparentBlockState != seafloorBlockState && material != Material.LIGHT_PASSES_THROUGH && material != Material.NOT_SOLID_ALLOWS_MOVEMENT && material != Material.AGGREGATE) {
                                 foliageHeight = seafloorHeight;
                                 foliageBlockState = seafloorBlockState;
                             }
@@ -1071,7 +1071,7 @@ public class Map implements Runnable, IChangeObserver {
                             --seafloorHeight;
                         }
 
-                        if (seafloorBlockState.getMaterial() == Material.WATER) {
+                        if (seafloorBlockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                             seafloorBlockState = BlockRepository.air.getDefaultState();
                         }
                     }
@@ -1083,7 +1083,7 @@ public class Map implements Runnable, IChangeObserver {
                     this.blockPos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
                     foliageBlockState = world.getBlockState(this.blockPos);
                     Material material = foliageBlockState.getMaterial();
-                    if (material != Material.SNOW_LAYER && material != Material.AIR && material != Material.LAVA && material != Material.WATER) {
+                    if (material != Material.AGGREGATE && material != Material.AGGREGATE && material != Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                         foliageBlockStateID = BlockRepository.getStateId(foliageBlockState);
                     } else {
                         foliageHeight = -1;
@@ -1138,7 +1138,7 @@ public class Map implements Runnable, IChangeObserver {
                 solid = true;
             }
 
-            if (this.surfaceBlockState.getMaterial() == Material.LAVA) {
+            if (this.surfaceBlockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                 solid = false;
             }
 
@@ -1199,7 +1199,7 @@ public class Map implements Runnable, IChangeObserver {
                     this.blockPos.setXYZ(startX + imageX, seafloorHeight, startZ + imageY);
                     BlockState blockStateAbove = world.getBlockState(this.blockPos);
                     Material materialAbove = blockStateAbove.getMaterial();
-                    if (this.options.lightmap && materialAbove == Material.ICE) {
+                    if (this.options.lightmap && materialAbove == Material.LIGHT_PASSES_THROUGH) {
                         int multiplier = 255;
                         // I'm not sure if this will be a 100% correct fix, but we'll see // Algo
                         //if (this.game.options.getAo().getValue() == AoMode.MIN) {
@@ -1358,12 +1358,12 @@ public class Map implements Runnable, IChangeObserver {
         int y = this.lastY;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = this.world.getBlockState(this.blockPos);
-        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.LAVA) {
+        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.NOT_SOLID_ALLOWS_MOVEMENT) {
             while (y > world.getBottomY()) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getMaterial() == Material.LAVA) {
+                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                     return y + 1;
                 }
             }
@@ -1374,7 +1374,7 @@ public class Map implements Runnable, IChangeObserver {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.LAVA) {
+                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                     return y;
                 }
             }
@@ -1384,7 +1384,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private int getSeafloorHeight(World world, int x, int z, int height) {
-        for (BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z)); blockState.getOpacity(world, this.blockPos) < 5 && blockState.getMaterial() != Material.LEAVES && height > 1; blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z))) {
+        for (BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z)); blockState.getOpacity(world, this.blockPos) < 5 && blockState.getMaterial() != Material.LIGHT_PASSES_THROUGH && height > 1; blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z))) {
             --height;
         }
 
@@ -1404,15 +1404,15 @@ public class Map implements Runnable, IChangeObserver {
 
         BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, transHeight - 1, z));
         Material material = blockState.getMaterial();
-        if (transHeight == height + 1 && material == Material.SNOW_LAYER) {
+        if (transHeight == height + 1 && material == Material.AGGREGATE) {
             transHeight = -1;
         }
 
-        if (material == Material.BARRIER) {
+        if (material == Material.GLASS) {
             ++transHeight;
             blockState = world.getBlockState(this.blockPos.withXYZ(x, transHeight - 1, z));
             material = blockState.getMaterial();
-            if (material == Material.AIR) {
+            if (material == Material.AGGREGATE) {
                 transHeight = -1;
             }
         }
@@ -1527,7 +1527,7 @@ public class Map implements Runnable, IChangeObserver {
             this.blockPos.setXYZ(x, Math.max(Math.min(height, 256 - 1), 0), z);
             int blockLight = world.getLightLevel(LightType.BLOCK, this.blockPos);
             int skyLight = world.getLightLevel(LightType.SKY, this.blockPos);
-            if (blockState.getMaterial() == Material.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
+            if (blockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
                 blockLight = 14;
             }
 
@@ -1613,7 +1613,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         matrixStack.push();
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        GLUtils.disp2(GLUtils.fboTextureID);
+        GLUtils.disp2(OpenGL.Utils.fboTextureId);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / this.scWidth;
         OpenGL.glEnable(3089);

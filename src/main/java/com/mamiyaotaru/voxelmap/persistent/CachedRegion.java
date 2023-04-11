@@ -29,10 +29,7 @@ import org.apache.logging.log4j.Level;
 
 import javax.imageio.ImageIO;
 import java.awt.image.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
@@ -541,6 +538,7 @@ public class CachedRegion {
 
     }
 
+    @SuppressWarnings("OverlyBroadThrowsClause")
     private void doSave() throws IOException {
         BiMap<BlockState, Integer> stateToInt = this.data.getStateToInt();
         byte[] byteArray = this.data.getData();

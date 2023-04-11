@@ -221,7 +221,7 @@ public class ColorManager {
         try {
             BakedModel model = VoxelConstants.getMinecraft().getItemRenderer().getModel(stack, world, null, 0);
             this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
-            BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(GLUtils.fboTextureID);
+            BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
             ImageIO.write(blockImage, "png", new File(VoxelConstants.getMinecraft().runDirectory, blockState.getBlock().getName().getString() + "-" + Block.getRawIdFromState(blockState) + ".png"));
             return blockImage;
         } catch (Exception var8) {
@@ -242,7 +242,7 @@ public class ColorManager {
         float rotX = rotations.x();
         float rotY = rotations.y();
         float rotZ = rotations.z();
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, GLUtils.fboTextureID);
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.Utils.fboTextureId);
         int width = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
         int height = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
         OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
@@ -486,14 +486,14 @@ public class ColorManager {
             Block block = blockState.getBlock();
             Material material = blockState.getMaterial();
             if (block instanceof FluidBlock) {
-                if (material == Material.WATER) {
+                if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                     icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
-                } else if (material == Material.LAVA) {
+                } else if (material == Material.GENERIC) {
                     icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
                 }
-            } else if (material == Material.WATER) {
+            } else if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
                 icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
-            } else if (material == Material.LAVA) {
+            } else if (material == Material.GENERIC) {
                 icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
             }
         }
@@ -557,7 +557,7 @@ public class ColorManager {
     private void checkForBiomeTinting(MutableBlockPos blockPos, BlockState blockState, int color) {
         try {
             Block block = blockState.getBlock();
-            String blockName = Registries.BLOCK.getId(block) + "";
+            String blockName = String.valueOf(Registries.BLOCK.getId(block));
             if (BlockRepository.biomeBlocks.contains(block) || !blockName.startsWith("minecraft:")) {
                 int tint;
                 MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
@@ -982,14 +982,14 @@ public class ColorManager {
 
             try {
                 if (token.matches("^\\d+$")) {
-                    tmpList.add(Integer.parseInt(token) + "");
+                    tmpList.add(String.valueOf(Integer.parseInt(token)));
                 } else if (token.matches("^\\d+-\\d+$")) {
                     String[] t = token.split("-");
                     int min = Integer.parseInt(t[0]);
                     int max = Integer.parseInt(t[1]);
 
                     for (int i = min; i <= max; ++i) {
-                        tmpList.add(i + "");
+                        tmpList.add(String.valueOf(i));
                     }
                 } else if (!token.isEmpty()) {
                     tmpList.add(token);
