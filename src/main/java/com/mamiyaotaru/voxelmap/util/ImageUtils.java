@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -19,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class ImageUtils {
     public static void saveImage(String name, int glid, int maxMipmapLevel, int width, int height) {
@@ -167,32 +169,40 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h) {
+    public static Optional<BufferedImage> blankImage(Identifier resourceLocation, int w, int h) {
         return blankImage(resourceLocation, w, h, 64, 32);
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight) {
+    public static Optional<BufferedImage> blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight) {
         return blankImage(resourceLocation, w, h, imageWidth, imageHeight, 0, 0, 0, 0);
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int r, int g, int b, int a) {
+    public static Optional<BufferedImage> blankImage(Identifier resourceLocation, int w, int h, int r, int g, int b, int a) {
         return blankImage(resourceLocation, w, h, 64, 32, r, g, b, a);
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
+    public static Optional<BufferedImage> blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
-            BufferedImage mobSkin = ImageIO.read(is);
-            is.close();
-            BufferedImage temp = new BufferedImage(w * mobSkin.getWidth() / imageWidth, h * mobSkin.getWidth() / imageWidth, 6);
-            Graphics2D g2 = temp.createGraphics();
-            g2.setColor(new Color(r, g, b, a));
-            g2.fillRect(0, 0, temp.getWidth(), temp.getHeight());
-            g2.dispose();
-            return temp;
-        } catch (Exception var13) {
-            VoxelConstants.getLogger().error("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage(), var13);
-            return null;
+            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation);
+
+            if (resource.isEmpty()) throw new IOException("Resource does not exist!");
+
+            InputStream stream = resource.get().getInputStream();
+            BufferedImage skin = ImageIO.read(stream);
+
+            stream.close();
+
+            BufferedImage tempImage = new BufferedImage(w * skin.getWidth() / imageWidth, h * skin.getHeight() / imageHeight, 6);
+            Graphics2D graphics2D = tempImage.createGraphics();
+
+            graphics2D.setColor(new Color(r, g, b, a));
+            graphics2D.fillRect(0, 0, tempImage.getWidth(), tempImage.getHeight());
+            graphics2D.dispose();
+
+            return Optional.of(tempImage);
+        } catch (IOException exception) {
+            VoxelConstants.getLogger().error(String.format("Failed getting mob: %s - %s", resourceLocation.toString(), exception.getLocalizedMessage()), exception);
+            return Optional.empty();
         }
     }
 

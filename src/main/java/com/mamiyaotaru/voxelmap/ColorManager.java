@@ -76,6 +76,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -831,16 +832,16 @@ public class ColorManager {
 
             String[] biomesArray = biomes.split(" ");
             if (blockStates.isEmpty()) {
-                Block block;
+                Optional<Block> block;
                 Pattern pattern = Pattern.compile(".*/block_(.+).properties");
                 Matcher matcher = pattern.matcher(filePath);
                 if (matcher.find()) {
                     block = this.getBlockFromName(matcher.group(1));
-                    if (block != null) {
-                        Set<BlockState> matching = this.parseBlockMetadata(block, metadata);
-                        if (matching.isEmpty()) {
-                            matching.addAll(block.getStateManager().getStates());
-                        }
+
+                    if (block.isPresent()) {
+                        Set<BlockState> matching = this.parseBlockMetadata(block.get(), metadata);
+
+                        if (matching.isEmpty()) matching.addAll(block.get().getStateManager().getStates());
 
                         blockStates.addAll(matching);
                     }
@@ -1007,27 +1008,24 @@ public class ColorManager {
             blockString = blockString.trim();
             String[] blockComponents = blockString.split(":");
             int tokensUsed = 0;
-            Block block;
-            block = this.getBlockFromName(blockComponents[0]);
-            if (block != null) {
-                tokensUsed = 1;
-            } else if (blockComponents.length > 1) {
-                block = this.getBlockFromName(blockComponents[0] + ":" + blockComponents[1]);
-                if (block != null) {
-                    tokensUsed = 2;
-                }
+
+            Optional<Block> block = this.getBlockFromName(blockComponents[0]);
+
+            if (block.isPresent()) tokensUsed = 1;
+            else if (blockComponents.length > 1) {
+                block = this.getBlockFromName(String.format("%s:%s", blockComponents[0], blockComponents[1]));
+
+                if (block.isPresent()) tokensUsed = 2;
             }
 
-            if (block != null) {
+            if (block.isPresent()) {
                 if (blockComponents.length > tokensUsed) {
                     metadata = new StringBuilder(blockComponents[tokensUsed]);
 
-                    for (int t = tokensUsed + 1; t < blockComponents.length; ++t) {
-                        metadata.append(":").append(blockComponents[t]);
-                    }
+                    for (int t = tokensUsed + 1; t < blockComponents.length; ++t) metadata.append(":").append(blockComponents[t]);
                 }
 
-                blockStates.addAll(this.parseBlockMetadata(block, metadata.toString()));
+                blockStates.addAll(this.parseBlockMetadata(block.get(), metadata.toString()));
             }
         }
 
@@ -1335,12 +1333,12 @@ public class ColorManager {
 
     }
 
-    private Block getBlockFromName(String name) {
+    private Optional<Block> getBlockFromName(String name) {
         try {
             Identifier resourceLocation = new Identifier(name);
-            return Registries.BLOCK.containsId(resourceLocation) ? Registries.BLOCK.get(resourceLocation) : null;
-        } catch (InvalidIdentifierException | NumberFormatException var3) {
-            return null;
+            return Registries.BLOCK.containsId(resourceLocation) ? Optional.of(Registries.BLOCK.get(resourceLocation)) : Optional.empty();
+        } catch (InvalidIdentifierException | NumberFormatException exception) {
+            return Optional.empty();
         }
     }
 
