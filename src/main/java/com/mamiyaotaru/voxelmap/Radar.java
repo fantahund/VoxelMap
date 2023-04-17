@@ -308,7 +308,7 @@ public class Radar implements IRadar {
                 }
             }
 
-            BufferedImage[] armorImages = {ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8)};
+            BufferedImage[] armorImages = {ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8).get(), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8).get(), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8).get(), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8).get()};
 
             for (int t = 0; t < armorImages.length; ++t) {
                 float scale = armorImages[t].getWidth() / 8.0F;
@@ -319,28 +319,28 @@ public class Radar implements IRadar {
                 }
             }
 
-            BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
+            BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64).get();
             float scale = zombie.getWidth() / 8.0F;
             zombie = ImageUtils.scaleImage(zombie, 4.0F / scale * 47.0F / 38.0F);
-            BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64);
+            BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64).get();
             zombieHat = ImageUtils.scaleImage(zombieHat, 4.0F / scale * 47.0F / 35.0F);
             zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8), zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
             zombieHat.flush();
             zombie = ImageUtils.fillOutline(ImageUtils.pad(zombie), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head", zombie);
-            BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32);
+            BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32).get();
             scale = skeleton.getWidth() / 8.0F;
             skeleton = ImageUtils.scaleImage(skeleton, 4.0F / scale * 47.0F / 38.0F);
             skeleton = ImageUtils.addImages(new BufferedImage(skeleton.getWidth(), skeleton.getHeight() + 8, 6), skeleton, 0.0F, 0.0F, skeleton.getWidth(), skeleton.getHeight() + 8);
             skeleton = ImageUtils.fillOutline(ImageUtils.pad(skeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head", skeleton);
-            BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32);
+            BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32).get();
             scale = witherSkeleton.getWidth() / 8.0F;
             witherSkeleton = ImageUtils.scaleImage(witherSkeleton, 4.0F / scale * 47.0F / 38.0F);
             witherSkeleton = ImageUtils.addImages(new BufferedImage(witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8, 6), witherSkeleton, 0.0F, 0.0F, witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8);
             witherSkeleton = ImageUtils.fillOutline(ImageUtils.pad(witherSkeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head", witherSkeleton);
-            BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10).get(), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8), 0.0F, 0.0F, 8, 10);
+            BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10).get(), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8).get(), 0.0F, 0.0F, 8, 10);
             scale = creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
             creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
@@ -348,7 +348,7 @@ public class Radar implements IRadar {
             scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
             dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
-            BufferedImage sheepFur = ImageUtils.loadImage(new Identifier("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
+            BufferedImage sheepFur = ImageUtils.loadImage(new Identifier("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6).get();
             scale = sheepFur.getWidth() / 6.0F;
             sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
             int chop = (int) Math.max(1.0F, 2.0F);
@@ -356,7 +356,7 @@ public class Radar implements IRadar {
             sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
             this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
             Identifier fontResourceLocation = new Identifier("textures/font/ascii.png");
-            BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
+            BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128).get();
             if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
                 int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
                 float scaleBy = 512.0F / maxDim;
@@ -366,7 +366,7 @@ public class Radar implements IRadar {
             fontImage = ImageUtils.addImages(new BufferedImage(fontImage.getWidth() + 2, fontImage.getHeight() + 2, fontImage.getType()), fontImage, 1.0F, 1.0F, fontImage.getWidth() + 2, fontImage.getHeight() + 2);
             Sprite fontSprite = this.textureAtlas.registerIconForBufferedImage(fontResourceLocation.toString(), fontImage);
             Identifier blankResourceLocation = new Identifier("voxelmap", "images/radar/solid.png");
-            BufferedImage blankImage = ImageUtils.loadImage(blankResourceLocation, 0, 0, 8, 8, 8, 8);
+            BufferedImage blankImage = ImageUtils.loadImage(blankResourceLocation, 0, 0, 8, 8, 8, 8).get();
             Sprite blankSprite = this.textureAtlas.registerIconForBufferedImage(blankResourceLocation.toString(), blankImage);
             this.fontRenderer.setSprites(fontSprite, blankSprite);
             this.textureAtlas.stitch();
@@ -378,10 +378,14 @@ public class Radar implements IRadar {
     }
 
     private BufferedImage createImageFromTypeAndResourceLocations(EnumMobs type, Identifier resourceLocation, Identifier resourceLocationSecondary, Entity entity) {
-        BufferedImage mobImage = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+        Optional<BufferedImage> optionalMobImage = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+
+        if (optionalMobImage.isEmpty()) return null;
+
+        BufferedImage mobImage = optionalMobImage.get();
         BufferedImage mobImageSecondary = null;
         if (resourceLocationSecondary != null) {
-            mobImageSecondary = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
+            mobImageSecondary = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary).get();
         }
 
         try {
@@ -395,11 +399,11 @@ public class Radar implements IRadar {
         BufferedImage image = null;
         switch (type) {
             case GENERICHOSTILE ->
-                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
+                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16).get();
             case GENERICNEUTRAL ->
-                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
+                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16).get();
             case GENERICTAME ->
-                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
+                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16).get();
             case BAT ->
                     image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 64, 64), ImageUtils.loadImage(mobImage, 25, 1, 3, 4), 0.0F, 0.0F, 8, 12), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 25, 1, 3, 4)), 5.0F, 0.0F, 8, 12), ImageUtils.loadImage(mobImage, 6, 6, 6, 6), 1.0F, 3.0F, 8, 12);
             case CHICKEN ->
@@ -847,16 +851,16 @@ public class Radar implements IRadar {
 
             BufferedImage mobImage = null;
             if (contact.type == EnumMobs.HORSE) {
-                BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+                BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation).get();
                 if (resourceLocationSecondary != null && base != null) {
-                    BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
+                    BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary).get();
                     pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / pattern.getWidth(), (float) base.getHeight() / pattern.getHeight());
                     base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                     pattern.flush();
                 }
 
                 if (resourceLocationTertiary != null && base != null) {
-                    BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
+                    BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary).get();
                     armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / armor.getWidth(), (float) base.getHeight() / armor.getHeight());
                     armor = ImageUtils.colorify(armor, contact.armorColor);
                     base = ImageUtils.addImages(base, armor, 0.0F, 0.0F, base.getWidth(), base.getHeight());
@@ -1186,11 +1190,11 @@ public class Radar implements IRadar {
                 for (int t = 1; t < resourceLocations.length; ++t) {
                     if (resourceLocations[t] != null) {
                         if (!hasAdditional) {
-                            base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+                            base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation).get();
                         }
 
                         hasAdditional = true;
-                        BufferedImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]);
+                        BufferedImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]).get();
                         float xScale = ((float) base.getWidth() / overlay.getWidth());
                         float yScale = ((float) base.getHeight() / overlay.getHeight());
                         if (xScale != 1.0F || yScale != 1.0F) {
@@ -1549,7 +1553,7 @@ public class Radar implements IRadar {
         }
 
         if (icon == null && resourceLocation != null) {
-            BufferedImage armorTexture = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+            BufferedImage armorTexture = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation).get();
             if (armorTexture != null) {
                 if (!isPiglin) {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);

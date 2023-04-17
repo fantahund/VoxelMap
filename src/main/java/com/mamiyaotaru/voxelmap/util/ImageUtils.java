@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
@@ -62,22 +63,29 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage createBufferedImageFromResourceLocation(Identifier resourceLocation) {
+    @NotNull
+    public static Optional<BufferedImage> createBufferedImageFromResourceLocation(Identifier resourceLocation) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
-            BufferedImage image = ImageIO.read(is);
-            is.close();
-            if (image.getType() != 6) {
-                BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 6);
-                Graphics2D g2 = temp.createGraphics();
-                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
-                g2.dispose();
-                image = temp;
-            }
+            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation);
 
-            return image;
-        } catch (Exception var5) {
-            return null;
+            if (resource.isEmpty()) throw new IOException("Resource does not exist!");
+
+            InputStream stream = resource.get().getInputStream();
+            BufferedImage image = ImageIO.read(stream);
+
+            stream.close();
+
+            if (image.getType() == BufferedImage.TYPE_4BYTE_ABGR) return Optional.of(image);
+
+            BufferedImage tempImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+            Graphics2D graphics2D = tempImage.createGraphics();
+
+            graphics2D.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+            graphics2D.dispose();
+
+            return Optional.of(tempImage);
+        } catch (IOException exception) {
+            return Optional.empty();
         }
     }
 
@@ -181,6 +189,7 @@ public class ImageUtils {
         return blankImage(resourceLocation, w, h, 64, 32, r, g, b, a);
     }
 
+    @NotNull
     public static Optional<BufferedImage> blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
             Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation);
@@ -192,7 +201,7 @@ public class ImageUtils {
 
             stream.close();
 
-            BufferedImage tempImage = new BufferedImage(w * skin.getWidth() / imageWidth, h * skin.getHeight() / imageHeight, 6);
+            BufferedImage tempImage = new BufferedImage(w * skin.getWidth() / imageWidth, h * skin.getHeight() / imageHeight, BufferedImage.TYPE_4BYTE_ABGR);
             Graphics2D graphics2D = tempImage.createGraphics();
 
             graphics2D.setColor(new Color(r, g, b, a));
@@ -253,18 +262,19 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage loadImage(Identifier resourceLocation, int x, int y, int w, int h) {
-        return loadImage(resourceLocation, x, y, w, h, 64, 32);
-    }
+    @NotNull
+    public static Optional<BufferedImage> loadImage(Identifier resourceLocation, int x, int y, int w, int h) { return loadImage(resourceLocation, x, y, w, h, 64, 32); }
 
-    public static BufferedImage loadImage(Identifier resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        BufferedImage mobSkin = createBufferedImageFromResourceLocation(resourceLocation);
-        if (mobSkin != null) {
-            return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
-        } else {
-            VoxelConstants.getLogger().warn("Failed getting image: " + resourceLocation.toString());
-            return null;
+    @NotNull
+    public static Optional<BufferedImage> loadImage(Identifier resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
+        Optional<BufferedImage> optionalSkin = createBufferedImageFromResourceLocation(resourceLocation);
+
+        if (optionalSkin.isEmpty()) {
+            VoxelConstants.getLogger().warn(String.format("Failed getting image: %s", resourceLocation.toString()));
+            return Optional.empty();
         }
+
+        return Optional.ofNullable(loadImage(optionalSkin.get(), x, y, w, h, imageWidth, imageHeight));
     }
 
     public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h) {
