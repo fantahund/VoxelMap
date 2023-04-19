@@ -15,9 +15,11 @@ import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPlayers.Row> {
     private final ArrayList<PlayerListEntry> players;
@@ -48,14 +50,12 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         return ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName());
     }
 
-    private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {
-        if (ScoreboardEntry == null) {
-            return null;
-        } else {
-            Text name = this.getPlayerName(ScoreboardEntry);
-            return new ButtonWidget.Builder(name, button -> {
-            }).dimensions(x, y, 150, 20).build();
-        }
+    @NotNull
+    private Optional<ButtonWidget> createButtonFor(int x, int y, PlayerListEntry entry) {
+        if (entry == null) return Optional.empty();
+
+        Text name = getPlayerName(entry);
+        return Optional.of(ButtonWidget.builder(name, button -> {}).dimensions(x, y, 150, 20).build());
     }
 
     public int getRowWidth() {
@@ -92,8 +92,8 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         for (int i = 0; i < this.playersFiltered.size(); i += 2) {
             PlayerListEntry ScoreboardEntry1 = (PlayerListEntry) this.playersFiltered.get(i);
             PlayerListEntry ScoreboardEntry2 = i < this.playersFiltered.size() - 1 ? (PlayerListEntry) this.playersFiltered.get(i + 1) : null;
-            ButtonWidget guibutton1 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
-            ButtonWidget guibutton2 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
+            ButtonWidget guibutton1 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1).get();
+            ButtonWidget guibutton2 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2).get();
             this.addEntry(new Row(guibutton1, i, guibutton2, i + 1));
         }
 

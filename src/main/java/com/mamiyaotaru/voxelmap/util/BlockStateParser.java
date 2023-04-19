@@ -23,7 +23,6 @@ public final class BlockStateParser {
         if (blockState != null) map.forcePut(blockState, id);
     }
 
-    @Nullable
     private static BlockState parseStateString(String stateString) {
         int bracketIndex = stateString.indexOf('[');
         String resourceString = stateString.substring(0, bracketIndex == -1 ? stateString.length() : bracketIndex);
