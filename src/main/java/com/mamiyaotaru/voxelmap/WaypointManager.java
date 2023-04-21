@@ -13,8 +13,16 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
+import com.mojang.authlib.yggdrasil.request.AbuseReportRequest;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerServerListWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.realms.RealmsClient;
+import net.minecraft.client.realms.dto.RealmsServerAddress;
+import net.minecraft.client.util.Session;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.resource.Resource;
@@ -204,9 +212,10 @@ public class WaypointManager {
                 } else {
                     serverName = serverData.address;
                 }
-            } else if (VoxelConstants.getMinecraft().isConnectedToRealms()) {
-                VoxelConstants.getLogger().warn("REALMS server detected!");
-                serverName = "Realms";
+            } else if (VoxelConstants.isRealmServer()) {
+                Session session = VoxelConstants.getMinecraft().getSession();
+                serverName = session.getSessionId();
+                VoxelConstants.getLogger().info(serverName);
             } else {
                 ClientPlayNetworkHandler netHandler = VoxelConstants.getMinecraft().getNetworkHandler();
                 ClientConnection networkManager = netHandler.getConnection();
