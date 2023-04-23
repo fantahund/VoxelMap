@@ -6,9 +6,9 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 public class GuiWaypointsOptions extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DEATHPOINTS };
@@ -51,10 +51,10 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         par1GuiButton.setMessage(Text.literal(this.options.getKeyText(option)));
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        drawMap(matrices);
-        this.renderBackground(matrices);
-        drawCenteredTextWithShadow(matrices, this.textRenderer, this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawMap(drawContext);
+        this.renderBackground(drawContext);
+        drawContext.drawCenteredTextWithShadow(this.textRenderer, this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 }

@@ -3,9 +3,12 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
@@ -18,18 +21,18 @@ public class GuiScreenMinimap extends Screen {
         super (title);
     }
 
-    public void drawMap(MatrixStack matrixStack) {
+    public void drawMap(DrawContext drawContext) {
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().showUnderMenus) return;
 
-        VoxelConstants.getVoxelMapInstance().getMap().drawMinimap(matrixStack);
+        VoxelConstants.getVoxelMapInstance().getMap().drawMinimap(drawContext);
         OpenGL.glClear(256);
     }
 
     public void removed() { MapSettingsManager.instance.saveAll(); }
 
-    public void renderTooltip(MatrixStack matrices, Text text, int x, int y) {
+    public void renderTooltip(DrawContext drawContext, Text text, int x, int y) {
         if (!(text != null && text.getString() != null && !text.getString().isEmpty())) return;
-        super.renderTooltip(matrices, text, x, y);
+        drawContext.drawTooltip(VoxelConstants.getMinecraft().textRenderer, text, x, y);
     }
 
     public int getWidth() { return width; }

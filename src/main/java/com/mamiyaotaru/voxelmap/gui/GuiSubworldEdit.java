@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -114,13 +115,13 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        drawMap(matrices);
-        this.renderBackground(matrices);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
-        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
-        this.subworldNameField.render(matrices, mouseX, mouseY, delta);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawMap(drawContext);
+        this.renderBackground(drawContext);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), I18n.translate("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
+        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
+        this.subworldNameField.render(drawContext, mouseX, mouseY, delta);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 
     private boolean isNameAcceptable() {

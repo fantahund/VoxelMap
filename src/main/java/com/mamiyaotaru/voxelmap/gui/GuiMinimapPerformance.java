@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiButtonText;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.resource.language.I18n;
@@ -114,11 +115,11 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.slimeChunksButton.active = VoxelConstants.getMinecraft().isIntegratedServerRunning() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        drawMap(matrices);
-        this.renderBackground(matrices);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawMap(drawContext);
+        this.renderBackground(drawContext);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 
     public void tick() {

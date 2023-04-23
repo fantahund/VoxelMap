@@ -6,11 +6,11 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class GuiMobs extends GuiScreenMinimap {
@@ -128,19 +128,19 @@ public class GuiMobs extends GuiScreenMinimap {
 
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        drawMap(matrices);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawMap(drawContext);
         this.tooltip = null;
-        this.mobsList.render(matrices, mouseX, mouseY, delta);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        this.mobsList.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         boolean isSomethingSelected = this.selectedMobId != null;
         this.buttonEnable.active = isSomethingSelected && !this.isMobEnabled(this.selectedMobId);
         this.buttonDisable.active = isSomethingSelected && this.isMobEnabled(this.selectedMobId);
-        super.render(matrices, mouseX, mouseY, delta);
-        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 10526880);
-        this.filter.render(matrices, mouseX, mouseY, delta);
+        super.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 10526880);
+        this.filter.render(drawContext, mouseX, mouseY, delta);
         if (this.tooltip != null) {
-            this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
+            this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);
         }
 
     }

@@ -9,7 +9,7 @@ import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.NarratorManager;
@@ -85,8 +85,8 @@ class GuiSlotMobs extends GuiSlotMinimap {
         return this.getEntryCount() * this.itemHeight;
     }
 
-    public void renderBackground(MatrixStack matrices) {
-        this.parentGui.renderBackground(matrices);
+    public void renderBackground(DrawContext drawContext) {
+        this.parentGui.renderBackground(drawContext);
     }
 
     protected void updateFilter(String filterString) {
@@ -119,7 +119,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             this.name = GuiSlotMobs.getTranslatedName(id);
         }
 
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             boolean isHostile = false;
             boolean isNeutral = false;
             boolean isEnabled = true;
@@ -140,7 +140,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
             int color = -16777216 + (red << 16) + (green << 8);
-            DrawableHelper.drawCenteredTextWithShadow(matrices, this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, y + 3, color);
+            drawContext.drawCenteredTextWithShadow(this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, y + 3, color);
             byte padding = 3;
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {
                 Text tooltip;
@@ -155,7 +155,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
-            DrawableHelper.drawTexture(matrices, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.drawTexture(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

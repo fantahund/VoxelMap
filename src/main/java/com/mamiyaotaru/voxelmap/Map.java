@@ -26,13 +26,15 @@ import com.mamiyaotaru.voxelmap.util.ScaledMutableNativeImageBackedTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.GlassBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.gui.screen.OutOfMemoryScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -45,6 +47,7 @@ import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -72,7 +75,7 @@ import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -118,7 +121,7 @@ public class Map implements Runnable, IChangeObserver {
     private float lastSunBrightness;
     private float lastLightning;
     private float lastPotion;
-    private final int[] lastLightmapValues = { -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216 };
+    private final int[] lastLightmapValues = {-16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216};
     private boolean lastBeneathRendering;
     private boolean needSkyColor;
     private boolean lastAboveHorizon = true;
@@ -291,7 +294,7 @@ public class Map implements Runnable, IChangeObserver {
         this.error = subworldNameBuilder.toString();
     }
 
-    public void onTickInGame(MatrixStack matrixStack) {
+    public void onTickInGame(DrawContext drawContext) {
         this.northRotate = this.options.oldNorth ? 90 : 0;
 
         if (this.lightmapTexture == null) {
@@ -444,7 +447,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (enabled) {
-            this.drawMinimap(matrixStack);
+            this.drawMinimap(drawContext);
         }
 
         this.timer = this.timer > 5000 ? 0 : this.timer + 1;
@@ -622,7 +625,7 @@ public class Map implements Runnable, IChangeObserver {
         return this.lightmapColors;
     }
 
-    public void drawMinimap(MatrixStack matrixStack) {
+    public void drawMinimap(DrawContext drawContext) {
         int scScaleOrig = 1;
 
         while (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / (scScaleOrig + 1) >= 320 && VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / (scScaleOrig + 1) >= 240) {
@@ -679,7 +682,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (!this.options.hide) {
             if (this.fullscreenMap) {
-                this.renderMapFull(modelViewMatrixStack, this.scWidth, this.scHeight);
+                this.renderMapFull(drawContext, this.scWidth, this.scHeight);
             } else {
                 this.renderMap(modelViewMatrixStack, mapX, mapY, scScale);
             }
@@ -691,7 +694,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             if (!this.fullscreenMap) {
-                this.drawDirections(matrixStack, mapX, mapY);
+                this.drawDirections(drawContext, mapX, mapY);
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -703,7 +706,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (this.options.coords) {
-            this.showCoords(matrixStack, mapX, mapY);
+            this.showCoords(drawContext, mapX, mapY);
         }
 
         OpenGL.glDepthMask(true);
@@ -716,10 +719,11 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         VoxelConstants.getMinecraft().textRenderer.getClass();
-        VoxelConstants.getMinecraft().textRenderer.drawWithShadow(modelViewMatrixStack, Text.literal("******sdkfjhsdkjfhsdkjfh"), 100.0F, 100.0F, -1);
+        VertexConsumerProvider.Immediate vertexConsumerProvider = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+        VoxelConstants.getMinecraft().textRenderer.draw(Text.literal("******sdkfjhsdkjfhsdkjfh"), 100.0F, 100.0F, -1, true, matrix4f, vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL, 0, 15728880);
         if (this.showWelcomeScreen) {
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            this.drawWelcomeScreen(matrixStack, VoxelConstants.getMinecraft().getWindow().getScaledWidth(), VoxelConstants.getMinecraft().getWindow().getScaledHeight());
+            this.drawWelcomeScreen(drawContext, VoxelConstants.getMinecraft().getWindow().getScaledWidth(), VoxelConstants.getMinecraft().getWindow().getScaledHeight());
         }
 
         OpenGL.glDepthMask(true);
@@ -1037,7 +1041,7 @@ public class Map implements Runnable, IChangeObserver {
                         foliageBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                     }
 
-                    if (foliageBlockState.getMaterial() == Material.AGGREGATE) {
+                    if (foliageBlockState.getBlock() == Blocks.SNOW) {
                         this.surfaceBlockState = foliageBlockState;
                         foliageBlockState = BlockRepository.air.getDefaultState();
                     }
@@ -1046,24 +1050,24 @@ public class Map implements Runnable, IChangeObserver {
                         foliageBlockState = BlockRepository.air.getDefaultState();
                     }
 
-                    if (foliageBlockState != null && foliageBlockState.getMaterial() != Material.AGGREGATE) {
+                    if (foliageBlockState != null && !(foliageBlockState.getBlock() instanceof AirBlock)) {
                         foliageHeight = surfaceHeight + 1;
                     } else {
                         foliageHeight = -1;
                     }
 
-                    Material material = this.surfaceBlockState.getMaterial();
-                    if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT || material == Material.LIGHT_PASSES_THROUGH) {
+                    Block material = this.surfaceBlockState.getBlock();
+                    if (material == Blocks.WATER || material == Blocks.ICE) {
                         seafloorHeight = surfaceHeight;
 
-                        for (seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, this.blockPos) < 5 && seafloorBlockState.getMaterial() != Material.LIGHT_PASSES_THROUGH && seafloorHeight > 1; seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
-                            material = seafloorBlockState.getMaterial();
-                            if (transparentHeight == -1 && material != Material.LIGHT_PASSES_THROUGH && material != Material.NOT_SOLID_ALLOWS_MOVEMENT && material.blocksMovement()) {
+                        for (seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, this.blockPos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock) && seafloorHeight > 1; seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                            material = seafloorBlockState.getBlock();
+                            if (transparentHeight == -1 && material != Blocks.ICE && material != Blocks.WATER) {
                                 transparentHeight = seafloorHeight;
                                 this.transparentBlockState = seafloorBlockState;
                             }
 
-                            if (foliageHeight == -1 && seafloorHeight != transparentHeight && this.transparentBlockState != seafloorBlockState && material != Material.LIGHT_PASSES_THROUGH && material != Material.NOT_SOLID_ALLOWS_MOVEMENT && material != Material.AGGREGATE) {
+                            if (foliageHeight == -1 && seafloorHeight != transparentHeight && this.transparentBlockState != seafloorBlockState && material != Blocks.ICE && material != Blocks.WATER && !(material instanceof AirBlock) && material != Blocks.BUBBLE_COLUMN) {
                                 foliageHeight = seafloorHeight;
                                 foliageBlockState = seafloorBlockState;
                             }
@@ -1071,7 +1075,7 @@ public class Map implements Runnable, IChangeObserver {
                             --seafloorHeight;
                         }
 
-                        if (seafloorBlockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                        if (seafloorBlockState.getBlock() == Blocks.WATER) {
                             seafloorBlockState = BlockRepository.air.getDefaultState();
                         }
                     }
@@ -1082,8 +1086,8 @@ public class Map implements Runnable, IChangeObserver {
                     foliageHeight = surfaceHeight + 1;
                     this.blockPos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
                     foliageBlockState = world.getBlockState(this.blockPos);
-                    Material material = foliageBlockState.getMaterial();
-                    if (material != Material.AGGREGATE && material != Material.AGGREGATE && material != Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                    Block material = foliageBlockState.getBlock();
+                    if (material != Blocks.SNOW && !(material instanceof AirBlock) && material != Blocks.LAVA && material != Blocks.WATER) {
                         foliageBlockStateID = BlockRepository.getStateId(foliageBlockState);
                     } else {
                         foliageHeight = -1;
@@ -1138,7 +1142,7 @@ public class Map implements Runnable, IChangeObserver {
                 solid = true;
             }
 
-            if (this.surfaceBlockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+            if (this.surfaceBlockState.getBlock() == Blocks.LAVA) {
                 solid = false;
             }
 
@@ -1198,8 +1202,8 @@ public class Map implements Runnable, IChangeObserver {
                     seafloorLight = this.getLight(seafloorColor, seafloorBlockState, world, startX + imageX, startZ + imageY, seafloorHeight, solid);
                     this.blockPos.setXYZ(startX + imageX, seafloorHeight, startZ + imageY);
                     BlockState blockStateAbove = world.getBlockState(this.blockPos);
-                    Material materialAbove = blockStateAbove.getMaterial();
-                    if (this.options.lightmap && materialAbove == Material.LIGHT_PASSES_THROUGH) {
+                    Block materialAbove = blockStateAbove.getBlock();
+                    if (this.options.lightmap && materialAbove == Blocks.ICE) {
                         int multiplier = 255;
                         // I'm not sure if this will be a 100% correct fix, but we'll see // Algo
                         //if (this.game.options.getAo().getValue() == AoMode.MIN) {
@@ -1358,12 +1362,12 @@ public class Map implements Runnable, IChangeObserver {
         int y = this.lastY;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = this.world.getBlockState(this.blockPos);
-        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock()!= Blocks.LAVA) {
             while (y > world.getBottomY()) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getBlock() == Blocks.LAVA) {
                     return y + 1;
                 }
             }
@@ -1374,7 +1378,7 @@ public class Map implements Runnable, IChangeObserver {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
                     return y;
                 }
             }
@@ -1384,7 +1388,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private int getSeafloorHeight(World world, int x, int z, int height) {
-        for (BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z)); blockState.getOpacity(world, this.blockPos) < 5 && blockState.getMaterial() != Material.LIGHT_PASSES_THROUGH && height > 1; blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z))) {
+        for (BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z)); blockState.getOpacity(world, this.blockPos) < 5 && !(blockState.getBlock() instanceof LeavesBlock) && height > 1; blockState = world.getBlockState(this.blockPos.withXYZ(x, height - 1, z))) {
             --height;
         }
 
@@ -1403,16 +1407,16 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         BlockState blockState = world.getBlockState(this.blockPos.withXYZ(x, transHeight - 1, z));
-        Material material = blockState.getMaterial();
-        if (transHeight == height + 1 && material == Material.AGGREGATE) {
+        Block material = blockState.getBlock();
+        if (transHeight == height + 1 && material == Blocks.SNOW) {
             transHeight = -1;
         }
 
-        if (material == Material.GLASS) {
+        if (material == Blocks.BARRIER) {
             ++transHeight;
             blockState = world.getBlockState(this.blockPos.withXYZ(x, transHeight - 1, z));
-            material = blockState.getMaterial();
-            if (material == Material.AGGREGATE) {
+            material = blockState.getBlock();
+            if (material instanceof AirBlock) {
                 transHeight = -1;
             }
         }
@@ -1527,7 +1531,7 @@ public class Map implements Runnable, IChangeObserver {
             this.blockPos.setXYZ(x, Math.max(Math.min(height, 256 - 1), 0), z);
             int blockLight = world.getLightLevel(LightType.BLOCK, this.blockPos);
             int skyLight = world.getLightLevel(LightType.SKY, this.blockPos);
-            if (blockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
+            if (blockState.getBlock() == Blocks.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
                 blockLight = 14;
             }
 
@@ -1562,7 +1566,7 @@ public class Map implements Runnable, IChangeObserver {
         GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
         GLUtils.drawPre();
         GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
-        GLUtils.ldrawthree( (256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
+        GLUtils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
         GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
         GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
         BufferBuilder bb = Tessellator.getInstance().getBuffer();
@@ -1810,7 +1814,8 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private void renderMapFull(MatrixStack matrixStack, int scWidth, int scHeight) {
+    private void renderMapFull(DrawContext drawContext, int scWidth, int scHeight) {
+        MatrixStack matrixStack = drawContext.getMatrices();
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1857,9 +1862,9 @@ public class Map implements Runnable, IChangeObserver {
                     float x = (float) (o.x * factor);
                     float z = (float) (o.z * factor);
                     if (this.options.oldNorth) {
-                        this.write(matrixStack, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
+                        this.write(drawContext, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
                     } else {
-                        this.write(matrixStack, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
+                        this.write(drawContext, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
                     }
                 }
             }
@@ -1931,7 +1936,8 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private void drawDirections(MatrixStack matrixStack, int x, int y) {
+    private void drawDirections(DrawContext drawContext, int x, int y) {
+        MatrixStack matrixStack = drawContext.getMatrices();
         boolean unicode = VoxelConstants.getMinecraft().options.getForceUnicodeFont().getValue();
         float scale = unicode ? 0.65F : 0.5F;
         float rotate;
@@ -1957,26 +1963,27 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate - 90.0))), distance * Math.cos(Math.toRadians(-(rotate - 90.0))), 100.0);
-        this.write(matrixStack, "N", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "N", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(distance * Math.sin(Math.toRadians(-rotate)), distance * Math.cos(Math.toRadians(-rotate)), 10.0);
-        this.write(matrixStack, "E", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "E", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 90.0))), distance * Math.cos(Math.toRadians(-(rotate + 90.0))), 10.0);
-        this.write(matrixStack, "S", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "S", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
         matrixStack.push();
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 180.0))), distance * Math.cos(Math.toRadians(-(rotate + 180.0))), 10.0);
-        this.write(matrixStack, "W", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "W", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.pop();
     }
 
-    private void showCoords(MatrixStack matrixStack, int x, int y) {
+    private void showCoords(DrawContext drawContext, int x, int y) {
+        MatrixStack matrixStack = drawContext.getMatrices();
         int textStart;
         if (y > this.scHeight - 37 - 32 - 4 - 15) {
             textStart = y - 32 - 4 - 9;
@@ -1991,13 +1998,13 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.scale(scale, scale, 1.0F);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.chkLen(xy) / 2;
-            this.write(matrixStack, xy, x / scale - m, textStart / scale, 16777215); //X, Z
+            this.write(drawContext, xy, x / scale - m, textStart / scale, 16777215); //X, Z
             xy = Integer.toString(GameVariableAccessShim.yCoord());
             m = this.chkLen(xy) / 2;
-            this.write(matrixStack, xy, x / scale - m, textStart / scale + 10.0F, 16777215); //Y
+            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 16777215); //Y
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(matrixStack, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); //WORLD NAME
+                this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); //WORLD NAME
             }
 
             matrixStack.pop();
@@ -2021,10 +2028,10 @@ public class Map implements Runnable, IChangeObserver {
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
             int m = this.chkLen(stats) / 2;
-            this.write(matrixStack, stats, (this.scWidth / 2f - m), 5.0F, 16777215);
+            this.write(drawContext, stats, (this.scWidth / 2f - m), 5.0F, 16777215);
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(matrixStack, this.error, (this.scWidth / 2f - m), 15.0F, 16777215);
+                this.write(drawContext, this.error, (this.scWidth / 2f - m), 15.0F, 16777215);
             }
         }
 
@@ -2042,19 +2049,19 @@ public class Map implements Runnable, IChangeObserver {
         return this.fontRenderer.getWidth(string);
     }
 
-    private void write(MatrixStack matrixStack, String text, float x, float y, int color) {
-        this.fontRenderer.drawWithShadow(matrixStack, text, x, y, color);
+    private void write(DrawContext drawContext, String text, float x, float y, int color) {
+        write(drawContext, Text.of(text), x, y, color);
     }
 
     private int chkLen(Text text) {
         return this.fontRenderer.getWidth(text);
     }
 
-    private void write(MatrixStack matrixStack, Text text, float x, float y, int color) {
-        this.fontRenderer.drawWithShadow(matrixStack, text, x, y, color);
+    private void write(DrawContext drawContext, Text text, float x, float y, int color) {
+        drawContext.drawTextWithShadow(this.fontRenderer, text, (int) x, (int) y, color);
     }
 
-    private void drawWelcomeScreen(MatrixStack matrixStack, int scWidth, int scHeight) {
+    private void drawWelcomeScreen(DrawContext drawContext, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
             String zmodver = "v1.11.10";
             this.welcomeText[0] = (Text.literal("")).append((Text.literal("VoxelMap! ")).formatted(Formatting.RED)).append(zmodver + " ").append(Text.translatable("minimap.ui.welcome1"));
@@ -2100,13 +2107,13 @@ public class Map implements Runnable, IChangeObserver {
         topY = centerY + (height - 1) / 2.0 * 10.0 - border + 10.0;
         botY = centerY + (height - 1) / 2.0 * 10.0 + border + 20.0;
         this.drawBox(leftX, rightX, topY, botY);
-        this.write(matrixStack, head, (centerX - title / 2f), (centerY - (height - 1) * 10 / 2f - 19), 16777215);
+        this.write(drawContext, head, (centerX - title / 2f), (centerY - (height - 1) * 10 / 2f - 19), 16777215);
 
         for (int n = 1; n < height; ++n) {
-            this.write(matrixStack, this.welcomeText[n], (centerX - maxSize / 2f), (centerY - (height - 1) * 10 / 2f + n * 10 - 9), 16777215);
+            this.write(drawContext, this.welcomeText[n], (centerX - maxSize / 2f), (centerY - (height - 1) * 10 / 2f + n * 10 - 9), 16777215);
         }
 
-        this.write(matrixStack, hide, (centerX - footer / 2f), ((scHeight + 5) / 2f + (height - 1) * 10 / 2f + 11), 16777215);
+        this.write(drawContext, hide, (centerX - footer / 2f), ((scHeight + 5) / 2f + (height - 1) * 10 / 2f + 11), 16777215);
     }
 
     private void drawBox(double leftX, double rightX, double topY, double botY) {

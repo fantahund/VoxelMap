@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -135,18 +136,18 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             this.id2 = id2;
         }
 
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.drawButton(matrices, this.button, this.id, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(matrices, this.button1, this.id1, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(matrices, this.button2, this.id2, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+        public void render(DrawContext drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            this.drawButton(drawContext, this.button, this.id, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button1, this.id1, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button2, this.id2, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
         }
 
-        private void drawButton(MatrixStack matrixStack, ButtonWidget button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
+        private void drawButton(DrawContext drawContext, ButtonWidget button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
             if (button != null) {
                 button.setY(y);
-                button.render(matrixStack, mouseX, mouseY, partialTicks);
+                button.render(drawContext, mouseX, mouseY, partialTicks);
                 if (id != -1) {
-                    this.drawIconForButton(matrixStack, button, id);
+                    this.drawIconForButton(drawContext, button, id);
                 }
 
                 if (button.isHovered() && mouseY >= GuiButtonRowListPlayers.this.top && mouseY <= GuiButtonRowListPlayers.this.bottom) {
@@ -157,15 +158,15 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
 
         }
 
-        private void drawIconForButton(MatrixStack matrixStack, ButtonWidget button, int id) {
+        private void drawIconForButton(DrawContext drawContext, ButtonWidget button, int id) {
             PlayerListEntry networkPlayerInfo = (PlayerListEntry) GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             PlayerEntity entityPlayer = VoxelConstants.getPlayer().world.getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderTexture(0, networkPlayerInfo.getSkinTexture());
-            Screen.drawTexture(matrixStack, button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
+            drawContext.drawTexture(networkPlayerInfo.getSkinTexture(), button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
             if (entityPlayer != null && entityPlayer.isPartVisible(PlayerModelPart.HAT)) {
-                Screen.drawTexture(matrixStack, button.getX() + 6, button.getY() + 6, 8, 8, 40.0F, 8.0F, 8, 8, 64, 64);
+                drawContext.drawTexture(networkPlayerInfo.getSkinTexture(), button.getX() + 6, button.getY() + 6, 8, 8, 40.0F, 8.0F, 8, 8, 64, 64);
             }
 
         }
