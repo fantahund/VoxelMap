@@ -26,6 +26,7 @@ import com.mamiyaotaru.voxelmap.util.ScaledMutableNativeImageBackedTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -1061,7 +1062,7 @@ public class Map implements Runnable, IChangeObserver {
 
                         for (seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, this.blockPos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock) && seafloorHeight > 1; seafloorBlockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                             material = seafloorBlockState.getBlock();
-                            if (transparentHeight == -1 && material != Blocks.ICE && material != Blocks.WATER) {
+                            if (transparentHeight == -1 && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMovement()) {
                                 transparentHeight = seafloorHeight;
                                 this.transparentBlockState = seafloorBlockState;
                             }
@@ -2062,7 +2063,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private void drawWelcomeScreen(DrawContext drawContext, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
-            String zmodver = "v1.11.10";
+            String zmodver = FabricLoader.getInstance().getModContainer("voxelmap").get().getMetadata().getVersion().getFriendlyString();
             this.welcomeText[0] = (Text.literal("")).append((Text.literal("VoxelMap! ")).formatted(Formatting.RED)).append(zmodver + " ").append(Text.translatable("minimap.ui.welcome1"));
             this.welcomeText[1] = Text.translatable("minimap.ui.welcome2");
             this.welcomeText[2] = Text.translatable("minimap.ui.welcome3");

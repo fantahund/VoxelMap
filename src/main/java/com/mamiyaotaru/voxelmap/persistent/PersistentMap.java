@@ -314,7 +314,7 @@ public class PersistentMap implements IChangeObserver {
 
                     for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock) && seafloorHeight > 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                         material = seafloorBlockState.getBlock();
-                        if (transparentHeight == 0 && material != Blocks.ICE && material != Blocks.WATER) {
+                        if (transparentHeight == 0 && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMovement()) {
                             transparentHeight = seafloorHeight;
                             transparentBlockState = seafloorBlockState;
                         }
