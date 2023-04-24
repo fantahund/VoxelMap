@@ -48,7 +48,6 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
@@ -2091,37 +2090,32 @@ public class Map implements Runnable, IChangeObserver {
         int centerY = (int) ((scHeight + 5) / 2.0);
         Text hide = this.welcomeText[this.welcomeText.length - 1];
         int footer = this.chkLen(hide);
-        OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 0.7F);
-        double leftX = centerX - title / 2.0 - border;
-        double rightX = centerX + title / 2.0 + border;
-        double topY = centerY - (height - 1) / 2.0 * 10.0 - border - 20.0;
-        double botY = centerY - (height - 1) / 2.0 * 10.0 + border - 10.0;
-        this.drawBox(leftX, rightX, topY, botY);
-        leftX = centerX - maxSize / 2.0 - border;
-        rightX = centerX + maxSize / 2.0 + border;
-        topY = centerY - (height - 1) / 2.0 * 10.0 - border;
-        botY = centerY + (height - 1) / 2.0 * 10.0 + border;
-        this.drawBox(leftX, rightX, topY, botY);
-        leftX = centerX - footer / 2.0 - border;
-        rightX = centerX + footer / 2.0 + border;
-        topY = centerY + (height - 1) / 2.0 * 10.0 - border + 10.0;
-        botY = centerY + (height - 1) / 2.0 * 10.0 + border + 20.0;
-        this.drawBox(leftX, rightX, topY, botY);
-        this.write(drawContext, head, (centerX - title / 2f), (centerY - (height - 1) * 10 / 2f - 19), 16777215);
-
+        int leftX = centerX - title / 2 - border;
+        int rightX = centerX + title / 2 + border;
+        int topY = centerY - (height - 1) / 2 * 10 - border - 20;
+        int botY = centerY - (height - 1) / 2 * 10 + border - 10;
+        this.drawBox(drawContext, leftX, rightX, topY, botY);
+        leftX = centerX - maxSize / 2 - border;
+        rightX = centerX + maxSize / 2 + border;
+        topY = centerY - (height - 1) / 2 * 10 - border;
+        botY = centerY + (height - 1) / 2 * 10 + border;
+        this.drawBox(drawContext, leftX, rightX, topY, botY);
+        leftX = centerX - footer / 2 - border;
+        rightX = centerX + footer / 2 + border;
+        topY = centerY + (height - 1) / 2 * 10 - border + 10;
+        botY = centerY + (height - 1) / 2 * 10 + border + 20;
+        this.drawBox(drawContext, leftX, rightX, topY, botY);
+        drawContext.drawTextWithShadow(this.fontRenderer, head, (centerX - title / 2), (centerY - (height - 1) * 10 / 2 - 19), Color.WHITE.getRGB());
         for (int n = 1; n < height; ++n) {
-            this.write(drawContext, this.welcomeText[n], (centerX - maxSize / 2f), (centerY - (height - 1) * 10 / 2f + n * 10 - 9), 16777215);
+            drawContext.drawTextWithShadow(this.fontRenderer, this.welcomeText[n], (centerX - maxSize / 2), (centerY - (height - 1) * 10 / 2 + n * 10 - 9), Color.WHITE.getRGB());
         }
 
-        this.write(drawContext, hide, (centerX - footer / 2f), ((scHeight + 5) / 2f + (height - 1) * 10 / 2f + 11), 16777215);
+        drawContext.drawTextWithShadow(this.fontRenderer, hide, (centerX - footer / 2), ((scHeight + 5) / 2 + (height - 1) * 10 / 2 + 11), Color.WHITE.getRGB());;
     }
 
-    private void drawBox(double leftX, double rightX, double topY, double botY) {
-        GLUtils.drawPre(VertexFormats.POSITION);
-        GLUtils.ldrawtwo(leftX, botY, 0.0);
-        GLUtils.ldrawtwo(rightX, botY, 0.0);
-        GLUtils.ldrawtwo(rightX, topY, 0.0);
-        GLUtils.ldrawtwo(leftX, topY, 0.0);
-        GLUtils.drawPost();
+    private void drawBox(DrawContext drawContext, int leftX, int rightX, int topY, int botY) {
+        double e = VoxelConstants.getMinecraft().options.getTextBackgroundOpacity().getValue();
+        int v = (int) (255.0 * 1.0 * e);
+        drawContext.fill(leftX, topY, rightX, botY, v << 24);
     }
 }
