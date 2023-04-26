@@ -1098,7 +1098,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.editClicked = false;
         this.addClicked = false;
         this.deleteClicked = false;
-        double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
+        double dimensionScale = VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale();
         switch (action) {
             case 0 -> {
                 if (hovered != null) {
@@ -1119,7 +1119,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     b = this.generator.nextFloat();
                 }
                 TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world));
+                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
                 this.newWaypoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
                 VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
             }
@@ -1127,9 +1127,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.waypointManager.setHighlightedWaypoint(hovered, true);
                 } else {
-                    y = y > VoxelConstants.getPlayer().world.getBottomY() ? y : 64;
+                    y = y > VoxelConstants.getPlayer().getWorld().getBottomY() ? y : 64;
                     TreeSet<DimensionContainer> dimensions2 = new TreeSet<>();
-                    dimensions2.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world));
+                    dimensions2.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
                     Waypoint fakePoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, 1.0F, 0.0F, 0.0F, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions2);
                     this.waypointManager.setHighlightedWaypoint(fakePoint, true);
                 }
@@ -1138,13 +1138,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     CommandUtils.sendWaypoint(hovered);
                 } else {
-                    y = y > VoxelConstants.getPlayer().world.getBottomY() ? y : 64;
+                    y = y > VoxelConstants.getPlayer().getWorld().getBottomY() ? y : 64;
                     CommandUtils.sendCoordinate(x, y, z);
                 }
             }
             case 3 -> {
                 if (hovered == null) {
-                    if (y == 0) y = (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ? VoxelConstants.getPlayer().world.getTopY() : 64);
+                    if (y == 0) y = (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
 
                     VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), x, y, z));
 
@@ -1152,10 +1152,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
 
                 this.selectedWaypoint = hovered;
-                y = selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ?
+                y = selectedWaypoint.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ?
                         selectedWaypoint.getY() :
-                        (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ?
-                                VoxelConstants.getPlayer().world.getTopY() :
+                        (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ?
+                                VoxelConstants.getPlayer().getWorld().getTopY() :
                                 64
                         );
 

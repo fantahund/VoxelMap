@@ -134,13 +134,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void teleportClicked() {
-        int y = selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ?
-                selectedWaypoint.getY() :
-                (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ?
-                        VoxelConstants.getPlayer().world.getTopY() :
-                        64
-                );
-
+        int y = selectedWaypoint.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ? selectedWaypoint.getY() : (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
         VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), selectedWaypoint.getX(), y, selectedWaypoint.getZ()));
         VoxelConstants.getMinecraft().setScreen(null);
     }
@@ -263,8 +257,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         }
 
         TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-        dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world));
-        double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
+        dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
+        double dimensionScale = VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale();
         this.newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
         VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
     }

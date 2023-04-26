@@ -161,7 +161,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         private void drawIconForButton(DrawContext drawContext, ButtonWidget button, int id) {
             PlayerListEntry networkPlayerInfo = (PlayerListEntry) GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
-            PlayerEntity entityPlayer = VoxelConstants.getPlayer().world.getPlayerByUuid(gameProfile.getId());
+            PlayerEntity entityPlayer = VoxelConstants.getPlayer().getWorld().getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             RenderSystem.setShaderTexture(0, networkPlayerInfo.getSkinTexture());
             drawContext.drawTexture(networkPlayerInfo.getSkinTexture(), button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);

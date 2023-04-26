@@ -8,6 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.LargeEntitySpawnHelper;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
@@ -163,7 +164,7 @@ public final class CommandUtils {
             }
 
             if (dimensions.isEmpty()) {
-                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world));
+                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
             }
 
             if (x != null && z != null) {
@@ -208,7 +209,7 @@ public final class CommandUtils {
     }
 
     public static void sendWaypoint(Waypoint waypoint) {
-        Identifier resourceLocation = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world).resourceLocation;
+        Identifier resourceLocation = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()).resourceLocation;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
         StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
@@ -248,7 +249,7 @@ public final class CommandUtils {
         for (Waypoint wp : VoxelConstants.getVoxelMapInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
                 boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
-                int y = wp.getY() > VoxelConstants.getPlayer().world.getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().world.getDimension().hasCeiling() ? VoxelConstants.getPlayer().world.getTopY() : 64);
+                int y = wp.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling() ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
                 VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
                 if (mp) {
                     VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
@@ -268,20 +269,20 @@ public final class CommandUtils {
         if (inNetherDimension) {
             int safeY = -1;
 
-            for (int t = 0; t < 127; ++t) {
-                if (y + t < 127 && isBlockStandable(worldObj, x, y + t, z) && isBlockOpen(worldObj, x, y + t + 1, z) && isBlockOpen(worldObj, x, y + t + 2, z)) {
+            for (int t = worldObj.getBottomY(); t < worldObj.getTopY(); ++t) {
+                if (y + t < worldObj.getTopY() && isBlockStandable(worldObj, x, y + t, z) && isBlockOpen(worldObj, x, y + t + 1, z) && isBlockOpen(worldObj, x, y + t + 2, z)) {
                     safeY = y + t + 1;
-                    t = 128;
+                    t = worldObj.getTopY();
                 }
 
-                if (y - t > 0 && isBlockStandable(worldObj, x, y - t, z) && isBlockOpen(worldObj, x, y - t + 1, z) && isBlockOpen(worldObj, x, y - t + 2, z)) {
+                if (y - t > worldObj.getBottomY() && isBlockStandable(worldObj, x, y - t, z) && isBlockOpen(worldObj, x, y - t + 1, z) && isBlockOpen(worldObj, x, y - t + 2, z)) {
                     safeY = y - t + 1;
-                    t = 128;
+                    t = worldObj.getTopY();
                 }
             }
 
             y = safeY;
-        } else if (y <= 0) {
+        } else if (y <= worldObj.getBottomY()) {
             y = worldObj.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z) + 1;
         }
 
@@ -292,7 +293,7 @@ public final class CommandUtils {
         BlockPos blockPos = new BlockPos(par1, par2, par3);
         BlockState blockState = worldObj.getBlockState(blockPos);
         Block block = blockState.getBlock();
-        return block != null && blockState.getMaterial().blocksLight();
+        return block != null && blockState.isSolid();
     }
 
     private static boolean isBlockOpen(World worldObj, int par1, int par2, int par3) {

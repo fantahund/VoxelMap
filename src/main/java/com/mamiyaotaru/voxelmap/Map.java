@@ -342,8 +342,8 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().world));
-            double dimensionScale = VoxelConstants.getPlayer().world.getDimension().coordinateScale();
+            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
+            double dimensionScale = VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale();
             Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
             VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
         }
@@ -811,7 +811,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean caves = false;
         boolean netherPlayerInOpen;
         this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
-        if (VoxelConstants.getPlayer().world.getDimension().hasCeiling()) {
+        if (VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) {
 
             netherPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             nether = currentY < 126;
@@ -911,7 +911,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean netherPlayerInOpen;
         this.blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), 256 - 1), 0), this.lastZ);
         int currentY = GameVariableAccessShim.yCoord();
-        if (VoxelConstants.getPlayer().world.getDimension().hasCeiling()) {
+        if (VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) {
             netherPlayerInOpen = this.world.getChunk(this.blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, this.blockPos.getX() & 15, this.blockPos.getZ() & 15) <= currentY;
             nether = currentY < 126;
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {

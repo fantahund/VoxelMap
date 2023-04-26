@@ -48,11 +48,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public int getX() {
-        return (int) (this.x / VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        return (int) (this.x / VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale());
     }
 
     public int getZ() {
-        return (int) (this.z / VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        return (int) (this.z / VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale());
     }
 
     public int getY() {
@@ -60,11 +60,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public void setX(int x) {
-        this.x = (int) (x * VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        this.x = (int) (x * VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale());
     }
 
     public void setZ(int z) {
-        this.z = (int) (z * VoxelConstants.getPlayer().world.getDimension().coordinateScale());
+        this.z = (int) (z * VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale());
     }
 
     public void setY(int y) {

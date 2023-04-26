@@ -151,7 +151,7 @@ public class RadarSimple implements IRadar {
         } else {
             if (entity instanceof PolarBearEntity polarBearEntity) {
 
-                for (PolarBearEntity object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
+                for (PolarBearEntity object : polarBearEntity.getWorld().getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
                     if (object.isBaby()) {
                         return true;
                     }

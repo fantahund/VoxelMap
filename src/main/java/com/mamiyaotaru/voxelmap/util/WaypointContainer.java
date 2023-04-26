@@ -72,9 +72,9 @@ public class WaypointContainer {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
                     int z = pt.getZ();
-                    WorldChunk chunk = VoxelConstants.getPlayer().world.getChunk(x >> 4, z >> 4);
-                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = VoxelConstants.getPlayer().world.getBottomY() - renderPosY;
+                    WorldChunk chunk = VoxelConstants.getPlayer().getWorld().getChunk(x >> 4, z >> 4);
+                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(x >> 4, z >> 4)) {
+                        double bottomOfWorld = VoxelConstants.getPlayer().getWorld().getBottomY() - renderPosY;
                         this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, 64.0F, matrix4f);
                     }
                 }

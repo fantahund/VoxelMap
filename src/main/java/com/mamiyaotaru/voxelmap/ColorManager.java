@@ -20,7 +20,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FluidBlock;
-import net.minecraft.block.Material;
 import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.client.color.world.FoliageColors;
 import net.minecraft.client.color.world.GrassColors;
@@ -593,8 +592,8 @@ public class ColorManager {
 
     public int getBiomeTint(AbstractMapData mapData, World world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         Chunk chunk = world.getChunk(blockPos);
-        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getPlayer().world.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
-        live = live && VoxelConstants.getPlayer().world.isChunkLoaded(blockPos);
+        boolean live = chunk != null && !((WorldChunk) chunk).isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4);
+        live = live && VoxelConstants.getPlayer().getWorld().isChunkLoaded(blockPos);
         int tint = -2;
         if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {

@@ -1484,12 +1484,12 @@ public class Radar implements IRadar {
                 int stateID = Block.getRawIdFromState(blockState);
                 icon = this.textureAtlas.getAtlasSprite("blockArmor " + stateID);
                 if (icon == this.textureAtlas.getMissingImage()) {
-                    BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, -8.0F);
+                    BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.getWorld(), 4.9473686F, -8.0F);
                     if (blockImage != null) {
                         int width = blockImage.getWidth();
                         int height = blockImage.getHeight();
                         ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
-                        BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.world, 4.9473686F, 7.25F);
+                        BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.getWorld(), 4.9473686F, 7.25F);
                         blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
                         ImageUtils.addImages(blockImage, blockImageFront, (width / 2f - 15), (height / 2f - 15), width, height);
                         blockImageFront.flush();
@@ -1831,7 +1831,7 @@ public class Radar implements IRadar {
         } else {
             if (entity instanceof PolarBearEntity polarBearEntity) {
 
-                for (PolarBearEntity object : polarBearEntity.world.getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
+                for (PolarBearEntity object : polarBearEntity.getWorld().getNonSpectatingEntities(PolarBearEntity.class, polarBearEntity.getBoundingBox().expand(8.0, 4.0, 8.0))) {
                     if (object.isBaby()) {
                         return true;
                     }

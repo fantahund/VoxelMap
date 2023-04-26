@@ -26,7 +26,7 @@ public class MapChunkCache {
     }
 
     public void centerChunks(BlockPos blockPos) {
-        WorldChunk currentChunk = VoxelConstants.getPlayer().world.getWorldChunk(blockPos);
+        WorldChunk currentChunk = VoxelConstants.getPlayer().getWorld().getWorldChunk(blockPos);
         if (currentChunk != this.lastCenterChunk) {
             if (this.lastCenterChunk == null) {
                 this.fillAllChunks(blockPos);
@@ -67,7 +67,7 @@ public class MapChunkCache {
     }
 
     private void fillAllChunks(BlockPos blockPos) {
-        Chunk currentChunk = VoxelConstants.getPlayer().world.getChunk(blockPos);
+        Chunk currentChunk = VoxelConstants.getPlayer().getWorld().getChunk(blockPos);
         int middleX = this.width / 2;
         int middleZ = this.height / 2;
 
