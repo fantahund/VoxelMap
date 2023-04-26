@@ -136,6 +136,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean addClicked;
     Waypoint newWaypoint;
     Waypoint selectedWaypoint;
+    public boolean passEvents;
 
     public GuiPersistentMap(Screen parent) {
         this.parent = parent;
@@ -195,7 +196,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public void init() {
-        //this.passEvents = true;
+        this.passEvents = true;
         this.oldNorth = mapOptions.oldNorth;
         this.centerAt(this.options.mapX, this.options.mapZ);
         if (VoxelConstants.getMinecraft().currentScreen == this) {
