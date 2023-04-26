@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 
 import java.util.ArrayList;
 
@@ -48,11 +48,11 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     @Override
     public boolean popupOpen() { return popups.isEmpty(); }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        super.render(drawContext, mouseX, mouseY, delta);
 
         for (Popup popup : this.popups) {
-            popup.drawPopup(matrices, mouseX, mouseY);
+            popup.drawPopup(drawContext, mouseX, mouseY);
         }
 
     }

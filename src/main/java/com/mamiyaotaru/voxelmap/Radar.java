@@ -222,7 +222,7 @@ public class Radar implements IRadar {
             Class<?> randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
             Field mapPropertiesField = randomEntitiesClass.getDeclaredField("mapProperties");
             mapPropertiesField.setAccessible(true);
-            this.mapProperties = (java.util.Map) mapPropertiesField.get(null);
+            this.mapProperties = (Map) mapPropertiesField.get(null);
             Field randomEntityField = randomEntitiesClass.getDeclaredField("randomEntity");
             randomEntityField.setAccessible(true);
             this.randomEntity = randomEntityField.get(null);
@@ -1442,7 +1442,7 @@ public class Radar implements IRadar {
 
                 Identifier resourceLocation = DefaultSkinHelper.getTexture();
                 if (gameProfile != null) {
-                    java.util.Map<Type, MinecraftProfileTexture> map = VoxelConstants.getMinecraft().getSkinProvider().getTextures(gameProfile);
+                    Map<Type, MinecraftProfileTexture> map = VoxelConstants.getMinecraft().getSkinProvider().getTextures(gameProfile);
                     if (map.containsKey(Type.SKIN)) {
                         resourceLocation = VoxelConstants.getMinecraft().getSkinProvider().loadSkin(map.get(Type.SKIN), Type.SKIN);
                     }

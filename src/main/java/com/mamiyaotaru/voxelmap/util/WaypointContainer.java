@@ -7,6 +7,7 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.font.TextRenderer.TextLayerType;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
@@ -297,9 +298,6 @@ public class WaypointContainer {
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
                 fontRenderer.draw(Text.literal(name), (-fontRenderer.getWidth(name) / 2f), elevateBy, textColor, false, matrix4f, vertexConsumerProvider, TextLayerType.SEE_THROUGH, 0, 15728880);
                 vertexConsumerProvider.draw();
-                OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-                textColor = (int) (255.0F * fade) << 24 | 16777215;
-                fontRenderer.draw(matrixStack, name, (-fontRenderer.getWidth(name) / 2f), elevateBy, textColor);
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);

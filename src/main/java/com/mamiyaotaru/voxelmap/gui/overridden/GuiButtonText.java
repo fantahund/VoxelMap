@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -10,18 +11,18 @@ public class GuiButtonText extends ButtonWidget {
     private boolean editing;
     private final TextFieldWidget textField;
 
-    public GuiButtonText(TextRenderer fontRenderer, int x, int y, int width, int height, Text message, ButtonWidget.PressAction onPress) {
+    public GuiButtonText(TextRenderer fontRenderer, int x, int y, int width, int height, Text message, PressAction onPress) {
         super (x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, width - 2, height - 2, null);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         if (editing) {
-            textField.render(matrices, mouseX, mouseY, delta);
+            textField.render(drawContext, mouseX, mouseY, delta);
             return;
         }
 
-        super.render(matrices, mouseX, mouseY, delta);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {

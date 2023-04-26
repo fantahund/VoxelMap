@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
@@ -44,13 +45,13 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
     }
 
-    public void renderOverlay(MatrixStack matrixStack) {
+    public void renderOverlay(DrawContext drawContext) {
         if (!this.initialized) {
             this.lateInit();
         }
 
         try {
-            VoxelConstants.getVoxelMapInstance().onTickInGame(matrixStack);
+            VoxelConstants.getVoxelMapInstance().onTickInGame(drawContext);
         } catch (RuntimeException exception) {
             VoxelConstants.getLogger().error(exception);
         }

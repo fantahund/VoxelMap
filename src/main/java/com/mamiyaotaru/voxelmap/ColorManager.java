@@ -17,6 +17,7 @@ import net.minecraft.block.AbstractSignBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.Material;
@@ -484,16 +485,16 @@ public class ColorManager {
         Sprite icon = blockModelShapes.getModelParticleSprite(blockState);
         if (icon == blockModelShapes.getModelManager().getMissingModel().getParticleSprite()) {
             Block block = blockState.getBlock();
-            Material material = blockState.getMaterial();
+            Block material = blockState.getBlock();
             if (block instanceof FluidBlock) {
-                if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                if (material == Blocks.WATER) {
                     icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_flow"));
-                } else if (material == Material.GENERIC) {
+                } else if (material == Blocks.LAVA) {
                     icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_flow"));
                 }
-            } else if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+            } else if (material == Blocks.WATER) {
                 icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/water_still"));
-            } else if (material == Material.GENERIC) {
+            } else if (material == Blocks.LAVA) {
                 icon = VoxelConstants.getMinecraft().getSpriteAtlas(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).apply(new Identifier("minecraft:blocks/lava_still"));
             }
         }

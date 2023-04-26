@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -121,19 +122,19 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(this.parentScreen);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        drawMap(matrices);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawMap(drawContext);
         this.tooltip = null;
-        this.playerList.render(matrices, mouseX, mouseY, delta);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        super.render(matrices, mouseX, mouseY, delta);
-        drawTextWithShadow(matrices, this.getFontRenderer(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
-        this.message.render(matrices, mouseX, mouseY, delta);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 16777215);
-        drawTextWithShadow(matrices, this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
-        this.filter.render(matrices, mouseX, mouseY, delta);
+        this.playerList.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        super.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawTextWithShadow(this.getFontRenderer(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
+        this.message.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 16777215);
+        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
+        this.filter.render(drawContext, mouseX, mouseY, delta);
         if (this.tooltip != null) {
-            this.renderTooltip(matrices, this.tooltip, mouseX, mouseY);
+            this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);
         }
 
     }

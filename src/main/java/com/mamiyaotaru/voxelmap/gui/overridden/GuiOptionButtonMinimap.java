@@ -6,7 +6,7 @@ import net.minecraft.text.Text;
 public class GuiOptionButtonMinimap extends ButtonWidget {
     private final EnumOptionsMinimap enumOptions;
 
-    public GuiOptionButtonMinimap(int x, int y, EnumOptionsMinimap par4EnumOptions, Text message, ButtonWidget.PressAction onPress) {
+    public GuiOptionButtonMinimap(int x, int y, EnumOptionsMinimap par4EnumOptions, Text message, PressAction onPress) {
         super (x, y, 150, 20, message, onPress, DEFAULT_NARRATION_SUPPLIER);
         this.enumOptions = par4EnumOptions;
     }

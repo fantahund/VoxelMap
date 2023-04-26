@@ -14,11 +14,12 @@ import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.GlassBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
@@ -244,8 +245,8 @@ public class PersistentMap implements IChangeObserver {
                     foliageHeight = surfaceHeight + 1;
                     pos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
                     foliageBlockState = chunk.getBlockState(pos);
-                    Material material = foliageBlockState.getMaterial();
-                    if (material == Material.ALLOWS_MOVEMENT || material == Material.AGGREGATE || material == Material.GENERIC || material == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                    Block material = foliageBlockState.getBlock();
+                    if (material == Blocks.SNOW || material instanceof AirBlock || material == Blocks.LAVA || material == Blocks.WATER) {
                         foliageHeight = 0;
                     }
                 }
@@ -292,7 +293,7 @@ public class PersistentMap implements IChangeObserver {
                     foliageBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                 }
 
-                if (foliageBlockState.getMaterial() == Material.ALLOWS_MOVEMENT) {
+                if (foliageBlockState.getBlock() == Blocks.SNOW) {
                     surfaceBlockState = foliageBlockState;
                     foliageBlockState = BlockRepository.air.getDefaultState();
                 }
@@ -301,24 +302,24 @@ public class PersistentMap implements IChangeObserver {
                     foliageBlockState = BlockRepository.air.getDefaultState();
                 }
 
-                if (foliageBlockState != null && foliageBlockState.getMaterial() != Material.AGGREGATE) {
+                if (foliageBlockState != null && !(foliageBlockState.getBlock() instanceof AirBlock)) {
                     foliageHeight = surfaceHeight + 1;
                 } else {
                     foliageBlockState = BlockRepository.air.getDefaultState();
                 }
 
-                Material material = surfaceBlockState.getMaterial();
-                if (material == Material.NOT_SOLID_ALLOWS_MOVEMENT || material == Material.LIGHT_PASSES_THROUGH) {
+                Block material = surfaceBlockState.getBlock();
+                if (material == Blocks.WATER || material == Blocks.ICE) {
                     seafloorHeight = surfaceHeight;
 
-                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && seafloorBlockState.getMaterial() != Material.LIGHT_PASSES_THROUGH && seafloorHeight > 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
-                        material = seafloorBlockState.getMaterial();
-                        if (transparentHeight == 0 && material != Material.LIGHT_PASSES_THROUGH && material != Material.NOT_SOLID_ALLOWS_MOVEMENT && material.blocksMovement()) {
+                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock) && seafloorHeight > 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                        material = seafloorBlockState.getBlock();
+                        if (transparentHeight == 0 && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMovement()) {
                             transparentHeight = seafloorHeight;
                             transparentBlockState = seafloorBlockState;
                         }
 
-                        if (foliageHeight == 0 && seafloorHeight != transparentHeight && transparentBlockState != seafloorBlockState && material != Material.LIGHT_PASSES_THROUGH && material != Material.NOT_SOLID_ALLOWS_MOVEMENT && material != Material.AGGREGATE) {
+                        if (foliageHeight == 0 && seafloorHeight != transparentHeight && transparentBlockState != seafloorBlockState && material != Blocks.ICE && material != Blocks.WATER && !(material instanceof AirBlock) && material != Blocks.BUBBLE_COLUMN) {
                             foliageHeight = seafloorHeight;
                             foliageBlockState = seafloorBlockState;
                         }
@@ -326,7 +327,7 @@ public class PersistentMap implements IChangeObserver {
                         --seafloorHeight;
                     }
 
-                    if (seafloorBlockState.getMaterial() == Material.NOT_SOLID_ALLOWS_MOVEMENT) {
+                    if (seafloorBlockState.getBlock() == Blocks.WATER) {
                         seafloorBlockState = BlockRepository.air.getDefaultState();
                     }
                 }
@@ -345,7 +346,7 @@ public class PersistentMap implements IChangeObserver {
                 solid = true;
             }
 
-            if (surfaceBlockState.getMaterial() == Material.GENERIC) {
+            if (surfaceBlockState.getBlock() == Blocks.LAVA) {
                 solid = false;
             }
 
@@ -380,12 +381,12 @@ public class PersistentMap implements IChangeObserver {
         int y = 80;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = chunk.getBlockState(this.blockPos);
-        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.GENERIC) {
+        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
             while (y > 0) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = chunk.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getMaterial() == Material.GENERIC) {
+                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getBlock() == Blocks.LAVA) {
                     return y + 1;
                 }
             }
@@ -396,7 +397,7 @@ public class PersistentMap implements IChangeObserver {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = chunk.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getMaterial() != Material.GENERIC) {
+                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
                     return y;
                 }
             }
@@ -409,11 +410,11 @@ public class PersistentMap implements IChangeObserver {
         int i3 = 255;
         if (solid) {
             i3 = 0;
-        } else if (blockState != null && blockState.getMaterial() != Material.AGGREGATE) {
+        } else if (blockState != null && !(blockState.getBlock() instanceof AirBlock)) {
             blockPos.setXYZ(x, Math.max(Math.min(height, 255), 0), z);
             int blockLight = world.getLightLevel(LightType.BLOCK, blockPos) & 15;
             int skyLight = world.getLightLevel(LightType.SKY, blockPos);
-            if (blockState.getMaterial() == Material.GENERIC || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
+            if (blockState.getBlock() == Blocks.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
                 blockLight = 14;
             }
 
@@ -461,7 +462,7 @@ public class PersistentMap implements IChangeObserver {
                 }
 
                 blockPos.setXYZ(mcX, surfaceHeight - 1, mcZ);
-                if (surfaceBlockState.getMaterial() == Material.GENERIC) {
+                if (surfaceBlockState.getBlock() == Blocks.LAVA) {
                     solid = false;
                 }
 

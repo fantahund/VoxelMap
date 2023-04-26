@@ -13,7 +13,7 @@ import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
@@ -118,8 +118,8 @@ public class VoxelMap implements ResourceReloader {
         this.colorManager.onResourceManagerReload(resourceManager);
     }
 
-    public void onTickInGame(MatrixStack matrixStack) {
-        this.map.onTickInGame(matrixStack);
+    public void onTickInGame(DrawContext drawContext) {
+        this.map.onTickInGame(drawContext);
         if (passMessage != null) {
             VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(Text.literal(passMessage));
             passMessage = null;

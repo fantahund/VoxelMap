@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.google.common.collect.BiMap;
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -38,7 +39,7 @@ public final class BlockStateParser {
 
         Block block = Registries.BLOCK.get(resourceLocation);
 
-        if (!(block != Blocks.AIR || resourceString.equals("minecraft:air"))) return null;
+        if (!(!(block instanceof AirBlock) || resourceString.equals("minecraft:air"))) return null;
 
         BlockState blockState = block.getDefaultState();
 

@@ -5,9 +5,9 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class GuiPersistentMapOptions extends GuiScreenMinimap {
@@ -79,7 +79,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
@@ -97,11 +97,11 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             }
         }
 
-        drawMap(matrices);
-        this.renderBackground(matrices);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
-        super.render(matrices, mouseX, mouseY, delta);
+        drawMap(drawContext);
+        this.renderBackground(drawContext);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 }

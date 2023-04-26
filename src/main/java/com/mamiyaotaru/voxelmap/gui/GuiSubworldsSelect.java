@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -156,12 +157,12 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         super.tick();
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         int titleStringWidth = this.getFontRenderer().getWidth(this.title);
         titleStringWidth = Math.max(titleStringWidth, this.getFontRenderer().getWidth(this.select));
-        fill(matrices, this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.title, this.width / 2, 5, 16777215);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.select, this.width / 2, 15, 16711680);
+        drawContext.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.title, this.width / 2, 5, 16777215);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.select, this.width / 2, 15, 16711680);
         this.camera.prevPitch = 0.0F;
         this.camera.setPitch(0.0F);
         this.camera.prevYaw = this.yaw;
@@ -173,9 +174,9 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.camera.setPos(this.camera.prevX, this.camera.prevY, this.camera.prevZ);
         float var5 = 1.0F;
         this.yaw = (float) (this.yaw + var5 * (1.0 + 0.7F * Math.cos((this.yaw + 45.0F) / 45.0 * Math.PI)));
-        super.render(matrices, mouseX, mouseY, delta);
+        super.render(drawContext, mouseX, mouseY, delta);
         if (this.newWorld) {
-            this.newNameField.render(matrices, mouseX, mouseY, delta);
+            this.newNameField.render(drawContext, mouseX, mouseY, delta);
         }
 
     }

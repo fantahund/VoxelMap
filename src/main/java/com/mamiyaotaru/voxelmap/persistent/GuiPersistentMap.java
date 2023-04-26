@@ -24,6 +24,7 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -135,6 +136,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean addClicked;
     Waypoint newWaypoint;
     Waypoint selectedWaypoint;
+    public boolean passEvents;
 
     public GuiPersistentMap(Screen parent) {
         this.parent = parent;
@@ -483,7 +485,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         this.zoomGoal = this.bindZoom(this.zoomGoal);
         if (this.mouseX != mouseX || this.mouseY != mouseY) {
             this.timeOfLastMouseInput = System.currentTimeMillis();
@@ -527,7 +529,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.mapToGui = 1.0F / this.scScale * scaledZoom;
         this.mouseDirectToMap = 1.0F / scaledZoom;
         this.guiToDirectMouse = this.scScale;
-        this.renderBackground(matrices);
+        this.renderBackground(drawContext);
         if (VoxelConstants.getMinecraft().mouse.wasLeftButtonClicked()) {
             if (!this.leftMouseButtonDown && this.overPopup(mouseX, mouseY)) {
                 this.deltaX = 0.0F;
@@ -679,11 +681,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         if (this.options.showWaypoints) {
             for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                this.drawWaypoint(matrices, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
+                this.drawWaypoint(drawContext, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
             }
 
             if (this.waypointManager.getHighlightedWaypoint() != null) {
-                this.drawWaypoint(matrices, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+                this.drawWaypoint(drawContext, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
             }
         }
 
@@ -785,7 +787,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         int nameWidth = this.chkLen(biomeLabel.name);
                         float x = biomeLabel.x * biomeScaleX / this.scScale;
                         float z = biomeLabel.z * biomeScaleY / this.scScale;
-                        this.write(matrices, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
+                        this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
                     }
                 }
 
@@ -800,10 +802,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            Identifier GUI_ICONS_TEXTURE = new Identifier("textures/gui/icons.png");
             RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(775, 769, 1, 0);
-            this.drawTexture(matrices, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 16, 16);
+            drawContext.drawTexture(GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 16, 16);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, 0);
         } else {
             this.switchToMouseInput();
@@ -811,15 +814,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.overlayBackground(0, this.top, 255, 255);
         this.overlayBackground(this.bottom, this.getHeight(), 255, 255);
-        drawCenteredTextWithShadow(matrices, this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
         int x = (int) Math.floor(cursorCoordX);
         int z = (int) Math.floor(cursorCoordZ);
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
             if (!this.editingCoordinates) {
-                drawTextWithShadow(matrices, this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
-                drawTextWithShadow(matrices, this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
+                drawContext.drawTextWithShadow(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
+                drawContext.drawTextWithShadow(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
             } else {
-                this.coordinates.render(matrices, mouseX, mouseY, delta);
+                this.coordinates.render(drawContext, mouseX, mouseY, delta);
             }
         }
 
@@ -827,7 +830,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.buildWorldName();
         }
 
-        drawTextWithShadow(matrices, this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
+        drawContext.drawTextWithShadow(this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
         if (this.buttonMultiworld != null) {
             if ((this.subworldName == null || this.subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
                 if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {
@@ -840,10 +843,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        super.render(matrices, mouseX, mouseY, delta);
+        super.render(drawContext, mouseX, mouseY, delta);
     }
 
-    private void drawWaypoint(MatrixStack matrixStack, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon, Float r, Float g, Float b) {
+    private void drawWaypoint(DrawContext drawContext, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon, Float r, Float g, Float b) {
+        MatrixStack matrixStack = drawContext.getMatrices();
         if (pt.inWorld && pt.inDimension && this.isOnScreen(pt.getX(), pt.getZ())) {
             String name = pt.name;
             if (r == null) {
@@ -907,7 +911,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         RenderSystem.applyModelViewMatrix();
                     }
 
-                    this.write(matrixStack, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 1442840575 : 16777215);
+                    this.write(drawContext, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 1442840575 : 16777215);
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();
                     OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -937,8 +941,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return x > left && x < right && z > top && z < bottom;
     }
 
-    public void renderBackground(MatrixStack matrices) {
-        fill(matrices, 0, 0, this.getWidth(), this.getHeight(), -16777216);
+    public void renderBackground(DrawContext drawContext) {
+        drawContext.fill(0, 0, this.getWidth(), this.getHeight(), -16777216);
     }
 
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
@@ -1216,7 +1220,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return this.getFontRenderer().getWidth(string);
     }
 
-    private void write(MatrixStack matrixStack, String string, float x, float y, int color) {
-        this.getFontRenderer().drawWithShadow(matrixStack, string, x, y, color);
+    private void write(DrawContext drawContext, String string, float x, float y, int color) {
+        drawContext.drawTextWithShadow(this.textRenderer, string, (int) x, (int) y, color);
     }
 }
