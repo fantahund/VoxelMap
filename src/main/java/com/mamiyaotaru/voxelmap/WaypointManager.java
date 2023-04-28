@@ -327,7 +327,7 @@ public class WaypointManager {
                 }
 
                 if (!name.equals(this.currentSubWorldName)) {
-                    VoxelConstants.getLogger().warn("New world name: " + TextUtils.scrubCodes(name));
+                    VoxelConstants.getLogger().info("New world name: " + TextUtils.scrubCodes(name));
                 }
 
                 this.lastNewWorldNameTime = System.currentTimeMillis();
