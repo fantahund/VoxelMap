@@ -253,7 +253,6 @@ public final class CommandUtils {
                 return;
             }
         }
-
     }
 
     public static int getSafeHeight(int x, int y, int z, World worldObj) {
