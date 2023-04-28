@@ -67,6 +67,7 @@
   "options.minimap.chunkgrid": "Kamakate ruudustik",
   "options.minimap.slimechunks": "Limusekamakad",
   "options.minimap.worldseed": "Seeme",
+  "options.minimap.teleportcommand": "Telepordi käsk",
   "options.minimap.waypoints": "Kontrollpunktid...",
   "options.minimap.waypoints.title": "Kontrollpunktide valikud",
   "options.minimap.waypoints.distance": "Maksimaalne kaugus",

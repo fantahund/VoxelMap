@@ -68,6 +68,7 @@
   "options.minimap.chunkgrid": "Chunk Grid",
   "options.minimap.slimechunks": "Slime Chunks",
   "options.minimap.worldseed": "Seed",
+  "options.minimap.teleportcommand": "Teleport command",
   "options.minimap.waypoints": "Waypoints...",
   "options.minimap.waypoints.title": "Waypoint Options",
   "options.minimap.waypoints.distance": "Max Distance",

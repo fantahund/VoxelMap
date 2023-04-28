@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
 import net.minecraft.block.Block;
@@ -8,7 +9,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.LargeEntitySpawnHelper;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
@@ -248,13 +248,8 @@ public final class CommandUtils {
 
         for (Waypoint wp : VoxelConstants.getVoxelMapInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
-                boolean mp = !VoxelConstants.getMinecraft().isIntegratedServerRunning();
                 int y = wp.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling() ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
-                VoxelConstants.getPlayer().networkHandler.sendCommand("tp " + VoxelConstants.getPlayer().getName().getString() + " " + wp.getX() + " " + y + " " + wp.getZ());
-                if (mp) {
-                    VoxelConstants.getPlayer().networkHandler.sendCommand("tppos " + wp.getX() + " " + y + " " + wp.getZ());
-                }
-
+                FabricModVoxelMap.instance.playerRunTeleportCommand(wp.getX(), y, wp.getZ());
                 return;
             }
         }

@@ -66,6 +66,7 @@
   "options.minimap.chunkgrid": "Chunkgitter",
   "options.minimap.slimechunks": "Schleimchunks",
   "options.minimap.worldseed": "Weltstartwert",
+  "options.minimap.teleportcommand": "Teleport Befehl",
   "options.minimap.waypoints": "Wegpunkte...",
   "options.minimap.waypoints.title": "Wegpunktoptionen",
   "options.minimap.waypoints.distance": "Maximalabstand",

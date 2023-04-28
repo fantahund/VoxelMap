@@ -67,6 +67,7 @@
   "options.minimap.chunkgrid": "チャンク表示",
   "options.minimap.slimechunks": "スライムチャンク",
   "options.minimap.worldseed": "Seed",
+  "options.minimap.teleportcommand": "テレポートコマンド",
   "options.minimap.waypoints": "ウェイポイント...",
   "options.minimap.waypoints.title": "ウェイポイントオプション",
   "options.minimap.waypoints.distance": "表示される距離",

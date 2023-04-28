@@ -69,6 +69,9 @@ public class MapSettingsManager implements ISettingsManager {
     public static MapSettingsManager instance;
     private final List<ISubSettingsManager> subSettingsManagers = new ArrayList<>();
 
+    public String teleportCommand = "tp %p %x %y %z";
+    public String serverTeleportCommand;
+
     public MapSettingsManager() {
         instance = this;
         this.keyBindings = new KeyBinding[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle};
@@ -121,6 +124,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Waypoint Key" -> this.bindKey(this.keyBindWaypoint, curLine[1]);
                         case "Mob Key" -> this.bindKey(this.keyBindMobToggle, curLine[1]);
                         case "In-game Waypoint Key" -> this.bindKey(this.keyBindWaypointToggle, curLine[1]);
+                        case "Teleport Command" -> this.teleportCommand = curLine[1];
                     }
                 }
 
@@ -189,6 +193,7 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Waypoint Key:" + this.keyBindWaypoint.getBoundKeyTranslationKey());
             out.println("Mob Key:" + this.keyBindMobToggle.getBoundKeyTranslationKey());
             out.println("In-game Waypoint Key:" + this.keyBindWaypointToggle.getBoundKeyTranslationKey());
+            out.println("Teleport Command:" + this.teleportCommand);
 
             for (ISubSettingsManager subSettingsManager : this.subSettingsManagers) {
                 subSettingsManager.saveAll(out);
@@ -198,7 +203,6 @@ public class MapSettingsManager implements ISettingsManager {
         } catch (FileNotFoundException var5) {
             MessageUtils.chatInfo("§EError Saving Settings " + var5.getLocalizedMessage());
         }
-
     }
 
     @Override

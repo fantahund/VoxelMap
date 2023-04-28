@@ -67,6 +67,7 @@
   "options.minimap.chunkgrid": "区块网格",
   "options.minimap.slimechunks": "史莱姆区块",
   "options.minimap.worldseed": "地图种子",
+  "options.minimap.teleportcommand": "传送命令",
   "options.minimap.waypoints": "导航点...",
   "options.minimap.waypoints.title": "导航点选项",
   "options.minimap.waypoints.distance": "最远距离",

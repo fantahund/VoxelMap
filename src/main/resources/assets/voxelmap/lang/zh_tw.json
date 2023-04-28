@@ -67,6 +67,7 @@
   "options.minimap.chunkgrid": "網格",
   "options.minimap.slimechunks": "史萊姆區塊",
   "options.minimap.worldseed": "地圖種子",
+  "options.minimap.teleportcommand": "传送命令",
   "options.minimap.waypoints": "記錄點...",
   "options.minimap.waypoints.title": "記錄點選項",
   "options.minimap.waypoints.distance": "最大距離",
