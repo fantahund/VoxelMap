@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
 import com.mamiyaotaru.voxelmap.gui.GuiSubworldsSelect;
@@ -166,7 +167,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
                 imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
-        } catch (RuntimeException ignored) {}
+        } catch (RuntimeException ignored) {
+        }
 
         if (imageData != null) {
             gotSkin = true;
@@ -1141,22 +1143,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
             case 3 -> {
                 if (hovered == null) {
-                    if (y == 0) y = (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ? VoxelConstants.getPlayer().world.getTopY() : 64);
-
-                    VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), x, y, z));
-
+                    if (y == 0)
+                        y = (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
+                    FabricModVoxelMap.instance.playerRunTeleportCommand(x, y, z);
                     break;
                 }
 
                 this.selectedWaypoint = hovered;
-                y = selectedWaypoint.getY() > VoxelConstants.getPlayer().world.getBottomY() ?
-                        selectedWaypoint.getY() :
-                        (!(VoxelConstants.getPlayer().world.getDimension().hasCeiling()) ?
-                                VoxelConstants.getPlayer().world.getTopY() :
-                                64
-                        );
-
-                VoxelConstants.getPlayer().networkHandler.sendCommand(String.format("tp %s %d %d %d", VoxelConstants.getPlayer().getName().getString(), selectedWaypoint.getX(), y, selectedWaypoint.getZ()));
+                y = selectedWaypoint.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ? selectedWaypoint.getY() : (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
+                FabricModVoxelMap.instance.playerRunTeleportCommand(selectedWaypoint.getX(), y, selectedWaypoint.getZ());
             }
             case 4 -> {
                 if (hovered != null) {

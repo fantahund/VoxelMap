@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.fabricmod;
 
 import com.google.gson.Gson;
+import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -140,6 +141,8 @@ public class FabricModVoxelMap implements ClientModInitializer {
                                 VoxelConstants.getVoxelMapInstance().getRadarOptions().radarPlayersAllowed = (Boolean) value;
                         case "cavesAllowed" ->
                                 VoxelConstants.getVoxelMapInstance().getMapOptions().cavesAllowed = (Boolean) value;
+                        case "teleportCommand" ->
+                                VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand = (String) value;
                         default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
                     }
                 }
@@ -148,5 +151,12 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         return false;
+    }
+
+    public void playerRunTeleportCommand(double x, double y, double z) {
+        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
+        cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z));
+        VoxelConstants.getPlayer().networkHandler.sendCommand(cmd);
     }
 }

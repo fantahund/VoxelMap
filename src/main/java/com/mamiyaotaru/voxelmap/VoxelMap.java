@@ -89,6 +89,7 @@ public class VoxelMap implements ResourceReloader {
             radarOptions.radarPlayersAllowed = true;
             radarOptions.radarMobsAllowed = true;
             mapOptions.cavesAllowed = true;
+            mapOptions.serverTeleportCommand = null;
         });
         this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
