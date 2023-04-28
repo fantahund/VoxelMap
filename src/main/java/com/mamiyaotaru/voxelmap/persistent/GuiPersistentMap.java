@@ -644,6 +644,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int glid = region.getGLID();
             if (glid != 0) {
                 GLUtils.disp2(glid);
+                RenderSystem.bindTextureForSetup(glid);
                 if (mapOptions.filtering) {
                     OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
                     OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
