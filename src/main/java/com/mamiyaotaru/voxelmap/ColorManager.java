@@ -700,7 +700,7 @@ public class ColorManager {
                         MessageUtils.printDebug("Mapdata: " + mapData);
                     }
 
-                    int biomeTint = colorResolver.getColorAtPos(blockState, biome, loopBlockPos.withXYZ(t, blockPos.getY(), s));
+                    int biomeTint = biome == null ? 0 : colorResolver.getColorAtPos(blockState, biome, loopBlockPos.withXYZ(t, blockPos.getY(), s));
                     r += (biomeTint & 0xFF0000) >> 16;
                     g += (biomeTint & 0xFF00) >> 8;
                     b += biomeTint & 0xFF;
