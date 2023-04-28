@@ -1,2 +1,2 @@
-- Backport changes from 1.19.4 branch
-- Update to 23w14a
+- Update to 23w17a
+- We recommend to make a backup of the VoxelMap folder before using the current Beta version.

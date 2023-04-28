@@ -22,7 +22,6 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -102,7 +101,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    public void removed() {}
+    public void removed() {
+    }
 
     protected void cancelWaypoint() {
         waypoint.red = red;
@@ -344,8 +344,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             GLUtils.disp2(chooser.getGlId());
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
 
-            //FIXME 1.20
-            drawContext.drawTexture(blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, displayWidth, displayHeight, 0.0F, 0.0F, chooser.getWidth(), chooser.getHeight(), chooser.getImageWidth(), chooser.getImageHeight());
+            this.drawTexturedModalRect(this.getWidth() / 2f - displayWidth / 2f, this.getHeight() / 2f - displayHeight / 2f, displayWidth, displayHeight);
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
                 float x = (mouseX - (this.getWidth() / 2f - displayWidth / 2f)) * scale;
                 float y = (mouseY - (this.getHeight() / 2f - displayHeight / 2f)) * scale;
@@ -389,6 +388,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 0).texture(icon.getMaxU(), icon.getMaxV()).next();
         vertexbuffer.vertex(xCoord + widthIn, yCoord + 0.0F, 0).texture(icon.getMaxU(), icon.getMinV()).next();
         vertexbuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, 0).texture(icon.getMinU(), icon.getMinV()).next();
+        tessellator.draw();
+    }
+
+    public void drawTexturedModalRect(float x, float y, float width, float height) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder vertexBuffer = tessellator.getBuffer();
+        vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        vertexBuffer.vertex(x + 0.0F, y + height, 0).texture(0.0F, 1.0F).next();
+        vertexBuffer.vertex(x + width, y + height, 0).texture(1.0F, 1.0F).next();
+        vertexBuffer.vertex(x + width, y + 0.0F, 0).texture(1.0F, 0.0F).next();
+        vertexBuffer.vertex(x + 0.0F, y + 0.0F, 0).texture(0.0F, 0.0F).next();
         tessellator.draw();
     }
 }
