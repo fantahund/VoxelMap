@@ -21,12 +21,6 @@ public class MixinMouse {
     private boolean leftButtonClicked;
 
     @Shadow
-    private boolean middleButtonClicked;
-
-    @Shadow
-    private boolean rightButtonClicked;
-
-    @Shadow
     private double x;
 
     @Shadow
@@ -37,19 +31,11 @@ public class MixinMouse {
         boolean bl = action == 1;
         boolean[] bls = new boolean[]{false};
 
-        if (this.client.currentScreen instanceof GuiPersistentMap guiPersistentMap) {
+        if (this.client.currentScreen instanceof GuiPersistentMap guiPersistentMap && button == 0) {
             double d = this.x * (double) this.client.getWindow().getScaledWidth() / (double) this.client.getWindow().getWidth();
             double e = this.y * (double) this.client.getWindow().getScaledHeight() / (double) this.client.getWindow().getHeight();
             bls[0] = guiPersistentMap.mouseClicked(d, e, button);
-            if (!bls[0] && (guiPersistentMap.passEvents && this.client.getOverlay() == null)) {
-                if (button == 0) {
-                    this.leftButtonClicked = bl;
-                } else if (button == 2) {
-                    this.middleButtonClicked = bl;
-                } else if (button == 1) {
-                    this.rightButtonClicked = bl;
-                }
-            }
+            if (!bls[0] && (guiPersistentMap.passEvents && this.client.getOverlay() == null)) this.leftButtonClicked = bl;
         }
     }
 }
