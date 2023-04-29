@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
-import com.mamiyaotaru.voxelmap.textures.FontRendererWithAtlas;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.StitcherException;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -28,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.SkullBlockEntity;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.model.Dilation;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.ModelPart;
@@ -137,7 +137,7 @@ import net.minecraft.village.VillagerType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
+import org.lwjgl.opengl.GL11;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -162,7 +162,6 @@ public class Radar implements IRadar {
     private LayoutVariables layoutVariables;
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
-    private final FontRendererWithAtlas fontRenderer;
     private final TextureAtlas textureAtlas;
     private boolean newMobs;
     private boolean completedLoading;
@@ -214,7 +213,6 @@ public class Radar implements IRadar {
     public Radar() {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-        this.fontRenderer = new FontRendererWithAtlas(VoxelConstants.getMinecraft().getTextureManager(), new Identifier("textures/font/ascii.png"));
         this.textureAtlas = new TextureAtlas("mobs");
         this.textureAtlas.setFilter(false, false);
 
@@ -255,7 +253,6 @@ public class Radar implements IRadar {
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.loadTexturePackIcons();
-        this.fontRenderer.onResourceManagerReload(resourceManager);
     }
 
     private void loadTexturePackIcons() {
@@ -364,12 +361,6 @@ public class Radar implements IRadar {
                 fontImage = ImageUtils.scaleImage(fontImage, scaleBy);
             }
 
-            fontImage = ImageUtils.addImages(new BufferedImage(fontImage.getWidth() + 2, fontImage.getHeight() + 2, fontImage.getType()), fontImage, 1.0F, 1.0F, fontImage.getWidth() + 2, fontImage.getHeight() + 2);
-            Sprite fontSprite = this.textureAtlas.registerIconForBufferedImage(fontResourceLocation.toString(), fontImage);
-            Identifier blankResourceLocation = new Identifier("voxelmap", "images/radar/solid.png");
-            BufferedImage blankImage = ImageUtils.loadImage(blankResourceLocation, 0, 0, 8, 8, 8, 8);
-            Sprite blankSprite = this.textureAtlas.registerIconForBufferedImage(blankResourceLocation.toString(), blankImage);
-            this.fontRenderer.setSprites(fontSprite, blankSprite);
             this.textureAtlas.stitch();
             this.completedLoading = true;
         } catch (Exception var30) {
@@ -495,7 +486,7 @@ public class Radar implements IRadar {
     }
 
     @Override
-    public void onTickInGame(MatrixStack matrixStack, LayoutVariables layoutVariables) {
+    public void onTickInGame(DrawContext drawContext, MatrixStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -523,19 +514,12 @@ public class Radar implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+                this.renderMapMobs(drawContext, matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
         }
-    }
-
-    private void write(String paramStr, float x, float y, int color) {
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        this.fontRenderer.drawStringWithShadow(paramStr, x, y, color);
-
     }
 
     private boolean isEntityShown(Entity entity) {
@@ -1598,17 +1582,18 @@ public class Radar implements IRadar {
         return helmet.getTranslationKey().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
     }
 
-    public void renderMapMobs(MatrixStack matrixStack, int x, int y) {
+    public void renderMapMobs(DrawContext drawContext, MatrixStack matrixStack, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
         int lastY = GameVariableAccessShim.yCoord();
+
+        for (Contact contact : this.contacts) {
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         GLUtils.disp2(this.textureAtlas.getGlId());
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
-        for (Contact contact : this.contacts) {
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             contact.updateLocation();
             double contactX = contact.x;
@@ -1794,9 +1779,13 @@ public class Radar implements IRadar {
                         RenderSystem.applyModelViewMatrix();
 
                         String name = contact.entity.getDisplayName().getString();
-                        int m = this.fontRenderer.getWidth(name) / 2;
+                        int m = VoxelConstants.getMinecraft().textRenderer.getWidth(name) / 2;
 
-                        this.write(name, x * scaleFactor - m, (y + 3) * scaleFactor, 16777215);
+                        matrixStack.push();
+                        matrixStack.loadIdentity();
+                        matrixStack.translate(0, 0, 900);
+                        drawContext.drawText(VoxelConstants.getMinecraft().textRenderer, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
+                        matrixStack.pop();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);

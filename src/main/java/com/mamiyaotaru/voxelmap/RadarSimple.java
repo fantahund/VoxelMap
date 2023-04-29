@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -74,7 +75,7 @@ public class RadarSimple implements IRadar {
     }
 
     @Override
-    public void onTickInGame(MatrixStack matrixStack, LayoutVariables layoutVariables) {
+    public void onTickInGame(DrawContext drawContext, MatrixStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {

@@ -690,7 +690,7 @@ public class Map implements Runnable, IChangeObserver {
             OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
                 this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
-                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(modelViewMatrixStack, this.layoutVariables);
+                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, modelViewMatrixStack, this.layoutVariables);
             }
 
             if (!this.fullscreenMap) {
