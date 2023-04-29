@@ -1781,11 +1781,12 @@ public class Radar implements IRadar {
                         String name = contact.entity.getDisplayName().getString();
                         int m = VoxelConstants.getMinecraft().textRenderer.getWidth(name) / 2;
 
-                        matrixStack.push();
-                        matrixStack.loadIdentity();
-                        matrixStack.translate(0, 0, 900);
+                        MatrixStack textMatrixStack = drawContext.getMatrices();
+                        textMatrixStack.push();
+                        textMatrixStack.loadIdentity();
+                        textMatrixStack.translate(0, 0, 900);
                         drawContext.drawText(VoxelConstants.getMinecraft().textRenderer, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
-                        matrixStack.pop();
+                        textMatrixStack.pop();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
