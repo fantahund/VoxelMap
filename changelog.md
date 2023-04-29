@@ -1,6 +1,1 @@
-- The WorldMap is now no longer blurry
-- The teleport command can now be customized in the settings.
-- The teleport command can now be customized by the server at the client. If you have any questions, please contact me in the disocrd.
-- You can now right-click on the worldmap again.
-- When creating waypoints, the icons are now displayed again.
-- Fixed some null pointers.
+- mob and player names are now rendered correctly again.
