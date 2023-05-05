@@ -18,7 +18,7 @@ public class APIMixinNetHandlerPlayClient {
         }
     }
 
-    @Inject(method = "sendCommand", at = @At("HEAD"))
+    @Inject(method = "sendCommand", at = @At("HEAD"), cancellable = true)
     public void onSendChatMessage(String command, CallbackInfoReturnable<Boolean> cir) {
         if (!FabricModVoxelMap.instance.onSendChatMessage(command)) {
             cir.cancel();
