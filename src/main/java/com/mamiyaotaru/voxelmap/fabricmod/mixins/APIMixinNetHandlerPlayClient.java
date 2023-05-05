@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class APIMixinNetHandlerPlayClient {
@@ -15,6 +16,10 @@ public class APIMixinNetHandlerPlayClient {
         if (FabricModVoxelMap.instance.handleCustomPayload(packet)) {
             ci.cancel();
         }
+    }
 
+    @Inject(method = "sendCommand", at = @At("HEAD"), cancellable = true)
+    public void onSendChatMessage(String command, CallbackInfoReturnable<Boolean> cir) {
+        cir.setReturnValue(FabricModVoxelMap.instance.onSendChatMessage(command));
     }
 }

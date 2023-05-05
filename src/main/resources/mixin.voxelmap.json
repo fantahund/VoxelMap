@@ -6,7 +6,6 @@
     "target": "@env(DEFAULT)",
     "client": [
         "APIMixinChatListenerHud",
-        "APIMixinClientPlayerEntity",
         "APIMixinInGameHud",
         "APIMixinMinecraftClient",
         "APIMixinNetHandlerPlayClient",

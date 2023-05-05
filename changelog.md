@@ -1,1 +1,1 @@
-- Fixes an issue with the previous version.
+- Fix Waypoint Share

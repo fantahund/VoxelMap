@@ -29,8 +29,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class CommandUtils {
-    private static final int NEW_WAYPOINT_COMMAND_LENGTH = "/newWaypoint ".length();
-    private static final int TELEPORT_COMMAND_LENGTH = "/ztp ".length();
+    private static final int NEW_WAYPOINT_COMMAND_LENGTH = "newWaypoint ".length();
+    private static final int TELEPORT_COMMAND_LENGTH = "ztp ".length();
     private static final Random generator = new Random();
     public static final Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
 
