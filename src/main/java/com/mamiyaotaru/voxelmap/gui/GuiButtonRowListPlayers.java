@@ -5,7 +5,6 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EntryListWidget;
@@ -13,7 +12,6 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 
@@ -22,7 +20,7 @@ import java.util.Iterator;
 
 public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPlayers.Row> {
     private final ArrayList<PlayerListEntry> players;
-    private ArrayList<?> playersFiltered;
+    private ArrayList<PlayerListEntry> playersFiltered;
     final GuiSelectPlayer parentGui;
     final Row everyoneRow;
     static final Text ALL = Text.translatable("minimap.waypointshare.all");
@@ -46,7 +44,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     }
 
     private Text getPlayerName(PlayerListEntry ScoreboardEntryIn) {
-        return ScoreboardEntryIn.getDisplayName() != null ? ScoreboardEntryIn.getDisplayName() : Text.literal(ScoreboardEntryIn.getProfile().getName());
+        return Text.literal(ScoreboardEntryIn.getProfile().getName());
     }
 
     private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {
@@ -91,22 +89,21 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         this.addEntry(this.everyoneRow);
 
         for (int i = 0; i < this.playersFiltered.size(); i += 2) {
-            PlayerListEntry ScoreboardEntry1 = (PlayerListEntry) this.playersFiltered.get(i);
-            PlayerListEntry ScoreboardEntry2 = i < this.playersFiltered.size() - 1 ? (PlayerListEntry) this.playersFiltered.get(i + 1) : null;
+            PlayerListEntry ScoreboardEntry1 = this.playersFiltered.get(i);
+            PlayerListEntry ScoreboardEntry2 = i < this.playersFiltered.size() - 1 ? this.playersFiltered.get(i + 1) : null;
             ButtonWidget guibutton1 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
             ButtonWidget guibutton2 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
             this.addEntry(new Row(guibutton1, i, guibutton2, i + 1));
         }
-
     }
 
     public void buttonClicked(int id) {
         if (id == -1) {
             this.parentGui.allClicked = true;
-            ConfirmScreen confirmScreen = new ConfirmScreen(this.parentGui, this.TITLE, this.EXPLANATION, this.AFFIRM, this.DENY);
+            ConfirmScreen confirmScreen = new ConfirmScreen(this.parentGui, TITLE, EXPLANATION, AFFIRM, DENY);
             this.client.setScreen(confirmScreen);
         } else {
-            PlayerListEntry ScoreboardEntry = (PlayerListEntry) this.playersFiltered.get(id);
+            PlayerListEntry ScoreboardEntry = this.playersFiltered.get(id);
             String name = this.getPlayerName(ScoreboardEntry).getString();
             this.parentGui.sendMessageToPlayer(name);
         }
@@ -159,7 +156,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         }
 
         private void drawIconForButton(DrawContext drawContext, ButtonWidget button, int id) {
-            PlayerListEntry networkPlayerInfo = (PlayerListEntry) GuiButtonRowListPlayers.this.playersFiltered.get(id);
+            PlayerListEntry networkPlayerInfo = GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             PlayerEntity entityPlayer = VoxelConstants.getPlayer().getWorld().getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);

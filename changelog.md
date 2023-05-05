@@ -1,1 +1,1 @@
-- mob and player names are now rendered correctly again.
+- Fix Waypoint Share

@@ -94,11 +94,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
             this.allClicked = false;
             if (b) {
                 String combined = this.message.getText() + " " + this.locInfo;
-                if (combined.length() > 100) {
-                    VoxelConstants.getPlayer().sendMessage(Text.of(this.message.getText()));
-                    VoxelConstants.getPlayer().sendMessage(Text.of(this.locInfo));
+                if (combined.length() > 256) {
+                    VoxelConstants.getPlayer().networkHandler.sendChatMessage(this.message.getText());
+                    VoxelConstants.getPlayer().networkHandler.sendChatMessage(this.locInfo);
                 } else {
-                    VoxelConstants.getPlayer().sendMessage(Text.of(combined));
+                    VoxelConstants.getPlayer().networkHandler.sendChatMessage(combined);
                 }
 
                 VoxelConstants.getMinecraft().setScreen(this.parentScreen);
@@ -111,11 +111,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     protected void sendMessageToPlayer(String name) {
         String combined = "msg " + name + " " + this.message.getText() + " " + this.locInfo;
-        if (combined.length() > 100) {
-            VoxelConstants.getPlayer().networkHandler.sendCommand("msg " + name + " " + this.message.getText());
-            VoxelConstants.getPlayer().networkHandler.sendCommand("msg " + name + " " + this.locInfo);
+        if (combined.length() > 256) {
+            VoxelConstants.getPlayer().networkHandler.sendChatCommand("msg " + name + " " + this.message.getText());
+            VoxelConstants.getPlayer().networkHandler.sendChatCommand("msg " + name + " " + this.locInfo);
         } else {
-            VoxelConstants.getPlayer().networkHandler.sendCommand(combined);
+            VoxelConstants.getPlayer().networkHandler.sendChatCommand(combined);
         }
 
         VoxelConstants.getMinecraft().setScreen(this.parentScreen);
