@@ -1,1 +1,1 @@
-- Fix Waypoint Share
+- Update 1.20-pre1
