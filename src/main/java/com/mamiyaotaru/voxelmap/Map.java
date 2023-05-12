@@ -239,7 +239,7 @@ public class Map implements Runnable, IChangeObserver {
                         try {
                             this.zCalc.wait(0L);
                         } catch (InterruptedException exception) {
-                            VoxelConstants.getLogger().error(exception);
+                            VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
                         }
                     }
                 }
@@ -253,7 +253,7 @@ public class Map implements Runnable, IChangeObserver {
                                 this.chunkCache[this.zoom].checkIfChunksChanged();
                             }
                         } catch (Exception exception) {
-                            VoxelConstants.getLogger().error(exception);
+                            VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
                         }
                     }
 
@@ -266,7 +266,7 @@ public class Map implements Runnable, IChangeObserver {
                     try {
                         this.zCalc.wait(0L);
                     } catch (InterruptedException exception) {
-                        VoxelConstants.getLogger().error(exception);
+                        VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
                     }
                 }
             }
