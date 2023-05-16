@@ -1,1 +1,1 @@
-- Fix WorldMap Moving
+- Update 1.20 pre2
