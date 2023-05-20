@@ -396,11 +396,7 @@ public class Map implements Runnable, IChangeObserver {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
-                    try {
-                        this.zCalc.join();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    this.zCalc.stop();
                 } else {
                     synchronized (this.zCalc) {
                         this.zCalc.notify();
