@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import net.minecraft.world.chunk.WorldChunk;
+import org.jetbrains.annotations.Nullable;
 
 public class EmptyCachedRegion extends CachedRegion {
     @Override
@@ -47,6 +48,7 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
+    @Nullable
     public CompressibleMapData getMapData() {
         return null;
     }

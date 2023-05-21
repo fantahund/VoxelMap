@@ -1,5 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
@@ -10,6 +12,7 @@ public final class ReflectionUtils {
         return getPrivateFieldValueByType(o, objectClasstype, fieldClasstype, 0);
     }
 
+    @Nullable
     public static Object getPrivateFieldValueByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
         Class<?> objectClass;
         if (o != null) {
@@ -58,6 +61,7 @@ public final class ReflectionUtils {
         return matches;
     }
 
+    @Nullable
     public static Field getFieldByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
         Class<?> objectClass = o.getClass();
 

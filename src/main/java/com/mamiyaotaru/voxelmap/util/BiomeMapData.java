@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import net.minecraft.block.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -21,6 +22,7 @@ public class BiomeMapData extends AbstractMapData {
     }
 
     @Override
+    @Nullable
     public BlockState getBlockstate(int x, int z) {
         return null;
     }
@@ -41,6 +43,7 @@ public class BiomeMapData extends AbstractMapData {
     }
 
     @Override
+    @Nullable
     public BlockState getOceanFloorBlockstate(int x, int z) {
         return null;
     }
@@ -61,6 +64,7 @@ public class BiomeMapData extends AbstractMapData {
     }
 
     @Override
+    @Nullable
     public BlockState getTransparentBlockstate(int x, int z) {
         return null;
     }
@@ -81,6 +85,7 @@ public class BiomeMapData extends AbstractMapData {
     }
 
     @Override
+    @Nullable
     public BlockState getFoliageBlockstate(int x, int z) {
         return null;
     }

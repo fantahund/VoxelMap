@@ -26,6 +26,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
@@ -214,6 +215,7 @@ public class VoxelMap implements ResourceReloader {
         return this.settingsAndLightingChangeNotifier;
     }
 
+    @Nullable
     public IRadar getRadar() {
         if (radarOptions.showRadar) {
             if (radarOptions.radarMode == 1) {

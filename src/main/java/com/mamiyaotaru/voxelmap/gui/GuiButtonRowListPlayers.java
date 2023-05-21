@@ -15,6 +15,7 @@ import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,6 +49,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
         return Text.literal(ScoreboardEntryIn.getProfile().getName());
     }
 
+    @Nullable
     private ButtonWidget createButtonFor(int x, int y, PlayerListEntry ScoreboardEntry) {
         if (ScoreboardEntry == null) {
             return null;

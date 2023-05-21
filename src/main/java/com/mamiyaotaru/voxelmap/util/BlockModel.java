@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import net.minecraft.client.render.model.BakedQuad;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -50,6 +51,7 @@ public class BlockModel {
         return this.faces;
     }
 
+    @Nullable
     public BufferedImage getImage(BufferedImage terrainImage) {
         float terrainImageAspectRatio = (float) terrainImage.getWidth() / terrainImage.getHeight();
         float longestSideUV = Math.max(Math.abs(this.longestSide[0].u - this.longestSide[1].u), Math.abs(this.longestSide[0].v - this.longestSide[1].v) / terrainImageAspectRatio);

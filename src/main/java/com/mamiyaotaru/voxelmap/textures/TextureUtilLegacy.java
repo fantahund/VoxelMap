@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.textures;
 
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -24,6 +25,7 @@ public final class TextureUtilLegacy {
         return createDirectByteBuffer(capacity << 2).asIntBuffer();
     }
 
+    @Nullable
     public static BufferedImage readBufferedImage(InputStream imageStream) throws IOException {
         if (imageStream == null) {
             return null;

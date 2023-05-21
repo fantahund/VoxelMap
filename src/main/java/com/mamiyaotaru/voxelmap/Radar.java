@@ -132,6 +132,7 @@ import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerDataContainer;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -367,6 +368,7 @@ public class Radar implements IRadar {
 
     }
 
+    @Nullable
     private BufferedImage createImageFromTypeAndResourceLocations(EnumMobs type, Identifier resourceLocation, Identifier resourceLocationSecondary, Entity entity) {
         Optional<BufferedImage> optionalMobImage = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
 
