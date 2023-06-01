@@ -1,1 +1,1 @@
-- Update 1.20 pre6
+- Update 1.20 rc1
