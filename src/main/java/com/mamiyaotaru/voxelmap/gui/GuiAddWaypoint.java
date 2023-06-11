@@ -310,7 +310,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GLUtils.img2(this.pickerResourceLocation);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+            RenderSystem.disableDepthTest();
             drawContext.drawTexture(pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256);
+            RenderSystem.enableDepthTest();
         }
 
         if (this.choosingIcon) {
@@ -331,6 +333,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             int displayWidth = (int) displayWidthFloat;
             int displayHeight = (int) displayHeightFloat;
+            RenderSystem.disableDepthTest();
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, this.blank);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
@@ -353,7 +356,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     this.tooltip = Text.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));
                 }
             }
-
+            RenderSystem.enableDepthTest();
             OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
         }
