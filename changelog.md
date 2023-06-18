@@ -1,1 +1,1 @@
-- Fix weird NullPointer
+- Fix black water when Water Transparency and Biome Shading is off
