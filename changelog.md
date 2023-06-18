@@ -1,2 +1,1 @@
-- Fix OpenGL Error with AMD Graphics cards
-- Fix Create Waypoint GUI Text-rendering
+- Fix weird NullPointer
