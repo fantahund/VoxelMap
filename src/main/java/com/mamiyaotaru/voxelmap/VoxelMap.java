@@ -256,9 +256,9 @@ public class VoxelMap implements ResourceReloader {
         this.map.newWorldName();
     }
 
-    public String getWorldSeed() { return VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse(""); }
+    public String getWorldSeed() { return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse("") : waypointManager.getWorldSeed(); }
 
-    public void setWorldSeed(String newSeed) { if (VoxelConstants.getIntegratedServer().isEmpty()) waypointManager.setWorldSeed(newSeed); }
+    public void setWorldSeed(String newSeed) { waypointManager.setWorldSeed(newSeed); }
 
     public void sendPlayerMessageOnMainThread(String s) {
         passMessage = s;

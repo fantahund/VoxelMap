@@ -1,1 +1,1 @@
-- Fix black water when Water Transparency and Biome Shading is off
+- Fix WorldSeed Option

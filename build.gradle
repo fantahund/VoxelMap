@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
+    id 'fabric-loom' version '1.3-SNAPSHOT'
     id 'maven-publish'
     id "com.modrinth.minotaur" version "2.4.3"
 }
@@ -68,6 +68,25 @@ jar {
 
 loom {
     accessWidenerPath = file("src/main/resources/voxelmap.accesswidener")
+}
+
+tasks.publish.dependsOn build
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId project.archivesBaseName
+
+            // add all the jars that should be included when publishing to maven
+            //artifact(jar)             { builtBy remapJar }
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            url "$projectDir/../../CommonMaven"
+        }
+    }
 }
 
 modrinth {
