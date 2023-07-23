@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.EntryListWidget;
@@ -92,7 +91,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            GLUtils.img2("textures/gui/container/beacon.png");
+            OpenGL.Utils.img2("textures/gui/container/beacon.png");
             int xOffset = this.parentGui.waypoint.dimensions.contains(this.dim) ? 91 : 113;
             int yOffset = 222;
             drawContext.drawTexture(new Identifier("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);

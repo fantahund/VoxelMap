@@ -13,7 +13,6 @@ import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
@@ -211,7 +210,7 @@ public class Map implements Runnable, IChangeObserver {
             this.mapImages = this.mapImagesUnfiltered;
         }
 
-        GLUtils.setupFrameBuffer();
+        OpenGL.Utils.setupFramebuffer();
         this.fontRenderer = VoxelConstants.getMinecraft().textRenderer;
         this.zoom = this.options.zoom;
         this.setZoomScale();
@@ -499,7 +498,7 @@ public class Map implements Runnable, IChangeObserver {
         try {
             if (this.world != null) {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !VoxelConstants.getMinecraft().isPaused() || this.options.realTimeTorches) {
-                    GLUtils.disp(this.lightmapTexture.getGlId());
+                    OpenGL.Utils.disp(this.lightmapTexture.getGlId());
                     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
 
@@ -1548,7 +1547,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
-        GLUtils.bindFrameBuffer();
+        OpenGL.Utils.bindFramebuffer();
         OpenGL.glViewport(0, 0, 512, 512);
         matrixStack.push();
         matrixStack.loadIdentity();
@@ -1559,12 +1558,12 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
         OpenGL.glClear(16384);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        GLUtils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
-        GLUtils.drawPre();
-        GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
-        GLUtils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
-        GLUtils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
-        GLUtils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
+        OpenGL.Utils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
+        OpenGL.Utils.drawPre();
+        OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
+        OpenGL.Utils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
+        OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
+        OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
         BufferBuilder bb = Tessellator.getInstance().getBuffer();
         //BufferRenderer.drawWithShader(bb.end());
         BufferRenderer.drawWithGlobalProgram(bb.end());
@@ -1583,7 +1582,7 @@ public class Map implements Runnable, IChangeObserver {
         this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
         this.percentX *= multi;
         this.percentY *= multi;
-        GLUtils.disp2(this.mapImages[this.zoom].getIndex());
+        OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         matrixStack.push();
@@ -1597,30 +1596,30 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(-256.0, -256.0, 0.0);
         matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0);
         RenderSystem.applyModelViewMatrix();
-        GLUtils.drawPre();
-        GLUtils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
-        GLUtils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
-        GLUtils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
-        GLUtils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
-        GLUtils.drawPost();
+        OpenGL.Utils.drawPre();
+        OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
+        OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
+        OpenGL.Utils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
+        OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
+        OpenGL.Utils.drawPost();
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        GLUtils.unbindFrameBuffer();
+        OpenGL.Utils.unbindFramebuffer();
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         matrixStack.pop();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         matrixStack.push();
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        GLUtils.disp2(OpenGL.Utils.fboTextureId);
+        OpenGL.Utils.disp2(OpenGL.Utils.fboTextureId);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / this.scWidth;
         OpenGL.glEnable(3089);
         OpenGL.glScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
-        GLUtils.drawPre();
-        GLUtils.setMapWithScale(x, y, scale);
-        GLUtils.drawPost();
+        OpenGL.Utils.drawPre();
+        OpenGL.Utils.setMapWithScale(x, y, scale);
+        OpenGL.Utils.drawPost();
         OpenGL.glDisable(3089);
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
@@ -1635,7 +1634,7 @@ public class Map implements Runnable, IChangeObserver {
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        GLUtils.disp2(textureAtlas.getGlId());
+        OpenGL.Utils.disp2(textureAtlas.getGlId());
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -1735,9 +1734,9 @@ public class Map implements Runnable, IChangeObserver {
                 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-                GLUtils.drawPre();
-                GLUtils.setMap(icon, x, y, 16.0F);
-                GLUtils.drawPost();
+                OpenGL.Utils.drawPre();
+                OpenGL.Utils.setMap(icon, x, y, 16.0F);
+                OpenGL.Utils.drawPost();
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
@@ -1772,9 +1771,9 @@ public class Map implements Runnable, IChangeObserver {
                 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-                GLUtils.drawPre();
-                GLUtils.setMap(icon, x, y, 16.0F);
-                GLUtils.drawPost();
+                OpenGL.Utils.drawPre();
+                OpenGL.Utils.setMap(icon, x, y, 16.0F);
+                OpenGL.Utils.drawPost();
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
@@ -1791,16 +1790,16 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.push();
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-            GLUtils.img2(this.arrowResourceLocation);
+            OpenGL.Utils.img2(this.arrowResourceLocation);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
             matrixStack.translate(x, y, 0.0);
             matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
             matrixStack.translate(-x, -y, 0.0);
             RenderSystem.applyModelViewMatrix();
-            GLUtils.drawPre();
-            GLUtils.setMap(x, y, 16);
-            GLUtils.drawPost();
+            OpenGL.Utils.drawPre();
+            OpenGL.Utils.setMap(x, y, 16);
+            OpenGL.Utils.drawPost();
         } catch (Exception var8) {
             this.error = "Error: minimap arrow not found!";
         } finally {
@@ -1822,7 +1821,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        GLUtils.disp2(this.mapImages[this.zoom].getIndex());
+        OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         matrixStack.push();
@@ -1831,14 +1830,14 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
         RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        GLUtils.drawPre();
+        OpenGL.Utils.drawPre();
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        GLUtils.ldrawone(left, top + 256, 160.0, 0.0F, 1.0F);
-        GLUtils.ldrawone(left + 256, top + 256, 160.0, 1.0F, 1.0F);
-        GLUtils.ldrawone(left + 256, top, 160.0, 1.0F, 0.0F);
-        GLUtils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
-        GLUtils.drawPost();
+        OpenGL.Utils.ldrawone(left, top + 256, 160.0, 0.0F, 1.0F);
+        OpenGL.Utils.ldrawone(left + 256, top + 256, 160.0, 1.0F, 1.0F);
+        OpenGL.Utils.ldrawone(left + 256, top, 160.0, 1.0F, 0.0F);
+        OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
+        OpenGL.Utils.drawPost();
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
         if (this.options.biomeOverlay != 0) {
@@ -1874,14 +1873,14 @@ public class Map implements Runnable, IChangeObserver {
 
     private void drawSquareMapFrame(int x, int y) {
         try {
-            GLUtils.disp2(this.mapImageInt);
+            OpenGL.Utils.disp2(this.mapImageInt);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-            GLUtils.drawPre();
-            GLUtils.setMap(x, y, 128);
-            GLUtils.drawPost();
+            OpenGL.Utils.drawPre();
+            OpenGL.Utils.setMap(x, y, 128);
+            OpenGL.Utils.drawPost();
         } catch (Exception var4) {
             this.error = "error: minimap overlay not found!";
         }
@@ -1890,14 +1889,14 @@ public class Map implements Runnable, IChangeObserver {
 
     private void loadMapImage() {
         if (this.mapImageInt != -1) {
-            GLUtils.glah(this.mapImageInt);
+            OpenGL.Utils.glah(this.mapImageInt);
         }
 
         try {
             InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/squaremap.png")).get().getInputStream();
             BufferedImage mapImage = ImageIO.read(is);
             is.close();
-            this.mapImageInt = GLUtils.tex(mapImage);
+            this.mapImageInt = OpenGL.Utils.tex(mapImage);
         } catch (Exception var8) {
             try {
                 InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("textures/map/map_background.png")).get().getInputStream();
@@ -1910,7 +1909,7 @@ public class Map implements Runnable, IChangeObserver {
                 gfx.setComposite(AlphaComposite.Clear);
                 gfx.fillRect(border, border, mapImage.getWidth() - border * 2, mapImage.getHeight() - border * 2);
                 gfx.dispose();
-                this.mapImageInt = GLUtils.tex(mapImage);
+                this.mapImageInt = OpenGL.Utils.tex(mapImage);
             } catch (Exception var7) {
                 VoxelConstants.getLogger().warn("Error loading texture pack's map image: " + var7.getLocalizedMessage());
             }
@@ -1920,12 +1919,12 @@ public class Map implements Runnable, IChangeObserver {
 
     private void drawRoundMapFrame(int x, int y) {
         try {
-            GLUtils.img2(this.roundmapResourceLocation);
+            OpenGL.Utils.img2(this.roundmapResourceLocation);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            GLUtils.drawPre();
-            GLUtils.setMap(x, y, 128);
-            GLUtils.drawPost();
+            OpenGL.Utils.drawPre();
+            OpenGL.Utils.setMap(x, y, 128);
+            OpenGL.Utils.drawPost();
         } catch (Exception var4) {
             this.error = "Error: minimap overlay not found!";
         }

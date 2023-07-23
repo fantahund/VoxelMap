@@ -19,7 +19,6 @@ import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.BiomeMapData;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
@@ -174,10 +173,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         if (imageData != null) {
             gotSkin = true;
-            GLUtils.disp(imageData.getGlId());
+            OpenGL.Utils.disp(imageData.getGlId());
         } else {
             ++skinTries;
-            GLUtils.img(skinLocation);
+            OpenGL.Utils.img(skinLocation);
         }
 
         BufferedImage skinImage = ImageUtils.createBufferedImageFromCurrentGLImage();
@@ -191,10 +190,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float scale = skinImage.getWidth() / 8.0F;
         skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
         if (playerGLID != 0) {
-            GLUtils.glah(playerGLID);
+            OpenGL.Utils.glah(playerGLID);
         }
 
-        playerGLID = GLUtils.tex(skinImage);
+        playerGLID = OpenGL.Utils.tex(skinImage);
     }
 
     public void init() {
@@ -640,14 +639,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
-            GLUtils.disp2(this.backGroundImageInfo.glid);
+            OpenGL.Utils.disp2(this.backGroundImageInfo.glid);
             this.drawTexturedModalRect(this.backGroundImageInfo.left * this.mapToGui, this.backGroundImageInfo.top * this.mapToGui, this.backGroundImageInfo.width * this.mapToGui, this.backGroundImageInfo.height * this.mapToGui);
         }
 
         for (CachedRegion region : this.regions) {
             int glid = region.getGLID();
             if (glid != 0) {
-                GLUtils.disp2(glid);
+                OpenGL.Utils.disp2(glid);
                 RenderSystem.bindTextureForSetup(glid);
                 if (mapOptions.filtering) {
                     OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
@@ -694,7 +693,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        GLUtils.disp2(playerGLID);
+        OpenGL.Utils.disp2(playerGLID);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         float playerX = (float) GameVariableAccessShim.xCoordDouble();
@@ -874,7 +873,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 boolean target = false;
                 RenderSystem.setShader(GameRenderer::getPositionTexProgram);
                 TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-                GLUtils.disp2(atlas.getGlId());
+                OpenGL.Utils.disp2(atlas.getGlId());
                 if (icon == null) {
                     icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
                     if (icon == atlas.getMissingImage()) {

@@ -199,8 +199,6 @@ public final class OpenGL {
 
         private Utils() {}
 
-        public static int getFboTextureId() { return fboTextureId; }
-
         public static void setupFramebuffer() {
             previousFboId = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
             fboId = glGenFramebuffers();
@@ -211,6 +209,7 @@ public final class OpenGL {
             ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height);
 
             glBindFramebuffer(GL30_GL_FRAMEBUFFER, fboId);
+            glBindTexture(GL11_GL_TEXTURE_2D, fboTextureId);
             glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_WRAP_S, GL12_GL_CLAMP_TO_EDGE);
             glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_WRAP_T, GL12_GL_CLAMP_TO_EDGE);
             glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MIN_FILTER, GL11_GL_LINEAR);
@@ -248,7 +247,7 @@ public final class OpenGL {
         public static void bindFramebuffer() {
             previousFboId = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
             previousFboIdRead = glGetInteger(GL30_GL_READ_FRAMEBUFFER_BINDING);
-            previousFboIdDraw = glGetInteger(GL30_GL_DRAW_FRAMEBUFFER);
+            previousFboIdDraw = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
 
             glBindFramebuffer(GL30_GL_FRAMEBUFFER, fboId);
             glBindFramebuffer(GL30_GL_READ_FRAMEBUFFER, fboId);
@@ -335,8 +334,6 @@ public final class OpenGL {
         public static void glah(int g) { glDeleteTexture(g); }
 
         public static void ldrawone(int x, int y, double z, float u, float v) { VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next(); }
-
-        public static void ldrawtwo(double x, double y, double z) { VERTEX_BUFFER.vertex(x, y, z).next(); }
 
         public static void ldrawthree(double x, double y, double z, float u, float v) { VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next(); }
     }

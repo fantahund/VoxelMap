@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
@@ -59,6 +58,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GLUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -255,7 +255,7 @@ public class ColorManager {
         matrixStack.loadIdentity();
         matrixStack.translate(0.0, 0.0, -3000.0 + (captureDepth * scale));
         RenderSystem.applyModelViewMatrix();
-        GLUtils.bindFrameBuffer();
+        OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -270,7 +270,7 @@ public class ColorManager {
         matrixStack.translate((width / 2f) - size / 2.0F + transX, (height / 2f) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
         VoxelConstants.getMinecraft().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
-        GLUtils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
+        OpenGL.Utils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotY));
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(rotX));
@@ -294,7 +294,7 @@ public class ColorManager {
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
-        GLUtils.unbindFrameBuffer();
+        OpenGL.Utils.unbindFramebuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
     }

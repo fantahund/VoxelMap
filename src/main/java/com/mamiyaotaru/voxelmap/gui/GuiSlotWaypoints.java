@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -15,11 +14,10 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.NarratorManager;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -159,14 +157,14 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            GLUtils.img2(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier);
+            OpenGL.Utils.img2(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier);
             drawContext.drawTexture(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
                 int x1 = x + 199;
                 int y1 = y - 1;
                 OpenGL.glColor4f(1.0F, 0.0F, 0.0F, 1.0F);
                 TextureAtlas textureAtlas = this.parentGui.waypointManager.getTextureAtlas();
-                GLUtils.disp(textureAtlas.getGlId());
+                OpenGL.Utils.disp(textureAtlas.getGlId());
                 Sprite icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png");
                 GuiSlotWaypoints.this.drawTexturedModalRect(x1, y1, icon, 16, 16);
             }

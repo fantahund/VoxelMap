@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import net.minecraft.client.gui.DrawContext;
@@ -154,7 +153,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            GLUtils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
+            OpenGL.Utils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
             drawContext.drawTexture(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
         }
 

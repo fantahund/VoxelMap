@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
@@ -183,7 +182,7 @@ public class RadarSimple implements IRadar {
 
     public void renderMapMobs(MatrixStack matrixStack, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
-        GLUtils.disp2(this.textureAtlas.getGlId());
+        OpenGL.Utils.disp2(this.textureAtlas.getGlId());
 
         for (Contact contact : this.contacts) {
             contact.updateLocation();
@@ -239,14 +238,14 @@ public class RadarSimple implements IRadar {
                     RenderSystem.applyModelViewMatrix();
 
                     this.applyFilteringParameters();
-                    GLUtils.drawPre();
-                    GLUtils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
-                    GLUtils.drawPost();
+                    OpenGL.Utils.drawPre();
+                    OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
+                    OpenGL.Utils.drawPost();
                     if (this.options.showFacing) {
                         this.applyFilteringParameters();
-                        GLUtils.drawPre();
-                        GLUtils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
-                        GLUtils.drawPost();
+                        OpenGL.Utils.drawPre();
+                        OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
+                        OpenGL.Utils.drawPost();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);

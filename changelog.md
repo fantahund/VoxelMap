@@ -1,1 +1,2 @@
-- Fix WorldSeed Option
+- Clean up OpenGL code
+- Improved general stability of the minimap

@@ -9,7 +9,6 @@ import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
@@ -137,6 +136,8 @@ import net.minecraft.village.VillagerType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GLUtil;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -1187,11 +1188,11 @@ public class Radar implements IRadar {
                 }
 
                 if (hasAdditional) {
-                    NativeImage nativeImage = GLUtils.nativeImageFromBufferedImage(base);
+                    NativeImage nativeImage = OpenGL.Utils.nativeImageFromBufferedImage(base);
                     base.flush();
                     this.nativeBackedTexture.close();
                     this.nativeBackedTexture = new NativeImageBackedTexture(nativeImage);
-                    GLUtils.register(this.nativeBackedTextureLocation, this.nativeBackedTexture);
+                    OpenGL.Utils.register(this.nativeBackedTextureLocation, this.nativeBackedTexture);
                     resourceLocation = this.nativeBackedTextureLocation;
                 }
             } catch (Exception var9) {
@@ -1218,7 +1219,7 @@ public class Radar implements IRadar {
         matrixStack.loadIdentity();
         matrixStack.translate(0.0, 0.0, -3000.0 + captureDepth);
         RenderSystem.applyModelViewMatrix();
-        GLUtils.bindFrameBuffer();
+        OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -1290,7 +1291,7 @@ public class Radar implements IRadar {
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
-        GLUtils.unbindFrameBuffer();
+        OpenGL.Utils.unbindFramebuffer();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         return !failed;
@@ -1589,7 +1590,7 @@ public class Radar implements IRadar {
 
         for (Contact contact : this.contacts) {
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        GLUtils.disp2(this.textureAtlas.getGlId());
+        OpenGL.Utils.disp2(this.textureAtlas.getGlId());
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1685,16 +1686,16 @@ public class Radar implements IRadar {
                                 this.loadTexturePackIcons();
                             }
 
-                            GLUtils.disp2(this.textureAtlas.getGlId());
+                            OpenGL.Utils.disp2(this.textureAtlas.getGlId());
                         }
 
                         this.newMobs = false;
                     }
 
                     this.applyFilteringParameters();
-                    GLUtils.drawPre();
-                    GLUtils.setMap(contact.icon, x, y + yOffset, ((int) (contact.icon.getIconWidth() / 4.0F)));
-                    GLUtils.drawPost();
+                    OpenGL.Utils.drawPre();
+                    OpenGL.Utils.setMap(contact.icon, x, y + yOffset, ((int) (contact.icon.getIconWidth() / 4.0F)));
+                    OpenGL.Utils.drawPost();
                     if ((this.options.showHelmetsPlayers && contact.type == EnumMobs.PLAYER || this.options.showHelmetsMobs && contact.type != EnumMobs.PLAYER || contact.type == EnumMobs.SHEEP) && contact.armorIcon != null) {
                         Sprite icon = contact.armorIcon;
                         float armorOffset = 0.0F;
@@ -1736,9 +1737,9 @@ public class Radar implements IRadar {
                         }
 
                         this.applyFilteringParameters();
-                        GLUtils.drawPre();
-                        GLUtils.setMap(icon, x, y + yOffset + armorOffset, ((int) (icon.getIconWidth() / 4.0F * armorScale)));
-                        GLUtils.drawPost();
+                        OpenGL.Utils.drawPre();
+                        OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, ((int) (icon.getIconWidth() / 4.0F * armorScale)));
+                        OpenGL.Utils.drawPost();
                         if (icon == this.clothIcon) {
                             if (wayY < 0) {
                                 OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
@@ -1748,9 +1749,9 @@ public class Radar implements IRadar {
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[2]);
                             this.applyFilteringParameters();
-                            GLUtils.drawPre();
-                            GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
-                            GLUtils.drawPost();
+                            OpenGL.Utils.drawPre();
+                            OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
+                            OpenGL.Utils.drawPost();
                             if (wayY < 0) {
                                 OpenGL.glColor4f(red, green, blue, contact.brightness);
                             } else {
@@ -1759,15 +1760,15 @@ public class Radar implements IRadar {
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[1]);
                             this.applyFilteringParameters();
-                            GLUtils.drawPre();
-                            GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
-                            GLUtils.drawPost();
+                            OpenGL.Utils.drawPre();
+                            OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
+                            OpenGL.Utils.drawPost();
                             OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[3]);
                             this.applyFilteringParameters();
-                            GLUtils.drawPre();
-                            GLUtils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
-                            GLUtils.drawPost();
+                            OpenGL.Utils.drawPre();
+                            OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
+                            OpenGL.Utils.drawPost();
                         }
                     }
 

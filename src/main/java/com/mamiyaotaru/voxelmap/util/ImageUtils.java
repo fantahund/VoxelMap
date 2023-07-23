@@ -128,19 +128,19 @@ public class ImageUtils {
             MatrixStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.loadIdentity();
             matrixStack.translate(0.0, 0.0, -2000.0);
-            GLUtils.bindFrameBuffer();
+            OpenGL.Utils.bindFramebuffer();
             for (int startX = 0; startX + fboWidth < imageWidth; startX += fboWidth) {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
-                    GLUtils.disp(glid);
+                    OpenGL.Utils.disp(glid);
                     OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
                     OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
-                    GLUtils.drawPre();
-                    GLUtils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / imageWidth, (float) startY / imageHeight);
-                    GLUtils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + fboWidth) / imageWidth, (float) startY / imageHeight);
-                    GLUtils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + fboWidth) / imageWidth, ((float) startY + fboHeight) / imageHeight);
-                    GLUtils.ldrawthree(0.0, 0.0, 1.0, (float) startX / imageWidth, ((float) startY + fboHeight) / imageHeight);
-                    GLUtils.drawPost();
-                    GLUtils.disp(OpenGL.Utils.fboTextureId);
+                    OpenGL.Utils.drawPre();
+                    OpenGL.Utils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / imageWidth, (float) startY / imageHeight);
+                    OpenGL.Utils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + fboWidth) / imageWidth, (float) startY / imageHeight);
+                    OpenGL.Utils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + fboWidth) / imageWidth, ((float) startY + fboHeight) / imageHeight);
+                    OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, (float) startX / imageWidth, ((float) startY + fboHeight) / imageHeight);
+                    OpenGL.Utils.drawPost();
+                    OpenGL.Utils.disp(OpenGL.Utils.fboTextureId);
                     byteBuffer.position(0);
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
                     byteBuffer.position(0);
@@ -160,7 +160,7 @@ public class ImageUtils {
                 }
             }
 
-            GLUtils.unbindFrameBuffer();
+            OpenGL.Utils.unbindFramebuffer();
             RenderSystem.restoreProjectionMatrix();
             OpenGL.glPopAttrib();
             OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());

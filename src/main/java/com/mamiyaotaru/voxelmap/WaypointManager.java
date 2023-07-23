@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
@@ -747,7 +746,7 @@ public class WaypointManager {
 
     private void loadBackgroundMapImage() {
         if (this.backgroundImageInfo != null) {
-            GLUtils.glah(this.backgroundImageInfo.glid);
+            OpenGL.Utils.glah(this.backgroundImageInfo.glid);
             this.backgroundImageInfo = null;
         }
 
