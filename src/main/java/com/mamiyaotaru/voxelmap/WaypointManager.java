@@ -654,7 +654,8 @@ public class WaypointManager {
                                             case "dimensions" -> {
                                                 String[] dimensionStrings = value.split("#");
                                                 for (String dimensionString : dimensionStrings) {
-                                                    dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(dimensionString));
+                                                    String convertOldFormat = dimensionString.equals("1") ? "the_end" : dimensionString.equals("-1") ? "the_nether" : dimensionString.equals("0") ? "overworld" : dimensionString;
+                                                    dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(convertOldFormat));
                                                 }
                                                 if (dimensions.isEmpty()) {
                                                     dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByResourceLocation(DimensionTypes.OVERWORLD.getValue()));
