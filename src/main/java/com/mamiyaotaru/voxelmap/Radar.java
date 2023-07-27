@@ -136,9 +136,9 @@ import net.minecraft.village.VillagerType;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GLUtil;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1156,8 +1156,22 @@ public class Radar implements IRadar {
             headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof BipedEntityModel);
         }
 
+        if (contact.type == EnumMobs.CAMEL || contact.type == EnumMobs.SNIFFER) {
+            headImage = resizeBufferedImage(headImage, headImage.getHeight() / 2, headImage.getHeight() / 2);
+        }
+
         entityIconMap.put(entityUUID, headImage);
         return headImage;
+    }
+
+    public static BufferedImage resizeBufferedImage(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+        return dimg;
     }
 
     private Identifier combineResourceLocations(Identifier... resourceLocations) {
@@ -1589,10 +1603,10 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
 
         for (Contact contact : this.contacts) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        OpenGL.Utils.disp2(this.textureAtlas.getGlId());
-        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            OpenGL.Utils.disp2(this.textureAtlas.getGlId());
+            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+            OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
             contact.updateLocation();
