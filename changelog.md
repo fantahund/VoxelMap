@@ -1,2 +1,3 @@
-- Clean up OpenGL code
-- Improved general stability of the minimap
+- Camels and sniffers now have the right size on the minimap.
+- You should now be able to load old waypoints again.
+- 
