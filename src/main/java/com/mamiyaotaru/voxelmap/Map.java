@@ -636,6 +636,7 @@ public class Map implements Runnable, IChangeObserver {
         Matrix4f matrix4f = new Matrix4f().ortho(0.0f, (float) scaledWidthD, (float) scaledHeightD, 0.0f, 1000.0f, 3000.0f);
         RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
         MatrixStack modelViewMatrixStack = RenderSystem.getModelViewStack();
+        modelViewMatrixStack.push();
         modelViewMatrixStack.loadIdentity();
         modelViewMatrixStack.translate(0.0, 0.0, -2000.0);
         RenderSystem.applyModelViewMatrix();
@@ -707,6 +708,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        modelViewMatrixStack.pop();
         RenderSystem.restoreProjectionMatrix();
         RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
