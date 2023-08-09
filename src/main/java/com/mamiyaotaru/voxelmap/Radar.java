@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SkullBlock;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.model.Dilation;
@@ -37,6 +38,8 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.entity.SkullBlockEntityModel;
+import net.minecraft.client.render.block.entity.SkullBlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
@@ -1367,18 +1370,19 @@ public class Radar implements IRadar {
                 PlayerSkinTexture imageData;
 
                 try {
-                    if (player.getSkinTexture() == DefaultSkinHelper.getTexture(player.getUuid())) {
+                    Identifier skinIdentifier = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(player.getGameProfile()).texture();
+                    if (skinIdentifier == DefaultSkinHelper.getTexture(player.getUuid()).texture()) {
                         throw new Exception("failed to get skin: skin is default");
                     }
 
-                    AbstractClientPlayerEntity.loadSkin(player.getSkinTexture(), player.getName().getString());
-                    imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(player.getSkinTexture());
+                    //FIXME 1.20.2 AbstractClientPlayerEntity.loadSkin(skinIdentifier, player.getName().getString());
+                    imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinIdentifier);
                     if (imageData == null) {
                         throw new Exception("failed to get skin: image data was null");
                     }
 
                     EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
-                    BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, player.getSkinTexture(), null);
+                    BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, skinIdentifier, null);
                     icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
                     this.newMobs = true;
                     this.mpContactsSkinGetTries.remove(playerName);
@@ -1433,17 +1437,18 @@ public class Radar implements IRadar {
                         if (name != null && !name.isEmpty()) {
                             gameProfile = new GameProfile(null, name);
                             nbttagcompound.remove("SkullOwner");
-                            SkullBlockEntity.loadProperties(gameProfile, gameProfilex -> nbttagcompound.put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), gameProfilex)));
+                            //FIXME 1.20.2 SkullBlockEntity.loadProperties(gameProfile, gameProfilex -> nbttagcompound.put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), gameProfilex)));
                         }
                     }
                 }
 
                 Identifier resourceLocation = DefaultSkinHelper.getTexture();
                 if (gameProfile != null) {
-                    Map<Type, MinecraftProfileTexture> map = VoxelConstants.getMinecraft().getSkinProvider().getTextures(gameProfile);
-                    if (map.containsKey(Type.SKIN)) {
+                    resourceLocation = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(gameProfile).texture();
+                    //FIXME 1.20.2
+                    /*if (map.containsKey(Type.SKIN)) {
                         resourceLocation = VoxelConstants.getMinecraft().getSkinProvider().loadSkin(map.get(Type.SKIN), Type.SKIN);
-                    }
+                    }*/
                 }
 
                 icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head");

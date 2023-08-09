@@ -14,6 +14,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -160,10 +161,11 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             PlayerEntity entityPlayer = VoxelConstants.getPlayer().getWorld().getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            RenderSystem.setShaderTexture(0, networkPlayerInfo.getSkinTexture());
-            drawContext.drawTexture(networkPlayerInfo.getSkinTexture(), button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
+            Identifier skinIdentifier = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(VoxelConstants.getPlayer().getGameProfile()).texture();
+            RenderSystem.setShaderTexture(0, skinIdentifier);
+            drawContext.drawTexture(skinIdentifier, button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
             if (entityPlayer != null && entityPlayer.isPartVisible(PlayerModelPart.HAT)) {
-                drawContext.drawTexture(networkPlayerInfo.getSkinTexture(), button.getX() + 6, button.getY() + 6, 8, 8, 40.0F, 8.0F, 8, 8, 64, 64);
+                drawContext.drawTexture(skinIdentifier, button.getX() + 6, button.getY() + 6, 8, 8, 40.0F, 8.0F, 8, 8, 64, 64);
             }
 
         }

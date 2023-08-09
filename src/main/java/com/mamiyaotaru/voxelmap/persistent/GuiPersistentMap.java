@@ -160,12 +160,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void getSkin() {
-        Identifier skinLocation = VoxelConstants.getPlayer().getSkinTexture();
+        Identifier skinLocation = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(VoxelConstants.getPlayer().getGameProfile()).texture();
         PlayerSkinTexture imageData = null;
 
         try {
-            if (skinLocation != DefaultSkinHelper.getTexture(VoxelConstants.getPlayer().getUuid())) {
-                AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
+            if (skinLocation != DefaultSkinHelper.getTexture(VoxelConstants.getPlayer().getUuid()).texture()) {
+                //FIXME 1.20.2 AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
                 imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
         } catch (RuntimeException ignored) {
@@ -212,8 +212,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.buttonSeparation = 4;
         this.buttonWidth = (this.width - this.sideMargin * 2 - this.buttonSeparation * (this.buttonCount - 1)) / this.buttonCount;
         this.addDrawableChild(new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(this)), this));
-        this.multiworldButtonName = Text.translatable(VoxelConstants.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld");
-        this.multiworldButtonNameRed = (Text.translatable(VoxelConstants.getMinecraft().isConnectedToRealms() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
+        this.multiworldButtonName = Text.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld");
+        this.multiworldButtonNameRed = (Text.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
         if (!VoxelConstants.getMinecraft().isIntegratedServerRunning() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
             this.addDrawableChild(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiSubworldsSelect(this)), this));
         }
@@ -274,7 +274,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
             if (info != null) worldName.set(info.name);
             if (worldName.get() == null || worldName.get().isBlank()) worldName.set("Multiplayer Server");
-            if (VoxelConstants.getMinecraft().isConnectedToRealms()) worldName.set("Realms");
+            if (VoxelConstants.isRealmServer()) worldName.set("Realms");
         });
 
         StringBuilder worldNameBuilder = (new StringBuilder("§r")).append(worldName.get());
@@ -962,7 +962,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public void tick() {
-        this.coordinates.tick();
+        this.coordinates.setFocused(true);
     }
 
     @Override

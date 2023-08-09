@@ -58,7 +58,6 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GLUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -178,7 +177,8 @@ public class ColorManager {
     }
 
     private void loadColors() {
-        VoxelConstants.getPlayer().getSkinTexture();
+        //TODO 1.20.2 //VoxelConstants.getPlayer().getSkinTexture();
+        VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(VoxelConstants.getPlayer().getGameProfile());
         BlockRepository.getBlocks();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();

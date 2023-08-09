@@ -41,7 +41,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.thePlayer = VoxelConstants.getPlayer();
         this.camera = new ClientPlayerEntity(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getNetworkHandler(), this.thePlayer.getStatHandler(), new ClientRecipeBook(), false, false);
         this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
-        this.camera.refreshPositionAndAngles(this.thePlayer.getX(), this.thePlayer.getY() - this.thePlayer.getHeightOffset(), this.thePlayer.getZ(), this.thePlayer.getYaw(), 0.0F);
+        this.camera.refreshPositionAndAngles(this.thePlayer.getX(), this.thePlayer.getY() + 0.35, this.thePlayer.getZ(), this.thePlayer.getYaw(), 0.0F);
         this.yaw = this.thePlayer.getYaw();
         this.thirdPersonViewOrig = VoxelConstants.getMinecraft().options.getPerspective();
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
@@ -49,7 +49,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     public void init() {
         ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
-        if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.getMinecraft().isConnectedToRealms()) {
+        if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Text.translatable("worldmap.multiworld.isthismultiworld"), Text.translatable("worldmap.multiworld.explanation"), Text.translatable("gui.yes"), Text.translatable("gui.no"));
             VoxelConstants.getMinecraft().setScreen(confirmScreen);
         } else {
@@ -153,7 +153,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     public void tick() {
-        this.newNameField.tick();
+        this.newNameField.setFocused(true);
         super.tick();
     }
 

@@ -34,7 +34,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void tick() {
-        this.subworldNameField.tick();
+        this.subworldNameField.setFocused(true);
     }
 
     public void init() {
@@ -117,7 +117,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         drawMap(drawContext);
-        this.renderBackground(drawContext);
+        this.renderBackgroundTexture(drawContext);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), I18n.translate("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
         drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
         this.subworldNameField.render(drawContext, mouseX, mouseY, delta);

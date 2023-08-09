@@ -85,7 +85,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     }
 
     public void renderBackground(DrawContext drawContext) {
-        this.parentGui.renderBackground(drawContext);
+        this.parentGui.renderBackgroundTexture(drawContext);
     }
 
     protected void updateFilter(String filterString) {

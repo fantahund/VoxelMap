@@ -30,7 +30,7 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public void tick() {
-        this.filter.tick();
+        this.filter.setFocused(true);
     }
 
     public void init() {
@@ -83,7 +83,7 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        return this.mobsList.mouseScrolled(mouseX, mouseY, amount);
+        return this.mobsList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 
     protected void setSelectedMob(String id) {

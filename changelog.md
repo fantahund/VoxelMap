@@ -1,3 +1,2 @@
-- Camels and sniffers now have the right size on the minimap.
-- You should now be able to load old waypoints again.
-- 
+- Tooltip from the crafting book works again.
+- Update to Snapshot 1.20.2(23w31a)

@@ -33,8 +33,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void tick() {
-        this.message.tick();
-        this.filter.tick();
+        this.message.setFocused(true);
+        this.filter.setFocused(true);
     }
 
     public void init() {
@@ -86,7 +86,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        return this.playerList.mouseScrolled(mouseX, mouseY, amount);
+        return this.playerList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 
     public void accept(boolean b) {

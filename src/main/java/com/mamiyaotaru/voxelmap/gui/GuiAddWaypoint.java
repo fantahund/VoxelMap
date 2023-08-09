@@ -63,10 +63,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void tick() {
-        this.waypointName.tick();
-        this.waypointX.tick();
-        this.waypointY.tick();
-        this.waypointZ.tick();
+        this.waypointName.setFocused(true);
+        this.waypointX.setFocused(true);
+        this.waypointY.setFocused(true);
+        this.waypointZ.setFocused(true);
     }
 
     public void init() {
@@ -253,7 +253,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        return !this.popupOpen() || this.dimensionList == null || this.dimensionList.mouseScrolled(mouseX, mouseY, amount);
+        return !this.popupOpen() || this.dimensionList == null || this.dimensionList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 
     @Override
@@ -276,7 +276,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.tooltip = null;
         this.buttonEnabled.setMessage(Text.literal(I18n.translate("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.translate("options.on") : I18n.translate("options.off"))));
         if (!this.choosingColor && !this.choosingIcon) {
-            this.renderBackground(drawContext);
+            this.renderBackgroundTexture(drawContext);
         }
 
         this.dimensionList.render(drawContext, mouseX, mouseY, delta);
@@ -302,7 +302,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
         this.drawTexturedModalRect((this.getWidth() / 2f - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         if (this.choosingColor || this.choosingIcon) {
-            this.renderBackground(drawContext);
+            this.renderBackgroundTexture(drawContext);
         }
 
         if (this.choosingColor) {

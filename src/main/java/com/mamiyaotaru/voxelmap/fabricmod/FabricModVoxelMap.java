@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.fabricmod;
 
-import com.google.gson.Gson;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelmapSettingsChannelHandler;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -10,12 +10,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.text.Text;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 public class FabricModVoxelMap implements ClientModInitializer {
     public static FabricModVoxelMap instance;
@@ -23,6 +18,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
     public void onInitializeClient() {
         instance = this;
+        new VoxelmapSettingsChannelHandler();
     }
 
     public void lateInit() {
@@ -95,8 +91,9 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
     }
 
-    public boolean handleCustomPayload(CustomPayloadS2CPacket packet) {
-        if (packet != null && packet.getChannel() != null) {
+    //legacy world_id packet removed in 1.20.2
+    /*public boolean handleCustomPayload(class_8710 packet) {
+        if (packet != null && packet.id() != null) {
             PacketByteBuf buffer = packet.getData();
             String channelName = packet.getChannel().toString();
             if (channelName.equals("worldinfo:world_id")) {
@@ -152,7 +149,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
 
         return false;
-    }
+    }*/
 
     public void playerRunTeleportCommand(double x, double y, double z) {
         MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();

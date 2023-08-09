@@ -28,7 +28,7 @@ public final class VoxelConstants {
 
     public static boolean isSinglePlayer() { return getMinecraft().isInSingleplayer(); }
 
-    public static boolean isRealmServer() { return getMinecraft().isConnectedToRealms(); }
+    public static boolean isRealmServer() { return getMinecraft().connectedToRealms; }
 
     @NotNull
     public static Logger getLogger() { return LOGGER; }

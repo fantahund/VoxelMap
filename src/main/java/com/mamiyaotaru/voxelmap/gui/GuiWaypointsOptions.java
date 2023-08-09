@@ -53,7 +53,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         drawMap(drawContext);
-        this.renderBackground(drawContext);
+        this.renderBackgroundTexture(drawContext);
         drawContext.drawCenteredTextWithShadow(this.textRenderer, this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(drawContext, mouseX, mouseY, delta);
     }

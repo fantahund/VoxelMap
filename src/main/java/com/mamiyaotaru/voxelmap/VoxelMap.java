@@ -9,20 +9,18 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
@@ -135,22 +133,25 @@ public class VoxelMap implements ResourceReloader {
             this.persistentMap.newWorld(this.world);
             if (this.world != null) {
                 MapUtils.reset();
-                PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+                /*PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
                 buffer.writeBytes("worldinfo:world_id".getBytes(StandardCharsets.UTF_8));
                 buffer.writeByte(0);
                 buffer.writeBytes("voxelmap:settings".getBytes(StandardCharsets.UTF_8));
-                VoxelConstants.getMinecraft().getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
+                //TODO 1.20.2 VoxelConstants.getMinecraft().getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
+                VoxelConstants.getMinecraft().getNetworkHandler().getConnection().send(new CustomPayloadC2SPacket(buffer));
                 ByteBuf wIdRequestBuf = Unpooled.buffer(3);
                 // send "new" world_id packet
                 wIdRequestBuf.writeByte(0);
                 wIdRequestBuf.writeByte(42);
-                wIdRequestBuf.writeByte(0);
-                VoxelConstants.getPlayer().networkHandler.sendPacket(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
-                VoxelConstants.getPlayer().getSkinTexture();
-                java.util.Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
+                wIdRequestBuf.writeByte(0);*/
+                //TODO 1.20.2 VoxelConstants.getMinecraft().getNetworkHandler().getConnection().send(new CustomPayloadC2SPacket(new PacketByteBuf(wIdRequestBuf)));
+                //VoxelConstants.getPlayer().networkHandler.getConnection.send(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
+
+                //FIXME 1.20.2 VoxelConstants.getPlayer().getSkinTexture();
+                /*java.util.Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
                 if (skinMap.containsKey(MinecraftProfileTexture.Type.SKIN)) {
                     VoxelConstants.getMinecraft().getSkinProvider().loadSkin(skinMap.get(MinecraftProfileTexture.Type.SKIN), MinecraftProfileTexture.Type.SKIN);
-                }
+                }*/
 
                 if (!this.worldName.equals(this.waypointManager.getCurrentWorldName())) {
                     this.worldName = this.waypointManager.getCurrentWorldName();

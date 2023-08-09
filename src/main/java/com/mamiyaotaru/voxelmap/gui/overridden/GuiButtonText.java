@@ -56,7 +56,7 @@ public class GuiButtonText extends ButtonWidget {
 
     public boolean isEditing() { return editing; }
 
-    public void tick() { textField.tick(); }
+    public void tick() { textField.setFocused(true); }
 
     public void setText(String text) { textField.setText(text); }
 

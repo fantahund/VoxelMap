@@ -94,7 +94,8 @@ modrinth {
     projectId = project.modrinth_id
     versionNumber = project.mod_version
     versionName = "VoxelMap ${project.mod_version}"
-    versionType = isMCVersionNonRelease() ? "beta" : "release"
+    versionType = "alpha"
+    //versionType = isMCVersionNonRelease() ? "beta" : "release"
     changelog = file("changelog.md").text
     uploadFile = remapJar
     gameVersions = [ project.minecraft_version ]

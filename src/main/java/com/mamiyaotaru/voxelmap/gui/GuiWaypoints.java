@@ -56,7 +56,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public void tick() {
-        this.filter.tick();
+        this.filter.setFocused(true);
     }
 
     public void init() {
@@ -179,7 +179,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        return this.waypointList.mouseScrolled(mouseX, mouseY, amount);
+        return this.waypointList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 
     @Override

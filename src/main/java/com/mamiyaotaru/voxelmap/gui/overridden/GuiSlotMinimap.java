@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
@@ -32,7 +33,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     public void setShowSlotBG(boolean showSlotBG) { this.showSlotBG = showSlotBG; }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        renderBackground(drawContext);
+        //FIXME 1.20.2 renderBackground(drawContext);
 
         int scrollBarLeft = getScrollbarPositionX();
         int scrollBarRight = scrollBarLeft + 6;

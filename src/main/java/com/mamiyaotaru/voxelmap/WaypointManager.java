@@ -316,7 +316,7 @@ public class WaypointManager {
     }
 
     public boolean isMultiworld() {
-        return this.multiworld || VoxelConstants.getMinecraft().isConnectedToRealms();
+        return this.multiworld || VoxelConstants.isRealmServer();
     }
 
     public synchronized void setSubworldName(String name, boolean fromServer) {
