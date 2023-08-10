@@ -1,2 +1,4 @@
 - Tooltip from the crafting book works again.
 - Update to Snapshot 1.20.2(23w31a)
+
+- Update to Snapshot 1.20.2(23w32a)
