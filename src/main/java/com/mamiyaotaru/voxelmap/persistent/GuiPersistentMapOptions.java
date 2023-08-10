@@ -98,7 +98,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         }
 
         drawMap(drawContext);
-        this.renderBackgroundTexture(drawContext);
+        this.renderInGameBackground(drawContext);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);

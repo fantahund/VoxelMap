@@ -1,7 +1,10 @@
 package com.mamiyaotaru.voxelmap;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.realms.RealmsClient;
 import net.minecraft.client.realms.RealmsConnection;
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
@@ -31,10 +34,10 @@ public final class VoxelConstants {
     public static boolean isFabulousGraphicsOrBetter() { return MinecraftClient.isFabulousGraphicsOrBetter(); }
 
     public static boolean isSinglePlayer() { return getMinecraft().isInSingleplayer(); }
-
-    //TODO 1.20.2 public static boolean isRealmServer() { return getMinecraft().connectedToRealms; }
     public static boolean isRealmServer() {
-        return false;
+        ClientPlayNetworkHandler playNetworkHandler = getMinecraft().getNetworkHandler();
+        ServerInfo serverInfo = playNetworkHandler != null ? getMinecraft().getNetworkHandler().getServerInfo() : null;
+        return serverInfo != null && serverInfo.isRealm();
     }
 
     @NotNull

@@ -33,7 +33,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     public void setShowSlotBG(boolean showSlotBG) { this.showSlotBG = showSlotBG; }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        //FIXME 1.20.2 renderBackground(drawContext);
+        //FIXME 1.20.2 renderBackground(drawContext); ?? renderInGameBackground
 
         int scrollBarLeft = getScrollbarPositionX();
         int scrollBarRight = scrollBarLeft + 6;

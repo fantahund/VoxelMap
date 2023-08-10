@@ -84,10 +84,6 @@ class GuiSlotMobs extends GuiSlotMinimap {
         return this.getEntryCount() * this.itemHeight;
     }
 
-    public void renderBackground(DrawContext drawContext) {
-        this.parentGui.renderBackgroundTexture(drawContext);
-    }
-
     protected void updateFilter(String filterString) {
         this.clearEntries();
         this.mobsFiltered = new ArrayList<>(this.mobs);

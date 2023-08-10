@@ -65,10 +65,6 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
         return this.getEntryCount() * this.itemHeight;
     }
 
-    public void renderBackground(DrawContext drawContext) {
-        this.parentGui.renderBackgroundTexture(drawContext);
-    }
-
     public void drawTexturedModalRect(int xCoord, int yCoord, Sprite textureSprite, int widthIn, int heightIn) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexbuffer = tessellator.getBuffer();

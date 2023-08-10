@@ -33,8 +33,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void tick() {
-        this.message.setFocused(true);
-        this.filter.setFocused(true);
+        //this.message.setFocused(true);
+        //this.filter.setFocused(true);
     }
 
     public void init() {

@@ -962,7 +962,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public void tick() {
-        this.coordinates.setFocused(true);
+        //this.coordinates.setFocused(true);
     }
 
     @Override
