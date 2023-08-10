@@ -2,6 +2,10 @@ package com.mamiyaotaru.voxelmap;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.realms.RealmsClient;
+import net.minecraft.client.realms.RealmsConnection;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
+import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget.Entry;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.integrated.IntegratedServer;
@@ -28,7 +32,10 @@ public final class VoxelConstants {
 
     public static boolean isSinglePlayer() { return getMinecraft().isInSingleplayer(); }
 
-    public static boolean isRealmServer() { return getMinecraft().connectedToRealms; }
+    //TODO 1.20.2 public static boolean isRealmServer() { return getMinecraft().connectedToRealms; }
+    public static boolean isRealmServer() {
+        return false;
+    }
 
     @NotNull
     public static Logger getLogger() { return LOGGER; }
