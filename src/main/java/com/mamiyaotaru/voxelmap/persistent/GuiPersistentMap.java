@@ -331,7 +331,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return value;
     }
 
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         this.timeOfLastMouseInput = System.currentTimeMillis();
         this.switchToMouseInput();
         float mouseDirectX = (float) VoxelConstants.getMinecraft().mouse.getX();
@@ -995,12 +995,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         vertexBuffer.vertex(x + width, y + 0.0F, 0).texture(1.0F, 0.0F).next();
         vertexBuffer.vertex(x + 0.0F, y + 0.0F, 0).texture(0.0F, 0.0F).next();
         tessellator.draw();
-    }
-
-    public void drawTexturedModalRect(Sprite icon, float xCoord, float yCoord) {
-        float width = icon.getIconWidth() / this.scScale;
-        float height = icon.getIconHeight() / this.scScale;
-        this.drawTexturedModalRect(xCoord, yCoord, icon, width, height);
     }
 
     public void drawTexturedModalRect(float xCoord, float yCoord, Sprite icon, float widthIn, float heightIn) {

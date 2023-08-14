@@ -178,7 +178,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return this.waypointList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         return this.waypointList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 

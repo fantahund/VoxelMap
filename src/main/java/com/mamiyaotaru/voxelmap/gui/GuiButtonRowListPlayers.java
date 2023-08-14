@@ -161,7 +161,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             PlayerEntity entityPlayer = VoxelConstants.getPlayer().getWorld().getPlayerByUuid(gameProfile.getId());
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            Identifier skinIdentifier = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(VoxelConstants.getPlayer().getGameProfile()).texture();
+            Identifier skinIdentifier = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(gameProfile).texture();
             RenderSystem.setShaderTexture(0, skinIdentifier);
             drawContext.drawTexture(skinIdentifier, button.getX() + 6, button.getY() + 6, 8, 8, 8.0F, 8.0F, 8, 8, 64, 64);
             if (entityPlayer != null && entityPlayer.isPartVisible(PlayerModelPart.HAT)) {

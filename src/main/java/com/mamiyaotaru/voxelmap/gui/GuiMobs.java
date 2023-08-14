@@ -82,7 +82,7 @@ public class GuiMobs extends GuiScreenMinimap {
         return this.mobsList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         return this.mobsList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 
