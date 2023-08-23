@@ -417,7 +417,7 @@ public class Map implements Runnable, IChangeObserver {
             this.doFullRender = false;
         }
 
-        boolean enabled = !VoxelConstants.getMinecraft().options.hudHidden && (this.options.showUnderMenus || VoxelConstants.getMinecraft().currentScreen == null) && !VoxelConstants.getMinecraft().options.debugEnabled;
+        boolean enabled = !VoxelConstants.getMinecraft().options.hudHidden && (this.options.showUnderMenus || VoxelConstants.getMinecraft().currentScreen == null) && !VoxelConstants.getMinecraft().getDebugHud().shouldShowDebugHud();
 
         this.direction = GameVariableAccessShim.rotationYaw() + 180.0F;
 

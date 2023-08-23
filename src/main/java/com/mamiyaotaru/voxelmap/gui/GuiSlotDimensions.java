@@ -8,7 +8,6 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.util.NarratorManager;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -25,7 +24,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         this.parentGui = par1GuiWaypoints;
         this.setSlotWidth(88);
         this.setLeftPos(this.parentGui.getWidth() / 2);
-        this.setRenderSelection(false);
+        //this.setRenderSelection(false); //TODO 1.20.2
         this.setShowTopBottomBG(false);
         this.setShowSlotBG(false);
         DimensionManager dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
@@ -61,9 +60,6 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         return this.dimensions.get(index).dim.equals(this.parentGui.selectedDimension);
     }
 
-    public void renderBackground(MatrixStack matrices) {
-    }
-
     public class DimensionItem extends EntryListWidget.Entry<DimensionItem> {
         private final GuiAddWaypoint parentGui;
         private final DimensionContainer dim;
@@ -82,7 +78,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             if (mouseX >= x + padding && mouseY >= y && mouseX <= x + width + padding && mouseY <= y + GuiSlotDimensions.this.itemHeight) {
                 Text tooltip;
                 if (this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
-                    tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? GuiSlotDimensions.this.APPLIES : GuiSlotDimensions.this.NOT_APPLIES;
+                    tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES;
                 } else {
                     tooltip = null;
                 }
