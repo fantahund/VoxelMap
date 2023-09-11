@@ -6,3 +6,5 @@
 - Skins from other players are now displayed correctly again.
 
 - Update to Snapshot 1.20.2(23w33a)
+
+- Update to Pre-Release 1.20.2-pre2
