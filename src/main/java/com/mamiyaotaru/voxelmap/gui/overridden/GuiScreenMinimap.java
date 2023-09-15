@@ -42,4 +42,7 @@ public class GuiScreenMinimap extends Screen {
     public List<? extends Element> getButtonList() { return children(); }
 
     public TextRenderer getFontRenderer() { return textRenderer; }
+
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    }
 }
