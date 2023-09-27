@@ -1359,7 +1359,7 @@ public class Map implements Runnable, IChangeObserver {
         int y = this.lastY;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = this.world.getBlockState(this.blockPos);
-        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock()!= Blocks.LAVA) {
+        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
             while (y > world.getBottomY()) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
@@ -2108,7 +2108,7 @@ public class Map implements Runnable, IChangeObserver {
             drawContext.drawTextWithShadow(this.fontRenderer, this.welcomeText[n], (centerX - maxSize / 2), (centerY - (height - 1) * 10 / 2 + n * 10 - 9), Color.WHITE.getRGB());
         }
 
-        drawContext.drawTextWithShadow(this.fontRenderer, hide, (centerX - footer / 2), ((scHeight + 5) / 2 + (height - 1) * 10 / 2 + 11), Color.WHITE.getRGB());;
+        drawContext.drawTextWithShadow(this.fontRenderer, hide, (centerX - footer / 2), ((scHeight + 5) / 2 + (height - 1) * 10 / 2 + 11), Color.WHITE.getRGB());
     }
 
     private void drawBox(DrawContext drawContext, int leftX, int rightX, int topY, int botY) {
