@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
@@ -21,11 +22,14 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloader;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -45,7 +49,7 @@ public class VoxelMap implements ResourceReloader {
     private ClientWorld world;
     private String worldName = "";
     private static String passMessage;
-
+    private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque();
     VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
@@ -127,25 +131,20 @@ public class VoxelMap implements ResourceReloader {
     }
 
     public void onTick() {
-        if (GameVariableAccessShim.getWorld() != null && !GameVariableAccessShim.getWorld().equals(this.world) || this.world != null && !this.world.equals(GameVariableAccessShim.getWorld())) {
+        if (!Objects.equals(this.world, GameVariableAccessShim.getWorld())) {
             this.world = GameVariableAccessShim.getWorld();
             this.waypointManager.newWorld(this.world);
             this.persistentMap.newWorld(this.world);
             if (this.world != null) {
                 MapUtils.reset();
-                /*PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
-                buffer.writeBytes("worldinfo:world_id".getBytes(StandardCharsets.UTF_8));
-                buffer.writeByte(0);
-                buffer.writeBytes("voxelmap:settings".getBytes(StandardCharsets.UTF_8));
-                //TODO 1.20.2 VoxelConstants.getMinecraft().getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new Identifier("minecraft:register"), buffer));
-                VoxelConstants.getMinecraft().getNetworkHandler().getConnection().send(new CustomPayloadC2SPacket(buffer));
-                ByteBuf wIdRequestBuf = Unpooled.buffer(3);
                 // send "new" world_id packet
+                ByteBuf wIdRequestBuf = Unpooled.buffer(3);
                 wIdRequestBuf.writeByte(0);
                 wIdRequestBuf.writeByte(42);
-                wIdRequestBuf.writeByte(0);*/
-                //TODO 1.20.2 VoxelConstants.getMinecraft().getNetworkHandler().getConnection().send(new CustomPayloadC2SPacket(new PacketByteBuf(wIdRequestBuf)));
-                //VoxelConstants.getPlayer().networkHandler.getConnection.send(new CustomPayloadC2SPacket(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf)));
+                wIdRequestBuf.writeByte(0);
+                if (ClientPlayNetworking.canSend(new Identifier("worldinfo:world_id"))) {
+                    ClientPlayNetworking.send(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf));
+                }
 
                 //FIXME 1.20.2 VoxelConstants.getPlayer().getSkinTexture();
                 /*java.util.Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
@@ -158,6 +157,9 @@ public class VoxelMap implements ResourceReloader {
                 }
 
                 this.map.newWorld(this.world);
+                while (!runOnWorldSet.isEmpty()) {
+                    runOnWorldSet.removeFirst().run();
+                }
             }
         }
 
@@ -253,13 +255,27 @@ public class VoxelMap implements ResourceReloader {
     }
 
     public synchronized void newSubWorldName(String name, boolean fromServer) {
-        this.waypointManager.setSubworldName(name, fromServer);
-        this.map.newWorldName();
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                VoxelMap.this.waypointManager.setSubworldName(name, fromServer);
+                VoxelMap.this.map.newWorldName();
+            }
+        };
+        if (world == null) {
+            runOnWorldSet.addLast(run);
+        } else {
+            run.run();
+        }
     }
 
-    public String getWorldSeed() { return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse("") : waypointManager.getWorldSeed(); }
+    public String getWorldSeed() {
+        return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse("") : waypointManager.getWorldSeed();
+    }
 
-    public void setWorldSeed(String newSeed) { waypointManager.setWorldSeed(newSeed); }
+    public void setWorldSeed(String newSeed) {
+        waypointManager.setWorldSeed(newSeed);
+    }
 
     public void sendPlayerMessageOnMainThread(String s) {
         passMessage = s;

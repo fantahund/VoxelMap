@@ -340,13 +340,6 @@ public class WaypointManager {
 
     }
 
-    public synchronized void setSubworldHash(String hash) {
-        if (this.currentSubWorldName.isEmpty()) {
-            this.setSubWorldDescriptor(hash);
-        }
-
-    }
-
     private void setSubWorldDescriptor(String descriptor) {
         boolean serverSaysOldNorth = false;
         if (descriptor.endsWith("§o§n")) {

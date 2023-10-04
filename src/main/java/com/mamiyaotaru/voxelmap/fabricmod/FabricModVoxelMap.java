@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.fabricmod;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelmapSettingsChannelHandler;
+import com.mamiyaotaru.voxelmap.VoxelmapWorldIdChannelHandler;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -19,6 +20,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public void onInitializeClient() {
         instance = this;
         new VoxelmapSettingsChannelHandler();
+        new VoxelmapWorldIdChannelHandler();
     }
 
     public void lateInit() {
