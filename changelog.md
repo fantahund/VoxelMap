@@ -1,2 +1,1 @@
-- Tooltip from the crafting book works again.
-- Update 1.20.2
+- fix packets handling
