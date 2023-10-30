@@ -18,7 +18,6 @@ import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.GlassBlock;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.client.world.ClientWorld;
@@ -647,7 +646,7 @@ public class PersistentMap implements IChangeObserver {
                                 BlockState transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                                 if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
                                     Block block = transparentBlockState.getBlock();
-                                    if (block instanceof GlassBlock || block instanceof StainedGlassBlock) {
+                                    if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
                                         heightComp = mapData.getHeight(imageX - 1, imageY + 1);
                                     }
                                 }
@@ -672,7 +671,7 @@ public class PersistentMap implements IChangeObserver {
                                 BlockState transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                                 if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
                                     Block block = transparentBlockState.getBlock();
-                                    if (block instanceof GlassBlock || block instanceof StainedGlassBlock) {
+                                    if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
                                         heightComp = mapData.getHeight(imageX + 1, imageY - 1);
                                     }
                                 }

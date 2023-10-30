@@ -1371,7 +1371,7 @@ public class Radar implements IRadar {
 
                 try {
                     Identifier skinIdentifier = VoxelConstants.getMinecraft().getSkinProvider().getSkinTextures(player.getGameProfile()).texture();
-                    if (skinIdentifier == DefaultSkinHelper.getTexture(player.getUuid()).texture()) {
+                    if (skinIdentifier == DefaultSkinHelper.getSkinTextures(player.getUuid()).texture()) {
                         throw new Exception("failed to get skin: skin is default");
                     }
 

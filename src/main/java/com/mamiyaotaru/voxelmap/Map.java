@@ -30,7 +30,6 @@ import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.GlassBlock;
 import net.minecraft.block.LeavesBlock;
 import net.minecraft.block.StainedGlassBlock;
 import net.minecraft.client.font.TextRenderer;
@@ -1450,7 +1449,7 @@ public class Map implements Runnable, IChangeObserver {
                         heightComp = this.mapData[this.zoom].getTransparentHeight(imageX - 1, imageY + 1);
                         if (heightComp == -1) {
                             Block block = BlockRepository.getStateById(this.mapData[this.zoom].getTransparentBlockstateID(imageX, imageY)).getBlock();
-                            if (block instanceof GlassBlock || block instanceof StainedGlassBlock) {
+                            if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
                                 heightComp = this.mapData[this.zoom].getHeight(imageX - 1, imageY + 1);
                             }
                         }
@@ -1475,7 +1474,7 @@ public class Map implements Runnable, IChangeObserver {
                         if (heightComp == -1) {
                             BlockState blockState = world.getBlockState(this.blockPos.withXYZ(startX + imageX, height - 1, startZ + imageY));
                             Block block = blockState.getBlock();
-                            if (block instanceof GlassBlock || block instanceof StainedGlassBlock) {
+                            if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
                                 heightComp = baseHeight;
                             }
                         }

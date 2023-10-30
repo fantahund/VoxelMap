@@ -164,7 +164,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         PlayerSkinTexture imageData = null;
 
         try {
-            if (skinLocation != DefaultSkinHelper.getTexture(VoxelConstants.getPlayer().getUuid()).texture()) {
+            if (skinLocation != DefaultSkinHelper.getSkinTextures(VoxelConstants.getPlayer().getUuid()).texture()) {
                 //FIXME 1.20.2 AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
                 imageData = (PlayerSkinTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
