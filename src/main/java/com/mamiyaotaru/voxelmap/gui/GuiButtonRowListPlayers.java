@@ -31,7 +31,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     static final Text DENY = Text.translatable("gui.cancel");
 
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
-        super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight(), par1GuiSelectPlayer.getHeight() - 65 + 4, 25);
+        super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight() - 65 + 4 - 89, 89, 25);
         this.parentGui = par1GuiSelectPlayer;
         ClientPlayNetworkHandler netHandlerPlayClient = VoxelConstants.getPlayer().networkHandler;
         this.players = new ArrayList<>(netHandlerPlayClient.getPlayerList());
