@@ -23,7 +23,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     public boolean doubleclick;
 
     protected GuiSlotMinimap(int width, int height, int top, int bottom, int itemHeight) {
-        super (VoxelConstants.getMinecraft(), width, height, bottom, itemHeight);
+        super(VoxelConstants.getMinecraft(), width, bottom - top, top, itemHeight);
     }
 
     public void setShowTopBottomBG(boolean showTopBottomBG) { this.showTopBottomBG = showTopBottomBG; }
