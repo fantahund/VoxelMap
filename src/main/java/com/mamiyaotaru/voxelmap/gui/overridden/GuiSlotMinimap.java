@@ -21,9 +21,13 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
     private boolean hasListHeader;
     protected long lastClicked;
     public boolean doubleclick;
+    private int bottom;
+    private int fullheight;
 
     protected GuiSlotMinimap(int width, int height, int top, int bottom, int itemHeight) {
         super(VoxelConstants.getMinecraft(), width, bottom - top, top, itemHeight);
+        this.bottom = bottom;
+        this.fullheight = height;
     }
 
     public void setShowTopBottomBG(boolean showTopBottomBG) { this.showTopBottomBG = showTopBottomBG; }
@@ -46,8 +50,8 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             float f = 32.0f;
 
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(this.getX(), this.getBottom(), 0.0).texture(this.getX() / f, (this.getBottom() + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
-            vertexBuffer.vertex(this.getRight(), this.getBottom(), 0.0).texture(this.getRight() / f, (this.getBottom() + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
+            vertexBuffer.vertex(this.getX(), bottom, 0.0).texture(this.getX() / f, (bottom + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
+            vertexBuffer.vertex(this.getRight(), bottom, 0.0).texture(this.getRight() / f, (bottom + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
             vertexBuffer.vertex(this.getRight(), this.getY(), 0.0).texture(this.getRight() / f, (this.getY() + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
             vertexBuffer.vertex(this.getX(), this.getY(), 0.0).texture(this.getX() / f, (this.getY() + (int) getScrollAmount()) / f).color(32, 32, 32, 255).next();
 
@@ -75,10 +79,10 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             vertexBuffer.vertex(this.getX() + width, this.getY(), -100.0).texture(width / 32.0F, this.getY() / 32.0F).color(64, 64, 64, 255).next();
             vertexBuffer.vertex(this.getX() + width, 0.0, -100.0).texture(width / 32.0F, 0.0F).color(64, 64, 64, 255).next();
             vertexBuffer.vertex(this.getX(), 0.0, -100.0).texture(0.0F, 0.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.getX(), height, -100.0).texture(0.0F, height / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.getX() + width, height, -100.0).texture(width / 32.0F, height / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.getX() + width, this.getBottom(), -100.0).texture(width / 32.0F, this.getBottom() / 32.0F).color(64, 64, 64, 255).next();
-            vertexBuffer.vertex(this.getX(), this.getBottom(), -100.0).texture(0.0F, this.getBottom() / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(this.getX(), fullheight, -100.0).texture(0.0F, fullheight / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(this.getX() + width, fullheight, -100.0).texture(width / 32.0F, fullheight / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(this.getX() + width, bottom, -100.0).texture(width / 32.0F, bottom / 32.0F).color(64, 64, 64, 255).next();
+            vertexBuffer.vertex(this.getX(), bottom, -100.0).texture(0.0F, bottom / 32.0F).color(64, 64, 64, 255).next();
 
             tessellator.draw();
 
@@ -94,10 +98,10 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             vertexBuffer.vertex(this.getRight(), this.getY() + topBottomFadeHeight, 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 0).next();
             vertexBuffer.vertex(this.getRight(), this.getY(), 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 255).next();
             vertexBuffer.vertex(this.getX(), this.getY(), 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.getX(), this.getBottom(), 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.getRight(), this.getBottom(), 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 255).next();
-            vertexBuffer.vertex(this.getRight(), this.getBottom() - topBottomFadeHeight, 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 0).next();
-            vertexBuffer.vertex(this.getX(), this.getBottom() - topBottomFadeHeight, 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 0).next();
+            vertexBuffer.vertex(this.getX(), bottom, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(this.getRight(), bottom, 0.0).texture(1.0F, 1.0F).color(0, 0, 0, 255).next();
+            vertexBuffer.vertex(this.getRight(), bottom - topBottomFadeHeight, 0.0).texture(1.0F, 0.0F).color(0, 0, 0, 0).next();
+            vertexBuffer.vertex(this.getX(), bottom - topBottomFadeHeight, 0.0).texture(0.0F, 0.0F).color(0, 0, 0, 0).next();
 
             tessellator.draw();
         }
