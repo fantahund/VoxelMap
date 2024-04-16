@@ -16,6 +16,8 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -23,6 +25,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.SkullBlock;
+import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.model.Dilation;
 import net.minecraft.client.model.Model;
@@ -34,10 +38,11 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.entity.SkullBlockEntityModel;
+import net.minecraft.client.render.block.entity.SkullBlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
-import net.minecraft.client.render.entity.feature.HorseArmorFeatureRenderer;
 import net.minecraft.client.render.entity.feature.VillagerResourceMetadata;
 import net.minecraft.client.render.entity.model.AxolotlEntityModel;
 import net.minecraft.client.render.entity.model.BatEntityModel;
@@ -108,9 +113,11 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AnimalArmorItem;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.DyeableArmorItem;
+import net.minecraft.item.DyeableHorseArmorItem;
+import net.minecraft.item.HorseArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -754,12 +761,14 @@ public class Radar implements IRadar {
                         Entity var22 = contact.entity;
                         if (var22 instanceof HorseEntity horse) {
                             resourceLocationSecondary = (Identifier) TEXTURES.get(horse.getMarking());
-                            ItemStack itemStack = horse.getBodyArmor();
+                            ItemStack itemStack = horse.getArmorType();
                             if (this.options.showHelmetsMobs) {
                                 Item var30 = itemStack.getItem();
-                                if (var30 instanceof AnimalArmorItem horseArmorItem) {
+                                if (var30 instanceof HorseArmorItem horseArmorItem) {
                                     resourceLocationTertiary = horseArmorItem.getEntityTexture();
-                                    contact.armorColor = horseArmorItem.getItemBarColor(itemStack);
+                                    if (horseArmorItem instanceof DyeableHorseArmorItem dyableHorseArmorItem) {
+                                        contact.armorColor = dyableHorseArmorItem.getColor(itemStack);
+                                    }
                                 }
                             }
                             break label166;
