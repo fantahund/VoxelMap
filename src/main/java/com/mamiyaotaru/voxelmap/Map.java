@@ -383,6 +383,7 @@ public class Map implements Runnable, IChangeObserver {
             if (!this.zCalc.isAlive()) {
                 this.zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
                 this.zCalc.start();
+                this.zCalcTicker = 0;
             }
 
             if (!(VoxelConstants.getMinecraft().currentScreen instanceof DeathScreen) && !(VoxelConstants.getMinecraft().currentScreen instanceof OutOfMemoryScreen)) {
