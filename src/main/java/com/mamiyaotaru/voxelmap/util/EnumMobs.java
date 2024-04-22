@@ -6,6 +6,7 @@ import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.mob.BlazeEntity;
+import net.minecraft.entity.mob.BoggedEntity;
 import net.minecraft.entity.mob.BreezeEntity;
 import net.minecraft.entity.mob.CaveSpiderEntity;
 import net.minecraft.entity.mob.CreeperEntity;
@@ -43,6 +44,7 @@ import net.minecraft.entity.mob.ZombieHorseEntity;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
 import net.minecraft.entity.passive.AllayEntity;
+import net.minecraft.entity.passive.ArmadilloEntity;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.entity.passive.BatEntity;
 import net.minecraft.entity.passive.BeeEntity;
@@ -91,11 +93,13 @@ public enum EnumMobs {
     GENERICNEUTRAL(null, "Mob", false, 8.0F, "textures/entity/pig/pig.png", "", false, true),
     GENERICTAME(null, "Unknown_Tame", false, 8.0F, "textures/entity/wolf/wolf.png", "", false, true),
     AXOLOTL(AxolotlEntity.class, "Axolotl", true, 0.0F, "textures/entity/axolotl/axolotl_blue.png", "", false, true),
+    ARMADILLO(ArmadilloEntity.class, "Armadillo", true, 0.0F, "textures/entity/armadillo/armadillo.png", "", false, true),
     ALLAY(AllayEntity.class, "Allay", true, 4.0F, "textures/entity/allay/allay.png", "", false, true),
     ARMOR_STAND(ArmorStandEntity.class, "Armor_Stand", true, 0.0F, "textures/entity/armorstand/wood.png", "", true, true),
     BAT(BatEntity.class, "Bat", true, 4.0F, "textures/entity/bat.png", "", false, true),
     BEE(BeeEntity.class, "Bee", true, 0.0F, "textures/entity/bee/bee.png", "", true, true),
     BLAZE(BlazeEntity.class, "Blaze", true, 0.0F, "textures/entity/blaze.png", "", true, false),
+    BOGGED(BoggedEntity.class, "Bogged", true, 0.0F, "textures/entity/bogged/bogged.png", "", true, false),
     BREEZE(BreezeEntity.class, "Breeze", true, 0.0F, "textures/entity/breeze.png", "", true, false),
     CAT(CatEntity.class, "Cat", true, 0.0F, "textures/entity/cat/siamese.png", "", false, true),
     CAMEL(CamelEntity.class, "Camel", true, 0.0F, "textures/entity/camel/camel.png", "", false, true),
