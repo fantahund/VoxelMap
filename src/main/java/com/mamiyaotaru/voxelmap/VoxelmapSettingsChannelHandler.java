@@ -1,47 +1,43 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.gson.Gson;
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientConfigurationNetworkHandler;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-
+import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
 import java.util.Map;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking.Context;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.minecraft.client.MinecraftClient;
 
-public class VoxelmapSettingsChannelHandler implements ClientPlayNetworking.PlayChannelHandler, ClientConfigurationNetworking.ConfigurationChannelHandler {
-
-    private static final Identifier CHANNEL_IDENTIFIER = new Identifier("voxelmap", "settings");
-
+public class VoxelmapSettingsChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<VoxelmapSettingsS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<VoxelmapSettingsS2C> {
     public VoxelmapSettingsChannelHandler() {
-        ClientPlayNetworking.registerGlobalReceiver(CHANNEL_IDENTIFIER, this);
-        ClientConfigurationNetworking.registerGlobalReceiver(CHANNEL_IDENTIFIER, this);
+        PayloadTypeRegistry.playS2C().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
+        PayloadTypeRegistry.configurationS2C().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
+
+        ClientPlayNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, this);
+        ClientConfigurationNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, this);
     }
 
     @Override
-    public void receive(MinecraftClient client, ClientPlayNetworkHandler handler, PacketByteBuf buffer, PacketSender responseSender) {
-        parsePacket(client, buffer);
+    public void receive(VoxelmapSettingsS2C payload, Context context) {
+        parsePacket(payload);
     }
 
     @Override
-    public void receive(MinecraftClient client, ClientConfigurationNetworkHandler handler, PacketByteBuf buffer, PacketSender responseSender) {
-        parsePacket(client, buffer);
+    public void receive(VoxelmapSettingsS2C payload, net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.Context context) {
+        parsePacket(payload);
     }
 
-    private void parsePacket(MinecraftClient client, PacketByteBuf buffer) {
-        buffer.readByte(); // ignore
+    private void parsePacket(VoxelmapSettingsS2C packet) {
         @SuppressWarnings("unchecked")
-        java.util.Map<String, Object> settings = new Gson().fromJson(buffer.readString(), java.util.Map.class);
+        java.util.Map<String, Object> settings = new Gson().fromJson(packet.settingsJson(), java.util.Map.class);
         for (Map.Entry<String, Object> entry : settings.entrySet()) {
             String setting = entry.getKey();
             Object value = entry.getValue();
             switch (setting) {
                 case "worldName" -> {
                     if (value instanceof String worldName) {
-                        client.execute(() -> {
+                        MinecraftClient.getInstance().execute(() -> {
                             VoxelConstants.getLogger().info("Received world name from settings: " + worldName);
                             VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
                         });

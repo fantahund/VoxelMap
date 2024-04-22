@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
+import com.mamiyaotaru.voxelmap.packets.WorldIdC2S;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -142,8 +143,8 @@ public class VoxelMap implements ResourceReloader {
                 wIdRequestBuf.writeByte(0);
                 wIdRequestBuf.writeByte(42);
                 wIdRequestBuf.writeByte(0);
-                if (ClientPlayNetworking.canSend(new Identifier("worldinfo:world_id"))) {
-                    ClientPlayNetworking.send(new Identifier("worldinfo:world_id"), new PacketByteBuf(wIdRequestBuf));
+                if (ClientPlayNetworking.canSend(WorldIdC2S.PACKET_ID)) {
+                    ClientPlayNetworking.send(new WorldIdC2S());
                 }
 
                 //FIXME 1.20.2 VoxelConstants.getPlayer().getSkinTexture();
