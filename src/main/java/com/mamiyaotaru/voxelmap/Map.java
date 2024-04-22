@@ -233,15 +233,6 @@ public class Map implements Runnable, IChangeObserver {
     public void run() {
         if (VoxelConstants.getMinecraft() != null) {
             while (true) {
-                while (!this.threading) {
-                    synchronized (this.zCalc) {
-                        try {
-                            this.zCalc.wait(0L);
-                        } catch (InterruptedException exception) {
-                            VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
-                        }
-                    }
-                }
 
                 for (boolean active = true; this.world != null && active; active = false) {
                     if (!this.options.hide) {
@@ -398,12 +389,15 @@ public class Map implements Runnable, IChangeObserver {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
-                    this.zCalc.stop();
-                } else {
-                    synchronized (this.zCalc) {
-                        this.zCalc.notify();
-                    }
+                    Exception ex = new Exception();
+                    ex.setStackTrace(this.zCalc.getStackTrace());
+                    VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread is hanging?", ex);
+                    // this.zCalc.stop();
+                } // else {
+                synchronized (this.zCalc) {
+                    this.zCalc.notify();
                 }
+                // }
             }
         } else {
             if (!this.options.hide && this.world != null) {
