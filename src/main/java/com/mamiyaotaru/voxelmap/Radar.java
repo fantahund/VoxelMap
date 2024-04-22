@@ -82,6 +82,9 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.texture.PlayerSkinTexture;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -107,11 +110,9 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.AnimalArmorItem;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.DyeableArmorItem;
-import net.minecraft.item.DyeableHorseArmorItem;
-import net.minecraft.item.HorseArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -756,14 +757,12 @@ public class Radar implements IRadar {
                         Entity var22 = contact.entity;
                         if (var22 instanceof HorseEntity horse) {
                             resourceLocationSecondary = (Identifier) TEXTURES.get(horse.getMarking());
-                            ItemStack itemStack = horse.getArmorType();
                             if (this.options.showHelmetsMobs) {
+                                ItemStack itemStack = horse.getBodyArmor();
                                 Item var30 = itemStack.getItem();
-                                if (var30 instanceof HorseArmorItem horseArmorItem) {
+                                if (var30 instanceof AnimalArmorItem horseArmorItem) {
                                     resourceLocationTertiary = horseArmorItem.getEntityTexture();
-                                    if (horseArmorItem instanceof DyeableHorseArmorItem dyableHorseArmorItem) {
-                                        contact.armorColor = dyableHorseArmorItem.getColor(itemStack);
-                                    }
+                                    contact.setArmorColor(DyedColorComponent.getColor(itemStack, -1));
                                 }
                             }
                             break label166;
@@ -1423,18 +1422,9 @@ public class Radar implements IRadar {
                 icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head");
             } else if (helmet == Items.PLAYER_HEAD) {
                 GameProfile gameProfile = null;
-                if (stack.hasNbt()) {
-                    NbtCompound nbttagcompound = stack.getNbt();
-                    if (nbttagcompound.contains("SkullOwner", 10)) {
-                        gameProfile = NbtHelper.toGameProfile(nbttagcompound.getCompound("SkullOwner"));
-                    } else if (nbttagcompound.contains("SkullOwner", 8)) {
-                        String name = nbttagcompound.getString("SkullOwner");
-                        if (name != null && !name.isEmpty()) {
-                            gameProfile = new GameProfile(null, name);
-                            nbttagcompound.remove("SkullOwner");
-                            //FIXME 1.20.2 SkullBlockEntity.loadProperties(gameProfile, gameProfilex -> nbttagcompound.put("SkullOwner", NbtHelper.writeGameProfile(new NbtCompound(), gameProfilex)));
-                        }
-                    }
+                ProfileComponent profileComponent = stack.get(DataComponentTypes.PROFILE);
+                if (profileComponent != null && profileComponent.isCompleted()) {
+                    gameProfile = profileComponent.gameProfile();
                 }
 
                 Identifier resourceLocation = DefaultSkinHelper.getTexture();
@@ -1473,9 +1463,7 @@ public class Radar implements IRadar {
                     }
                 }
 
-                if (helmetArmor instanceof DyeableArmorItem dyeableHelmetArmor) {
-                    contact.setArmorColor(dyeableHelmetArmor.getColor(stack));
-                }
+                contact.setArmorColor(DyedColorComponent.getColor(stack, -1));
             } else if (helmet instanceof BlockItem blockItem) {
                 Block block = blockItem.getBlock();
                 BlockState blockState = block.getDefaultState();
@@ -1509,7 +1497,7 @@ public class Radar implements IRadar {
         Identifier resourceLocation = null;
 
         try {
-            String materialName = ((ArmorItem) helmet).getMaterial().getName();
+            String materialName = ((ArmorItem) helmet).getMaterial().getIdAsString(); // TODO 1.20.5 ???
             String domain = "minecraft";
             int sep = materialName.indexOf(58);
             if (sep != -1) {
