@@ -16,8 +16,6 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture;
-import com.mojang.authlib.minecraft.MinecraftProfileTexture.Type;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -25,8 +23,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.SkullBlock;
-import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.model.Dilation;
 import net.minecraft.client.model.Model;
@@ -38,8 +34,6 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.SkullBlockEntityModel;
-import net.minecraft.client.render.block.entity.SkullBlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
@@ -490,7 +484,7 @@ public class Radar implements IRadar {
     }
 
     @Override
-    public void onTickInGame(DrawContext drawContext, MatrixStack matrixStack, LayoutVariables layoutVariables) {
+    public void onTickInGame(DrawContext drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -1602,7 +1596,7 @@ public class Radar implements IRadar {
         return helmet.getTranslationKey().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
     }
 
-    public void renderMapMobs(DrawContext drawContext, MatrixStack matrixStack, int x, int y) {
+    public void renderMapMobs(DrawContext drawContext, Matrix4fStack matrixStack, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
@@ -1651,17 +1645,17 @@ public class Radar implements IRadar {
 
             if (inRange) {
                 try {
-                    matrixStack.push();
+                    matrixStack.pushMatrix();
                     if (this.options.filtering) {
-                        matrixStack.translate(x, y, 0.0);
-                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
-                        matrixStack.translate(0.0, -contact.distance, 0.0);
-                        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + contact.rotationFactor));
-                        matrixStack.translate((-x), (-y), 0.0);
+                        matrixStack.translate(x, y, 0.0f);
+                        matrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
+                        matrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
+                        matrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + contact.rotationFactor));
+                        matrixStack.translate((-x), (-y), 0.0f);
                     } else {
                         wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
                         wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                        matrixStack.translate((double) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (double) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0);
+                        matrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
                     }
 
                     RenderSystem.applyModelViewMatrix();
@@ -1811,7 +1805,7 @@ public class Radar implements IRadar {
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
-                    matrixStack.pop();
+                    matrixStack.popMatrix();
                     RenderSystem.applyModelViewMatrix();
                 }
             }
