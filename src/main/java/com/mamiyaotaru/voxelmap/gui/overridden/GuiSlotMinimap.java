@@ -45,7 +45,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         if (this.showSlotBG) {
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-            RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND_TEXTURE);
+            RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             float f = 32.0f;
 
@@ -70,7 +70,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
         if (this.showTopBottomBG) {
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-            RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND_TEXTURE);
+            RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(OpenGL.GL11_GL_ALWAYS);
 
@@ -91,7 +91,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-            RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND_TEXTURE);
+            RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
 
             vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(this.getX(), this.getY() + topBottomFadeHeight, 0.0).texture(0.0F, 1.0F).color(0, 0, 0, 0).next();

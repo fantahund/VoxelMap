@@ -1,17 +1,13 @@
 package com.mamiyaotaru.voxelmap;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.realms.RealmsClient;
-import net.minecraft.client.realms.RealmsConnection;
-import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
-import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget.Entry;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +19,7 @@ public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
+    private static final Identifier OPTIONS_BACKGROUND_TEXTURE = new Identifier("textures/block/dirt.png");
 
     private VoxelConstants() {}
 
@@ -74,4 +71,8 @@ public final class VoxelConstants {
     public static int getElapsedTicks() { return elapsedTicks; }
 
     static { elapsedTicks = 0; }
+
+    public static Identifier getOptionsBackgroundTexture() {
+        return OPTIONS_BACKGROUND_TEXTURE;
+    }
 }

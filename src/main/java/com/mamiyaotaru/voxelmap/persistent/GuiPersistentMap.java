@@ -952,7 +952,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         vertexBuffer.vertex(0.0, endY, 0.0).texture(0.0F, endY / 32.0F).color(64, 64, 64, endAlpha).next();

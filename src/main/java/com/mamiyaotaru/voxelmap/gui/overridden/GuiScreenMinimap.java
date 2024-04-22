@@ -45,4 +45,10 @@ public class GuiScreenMinimap extends Screen {
 
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
     }
+
+    public void renderBackgroundTexture(DrawContext context) {
+        context.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
+        context.drawTexture(VoxelConstants.getOptionsBackgroundTexture(), 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
+        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
 }
