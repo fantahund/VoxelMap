@@ -56,6 +56,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -250,10 +252,10 @@ public class ColorManager {
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
-        matrixStack.loadIdentity();
-        matrixStack.translate(0.0, 0.0, -3000.0 + (captureDepth * scale));
+        Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushMatrix();
+        matrixStack.identity();
+        matrixStack.translate(0.0f, 0.0f, -3000.0f + (captureDepth * scale));
         RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
@@ -266,30 +268,30 @@ public class ColorManager {
         OpenGL.glClearDepth(1.0);
         OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        matrixStack.push();
+        matrixStack.pushMatrix();
         matrixStack.translate((width / 2f) - size / 2.0F + transX, (height / 2f) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
         VoxelConstants.getMinecraft().getTextureManager().getTexture(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).setFilter(false, false);
         OpenGL.Utils.img2(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE);
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotY));
-        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(rotX));
-        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(rotZ));
+        matrixStack.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
+        matrixStack.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(rotY));
+        matrixStack.rotate(RotationAxis.POSITIVE_X.rotationDegrees(rotX));
+        matrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(rotZ));
         if (facing == Direction.UP) {
-            matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
+            matrixStack.rotate(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
         }
 
         RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(this.fullbright.x, fullbright.y, fullbright.z, 0);
-        fullbright2.mul(matrixStack.peek().getPositionMatrix());
+        fullbright2.mul(matrixStack);
         Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
         MatrixStack newMatrixStack = new MatrixStack();
         VertexConsumerProvider.Immediate immediate = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
         VoxelConstants.getMinecraft().getItemRenderer().renderItem(stack, ModelTransformationMode.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.DEFAULT_UV, model);
         immediate.draw();
-        matrixStack.pop();
-        matrixStack.pop();
+        matrixStack.popMatrix();
+        matrixStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);

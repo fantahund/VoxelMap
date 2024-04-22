@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.VertexSorter;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
@@ -125,9 +126,9 @@ public class ImageUtils {
             OpenGL.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = new Matrix4f().ortho(fboWidth, (-(fboHeight)), 1000.0F, 3000.0F, -1.0f, 1.0f);
             RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
-            MatrixStack matrixStack = RenderSystem.getModelViewStack();
-            matrixStack.loadIdentity();
-            matrixStack.translate(0.0, 0.0, -2000.0);
+            Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            matrixStack.identity();
+            matrixStack.translate(0.0f, 0.0f, -2000.0f);
             OpenGL.Utils.bindFramebuffer();
             for (int startX = 0; startX + fboWidth < imageWidth; startX += fboWidth) {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {

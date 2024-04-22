@@ -47,6 +47,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
+import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.image.BufferedImage;
@@ -627,12 +628,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.regions = this.persistentMap.getRegions(left - 1, right + 1, top - 1, bottom + 1);
         }
 
-        MatrixStack modelViewMatrixStack = RenderSystem.getModelViewStack();
-        modelViewMatrixStack.push();
+        Matrix4fStack modelViewMatrixStack = RenderSystem.getModelViewStack();
+        modelViewMatrixStack.pushMatrix();
         OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
-        modelViewMatrixStack.translate(this.centerX - this.mapCenterX * this.mapToGui, (this.top + this.centerY) - this.mapCenterZ * this.mapToGui, 0.0);
+        modelViewMatrixStack.translate(this.centerX - this.mapCenterX * this.mapToGui, (this.top + this.centerY) - this.mapCenterZ * this.mapToGui, 0.0f);
         if (this.oldNorth) {
-            modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(90.0F));
+            modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(90.0F));
         }
 
         RenderSystem.applyModelViewMatrix();
@@ -699,23 +700,23 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float playerX = (float) GameVariableAccessShim.xCoordDouble();
         float playerZ = (float) GameVariableAccessShim.zCoordDouble();
         if (this.oldNorth) {
-            modelViewMatrixStack.push();
-            modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0);
-            modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
-            modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0);
+            modelViewMatrixStack.pushMatrix();
+            modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0f);
+            modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
+            modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0f);
             RenderSystem.applyModelViewMatrix();
         }
 
         this.drawTexturedModalRect(-10.0F / this.scScale + playerX * this.mapToGui, -10.0F / this.scScale + playerZ * this.mapToGui, 20.0F / this.scScale, 20.0F / this.scScale);
         if (this.oldNorth) {
-            modelViewMatrixStack.pop();
+            modelViewMatrixStack.popMatrix();
         }
 
         if (this.oldNorth) {
-            modelViewMatrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
+            modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
         }
 
-        modelViewMatrixStack.translate(-(this.centerX - this.mapCenterX * this.mapToGui), -((this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0);
+        modelViewMatrixStack.translate(-(this.centerX - this.mapCenterX * this.mapToGui), -((this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0f);
         RenderSystem.applyModelViewMatrix();
         if (mapOptions.biomeOverlay != 0) {
             float biomeScaleX = this.mapPixelsX / 760.0F;
@@ -797,7 +798,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        modelViewMatrixStack.pop();
+        modelViewMatrixStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
             int scWidth = VoxelConstants.getMinecraft().getWindow().getScaledWidth();
@@ -951,7 +952,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         vertexBuffer.vertex(0.0, endY, 0.0).texture(0.0F, endY / 32.0F).color(64, 64, 64, endAlpha).next();

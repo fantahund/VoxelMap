@@ -63,7 +63,7 @@ public class GuiButtonRowListPlayers extends EntryListWidget<GuiButtonRowListPla
     }
 
     protected int getScrollbarPositionX() {
-        return super.getScrollbarPositionX() + 32;
+        return super.getScrollbarX() + 32;
     }
 
     protected void sort() {

@@ -94,7 +94,7 @@ public class Popup {
         BufferBuilder vertexBuffer = tessellator.getBuffer();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        RenderSystem.setShaderTexture(0, Screen.OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderTexture(0, Screen.MENU_BACKGROUND_TEXTURE);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var6 = 32.0F;
         vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);

@@ -25,7 +25,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
-
+import org.joml.Matrix4fStack;
 import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -74,7 +74,7 @@ public class RadarSimple implements IRadar {
     }
 
     @Override
-    public void onTickInGame(DrawContext drawContext, MatrixStack matrixStack, LayoutVariables layoutVariables) {
+    public void onTickInGame(DrawContext drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -180,7 +180,7 @@ public class RadarSimple implements IRadar {
         }
     }
 
-    public void renderMapMobs(MatrixStack matrixStack, int x, int y) {
+    public void renderMapMobs(Matrix4fStack matrixStack, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         OpenGL.Utils.disp2(this.textureAtlas.getGlId());
 
@@ -222,7 +222,7 @@ public class RadarSimple implements IRadar {
 
             if (inRange) {
                 try {
-                    matrixStack.push();
+                    matrixStack.pushMatrix();
                     float contactFacing = contact.entity.getHeadYaw();
                     if (this.minimapOptions.rotates) {
                         contactFacing -= this.direction;
@@ -230,11 +230,11 @@ public class RadarSimple implements IRadar {
                         contactFacing += 90.0F;
                     }
 
-                    matrixStack.translate(x, y, 0.0);
-                    matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
-                    matrixStack.translate(0.0, -contact.distance, 0.0);
-                    matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + contactFacing));
-                    matrixStack.translate(-x, -y, 0.0);
+                    matrixStack.translate(x, y, 0.0f);
+                    matrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-contact.angle));
+                    matrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
+                    matrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(contact.angle + contactFacing));
+                    matrixStack.translate(-x, -y, 0.0f);
                     RenderSystem.applyModelViewMatrix();
 
                     this.applyFilteringParameters();
@@ -250,7 +250,7 @@ public class RadarSimple implements IRadar {
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
-                    matrixStack.pop();
+                    matrixStack.popMatrix();
                     RenderSystem.applyModelViewMatrix();
                 }
             }
