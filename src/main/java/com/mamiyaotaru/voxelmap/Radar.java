@@ -137,6 +137,7 @@ import net.minecraft.village.VillagerDataContainer;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.village.VillagerType;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -1231,10 +1232,10 @@ public class Radar implements IRadar {
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
-        matrixStack.loadIdentity();
-        matrixStack.translate(0.0, 0.0, -3000.0 + captureDepth);
+        Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushMatrix();
+        matrixStack.identity();
+        matrixStack.translate(0.0f, 0.0f, -3000.0f + captureDepth);
         RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
@@ -1245,20 +1246,20 @@ public class Radar implements IRadar {
         OpenGL.glClearDepth(1.0);
         OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        matrixStack.push();
-        matrixStack.translate(width / 2f, height / 2f, 0.0);
+        matrixStack.pushMatrix();
+        matrixStack.translate(width / 2f, height / 2f, 0.0f);
         matrixStack.scale(size, size, size);
-        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(180.0F));
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
+        matrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(180.0F));
+        matrixStack.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
         if (facing == Direction.EAST) {
-            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-90.0F));
+            matrixStack.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(-90.0F));
         } else if (facing == Direction.UP) {
-            matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
+            matrixStack.rotate(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
         }
 
         RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
-        fullbright2.mul(matrixStack.peek().getPositionMatrix());
+        fullbright2.mul(matrixStack);
         Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
         RenderSystem.setShaderLights(fullbright3, fullbright3);
 
@@ -1302,8 +1303,8 @@ public class Radar implements IRadar {
             failed = true;
         }
 
-        matrixStack.pop();
-        matrixStack.pop();
+        matrixStack.popMatrix();
+        matrixStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);

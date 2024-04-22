@@ -12,6 +12,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import org.joml.Matrix4fStack;
 
 public class FabricModVoxelMap implements ClientModInitializer {
     public static FabricModVoxelMap instance;
@@ -72,7 +73,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
     }
 
-    public static void onRenderHand(float partialTicks, long timeSlice, MatrixStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
+    public static void onRenderHand(float partialTicks, long timeSlice, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
             VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
         } catch (RuntimeException exception) {

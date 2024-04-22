@@ -12,6 +12,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,7 +25,7 @@ public class MixinWorldRenderer {
     private Framebuffer translucentFramebuffer;
 
     @Inject(method = "render", at = @At("RETURN"))
-    private void postRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
+    private void postRender(Matrix4fStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints) {
             if (VoxelConstants.isFabulousGraphicsOrBetter()) {
                 Framebuffer framebuffer = VoxelConstants.getMinecraft().getFramebuffer();
@@ -40,7 +41,7 @@ public class MixinWorldRenderer {
     }
 
     @Inject(method = "renderLayer", at = @At("RETURN"))
-    private void postRenderLayer(RenderLayer renderLayer, MatrixStack matrixStack, double x, double y, double z, Matrix4f matrix4f, CallbackInfo ci) {
+    private void postRenderLayer(RenderLayer renderLayer, Matrix4fStack matrixStack, double x, double y, double z, Matrix4f matrix4f, CallbackInfo ci) {
         if (VoxelConstants.isFabulousGraphicsOrBetter() && VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints && renderLayer == RenderLayer.getTranslucent() && VoxelConstants.getMinecraft().worldRenderer.getTranslucentFramebuffer() != null) {
             VoxelConstants.getMinecraft().worldRenderer.getTranslucentFramebuffer().beginWrite(false);
             FabricModVoxelMap.onRenderHand(VoxelConstants.getMinecraft().getTickDelta(), 0L, matrixStack, false, true, true, false);
