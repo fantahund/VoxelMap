@@ -233,8 +233,7 @@ public class Map implements Runnable, IChangeObserver {
     public void run() {
         if (VoxelConstants.getMinecraft() != null) {
             while (true) {
-
-                for (boolean active = true; this.world != null && active; active = false) {
+                if (this.world != null) {
                     if (!this.options.hide) {
                         try {
                             this.mapCalc(this.doFullRender);
