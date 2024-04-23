@@ -36,7 +36,15 @@ public class MixinWorldRenderer {
             }
 
             boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter();
-            FabricModVoxelMap.onRenderHand(tickDelta, limitTime, RenderSystem.getModelViewStack(), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
+            Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            try {
+                matrixStack.pushMatrix();
+                matrixStack.mul(matrix4f);
+                RenderSystem.applyModelViewMatrix();
+                FabricModVoxelMap.onRenderHand(tickDelta, limitTime, new Matrix4fStack(5), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
+            } finally {
+                matrixStack.popMatrix();
+            }
         }
 
     }
@@ -45,7 +53,15 @@ public class MixinWorldRenderer {
     private void postRenderLayer(RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, CallbackInfo ci) {
         if (VoxelConstants.isFabulousGraphicsOrBetter() && VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints && renderLayer == RenderLayer.getTranslucent() && VoxelConstants.getMinecraft().worldRenderer.getTranslucentFramebuffer() != null) {
             VoxelConstants.getMinecraft().worldRenderer.getTranslucentFramebuffer().beginWrite(false);
-            FabricModVoxelMap.onRenderHand(VoxelConstants.getMinecraft().getTickDelta(), 0L, RenderSystem.getModelViewStack(), false, true, true, false);
+            Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            try {
+                matrixStack.pushMatrix();
+                matrixStack.mul(matrix4f);
+                RenderSystem.applyModelViewMatrix();
+                FabricModVoxelMap.onRenderHand(VoxelConstants.getMinecraft().getTickDelta(), 0L, new Matrix4fStack(5), false, true, true, false);
+            } finally {
+                matrixStack.popMatrix();
+            }
             VoxelConstants.getMinecraft().getFramebuffer().beginWrite(false);
         }
 

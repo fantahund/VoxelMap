@@ -10,7 +10,6 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.MessageIndicator;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.joml.Matrix4fStack;
 
