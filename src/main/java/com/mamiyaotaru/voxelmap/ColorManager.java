@@ -648,6 +648,9 @@ public class ColorManager {
         if (BlockRepository.biomeBlocks.contains(block) || this.biomeTintsAvailable.contains(blockStateID)) {
             if (live) {
                 try {
+                    DebugRenderState.blockX = blockPos.x;
+                    DebugRenderState.blockY = blockPos.y;
+                    DebugRenderState.blockZ = blockPos.z;
                     tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
                 } catch (Exception ignored) {}
             }

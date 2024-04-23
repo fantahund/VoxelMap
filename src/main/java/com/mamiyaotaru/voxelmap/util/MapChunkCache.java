@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.DebugRenderState;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import net.minecraft.util.math.BlockPos;
@@ -104,8 +105,11 @@ public class MapChunkCache {
 
     public void checkIfChunksChanged() {
         if (this.loaded) {
+            DebugRenderState.chunksChanged = 0;
+            DebugRenderState.chunksTotal = 0;
             for (int z = this.height - 1; z >= 0; --z) {
                 for (int x = 0; x < this.width; ++x) {
+                    DebugRenderState.chunksTotal++;
                     this.mapChunks[x + z * this.width].checkIfChunkChanged(this.changeObserver);
                 }
             }

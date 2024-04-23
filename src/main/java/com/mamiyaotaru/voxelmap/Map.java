@@ -391,6 +391,7 @@ public class Map implements Runnable, IChangeObserver {
                     this.zCalcTicker = 0;
                     Exception ex = new Exception();
                     ex.setStackTrace(this.zCalc.getStackTrace());
+                    DebugRenderState.print();
                     VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread is hanging?", ex);
                     // this.zCalc.stop();
                 } // else {

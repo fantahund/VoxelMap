@@ -67,7 +67,7 @@ public class MixinWorldRenderer {
     }
 
     @Inject(method = "scheduleChunkRender(IIIZ)V", at = @At("RETURN"))
-    public void postScheduleChunkRender(int x, int y, int z, boolean dunno, CallbackInfo ci) {
+    public void postScheduleChunkRender(int x, int y, int z, boolean important, CallbackInfo ci) {
         VoxelConstants.getVoxelMapInstance().getWorldUpdateListener().notifyObservers(x, z);
     }
 }

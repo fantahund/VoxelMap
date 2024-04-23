@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.DebugRenderState;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import net.minecraft.world.chunk.WorldChunk;
@@ -23,6 +24,9 @@ public class MapChunk {
 
     public void checkIfChunkChanged(IChangeObserver changeObserver) {
         if (this.hasChunkLoadedOrUnloaded() || this.isChanged) {
+            DebugRenderState.checkChunkX = x;
+            DebugRenderState.checkChunkZ = z;
+            DebugRenderState.chunksChanged++;
             changeObserver.processChunk(this.chunk);
             this.isChanged = false;
         }
