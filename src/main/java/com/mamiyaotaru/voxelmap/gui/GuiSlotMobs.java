@@ -12,7 +12,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.NarratorManager;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -140,9 +139,9 @@ class GuiSlotMobs extends GuiSlotMinimap {
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {
                 Text tooltip;
                 if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
-                    tooltip = isEnabled ? GuiSlotMobs.this.DISABLE : GuiSlotMobs.this.ENABLE;
+                    tooltip = isEnabled ? GuiSlotMobs.DISABLE : GuiSlotMobs.ENABLE;
                 } else {
-                    tooltip = isEnabled ? GuiSlotMobs.this.ENABLED : GuiSlotMobs.this.DISABLED;
+                    tooltip = isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED;
                 }
 
                 GuiMobs.setTooltip(this.parentGui, tooltip);

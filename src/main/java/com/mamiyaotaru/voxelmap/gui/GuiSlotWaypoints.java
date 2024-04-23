@@ -137,7 +137,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + entryHeight) {
                 Text tooltip;
                 if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
-                    tooltip = this.waypoint.enabled ? GuiSlotWaypoints.this.DISABLE : GuiSlotWaypoints.this.ENABLE;
+                    tooltip = this.waypoint.enabled ? GuiSlotWaypoints.DISABLE : GuiSlotWaypoints.ENABLE;
                 } else {
                     String tooltipText = "X: " + this.waypoint.getX() + " Z: " + this.waypoint.getZ();
                     if (this.waypoint.getY() > client.world.getBottomY()) {

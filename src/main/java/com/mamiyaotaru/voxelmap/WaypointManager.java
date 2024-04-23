@@ -15,7 +15,6 @@ import com.mamiyaotaru.voxelmap.util.WaypointContainer;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.session.Session;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
