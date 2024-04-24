@@ -95,7 +95,7 @@ public class WaypointContainer {
                     if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hudHidden) {
                         boolean isPointedAt = this.isPointedAt(pt, distance, cameraEntity, partialTicks);
                         String label = pt.name;
-                        this.renderLabel(matrixStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, 64, withDepth, withoutDepth);
+                        this.renderLabel(matrixStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, withDepth, withoutDepth);
                     }
                 }
             }
@@ -106,7 +106,7 @@ public class WaypointContainer {
                 int y = this.highlightedWaypoint.getY();
                 double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToEntity(cameraEntity));
                 boolean isPointedAt = this.isPointedAt(this.highlightedWaypoint, distance, cameraEntity, partialTicks);
-                this.renderLabel(matrixStack, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, 64, withDepth, withoutDepth);
+                this.renderLabel(matrixStack, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, withDepth, withoutDepth);
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -179,7 +179,7 @@ public class WaypointContainer {
 
     }
 
-    private void renderLabel(Matrix4fStack matrixStack, Waypoint pt, double distance, boolean isPointedAt, String name, boolean target, double baseX, double baseY, double baseZ, int par9, boolean withDepth, boolean withoutDepth) {
+    private void renderLabel(Matrix4fStack matrixStack, Waypoint pt, double distance, boolean isPointedAt, String name, boolean target, double baseX, double baseY, double baseZ, boolean withDepth, boolean withoutDepth) {
         if (target) {
             if (pt.red == 2.0F && pt.green == 0.0F && pt.blue == 0.0F) {
                 name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
