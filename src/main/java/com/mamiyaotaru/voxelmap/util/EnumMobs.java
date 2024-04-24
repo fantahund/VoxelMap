@@ -99,7 +99,7 @@ public enum EnumMobs {
     BAT(BatEntity.class, "Bat", true, 4.0F, "textures/entity/bat.png", "", false, true),
     BEE(BeeEntity.class, "Bee", true, 0.0F, "textures/entity/bee/bee.png", "", true, true),
     BLAZE(BlazeEntity.class, "Blaze", true, 0.0F, "textures/entity/blaze.png", "", true, false),
-    BOGGED(BoggedEntity.class, "Bogged", true, 0.0F, "textures/entity/bogged/bogged.png", "", true, false),
+    BOGGED(BoggedEntity.class, "Bogged", true, 0.0F, "textures/entity/skeleton/bogged.png", "textures/entity/skeleton/bogged_overlay.png", true, false),
     BREEZE(BreezeEntity.class, "Breeze", true, 0.0F, "textures/entity/breeze.png", "", true, false),
     CAT(CatEntity.class, "Cat", true, 0.0F, "textures/entity/cat/siamese.png", "", false, true),
     CAMEL(CamelEntity.class, "Camel", true, 0.0F, "textures/entity/camel/camel.png", "", false, true),
