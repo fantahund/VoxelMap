@@ -1,1 +1,2 @@
-- Fix Background randering in List Screens.
+- Map Scale could not be set to 0.25 if the simulation distance was below 9. The normal view distance is now used!
+- Update 1.20.6

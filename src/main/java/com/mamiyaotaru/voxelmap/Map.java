@@ -462,7 +462,7 @@ public class Map implements Runnable, IChangeObserver {
             this.options.zoom = 0;
             this.error = I18n.translate("minimap.ui.zoomlevel") + " (4.0x)";
         } else if (this.options.zoom == 0) {
-            if (this.multicore && VoxelConstants.getMinecraft().options.getSimulationDistance().getValue() > 8) {
+            if (this.multicore && VoxelConstants.getMinecraft().options.getViewDistance().getValue() > 8) {
                 this.options.zoom = 4;
                 this.error = I18n.translate("minimap.ui.zoomlevel") + " (0.25x)";
             } else {
