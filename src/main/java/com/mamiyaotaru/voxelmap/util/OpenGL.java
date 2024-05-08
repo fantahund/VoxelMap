@@ -222,11 +222,11 @@ public final class OpenGL {
             glBindRenderbuffer(GL30_GL_RENDERBUFFER, rboId);
             glRenderbufferStorage(GL30_GL_RENDERBUFFER, GL14_GL_DEPTH_COMPONENT24, width, height);
             glFramebufferRenderbuffer(GL30_GL_FRAMEBUFFER, GL30_GL_DEPTH_ATTACHMENT, GL30_GL_RENDERBUFFER, rboId);
-            glBindRenderbuffer(GL30_GL_DRAW_FRAMEBUFFER, 0);
+            glBindRenderbuffer(GL30_GL_RENDERBUFFER, 0);
 
             checkFramebufferStatus();
 
-            glBindRenderbuffer(GL30_GL_DRAW_FRAMEBUFFER, previousFboId);
+            glBindRenderbuffer(GL30_GL_RENDERBUFFER, previousFboId);
             GlStateManager._bindTexture(0);
         }
 
