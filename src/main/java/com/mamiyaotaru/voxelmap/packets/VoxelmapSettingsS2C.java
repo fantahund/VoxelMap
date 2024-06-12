@@ -6,7 +6,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 public record VoxelmapSettingsS2C(String settingsJson) implements CustomPayload {
-    public static final CustomPayload.Id<VoxelmapSettingsS2C> PACKET_ID = new CustomPayload.Id<>(new Identifier("voxelmap", "settings"));
+    public static final CustomPayload.Id<VoxelmapSettingsS2C> PACKET_ID = new CustomPayload.Id<>(Identifier.of("voxelmap", "settings"));
     public static final PacketCodec<PacketByteBuf, VoxelmapSettingsS2C> PACKET_CODEC = PacketCodec.of(VoxelmapSettingsS2C::write, VoxelmapSettingsS2C::new);
 
     public VoxelmapSettingsS2C(PacketByteBuf buf) {

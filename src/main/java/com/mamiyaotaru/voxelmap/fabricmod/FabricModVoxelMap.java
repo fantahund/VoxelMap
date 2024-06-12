@@ -72,7 +72,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
     }
 
-    public static void onRenderHand(float partialTicks, long timeSlice, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
+    public static void onRenderHand(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
             VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
         } catch (RuntimeException exception) {

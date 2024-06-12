@@ -82,7 +82,7 @@ public class DimensionManager {
 
     public DimensionContainer getDimensionContainerByIdentifier(String ident) {
         DimensionContainer dim;
-        Identifier resourceLocation = new Identifier(ident);
+        Identifier resourceLocation = Identifier.of(ident);
         dim = this.getDimensionContainerByResourceLocation(resourceLocation);
         if (dim == null) {
             dim = new DimensionContainer(null, resourceLocation.getPath(), resourceLocation);

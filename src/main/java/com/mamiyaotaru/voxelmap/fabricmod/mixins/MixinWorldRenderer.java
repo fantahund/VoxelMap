@@ -5,14 +5,17 @@ import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.render.WorldRenderer;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,8 +27,12 @@ public class MixinWorldRenderer {
     @Shadow
     private Framebuffer translucentFramebuffer;
 
+    @Shadow
+    @Final
+    private MinecraftClient client;
+
     @Inject(method = "render", at = @At("RETURN"))
-    private void postRender(float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+    private void postRender(RenderTickCounter tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints) {
             if (VoxelConstants.isFabulousGraphicsOrBetter()) {
                 Framebuffer framebuffer = VoxelConstants.getMinecraft().getFramebuffer();
@@ -40,7 +47,7 @@ public class MixinWorldRenderer {
                 matrixStack.pushMatrix();
                 matrixStack.mul(matrix4f);
                 RenderSystem.applyModelViewMatrix();
-                FabricModVoxelMap.onRenderHand(tickDelta, limitTime, new Matrix4fStack(5), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
+                FabricModVoxelMap.onRenderHand(tickCounter.getTickDelta(false), new Matrix4fStack(5), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
             } finally {
                 matrixStack.popMatrix();
             }
@@ -57,7 +64,7 @@ public class MixinWorldRenderer {
                 matrixStack.pushMatrix();
                 matrixStack.mul(matrix4f);
                 RenderSystem.applyModelViewMatrix();
-                FabricModVoxelMap.onRenderHand(VoxelConstants.getMinecraft().getTickDelta(), 0L, new Matrix4fStack(5), false, true, true, false);
+                FabricModVoxelMap.onRenderHand(VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false), new Matrix4fStack(5), false, true, true, false);
             } finally {
                 matrixStack.popMatrix();
             }

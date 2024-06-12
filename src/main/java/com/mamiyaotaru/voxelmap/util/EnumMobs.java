@@ -217,8 +217,8 @@ public enum EnumMobs {
         this.id = name;
         this.isTopLevelUnit = topLevelUnit;
         this.expectedWidth = expectedWidth;
-        this.resourceLocation = new Identifier(path.toLowerCase());
-        this.secondaryResourceLocation = secondaryPath.isEmpty() ? null : new Identifier(secondaryPath.toLowerCase());
+        this.resourceLocation = Identifier.of(path.toLowerCase());
+        this.secondaryResourceLocation = secondaryPath.isEmpty() ? null : Identifier.of(secondaryPath.toLowerCase());
         this.isHostile = isHostile;
         this.isNeutral = isNeutral;
         this.enabled = true;

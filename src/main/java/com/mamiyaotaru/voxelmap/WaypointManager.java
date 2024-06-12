@@ -95,8 +95,8 @@ public class WaypointManager {
                 }
             }
 
-            Sprite markerIcon = textureAtlas.registerIconForResource(new Identifier("voxelmap", "images/waypoints/marker.png"), VoxelConstants.getMinecraft().getResourceManager());
-            Sprite markerIconSmall = textureAtlas.registerIconForResource(new Identifier("voxelmap", "images/waypoints/markersmall.png"), VoxelConstants.getMinecraft().getResourceManager());
+            Sprite markerIcon = textureAtlas.registerIconForResource(Identifier.of("voxelmap", "images/waypoints/marker.png"), VoxelConstants.getMinecraft().getResourceManager());
+            Sprite markerIconSmall = textureAtlas.registerIconForResource(Identifier.of("voxelmap", "images/waypoints/markersmall.png"), VoxelConstants.getMinecraft().getResourceManager());
 
             for (Identifier resourceLocation : images) {
                 Sprite icon = textureAtlas.registerIconForResource(resourceLocation, VoxelConstants.getMinecraft().getResourceManager());
@@ -752,7 +752,7 @@ public class WaypointManager {
 
             path = path + "/" + this.currentDimension.getStorageName();
             String tempPath = "images/backgroundmaps/" + path + "/map.png";
-            Identifier identifier = new Identifier("voxelmap", tempPath);
+            Identifier identifier = Identifier.of("voxelmap", tempPath);
             InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(identifier).get().getInputStream();
             Image image = ImageIO.read(is);
             is.close();
@@ -760,7 +760,7 @@ public class WaypointManager {
             Graphics gfx = mapImage.createGraphics();
             gfx.drawImage(image, 0, 0, null);
             gfx.dispose();
-            is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().getInputStream();
+            is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             Properties mapProperties = new Properties();
             mapProperties.load(isr);

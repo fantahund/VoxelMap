@@ -8,7 +8,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 public record WorldIdS2C(String worldName) implements CustomPayload {
-    public static final CustomPayload.Id<WorldIdS2C> PACKET_ID = new CustomPayload.Id<>(new Identifier("worldinfo", "world_id"));
+    public static final CustomPayload.Id<WorldIdS2C> PACKET_ID = new CustomPayload.Id<>(Identifier.of("worldinfo", "world_id"));
     public static final PacketCodec<PacketByteBuf, WorldIdS2C> PACKET_CODEC = PacketCodec.of(WorldIdS2C::write, WorldIdS2C::new);
 
     public WorldIdS2C(PacketByteBuf buf) {

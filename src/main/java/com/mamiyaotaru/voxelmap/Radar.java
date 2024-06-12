@@ -36,7 +36,6 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.render.entity.feature.VillagerResourceMetadata;
 import net.minecraft.client.render.entity.model.AxolotlEntityModel;
 import net.minecraft.client.render.entity.model.BatEntityModel;
@@ -110,6 +109,7 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.item.AnimalArmorItem;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BlockItem;
@@ -190,23 +190,23 @@ public class Radar implements IRadar {
     private DrownedEntityModel<net.minecraft.entity.mob.ZombieEntity> drownedOverlayModel;
     private BipedEntityModel<LivingEntity> piglinArmorModel;
     private NativeImageBackedTexture nativeBackedTexture = new NativeImageBackedTexture(2, 2, false);
-    private final Identifier nativeBackedTextureLocation = new Identifier("voxelmap", "tempimage");
+    private final Identifier nativeBackedTextureLocation = Identifier.of("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
 
     private static final Int2ObjectMap<Identifier> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
-        int2ObjectOpenHashMap.put(1, new Identifier("stone"));
-        int2ObjectOpenHashMap.put(2, new Identifier("iron"));
-        int2ObjectOpenHashMap.put(3, new Identifier("gold"));
-        int2ObjectOpenHashMap.put(4, new Identifier("emerald"));
-        int2ObjectOpenHashMap.put(5, new Identifier("diamond"));
+        int2ObjectOpenHashMap.put(1, Identifier.of("stone"));
+        int2ObjectOpenHashMap.put(2, Identifier.of("iron"));
+        int2ObjectOpenHashMap.put(3, Identifier.of("gold"));
+        int2ObjectOpenHashMap.put(4, Identifier.of("emerald"));
+        int2ObjectOpenHashMap.put(5, Identifier.of("diamond"));
     });
     private static final Map<HorseMarking, Object> TEXTURES = Util.make(Maps.newEnumMap(HorseMarking.class), enumMap -> {
         enumMap.put(HorseMarking.NONE, null);
-        enumMap.put(HorseMarking.WHITE, new Identifier("textures/entity/horse/horse_markings_white.png"));
-        enumMap.put(HorseMarking.WHITE_FIELD, new Identifier("textures/entity/horse/horse_markings_whitefield.png"));
-        enumMap.put(HorseMarking.WHITE_DOTS, new Identifier("textures/entity/horse/horse_markings_whitedots.png"));
-        enumMap.put(HorseMarking.BLACK_DOTS, new Identifier("textures/entity/horse/horse_markings_blackdots.png"));
+        enumMap.put(HorseMarking.WHITE, Identifier.of("textures/entity/horse/horse_markings_white.png"));
+        enumMap.put(HorseMarking.WHITE_FIELD, Identifier.of("textures/entity/horse/horse_markings_whitefield.png"));
+        enumMap.put(HorseMarking.WHITE_DOTS, Identifier.of("textures/entity/horse/horse_markings_whitedots.png"));
+        enumMap.put(HorseMarking.BLACK_DOTS, Identifier.of("textures/entity/horse/horse_markings_blackdots.png"));
     });
 
     public Radar() {
@@ -277,10 +277,10 @@ public class Radar implements IRadar {
             TexturedModelData texturedModelData3 = TexturedModelData.of(BipedEntityModel.getModelData(new Dilation(1.02F), 0.0F), 64, 32);
             ModelPart piglinArmorModelPart = texturedModelData3.createModel();
             this.piglinArmorModel = new BipedEntityModel<>(piglinArmorModelPart);
-            if (ReflectionUtils.classExists("com.prupe.mcpatcher.mob.MobOverlay") && ImageUtils.loadImage(new Identifier("mcpatcher/mob/cow/mooshroom_overlay.png"), 0, 0, 1, 1) != null) {
-                EnumMobs.MOOSHROOM.secondaryResourceLocation = new Identifier("mcpatcher/mob/cow/mooshroom_overlay.png");
+            if (ReflectionUtils.classExists("com.prupe.mcpatcher.mob.MobOverlay") && ImageUtils.loadImage(Identifier.of("mcpatcher/mob/cow/mooshroom_overlay.png"), 0, 0, 1, 1) != null) {
+                EnumMobs.MOOSHROOM.secondaryResourceLocation = Identifier.of("mcpatcher/mob/cow/mooshroom_overlay.png");
             } else {
-                EnumMobs.MOOSHROOM.secondaryResourceLocation = new Identifier("textures/block/red_mushroom.png");
+                EnumMobs.MOOSHROOM.secondaryResourceLocation = Identifier.of("textures/block/red_mushroom.png");
             }
 
             for (int t = 0; t < EnumMobs.values().length - 1; ++t) {
@@ -305,7 +305,7 @@ public class Radar implements IRadar {
                 }
             }
 
-            BufferedImage[] armorImages = {ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(new Identifier("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8)};
+            BufferedImage[] armorImages = {ImageUtils.loadImage(Identifier.of("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(Identifier.of("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8), ImageUtils.loadImage(Identifier.of("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(Identifier.of("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8)};
 
             for (int t = 0; t < armorImages.length; ++t) {
                 float scale = armorImages[t].getWidth() / 8.0F;
@@ -345,14 +345,14 @@ public class Radar implements IRadar {
             scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
             dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
-            BufferedImage sheepFur = ImageUtils.loadImage(new Identifier("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
+            BufferedImage sheepFur = ImageUtils.loadImage(Identifier.of("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
             scale = sheepFur.getWidth() / 6.0F;
             sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
             int chop = (int) Math.max(1.0F, 2.0F);
             ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
             sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
             this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
-            Identifier fontResourceLocation = new Identifier("textures/font/ascii.png");
+            Identifier fontResourceLocation = Identifier.of("textures/font/ascii.png");
             BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
             if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
                 int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
@@ -386,11 +386,11 @@ public class Radar implements IRadar {
         BufferedImage image = null;
         switch (type) {
             case GENERICHOSTILE ->
-                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
+                    image = ImageUtils.loadImage(Identifier.of("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
             case GENERICNEUTRAL ->
-                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
+                    image = ImageUtils.loadImage(Identifier.of("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
             case GENERICTAME ->
-                    image = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
+                    image = ImageUtils.loadImage(Identifier.of("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
             case BAT ->
                     image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 64, 64), ImageUtils.loadImage(mobImage, 25, 1, 3, 4), 0.0F, 0.0F, 8, 12), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 25, 1, 3, 4)), 5.0F, 0.0F, 8, 12), ImageUtils.loadImage(mobImage, 6, 6, 6, 6), 1.0F, 3.0F, 8, 12);
             case CHICKEN ->
@@ -445,30 +445,27 @@ public class Radar implements IRadar {
             case SLIME ->
                     image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
             case TROPICALFISHA -> {
-                float[] primaryColorsA = {0.9765F, 0.502F, 0.1137F};
-                float[] secondaryColorsA = {0.9765F, 1.0F, 0.9961F};
                 if (entity instanceof TropicalFishEntity fish) {
-                    primaryColorsA = fish.getBaseColorComponents().getColorComponents();
-                    secondaryColorsA = fish.getPatternColorComponents().getColorComponents();
+                    Color primaryColorsA = new Color(fish.getBaseColorComponents().getEntityColor());
+                    Color secondaryColorsA = new Color(fish.getPatternColorComponents().getEntityColor());
+                    BufferedImage baseA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 10, 6, 32, 32), ImageUtils.loadImage(mobImage, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImage, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImage, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), primaryColorsA.getRed(), primaryColorsA.getGreen(), primaryColorsA.getBlue());
+                    BufferedImage patternA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 10, 6, 32, 32), ImageUtils.loadImage(mobImageSecondary, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), secondaryColorsA.getRed(), secondaryColorsA.getGreen(), secondaryColorsA.getBlue());
+                    image = ImageUtils.addImages(baseA, patternA, 0.0F, 0.0F, 10, 6);
+                    baseA.flush();
+                    patternA.flush();
                 }
-                BufferedImage baseA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 10, 6, 32, 32), ImageUtils.loadImage(mobImage, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImage, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImage, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), primaryColorsA[0], primaryColorsA[1], primaryColorsA[2]);
-                BufferedImage patternA = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 10, 6, 32, 32), ImageUtils.loadImage(mobImageSecondary, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), secondaryColorsA[0], secondaryColorsA[1], secondaryColorsA[2]);
-                image = ImageUtils.addImages(baseA, patternA, 0.0F, 0.0F, 10, 6);
-                baseA.flush();
-                patternA.flush();
             }
             case TROPICALFISHB -> {
-                float[] primaryColorsB = {0.5373F, 0.1961F, 0.7216F};
-                float[] secondaryColorsB = {0.9961F, 0.8471F, 0.2392F};
                 if (entity instanceof TropicalFishEntity fish) {
-                    primaryColorsB = fish.getBaseColorComponents().getColorComponents();
-                    secondaryColorsB = fish.getPatternColorComponents().getColorComponents();
+                    Color primaryColorsB = new Color(fish.getBaseColorComponents().getEntityColor());
+                    Color secondaryColorsB = new Color(fish.getPatternColorComponents().getEntityColor());
+                    BufferedImage baseB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 12, 12, 32, 32), ImageUtils.loadImage(mobImage, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), primaryColorsB.getRed(), primaryColorsB.getGreen(), primaryColorsB.getBlue());
+                    BufferedImage patternB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 12, 12, 32, 32), ImageUtils.loadImage(mobImageSecondary, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), secondaryColorsB.getRed(), secondaryColorsB.getGreen(), secondaryColorsB.getBlue());
+                    image = ImageUtils.addImages(baseB, patternB, 0.0F, 0.0F, 12, 12);
+                    baseB.flush();
+                    patternB.flush();
                 }
-                BufferedImage baseB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 12, 12, 32, 32), ImageUtils.loadImage(mobImage, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), primaryColorsB[0], primaryColorsB[1], primaryColorsB[2]);
-                BufferedImage patternB = ImageUtils.colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 12, 12, 32, 32), ImageUtils.loadImage(mobImageSecondary, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12), secondaryColorsB[0], secondaryColorsB[1], secondaryColorsB[2]);
-                image = ImageUtils.addImages(baseB, patternB, 0.0F, 0.0F, 12, 12);
-                baseB.flush();
-                patternB.flush();
+
             }
             case WITHER, WITHERINVULNERABLE ->
                     image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 24, 10, 64, 64), ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 64, 64), 8.0F, 0.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 0.0F, 2.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 18.0F, 2.0F, 24, 10);
@@ -654,7 +651,7 @@ public class Radar implements IRadar {
             InputStream is = null;
 
             try {
-                is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
             } catch (IOException ignored) {
             }
 
@@ -662,7 +659,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + ".png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -671,7 +668,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "8.png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -680,7 +677,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "8.png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -690,7 +687,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "16.png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -699,7 +696,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "16.png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -709,7 +706,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifier + "32.png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -718,7 +715,7 @@ public class Radar implements IRadar {
                 fullPath = ("textures/icons/" + identifierSimple + "32.png").toLowerCase();
 
                 try {
-                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier(fullPath)).get().getInputStream();
+                    is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of(fullPath)).get().getInputStream();
                 } catch (IOException ignored) {
                 }
             }
@@ -777,13 +774,13 @@ public class Radar implements IRadar {
                         VillagerType villagerType = villagerData.getType();
                         VillagerProfession villagerProfession = villagerData.getProfession();
                         resourceLocationSecondary = Registries.VILLAGER_TYPE.getId(villagerType);
-                        resourceLocationSecondary = new Identifier(resourceLocationSecondary.getNamespace(), "textures/entity/" + zombie + "villager/type/" + resourceLocationSecondary.getPath() + ".png");
+                        resourceLocationSecondary = Identifier.of(resourceLocationSecondary.getNamespace(), "textures/entity/" + zombie + "villager/type/" + resourceLocationSecondary.getPath() + ".png");
                         if (villagerProfession != VillagerProfession.NONE && !((LivingEntity) contact.entity).isBaby()) {
                             resourceLocationTertiary = Registries.VILLAGER_PROFESSION.getId(villagerProfession);
-                            resourceLocationTertiary = new Identifier(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
+                            resourceLocationTertiary = Identifier.of(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
                             if (villagerProfession != VillagerProfession.NITWIT) {
                                 resourceLocationQuaternary = LEVEL_TO_ID.get(MathHelper.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
-                                resourceLocationQuaternary = new Identifier(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
+                                resourceLocationQuaternary = Identifier.of(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
                             }
                         }
 
@@ -935,11 +932,11 @@ public class Radar implements IRadar {
                 String fullPath = ("textures/icons/" + fullName + ".properties").toLowerCase();
 
                 ResourceManager resourceManager = VoxelConstants.getMinecraft().getResourceManager();
-                Optional<Resource> resource = resourceManager.getResource(new Identifier(fullPath));
+                Optional<Resource> resource = resourceManager.getResource(Identifier.of(fullPath));
 
                 if (resource.isEmpty()) {
                     fullPath = ("textures/icons/" + simpleName + ".properties").toLowerCase();
-                    resource = resourceManager.getResource(new Identifier(fullPath));
+                    resource = resourceManager.getResource(Identifier.of(fullPath));
                 }
                 if (resource.isPresent())
                     try (InputStream is = resource.get().getInputStream()) {
@@ -1406,8 +1403,8 @@ public class Radar implements IRadar {
             SheepEntity sheepEntity = (SheepEntity) contact.entity;
             if (!sheepEntity.isSheared()) {
                 icon = this.textureAtlas.getAtlasSprite("sheepfur");
-                float[] sheepColors = SheepEntity.getRgbColor(sheepEntity.getColor());
-                contact.setArmorColor((int) (sheepColors[0] * 255.0F) << 16 | (int) (sheepColors[1] * 255.0F) << 8 | (int) (sheepColors[2] * 255.0F));
+                int sheepColors = SheepEntity.getRgbColor(sheepEntity.getColor());
+                contact.setArmorColor((int) (sheepColors * 255.0F) << 16 | (int) (sheepColors * 255.0F) << 8 | (int) (sheepColors * 255.0F));
             }
         } else if (helmet != null) {
             if (helmet == Items.SKELETON_SKULL) {
@@ -1509,7 +1506,7 @@ public class Radar implements IRadar {
             suffix = "";
             String resourcePath = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, materialName, 1, suffix);
 
-            resourceLocation = new Identifier(resourcePath);
+            resourceLocation = Identifier.of(resourcePath);
         } catch (RuntimeException ignored) {
         }
 
@@ -1720,12 +1717,12 @@ public class Radar implements IRadar {
                                     int numDyeColors = DyeColor.values().length;
                                     int colorID1 = semiRandom % numDyeColors;
                                     int colorID2 = (semiRandom + 1) % numDyeColors;
-                                    float lerpVal = ((sheepEntity.age % 25) + VoxelConstants.getMinecraft().getTickDelta()) / 25.0F;
-                                    float[] sheepColors1 = SheepEntity.getRgbColor(DyeColor.byId(colorID1));
-                                    float[] sheepColors2 = SheepEntity.getRgbColor(DyeColor.byId(colorID2));
-                                    red = sheepColors1[0] * (1.0F - lerpVal) + sheepColors2[0] * lerpVal;
-                                    green = sheepColors1[1] * (1.0F - lerpVal) + sheepColors2[1] * lerpVal;
-                                    blue = sheepColors1[2] * (1.0F - lerpVal) + sheepColors2[2] * lerpVal;
+                                    float lerpVal = ((sheepEntity.age % 25) + VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false)) / 25.0F;
+                                    Color sheepColors1 = new Color(SheepEntity.getRgbColor(DyeColor.byId(colorID1)));
+                                    Color sheepColors2 = new Color(SheepEntity.getRgbColor(DyeColor.byId(colorID2)));
+                                    red = sheepColors1.getRed() * (1.0F - lerpVal) + sheepColors2.getRed() * lerpVal;
+                                    green = sheepColors1.getGreen() * (1.0F - lerpVal) + sheepColors2.getGreen() * lerpVal;
+                                    blue = sheepColors1.getBlue() * (1.0F - lerpVal) + sheepColors2.getBlue() * lerpVal;
                                 }
 
                                 armorScale = 1.04F;

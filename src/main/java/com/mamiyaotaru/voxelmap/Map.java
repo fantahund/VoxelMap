@@ -48,6 +48,8 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.math.MatrixStack;
@@ -89,10 +91,10 @@ import java.util.TreeSet;
 public class Map implements Runnable, IChangeObserver {
     private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
-    private final Identifier arrowResourceLocation = new Identifier("voxelmap", "images/mmarrow.png");
-    private final Identifier roundmapResourceLocation = new Identifier("voxelmap", "images/roundmap.png");
-    private final Identifier squareStencil = new Identifier("voxelmap", "images/square.png");
-    private final Identifier circleStencil = new Identifier("voxelmap", "images/circle.png");
+    private final Identifier arrowResourceLocation = Identifier.of("voxelmap", "images/mmarrow.png");
+    private final Identifier roundmapResourceLocation = Identifier.of("voxelmap", "images/roundmap.png");
+    private final Identifier squareStencil = Identifier.of("voxelmap", "images/square.png");
+    private final Identifier circleStencil = Identifier.of("voxelmap", "images/circle.png");
     private ClientWorld world;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
@@ -1210,15 +1212,7 @@ public class Map implements Runnable, IChangeObserver {
                     BlockState blockStateAbove = world.getBlockState(blockPos);
                     Block materialAbove = blockStateAbove.getBlock();
                     if (this.options.lightmap && materialAbove == Blocks.ICE) {
-                        int multiplier = 255;
-                        // I'm not sure if this will be a 100% correct fix, but we'll see // Algo
-                        //if (this.game.options.getAo().getValue() == AoMode.MIN) {
-                        //    multiplier = 200;
-                        //} else if (this.game.options.getAo().getValue() == AoMode.MAX) {
-                        //    multiplier = 120;
-                        //}
-                        multiplier = (VoxelConstants.getMinecraft().options.getAo().getValue()) ? 200 : 120;
-
+                        int multiplier = VoxelConstants.getMinecraft().options.getAo().getValue() ? 200 : 120;
                         seafloorLight = ColorUtils.colorMultiplier(seafloorLight, 0xFF000000 | multiplier << 16 | multiplier << 8 | multiplier);
                     }
 
@@ -1586,7 +1580,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
         OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
         OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
-        BufferBuilder bb = Tessellator.getInstance().getBuffer();
+        BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         //BufferRenderer.drawWithShader(bb.end());
         BufferRenderer.drawWithGlobalProgram(bb.end());
         OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
@@ -1915,13 +1909,13 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("voxelmap", "images/squaremap.png")).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of("voxelmap", "images/squaremap.png")).get().getInputStream();
             BufferedImage mapImage = ImageIO.read(is);
             is.close();
             this.mapImageInt = OpenGL.Utils.tex(mapImage);
         } catch (Exception var8) {
             try {
-                InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new Identifier("textures/map/map_background.png")).get().getInputStream();
+                InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.of("textures/map/map_background.png")).get().getInputStream();
                 Image tpMap = ImageIO.read(is);
                 is.close();
                 BufferedImage mapImage = new BufferedImage(tpMap.getWidth(null), tpMap.getHeight(null), 2);

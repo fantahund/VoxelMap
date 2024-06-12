@@ -41,8 +41,8 @@ public class Contact {
     public void setArmorColor(int armorColor) { this.armorColor = armorColor; }
 
     public void updateLocation() {
-        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * VoxelConstants.getMinecraft().getTickDelta();
+        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
         this.y = (int) this.entity.getY() + this.yFudge;
-        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * VoxelConstants.getMinecraft().getTickDelta();
+        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
     }
 }

@@ -58,10 +58,10 @@ public class RadarSimple implements IRadar {
 
         try {
             this.textureAtlas.reset();
-            BufferedImage contact = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/contact.png"), 0, 0, 32, 32, 32, 32);
+            BufferedImage contact = ImageUtils.loadImage(Identifier.of("voxelmap", "images/radar/contact.png"), 0, 0, 32, 32, 32, 32);
             contact = ImageUtils.fillOutline(contact, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("contact", contact);
-            BufferedImage facing = ImageUtils.loadImage(new Identifier("voxelmap", "images/radar/contact_facing.png"), 0, 0, 32, 32, 32, 32);
+            BufferedImage facing = ImageUtils.loadImage(Identifier.of("voxelmap", "images/radar/contact_facing.png"), 0, 0, 32, 32, 32, 32);
             facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
             this.textureAtlas.stitch();

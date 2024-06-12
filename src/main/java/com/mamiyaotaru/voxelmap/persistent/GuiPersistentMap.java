@@ -31,16 +31,17 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.texture.PlayerSkinTexture;
 import net.minecraft.client.util.DefaultSkinHelper;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerModelPart;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -804,7 +805,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            Identifier GUI_ICONS_TEXTURE = new Identifier("textures/gui/icons.png");
+            Identifier GUI_ICONS_TEXTURE = Identifier.of("textures/gui/icons.png");
             RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(775, 769, 1, 0);
@@ -949,16 +950,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
+        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        vertexBuffer.vertex(0.0, endY, 0.0).texture(0.0F, endY / 32.0F).color(64, 64, 64, endAlpha).next();
-        vertexBuffer.vertex(this.getWidth(), endY, 0.0).texture(this.width / 32.0F, endY / 32.0F).color(64, 64, 64, endAlpha).next();
-        vertexBuffer.vertex(this.getWidth(), startY, 0.0).texture(this.width / 32.0F, startY / 32.0F).color(64, 64, 64, startAlpha).next();
-        vertexBuffer.vertex(0.0, startY, 0.0).texture(0.0F, startY / 32.0F).color(64, 64, 64, startAlpha).next();
-        tessellator.draw();
+        vertexBuffer.vertex(0.0F, endY, 0.0F).texture(0.0F, endY / 32.0F).color(64, 64, 64, endAlpha);
+        vertexBuffer.vertex(this.getWidth(), endY, 0.0F).texture(this.width / 32.0F, endY / 32.0F).color(64, 64, 64, endAlpha);
+        vertexBuffer.vertex(this.getWidth(), startY, 0.0F).texture(this.width / 32.0F, startY / 32.0F).color(64, 64, 64, startAlpha);
+        vertexBuffer.vertex(0.0F, startY, 0.0F).texture(0.0F, startY / 32.0F).color(64, 64, 64, startAlpha);
+        BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
     }
 
     public void tick() {
@@ -988,24 +988,22 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     public void drawTexturedModalRect(float x, float y, float width, float height) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex(x + 0.0F, y + height, 0).texture(0.0F, 1.0F).next();
-        vertexBuffer.vertex(x + width, y + height, 0).texture(1.0F, 1.0F).next();
-        vertexBuffer.vertex(x + width, y + 0.0F, 0).texture(1.0F, 0.0F).next();
-        vertexBuffer.vertex(x + 0.0F, y + 0.0F, 0).texture(0.0F, 0.0F).next();
-        tessellator.draw();
+        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        vertexBuffer.vertex(x + 0.0F, y + height, 0).texture(0.0F, 1.0F);
+        vertexBuffer.vertex(x + width, y + height, 0).texture(1.0F, 1.0F);
+        vertexBuffer.vertex(x + width, y + 0.0F, 0).texture(1.0F, 0.0F);
+        vertexBuffer.vertex(x + 0.0F, y + 0.0F, 0).texture(0.0F, 0.0F);
+        BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
     }
 
     public void drawTexturedModalRect(float xCoord, float yCoord, Sprite icon, float widthIn, float heightIn) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex(xCoord + 0.0F, yCoord + heightIn, 0).texture(icon.getMinU(), icon.getMaxV()).next();
-        vertexBuffer.vertex(xCoord + widthIn, yCoord + heightIn, 0).texture(icon.getMaxU(), icon.getMaxV()).next();
-        vertexBuffer.vertex(xCoord + widthIn, yCoord + 0.0F, 0).texture(icon.getMaxU(), icon.getMinV()).next();
-        vertexBuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, 0).texture(icon.getMinU(), icon.getMinV()).next();
-        tessellator.draw();
+        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        vertexBuffer.vertex(xCoord + 0.0F, yCoord + heightIn, 0).texture(icon.getMinU(), icon.getMaxV());
+        vertexBuffer.vertex(xCoord + widthIn, yCoord + heightIn, 0).texture(icon.getMaxU(), icon.getMaxV());
+        vertexBuffer.vertex(xCoord + widthIn, yCoord + 0.0F, 0).texture(icon.getMaxU(), icon.getMinV());
+        vertexBuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, 0).texture(icon.getMinU(), icon.getMinV());
+        BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
     }
 
     private void createPopup(int x, int y, int directX, int directY) {

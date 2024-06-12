@@ -90,7 +90,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             OpenGL.Utils.img2("textures/gui/container/beacon.png");
             int xOffset = this.parentGui.waypoint.dimensions.contains(this.dim) ? 91 : 113;
             int yOffset = 222;
-            drawContext.drawTexture(new Identifier("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
+            drawContext.drawTexture(Identifier.of("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

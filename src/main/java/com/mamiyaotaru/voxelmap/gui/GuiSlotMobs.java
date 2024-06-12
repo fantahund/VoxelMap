@@ -26,8 +26,8 @@ class GuiSlotMobs extends GuiSlotMinimap {
     static final Text DISABLE = Text.translatable("options.minimap.mobs.disable");
     static final Text ENABLED = Text.translatable("options.minimap.mobs.enabled");
     static final Text DISABLED = Text.translatable("options.minimap.mobs.disabled");
-    final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
-    final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
+    final Identifier visibleIconIdentifier = Identifier.of("textures/mob_effect/night_vision.png");
+    final Identifier invisibleIconIdentifier = Identifier.of("textures/mob_effect/blindness.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
         super (par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);

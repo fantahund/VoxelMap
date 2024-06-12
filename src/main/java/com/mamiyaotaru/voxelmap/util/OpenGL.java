@@ -12,7 +12,6 @@ import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.TextureManager;
-import net.minecraft.client.util.GlAllocationUtils;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
@@ -303,7 +302,7 @@ public final class OpenGL {
             return glId;
         }
 
-        public static void img2(String param) { img2(new Identifier(param)); }
+        public static void img2(String param) { img2(Identifier.of(param)); }
 
         public static void img(Identifier param) { textureManager.bindTexture(param); }
 

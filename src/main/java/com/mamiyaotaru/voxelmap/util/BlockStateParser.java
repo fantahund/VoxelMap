@@ -33,8 +33,8 @@ public final class BlockStateParser {
         String[] resourceStringParts = resourceString.split(":");
         Identifier resourceLocation = null;
 
-        if (resourceStringParts.length == 1) resourceLocation = new Identifier(resourceStringParts[0]);
-        else if (resourceStringParts.length == 2) resourceLocation = new Identifier(resourceStringParts[0], resourceStringParts[1]);
+        if (resourceStringParts.length == 1) resourceLocation = Identifier.of(resourceStringParts[0]);
+        else if (resourceStringParts.length == 2) resourceLocation = Identifier.of(resourceStringParts[0], resourceStringParts[1]);
 
         Block block = Registries.BLOCK.get(resourceLocation);
 

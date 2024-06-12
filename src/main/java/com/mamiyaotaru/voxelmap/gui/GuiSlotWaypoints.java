@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.EntryListWidget;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -29,8 +30,8 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
     private String filterString = "";
     static final Text ENABLE = Text.translatable("minimap.waypoints.enable");
     static final Text DISABLE = Text.translatable("minimap.waypoints.disable");
-    final Identifier visibleIconIdentifier = new Identifier("textures/mob_effect/night_vision.png");
-    final Identifier invisibleIconIdentifier = new Identifier("textures/mob_effect/blindness.png");
+    final Identifier visibleIconIdentifier = Identifier.of("textures/mob_effect/night_vision.png");
+    final Identifier invisibleIconIdentifier = Identifier.of("textures/mob_effect/blindness.png");
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
         super(par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
@@ -67,13 +68,12 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
 
     public void drawTexturedModalRect(int xCoord, int yCoord, Sprite textureSprite, int widthIn, int heightIn) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexbuffer = tessellator.getBuffer();
-        vertexbuffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexbuffer.vertex(xCoord, yCoord + heightIn, 1.0).texture(textureSprite.getMinU(), textureSprite.getMaxV()).next();
-        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 1.0).texture(textureSprite.getMaxU(), textureSprite.getMaxV()).next();
-        vertexbuffer.vertex(xCoord + widthIn, yCoord, 1.0).texture(textureSprite.getMaxU(), textureSprite.getMinV()).next();
-        vertexbuffer.vertex(xCoord, yCoord, 1.0).texture(textureSprite.getMinU(), textureSprite.getMinV()).next();
-        tessellator.draw();
+        BufferBuilder vertexbuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
+        vertexbuffer.vertex(xCoord, yCoord + heightIn, 1.0F).texture(textureSprite.getMinU(), textureSprite.getMaxV());
+        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 1.0F).texture(textureSprite.getMaxU(), textureSprite.getMaxV());
+        vertexbuffer.vertex(xCoord + widthIn, yCoord, 1.0F).texture(textureSprite.getMaxU(), textureSprite.getMinV());
+        vertexbuffer.vertex(xCoord, yCoord, 1.0F).texture(textureSprite.getMinU(), textureSprite.getMinV());
+        BufferRenderer.drawWithGlobalProgram(vertexbuffer.end());
     }
 
     protected void sortBy(int sortKey, boolean ascending) {
