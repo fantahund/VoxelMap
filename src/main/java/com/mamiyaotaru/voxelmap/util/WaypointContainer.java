@@ -206,7 +206,6 @@ public class WaypointContainer {
         matrixStack.scale(-var14, -var14, -var14);
         // Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
         fade = Math.min(fade, !pt.enabled && !target ? 0.3F : 1.0F);
         float width = 10.0F;
@@ -224,6 +223,7 @@ public class WaypointContainer {
         if (withDepth) {
             OpenGL.glDepthMask(distance < maxDistance);
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(matrixStack, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, fade);
             vertexBuffer.vertex(matrixStack, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, fade);
             vertexBuffer.vertex(matrixStack, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, fade);
@@ -234,7 +234,7 @@ public class WaypointContainer {
         if (withoutDepth) {
             OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             OpenGL.glDepthMask(false);
-            vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(matrixStack, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, 0.3F * fade);
             vertexBuffer.vertex(matrixStack, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, 0.3F * fade);
             vertexBuffer.vertex(matrixStack, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, 0.3F * fade);
@@ -252,7 +252,7 @@ public class WaypointContainer {
                 OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
                 OpenGL.glDepthMask(distance < maxDistance);
                 OpenGL.glPolygonOffset(1.0F, 7.0F);
-                vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
                 vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexBuffer.vertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
@@ -271,7 +271,7 @@ public class WaypointContainer {
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
                 OpenGL.glDepthMask(false);
                 OpenGL.glPolygonOffset(1.0F, 11.0F);
-                vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
                 vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
                 vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
                 vertexBuffer.vertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
