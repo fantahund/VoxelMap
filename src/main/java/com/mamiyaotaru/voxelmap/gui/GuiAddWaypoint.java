@@ -64,10 +64,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void tick() {
-        //this.waypointName.setFocused(true);
-        //this.waypointX.setFocused(true);
-        //this.waypointY.setFocused(true);
-        //this.waypointZ.setFocused(true);
     }
 
     public void init() {
@@ -98,6 +94,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.setFocused(this.waypointName);
         this.waypointName.setFocused(true);
         this.dimensionList = new GuiSlotDimensions(this);
+        this.addDrawableChild(dimensionList);
     }
 
     @Override
@@ -272,7 +269,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        drawMap(drawContext);
         float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
         this.tooltip = null;
         this.buttonEnabled.setMessage(Text.literal(I18n.translate("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.translate("options.on") : I18n.translate("options.off"))));
@@ -280,16 +276,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             this.renderInGameBackground(drawContext);
         }
 
-        this.dimensionList.render(drawContext, mouseX, mouseY, delta);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.translate("minimap.waypoints.new") : I18n.translate("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
         drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
         drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
         drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
         drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
-        this.waypointName.render(drawContext, mouseX, mouseY, delta);
-        this.waypointX.render(drawContext, mouseX, mouseY, delta);
-        this.waypointZ.render(drawContext, mouseX, mouseY, delta);
-        this.waypointY.render(drawContext, mouseX, mouseY, delta);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         super.render(drawContext, mouseX, mouseY, delta);
         OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);

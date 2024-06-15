@@ -18,13 +18,6 @@ public class GuiScreenMinimap extends Screen {
         super (title);
     }
 
-    public void drawMap(DrawContext drawContext) {
-        if (VoxelConstants.getVoxelMapInstance().getMapOptions().showUnderMenus) return;
-
-        VoxelConstants.getVoxelMapInstance().getMap().drawMinimap(drawContext);
-        OpenGL.glClear(256);
-    }
-
     public void removed() { MapSettingsManager.instance.saveAll(); }
 
     public void renderTooltip(DrawContext drawContext, Text text, int x, int y) {

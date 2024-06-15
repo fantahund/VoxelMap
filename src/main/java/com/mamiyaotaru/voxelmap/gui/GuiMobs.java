@@ -129,7 +129,6 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        drawMap(drawContext);
         this.tooltip = null;
         this.mobsList.render(drawContext, mouseX, mouseY, delta);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);

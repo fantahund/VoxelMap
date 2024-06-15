@@ -54,7 +54,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        drawMap(drawContext);
         this.renderInGameBackground(drawContext);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(drawContext, mouseX, mouseY, delta);
