@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class APIMixinInGameHud {
-    @Inject(method = "renderMainHud", at = @At("RETURN"))
+    @Inject(method = "renderMainHud(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/render/RenderTickCounter;)V", at = @At("RETURN"))
     private void onRenderGameOverlay(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         FabricModVoxelMap.instance.renderOverlay(context);
     }

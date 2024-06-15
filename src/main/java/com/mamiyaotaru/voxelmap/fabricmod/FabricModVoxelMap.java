@@ -52,8 +52,8 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
         try {
             VoxelConstants.getVoxelMapInstance().onTickInGame(drawContext);
-        } catch (RuntimeException exception) {
-            VoxelConstants.getLogger().error(exception);
+        } catch (RuntimeException e) {
+            VoxelConstants.getLogger().log(Level.ERROR, "Error while render overlay", e);
         }
     }
 
