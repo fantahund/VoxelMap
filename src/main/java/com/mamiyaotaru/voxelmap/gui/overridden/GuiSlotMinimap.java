@@ -30,9 +30,13 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         this.fullheight = height;
     }
 
-    public void setShowTopBottomBG(boolean showTopBottomBG) { this.showTopBottomBG = showTopBottomBG; }
+    public void setShowTopBottomBG(boolean showTopBottomBG) {
+        this.showTopBottomBG = showTopBottomBG;
+    }
 
-    public void setShowSlotBG(boolean showSlotBG) { this.showSlotBG = showSlotBG; }
+    public void setShowSlotBG(boolean showSlotBG) {
+        this.showSlotBG = showSlotBG;
+    }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         int scrollBarLeft = getScrollbarPositionX();
@@ -41,13 +45,14 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         setScrollAmount(getScrollAmount());
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+
 
         if (this.showSlotBG) {
             RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
             RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             float f = 32.0f;
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(this.getX(), bottom, 0.0F).texture(this.getX() / f, (bottom + (int) getScrollAmount()) / f).color(32, 32, 32, 255);
             vertexBuffer.vertex(this.getRight(), bottom, 0.0F).texture(this.getRight() / f, (bottom + (int) getScrollAmount()) / f).color(32, 32, 32, 255);
             vertexBuffer.vertex(this.getRight(), this.getY(), 0.0F).texture(this.getRight() / f, (this.getY() + (int) getScrollAmount()) / f).color(32, 32, 32, 255);
@@ -72,7 +77,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(OpenGL.GL11_GL_ALWAYS);
 
-            vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
             vertexBuffer.vertex(this.getX(), this.getY(), -100.0F).texture(0.0F, this.getY() / 32.0F).color(64, 64, 64, 255);
             vertexBuffer.vertex(this.getX() + width, this.getY(), -100.0F).texture(width / 32.0F, this.getY() / 32.0F).color(64, 64, 64, 255);
             vertexBuffer.vertex(this.getX() + width, 0.0F, -100.0F).texture(width / 32.0F, 0.0F).color(64, 64, 64, 255);
@@ -114,7 +119,7 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
 
             if (l1 < this.getY()) l1 = this.getY();
 
-            vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
             vertexBuffer.vertex(scrollBarLeft, this.getBottom(), 0.0F).color(0, 0, 0, 255);
             vertexBuffer.vertex(scrollBarRight, this.getBottom(), 0.0F).color(0, 0, 0, 255);
             vertexBuffer.vertex(scrollBarRight, this.getY(), 0.0F).color(0, 0, 0, 255);
@@ -136,11 +141,17 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
     }
 
-    public int getRowWidth() { return slotWidth; }
+    public int getRowWidth() {
+        return slotWidth;
+    }
 
-    public void setSlotWidth(int slotWidth) { this.slotWidth = slotWidth; }
+    public void setSlotWidth(int slotWidth) {
+        this.slotWidth = slotWidth;
+    }
 
-    protected int getScrollbarPositionX() { return slotWidth >= 220 ? width / 2 + 124 : this.getRight() - 6; }
+    protected int getScrollbarPositionX() {
+        return slotWidth >= 220 ? width / 2 + 124 : this.getRight() - 6;
+    }
 
     public void setLeftPos(int left) {
         this.setX(left);
@@ -152,5 +163,6 @@ public abstract class GuiSlotMinimap extends EntryListWidget {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public void appendClickableNarrations(NarrationMessageBuilder builder) {}
+    public void appendClickableNarrations(NarrationMessageBuilder builder) {
+    }
 }
