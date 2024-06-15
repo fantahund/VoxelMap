@@ -14,9 +14,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.thread.ThreadExecutor;
@@ -57,7 +57,7 @@ public class CachedRegion {
     private ServerChunkManager chunkProvider;
     Class<?> executorClass;
     private ThreadExecutor<RefreshRunnable> executor;
-    private ThreadedAnvilChunkStorage chunkLoader;
+    private ServerChunkLoadingManager chunkLoader;
     private String subworldName;
     private String worldNamePathPart;
     private String subworldNamePathPart = "";
@@ -126,7 +126,7 @@ public class CachedRegion {
             this.chunkProvider = worldServer.getChunkManager();
             this.executorClass = chunkProvider.getClass().getDeclaredClasses()[0];
             this.executor = (ThreadExecutor<RefreshRunnable>) ReflectionUtils.getPrivateFieldValueByType(chunkProvider, ServerChunkManager.class, executorClass);
-            this.chunkLoader = chunkProvider.threadedAnvilChunkStorage;
+            this.chunkLoader = chunkProvider.chunkLoadingManager;
         }
 
         Arrays.fill(this.liveChunkUpdateQueued, false);
