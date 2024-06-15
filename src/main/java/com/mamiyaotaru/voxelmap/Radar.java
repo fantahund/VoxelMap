@@ -1404,7 +1404,7 @@ public class Radar implements IRadar {
             if (!sheepEntity.isSheared()) {
                 icon = this.textureAtlas.getAtlasSprite("sheepfur");
                 int sheepColors = SheepEntity.getRgbColor(sheepEntity.getColor());
-                contact.setArmorColor((int) (sheepColors * 255.0F) << 16 | (int) (sheepColors * 255.0F) << 8 | (int) (sheepColors * 255.0F));
+                contact.setArmorColor(sheepColors);
             }
         } else if (helmet != null) {
             if (helmet == Items.SKELETON_SKULL) {
@@ -1720,9 +1720,9 @@ public class Radar implements IRadar {
                                     float lerpVal = ((sheepEntity.age % 25) + VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false)) / 25.0F;
                                     Color sheepColors1 = new Color(SheepEntity.getRgbColor(DyeColor.byId(colorID1)));
                                     Color sheepColors2 = new Color(SheepEntity.getRgbColor(DyeColor.byId(colorID2)));
-                                    red = sheepColors1.getRed() * (1.0F - lerpVal) + sheepColors2.getRed() * lerpVal;
-                                    green = sheepColors1.getGreen() * (1.0F - lerpVal) + sheepColors2.getGreen() * lerpVal;
-                                    blue = sheepColors1.getBlue() * (1.0F - lerpVal) + sheepColors2.getBlue() * lerpVal;
+                                    red = (sheepColors1.getRed() * (1.0F - lerpVal) + sheepColors2.getRed() * lerpVal) / 255.0F;
+                                    green = (sheepColors1.getGreen() * (1.0F - lerpVal) + sheepColors2.getGreen() * lerpVal) / 255.0F;
+                                    blue = (sheepColors1.getBlue() * (1.0F - lerpVal) + sheepColors2.getBlue() * lerpVal) / 255.0F;
                                 }
 
                                 armorScale = 1.04F;
