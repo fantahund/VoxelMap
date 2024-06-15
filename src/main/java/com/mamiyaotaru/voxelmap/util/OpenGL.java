@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-
+import org.lwjgl.system.MemoryUtil;
 import java.awt.image.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -186,8 +187,8 @@ public final class OpenGL {
 
     public static final class Utils {
         public static final Tessellator TESSELLATOR = Tessellator.getInstance();
-        public static final BufferBuilder VERTEX_BUFFER = TESSELLATOR.getBuffer();
-        public static final IntBuffer DATA_BUFFER = GlAllocationUtils.allocateByteBuffer(16777216).asIntBuffer();
+        private static BufferBuilder bufferBuilder;
+        public static final IntBuffer DATA_BUFFER = MemoryUtil.memCallocInt(16777216 / 4);
 
         public static final TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
         public static int fboId = -1;
@@ -326,14 +327,22 @@ public final class OpenGL {
 
         public static void drawPre() { drawPre(VertexFormats.POSITION_TEXTURE); }
 
-        public static void drawPre(VertexFormat format) { VERTEX_BUFFER.begin(VertexFormat.DrawMode.QUADS, format); }
+        public static void drawPre(VertexFormat format) {
+            bufferBuilder = TESSELLATOR.begin(VertexFormat.DrawMode.QUADS, format);
+        }
 
-        public static void drawPost() { TESSELLATOR.draw(); }
+        public static void drawPost() {
+            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        }
 
         public static void glah(int g) { glDeleteTexture(g); }
 
-        public static void ldrawone(int x, int y, double z, float u, float v) { VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next(); }
+        public static void ldrawone(int x, int y, double z, float u, float v) {
+            bufferBuilder.vertex(x, y, (float) z).texture(u, v);
+        }
 
-        public static void ldrawthree(double x, double y, double z, float u, float v) { VERTEX_BUFFER.vertex(x, y, z).texture(u, v).next(); }
+        public static void ldrawthree(double x, double y, double z, float u, float v) {
+            bufferBuilder.vertex((float) x, (float) y, (float) z).texture(u, v);
+        }
     }
 }
