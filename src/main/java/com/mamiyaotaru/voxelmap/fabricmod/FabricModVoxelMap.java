@@ -157,7 +157,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public void playerRunTeleportCommand(double x, double y, double z) {
         MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
-        cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z));
+        cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
         VoxelConstants.getPlayer().networkHandler.sendCommand(cmd);
     }
 }
