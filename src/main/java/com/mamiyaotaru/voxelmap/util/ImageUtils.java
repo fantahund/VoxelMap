@@ -66,8 +66,8 @@ public class ImageUtils {
             InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
             BufferedImage image = ImageIO.read(is);
             is.close();
-            if (image.getType() != 6) {
-                BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), 6);
+            if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
+                BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
                 Graphics2D g2 = temp.createGraphics();
                 g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
                 g2.dispose();

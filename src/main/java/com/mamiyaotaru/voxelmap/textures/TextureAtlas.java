@@ -82,7 +82,7 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitch();
 
         VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-        TextureUtilLegacy.allocateTextureImpl(this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        TextureUtilLegacy.allocateTexture(this.getGlId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
         Arrays.fill(zeros, 0);
         TextureUtilLegacy.uploadTexture(this.getGlId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
@@ -94,7 +94,7 @@ public class TextureAtlas extends AbstractTexture {
             this.mapUploadedSprites.put(iconName, icon);
 
             try {
-                TextureUtilLegacy.uploadTextureMipmap(new int[][]{icon.getTextureData()}, icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY(), false, false);
+                TextureUtilLegacy.uploadSubTexture(icon.getTextureData(), icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY());
             } catch (Throwable var10) {
                 CrashReport crashReport = CrashReport.create(var10, "Stitching texture atlas");
                 CrashReportSection crashReportCategory = crashReport.addElement("Texture being stitched together");
@@ -129,7 +129,7 @@ public class TextureAtlas extends AbstractTexture {
             OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
         } else {
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-            TextureUtilLegacy.allocateTextureImpl(this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            TextureUtilLegacy.allocateTexture(this.getGlId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
             int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
             Arrays.fill(zeros, 0);
             TextureUtilLegacy.uploadTexture(this.getGlId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
@@ -143,7 +143,7 @@ public class TextureAtlas extends AbstractTexture {
             this.mapUploadedSprites.put(iconName, icon);
 
             try {
-                TextureUtilLegacy.uploadTextureMipmap(new int[][]{icon.getTextureData()}, icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY(), false, false);
+                TextureUtilLegacy.uploadSubTexture(icon.getTextureData(), icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY());
             } catch (Throwable var11) {
                 CrashReport crashReport = CrashReport.create(var11, "Stitching texture atlas");
                 CrashReportSection crashReportCategory = crashReport.addElement("Texture being stitched together");
