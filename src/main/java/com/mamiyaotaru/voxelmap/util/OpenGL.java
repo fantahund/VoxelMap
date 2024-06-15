@@ -7,6 +7,7 @@ import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -332,7 +333,10 @@ public final class OpenGL {
         }
 
         public static void drawPost() {
-            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+            BuiltBuffer builtBuffer = bufferBuilder.endNullable();
+            if (builtBuffer != null) {
+                BufferRenderer.drawWithGlobalProgram(builtBuffer);
+            }
         }
 
         public static void glah(int g) { glDeleteTexture(g); }
