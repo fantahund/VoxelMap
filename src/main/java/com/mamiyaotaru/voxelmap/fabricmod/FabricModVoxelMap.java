@@ -11,6 +11,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.MessageIndicator;
 import net.minecraft.text.Text;
+import org.apache.logging.log4j.Level;
 import org.joml.Matrix4fStack;
 
 public class FabricModVoxelMap implements ClientModInitializer {
@@ -75,8 +76,8 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public static void onRenderHand(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         try {
             VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-        } catch (RuntimeException exception) {
-            VoxelConstants.getLogger().error(exception);
+        } catch (RuntimeException e) {
+            VoxelConstants.getLogger().log(Level.ERROR, "Error while render waypoints", e);
         }
 
     }

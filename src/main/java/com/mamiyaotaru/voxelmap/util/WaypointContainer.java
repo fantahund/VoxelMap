@@ -134,7 +134,6 @@ public class WaypointContainer {
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, Matrix4f matrix4f) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         int height = VoxelConstants.getClientWorld().getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
@@ -144,6 +143,7 @@ public class WaypointContainer {
         float g = par1EntityWaypoint.green;
 
         for (int width = 0; width < 4; ++width) {
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
             double d6 = 0.1 + width * 0.2;
             d6 *= topWidthFactor;
             double d7 = 0.1 + width * 0.2;
