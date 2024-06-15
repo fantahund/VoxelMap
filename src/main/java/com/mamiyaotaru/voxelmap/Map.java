@@ -1580,9 +1580,10 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
         OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
         OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
-        BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        OpenGL.Utils.drawPost();
+        // BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
         //BufferRenderer.drawWithShader(bb.end());
-        BufferRenderer.drawWithGlobalProgram(bb.end());
+        // BufferRenderer.drawWithGlobalProgram(bb.end());
         OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
