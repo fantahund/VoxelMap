@@ -2,25 +2,25 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import net.minecraft.block.BlockState;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
 public class CompressibleMapData extends AbstractMapData {
+    private final static int LAYERS = 18;
+    private final static int REGION_SIZE = 256;
+    private final static byte[] compressedEmptyData = CompressionUtils.compress(new byte[REGION_SIZE * REGION_SIZE * LAYERS]);
+
     private byte[] data;
     private boolean isCompressed;
     private BiMap<BlockState, Integer> stateToInt;
     int count = 1;
-    private static byte[] compressedEmptyData = new byte[1179648];
 
-    public CompressibleMapData(int width, int height) {
-        this.width = width;
-        this.height = height;
+    public CompressibleMapData() {
+        this.width = REGION_SIZE;
+        this.height = REGION_SIZE;
         this.data = compressedEmptyData;
         this.isCompressed = true;
     }
@@ -226,9 +226,9 @@ public class CompressibleMapData extends AbstractMapData {
     public void moveX(int x) {
         synchronized (this.dataLock) {
             if (x > 0) {
-                System.arraycopy(this.data, x * 18, this.data, 0, this.data.length - x * 18);
+                System.arraycopy(this.data, x * LAYERS, this.data, 0, this.data.length - x * LAYERS);
             } else if (x < 0) {
-                System.arraycopy(this.data, 0, this.data, -x * 18, this.data.length + x * 18);
+                System.arraycopy(this.data, 0, this.data, -x * LAYERS, this.data.length + x * LAYERS);
             }
 
         }
@@ -238,9 +238,9 @@ public class CompressibleMapData extends AbstractMapData {
     public void moveZ(int z) {
         synchronized (this.dataLock) {
             if (z > 0) {
-                System.arraycopy(this.data, z * this.width * 18, this.data, 0, this.data.length - z * this.width * 18);
+                System.arraycopy(this.data, z * this.width * LAYERS, this.data, 0, this.data.length - z * this.width * LAYERS);
             } else if (z < 0) {
-                System.arraycopy(this.data, 0, this.data, -z * this.width * 18, this.data.length + z * this.width * 18);
+                System.arraycopy(this.data, 0, this.data, -z * this.width * LAYERS, this.data.length + z * this.width * LAYERS);
             }
 
         }
@@ -266,9 +266,9 @@ public class CompressibleMapData extends AbstractMapData {
 
         for (int x = 0; x < this.width; ++x) {
             for (int z = 0; z < this.height; ++z) {
-                for (int bit = 0; bit < 18; ++bit) {
-                    int oldIndex = (x + z * this.width) * 18 + bit;
-                    int newIndex = x + z * this.width + this.width * this.height * bit;
+                for (int layer = 0; layer < LAYERS; ++layer) {
+                    int oldIndex = (x + z * this.width) * LAYERS + layer;
+                    int newIndex = x + z * this.width + this.width * this.height * layer;
                     newData[newIndex] = this.data[oldIndex];
                 }
             }
@@ -287,11 +287,8 @@ public class CompressibleMapData extends AbstractMapData {
 
     public synchronized void compress() {
         if (!this.isCompressed) {
-            try {
-                this.isCompressed = true;
-                this.data = CompressionUtils.compress(this.data);
-            } catch (IOException ignored) {}
-
+            this.isCompressed = true;
+            this.data = CompressionUtils.compress(this.data);
         }
     }
 
@@ -304,8 +301,8 @@ public class CompressibleMapData extends AbstractMapData {
             try {
                 this.data = CompressionUtils.decompress(this.data);
                 this.isCompressed = false;
-            } catch (IOException | DataFormatException ignored) {}
-
+            } catch (DataFormatException ignored) {
+            }
         }
     }
 
@@ -413,16 +410,5 @@ public class CompressibleMapData extends AbstractMapData {
         }
 
         return newMap;
-    }
-
-    static {
-        Arrays.fill(compressedEmptyData, (byte) 0);
-
-        try {
-            compressedEmptyData = CompressionUtils.compress(compressedEmptyData);
-        } catch (IOException var1) {
-            VoxelConstants.getLogger().error(var1);
-        }
-
     }
 }

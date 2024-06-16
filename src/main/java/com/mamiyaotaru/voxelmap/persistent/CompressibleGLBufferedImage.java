@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -110,9 +109,7 @@ public class CompressibleGLBufferedImage {
     private synchronized void compress() {
         if (!this.isCompressed) {
             if (this.compressNotDelete) {
-                try {
-                    this.bytes = CompressionUtils.compress(this.bytes);
-                } catch (IOException ignored) {}
+                this.bytes = CompressionUtils.compress(this.bytes);
             } else {
                 this.bytes = null;
             }
@@ -126,7 +123,8 @@ public class CompressibleGLBufferedImage {
             if (this.compressNotDelete) {
                 try {
                     this.bytes = CompressionUtils.decompress(this.bytes);
-                } catch (IOException | DataFormatException ignored) {}
+                } catch (DataFormatException ignored) {
+                }
             } else {
                 this.bytes = new byte[this.width * this.height * 4];
                 this.isCompressed = false;

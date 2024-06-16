@@ -55,7 +55,6 @@ public class CachedRegion {
     private ClientWorld world;
     private ServerWorld worldServer;
     private ServerChunkManager chunkProvider;
-    Class<?> executorClass;
     private ThreadExecutor<RefreshRunnable> executor;
     private ServerChunkLoadingManager chunkLoader;
     private String subworldName;
@@ -124,7 +123,7 @@ public class CachedRegion {
 
             this.worldServer = (ServerWorld) optionalWorld.get();
             this.chunkProvider = worldServer.getChunkManager();
-            this.executorClass = chunkProvider.getClass().getDeclaredClasses()[0];
+            Class<?> executorClass = chunkProvider.getClass().getDeclaredClasses()[0];
             this.executor = (ThreadExecutor<RefreshRunnable>) ReflectionUtils.getPrivateFieldValueByType(chunkProvider, ServerChunkManager.class, executorClass);
             this.chunkLoader = chunkProvider.chunkLoadingManager;
         }
@@ -196,7 +195,7 @@ public class CachedRegion {
     }
 
     private void load() {
-        this.data = new CompressibleMapData(256, 256);
+        this.data = new CompressibleMapData();
         this.image = new CompressibleGLBufferedImage(256, 256, 6);
         this.loadCachedData();
         this.loadCurrentData(this.world);

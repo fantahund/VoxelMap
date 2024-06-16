@@ -6,12 +6,14 @@ import net.minecraft.block.BlockState;
 import java.util.Arrays;
 
 public class FullMapData extends AbstractMapData {
+    private final static int LAYERS = 17;
+
     private int[] data;
 
     public FullMapData(int width, int height) {
         this.width = width;
         this.height = height;
-        this.data = new int[width * height * 17];
+        this.data = new int[width * height * LAYERS];
         Arrays.fill(this.data, 0);
     }
 
@@ -121,7 +123,7 @@ public class FullMapData extends AbstractMapData {
     }
 
     private int getData(int x, int z, int bit) {
-        int index = (x + z * this.width) * 17 + bit;
+        int index = (x + z * this.width) * LAYERS + bit;
         return this.data[index];
     }
 
@@ -227,7 +229,7 @@ public class FullMapData extends AbstractMapData {
     }
 
     private void setData(int x, int z, int bit, int value) {
-        int index = (x + z * this.width) * 17 + bit;
+        int index = (x + z * this.width) * LAYERS + bit;
         this.data[index] = value;
     }
 
@@ -235,9 +237,9 @@ public class FullMapData extends AbstractMapData {
     public void moveX(int x) {
         synchronized (this.dataLock) {
             if (x > 0) {
-                System.arraycopy(this.data, x * 17, this.data, 0, this.data.length - x * 17);
+                System.arraycopy(this.data, x * LAYERS, this.data, 0, this.data.length - x * LAYERS);
             } else if (x < 0) {
-                System.arraycopy(this.data, 0, this.data, -x * 17, this.data.length + x * 17);
+                System.arraycopy(this.data, 0, this.data, -x * LAYERS, this.data.length + x * LAYERS);
             }
 
         }
@@ -247,9 +249,9 @@ public class FullMapData extends AbstractMapData {
     public void moveZ(int z) {
         synchronized (this.dataLock) {
             if (z > 0) {
-                System.arraycopy(this.data, z * this.width * 17, this.data, 0, this.data.length - z * this.width * 17);
+                System.arraycopy(this.data, z * this.width * LAYERS, this.data, 0, this.data.length - z * this.width * LAYERS);
             } else if (z < 0) {
-                System.arraycopy(this.data, 0, this.data, -z * this.width * 17, this.data.length + z * this.width * 17);
+                System.arraycopy(this.data, 0, this.data, -z * this.width * LAYERS, this.data.length + z * this.width * LAYERS);
             }
 
         }
