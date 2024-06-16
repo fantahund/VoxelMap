@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+
 plugins {
     id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
@@ -89,6 +91,85 @@ publishing {
     }
 }
 
+tasks.register('updateChangelog') {
+    group = 'build'
+    description = 'Updates the changelog.'
+    doLast {
+        def changelogFile = file('changelog.md')
+        def dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+        def currentDate = new Date()
+        def currentDateString = dateFormat.format(currentDate)
+
+        // Finde das letzte Update-Datum in der changelog.md Datei
+        def lastUpdateDate = null
+        if (changelogFile.exists()) {
+            changelogFile.eachLine { line ->
+                if (line.startsWith("Last update:")) {
+                    lastUpdateDate = line.replace("Last update:", "").trim()
+                }
+            }
+        }
+
+        // Wenn kein Datum gefunden wurde, setze lastUpdateDate auf 3 Tage vor dem aktuellen Datum
+        if (!lastUpdateDate) {
+            def calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_YEAR, -3)
+            lastUpdateDate = dateFormat.format(calendar.time)
+        }
+
+        // Hole die Commits seit dem letzten Update-Datum
+        def commits = []
+        def process = "git log --since='${lastUpdateDate}'".execute()
+        String commitHash = ""
+        String author = ""
+        String message = ""
+        process.in.eachLine { line ->
+            if (line.startsWith("commit")) {
+                commitHash = line.replace("commit ", "")
+            } else if (line.startsWith("Author:")) {
+                def authorRegex = /Author:\s*([^<]+)/
+                def authorMatch = (line =~ authorRegex)
+                if (authorMatch) {
+                    def authorName = authorMatch[0][1].trim()
+                    author = authorName
+                }
+            } else if (line.startsWith("Date:")) {
+
+            } else if (!line.isBlank()) {
+                message = line.replaceAll(/^\s+|\s+$/, "")
+            }
+
+            if (!commitHash.isEmpty() && !author.isEmpty() && !message.isEmpty()) {
+                commits << [commitHash: commitHash, author: author, message: message]
+                commitHash = ""
+                author = ""
+                message = ""
+            }
+
+        }
+        process.waitFor()
+
+        if (commits.isEmpty()) {
+            println "No new commits since last update."
+        } else {
+            commits.each { commit ->
+                println "- ${commit.message} (${commit.author})"
+            }
+
+            changelogFile.text = ""
+            changelogFile.withWriter { writer ->
+                writer << "## VoxelMap ${project.mod_version} \n"
+                commits.each { commit ->
+                    def commitLink = "https://github.com/fantahund/VoxelMap/commit/${commit.commitHash}"
+                    writer << "- [${commit.message}](${commitLink}) (${commit.author})\n"
+                }
+                writer << "\nLast update: ${currentDateString}\n"
+                println "changelog updated"
+            }
+        }
+    }
+}
+
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = project.modrinth_id
@@ -98,8 +179,8 @@ modrinth {
     versionType = isMCVersionNonRelease() ? "beta" : "release"
     changelog = file("changelog.md").text
     uploadFile = remapJar
-    gameVersions = [ project.minecraft_version ]
-    loaders = [ "fabric" ]
+    gameVersions = [project.minecraft_version]
+    loaders = ["fabric"]
     dependencies {
         required.project 'fabric-api'
     }
