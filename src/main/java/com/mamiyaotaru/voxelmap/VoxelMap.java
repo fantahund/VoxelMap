@@ -16,7 +16,7 @@ import java.util.ArrayDeque;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.world.ClientWorld;
@@ -82,13 +82,8 @@ public class VoxelMap implements ResourceReloader {
             this.radar = null;
             this.radarSimple = null;
         }
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            radarOptions.radarAllowed = true;
-            radarOptions.radarPlayersAllowed = true;
-            radarOptions.radarMobsAllowed = true;
-            mapOptions.cavesAllowed = true;
-            mapOptions.serverTeleportCommand = null;
-        });
+
+        new Events(mapOptions, radarOptions).initEvents();
         this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
         this.worldUpdateListener = new WorldUpdateListener();
