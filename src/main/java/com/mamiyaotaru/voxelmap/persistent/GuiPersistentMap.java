@@ -761,7 +761,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                             int inRegionZ = mapZ - region.getZ() * region.getWidth();
                             int height = region.getMapData().getHeight(inRegionX, inRegionZ);
                             int light = region.getMapData().getLight(inRegionX, inRegionZ);
-                            if (height != 0 || light != 0) {
+                            if (height != Short.MIN_VALUE || light != 0) {
                                 id = region.getMapData().getBiomeID(inRegionX, inRegionZ);
                             }
                         }

@@ -290,7 +290,7 @@ public class CachedRegion {
 
             for (int t = 0; t < 16; ++t) {
                 for (int s = 0; s < 16; ++s) {
-                    if (!this.closed && this.data.getHeight(t * 16, s * 16) == 0 && this.data.getLight(t * 16, s * 16) == 0) {
+                    if (!this.closed && this.data.getHeight(t * 16, s * 16) == Short.MIN_VALUE && this.data.getLight(t * 16, s * 16) == 0) {
                         full = false;
                     }
                 }
@@ -318,7 +318,7 @@ public class CachedRegion {
                             CompletableFuture<?> loadFuture = CompletableFuture.runAsync(() -> {
                                 for (int tx = 0; tx < 16; ++tx) {
                                     for (int sx = 0; sx < 16; ++sx) {
-                                        if (!this.closed && this.data.getHeight(tx * 16, sx * 16) == 0 && this.data.getLight(tx * 16, sx * 16) == 0) {
+                                        if (!this.closed && this.data.getHeight(tx * 16, sx * 16) == Short.MIN_VALUE && this.data.getLight(tx * 16, sx * 16) == 0) {
                                             int index = tx + sx * 16;
                                             ChunkPos chunkPos = new ChunkPos(this.x * 16 + tx, this.z * 16 + sx);
                                             NbtCompound rawNbt = this.chunkLoader.getNbt(chunkPos).join().get();
@@ -532,9 +532,7 @@ public class CachedRegion {
     private void doSave() throws IOException {
         BiMap<BlockState, Integer> stateToInt = this.data.getStateToInt();
         byte[] byteArray = this.data.getData();
-        int var10000 = byteArray.length;
-        int var10001 = this.data.getWidth() * this.data.getHeight();
-        if (var10000 == var10001 * 18) {
+        if (byteArray.length == this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION)) {
             File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
@@ -563,7 +561,7 @@ public class CachedRegion {
                 zos.closeEntry();
             }
 
-            String nextLine = "version:3\r\n";
+            String nextLine = "version:" + CompressibleMapData.DATA_VERSION + "\r\n";
             byte[] keyByteArray = nextLine.getBytes();
             ze = new ZipEntry("control");
             ze.setSize(keyByteArray.length);
@@ -579,15 +577,12 @@ public class CachedRegion {
     }
 
     private void fillImage() {
-        int color24;
-
         for (int t = 0; t < 256; ++t) {
             for (int s = 0; s < 256; ++s) {
-                color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * 256, this.z * 256, t, s);
+                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * 256, this.z * 256, t, s);
                 this.image.setRGB(t, s, color24);
             }
         }
-
     }
 
     private void saveImage() {

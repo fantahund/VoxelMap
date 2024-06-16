@@ -221,10 +221,11 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public void getAndStoreData(AbstractMapData mapData, World world, WorldChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
+        int bottomY = world.getBottomY();
         int surfaceHeight;
-        int seafloorHeight = 0;
-        int transparentHeight = 0;
-        int foliageHeight = 0;
+        int seafloorHeight = bottomY;
+        int transparentHeight = bottomY;
+        int foliageHeight = bottomY;
         BlockState surfaceBlockState;
         BlockState transparentBlockState = BlockRepository.air.getDefaultState();
         BlockState foliageBlockState = BlockRepository.air.getDefaultState();
@@ -243,7 +244,7 @@ public class PersistentMap implements IChangeObserver {
             if (underground) {
                 surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY);
                 surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
-                if (surfaceHeight != -1) {
+                if (surfaceHeight != Short.MIN_VALUE) {
                     foliageHeight = surfaceHeight + 1;
                     pos.setXYZ(startX + imageX, foliageHeight - 1, startZ + imageY);
                     foliageBlockState = chunk.getBlockState(pos);
@@ -271,7 +272,7 @@ public class PersistentMap implements IChangeObserver {
                     hasOpacity = hasOpacity || VoxelShapes.unionCoversFullCube(VoxelShapes.empty(), voxelShape);
                 }
 
-                while (!hasOpacity && surfaceHeight > 0) {
+                while (!hasOpacity && surfaceHeight > bottomY) {
                     foliageBlockState = surfaceBlockState;
                     --surfaceHeight;
                     surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
@@ -290,7 +291,7 @@ public class PersistentMap implements IChangeObserver {
                 }
 
                 if (surfaceHeight == transparentHeight) {
-                    transparentHeight = 0;
+                    transparentHeight = bottomY;
                     transparentBlockState = BlockRepository.air.getDefaultState();
                     foliageBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                 }
@@ -314,14 +315,15 @@ public class PersistentMap implements IChangeObserver {
                 if (material == Blocks.WATER || material == Blocks.ICE) {
                     seafloorHeight = surfaceHeight;
 
-                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock) && seafloorHeight > 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
+                            && seafloorHeight > bottomY + 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                         material = seafloorBlockState.getBlock();
-                        if (transparentHeight == 0 && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMovement()) {
+                        if (transparentHeight == bottomY && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMovement()) {
                             transparentHeight = seafloorHeight;
                             transparentBlockState = seafloorBlockState;
                         }
 
-                        if (foliageHeight == 0 && seafloorHeight != transparentHeight && transparentBlockState != seafloorBlockState && material != Blocks.ICE && material != Blocks.WATER && !(material instanceof AirBlock) && material != Blocks.BUBBLE_COLUMN) {
+                        if (foliageHeight == bottomY && seafloorHeight != transparentHeight && transparentBlockState != seafloorBlockState && material != Blocks.ICE && material != Blocks.WATER && !(material instanceof AirBlock) && material != Blocks.BUBBLE_COLUMN) {
                             foliageHeight = seafloorHeight;
                             foliageBlockState = seafloorBlockState;
                         }
@@ -343,7 +345,7 @@ public class PersistentMap implements IChangeObserver {
             mapData.setFoliageBlockstate(imageX, imageY, foliageBlockState);
             mapData.setOceanFloorHeight(imageX, imageY, seafloorHeight);
             mapData.setOceanFloorBlockstate(imageX, imageY, seafloorBlockState);
-            if (surfaceHeight == -1) {
+            if (surfaceHeight < bottomY) {
                 surfaceHeight = 80;
                 solid = true;
             }
@@ -380,11 +382,12 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private int getNetherHeight(WorldChunk chunk, int x, int z) {
+        int bottomY = chunk.getBottomY();
         int y = 80;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = chunk.getBlockState(this.blockPos);
         if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
-            while (y > 0) {
+            while (y > bottomY) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = chunk.getBlockState(this.blockPos);
@@ -404,29 +407,30 @@ public class PersistentMap implements IChangeObserver {
                 }
             }
 
-            return -1;
+            return Short.MIN_VALUE;
         }
     }
 
     private int getLight(BlockState blockState, World world, MutableBlockPos blockPos, int x, int z, int height, boolean solid) {
-        int i3 = 255;
+        int lightCombined = 255;
         if (solid) {
-            i3 = 0;
+            lightCombined = 0;
         } else if (blockState != null && !(blockState.getBlock() instanceof AirBlock)) {
-            blockPos.setXYZ(x, Math.max(Math.min(height, 255), 0), z);
+            blockPos.setXYZ(x, Math.max(Math.min(height, world.getTopY()), world.getBottomY()), z);
             int blockLight = world.getLightLevel(LightType.BLOCK, blockPos) & 15;
             int skyLight = world.getLightLevel(LightType.SKY, blockPos);
             if (blockState.getBlock() == Blocks.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
                 blockLight = 14;
             }
 
-            i3 = blockLight + skyLight * 16;
+            lightCombined = blockLight + skyLight * 16;
         }
 
-        return i3;
+        return lightCombined;
     }
 
     public int getPixelColor(AbstractMapData mapData, ClientWorld world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
+        int bottomY = world.getBottomY();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
         BlockState surfaceBlockState;
@@ -434,9 +438,9 @@ public class PersistentMap implements IChangeObserver {
         BlockState foliageBlockState;
         BlockState seafloorBlockState;
         int surfaceHeight;
-        int seafloorHeight = 0;
-        int transparentHeight = 0;
-        int foliageHeight = 0;
+        int seafloorHeight = bottomY;
+        int transparentHeight = bottomY;
+        int foliageHeight = bottomY;
         int surfaceColor;
         int seafloorColor = 0;
         int transparentColor = 0;
@@ -445,7 +449,7 @@ public class PersistentMap implements IChangeObserver {
         int color24;
         int biomeID = mapData.getBiomeID(imageX, imageY);
         surfaceBlockState = mapData.getBlockstate(imageX, imageY);
-        if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != 0) && biomeID != -1 && biomeID != 255) {
+        if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != Short.MIN_VALUE) && biomeID != -1 && biomeID != 255) {
             if (mapOptions.biomeOverlay == 1) {
                 if (biomeID >= 0) {
                     color24 = BiomeRepository.getBiomeColor(biomeID) | 0xFF000000;
@@ -458,7 +462,7 @@ public class PersistentMap implements IChangeObserver {
                 int blockStateID;
                 surfaceHeight = mapData.getHeight(imageX, imageY);
                 blockStateID = BlockRepository.getStateId(surfaceBlockState);
-                if (surfaceHeight == -1 || surfaceHeight == 255) {
+                if (surfaceHeight < bottomY || surfaceHeight == world.getTopY()) {
                     surfaceHeight = 80;
                     solid = true;
                 }
@@ -490,7 +494,7 @@ public class PersistentMap implements IChangeObserver {
 
                 if (mapOptions.waterTransparency && !solid) {
                     seafloorHeight = mapData.getOceanFloorHeight(imageX, imageY);
-                    if (seafloorHeight > 0) {
+                    if (seafloorHeight > bottomY) {
                         blockPos.setXYZ(mcX, seafloorHeight - 1, mcZ);
                         seafloorBlockState = mapData.getOceanFloorBlockstate(imageX, imageY);
                         if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.getDefaultState()) {
@@ -519,7 +523,7 @@ public class PersistentMap implements IChangeObserver {
 
                 if (mapOptions.blockTransparency && !solid) {
                     transparentHeight = mapData.getTransparentHeight(imageX, imageY);
-                    if (transparentHeight > 0) {
+                    if (transparentHeight > bottomY) {
                         blockPos.setXYZ(mcX, transparentHeight - 1, mcZ);
                         transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                         if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
@@ -546,7 +550,7 @@ public class PersistentMap implements IChangeObserver {
                     }
 
                     foliageHeight = mapData.getFoliageHeight(imageX, imageY);
-                    if (foliageHeight > 0) {
+                    if (foliageHeight > bottomY) {
                         blockPos.setXYZ(mcX, foliageHeight - 1, mcZ);
                         foliageBlockState = mapData.getFoliageBlockstate(imageX, imageY);
                         if (foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
@@ -573,7 +577,7 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                if (mapOptions.waterTransparency && seafloorHeight > 0) {
+                if (mapOptions.waterTransparency && seafloorHeight > bottomY) {
                     color24 = seafloorColor;
                     if (foliageColor != 0 && foliageHeight <= surfaceHeight) {
                         color24 = ColorUtils.colorAdder(foliageColor, seafloorColor);
@@ -615,7 +619,7 @@ public class PersistentMap implements IChangeObserver {
 
     private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer) {
         if (color24 != this.colorManager.getAirColor() && color24 != 0) {
-            int heightComp = -1;
+            int heightComp = Short.MIN_VALUE;
             if ((mapOptions.heightmap || mapOptions.slopemap) && !solid) {
                 int diff;
                 double sc = 0.0;
@@ -642,7 +646,7 @@ public class PersistentMap implements IChangeObserver {
 
                         if (layer == 3) {
                             heightComp = mapData.getTransparentHeight(imageX - 1, imageY + 1);
-                            if (heightComp == -1) {
+                            if (heightComp == Short.MIN_VALUE) {
                                 BlockState transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                                 if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
                                     Block block = transparentBlockState.getBlock();
@@ -667,7 +671,7 @@ public class PersistentMap implements IChangeObserver {
 
                         if (layer == 3) {
                             heightComp = mapData.getTransparentHeight(imageX + 1, imageY - 1);
-                            if (heightComp == -1) {
+                            if (heightComp == Short.MIN_VALUE) {
                                 BlockState transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                                 if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
                                     Block block = transparentBlockState.getBlock();
@@ -683,7 +687,7 @@ public class PersistentMap implements IChangeObserver {
                         heightComp = height;
                     }
 
-                    if (heightComp == -1) {
+                    if (heightComp == Short.MIN_VALUE) {
                         heightComp = height;
                     }
 

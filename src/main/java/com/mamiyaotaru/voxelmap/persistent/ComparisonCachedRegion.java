@@ -204,17 +204,17 @@ public class ComparisonCachedRegion {
                             ++matchesInChunk;
                         }
 
-                        if (this.data.getHeight(x, z) != 0) {
+                        if (this.data.getHeight(x, z) != Short.MIN_VALUE) {
                             ++nonZeroHeights;
                         }
 
-                        if (candidateData.getHeight(x, z) != 0) {
+                        if (candidateData.getHeight(x, z) != Short.MIN_VALUE) {
                             ++nonZeroHeightsInCandidate;
                         }
                     }
                 }
 
-                if (nonZeroHeights != 0 && nonZeroHeightsInCandidate != 0) {
+                if (nonZeroHeights != Short.MIN_VALUE && nonZeroHeightsInCandidate != Short.MIN_VALUE) {
                     compared += 256;
                     matched += matchesInChunk;
                 }
