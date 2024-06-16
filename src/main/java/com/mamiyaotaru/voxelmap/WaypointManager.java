@@ -199,7 +199,7 @@ public class WaypointManager {
                 boolean isOnLAN = serverData.isLocal();
                 boolean isRealm = VoxelConstants.isRealmServer();
                 if (isOnLAN || isRealm) {
-                    VoxelConstants.getLogger().error("LAN or Realm server detected!");
+                    VoxelConstants.getLogger().warn("LAN or Realm server detected!");
                     serverName = serverData.name;
                 } else {
                     serverName = serverData.address;
