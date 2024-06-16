@@ -197,13 +197,15 @@ public class WaypointManager {
             ServerInfo serverData = VoxelConstants.getMinecraft().getCurrentServerEntry();
             if (serverData != null) {
                 boolean isOnLAN = serverData.isLocal();
-                if (isOnLAN) {
-                    VoxelConstants.getLogger().warn("LAN server detected!");
+                boolean isRealm = VoxelConstants.isRealmServer();
+                if (isOnLAN || isRealm) {
+                    VoxelConstants.getLogger().error("LAN or Realm server detected!");
                     serverName = serverData.name;
                 } else {
                     serverName = serverData.address;
                 }
             } else if (VoxelConstants.isRealmServer()) {
+                VoxelConstants.getLogger().warn("ServerData was null, and detected as realm server.");
                 Session session = VoxelConstants.getMinecraft().getSession();
                 serverName = session.getSessionId();
                 VoxelConstants.getLogger().info(serverName);
