@@ -12,12 +12,16 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.session.Session;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.client.realms.RealmsClient;
+import net.minecraft.client.realms.dto.RealmsServer;
+import net.minecraft.client.realms.dto.RealmsServerList;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
@@ -197,13 +201,25 @@ public class WaypointManager {
             ServerInfo serverData = VoxelConstants.getMinecraft().getCurrentServerEntry();
             if (serverData != null) {
                 boolean isOnLAN = serverData.isLocal();
+                boolean isRealm = VoxelConstants.isRealmServer();
                 if (isOnLAN) {
                     VoxelConstants.getLogger().warn("LAN server detected!");
                     serverName = serverData.name;
+                } else if (isRealm) {
+                    VoxelConstants.getLogger().info("Server is a Realm.");
+                    RealmsClient realmsClient = RealmsClient.createRealmsClient(MinecraftClient.getInstance());
+                    RealmsServerList realmsServerList = realmsClient.listWorlds();
+                    for (RealmsServer realmsServer : realmsServerList.servers) {
+                        if (realmsServer.name.equals(serverData.name)) {
+                            serverName = "Realm_" + realmsServer.id + "." + realmsServer.ownerUUID;
+                            break;
+                        }
+                    }
                 } else {
                     serverName = serverData.address;
                 }
             } else if (VoxelConstants.isRealmServer()) {
+                VoxelConstants.getLogger().warn("ServerData was null, and detected as realm server.");
                 Session session = VoxelConstants.getMinecraft().getSession();
                 serverName = session.getSessionId();
                 VoxelConstants.getLogger().info(serverName);
