@@ -10,18 +10,23 @@ import java.util.zip.DataFormatException;
 
 public class CompressibleMapData extends AbstractMapData {
     public final static int LAYERS = 18;
+
     private static final int HEIGHTPOS = 0;
     private static final int BLOCKSTATEPOS = 1;
     private static final int LIGHTPOS = 3;
+
     private static final int OCEANFLOORHEIGHTPOS = 4;
     private static final int OCEANFLOORBLOCKSTATEPOS = 5;
     private static final int OCEANFLOORLIGHTPOS = 7;
+
     private static final int TRANSPARENTHEIGHTPOS = 8;
     private static final int TRANSPARENTBLOCKSTATEPOS = 9;
     private static final int TRANSPARENTLIGHTPOS = 11;
+
     private static final int FOLIAGEHEIGHTPOS = 12;
     private static final int FOLIAGEBLOCKSTATEPOS = 13;
     private static final int FOLIAGELIGHTPOS = 15;
+
     private static final int BIOMEIDPOS = 16;
 
     private final static int REGION_SIZE = 256;
