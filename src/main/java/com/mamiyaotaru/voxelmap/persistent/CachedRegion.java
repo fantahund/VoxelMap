@@ -449,24 +449,17 @@ public class CachedRegion {
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
                 ZipFile zFile = new ZipFile(cachedRegionFile);
-                int total = 0;
-                byte[] decompressedByteData = new byte[this.data.getWidth() * this.data.getHeight() * 17 * 4];
                 ZipEntry ze = zFile.getEntry("data");
                 InputStream is = zFile.getInputStream(ze);
-
-                int count;
-                for (byte[] byteData = new byte[2048]; (count = is.read(byteData, 0, 2048)) != -1 && count + total <= this.data.getWidth() * this.data.getHeight() * 17 * 4; total += count) {
-                    System.arraycopy(byteData, 0, decompressedByteData, total, count);
-                }
-
+                byte[] decompressedByteData = is.readAllBytes();
                 is.close();
                 ze = zFile.getEntry("key");
                 is = zFile.getInputStream(ze);
-                BiMap<BlockState, Integer> var18 = HashBiMap.create();
+                BiMap<BlockState, Integer> blockstateMap = HashBiMap.create();
                 Scanner sc = new Scanner(is);
 
                 while (sc.hasNextLine()) {
-                    BlockStateParser.parseLine(sc.nextLine(), var18);
+                    BlockStateParser.parseLine(sc.nextLine(), blockstateMap);
                 }
 
                 sc.close();
@@ -489,10 +482,8 @@ public class CachedRegion {
                 }
 
                 zFile.close();
-                if (total == this.data.getWidth() * this.data.getHeight() * 18) {
-                    byte[] var23 = new byte[this.data.getWidth() * this.data.getHeight() * 18];
-                    System.arraycopy(decompressedByteData, 0, var23, 0, var23.length);
-                    this.data.setData(var23, var18, version);
+                if (decompressedByteData.length == this.data.getExpectedDataLength(version)) {
+                    this.data.setData(decompressedByteData, blockstateMap, version);
                     this.empty = false;
                     this.dataUpdated = true;
                 } else {
@@ -572,7 +563,7 @@ public class CachedRegion {
                 zos.closeEntry();
             }
 
-            String nextLine = "version:2\r\n";
+            String nextLine = "version:3\r\n";
             byte[] keyByteArray = nextLine.getBytes();
             ze = new ZipEntry("control");
             ze.setSize(keyByteArray.length);

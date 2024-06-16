@@ -9,7 +9,21 @@ import net.minecraft.block.BlockState;
 import java.util.zip.DataFormatException;
 
 public class CompressibleMapData extends AbstractMapData {
-    private final static int LAYERS = 18;
+    public final static int LAYERS = 18;
+    private static final int HEIGHTPOS = 0;
+    private static final int BLOCKSTATEPOS = 1;
+    private static final int LIGHTPOS = 3;
+    private static final int OCEANFLOORHEIGHTPOS = 4;
+    private static final int OCEANFLOORBLOCKSTATEPOS = 5;
+    private static final int OCEANFLOORLIGHTPOS = 7;
+    private static final int TRANSPARENTHEIGHTPOS = 8;
+    private static final int TRANSPARENTBLOCKSTATEPOS = 9;
+    private static final int TRANSPARENTLIGHTPOS = 11;
+    private static final int FOLIAGEHEIGHTPOS = 12;
+    private static final int FOLIAGEBLOCKSTATEPOS = 13;
+    private static final int FOLIAGELIGHTPOS = 15;
+    private static final int BIOMEIDPOS = 16;
+
     private final static int REGION_SIZE = 256;
     private final static byte[] compressedEmptyData = CompressionUtils.compress(new byte[REGION_SIZE * REGION_SIZE * LAYERS]);
 
@@ -27,12 +41,12 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public int getHeight(int x, int z) {
-        return this.getData(x, z, 0) & 0xFF;
+        return this.getData(x, z, HEIGHTPOS) & 0xFF;
     }
 
     @Override
     public BlockState getBlockstate(int x, int z) {
-        int id = (this.getData(x, z, 1) & 255) << 8 | this.getData(x, z, 2) & 255;
+        int id = (this.getData(x, z, BLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, BLOCKSTATEPOS + 1) & 255;
         return this.getStateFromID(id);
     }
 
@@ -43,17 +57,17 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public int getLight(int x, int z) {
-        return this.getData(x, z, 3) & 0xFF;
+        return this.getData(x, z, LIGHTPOS) & 0xFF;
     }
 
     @Override
     public int getOceanFloorHeight(int x, int z) {
-        return this.getData(x, z, 4) & 0xFF;
+        return this.getData(x, z, OCEANFLOORHEIGHTPOS) & 0xFF;
     }
 
     @Override
     public BlockState getOceanFloorBlockstate(int x, int z) {
-        int id = (this.getData(x, z, 5) & 255) << 8 | this.getData(x, z, 6) & 255;
+        int id = (this.getData(x, z, OCEANFLOORBLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, OCEANFLOORBLOCKSTATEPOS + 1) & 255;
         return this.getStateFromID(id);
     }
 
@@ -64,17 +78,17 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public int getOceanFloorLight(int x, int z) {
-        return this.getData(x, z, 7) & 0xFF;
+        return this.getData(x, z, OCEANFLOORLIGHTPOS) & 0xFF;
     }
 
     @Override
     public int getTransparentHeight(int x, int z) {
-        return this.getData(x, z, 8) & 0xFF;
+        return this.getData(x, z, TRANSPARENTHEIGHTPOS) & 0xFF;
     }
 
     @Override
     public BlockState getTransparentBlockstate(int x, int z) {
-        int id = (this.getData(x, z, 9) & 255) << 8 | this.getData(x, z, 10) & 255;
+        int id = (this.getData(x, z, TRANSPARENTBLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, TRANSPARENTBLOCKSTATEPOS + 1) & 255;
         return this.getStateFromID(id);
     }
 
@@ -85,17 +99,17 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public int getTransparentLight(int x, int z) {
-        return this.getData(x, z, 11) & 0xFF;
+        return this.getData(x, z, TRANSPARENTLIGHTPOS) & 0xFF;
     }
 
     @Override
     public int getFoliageHeight(int x, int z) {
-        return this.getData(x, z, 12) & 0xFF;
+        return this.getData(x, z, FOLIAGEHEIGHTPOS) & 0xFF;
     }
 
     @Override
     public BlockState getFoliageBlockstate(int x, int z) {
-        int id = (this.getData(x, z, 13) & 255) << 8 | this.getData(x, z, 14) & 255;
+        int id = (this.getData(x, z, FOLIAGEBLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, FOLIAGEBLOCKSTATEPOS + 1) & 255;
         return this.getStateFromID(id);
     }
 
@@ -106,12 +120,12 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public int getFoliageLight(int x, int z) {
-        return this.getData(x, z, 15) & 0xFF;
+        return this.getData(x, z, FOLIAGELIGHTPOS) & 0xFF;
     }
 
     @Override
     public int getBiomeID(int x, int z) {
-        return (this.getData(x, z, 16) & 0xFF) << 8 | this.getData(x, z, 17) & 0xFF;
+        return (this.getData(x, z, BIOMEIDPOS) & 0xFF) << 8 | this.getData(x, z, BIOMEIDPOS + 1) & 0xFF;
     }
 
     private synchronized byte getData(int x, int z, int bit) {
@@ -125,14 +139,14 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public void setHeight(int x, int z, int height) {
-        this.setData(x, z, 0, (byte) height);
+        this.setData(x, z, HEIGHTPOS, (byte) height);
     }
 
     @Override
     public void setBlockstate(int x, int z, BlockState state) {
         int id = this.getIDFromState(state);
-        this.setData(x, z, 1, (byte) (id >> 8));
-        this.setData(x, z, 2, (byte) id);
+        this.setData(x, z, BLOCKSTATEPOS, (byte) (id >> 8));
+        this.setData(x, z, BLOCKSTATEPOS + 1, (byte) id);
     }
 
     @Override
@@ -141,19 +155,19 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public void setLight(int x, int z, int light) {
-        this.setData(x, z, 3, (byte) light);
+        this.setData(x, z, LIGHTPOS, (byte) light);
     }
 
     @Override
     public void setOceanFloorHeight(int x, int z, int height) {
-        this.setData(x, z, 4, (byte) height);
+        this.setData(x, z, OCEANFLOORHEIGHTPOS, (byte) height);
     }
 
     @Override
     public void setOceanFloorBlockstate(int x, int z, BlockState state) {
         int id = this.getIDFromState(state);
-        this.setData(x, z, 5, (byte) (id >> 8));
-        this.setData(x, z, 6, (byte) id);
+        this.setData(x, z, OCEANFLOORBLOCKSTATEPOS, (byte) (id >> 8));
+        this.setData(x, z, OCEANFLOORBLOCKSTATEPOS + 1, (byte) id);
     }
 
     @Override
@@ -162,19 +176,19 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public void setOceanFloorLight(int x, int z, int light) {
-        this.setData(x, z, 7, (byte) light);
+        this.setData(x, z, OCEANFLOORLIGHTPOS, (byte) light);
     }
 
     @Override
     public void setTransparentHeight(int x, int z, int height) {
-        this.setData(x, z, 8, (byte) height);
+        this.setData(x, z, TRANSPARENTHEIGHTPOS, (byte) height);
     }
 
     @Override
     public void setTransparentBlockstate(int x, int z, BlockState state) {
         int id = this.getIDFromState(state);
-        this.setData(x, z, 9, (byte) (id >> 8));
-        this.setData(x, z, 10, (byte) id);
+        this.setData(x, z, TRANSPARENTBLOCKSTATEPOS, (byte) (id >> 8));
+        this.setData(x, z, TRANSPARENTBLOCKSTATEPOS + 1, (byte) id);
     }
 
     @Override
@@ -183,19 +197,19 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public void setTransparentLight(int x, int z, int light) {
-        this.setData(x, z, 11, (byte) light);
+        this.setData(x, z, TRANSPARENTLIGHTPOS, (byte) light);
     }
 
     @Override
     public void setFoliageHeight(int x, int z, int height) {
-        this.setData(x, z, 12, (byte) height);
+        this.setData(x, z, FOLIAGEHEIGHTPOS, (byte) height);
     }
 
     @Override
     public void setFoliageBlockstate(int x, int z, BlockState state) {
         int id = this.getIDFromState(state);
-        this.setData(x, z, 13, (byte) (id >> 8));
-        this.setData(x, z, 14, (byte) id);
+        this.setData(x, z, FOLIAGEBLOCKSTATEPOS, (byte) (id >> 8));
+        this.setData(x, z, FOLIAGEBLOCKSTATEPOS + 1, (byte) id);
     }
 
     @Override
@@ -204,13 +218,13 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public void setFoliageLight(int x, int z, int light) {
-        this.setData(x, z, 15, (byte) light);
+        this.setData(x, z, FOLIAGELIGHTPOS, (byte) light);
     }
 
     @Override
     public void setBiomeID(int x, int z, int id) {
-        this.setData(x, z, 16, (byte) (id >> 8));
-        this.setData(x, z, 17, (byte) id);
+        this.setData(x, z, BIOMEIDPOS, (byte) (id >> 8));
+        this.setData(x, z, BIOMEIDPOS + 1, (byte) id);
     }
 
     private synchronized void setData(int x, int z, int bit, byte value) {
@@ -339,7 +353,7 @@ public class CompressibleMapData extends AbstractMapData {
 
         for (int x = 0; x < this.width; ++x) {
             for (int z = 0; z < this.height; ++z) {
-                int oldID = (this.getData(x, z, 1) & 255) << 8 | this.getData(x, z, 2) & 255;
+                int oldID = (this.getData(x, z, BLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, BLOCKSTATEPOS + 1) & 255;
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
                     Integer id = newMap.get(blockState);
@@ -352,11 +366,11 @@ public class CompressibleMapData extends AbstractMapData {
                         newMap.put(blockState, id);
                     }
 
-                    this.setData(x, z, 1, (byte) (id >> 8));
-                    this.setData(x, z, 2, (byte) id.intValue());
+                    this.setData(x, z, BLOCKSTATEPOS, (byte) (id >> 8));
+                    this.setData(x, z, BLOCKSTATEPOS + 1, (byte) id.intValue());
                 }
 
-                oldID = (this.getData(x, z, 5) & 255) << 8 | this.getData(x, z, 6) & 255;
+                oldID = (this.getData(x, z, OCEANFLOORBLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, OCEANFLOORBLOCKSTATEPOS + 1) & 255;
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
                     Integer id = newMap.get(blockState);
@@ -369,11 +383,11 @@ public class CompressibleMapData extends AbstractMapData {
                         newMap.put(blockState, id);
                     }
 
-                    this.setData(x, z, 5, (byte) (id >> 8));
-                    this.setData(x, z, 6, (byte) id.intValue());
+                    this.setData(x, z, OCEANFLOORBLOCKSTATEPOS, (byte) (id >> 8));
+                    this.setData(x, z, OCEANFLOORBLOCKSTATEPOS + 1, (byte) id.intValue());
                 }
 
-                oldID = (this.getData(x, z, 9) & 255) << 8 | this.getData(x, z, 10) & 255;
+                oldID = (this.getData(x, z, TRANSPARENTBLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, TRANSPARENTBLOCKSTATEPOS + 1) & 255;
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
                     Integer id = newMap.get(blockState);
@@ -386,11 +400,11 @@ public class CompressibleMapData extends AbstractMapData {
                         newMap.put(blockState, id);
                     }
 
-                    this.setData(x, z, 9, (byte) (id >> 8));
-                    this.setData(x, z, 10, (byte) id.intValue());
+                    this.setData(x, z, TRANSPARENTBLOCKSTATEPOS, (byte) (id >> 8));
+                    this.setData(x, z, TRANSPARENTBLOCKSTATEPOS + 1, (byte) id.intValue());
                 }
 
-                oldID = (this.getData(x, z, 13) & 255) << 8 | this.getData(x, z, 14) & 255;
+                oldID = (this.getData(x, z, FOLIAGEBLOCKSTATEPOS) & 255) << 8 | this.getData(x, z, FOLIAGEBLOCKSTATEPOS + 1) & 255;
                 if (oldID != 0) {
                     BlockState blockState = oldMap.inverse().get(oldID);
                     Integer id = newMap.get(blockState);
@@ -403,12 +417,16 @@ public class CompressibleMapData extends AbstractMapData {
                         newMap.put(blockState, id);
                     }
 
-                    this.setData(x, z, 13, (byte) (id >> 8));
-                    this.setData(x, z, 14, (byte) id.intValue());
+                    this.setData(x, z, FOLIAGEBLOCKSTATEPOS, (byte) (id >> 8));
+                    this.setData(x, z, FOLIAGEBLOCKSTATEPOS + 1, (byte) id.intValue());
                 }
             }
         }
 
         return newMap;
+    }
+
+    public int getExpectedDataLength(int version) {
+        return getWidth() * getHeight() * CompressibleMapData.LAYERS;
     }
 }

@@ -99,16 +99,12 @@ public class ComparisonCachedRegion {
                 Scanner sc = new Scanner(zis);
                 BiMap<BlockState, Integer> stateToInt = null;
                 int version = 1;
-                int total = 0;
 
                 ZipEntry ze;
-                byte[] decompressedByteData;
-                for (decompressedByteData = new byte[this.data.getWidth() * this.data.getHeight() * 17 * 4]; (ze = zis.getNextEntry()) != null; zis.closeEntry()) {
-                    int count;
+                byte[] decompressedByteData = null;
+                for (; (ze = zis.getNextEntry()) != null; zis.closeEntry()) {
                     if (ze.getName().equals("data")) {
-                        for (byte[] data = new byte[2048]; (count = zis.read(data, 0, 2048)) != -1 && count + total <= this.data.getWidth() * this.data.getHeight() * 17 * 4; total += count) {
-                            System.arraycopy(data, 0, decompressedByteData, total, count);
-                        }
+                        decompressedByteData = zis.readAllBytes();
                     }
 
                     if (ze.getName().equals("key")) {
@@ -132,10 +128,8 @@ public class ComparisonCachedRegion {
                     }
                 }
 
-                if (total == this.data.getWidth() * this.data.getHeight() * 18 && stateToInt != null) {
-                    byte[] byteData = new byte[this.data.getWidth() * this.data.getHeight() * 18];
-                    System.arraycopy(decompressedByteData, 0, byteData, 0, byteData.length);
-                    this.data.setData(byteData, stateToInt, version);
+                if (decompressedByteData != null && decompressedByteData.length == this.data.getExpectedDataLength(version) && stateToInt != null) {
+                    this.data.setData(decompressedByteData, stateToInt, version);
                     this.empty = false;
                     this.loaded = true;
                 } else {
