@@ -47,7 +47,7 @@ public class PersistentMap implements IChangeObserver {
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final ColorManager colorManager;
     final MapSettingsManager mapOptions;
-    final PersistentMapSettingsManager options;
+    PersistentMapSettingsManager options;
     WorldMatcher worldMatcher;
     final int[] lightmapColors;
     ClientWorld world;

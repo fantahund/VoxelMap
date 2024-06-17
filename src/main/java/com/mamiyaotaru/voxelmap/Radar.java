@@ -87,24 +87,16 @@ import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.IllagerEntity;
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.entity.mob.PhantomEntity;
-import net.minecraft.entity.mob.ShulkerEntity;
-import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.mob.ZombifiedPiglinEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.entity.passive.HorseMarking;
-import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraft.entity.passive.PufferfishEntity;
 import net.minecraft.entity.passive.RabbitEntity;
 import net.minecraft.entity.passive.SheepEntity;
-import net.minecraft.entity.passive.SnifferEntity;
-import net.minecraft.entity.passive.StriderEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.passive.TropicalFishEntity;
 import net.minecraft.entity.passive.WolfEntity;
@@ -116,8 +108,6 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.Registries;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
@@ -1001,65 +991,65 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{batEntityModel.getPart().getChild("head")};
                     } else if (model instanceof BeeEntityModel) {
                         headBits = new ModelPart[]{((ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, BeeEntityModel.class, ModelPart.class, 0)).getChild("body")};
-                    } else if (model instanceof BipedEntityModel<? extends LivingEntity> bipedEntityModel) {
+                    } else if (model instanceof BipedEntityModel<?> bipedEntityModel) {
                         headBits = new ModelPart[]{bipedEntityModel.head, bipedEntityModel.hat};
-                    } else if (model instanceof BlazeEntityModel<? extends Entity> blazeEntityModel) {
+                    } else if (model instanceof BlazeEntityModel<?> blazeEntityModel) {
                         headBits = new ModelPart[]{blazeEntityModel.getPart().getChild("head")};
                     } else if (model instanceof ChickenEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, ChickenEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof CreeperEntityModel<? extends Entity> creeperEntityModel) {
+                    } else if (model instanceof CreeperEntityModel<?> creeperEntityModel) {
                         headBits = new ModelPart[]{creeperEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof DolphinEntityModel<? extends Entity> dolphinEntityModel) {
+                    } else if (model instanceof DolphinEntityModel<?> dolphinEntityModel) {
                         headBits = new ModelPart[]{dolphinEntityModel.getPart().getChild("body").getChild("head")};
-                    } else if (model instanceof EndermiteEntityModel<? extends Entity> endermiteEntityModel) {
+                    } else if (model instanceof EndermiteEntityModel<?> endermiteEntityModel) {
                         headBits = new ModelPart[]{endermiteEntityModel.getPart().getChild("segment0"), endermiteEntityModel.getPart().getChild("segment1")};
-                    } else if (model instanceof GhastEntityModel<? extends Entity> ghastEntityModel) {
+                    } else if (model instanceof GhastEntityModel<?> ghastEntityModel) {
                         headBits = new ModelPart[]{ghastEntityModel.getPart()};
                     } else if (model instanceof GuardianEntityModel guardianEntityModel) {
                         headBits = new ModelPart[]{guardianEntityModel.getPart().getChild("head")};
                     } else if (model instanceof HoglinEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, HoglinEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof HorseEntityModel<? extends AbstractHorseEntity> horseEntityModel) {
+                    } else if (model instanceof HorseEntityModel<?> horseEntityModel) {
                         headBits = StreamSupport.stream(horseEntityModel.getHeadParts().spliterator(), false).toArray(ModelPart[]::new);
-                    } else if (model instanceof IllagerEntityModel<? extends IllagerEntity> illagerEntityModel) {
+                    } else if (model instanceof IllagerEntityModel<?> illagerEntityModel) {
                         headBits = new ModelPart[]{illagerEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof IronGolemEntityModel<? extends IronGolemEntity> ironGolemEntityModel) {
+                    } else if (model instanceof IronGolemEntityModel<?> ironGolemEntityModel) {
                         headBits = new ModelPart[]{ironGolemEntityModel.getPart().getChild("head")};
                     } else if (model instanceof MagmaCubeEntityModel) {
                         headBits = (ModelPart[]) ReflectionUtils.getPrivateFieldValueByType(model, MagmaCubeEntityModel.class, ModelPart[].class);
                     } else if (model instanceof OcelotEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, OcelotEntityModel.class, ModelPart.class, 6)};
-                    } else if (model instanceof PhantomEntityModel<? extends PhantomEntity> phantomEntityModel) {
+                    } else if (model instanceof PhantomEntityModel<?> phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.getPart().getChild("body")};
                     } else if (model instanceof RabbitEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 7), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 8), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 9), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitEntityModel.class, ModelPart.class, 11)};
                     } else if (model instanceof RavagerEntityModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.getPart().getChild("neck").getChild("head")};
-                    } else if (model instanceof ShulkerEntityModel<? extends ShulkerEntity> shulkerEntityModel) {
+                    } else if (model instanceof ShulkerEntityModel<?> shulkerEntityModel) {
                         headBits = new ModelPart[]{shulkerEntityModel.getHead()};
-                    } else if (model instanceof SilverfishEntityModel<? extends Entity> silverFishEntityModel) {
+                    } else if (model instanceof SilverfishEntityModel<?> silverFishEntityModel) {
                         headBits = new ModelPart[]{silverFishEntityModel.getPart().getChild("segment0"), silverFishEntityModel.getPart().getChild("segment1")};
-                    } else if (model instanceof SlimeEntityModel<? extends Entity> slimeEntityModel) {
+                    } else if (model instanceof SlimeEntityModel<?> slimeEntityModel) {
                         headBits = new ModelPart[]{slimeEntityModel.getPart()};
-                    } else if (model instanceof SnifferEntityModel<? extends SnifferEntity> snifferModel) {
+                    } else if (model instanceof SnifferEntityModel<?> snifferModel) {
                         headBits = new ModelPart[]{snifferModel.getPart().getChild("bone").getChild("body").getChild("head")};
-                    } else if (model instanceof SnowGolemEntityModel<? extends Entity> snowGolemEntityModel) {
+                    } else if (model instanceof SnowGolemEntityModel<?> snowGolemEntityModel) {
                         headBits = new ModelPart[]{snowGolemEntityModel.getPart().getChild("head")};
-                    } else if (model instanceof SpiderEntityModel<? extends Entity> spiderEntityModel) {
+                    } else if (model instanceof SpiderEntityModel<?> spiderEntityModel) {
                         headBits = new ModelPart[]{spiderEntityModel.getPart().getChild("head"), spiderEntityModel.getPart().getChild("body0")};
-                    } else if (model instanceof SquidEntityModel<? extends Entity> squidEntityModel) {
+                    } else if (model instanceof SquidEntityModel<?> squidEntityModel) {
                         headBits = new ModelPart[]{squidEntityModel.getPart().getChild("body")};
-                    } else if (model instanceof WardenEntityModel<? extends WardenEntity> wardenEntityModel) {
+                    } else if (model instanceof WardenEntityModel<?> wardenEntityModel) {
                         headBits = new ModelPart[]{wardenEntityModel.getPart().getChild("bone").getChild("body").getChild("head")};
-                    } else if (model instanceof StriderEntityModel<? extends StriderEntity> striderEntityModel) {
+                    } else if (model instanceof StriderEntityModel<?> striderEntityModel) {
                         headBits = new ModelPart[]{striderEntityModel.getPart().getChild("body")};
-                    } else if (model instanceof VillagerResemblingModel<? extends Entity> villagerResemblingModel) {
+                    } else if (model instanceof VillagerResemblingModel<?> villagerResemblingModel) {
                         headBits = new ModelPart[]{villagerResemblingModel.getHead()};
                     } else if (model instanceof WolfEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, WolfEntityModel.class, ModelPart.class)};
                     } else if (model instanceof QuadrupedEntityModel) {
                         headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, QuadrupedEntityModel.class, ModelPart.class)};
-                    } else if (model instanceof SinglePartEntityModel<? extends Entity> singlePartEntityModel) {
+                    } else if (model instanceof SinglePartEntityModel<?> singlePartEntityModel) {
                         try {
                             headBits = new ModelPart[]{singlePartEntityModel.getPart().getChild("head")};
                         } catch (Exception ignored) {
