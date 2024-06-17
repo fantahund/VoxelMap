@@ -325,6 +325,7 @@ public class CompressibleMapData extends AbstractMapData {
                     }
                 }
             }
+            this.data = newData;
         }
         if (version < 4) {
             final int OLD_HEIGHTPOS = 0;
