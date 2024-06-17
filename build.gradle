@@ -140,7 +140,9 @@ tasks.register('updateChangelog') {
             }
 
             if (!commitHash.isEmpty() && !author.isEmpty() && !message.isEmpty()) {
-                commits << [commitHash: commitHash, author: author, message: message]
+                if (!message.startsWith("Merge:") || !message.startsWith("Release")) {
+                    commits << [commitHash: commitHash, author: author, message: message]
+                }
                 commitHash = ""
                 author = ""
                 message = ""

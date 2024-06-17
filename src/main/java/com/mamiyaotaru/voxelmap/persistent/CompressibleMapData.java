@@ -313,24 +313,17 @@ public class CompressibleMapData extends AbstractMapData {
             this.decompress();
         }
         if (version < 2) {
-            try {
-                byte[] newData = new byte[this.data.length];
+            final int OLD_LAYERS = 18;
+            byte[] newData = new byte[this.data.length];
 
-                for (int x = 0; x < this.width; ++x) {
-                    for (int z = 0; z < this.height; ++z) {
-                        for (int layer = 0; layer < LAYERS; ++layer) {
-                            int oldIndex = (x + z * this.width) * LAYERS + layer;
-                            int newIndex = x + z * this.width + this.width * this.height * layer;
-                            newData[newIndex] = this.data[oldIndex];
-                        }
+            for (int x = 0; x < this.width; ++x) {
+                for (int z = 0; z < this.height; ++z) {
+                    for (int layer = 0; layer < OLD_LAYERS; ++layer) {
+                        int oldIndex = (x + z * this.width) * OLD_LAYERS + layer;
+                        int newIndex = x + z * this.width + this.width * this.height * layer;
+                        newData[newIndex] = this.data[oldIndex];
                     }
                 }
-                this.data = newData;
-            } catch (ArrayIndexOutOfBoundsException e) {
-                // could not load
-                this.data = compressedEmptyData;
-                this.isCompressed = true;
-                return;
             }
         }
         if (version < 4) {
