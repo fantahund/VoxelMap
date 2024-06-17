@@ -23,7 +23,7 @@ import java.util.TreeMap;
 
 public final class BiomeRepository {
     private static final Random generator = new Random();
-    private static final HashMap<Integer, Integer> IDtoColor = new HashMap<>(256);
+    private static final HashMap<Biome, Integer> IDtoColor = new HashMap<>(256);
     private static final TreeMap<String, Integer> nameToColor = new TreeMap<>();
     private static boolean dirty;
 
@@ -128,16 +128,13 @@ public final class BiomeRepository {
         dirty = false;
     }
 
-    public static int getBiomeColor(int biomeID) {
-        Integer color = IDtoColor.get(biomeID);
+    public static int getBiomeColor(Biome biome) {
+        Integer color = IDtoColor.get(biome);
 
         if (color != null) return color;
 
-        Biome biome = VoxelConstants.getPlayer().getWorld().getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
-
         if (biome == null) {
             VoxelConstants.getLogger().warn("non biome");
-            IDtoColor.put(biomeID, 0);
 
             return 0;
         }
@@ -167,12 +164,12 @@ public final class BiomeRepository {
             dirty = true;
         }
 
-        IDtoColor.put(biomeID, color);
+        IDtoColor.put(biome, color);
         return color;
     }
 
     @NotNull
-    private static String getName(Biome biome) {
+    public static String getName(Biome biome) {
         Identifier resourceLocation = VoxelConstants.getPlayer().getWorld().getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
         String translationKey = Util.createTranslationKey("biome", resourceLocation);
 

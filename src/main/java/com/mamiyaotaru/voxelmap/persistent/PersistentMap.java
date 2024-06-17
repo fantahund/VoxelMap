@@ -30,6 +30,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.io.File;
@@ -231,15 +232,15 @@ public class PersistentMap implements IChangeObserver {
         BlockState foliageBlockState = BlockRepository.air.getDefaultState();
         BlockState seafloorBlockState = BlockRepository.air.getDefaultState();
         pos = pos.withXYZ(startX + imageX, 64, startZ + imageY);
-        int biomeID;
+        Biome biome;
         if (!chunk.isEmpty()) {
-            biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(pos).value());
+            biome = world.getBiome(pos).value();
         } else {
-            biomeID = -1;
+            biome = null;
         }
 
-        mapData.setBiomeID(imageX, imageY, biomeID);
-        if (biomeID != -1) {
+        mapData.setBiome(imageX, imageY, biome);
+        if (biome != null) {
             boolean solid = false;
             if (underground) {
                 surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY);
@@ -447,16 +448,11 @@ public class PersistentMap implements IChangeObserver {
         int foliageColor = 0;
         blockPos = blockPos.withXYZ(mcX, 0, mcZ);
         int color24;
-        int biomeID = mapData.getBiomeID(imageX, imageY);
+        Biome biome = mapData.getBiome(imageX, imageY);
         surfaceBlockState = mapData.getBlockstate(imageX, imageY);
-        if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != Short.MIN_VALUE) && biomeID != -1 && biomeID != 255) {
+        if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != Short.MIN_VALUE) && biome != null) {
             if (mapOptions.biomeOverlay == 1) {
-                if (biomeID >= 0) {
-                    color24 = BiomeRepository.getBiomeColor(biomeID) | 0xFF000000;
-                } else {
-                    color24 = 0;
-                }
-
+                color24 = BiomeRepository.getBiomeColor(biome) | 0xFF000000;
             } else {
                 boolean solid = false;
                 int blockStateID;
@@ -473,7 +469,7 @@ public class PersistentMap implements IChangeObserver {
                 }
 
                 if (mapOptions.biomes) {
-                    surfaceColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
+                    surfaceColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                     int tint;
                     tint = this.colorManager.getBiomeTint(mapData, world, surfaceBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                     if (tint != -1) {
@@ -500,7 +496,7 @@ public class PersistentMap implements IChangeObserver {
                         if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.getDefaultState()) {
                             blockStateID = BlockRepository.getStateId(seafloorBlockState);
                             if (mapOptions.biomes) {
-                                seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
+                                seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, seafloorBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                                 if (tint != -1) {
@@ -529,7 +525,7 @@ public class PersistentMap implements IChangeObserver {
                         if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
                             blockStateID = BlockRepository.getStateId(transparentBlockState);
                             if (mapOptions.biomes) {
-                                transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
+                                transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, transparentBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                                 if (tint != -1) {
@@ -556,7 +552,7 @@ public class PersistentMap implements IChangeObserver {
                         if (foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
                             blockStateID = BlockRepository.getStateId(foliageBlockState);
                             if (mapOptions.biomes) {
-                                foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biomeID);
+                                foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, foliageBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
                                 if (tint != -1) {
@@ -602,8 +598,8 @@ public class PersistentMap implements IChangeObserver {
 
                 if (mapOptions.biomeOverlay == 2) {
                     int bc = 0;
-                    if (biomeID >= 0) {
-                        bc = BiomeRepository.getBiomeColor(biomeID);
+                    if (biome != null) {
+                        bc = BiomeRepository.getBiomeColor(biome);
                     }
 
                     bc = 2130706432 | bc;

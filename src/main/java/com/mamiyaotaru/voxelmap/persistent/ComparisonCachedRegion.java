@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
@@ -11,6 +12,7 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.Heightmap;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.io.BufferedInputStream;
@@ -98,6 +100,7 @@ public class ComparisonCachedRegion {
                 ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
                 Scanner sc = new Scanner(zis);
                 BiMap<BlockState, Integer> stateToInt = null;
+                BiMap<Biome, Integer> biomeMap = null;
                 int version = 1;
 
                 ZipEntry ze;
@@ -115,6 +118,13 @@ public class ComparisonCachedRegion {
                         }
                     }
 
+                    if (ze.getName().equals("biomes")) {
+                        biomeMap = HashBiMap.create();
+                        while (sc.hasNextLine()) {
+                            BiomeParser.parseLine(world, sc.nextLine(), biomeMap);
+                        }
+                    }
+
                     if (ze.getName().equals("control")) {
                         Properties properties = new Properties();
                         properties.load(zis);
@@ -129,7 +139,11 @@ public class ComparisonCachedRegion {
                 }
 
                 if (decompressedByteData != null && decompressedByteData.length == this.data.getExpectedDataLength(version) && stateToInt != null) {
-                    this.data.setData(decompressedByteData, stateToInt, version);
+                    if (biomeMap == null) {
+                        biomeMap = HashBiMap.create();
+                        BiomeParser.populateLegacyBiomeMap(world, biomeMap);
+                    }
+                    this.data.setData(decompressedByteData, stateToInt, biomeMap, version);
                     this.empty = false;
                     this.loaded = true;
                 } else {

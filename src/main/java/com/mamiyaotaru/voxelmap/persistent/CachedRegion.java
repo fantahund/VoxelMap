@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -14,6 +15,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
@@ -21,6 +23,7 @@ import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -461,6 +464,21 @@ public class CachedRegion {
                 while (sc.hasNextLine()) {
                     BlockStateParser.parseLine(sc.nextLine(), blockstateMap);
                 }
+                sc.close();
+                is.close();
+
+                BiMap<Biome, Integer> biomeMap = HashBiMap.create();
+                ze = zFile.getEntry("biomes");
+                if (ze != null) {
+                    is = zFile.getInputStream(ze);
+                    sc = new Scanner(is);
+
+                    while (sc.hasNextLine()) {
+                        BiomeParser.parseLine(world, sc.nextLine(), biomeMap);
+                    }
+                } else {
+                    BiomeParser.populateLegacyBiomeMap(world, biomeMap);
+                }
 
                 sc.close();
                 is.close();
@@ -483,7 +501,7 @@ public class CachedRegion {
 
                 zFile.close();
                 if (decompressedByteData.length == this.data.getExpectedDataLength(version)) {
-                    this.data.setData(decompressedByteData, blockstateMap, version);
+                    this.data.setData(decompressedByteData, blockstateMap, biomeMap, version);
                     this.empty = false;
                     this.dataUpdated = true;
                 } else {
@@ -531,6 +549,7 @@ public class CachedRegion {
     @SuppressWarnings("OverlyBroadThrowsClause")
     private void doSave() throws IOException {
         BiMap<BlockState, Integer> stateToInt = this.data.getStateToInt();
+        BiMap<Biome, Integer> biomeToInt = this.data.getBiomeToInt();
         byte[] byteArray = this.data.getData();
         if (byteArray.length == this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION)) {
             File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
@@ -555,6 +574,23 @@ public class CachedRegion {
 
                 byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
                 ze = new ZipEntry("key");
+                ze.setSize(keyByteArray.length);
+                zos.putNextEntry(ze);
+                zos.write(keyByteArray);
+                zos.closeEntry();
+            }
+            if (biomeToInt != null) {
+                Iterator<Map.Entry<Biome, Integer>> iterator = biomeToInt.entrySet().iterator();
+                StringBuilder stringBuffer = new StringBuilder();
+
+                while (iterator.hasNext()) {
+                    Map.Entry<Biome, Integer> entry = iterator.next();
+                    String nextLine = entry.getValue() + " " + world.getRegistryManager().get(RegistryKeys.BIOME).getId(entry.getKey()).toString() + "\r\n";
+                    stringBuffer.append(nextLine);
+                }
+
+                byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
+                ze = new ZipEntry("biomes");
                 ze.setSize(keyByteArray.length);
                 zos.putNextEntry(ze);
                 zos.write(keyByteArray);

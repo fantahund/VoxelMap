@@ -47,6 +47,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.world.biome.Biome;
 import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
@@ -755,18 +756,18 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
                         column = !this.oldNorth ? regionX : regionZ;
                         CachedRegion region = this.regions[regionZ * (right + 1 - (left - 1) + 1) + regionX];
-                        int id = -1;
+                        Biome biome = null;
                         if (region.getMapData() != null && region.isLoaded() && !region.isEmpty()) {
                             int inRegionX = mapX - region.getX() * region.getWidth();
                             int inRegionZ = mapZ - region.getZ() * region.getWidth();
                             int height = region.getMapData().getHeight(inRegionX, inRegionZ);
                             int light = region.getMapData().getLight(inRegionX, inRegionZ);
                             if (height != Short.MIN_VALUE || light != 0) {
-                                id = region.getMapData().getBiomeID(inRegionX, inRegionZ);
+                                biome = region.getMapData().getBiome(inRegionX, inRegionZ);
                             }
                         }
 
-                        this.biomeMapData.setBiomeID(x, z, id);
+                        this.biomeMapData.setBiome(x, z, biome);
                     }
                 }
 

@@ -51,6 +51,7 @@ import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.biome.FoliageColors;
 import net.minecraft.world.biome.GrassColors;
 import net.minecraft.world.chunk.Chunk;
@@ -364,7 +365,7 @@ public class ColorManager {
         }
     }
 
-    public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, int biomeID) {
+    public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, Biome biomeID) {
         if (this.loaded) {
             if (this.optifineInstalled && this.biomeTextureAvailable.contains(blockStateID)) {
                 Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
@@ -563,7 +564,7 @@ public class ColorManager {
                 int tint;
                 MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
                 if (blockPos == this.dummyBlockPos) {
-                    tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
+                    tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, null); // Biome 4?
                 } else {
                     ClientWorld clientWorld = VoxelConstants.getClientWorld();
 
@@ -571,7 +572,7 @@ public class ColorManager {
                     if (chunk != null && !((WorldChunk) chunk).isEmpty() && clientWorld.isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
                         tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, clientWorld, blockPos, 1) | 0xFF000000;
                     } else {
-                        tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, (byte) 4);
+                        tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, null); // Biome 4?
                     }
                 }
 
@@ -587,7 +588,7 @@ public class ColorManager {
 
     }
 
-    private int tintFromFakePlacedBlock(BlockState blockState, MutableBlockPos loopBlockPos, byte biomeID) {
+    private int tintFromFakePlacedBlock(BlockState blockState, MutableBlockPos loopBlockPos, Biome biomeID) {
         return -1;
     }
 
@@ -606,9 +607,9 @@ public class ColorManager {
 
                     for (int t = blockPos.getX() - 1; t <= blockPos.getX() + 1; ++t) {
                         for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
-                            int biomeID;
+                            Biome biome;
                             if (live) {
-                                biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value());
+                                biome = world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value();
                             } else {
                                 int dataX = t - startX;
                                 int dataZ = s - startZ;
@@ -616,13 +617,14 @@ public class ColorManager {
                                 dataX = Math.min(dataX, mapData.getWidth() - 1);
                                 dataZ = Math.max(dataZ, 0);
                                 dataZ = Math.min(dataZ, mapData.getHeight() - 1);
-                                biomeID = mapData.getBiomeID(dataX, dataZ);
+                                biome = mapData.getBiome(dataX, dataZ);
                             }
 
-                            if (biomeID < 0) {
-                                biomeID = 1;
+                            if (biome == null) {
+                                biome = world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
                             }
 
+                            int biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(biome);
                             int biomeTint = tints[biomeID][loopBlockPos.y / 8];
                             r += (biomeTint & 0xFF0000) >> 16;
                             g += (biomeTint & 0xFF00) >> 8;
@@ -696,10 +698,9 @@ public class ColorManager {
                     dataX = Math.min(dataX, 255);
                     dataZ = Math.max(dataZ, 0);
                     dataZ = Math.min(dataZ, 255);
-                    int biomeID = mapData.getBiomeID(dataX, dataZ);
-                    Biome biome = world.getRegistryManager().get(RegistryKeys.BIOME).get(biomeID);
+                    Biome biome = mapData.getBiome(dataX, dataZ);
                     if (biome == null) {
-                        MessageUtils.printDebug("Null biome ID! " + biomeID + " at " + t + "," + s);
+                        MessageUtils.printDebug("Null biome ID! " + " at " + t + "," + s);
                         MessageUtils.printDebug("block: " + mapData.getBlockstate(dataX, dataZ) + ", height: " + mapData.getHeight(dataX, dataZ));
                         MessageUtils.printDebug("Mapdata: " + mapData);
                     }
@@ -729,8 +730,8 @@ public class ColorManager {
             dataX = Math.min(dataX, mapData.getWidth() - 1);
             dataZ = Math.max(dataZ, 0);
             dataZ = Math.min(dataZ, mapData.getHeight() - 1);
-            byte biomeID = (byte) mapData.getBiomeID(dataX, dataZ);
-            tint = this.tintFromFakePlacedBlock(blockState, loopBlockPos, biomeID);
+            Biome biome = mapData.getBiome(dataX, dataZ);
+            tint = this.tintFromFakePlacedBlock(blockState, loopBlockPos, biome);
         } catch (Exception var12) {
             tint = -1;
         }

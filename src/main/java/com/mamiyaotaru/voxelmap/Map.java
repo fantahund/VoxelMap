@@ -65,6 +65,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.LightType;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -977,22 +978,22 @@ public class Map implements Runnable, IChangeObserver {
         MutableBlockPos tempBlockPos = MutableBlockPosCache.get();
         blockPos.withXYZ(startX + imageX, 0, startZ + imageY);
         int color24;
-        int biomeID;
+        Biome biome;
         if (needBiome) {
             if (world.isChunkLoaded(blockPos)) {
-                biomeID = world.getRegistryManager().get(RegistryKeys.BIOME).getRawId(world.getBiome(blockPos).value());
+                biome = world.getBiome(blockPos).value();
             } else {
-                biomeID = -1;
+                biome = null;
             }
 
-            this.mapData[this.zoom].setBiomeID(imageX, imageY, biomeID);
+            this.mapData[this.zoom].setBiome(imageX, imageY, biome);
         } else {
-            biomeID = this.mapData[this.zoom].getBiomeID(imageX, imageY);
+            biome = this.mapData[this.zoom].getBiome(imageX, imageY);
         }
 
         if (this.options.biomeOverlay == 1) {
-            if (biomeID >= 0) {
-                color24 = BiomeRepository.getBiomeColor(biomeID) | 0xFF000000;
+            if (biome != null) {
+                color24 = BiomeRepository.getBiomeColor(biome) | 0xFF000000;
             } else {
                 color24 = 0;
             }
@@ -1151,7 +1152,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             if (this.options.biomes) {
-                surfaceColor = this.colorManager.getBlockColor(blockPos, surfaceBlockStateID, biomeID);
+                surfaceColor = this.colorManager.getBlockColor(blockPos, surfaceBlockStateID, biome);
                 int tint;
                 if (!needTint && !surfaceBlockChangeForcedTint) {
                     tint = this.mapData[this.zoom].getBiomeTint(imageX, imageY);
@@ -1186,7 +1187,7 @@ public class Map implements Runnable, IChangeObserver {
                 if (!this.options.biomes) {
                     seafloorColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, seafloorBlockStateID);
                 } else {
-                    seafloorColor = this.colorManager.getBlockColor(blockPos, seafloorBlockStateID, biomeID);
+                    seafloorColor = this.colorManager.getBlockColor(blockPos, seafloorBlockStateID, biome);
                     int tint;
                     if (!needTint && !seafloorBlockChangeForcedTint) {
                         tint = this.mapData[this.zoom].getOceanFloorBiomeTint(imageX, imageY);
@@ -1227,7 +1228,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.blockTransparency) {
                 if (transparentHeight != Short.MIN_VALUE && this.transparentBlockState != null && this.transparentBlockState != BlockRepository.air.getDefaultState()) {
                     if (this.options.biomes) {
-                        transparentColor = this.colorManager.getBlockColor(blockPos, transparentBlockStateID, biomeID);
+                        transparentColor = this.colorManager.getBlockColor(blockPos, transparentBlockStateID, biome);
                         int tint;
                         if (!needTint && !transparentBlockChangeForcedTint) {
                             tint = this.mapData[this.zoom].getTransparentBiomeTint(imageX, imageY);
@@ -1263,7 +1264,7 @@ public class Map implements Runnable, IChangeObserver {
                     if (!this.options.biomes) {
                         foliageColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, foliageBlockStateID);
                     } else {
-                        foliageColor = this.colorManager.getBlockColor(blockPos, foliageBlockStateID, biomeID);
+                        foliageColor = this.colorManager.getBlockColor(blockPos, foliageBlockStateID, biome);
                         int tint;
                         if (!needTint && !foliageBlockChangeForcedTint) {
                             tint = this.mapData[this.zoom].getFoliageBiomeTint(imageX, imageY);
@@ -1319,8 +1320,8 @@ public class Map implements Runnable, IChangeObserver {
 
             if (this.options.biomeOverlay == 2) {
                 int bc = 0;
-                if (biomeID >= 0) {
-                    bc = BiomeRepository.getBiomeColor(biomeID);
+                if (biome != null) {
+                    bc = BiomeRepository.getBiomeColor(biome);
                 }
 
                 bc = 2130706432 | bc;

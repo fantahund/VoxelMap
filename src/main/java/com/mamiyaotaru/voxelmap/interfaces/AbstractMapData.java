@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.interfaces;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import net.minecraft.block.BlockState;
-
+import net.minecraft.world.biome.Biome;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public abstract class AbstractMapData {
 
         for (int x = 0; x < this.width; ++x) {
             for (int z = 0; z < this.height; ++z) {
-                this.points[x][z] = new Point(x, z, this.getBiomeID(x, z));
+                this.points[x][z] = new Point(x, z, this.getBiome(x, z));
             }
         }
 
@@ -39,14 +39,14 @@ public abstract class AbstractMapData {
                 for (int z = 0; z < this.height; ++z) {
                     if (!this.points[x][z].inSegment) {
                         long startTime = System.nanoTime();
-                        if (this.points[x][z].biomeID == -1) {
+                        if (this.points[x][z].biomeID == null) {
                             VoxelConstants.getLogger().warn("no biome segment!");
                         }
 
                         Segment segment = new Segment(this.points[x][z]);
                         this.segments.add(segment);
                         segment.flood();
-                        if (this.points[x][z].biomeID == -1) {
+                        if (this.points[x][z].biomeID == null) {
                             VoxelConstants.getLogger().warn("created in " + (System.nanoTime() - startTime));
                         }
                     }
@@ -59,7 +59,7 @@ public abstract class AbstractMapData {
     public void findCenterOfSegments(boolean horizontalBias) {
         if (this.segments != null) {
             for (Segment segment : this.segments) {
-                if (segment.biomeID != -1) {
+                if (segment.biomeID != null) {
                     segment.calculateCenter(horizontalBias);
                 }
             }
@@ -69,7 +69,7 @@ public abstract class AbstractMapData {
             this.labels.clear();
             if (this.segments != null) {
                 for (Segment segment : this.segments) {
-                    if (segment.biomeID != -1) {
+                    if (segment.biomeID != null) {
                         BiomeLabel label = new BiomeLabel();
                         label.biomeID = segment.biomeID;
                         label.name = segment.name;
@@ -122,7 +122,7 @@ public abstract class AbstractMapData {
 
     public abstract int getFoliageLight(int x, int z);
 
-    public abstract int getBiomeID(int x, int z);
+    public abstract Biome getBiome(int x, int z);
 
     public abstract void setHeight(int x, int z, int height);
 
@@ -156,14 +156,14 @@ public abstract class AbstractMapData {
 
     public abstract void setFoliageLight(int x, int z, int light);
 
-    public abstract void setBiomeID(int x, int z, int id);
+    public abstract void setBiome(int x, int z, Biome biome);
 
     public abstract void moveX(int x);
 
     public abstract void moveZ(int z);
 
     public static class BiomeLabel {
-        public int biomeID = -1;
+        public Biome biomeID = null;
         public String name = "";
         public int segmentSize;
         public int x;
@@ -176,14 +176,13 @@ public abstract class AbstractMapData {
         public boolean inSegment;
         public boolean isCandidate;
         public int layer = -1;
-        public final int biomeID;
+        public final Biome biomeID;
 
-        private Point(int x, int z, int biomeID) {
+        private Point(int x, int z, Biome biomeID) {
             this.x = x;
             this.z = z;
 
-            if (biomeID == 255 || biomeID == -1) {
-                biomeID = -1;
+            if (biomeID == null) {
                 this.inSegment = true;
             }
 
@@ -194,14 +193,14 @@ public abstract class AbstractMapData {
     public class Segment {
         public final ArrayList<Point> memberPoints;
         ArrayList<Point> currentShell;
-        public final int biomeID;
+        public final Biome biomeID;
         public String name;
         public int centerX;
         public int centerZ;
 
         public Segment(Point point) {
             this.biomeID = point.biomeID;
-            if (this.biomeID != -1) {
+            if (this.biomeID != null) {
                 this.name = BiomeRepository.getName(this.biomeID);
             }
 

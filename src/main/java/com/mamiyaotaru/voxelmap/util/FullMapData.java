@@ -2,18 +2,20 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import net.minecraft.block.BlockState;
-
+import net.minecraft.world.biome.Biome;
 import java.util.Arrays;
 
 public class FullMapData extends AbstractMapData {
     private final static int LAYERS = 17;
 
     private int[] data;
+    private Biome[] biomes;
 
     public FullMapData(int width, int height) {
         this.width = width;
         this.height = height;
         this.data = new int[width * height * LAYERS];
+        this.biomes = new Biome[width * height];
         Arrays.fill(this.data, 0);
     }
 
@@ -118,8 +120,8 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public int getBiomeID(int x, int z) {
-        return this.getData(x, z, 16);
+    public Biome getBiome(int x, int z) {
+        return this.biomes[x + z * this.width];
     }
 
     private int getData(int x, int z, int bit) {
@@ -224,8 +226,8 @@ public class FullMapData extends AbstractMapData {
     }
 
     @Override
-    public void setBiomeID(int x, int z, int id) {
-        this.setData(x, z, 16, id);
+    public void setBiome(int x, int z, Biome biome) {
+        this.biomes[x + z * this.width] = biome;
     }
 
     private void setData(int x, int z, int bit, int value) {

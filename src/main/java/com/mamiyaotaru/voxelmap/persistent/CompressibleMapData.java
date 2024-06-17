@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.world.biome.Biome;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -37,6 +38,8 @@ public class CompressibleMapData extends AbstractMapData {
     private boolean isCompressed;
     private BiMap<BlockState, Integer> blockStateToInt;
     int blockStateCount = 1;
+    private BiMap<Biome, Integer> biomeToInt;
+    int biomeCount = 1;
 
     public CompressibleMapData() {
         this.width = REGION_SIZE;
@@ -141,8 +144,11 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     @Override
-    public int getBiomeID(int x, int z) {
-        return this.getDataUnsignedShort(x, z, BIOMEIDPOS);
+    public Biome getBiome(int x, int z) {
+        if (this.isCompressed) {
+            this.decompress();
+        }
+        return this.getBiomeFromID(this.getDataUnsignedShort(x, z, BIOMEIDPOS));
     }
 
     private synchronized byte getData(int x, int z, int layer) {
@@ -243,7 +249,11 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     @Override
-    public void setBiomeID(int x, int z, int id) {
+    public void setBiome(int x, int z, Biome biome) {
+        if (this.isCompressed) {
+            this.decompress();
+        }
+        int id = this.getIDFromBiome(biome);
         this.setDataShort(x, z, BIOMEIDPOS, id);
     }
 
@@ -285,7 +295,7 @@ public class CompressibleMapData extends AbstractMapData {
         }
     }
 
-    public synchronized void setData(byte[] is, BiMap<BlockState, Integer> newStateToInt, int version) {
+    public synchronized void setData(byte[] is, BiMap<BlockState, Integer> newStateToInt, BiMap<Biome, Integer> newBiomeToInt, int version) {
         this.data = is;
         this.isCompressed = false;
         if (version < DATA_VERSION) {
@@ -294,6 +304,8 @@ public class CompressibleMapData extends AbstractMapData {
 
         this.blockStateToInt = newStateToInt;
         this.blockStateCount = this.blockStateToInt.size();
+        this.biomeToInt = newBiomeToInt;
+        this.biomeCount = this.biomeToInt.size();
     }
 
     private synchronized void convertData(int version) {
@@ -301,18 +313,25 @@ public class CompressibleMapData extends AbstractMapData {
             this.decompress();
         }
         if (version < 2) {
-            byte[] newData = new byte[this.data.length];
+            try {
+                byte[] newData = new byte[this.data.length];
 
-            for (int x = 0; x < this.width; ++x) {
-                for (int z = 0; z < this.height; ++z) {
-                    for (int layer = 0; layer < LAYERS; ++layer) {
-                        int oldIndex = (x + z * this.width) * LAYERS + layer;
-                        int newIndex = x + z * this.width + this.width * this.height * layer;
-                        newData[newIndex] = this.data[oldIndex];
+                for (int x = 0; x < this.width; ++x) {
+                    for (int z = 0; z < this.height; ++z) {
+                        for (int layer = 0; layer < LAYERS; ++layer) {
+                            int oldIndex = (x + z * this.width) * LAYERS + layer;
+                            int newIndex = x + z * this.width + this.width * this.height * layer;
+                            newData[newIndex] = this.data[oldIndex];
+                        }
                     }
                 }
+                this.data = newData;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // could not load
+                this.data = compressedEmptyData;
+                this.isCompressed = true;
+                return;
             }
-            this.data = newData;
         }
         if (version < 4) {
             final int OLD_HEIGHTPOS = 0;
@@ -401,6 +420,9 @@ public class CompressibleMapData extends AbstractMapData {
     private synchronized void decompress() {
         if (this.blockStateToInt == null) {
             this.blockStateToInt = HashBiMap.create();
+        }
+        if (this.biomeToInt == null) {
+            this.biomeToInt = HashBiMap.create();
         }
 
         if (this.isCompressed) {
@@ -511,6 +533,60 @@ public class CompressibleMapData extends AbstractMapData {
 
                     this.setData(x, z, FOLIAGEBLOCKSTATEPOS, (byte) (id >> 8));
                     this.setData(x, z, FOLIAGEBLOCKSTATEPOS + 1, (byte) id.intValue());
+                }
+            }
+        }
+
+        return newMap;
+    }
+
+    private synchronized int getIDFromBiome(Biome biome) {
+        if (biome == null) {
+            return 0;
+        }
+        Integer id = this.biomeToInt.get(biome);
+        if (id == null && biome != null) {
+            while (this.biomeToInt.inverse().containsKey(this.biomeCount)) {
+                ++this.biomeCount;
+            }
+
+            id = this.biomeCount;
+            this.biomeToInt.put(biome, id);
+        }
+
+        return id;
+    }
+
+    private Biome getBiomeFromID(int id) {
+        return id == 0 ? null : this.biomeToInt.inverse().get(id);
+    }
+
+    public BiMap<Biome, Integer> getBiomeToInt() {
+        this.biomeToInt = this.createKeyFromCurrentBiomes(this.biomeToInt);
+        return this.biomeToInt;
+    }
+
+    private BiMap<Biome, Integer> createKeyFromCurrentBiomes(BiMap<Biome, Integer> oldMap) {
+        this.biomeCount = 1;
+        BiMap<Biome, Integer> newMap = HashBiMap.create();
+
+        for (int x = 0; x < this.width; ++x) {
+            for (int z = 0; z < this.height; ++z) {
+                int oldID = (this.getData(x, z, BIOMEIDPOS) & 255) << 8 | this.getData(x, z, BIOMEIDPOS + 1) & 255;
+                if (oldID != 0) {
+                    Biome biome = oldMap.inverse().get(oldID);
+                    Integer id = newMap.get(biome);
+                    if (id == null && biome != null) {
+                        while (newMap.inverse().containsKey(this.biomeCount)) {
+                            ++this.biomeCount;
+                        }
+
+                        id = this.biomeCount;
+                        newMap.put(biome, id);
+                    }
+
+                    this.setData(x, z, BIOMEIDPOS, (byte) (id >> 8));
+                    this.setData(x, z, BIOMEIDPOS + 1, (byte) id.intValue());
                 }
             }
         }
