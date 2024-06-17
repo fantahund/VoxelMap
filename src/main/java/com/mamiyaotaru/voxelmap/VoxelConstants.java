@@ -20,6 +20,7 @@ public final class VoxelConstants {
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
     private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.of("textures/block/dirt.png");
+    public static final boolean DEBUG = false;
 
     private VoxelConstants() {}
 

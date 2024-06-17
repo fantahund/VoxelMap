@@ -111,7 +111,9 @@ public class TextureAtlas extends AbstractTexture {
         this.mapRegisteredSprites.clear();
         this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
-        ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        if (VoxelConstants.DEBUG) {
+            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        }
     }
 
     public void stitchNew() {
@@ -160,10 +162,11 @@ public class TextureAtlas extends AbstractTexture {
         this.mapRegisteredSprites.clear();
         this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
-        if (oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
-            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        if (VoxelConstants.DEBUG) {
+            if (oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
+                ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            }
         }
-
     }
 
     public Sprite getIconAt(float x, float y) {

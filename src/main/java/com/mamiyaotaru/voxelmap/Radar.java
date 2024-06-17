@@ -1136,7 +1136,9 @@ public class Radar implements IRadar {
 
                     ModelPartWithResourceLocation[] headBitsWithLocations = headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[0]);
                     boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
-                    ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
+                    if (VoxelConstants.DEBUG) {
+                        ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
+                    }
                     if (success) {
                         headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
                     }
