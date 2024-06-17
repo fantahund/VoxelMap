@@ -2,22 +2,20 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-
+import java.util.Objects;
 import java.util.Random;
 
 public class MapUtils {
     private static MapSettingsManager options;
-    private static Random slimeRandom;
+    private static Random slimeRandom = new Random();
+    private static String lastSeed;
+    private static long lastSeedLong;
     private static int lastSlimeX;
     private static int lastSlimeZ;
     private static boolean isSlimeChunk;
 
     public static void reset() {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        slimeRandom = null;
-        lastSlimeX = -120000;
-        lastSlimeZ = 10000;
-        isSlimeChunk = false;
     }
 
     public static int doSlimeAndGrid(int color24, int mcX, int mcZ) {
@@ -38,25 +36,28 @@ public class MapUtils {
         return color24;
     }
 
-    public static boolean isSlimeChunk(int mcX, int mcZ) {
+    public synchronized static boolean isSlimeChunk(int mcX, int mcZ) {
         int xPosition = mcX >> 4;
         int zPosition = mcZ >> 4;
         String seedString = VoxelConstants.getVoxelMapInstance().getWorldSeed();
-        if (!seedString.isEmpty()) {
-            long seed;
-
+        if (seedString.isEmpty()) {
+            return false;
+        }
+        if (!Objects.equals(lastSeed, seedString)) {
+            lastSeed = seedString;
+            lastSlimeX = Integer.MIN_VALUE;
             try {
-                seed = Long.parseLong(seedString);
+                lastSeedLong = Long.parseLong(seedString);
             } catch (NumberFormatException var8) {
-                seed = seedString.hashCode();
+                lastSeedLong = seedString.hashCode();
             }
+        }
 
-            if (xPosition != lastSlimeX || zPosition != lastSlimeZ || slimeRandom == null) {
-                lastSlimeX = xPosition;
-                lastSlimeZ = zPosition;
-                slimeRandom = new Random(seed + ((long) xPosition * xPosition * 4987142) + (xPosition * 5947611L) + (long) zPosition * zPosition * 4392871L + (zPosition * 389711L) ^ 987234911L);
-                isSlimeChunk = slimeRandom.nextInt(10) == 0;
-            }
+        if (xPosition != lastSlimeX || zPosition != lastSlimeZ) {
+            lastSlimeX = xPosition;
+            lastSlimeZ = zPosition;
+            slimeRandom.setSeed(lastSeedLong + (int) (xPosition * xPosition * 0x4C1906) + (int) (xPosition * 0x5ac0db) + (int) (zPosition * zPosition) * 0x4307a7L + (int) (zPosition * 0x5f24f) ^ 0x3ad8025fL);
+            isSlimeChunk = slimeRandom.nextInt(10) == 0;
         }
 
         return isSlimeChunk;
