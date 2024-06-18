@@ -763,7 +763,9 @@ public class Map implements Runnable, IChangeObserver {
         int offsetX = currentX - this.lastX;
         int offsetZ = currentZ - this.lastZ;
         int offsetY = currentY - this.lastY;
-        int multi = (int) Math.pow(2.0, this.zoom);
+        int zoom = this.zoom;
+        int multi = (int) Math.pow(2.0, zoom);
+        ClientWorld world = this.world;
         boolean needHeightAndID;
         boolean needHeightMap = false;
         boolean needLight = false;
@@ -812,17 +814,17 @@ public class Map implements Runnable, IChangeObserver {
         blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getTopY() - 1), world.getBottomY()), this.lastZ);
         if (VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) {
 
-            netherPlayerInOpen = this.world.getChunk(blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
+            netherPlayerInOpen = world.getChunk(blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
             nether = currentY < 126;
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
         } else if (VoxelConstants.getClientWorld().getDimensionEffects().shouldBrightenLighting() && !VoxelConstants.getClientWorld().getDimension().hasSkyLight()) {
-            boolean endPlayerInOpen = this.world.getChunk(blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
+            boolean endPlayerInOpen = world.getChunk(blockPos).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;
             }
-        } else if (this.options.cavesAllowed && this.options.showCaves && this.world.getLightLevel(LightType.SKY, blockPos) <= 0) {
+        } else if (this.options.cavesAllowed && this.options.showCaves && world.getLightLevel(LightType.SKY, blockPos) <= 0) {
             caves = true;
         }
         MutableBlockPosCache.release(blockPos);
@@ -837,47 +839,46 @@ public class Map implements Runnable, IChangeObserver {
         int color24;
         synchronized (this.coordinateLock) {
             if (!full) {
-                this.mapImages[this.zoom].moveY(offsetZ);
-                this.mapImages[this.zoom].moveX(offsetX);
+                this.mapImages[zoom].moveY(offsetZ);
+                this.mapImages[zoom].moveX(offsetX);
             }
 
             this.lastX = currentX;
             this.lastZ = currentZ;
         }
-
         int startX = currentX - 16 * multi;
         int startZ = currentZ - 16 * multi;
         if (!full) {
-            this.mapData[this.zoom].moveZ(offsetZ);
-            this.mapData[this.zoom].moveX(offsetX);
+            this.mapData[zoom].moveZ(offsetZ);
+            this.mapData[zoom].moveX(offsetX);
 
             for (int imageY = offsetZ > 0 ? 32 * multi - 1 : -offsetZ - 1; imageY >= (offsetZ > 0 ? 32 * multi - offsetZ : 0); --imageY) {
                 for (int imageX = 0; imageX < 32 * multi; ++imageX) {
-                    color24 = this.getPixelColor(true, true, true, true, nether, caves, this.world, multi, startX, startZ, imageX, imageY);
-                    this.mapImages[this.zoom].setRGB(imageX, imageY, color24);
+                    color24 = this.getPixelColor(true, true, true, true, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY);
+                    this.mapImages[zoom].setRGB(imageX, imageY, color24);
                 }
             }
 
             for (int imageY = 32 * multi - 1; imageY >= 0; --imageY) {
                 for (int imageX = offsetX > 0 ? 32 * multi - offsetX : 0; imageX < (offsetX > 0 ? 32 * multi : -offsetX); ++imageX) {
-                    color24 = this.getPixelColor(true, true, true, true, nether, caves, this.world, multi, startX, startZ, imageX, imageY);
-                    this.mapImages[this.zoom].setRGB(imageX, imageY, color24);
+                    color24 = this.getPixelColor(true, true, true, true, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY);
+                    this.mapImages[zoom].setRGB(imageX, imageY, color24);
                 }
             }
         }
 
-        if (full || this.options.heightmap && needHeightMap || needHeightAndID || this.options.lightmap && needLight || skyColorChanged) {//TODO Dynamic Light below 0
+        if (full || this.options.heightmap && needHeightMap || needHeightAndID || this.options.lightmap && needLight || skyColorChanged) {
             for (int imageY = 32 * multi - 1; imageY >= 0; --imageY) {
                 for (int imageX = 0; imageX < 32 * multi; ++imageX) {
-                    color24 = this.getPixelColor(full, full || needHeightAndID, full, full || needLight || needHeightAndID, nether, caves, this.world, multi, startX, startZ, imageX, imageY);
-                    this.mapImages[this.zoom].setRGB(imageX, imageY, color24);
+                    color24 = this.getPixelColor(full, full || needHeightAndID, full, full || needLight || needHeightAndID, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY);
+                    this.mapImages[zoom].setRGB(imageX, imageY, color24);
                 }
             }
         }
 
         if ((full || offsetX != 0 || offsetZ != 0 || !this.lastFullscreen) && this.fullscreenMap && this.options.biomeOverlay != 0) {
-            this.mapData[this.zoom].segmentBiomes();
-            this.mapData[this.zoom].findCenterOfSegments(!this.options.oldNorth);
+            this.mapData[zoom].segmentBiomes();
+            this.mapData[zoom].findCenterOfSegments(!this.options.oldNorth);
         }
 
         this.lastFullscreen = this.fullscreenMap;
@@ -928,9 +929,11 @@ public class Map implements Runnable, IChangeObserver {
         }
         MutableBlockPosCache.release(blockPos);
 
+        int zoom = this.zoom;
         int startX = this.lastX;
         int startZ = this.lastZ;
-        int multi = (int) Math.pow(2.0, this.zoom);
+        ClientWorld world = this.world;
+        int multi = (int) Math.pow(2.0, zoom);
         startX -= 16 * multi;
         startZ -= 16 * multi;
         left = left - startX - 1;
@@ -945,15 +948,15 @@ public class Map implements Runnable, IChangeObserver {
 
         for (int imageY = bottom; imageY >= top; --imageY) {
             for (int imageX = left; imageX <= right; ++imageX) {
-                color24 = this.getPixelColor(true, true, true, true, nether, caves, this.world, multi, startX, startZ, imageX, imageY);
-                this.mapImages[this.zoom].setRGB(imageX, imageY, color24);
+                color24 = this.getPixelColor(true, true, true, true, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY);
+                this.mapImages[zoom].setRGB(imageX, imageY, color24);
             }
         }
 
         this.imageChanged = true;
     }
 
-    private int getPixelColor(boolean needBiome, boolean needHeightAndID, boolean needTint, boolean needLight, boolean nether, boolean caves, World world, int multi, int startX, int startZ, int imageX, int imageY) {
+    private int getPixelColor(boolean needBiome, boolean needHeightAndID, boolean needTint, boolean needLight, boolean nether, boolean caves, World world, int zoom, int multi, int startX, int startZ, int imageX, int imageY) {
         int surfaceHeight = Short.MIN_VALUE;
         int seafloorHeight = Short.MIN_VALUE;
         int transparentHeight = Short.MIN_VALUE;
@@ -986,9 +989,9 @@ public class Map implements Runnable, IChangeObserver {
                 biome = null;
             }
 
-            this.mapData[this.zoom].setBiome(imageX, imageY, biome);
+            this.mapData[zoom].setBiome(imageX, imageY, biome);
         } else {
-            biome = this.mapData[this.zoom].getBiome(imageX, imageY);
+            biome = this.mapData[zoom].getBiome(imageX, imageY);
         }
 
         if (this.options.biomeOverlay == 1) {
@@ -1100,45 +1103,45 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 surfaceBlockStateID = BlockRepository.getStateId(this.surfaceBlockState);
-                if (this.options.biomes && this.surfaceBlockState != this.mapData[this.zoom].getBlockstate(imageX, imageY)) {
+                if (this.options.biomes && this.surfaceBlockState != this.mapData[zoom].getBlockstate(imageX, imageY)) {
                     surfaceBlockChangeForcedTint = true;
                 }
 
-                this.mapData[this.zoom].setHeight(imageX, imageY, surfaceHeight);
-                this.mapData[this.zoom].setBlockstateID(imageX, imageY, surfaceBlockStateID);
-                if (this.options.biomes && this.transparentBlockState != this.mapData[this.zoom].getTransparentBlockstate(imageX, imageY)) {
+                this.mapData[zoom].setHeight(imageX, imageY, surfaceHeight);
+                this.mapData[zoom].setBlockstateID(imageX, imageY, surfaceBlockStateID);
+                if (this.options.biomes && this.transparentBlockState != this.mapData[zoom].getTransparentBlockstate(imageX, imageY)) {
                     transparentBlockChangeForcedTint = true;
                 }
 
-                this.mapData[this.zoom].setTransparentHeight(imageX, imageY, transparentHeight);
+                this.mapData[zoom].setTransparentHeight(imageX, imageY, transparentHeight);
                 transparentBlockStateID = BlockRepository.getStateId(this.transparentBlockState);
-                this.mapData[this.zoom].setTransparentBlockstateID(imageX, imageY, transparentBlockStateID);
-                if (this.options.biomes && foliageBlockState != this.mapData[this.zoom].getFoliageBlockstate(imageX, imageY)) {
+                this.mapData[zoom].setTransparentBlockstateID(imageX, imageY, transparentBlockStateID);
+                if (this.options.biomes && foliageBlockState != this.mapData[zoom].getFoliageBlockstate(imageX, imageY)) {
                     foliageBlockChangeForcedTint = true;
                 }
 
-                this.mapData[this.zoom].setFoliageHeight(imageX, imageY, foliageHeight);
+                this.mapData[zoom].setFoliageHeight(imageX, imageY, foliageHeight);
                 foliageBlockStateID = BlockRepository.getStateId(foliageBlockState);
-                this.mapData[this.zoom].setFoliageBlockstateID(imageX, imageY, foliageBlockStateID);
-                if (this.options.biomes && seafloorBlockState != this.mapData[this.zoom].getOceanFloorBlockstate(imageX, imageY)) {
+                this.mapData[zoom].setFoliageBlockstateID(imageX, imageY, foliageBlockStateID);
+                if (this.options.biomes && seafloorBlockState != this.mapData[zoom].getOceanFloorBlockstate(imageX, imageY)) {
                     seafloorBlockChangeForcedTint = true;
                 }
 
-                this.mapData[this.zoom].setOceanFloorHeight(imageX, imageY, seafloorHeight);
+                this.mapData[zoom].setOceanFloorHeight(imageX, imageY, seafloorHeight);
                 seafloorBlockStateID = BlockRepository.getStateId(seafloorBlockState);
-                this.mapData[this.zoom].setOceanFloorBlockstateID(imageX, imageY, seafloorBlockStateID);
+                this.mapData[zoom].setOceanFloorBlockstateID(imageX, imageY, seafloorBlockStateID);
             } else {
-                surfaceHeight = this.mapData[this.zoom].getHeight(imageX, imageY);
-                surfaceBlockStateID = this.mapData[this.zoom].getBlockstateID(imageX, imageY);
+                surfaceHeight = this.mapData[zoom].getHeight(imageX, imageY);
+                surfaceBlockStateID = this.mapData[zoom].getBlockstateID(imageX, imageY);
                 this.surfaceBlockState = BlockRepository.getStateById(surfaceBlockStateID);
-                transparentHeight = this.mapData[this.zoom].getTransparentHeight(imageX, imageY);
-                transparentBlockStateID = this.mapData[this.zoom].getTransparentBlockstateID(imageX, imageY);
+                transparentHeight = this.mapData[zoom].getTransparentHeight(imageX, imageY);
+                transparentBlockStateID = this.mapData[zoom].getTransparentBlockstateID(imageX, imageY);
                 this.transparentBlockState = BlockRepository.getStateById(transparentBlockStateID);
-                foliageHeight = this.mapData[this.zoom].getFoliageHeight(imageX, imageY);
-                foliageBlockStateID = this.mapData[this.zoom].getFoliageBlockstateID(imageX, imageY);
+                foliageHeight = this.mapData[zoom].getFoliageHeight(imageX, imageY);
+                foliageBlockStateID = this.mapData[zoom].getFoliageBlockstateID(imageX, imageY);
                 foliageBlockState = BlockRepository.getStateById(foliageBlockStateID);
-                seafloorHeight = this.mapData[this.zoom].getOceanFloorHeight(imageX, imageY);
-                seafloorBlockStateID = this.mapData[this.zoom].getOceanFloorBlockstateID(imageX, imageY);
+                seafloorHeight = this.mapData[zoom].getOceanFloorHeight(imageX, imageY);
+                seafloorBlockStateID = this.mapData[zoom].getOceanFloorBlockstateID(imageX, imageY);
                 seafloorBlockState = BlockRepository.getStateById(seafloorBlockStateID);
             }
 
@@ -1155,10 +1158,10 @@ public class Map implements Runnable, IChangeObserver {
                 surfaceColor = this.colorManager.getBlockColor(blockPos, surfaceBlockStateID, biome);
                 int tint;
                 if (!needTint && !surfaceBlockChangeForcedTint) {
-                    tint = this.mapData[this.zoom].getBiomeTint(imageX, imageY);
+                    tint = this.mapData[zoom].getBiomeTint(imageX, imageY);
                 } else {
-                    tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, this.surfaceBlockState, surfaceBlockStateID, blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
-                    this.mapData[this.zoom].setBiomeTint(imageX, imageY, tint);
+                    tint = this.colorManager.getBiomeTint(this.mapData[zoom], world, this.surfaceBlockState, surfaceBlockStateID, blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
+                    this.mapData[zoom].setBiomeTint(imageX, imageY, tint);
                 }
 
                 if (tint != -1) {
@@ -1168,13 +1171,13 @@ public class Map implements Runnable, IChangeObserver {
                 surfaceColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, surfaceBlockStateID);
             }
 
-            surfaceColor = this.applyHeight(surfaceColor, nether, caves, world, multi, startX, startZ, imageX, imageY, surfaceHeight, solid, 1);
+            surfaceColor = this.applyHeight(surfaceColor, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY, surfaceHeight, solid, 1);
             int light;
             if (needLight) {
                 light = this.getLight(surfaceColor, this.surfaceBlockState, world, startX + imageX, startZ + imageY, surfaceHeight, solid);
-                this.mapData[this.zoom].setLight(imageX, imageY, light);
+                this.mapData[zoom].setLight(imageX, imageY, light);
             } else {
-                light = this.mapData[this.zoom].getLight(imageX, imageY);
+                light = this.mapData[zoom].getLight(imageX, imageY);
             }
 
             if (light == 0) {
@@ -1190,10 +1193,10 @@ public class Map implements Runnable, IChangeObserver {
                     seafloorColor = this.colorManager.getBlockColor(blockPos, seafloorBlockStateID, biome);
                     int tint;
                     if (!needTint && !seafloorBlockChangeForcedTint) {
-                        tint = this.mapData[this.zoom].getOceanFloorBiomeTint(imageX, imageY);
+                        tint = this.mapData[zoom].getOceanFloorBiomeTint(imageX, imageY);
                     } else {
-                        tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, seafloorBlockState, seafloorBlockStateID, blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
-                        this.mapData[this.zoom].setOceanFloorBiomeTint(imageX, imageY, tint);
+                        tint = this.colorManager.getBiomeTint(this.mapData[zoom], world, seafloorBlockState, seafloorBlockStateID, blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
+                        this.mapData[zoom].setOceanFloorBiomeTint(imageX, imageY, tint);
                     }
 
                     if (tint != -1) {
@@ -1201,7 +1204,7 @@ public class Map implements Runnable, IChangeObserver {
                     }
                 }
 
-                seafloorColor = this.applyHeight(seafloorColor, nether, caves, world, multi, startX, startZ, imageX, imageY, seafloorHeight, solid, 0);
+                seafloorColor = this.applyHeight(seafloorColor, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY, seafloorHeight, solid, 0);
                 int seafloorLight;
                 if (needLight) {
                     seafloorLight = this.getLight(seafloorColor, seafloorBlockState, world, startX + imageX, startZ + imageY, seafloorHeight, solid);
@@ -1213,9 +1216,9 @@ public class Map implements Runnable, IChangeObserver {
                         seafloorLight = ColorUtils.colorMultiplier(seafloorLight, 0xFF000000 | multiplier << 16 | multiplier << 8 | multiplier);
                     }
 
-                    this.mapData[this.zoom].setOceanFloorLight(imageX, imageY, seafloorLight);
+                    this.mapData[zoom].setOceanFloorLight(imageX, imageY, seafloorLight);
                 } else {
-                    seafloorLight = this.mapData[this.zoom].getOceanFloorLight(imageX, imageY);
+                    seafloorLight = this.mapData[zoom].getOceanFloorLight(imageX, imageY);
                 }
 
                 if (seafloorLight == 0) {
@@ -1231,10 +1234,10 @@ public class Map implements Runnable, IChangeObserver {
                         transparentColor = this.colorManager.getBlockColor(blockPos, transparentBlockStateID, biome);
                         int tint;
                         if (!needTint && !transparentBlockChangeForcedTint) {
-                            tint = this.mapData[this.zoom].getTransparentBiomeTint(imageX, imageY);
+                            tint = this.mapData[zoom].getTransparentBiomeTint(imageX, imageY);
                         } else {
-                            tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, this.transparentBlockState, transparentBlockStateID, blockPos.withXYZ(startX + imageX, transparentHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
-                            this.mapData[this.zoom].setTransparentBiomeTint(imageX, imageY, tint);
+                            tint = this.colorManager.getBiomeTint(this.mapData[zoom], world, this.transparentBlockState, transparentBlockStateID, blockPos.withXYZ(startX + imageX, transparentHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
+                            this.mapData[zoom].setTransparentBiomeTint(imageX, imageY, tint);
                         }
 
                         if (tint != -1) {
@@ -1244,13 +1247,13 @@ public class Map implements Runnable, IChangeObserver {
                         transparentColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, transparentBlockStateID);
                     }
 
-                    transparentColor = this.applyHeight(transparentColor, nether, caves, world, multi, startX, startZ, imageX, imageY, transparentHeight, solid, 3);
+                    transparentColor = this.applyHeight(transparentColor, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY, transparentHeight, solid, 3);
                     int transparentLight;
                     if (needLight) {
                         transparentLight = this.getLight(transparentColor, this.transparentBlockState, world, startX + imageX, startZ + imageY, transparentHeight, solid);
-                        this.mapData[this.zoom].setTransparentLight(imageX, imageY, transparentLight);
+                        this.mapData[zoom].setTransparentLight(imageX, imageY, transparentLight);
                     } else {
-                        transparentLight = this.mapData[this.zoom].getTransparentLight(imageX, imageY);
+                        transparentLight = this.mapData[zoom].getTransparentLight(imageX, imageY);
                     }
 
                     if (transparentLight == 0) {
@@ -1267,10 +1270,10 @@ public class Map implements Runnable, IChangeObserver {
                         foliageColor = this.colorManager.getBlockColor(blockPos, foliageBlockStateID, biome);
                         int tint;
                         if (!needTint && !foliageBlockChangeForcedTint) {
-                            tint = this.mapData[this.zoom].getFoliageBiomeTint(imageX, imageY);
+                            tint = this.mapData[zoom].getFoliageBiomeTint(imageX, imageY);
                         } else {
-                            tint = this.colorManager.getBiomeTint(this.mapData[this.zoom], world, foliageBlockState, foliageBlockStateID, blockPos.withXYZ(startX + imageX, foliageHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
-                            this.mapData[this.zoom].setFoliageBiomeTint(imageX, imageY, tint);
+                            tint = this.colorManager.getBiomeTint(this.mapData[zoom], world, foliageBlockState, foliageBlockStateID, blockPos.withXYZ(startX + imageX, foliageHeight - 1, startZ + imageY), tempBlockPos, startX, startZ);
+                            this.mapData[zoom].setFoliageBiomeTint(imageX, imageY, tint);
                         }
 
                         if (tint != -1) {
@@ -1278,13 +1281,13 @@ public class Map implements Runnable, IChangeObserver {
                         }
                     }
 
-                    foliageColor = this.applyHeight(foliageColor, nether, caves, world, multi, startX, startZ, imageX, imageY, foliageHeight, solid, 2);
+                    foliageColor = this.applyHeight(foliageColor, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY, foliageHeight, solid, 2);
                     int foliageLight;
                     if (needLight) {
                         foliageLight = this.getLight(foliageColor, foliageBlockState, world, startX + imageX, startZ + imageY, foliageHeight, solid);
-                        this.mapData[this.zoom].setFoliageLight(imageX, imageY, foliageLight);
+                        this.mapData[zoom].setFoliageLight(imageX, imageY, foliageLight);
                     } else {
-                        foliageLight = this.mapData[this.zoom].getFoliageLight(imageX, imageY);
+                        foliageLight = this.mapData[zoom].getFoliageLight(imageX, imageY);
                     }
 
                     if (foliageLight == 0) {
@@ -1429,7 +1432,7 @@ public class Map implements Runnable, IChangeObserver {
         return transHeight;
     }
 
-    private int applyHeight(int color24, boolean nether, boolean caves, World world, int multi, int startX, int startZ, int imageX, int imageY, int height, boolean solid, int layer) {
+    private int applyHeight(int color24, boolean nether, boolean caves, World world, int zoom, int multi, int startX, int startZ, int imageX, int imageY, int height, boolean solid, int layer) {
         if (color24 != this.colorManager.getAirColor() && color24 != 0 && (this.options.heightmap || this.options.slopemap) && !solid) {
             int heightComp = -1;
             int diff;
@@ -1443,11 +1446,11 @@ public class Map implements Runnable, IChangeObserver {
             } else {
                 if (imageX > 0 && imageY < 32 * multi - 1) {
                     if (layer == 0) {
-                        heightComp = this.mapData[this.zoom].getOceanFloorHeight(imageX - 1, imageY + 1);
+                        heightComp = this.mapData[zoom].getOceanFloorHeight(imageX - 1, imageY + 1);
                     }
 
                     if (layer == 1) {
-                        heightComp = this.mapData[this.zoom].getHeight(imageX - 1, imageY + 1);
+                        heightComp = this.mapData[zoom].getHeight(imageX - 1, imageY + 1);
                     }
 
                     if (layer == 2) {
@@ -1455,11 +1458,11 @@ public class Map implements Runnable, IChangeObserver {
                     }
 
                     if (layer == 3) {
-                        heightComp = this.mapData[this.zoom].getTransparentHeight(imageX - 1, imageY + 1);
+                        heightComp = this.mapData[zoom].getTransparentHeight(imageX - 1, imageY + 1);
                         if (heightComp == Short.MIN_VALUE) {
-                            Block block = BlockRepository.getStateById(this.mapData[this.zoom].getTransparentBlockstateID(imageX, imageY)).getBlock();
+                            Block block = BlockRepository.getStateById(this.mapData[zoom].getTransparentBlockstateID(imageX, imageY)).getBlock();
                             if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
-                                heightComp = this.mapData[this.zoom].getHeight(imageX - 1, imageY + 1);
+                                heightComp = this.mapData[zoom].getHeight(imageX - 1, imageY + 1);
                             }
                         }
                     }
