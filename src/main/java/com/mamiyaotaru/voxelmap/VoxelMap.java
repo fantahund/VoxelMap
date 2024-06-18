@@ -83,7 +83,7 @@ public class VoxelMap implements ResourceReloader {
             this.radarSimple = null;
         }
 
-        new Events(mapOptions, radarOptions).initEvents();
+        Events.initEvents(this);
         this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
         this.worldUpdateListener = new WorldUpdateListener();
@@ -274,5 +274,16 @@ public class VoxelMap implements ResourceReloader {
 
     public WorldUpdateListener getWorldUpdateListener() {
         return this.worldUpdateListener;
+    }
+
+    public void clearServerSettings() {
+        radarOptions.radarAllowed = true;
+        radarOptions.radarPlayersAllowed = true;
+        radarOptions.radarMobsAllowed = true;
+        mapOptions.cavesAllowed = true;
+        mapOptions.serverTeleportCommand = null;
+    }
+
+    public void initBeforeWorld() {
     }
 }

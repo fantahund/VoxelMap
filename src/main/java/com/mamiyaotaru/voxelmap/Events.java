@@ -1,28 +1,18 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 
 public class Events {
-
-    private final MapSettingsManager mapOptions;
-    private final RadarSettingsManager radarOptions;
-
-    public Events(MapSettingsManager mapOptions, RadarSettingsManager radarOptions) {
-        this.mapOptions = mapOptions;
-        this.radarOptions = radarOptions;
+    private Events() {
     }
 
-    public void initEvents() {
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            radarOptions.radarAllowed = true;
-            radarOptions.radarPlayersAllowed = true;
-            radarOptions.radarMobsAllowed = true;
-            mapOptions.cavesAllowed = true;
-            mapOptions.serverTeleportCommand = null;
-        });
-
+    public static void initEvents(VoxelMap map) {
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> map.clearServerSettings());
+        ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.clearServerSettings());
+        ClientPlayConnectionEvents.INIT.register((handler, client) -> map.initBeforeWorld());
         HudRenderCallback.EVENT.register((drawContext, tickCounter) -> FabricModVoxelMap.instance.renderOverlay(drawContext));
     }
 }

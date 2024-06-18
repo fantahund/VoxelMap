@@ -44,7 +44,7 @@ public class ComparisonCachedRegion {
     private boolean empty = true;
 
     public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
-        this.data = new CompressibleMapData();
+        this.data = new CompressibleMapData(world);
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;

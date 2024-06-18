@@ -55,7 +55,7 @@ public class CachedRegion {
     private long mostRecentChange;
     private PersistentMap persistentMap;
     private String key;
-    private ClientWorld world;
+    private final ClientWorld world;
     private ServerWorld worldServer;
     private ServerChunkManager chunkProvider;
     private ThreadExecutor<RefreshRunnable> executor;
@@ -93,7 +93,9 @@ public class CachedRegion {
     private boolean queuedToCompress;
     final boolean debug = false;
 
-    public CachedRegion() {}
+    public CachedRegion() {
+        this.world = null;
+    }
 
     public CachedRegion(PersistentMap persistentMap, String key, ClientWorld world, String worldName, String subworldName, int x, int z) {
         this.persistentMap = persistentMap;
@@ -198,7 +200,7 @@ public class CachedRegion {
     }
 
     private void load() {
-        this.data = new CompressibleMapData();
+        this.data = new CompressibleMapData(world);
         this.image = new CompressibleGLBufferedImage(256, 256, 6);
         this.loadCachedData();
         this.loadCurrentData(this.world);
@@ -521,23 +523,29 @@ public class CachedRegion {
     private void saveData(boolean newThread) {
         if (this.liveChunksUpdated && !this.worldNamePathPart.isEmpty()) {
             if (newThread) {
-                ThreadManager.executorService.execute(() -> {
+                ThreadManager.saveExecutorService.execute(() -> {
+                    if (VoxelConstants.DEBUG) {
+                        VoxelConstants.getLogger().info("Saving region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart);
+                    }
                     CachedRegion.this.threadLock.lock();
 
                     try {
                         CachedRegion.this.doSave();
-                    } catch (IOException var5) {
-                        VoxelConstants.getLogger().error("Failed to save region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart, var5);
+                    } catch (Exception ex) {
+                        VoxelConstants.getLogger().error("Failed to save region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart, ex);
                     } finally {
                         CachedRegion.this.threadLock.unlock();
                     }
-
+                    if (VoxelConstants.DEBUG) {
+                        VoxelConstants.getLogger().info("Finished saving region file for " + CachedRegion.this.x + "," + CachedRegion.this.z + " in " + CachedRegion.this.worldNamePathPart + "/" + CachedRegion.this.subworldNamePathPart + CachedRegion.this.dimensionNamePathPart + " ("
+                                + ThreadManager.saveExecutorService.getQueue().size() + ")");
+                    }
                 });
             } else {
                 try {
                     this.doSave();
-                } catch (IOException var3) {
-                    VoxelConstants.getLogger().error(var3);
+                } catch (Exception ex) {
+                    VoxelConstants.getLogger().error(ex);
                 }
             }
 
@@ -585,8 +593,12 @@ public class CachedRegion {
 
                 while (iterator.hasNext()) {
                     Map.Entry<Biome, Integer> entry = iterator.next();
-                    String nextLine = entry.getValue() + " " + world.getRegistryManager().get(RegistryKeys.BIOME).getId(entry.getKey()).toString() + "\r\n";
-                    stringBuffer.append(nextLine);
+                    try {
+                        String nextLine = entry.getValue() + " " + world.getRegistryManager().get(RegistryKeys.BIOME).getId(entry.getKey()).toString() + "\r\n";
+                        stringBuffer.append(nextLine);
+                    } catch (NullPointerException ex) {
+                        VoxelConstants.getLogger().warn("Nullpointer for Biome: " + entry.getValue() + " at " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+                    }
                 }
 
                 byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();

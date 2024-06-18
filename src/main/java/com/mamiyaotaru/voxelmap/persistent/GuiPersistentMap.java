@@ -1041,6 +1041,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         entries.add(entry);
 
         this.createPopup(x, y, directX, directY, entries);
+        if (VoxelConstants.DEBUG) {
+            persistentMap.debugLog((int) cursorCoordX, (int) cursorCoordZ);
+        }
     }
 
     private Waypoint getHovered(float cursorCoordX, float cursorCoordZ) {

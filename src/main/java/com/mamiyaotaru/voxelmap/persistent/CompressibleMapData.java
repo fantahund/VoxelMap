@@ -2,15 +2,14 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
-import net.minecraft.world.biome.BuiltinBiomes;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -45,11 +44,13 @@ public class CompressibleMapData extends AbstractMapData {
     int blockStateCount = 1;
     private BiMap<Biome, Integer> biomeToInt;
     int biomeCount = 1;
+    private final ClientWorld world;
 
-    public CompressibleMapData() {
+    public CompressibleMapData(ClientWorld world) {
         this.width = REGION_SIZE;
         this.height = REGION_SIZE;
         this.data = compressedEmptyData;
+        this.world = world;
         this.isCompressed = true;
     }
 
@@ -584,7 +585,7 @@ public class CompressibleMapData extends AbstractMapData {
         if (biome != null) {
             return biome;
         }
-        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+        return world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
     }
 
     public BiMap<Biome, Integer> getBiomeToInt() {
@@ -602,7 +603,7 @@ public class CompressibleMapData extends AbstractMapData {
                 if (oldID != 0) {
                     Biome biome = oldMap.inverse().get(oldID);
                     if (biome == null) {
-                        biome = MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+                        biome = world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
                     }
                     Integer id = newMap.get(biome);
                     if (id == null && biome != null) {

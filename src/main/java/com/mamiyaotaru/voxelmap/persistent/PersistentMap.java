@@ -912,6 +912,29 @@ public class PersistentMap implements IChangeObserver {
         return cachedRegion == null ? 64 : cachedRegion.getHeightAt(blockX, blockZ);
     }
 
+    public void debugLog(int blockX, int blockZ) {
+        int x = (int) Math.floor(blockX / 256.0F);
+        int z = (int) Math.floor(blockZ / 256.0F);
+        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
+        if (cachedRegion == null) {
+            VoxelConstants.getLogger().info("No Region " + x + "," + z + " at " + blockX + "," + blockZ);
+        } else {
+            VoxelConstants.getLogger().info("Info for region " + x + "," + z + " block " + blockX + "," + blockZ);
+            int localx = blockX - x * 256;
+            int localz = blockZ - z * 256;
+            CompressibleMapData data = cachedRegion.getMapData();
+            if (data == null) {
+                VoxelConstants.getLogger().info("  No map data!");
+            } else {
+                VoxelConstants.getLogger().info("  Base: " + data.getHeight(localx, localz) + " Block: " + data.getBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getLight(localx, localz)));
+                VoxelConstants.getLogger().info("  Foilage: " + data.getFoliageHeight(localx, localz) + " Block: " + data.getFoliageBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getFoliageLight(localx, localz)));
+                VoxelConstants.getLogger().info("  Ocean Floor: " + data.getOceanFloorHeight(localx, localz) + " Block: " + data.getOceanFloorBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getOceanFloorLight(localx, localz)));
+                VoxelConstants.getLogger().info("  Transparent: " + data.getTransparentHeight(localx, localz) + " Block: " + data.getTransparentBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getTransparentLight(localx, localz)));
+                VoxelConstants.getLogger().info("  Biome: " + world.getRegistryManager().get(RegistryKeys.BIOME).getId(data.getBiome(localx, localz)) + " (" + data.getBiomeId(localx, localz) + ")");
+            }
+        }
+    }
+
     private record ChunkWithAge(WorldChunk chunk, int tick) {}
     private record RegionCoordinates(int x, int z) {}
 }
