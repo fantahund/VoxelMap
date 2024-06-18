@@ -68,7 +68,7 @@ public class EmptyCachedRegion extends CachedRegion {
 
     @Override
     public int getHeightAt(int blockX, int blockZ) {
-        return 0;
+        return Short.MIN_VALUE;
     }
 
     @Override
