@@ -2,10 +2,15 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.biome.BuiltinBiomes;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 
@@ -145,10 +150,18 @@ public class CompressibleMapData extends AbstractMapData {
 
     @Override
     public Biome getBiome(int x, int z) {
+        int biomeId = getBiomeId(x, z);
+        if (biomeId == 0 && getHeight(x, z) != Short.MIN_VALUE) {
+            return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+        }
+        return this.getBiomeFromID(biomeId);
+    }
+
+    public int getBiomeId(int x, int z) {
         if (this.isCompressed) {
             this.decompress();
         }
-        return this.getBiomeFromID(this.getDataUnsignedShort(x, z, BIOMEIDPOS));
+        return this.getDataUnsignedShort(x, z, BIOMEIDPOS);
     }
 
     private synchronized byte getData(int x, int z, int layer) {
@@ -473,6 +486,9 @@ public class CompressibleMapData extends AbstractMapData {
                         id = this.blockStateCount;
                         newMap.put(blockState, id);
                     }
+                    if (id == null) {
+                        id = 0;
+                    }
 
                     this.setData(x, z, BLOCKSTATEPOS, (byte) (id >> 8));
                     this.setData(x, z, BLOCKSTATEPOS + 1, (byte) id.intValue());
@@ -489,6 +505,9 @@ public class CompressibleMapData extends AbstractMapData {
 
                         id = this.blockStateCount;
                         newMap.put(blockState, id);
+                    }
+                    if (id == null) {
+                        id = 0;
                     }
 
                     this.setData(x, z, OCEANFLOORBLOCKSTATEPOS, (byte) (id >> 8));
@@ -507,6 +526,9 @@ public class CompressibleMapData extends AbstractMapData {
                         id = this.blockStateCount;
                         newMap.put(blockState, id);
                     }
+                    if (id == null) {
+                        id = 0;
+                    }
 
                     this.setData(x, z, TRANSPARENTBLOCKSTATEPOS, (byte) (id >> 8));
                     this.setData(x, z, TRANSPARENTBLOCKSTATEPOS + 1, (byte) id.intValue());
@@ -523,6 +545,9 @@ public class CompressibleMapData extends AbstractMapData {
 
                         id = this.blockStateCount;
                         newMap.put(blockState, id);
+                    }
+                    if (id == null) {
+                        id = 0;
                     }
 
                     this.setData(x, z, FOLIAGEBLOCKSTATEPOS, (byte) (id >> 8));
@@ -552,7 +577,14 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     private Biome getBiomeFromID(int id) {
-        return id == 0 ? null : this.biomeToInt.inverse().get(id);
+        if (id == 0) {
+            return null;
+        }
+        Biome biome = this.biomeToInt.inverse().get(id);
+        if (biome != null) {
+            return biome;
+        }
+        return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
     }
 
     public BiMap<Biome, Integer> getBiomeToInt() {
@@ -569,6 +601,9 @@ public class CompressibleMapData extends AbstractMapData {
                 int oldID = (this.getData(x, z, BIOMEIDPOS) & 255) << 8 | this.getData(x, z, BIOMEIDPOS + 1) & 255;
                 if (oldID != 0) {
                     Biome biome = oldMap.inverse().get(oldID);
+                    if (biome == null) {
+                        biome = MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+                    }
                     Integer id = newMap.get(biome);
                     if (id == null && biome != null) {
                         while (newMap.inverse().containsKey(this.biomeCount)) {
@@ -577,6 +612,9 @@ public class CompressibleMapData extends AbstractMapData {
 
                         id = this.biomeCount;
                         newMap.put(biome, id);
+                    }
+                    if (id == null) {
+                        id = 0;
                     }
 
                     this.setData(x, z, BIOMEIDPOS, (byte) (id >> 8));
