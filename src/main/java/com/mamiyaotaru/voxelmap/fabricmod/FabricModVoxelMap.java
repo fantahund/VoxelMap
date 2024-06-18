@@ -27,7 +27,6 @@ public class FabricModVoxelMap implements ClientModInitializer {
     public void lateInit() {
         this.initialized = true;
         VoxelConstants.getVoxelMapInstance().lateInit(true, false);
-        Runtime.getRuntime().addShutdownHook(new Thread(FabricModVoxelMap.this::onShutDown));
     }
 
     public void clientTick() {

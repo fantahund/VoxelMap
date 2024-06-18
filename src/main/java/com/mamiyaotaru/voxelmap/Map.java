@@ -976,7 +976,7 @@ public class Map implements Runnable, IChangeObserver {
         int seafloorBlockStateID;
         MutableBlockPos blockPos = MutableBlockPosCache.get();
         MutableBlockPos tempBlockPos = MutableBlockPosCache.get();
-        blockPos.withXYZ(startX + imageX, 0, startZ + imageY);
+        blockPos.withXYZ(startX + imageX, 64, startZ + imageY);
         int color24;
         Biome biome;
         if (needBiome) {

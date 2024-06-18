@@ -514,8 +514,8 @@ public class CachedRegion {
                     this.liveChunksUpdated = true;
                 }
             }
-        } catch (IOException var17) {
-            VoxelConstants.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, var17);
+        } catch (Exception ex) {
+            VoxelConstants.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, ex);
         }
 
     }
