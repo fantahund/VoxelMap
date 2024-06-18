@@ -1118,6 +1118,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
                 TreeSet<DimensionContainer> dimensions = new TreeSet<>();
                 dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
+                y = y > VoxelConstants.getPlayer().getWorld().getBottomY() ? y : 64;
                 this.newWaypoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
                 VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
             }
@@ -1142,7 +1143,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
             case 3 -> {
                 if (hovered == null) {
-                    if (y == 0)
+                    if (y < VoxelConstants.getPlayer().getWorld().getBottomY())
                         y = (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
                     FabricModVoxelMap.instance.playerRunTeleportCommand(x, y, z);
                     break;
