@@ -719,7 +719,7 @@ public class CachedRegion {
     public int getHeightAt(int blockX, int blockZ) {
         int x = blockX - this.x * 256;
         int z = blockZ - this.z * 256;
-        int y = this.data == null ? 0 : this.data.getHeight(x, z);
+        int y = this.data == null ? Short.MIN_VALUE : this.data.getHeight(x, z);
         if (this.underground && y == 255) {
             y = CommandUtils.getSafeHeight(blockX, 64, blockZ, this.world);
         }
