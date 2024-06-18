@@ -240,8 +240,10 @@ public class FullMapData extends AbstractMapData {
         synchronized (this.dataLock) {
             if (x > 0) {
                 System.arraycopy(this.data, x * LAYERS, this.data, 0, this.data.length - x * LAYERS);
+                System.arraycopy(this.biomes, x, this.biomes, 0, this.biomes.length - x);
             } else if (x < 0) {
                 System.arraycopy(this.data, 0, this.data, -x * LAYERS, this.data.length + x * LAYERS);
+                System.arraycopy(this.biomes, 0, this.biomes, -x, this.biomes.length + x);
             }
 
         }
@@ -252,8 +254,10 @@ public class FullMapData extends AbstractMapData {
         synchronized (this.dataLock) {
             if (z > 0) {
                 System.arraycopy(this.data, z * this.width * LAYERS, this.data, 0, this.data.length - z * this.width * LAYERS);
+                System.arraycopy(this.biomes, z * this.width, this.biomes, 0, this.biomes.length - z * this.width);
             } else if (z < 0) {
                 System.arraycopy(this.data, 0, this.data, -z * this.width * LAYERS, this.data.length + z * this.width * LAYERS);
+                System.arraycopy(this.biomes, 0, this.biomes, -z * this.width, this.biomes.length + z * this.width);
             }
 
         }
