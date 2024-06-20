@@ -24,14 +24,16 @@ public class MixinInGameHud {
     @ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/hud/InGameHud$SidebarEntry;Lnet/minecraft/client/gui/DrawContext;ILnet/minecraft/text/Text;I)V", at = @At("STORE"), ordinal = 4)
     private int injected(int bottomX, @Local(ordinal = 3) int entriesHeight) {
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (VoxelMap.mapOptions.hide || !Double.isFinite(unscaledHeight)) {
+        if (VoxelMap.mapOptions.hide || VoxelMap.mapOptions.mapCorner != 1 || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor(); // 1x 2x 3x, ...
         double mapHeightScaled = unscaledHeight * 1.37 / scaleFactor; // * 1.37 weil unscaledHeight nur die map selbst ist ohne text aussen und abstand oben
 
         int fontHeight = ((InGameHud) (Object) this).getTextRenderer().fontHeight; // height of the title line
-        int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight);
+        float statusIconOffset = Map.getStatusIconOffset();
+        int statusIconOffsetInt = Float.isFinite(statusIconOffset) ? (int) statusIconOffset : 0;
+        int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
 
         return Math.max(bottomX, (int) minBottom);
     }

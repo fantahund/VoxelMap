@@ -157,6 +157,7 @@ public class Map implements Runnable, IChangeObserver {
     private double zoomScaleAdjusted = 1.0;
     private int mapImageInt = -1;
     private static double minTablistOffset;
+    private static float statusIconOffset;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -656,8 +657,8 @@ public class Map implements Runnable, IChangeObserver {
             mapY = 37;
         }
 
+        float statusIconOffset = 0.0F;
         if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getStatusEffects().isEmpty()) {
-            float statusIconOffset = 0.0F;
 
             for (StatusEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getStatusEffects()) {
                 if (statusEffectInstance.shouldShowIcon()) {
@@ -668,11 +669,11 @@ public class Map implements Runnable, IChangeObserver {
                     }
                 }
             }
-
             int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
             float resFactor = (float) this.scHeight / scHeight;
             mapY += (int) (statusIconOffset * resFactor);
         }
+        Map.statusIconOffset = statusIconOffset;
 
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
@@ -2136,5 +2137,9 @@ public class Map implements Runnable, IChangeObserver {
 
     public static double getMinTablistOffset() {
         return minTablistOffset;
+    }
+
+    public static float getStatusIconOffset() {
+        return statusIconOffset;
     }
 }
