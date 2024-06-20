@@ -8,6 +8,7 @@
     "APIMixinChatListenerHud",
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
+    "MixinInGameHud",
     "MixinChatHud",
     "MixinKeyboard",
     "MixinMouse",

@@ -70,7 +70,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
-
+import org.lwjgl.opengl.GL30C;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -156,6 +156,7 @@ public class Map implements Runnable, IChangeObserver {
     private double zoomScale = 1.0;
     private double zoomScaleAdjusted = 1.0;
     private int mapImageInt = -1;
+    private static double minTablistOffset;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -1622,25 +1623,26 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(true);
-        OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        OpenGL.glEnable(GL30C.GL_DEPTH_TEST);
         OpenGL.Utils.unbindFramebuffer();
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
         matrixStack.popMatrix();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorter.BY_DISTANCE);
         matrixStack.pushMatrix();
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
+        OpenGL.glBlendFunc(GL30C.GL_SRC_ALPHA, GL30C.GL_ZERO);
         OpenGL.Utils.disp2(OpenGL.Utils.fboTextureId);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / this.scWidth;
-        OpenGL.glEnable(3089);
+        minTablistOffset = guiScale * 63;
+        OpenGL.glEnable(GL30C.GL_SCISSOR_TEST);
         OpenGL.glScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
         OpenGL.Utils.drawPre();
         OpenGL.Utils.setMapWithScale(x, y, scale);
         OpenGL.Utils.drawPost();
-        OpenGL.glDisable(3089);
+        OpenGL.glDisable(GL30C.GL_SCISSOR_TEST);
         matrixStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        OpenGL.glBlendFunc(GL30C.GL_SRC_ALPHA, GL30C.GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.options.squareMap) {
             this.drawSquareMapFrame(x, y);
@@ -2130,5 +2132,9 @@ public class Map implements Runnable, IChangeObserver {
         double e = VoxelConstants.getMinecraft().options.getTextBackgroundOpacity().getValue();
         int v = (int) (255.0 * 1.0 * e);
         drawContext.fill(leftX, topY, rightX, botY, v << 24);
+    }
+
+    public static double getMinTablistOffset() {
+        return minTablistOffset;
     }
 }
