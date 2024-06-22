@@ -23,21 +23,18 @@ public class MixinInGameHud {
 
     @ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/hud/InGameHud$SidebarEntry;Lnet/minecraft/client/gui/DrawContext;ILnet/minecraft/text/Text;I)V", at = @At("STORE"), ordinal = 4)
     private int injected(int bottomX, @Local(ordinal = 3) int entriesHeight) {
-        if (VoxelMap.mapOptions.moveScoreBoardDown) {
-            double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-            if (VoxelMap.mapOptions.hide || VoxelMap.mapOptions.mapCorner != 1 || !Double.isFinite(unscaledHeight)) {
-                return bottomX;
-            }
-            double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor(); // 1x 2x 3x, ...
-            double mapHeightScaled = unscaledHeight * 1.37 / scaleFactor; // * 1.37 weil unscaledHeight nur die map selbst ist ohne text aussen und abstand oben
-
-            int fontHeight = ((InGameHud) (Object) this).getTextRenderer().fontHeight; // height of the title line
-            float statusIconOffset = Map.getStatusIconOffset();
-            int statusIconOffsetInt = Float.isFinite(statusIconOffset) ? (int) statusIconOffset : 0;
-            int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
-
-            return Math.max(bottomX, (int) minBottom);
+        double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
+        if (VoxelMap.mapOptions.hide || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
+            return bottomX;
         }
-        return bottomX;
+        double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor(); // 1x 2x 3x, ...
+        double mapHeightScaled = unscaledHeight * 1.37 / scaleFactor; // * 1.37 because unscaledHeight is just the map without the text around it
+
+        int fontHeight = ((InGameHud) (Object) this).getTextRenderer().fontHeight; // height of the title line
+        float statusIconOffset = Map.getStatusIconOffset();
+        int statusIconOffsetInt = Float.isFinite(statusIconOffset) ? (int) statusIconOffset : 0;
+        int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
+
+        return Math.max(bottomX, (int) minBottom);
     }
 }

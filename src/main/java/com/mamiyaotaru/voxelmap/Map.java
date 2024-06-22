@@ -658,8 +658,8 @@ public class Map implements Runnable, IChangeObserver {
             mapY = 37;
         }
 
+        float statusIconOffset = 0.0F;
         if (VoxelMap.mapOptions.moveMapDownWhileStatusEffect) {
-            float statusIconOffset = 0.0F;
             if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getStatusEffects().isEmpty()) {
 
                 for (StatusEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getStatusEffects()) {
@@ -675,8 +675,8 @@ public class Map implements Runnable, IChangeObserver {
                 float resFactor = (float) this.scHeight / scHeight;
                 mapY += (int) (statusIconOffset * resFactor);
             }
-            Map.statusIconOffset = statusIconOffset;
         }
+        Map.statusIconOffset = statusIconOffset;
 
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
