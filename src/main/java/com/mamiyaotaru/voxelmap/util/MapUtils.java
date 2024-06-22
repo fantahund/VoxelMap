@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.Objects;
 import java.util.Random;
+import net.minecraft.client.world.ClientWorld;
 
 public class MapUtils {
     private static MapSettingsManager options;
@@ -18,18 +19,29 @@ public class MapUtils {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
-    public static int doSlimeAndGrid(int color24, int mcX, int mcZ) {
+    public static int doSlimeAndGrid(int color24, ClientWorld world, int mcX, int mcZ) {
         if (options.slimeChunks && isSlimeChunk(mcX, mcZ)) {
-            color24 = ColorUtils.colorAdder(2097217280, color24);
+            color24 = ColorUtils.colorAdder(0x7D00FF00, color24);
         }
 
         if (options.chunkGrid) {
             if (mcX % 512 != 0 && mcZ % 512 != 0) {
                 if (mcX % 16 == 0 || mcZ % 16 == 0) {
-                    color24 = ColorUtils.colorAdder(2097152000, color24);
+                    color24 = ColorUtils.colorAdder(0x7D000000, color24);
                 }
             } else {
-                color24 = ColorUtils.colorAdder(2113863680, color24);
+                color24 = ColorUtils.colorAdder(0x7DFF0000, color24);
+            }
+        }
+
+        if (true) {
+            int wbEast = (int) Math.round(world.getWorldBorder().getBoundEast()); // +x
+            int wbWest = (int) Math.round(world.getWorldBorder().getBoundWest()); // -x
+            int wbSouth = (int) Math.round(world.getWorldBorder().getBoundSouth()); // +z
+            int wbNorth = (int) Math.round(world.getWorldBorder().getBoundNorth()); // -z
+            if (((mcX == wbEast || mcX == wbWest) && mcZ >= wbNorth && mcZ <= wbSouth) ||
+                    ((mcZ == wbNorth || mcZ == wbSouth) && mcX >= wbWest && mcX <= wbEast)) {
+                color24 = ColorUtils.colorAdder(0xADFF0000, color24);
             }
         }
 

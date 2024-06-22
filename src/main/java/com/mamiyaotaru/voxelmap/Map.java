@@ -958,7 +958,7 @@ public class Map implements Runnable, IChangeObserver {
         this.imageChanged = true;
     }
 
-    private int getPixelColor(boolean needBiome, boolean needHeightAndID, boolean needTint, boolean needLight, boolean nether, boolean caves, World world, int zoom, int multi, int startX, int startZ, int imageX, int imageY) {
+    private int getPixelColor(boolean needBiome, boolean needHeightAndID, boolean needTint, boolean needLight, boolean nether, boolean caves, ClientWorld world, int zoom, int multi, int startX, int startZ, int imageX, int imageY) {
         int surfaceHeight = Short.MIN_VALUE;
         int seafloorHeight = Short.MIN_VALUE;
         int transparentHeight = Short.MIN_VALUE;
@@ -1336,7 +1336,7 @@ public class Map implements Runnable, IChangeObserver {
         }
         MutableBlockPosCache.release(blockPos);
         MutableBlockPosCache.release(tempBlockPos);
-        return MapUtils.doSlimeAndGrid(color24, startX + imageX, startZ + imageY);
+        return MapUtils.doSlimeAndGrid(color24, world, startX + imageX, startZ + imageY);
     }
 
     private int getBlockHeight(boolean nether, boolean caves, World world, int x, int z) {
