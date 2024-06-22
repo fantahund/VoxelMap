@@ -19,12 +19,12 @@ public class MapUtils {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
-    public static int doSlimeAndGrid(int color24, ClientWorld world, int mcX, int mcZ) {
-        if (options.slimeChunks && isSlimeChunk(mcX, mcZ)) {
+    public static int doSlimeAndGrid(int color24, boolean hasBlock, ClientWorld world, int mcX, int mcZ) {
+        if (hasBlock && options.slimeChunks && isSlimeChunk(mcX, mcZ)) {
             color24 = ColorUtils.colorAdder(0x7D00FF00, color24);
         }
 
-        if (options.chunkGrid) {
+        if (hasBlock && options.chunkGrid) {
             if (mcX % 512 != 0 && mcZ % 512 != 0) {
                 if (mcX % 16 == 0 || mcZ % 16 == 0) {
                     color24 = ColorUtils.colorAdder(0x7D000000, color24);

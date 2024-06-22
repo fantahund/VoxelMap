@@ -1336,7 +1336,7 @@ public class Map implements Runnable, IChangeObserver {
         }
         MutableBlockPosCache.release(blockPos);
         MutableBlockPosCache.release(tempBlockPos);
-        return MapUtils.doSlimeAndGrid(color24, world, startX + imageX, startZ + imageY);
+        return MapUtils.doSlimeAndGrid(color24, true, world, startX + imageX, startZ + imageY);
     }
 
     private int getBlockHeight(boolean nether, boolean caves, World world, int x, int z) {

@@ -607,9 +607,9 @@ public class PersistentMap implements IChangeObserver {
                 }
 
             }
-            return MapUtils.doSlimeAndGrid(color24, world, mcX, mcZ);
+            return MapUtils.doSlimeAndGrid(color24, true, world, mcX, mcZ);
         } else {
-            return 0;
+            return MapUtils.doSlimeAndGrid(0, false, world, mcX, mcZ);
         }
     }
 
