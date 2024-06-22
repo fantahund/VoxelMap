@@ -13,7 +13,7 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Text;
 
 public class GuiMinimapPerformance extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = {EnumOptionsMinimap.LIGHTING, EnumOptionsMinimap.TERRAIN, EnumOptionsMinimap.WATERTRANSPARENCY, EnumOptionsMinimap.BLOCKTRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNKGRID, EnumOptionsMinimap.BIOMEOVERLAY, EnumOptionsMinimap.SLIMECHUNKS};
+    private static final EnumOptionsMinimap[] relevantOptions = {EnumOptionsMinimap.LIGHTING, EnumOptionsMinimap.TERRAIN, EnumOptionsMinimap.WATERTRANSPARENCY, EnumOptionsMinimap.BLOCKTRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNKGRID, EnumOptionsMinimap.BIOMEOVERLAY, EnumOptionsMinimap.SLIMECHUNKS, EnumOptionsMinimap.WORLDBORDER};
     private GuiButtonText worldSeedButton;
     private GuiButtonText teleportCommandButton;
     private GuiOptionButtonMinimap slimeChunksButton;
@@ -63,7 +63,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         ++var2;
 
         String buttonTeleportText = I18n.translate("options.minimap.teleportcommand") + ": " + VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand;
-        this.teleportCommandButton = new GuiButtonText(this.getFontRenderer(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 310, 20, Text.literal(buttonTeleportText), button -> this.teleportCommandButton.setEditing(true));
+        this.teleportCommandButton = new GuiButtonText(this.getFontRenderer(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, Text.literal(buttonTeleportText), button -> this.teleportCommandButton.setEditing(true));
         this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
         this.teleportCommandButton.active = VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand == null;
         this.addDrawableChild(this.teleportCommandButton);

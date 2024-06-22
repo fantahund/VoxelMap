@@ -23,7 +23,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE };
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE, EnumOptionsMinimap.MOVEMAPDOWNWHILESTATSUEFFECT, EnumOptionsMinimap.MOVESCOREBOARDDOWN };
         this.screenTitle = I18n.translate("options.minimap.title");
 
         for (int i = 0; i < relevantOptions.length; i++) {
@@ -34,13 +34,13 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             if (option == EnumOptionsMinimap.CAVEMODE) optionButton.active = this.options.cavesAllowed;
         }
 
-        ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 120 - 6, 150, 20).build();
+        ButtonWidget radarOptionsButton = new ButtonWidget.Builder(Text.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 135 - 6, 150, 20).build();
         radarOptionsButton.active = VoxelConstants.getVoxelMapInstance().getRadarOptions().radarAllowed || VoxelConstants.getVoxelMapInstance().getRadarOptions().radarMobsAllowed || VoxelConstants.getVoxelMapInstance().getRadarOptions().radarPlayersAllowed;
         this.addDrawableChild(radarOptionsButton);
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 120 - 6, 150, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 144 - 6, 150, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 144 - 6, 150, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 135 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 159 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 159 - 6, 150, 20).build());
+        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 183, 200, 20).build());
     }
 
     protected void optionClicked(ButtonWidget par1GuiButton) {
@@ -54,7 +54,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        this.renderInGameBackground(drawContext);
+        this.applyBlur(delta);
+        this.renderDarkening(drawContext);
         drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(drawContext, mouseX, mouseY, delta);
     }

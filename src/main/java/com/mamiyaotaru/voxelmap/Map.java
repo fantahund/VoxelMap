@@ -71,6 +71,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL30C;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -157,7 +158,7 @@ public class Map implements Runnable, IChangeObserver {
     private double zoomScaleAdjusted = 1.0;
     private int mapImageInt = -1;
     private static double minTablistOffset;
-    private static float statusIconOffset;
+    private static float statusIconOffset = 0.0F;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -657,23 +658,25 @@ public class Map implements Runnable, IChangeObserver {
             mapY = 37;
         }
 
-        float statusIconOffset = 0.0F;
-        if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getStatusEffects().isEmpty()) {
+        if (VoxelMap.mapOptions.moveMapDownWhileStatusEffect) {
+            float statusIconOffset = 0.0F;
+            if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getStatusEffects().isEmpty()) {
 
-            for (StatusEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getStatusEffects()) {
-                if (statusEffectInstance.shouldShowIcon()) {
-                    if (statusEffectInstance.getEffectType().value().isBeneficial()) {
-                        statusIconOffset = Math.max(statusIconOffset, 24.0F);
-                    } else {
-                        statusIconOffset = 50.0F;
+                for (StatusEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getStatusEffects()) {
+                    if (statusEffectInstance.shouldShowIcon()) {
+                        if (statusEffectInstance.getEffectType().value().isBeneficial()) {
+                            statusIconOffset = Math.max(statusIconOffset, 24.0F);
+                        } else {
+                            statusIconOffset = 50.0F;
+                        }
                     }
                 }
+                int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
+                float resFactor = (float) this.scHeight / scHeight;
+                mapY += (int) (statusIconOffset * resFactor);
             }
-            int scHeight = VoxelConstants.getMinecraft().getWindow().getScaledHeight();
-            float resFactor = (float) this.scHeight / scHeight;
-            mapY += (int) (statusIconOffset * resFactor);
+            Map.statusIconOffset = statusIconOffset;
         }
-        Map.statusIconOffset = statusIconOffset;
 
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);

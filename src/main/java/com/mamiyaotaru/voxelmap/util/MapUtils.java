@@ -34,7 +34,7 @@ public class MapUtils {
             }
         }
 
-        if (true) {
+        if (options.worldborder) {
             int wbEast = (int) Math.round(world.getWorldBorder().getBoundEast()); // +x
             int wbWest = (int) Math.round(world.getWorldBorder().getBoundWest()); // -x
             int wbSouth = (int) Math.round(world.getWorldBorder().getBoundSouth()); // +z

@@ -41,6 +41,7 @@ public class MapSettingsManager implements ISettingsManager {
     public int biomeOverlay;
     public boolean chunkGrid;
     public boolean slimeChunks;
+    public boolean worldborder = true;
     public boolean squareMap = true;
     public boolean rotates = true;
     public boolean oldNorth;
@@ -55,6 +56,8 @@ public class MapSettingsManager implements ISettingsManager {
     public int sizeModifier = 1;
     public int mapCorner = 1;
     public Boolean cavesAllowed = true;
+    public boolean moveMapDownWhileStatusEffect = true;
+    public boolean moveScoreBoardDown = true;
     public int sort = 1;
     protected boolean realTimeTorches;
     public final KeyBinding keyBindZoom = new KeyBinding("key.minimap.zoom", InputUtil.fromTranslationKey("key.keyboard.z").getCode(), "controls.minimap.title");
@@ -105,6 +108,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Biome Overlay" -> this.biomeOverlay = Math.max(0, Math.min(2, Integer.parseInt(curLine[1])));
                         case "Chunk Grid" -> this.chunkGrid = Boolean.parseBoolean(curLine[1]);
                         case "Slime Chunks" -> this.slimeChunks = Boolean.parseBoolean(curLine[1]);
+                        case "World Border" -> this.worldborder = Boolean.parseBoolean(curLine[1]);
                         case "Square Map" -> this.squareMap = Boolean.parseBoolean(curLine[1]);
                         case "Rotation" -> this.rotates = Boolean.parseBoolean(curLine[1]);
                         case "Old North" -> this.oldNorth = Boolean.parseBoolean(curLine[1]);
@@ -125,6 +129,8 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Mob Key" -> this.bindKey(this.keyBindMobToggle, curLine[1]);
                         case "In-game Waypoint Key" -> this.bindKey(this.keyBindWaypointToggle, curLine[1]);
                         case "Teleport Command" -> this.teleportCommand = curLine[1];
+                        case "Move Map Down While Status Effect" -> this.moveMapDownWhileStatusEffect = Boolean.parseBoolean(curLine[1]);
+                        case "Move ScoreBoard Down" -> this.moveScoreBoardDown = Boolean.parseBoolean(curLine[1]);
                     }
                 }
 
@@ -175,6 +181,7 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Biome Overlay:" + this.biomeOverlay);
             out.println("Chunk Grid:" + this.chunkGrid);
             out.println("Slime Chunks:" + this.slimeChunks);
+            out.println("World Boarder:" + this.worldborder);
             out.println("Square Map:" + this.squareMap);
             out.println("Rotation:" + this.rotates);
             out.println("Old North:" + this.oldNorth);
@@ -194,6 +201,8 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Mob Key:" + this.keyBindMobToggle.getBoundKeyTranslationKey());
             out.println("In-game Waypoint Key:" + this.keyBindWaypointToggle.getBoundKeyTranslationKey());
             out.println("Teleport Command:" + this.teleportCommand);
+            out.println("Move Map Down While Status Effect:" + this.moveMapDownWhileStatusEffect);
+            out.println("Move ScoreBoard Down:" + this.moveScoreBoardDown);
 
             for (ISubSettingsManager subSettingsManager : this.subSettingsManagers) {
                 subSettingsManager.saveAll(out);
@@ -253,6 +262,9 @@ public class MapSettingsManager implements ISettingsManager {
             case BIOMES -> this.biomes;
             case CHUNKGRID -> this.chunkGrid;
             case SLIMECHUNKS -> this.slimeChunks;
+            case WORLDBORDER -> this.worldborder;
+            case MOVEMAPDOWNWHILESTATSUEFFECT -> this.moveMapDownWhileStatusEffect;
+            case MOVESCOREBOARDDOWN -> this.moveScoreBoardDown;
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
         };
     }
@@ -380,6 +392,9 @@ public class MapSettingsManager implements ISettingsManager {
             case BIOMES -> this.biomes = !this.biomes;
             case CHUNKGRID -> this.chunkGrid = !this.chunkGrid;
             case SLIMECHUNKS -> this.slimeChunks = !this.slimeChunks;
+            case WORLDBORDER -> this.worldborder = !this.worldborder;
+            case MOVEMAPDOWNWHILESTATSUEFFECT -> this.moveMapDownWhileStatusEffect = !this.moveMapDownWhileStatusEffect;
+            case MOVESCOREBOARDDOWN -> this.moveScoreBoardDown = !this.moveScoreBoardDown;
             case TERRAIN -> {
                 if (this.slopemap && this.heightmap) {
                     this.slopemap = false;
@@ -437,7 +452,6 @@ public class MapSettingsManager implements ISettingsManager {
             this.showBeacons = false;
             this.showWaypoints = false;
         }
-
     }
 
     public String getKeyBindingDescription(int keybindIndex) {

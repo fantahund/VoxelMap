@@ -21,6 +21,7 @@ public enum EnumOptionsMinimap {
     BIOMEOVERLAY("options.minimap.biomeoverlay", false, false, true),
     CHUNKGRID("options.minimap.chunkgrid", false, true, false),
     SLIMECHUNKS("options.minimap.slimechunks", false, true, false),
+    WORLDBORDER("options.minimap.worldborder", false, true, false),
     RADARMODE("options.minimap.radar.radarmode", false, false, true),
     SHOWRADAR("options.minimap.radar.showradar", false, true, false),
     SHOWHOSTILES("options.minimap.radar.showhostiles", false, true, false),
@@ -39,7 +40,9 @@ public enum EnumOptionsMinimap {
     SHOWWAYPOINTNAMES("options.worldmap.showwaypointnames", false, true, false),
     MINZOOM("options.worldmap.minzoom", true, false, false),
     MAXZOOM("options.worldmap.maxzoom", true, false, false),
-    CACHESIZE("options.worldmap.cachesize", true, false, false);
+    CACHESIZE("options.worldmap.cachesize", true, false, false),
+    MOVEMAPDOWNWHILESTATSUEFFECT("options.minimap.movemapdownwhilestatuseffect", false, true, false),
+    MOVESCOREBOARDDOWN("options.minimap.movescoreboarddown", false, true, false);
 
     private final boolean isFloat;
     private final boolean isBoolean;
