@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
@@ -139,6 +140,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     Waypoint newWaypoint;
     Waypoint selectedWaypoint;
     public boolean passEvents;
+    private PopupGuiButton buttonWaypoints;
 
     public GuiPersistentMap(Screen parent) {
         this.parent = parent;
@@ -213,7 +215,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.buttonCount = 5;
         this.buttonSeparation = 4;
         this.buttonWidth = (this.width - this.sideMargin * 2 - this.buttonSeparation * (this.buttonCount - 1)) / this.buttonCount;
-        this.addDrawableChild(new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(this)), this));
+        this.buttonWaypoints = new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Text.translatable("options.minimap.waypoints"), buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(this)), this);
+        this.addDrawableChild(this.buttonWaypoints);
         this.multiworldButtonName = Text.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld");
         this.multiworldButtonNameRed = (Text.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld")).formatted(Formatting.RED);
         if (!VoxelConstants.getMinecraft().isIntegratedServerRunning() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
@@ -360,7 +363,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.timeOfLastKBInput = 0L;
             int mouseDirectX = (int) VoxelConstants.getMinecraft().mouse.getX();
             int mouseDirectY = (int) VoxelConstants.getMinecraft().mouse.getY();
-            this.createPopup((int) mouseX, (int) mouseY, mouseDirectX, mouseDirectY);
+            if (VoxelMap.mapOptions.worldmapAllowed) {
+                this.createPopup((int) mouseX, (int) mouseY, mouseDirectX, mouseDirectY);
+            }
         }
 
         return super.mouseReleased(mouseX, mouseY, button);
@@ -489,6 +494,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        this.buttonWaypoints.active = VoxelMap.mapOptions.waypointsAllowed;
         this.zoomGoal = this.bindZoom(this.zoomGoal);
         if (this.mouseX != mouseX || this.mouseY != mouseY) {
             this.timeOfLastMouseInput = System.currentTimeMillis();
@@ -645,157 +651,159 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.drawTexturedModalRect(this.backGroundImageInfo.left * this.mapToGui, this.backGroundImageInfo.top * this.mapToGui, this.backGroundImageInfo.width * this.mapToGui, this.backGroundImageInfo.height * this.mapToGui);
         }
 
-        for (CachedRegion region : this.regions) {
-            int glid = region.getGLID();
-            if (glid != 0) {
-                OpenGL.Utils.disp2(glid);
-                RenderSystem.bindTextureForSetup(glid);
-                if (mapOptions.filtering) {
-                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-                } else {
-                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-                    OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+        float cursorCoordZ = 0.0f;
+        float cursorCoordX = 0.0f;
+        if (VoxelMap.mapOptions.worldmapAllowed) {
+            for (CachedRegion region : this.regions) {
+                int glid = region.getGLID();
+                if (glid != 0) {
+                    OpenGL.Utils.disp2(glid);
+                    RenderSystem.bindTextureForSetup(glid);
+                    if (mapOptions.filtering) {
+                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+                    } else {
+                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+                    }
+
+                    this.drawTexturedModalRect((region.getX() * 256) * this.mapToGui, (region.getZ() * 256) * this.mapToGui, region.getWidth() * this.mapToGui, region.getWidth() * this.mapToGui);
+                }
+            }
+
+            float cursorX;
+            float cursorY;
+            if (this.mouseCursorShown) {
+                cursorX = mouseDirectX;
+                cursorY = mouseDirectY - this.top * this.guiToDirectMouse;
+            } else {
+                cursorX = (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / 2f);
+                cursorY = (VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() - VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / 2f) - this.top * this.guiToDirectMouse;
+            }
+
+            if (this.oldNorth) {
+                cursorCoordX = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
+                cursorCoordZ = -(cursorX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap));
+            } else {
+                cursorCoordX = cursorX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap);
+                cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
+            }
+
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            if (VoxelMap.mapOptions.waypointsAllowed && this.options.showWaypoints) {
+                for (Waypoint pt : this.waypointManager.getWaypoints()) {
+                    this.drawWaypoint(drawContext, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
                 }
 
-                this.drawTexturedModalRect((region.getX() * 256) * this.mapToGui, (region.getZ() * 256) * this.mapToGui, region.getWidth() * this.mapToGui, region.getWidth() * this.mapToGui);
-            }
-        }
-
-        float cursorX;
-        float cursorY;
-        if (this.mouseCursorShown) {
-            cursorX = mouseDirectX;
-            cursorY = mouseDirectY - this.top * this.guiToDirectMouse;
-        } else {
-            cursorX = (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / 2f);
-            cursorY = (VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() - VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / 2f) - this.top * this.guiToDirectMouse;
-        }
-
-        float cursorCoordZ;
-        float cursorCoordX;
-        if (this.oldNorth) {
-            cursorCoordX = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
-            cursorCoordZ = -(cursorX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap));
-        } else {
-            cursorCoordX = cursorX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap);
-            cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
-        }
-
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        if (this.options.showWaypoints) {
-            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                this.drawWaypoint(drawContext, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
+                if (this.waypointManager.getHighlightedWaypoint() != null) {
+                    this.drawWaypoint(drawContext, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+                }
             }
 
-            if (this.waypointManager.getHighlightedWaypoint() != null) {
-                this.drawWaypoint(drawContext, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            OpenGL.Utils.disp2(playerGLID);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+            float playerX = (float) GameVariableAccessShim.xCoordDouble();
+            float playerZ = (float) GameVariableAccessShim.zCoordDouble();
+            if (this.oldNorth) {
+                modelViewMatrixStack.pushMatrix();
+                modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0f);
+                modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
+                modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0f);
+                RenderSystem.applyModelViewMatrix();
             }
-        }
 
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        OpenGL.Utils.disp2(playerGLID);
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        float playerX = (float) GameVariableAccessShim.xCoordDouble();
-        float playerZ = (float) GameVariableAccessShim.zCoordDouble();
-        if (this.oldNorth) {
-            modelViewMatrixStack.pushMatrix();
-            modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0f);
-            modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
-            modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0f);
+            this.drawTexturedModalRect(-10.0F / this.scScale + playerX * this.mapToGui, -10.0F / this.scScale + playerZ * this.mapToGui, 20.0F / this.scScale, 20.0F / this.scScale);
+            if (this.oldNorth) {
+                modelViewMatrixStack.popMatrix();
+            }
+
+            if (this.oldNorth) {
+                modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
+            }
+
+            modelViewMatrixStack.translate(-(this.centerX - this.mapCenterX * this.mapToGui), -((this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0f);
             RenderSystem.applyModelViewMatrix();
-        }
+            if (mapOptions.biomeOverlay != 0) {
+                float biomeScaleX = this.mapPixelsX / 760.0F;
+                float biomeScaleY = this.mapPixelsY / 360.0F;
+                boolean still = !this.leftMouseButtonDown;
+                still = still && this.zoom == this.zoomGoal;
+                still = still && this.deltaX == 0.0F && this.deltaY == 0.0F;
+                still = still && ThreadManager.executorService.getActiveCount() == 0;
+                if (still && !this.lastStill) {
+                    int column;
+                    if (this.oldNorth) {
+                        column = (int) Math.floor(Math.floor(this.mapCenterZ - this.centerY * this.guiToMap) / 256.0) - (left - 1);
+                    } else {
+                        column = (int) Math.floor(Math.floor(this.mapCenterX - this.centerX * this.guiToMap) / 256.0) - (left - 1);
+                    }
 
-        this.drawTexturedModalRect(-10.0F / this.scScale + playerX * this.mapToGui, -10.0F / this.scScale + playerZ * this.mapToGui, 20.0F / this.scScale, 20.0F / this.scScale);
-        if (this.oldNorth) {
-            modelViewMatrixStack.popMatrix();
-        }
-
-        if (this.oldNorth) {
-            modelViewMatrixStack.rotate(RotationAxis.POSITIVE_Z.rotationDegrees(-90.0F));
-        }
-
-        modelViewMatrixStack.translate(-(this.centerX - this.mapCenterX * this.mapToGui), -((this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0f);
-        RenderSystem.applyModelViewMatrix();
-        if (mapOptions.biomeOverlay != 0) {
-            float biomeScaleX = this.mapPixelsX / 760.0F;
-            float biomeScaleY = this.mapPixelsY / 360.0F;
-            boolean still = !this.leftMouseButtonDown;
-            still = still && this.zoom == this.zoomGoal;
-            still = still && this.deltaX == 0.0F && this.deltaY == 0.0F;
-            still = still && ThreadManager.executorService.getActiveCount() == 0;
-            if (still && !this.lastStill) {
-                int column;
-                if (this.oldNorth) {
-                    column = (int) Math.floor(Math.floor(this.mapCenterZ - this.centerY * this.guiToMap) / 256.0) - (left - 1);
-                } else {
-                    column = (int) Math.floor(Math.floor(this.mapCenterX - this.centerX * this.guiToMap) / 256.0) - (left - 1);
-                }
-
-                for (int x = 0; x < this.biomeMapData.getWidth(); ++x) {
-                    for (int z = 0; z < this.biomeMapData.getHeight(); ++z) {
-                        float floatMapX;
-                        float floatMapZ;
-                        if (this.oldNorth) {
-                            floatMapX = z * biomeScaleY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
-                            floatMapZ = -(x * biomeScaleX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap));
-                        } else {
-                            floatMapX = x * biomeScaleX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap);
-                            floatMapZ = z * biomeScaleY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
-                        }
-
-                        int mapX = (int) Math.floor(floatMapX);
-                        int mapZ = (int) Math.floor(floatMapZ);
-                        int regionX = (int) Math.floor(mapX / 256.0F) - (left - 1);
-                        int regionZ = (int) Math.floor(mapZ / 256.0F) - (top - 1);
-                        if (!this.oldNorth && regionX != column || this.oldNorth && regionZ != column) {
-                            this.persistentMap.compress();
-                        }
-
-                        column = !this.oldNorth ? regionX : regionZ;
-                        CachedRegion region = this.regions[regionZ * (right + 1 - (left - 1) + 1) + regionX];
-                        Biome biome = null;
-                        if (region.getMapData() != null && region.isLoaded() && !region.isEmpty()) {
-                            int inRegionX = mapX - region.getX() * region.getWidth();
-                            int inRegionZ = mapZ - region.getZ() * region.getWidth();
-                            int height = region.getMapData().getHeight(inRegionX, inRegionZ);
-                            int light = region.getMapData().getLight(inRegionX, inRegionZ);
-                            if (height != Short.MIN_VALUE || light != 0) {
-                                biome = region.getMapData().getBiome(inRegionX, inRegionZ);
+                    for (int x = 0; x < this.biomeMapData.getWidth(); ++x) {
+                        for (int z = 0; z < this.biomeMapData.getHeight(); ++z) {
+                            float floatMapX;
+                            float floatMapZ;
+                            if (this.oldNorth) {
+                                floatMapX = z * biomeScaleY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
+                                floatMapZ = -(x * biomeScaleX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap));
+                            } else {
+                                floatMapX = x * biomeScaleX * this.mouseDirectToMap + (this.mapCenterX - this.centerX * this.guiToMap);
+                                floatMapZ = z * biomeScaleY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
                             }
+
+                            int mapX = (int) Math.floor(floatMapX);
+                            int mapZ = (int) Math.floor(floatMapZ);
+                            int regionX = (int) Math.floor(mapX / 256.0F) - (left - 1);
+                            int regionZ = (int) Math.floor(mapZ / 256.0F) - (top - 1);
+                            if (!this.oldNorth && regionX != column || this.oldNorth && regionZ != column) {
+                                this.persistentMap.compress();
+                            }
+
+                            column = !this.oldNorth ? regionX : regionZ;
+                            CachedRegion region = this.regions[regionZ * (right + 1 - (left - 1) + 1) + regionX];
+                            Biome biome = null;
+                            if (region.getMapData() != null && region.isLoaded() && !region.isEmpty()) {
+                                int inRegionX = mapX - region.getX() * region.getWidth();
+                                int inRegionZ = mapZ - region.getZ() * region.getWidth();
+                                int height = region.getMapData().getHeight(inRegionX, inRegionZ);
+                                int light = region.getMapData().getLight(inRegionX, inRegionZ);
+                                if (height != Short.MIN_VALUE || light != 0) {
+                                    biome = region.getMapData().getBiome(inRegionX, inRegionZ);
+                                }
+                            }
+
+                            this.biomeMapData.setBiome(x, z, biome);
                         }
-
-                        this.biomeMapData.setBiome(x, z, biome);
                     }
+
+                    this.persistentMap.compress();
+                    this.biomeMapData.segmentBiomes();
+                    this.biomeMapData.findCenterOfSegments(true);
                 }
 
-                this.persistentMap.compress();
-                this.biomeMapData.segmentBiomes();
-                this.biomeMapData.findCenterOfSegments(true);
-            }
+                this.lastStill = still;
+                boolean displayStill = !this.leftMouseButtonDown;
+                displayStill = displayStill && this.zoom == this.zoomGoal;
+                displayStill = displayStill && this.deltaX == 0.0F && this.deltaY == 0.0F;
+                if (displayStill) {
+                    int minimumSize = (int) (20.0F * this.scScale / biomeScaleX);
+                    minimumSize *= minimumSize;
+                    ArrayList<AbstractMapData.BiomeLabel> labels = this.biomeMapData.getBiomeLabels();
+                    OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
 
-            this.lastStill = still;
-            boolean displayStill = !this.leftMouseButtonDown;
-            displayStill = displayStill && this.zoom == this.zoomGoal;
-            displayStill = displayStill && this.deltaX == 0.0F && this.deltaY == 0.0F;
-            if (displayStill) {
-                int minimumSize = (int) (20.0F * this.scScale / biomeScaleX);
-                minimumSize *= minimumSize;
-                ArrayList<AbstractMapData.BiomeLabel> labels = this.biomeMapData.getBiomeLabels();
-                OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-
-                for (AbstractMapData.BiomeLabel biomeLabel : labels) {
-                    if (biomeLabel.segmentSize > minimumSize) {
-                        int nameWidth = this.chkLen(biomeLabel.name);
-                        float x = biomeLabel.x * biomeScaleX / this.scScale;
-                        float z = biomeLabel.z * biomeScaleY / this.scScale;
-                        this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
+                    for (AbstractMapData.BiomeLabel biomeLabel : labels) {
+                        if (biomeLabel.segmentSize > minimumSize) {
+                            int nameWidth = this.chkLen(biomeLabel.name);
+                            float x = biomeLabel.x * biomeScaleX / this.scScale;
+                            float z = biomeLabel.z * biomeScaleY / this.scScale;
+                            this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
+                        }
                     }
-                }
 
-                OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+                    OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+                }
             }
         }
 
@@ -818,35 +826,37 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.overlayBackground(0, this.top, 255, 255);
         this.overlayBackground(this.bottom, this.getHeight(), 255, 255);
-        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
-        int x = (int) Math.floor(cursorCoordX);
-        int z = (int) Math.floor(cursorCoordZ);
-        if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
-            if (!this.editingCoordinates) {
-                drawContext.drawTextWithShadow(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
-                drawContext.drawTextWithShadow(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
-            } else {
-                this.coordinates.render(drawContext, mouseX, mouseY, delta);
+        if (VoxelMap.mapOptions.worldmapAllowed) {
+            drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
+            int x = (int) Math.floor(cursorCoordX);
+            int z = (int) Math.floor(cursorCoordZ);
+            if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
+                if (!this.editingCoordinates) {
+                    drawContext.drawTextWithShadow(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
+                    drawContext.drawTextWithShadow(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
+                } else {
+                    this.coordinates.render(drawContext, mouseX, mouseY, delta);
+                }
             }
-        }
 
-        if (this.subworldName != null && !this.subworldName.equals(VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true)) || VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true) != null && !VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true).equals(this.subworldName)) {
-            this.buildWorldName();
-        }
+            if (this.subworldName != null && !this.subworldName.equals(VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true))
+                    || VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true) != null && !VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(true).equals(this.subworldName)) {
+                this.buildWorldName();
+            }
 
-        drawContext.drawTextWithShadow(this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
-        if (this.buttonMultiworld != null) {
-            if ((this.subworldName == null || this.subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
-                if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {
-                    this.buttonMultiworld.setMessage(this.multiworldButtonNameRed);
+            drawContext.drawTextWithShadow(this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
+            if (this.buttonMultiworld != null) {
+                if ((this.subworldName == null || this.subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
+                    if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {
+                        this.buttonMultiworld.setMessage(this.multiworldButtonNameRed);
+                    } else {
+                        this.buttonMultiworld.setMessage(this.multiworldButtonName);
+                    }
                 } else {
                     this.buttonMultiworld.setMessage(this.multiworldButtonName);
                 }
-            } else {
-                this.buttonMultiworld.setMessage(this.multiworldButtonName);
             }
         }
-
         super.render(drawContext, mouseX, mouseY, delta);
     }
 
@@ -1030,9 +1040,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             entries.add(entry);
             entry = new Popup.PopupEntry(I18n.translate(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
         } else {
-            entry = new Popup.PopupEntry(I18n.translate("minimap.waypoints.newwaypoint"), 0, true, true);
+            entry = new Popup.PopupEntry(I18n.translate("minimap.waypoints.newwaypoint"), 0, true, VoxelMap.mapOptions.waypointsAllowed);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.translate(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
+            entry = new Popup.PopupEntry(I18n.translate(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, VoxelMap.mapOptions.waypointsAllowed);
         }
         entries.add(entry);
         entry = new Popup.PopupEntry(I18n.translate("minimap.waypoints.teleportto"), 3, true, true);
@@ -1047,6 +1057,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private Waypoint getHovered(float cursorCoordX, float cursorCoordZ) {
+        if (!VoxelMap.mapOptions.waypointsAllowed) {
+            return null;
+        }
         Waypoint waypoint = null;
 
         for (Waypoint pt : this.waypointManager.getWaypoints()) {

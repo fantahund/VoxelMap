@@ -55,7 +55,13 @@ public class MapSettingsManager implements ISettingsManager {
     public int zoom = 2;
     public int sizeModifier = 1;
     public int mapCorner = 1;
+
     public Boolean cavesAllowed = true;
+    public boolean worldmapAllowed = true;
+    public boolean minimapAllowed = true;
+    public boolean waypointsAllowed = true;
+    public boolean deathWaypointAllowed = true;
+
     public boolean moveMapDownWhileStatusEffect = true;
     public boolean moveScoreBoardDown = true;
     public int sort = 1;
@@ -249,7 +255,7 @@ public class MapSettingsManager implements ISettingsManager {
     public boolean getOptionBooleanValue(EnumOptionsMinimap par1EnumOptions) {
         return switch (par1EnumOptions) {
             case COORDS -> this.coords;
-            case HIDE -> this.hide;
+            case HIDE -> this.hide || !this.minimapAllowed;
             case CAVEMODE -> this.cavesAllowed && this.showCaves;
             case LIGHTING -> this.lightmap;
             case SQUARE -> this.squareMap;
@@ -276,26 +282,20 @@ public class MapSettingsManager implements ISettingsManager {
                     return I18n.translate("options.minimap.terrain.both");
                 } else if (this.heightmap) {
                     return I18n.translate("options.minimap.terrain.height");
-                } else {
-                    if (this.slopemap) {
-                        return I18n.translate("options.minimap.terrain.slope");
-                    }
-
-                    return I18n.translate("options.off");
+                } else if (this.slopemap) {
+                    return I18n.translate("options.minimap.terrain.slope");
                 }
+                return I18n.translate("options.off");
             }
             case BEACONS -> {
-                if (this.showBeacons && this.showWaypoints) {
+                if (this.waypointsAllowed && this.showBeacons && this.showWaypoints) {
                     return I18n.translate("options.minimap.ingamewaypoints.both");
-                } else if (this.showBeacons) {
+                } else if (this.waypointsAllowed && this.showBeacons) {
                     return I18n.translate("options.minimap.ingamewaypoints.beacons");
-                } else {
-                    if (this.showWaypoints) {
-                        return I18n.translate("options.minimap.ingamewaypoints.signs");
-                    }
-
-                    return I18n.translate("options.off");
+                } else if (this.waypointsAllowed && this.showWaypoints) {
+                    return I18n.translate("options.minimap.ingamewaypoints.signs");
                 }
+                return I18n.translate("options.off");
             }
             case LOCATION -> {
                 if (this.mapCorner == 0) {

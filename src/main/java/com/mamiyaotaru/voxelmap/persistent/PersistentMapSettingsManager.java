@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import net.minecraft.client.resource.language.I18n;
@@ -108,8 +109,8 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
 
     public boolean getOptionBooleanValue(EnumOptionsMinimap par1EnumOptions) {
         return switch (par1EnumOptions) {
-            case SHOWWAYPOINTS -> this.showWaypoints;
-            case SHOWWAYPOINTNAMES -> this.showWaypointNames;
+            case SHOWWAYPOINTS -> this.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
+            case SHOWWAYPOINTNAMES -> this.showWaypointNames && VoxelMap.mapOptions.waypointsAllowed;
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean)");
         };
     }

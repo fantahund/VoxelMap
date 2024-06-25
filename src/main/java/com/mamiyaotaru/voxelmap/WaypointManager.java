@@ -747,7 +747,7 @@ public class WaypointManager {
     }
 
     public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
-        if (this.waypointContainer != null) {
+        if (VoxelMap.mapOptions.waypointsAllowed && this.waypointContainer != null) {
             this.waypointContainer.renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
         }
 

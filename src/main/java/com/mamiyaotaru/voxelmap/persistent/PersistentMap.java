@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -602,7 +603,7 @@ public class PersistentMap implements IChangeObserver {
                         bc = BiomeRepository.getBiomeColor(biome);
                     }
 
-                    bc = 2130706432 | bc;
+                    bc = 0x7F000000 | bc;
                     color24 = ColorUtils.colorAdder(bc, color24);
                 }
 
@@ -835,7 +836,9 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public void processChunk(WorldChunk chunk) {
-        this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+        if (VoxelMap.mapOptions.worldmapAllowed) {
+            this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+        }
     }
 
     private void doProcessChunk(WorldChunk chunk) {

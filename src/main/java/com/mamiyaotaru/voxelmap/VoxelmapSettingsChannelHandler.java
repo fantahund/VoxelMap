@@ -49,6 +49,10 @@ public class VoxelmapSettingsChannelHandler implements ClientPlayNetworking.Play
                 case "radarMobsAllowed" -> VoxelConstants.getVoxelMapInstance().getRadarOptions().radarMobsAllowed = (Boolean) value;
                 case "radarPlayersAllowed" -> VoxelConstants.getVoxelMapInstance().getRadarOptions().radarPlayersAllowed = (Boolean) value;
                 case "cavesAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().cavesAllowed = (Boolean) value;
+                case "minimapAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().minimapAllowed = (Boolean) value;
+                case "worldmapAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().worldmapAllowed = (Boolean) value;
+                case "waypointsAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed = (Boolean) value;
+                case "deathWaypointAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().deathWaypointAllowed = (Boolean) value;
                 case "teleportCommand" -> VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand = (String) value;
                 default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
             }

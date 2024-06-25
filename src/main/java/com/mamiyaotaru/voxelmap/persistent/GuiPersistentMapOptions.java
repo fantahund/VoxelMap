@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
@@ -28,7 +29,11 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         int counter = 0;
 
         for (EnumOptionsMinimap option : relevantOptions) {
-            this.addDrawableChild(new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked));
+            GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, Text.literal(this.options.getKeyText(option)), this::optionClicked);
+            this.addDrawableChild(optionButton);
+            
+            if (option == EnumOptionsMinimap.SHOWWAYPOINTS) optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
+            if (option == EnumOptionsMinimap.SHOWWAYPOINTNAMES) optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
             counter++;
         }
 
@@ -57,7 +62,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
-                    button.active = this.options.showWaypoints;
+                    button.active = this.options.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
                 }
             }
         }
@@ -72,7 +77,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
-                    button.active = this.options.showWaypoints;
+                    button.active = this.options.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
                 }
             }
         }

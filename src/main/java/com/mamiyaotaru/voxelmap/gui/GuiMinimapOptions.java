@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
@@ -31,6 +32,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(getWidth() / 2 - 155 + i % 2 * 160, getHeight() / 6 + 24 * (i >> 1), option, Text.literal(options.getKeyText(option)), this::optionClicked);
             this.addDrawableChild(optionButton);
 
+            if (option == EnumOptionsMinimap.HIDE) optionButton.active = this.options.minimapAllowed;
+            if (option == EnumOptionsMinimap.BEACONS) optionButton.active = this.options.waypointsAllowed;
             if (option == EnumOptionsMinimap.CAVEMODE) optionButton.active = this.options.cavesAllowed;
         }
 
@@ -39,7 +42,9 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         this.addDrawableChild(radarOptionsButton);
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.detailsperformance"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapPerformance(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 135 - 6, 150, 20).build());
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.controls"), button -> VoxelConstants.getMinecraft().setScreen(new GuiMinimapControls(this))).dimensions(this.getWidth() / 2 - 155, this.getHeight() / 6 + 159 - 6, 150, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 159 - 6, 150, 20).build());
+        ButtonWidget worldMapButton = new ButtonWidget.Builder(Text.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this))).dimensions(this.getWidth() / 2 + 5, this.getHeight() / 6 + 159 - 6, 150, 20).build();
+        worldMapButton.active = VoxelMap.mapOptions.worldmapAllowed;
+        this.addDrawableChild(worldMapButton);
         this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).dimensions(this.getWidth() / 2 - 100, this.getHeight() / 6 + 183, 200, 20).build());
     }
 

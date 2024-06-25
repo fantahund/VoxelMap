@@ -284,6 +284,11 @@ public class VoxelMap implements ResourceReloader {
         radarOptions.radarMobsAllowed = true;
         mapOptions.cavesAllowed = true;
         mapOptions.serverTeleportCommand = null;
+
+        mapOptions.worldmapAllowed = true;
+        mapOptions.minimapAllowed = true;
+        mapOptions.waypointsAllowed = true;
+        mapOptions.deathWaypointAllowed = true;
     }
 
     public void onPlayInit() {

@@ -310,8 +310,9 @@ public class Map implements Runnable, IChangeObserver {
                 this.options.welcome = false;
                 this.options.saveAll();
             }
-
-            VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(null));
+            if (VoxelMap.mapOptions.waypointsAllowed) {
+                VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(null));
+            }
         }
 
         if (VoxelConstants.getMinecraft().currentScreen == null && this.options.keyBindWaypoint.wasPressed()) {
@@ -321,24 +322,27 @@ public class Map implements Runnable, IChangeObserver {
                 this.options.saveAll();
             }
 
-            float r;
-            float g;
-            float b;
-            if (this.waypointManager.getWaypoints().isEmpty()) {
-                r = 0.0F;
-                g = 1.0F;
-                b = 0.0F;
-            } else {
-                r = this.generator.nextFloat();
-                g = this.generator.nextFloat();
-                b = this.generator.nextFloat();
-            }
+            if (VoxelMap.mapOptions.waypointsAllowed) {
+                float r;
+                float g;
+                float b;
+                if (this.waypointManager.getWaypoints().isEmpty()) {
+                    r = 0.0F;
+                    g = 1.0F;
+                    b = 0.0F;
+                } else {
+                    r = this.generator.nextFloat();
+                    g = this.generator.nextFloat();
+                    b = this.generator.nextFloat();
+                }
 
-            TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-            dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
-            double dimensionScale = VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale();
-            Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
-            VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
+                TreeSet<DimensionContainer> dimensions = new TreeSet<>();
+                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
+                double dimensionScale = VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale();
+                Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "",
+                        VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
+                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
+            }
         }
 
         if (VoxelConstants.getMinecraft().currentScreen == null && this.options.keyBindMobToggle.wasPressed()) {
@@ -376,7 +380,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         this.checkForChanges();
-        if (VoxelConstants.getMinecraft().currentScreen instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
+        if (VoxelMap.mapOptions.deathWaypointAllowed && VoxelConstants.getMinecraft().currentScreen instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
             this.waypointManager.handleDeath();
         }
 
@@ -442,7 +446,7 @@ public class Map implements Runnable, IChangeObserver {
             this.error = "";
         }
 
-        if (enabled) {
+        if (enabled && VoxelMap.mapOptions.minimapAllowed) {
             this.drawMinimap(drawContext);
         }
 
@@ -1661,21 +1665,22 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
+        if (VoxelMap.mapOptions.waypointsAllowed) {
+            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
 
-        for (Waypoint pt : this.waypointManager.getWaypoints()) {
-            if (pt.isActive() || pt == highlightedPoint) {
-                double distanceSq = pt.getDistanceSqToEntity(VoxelConstants.getMinecraft().getCameraEntity());
-                if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                    this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
+            for (Waypoint pt : this.waypointManager.getWaypoints()) {
+                if (pt.isActive() || pt == highlightedPoint) {
+                    double distanceSq = pt.getDistanceSqToEntity(VoxelConstants.getMinecraft().getCameraEntity());
+                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
+                        this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
+                    }
                 }
             }
-        }
 
-        if (highlightedPoint != null) {
-            this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+            if (highlightedPoint != null) {
+                this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+            }
         }
-
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
