@@ -116,8 +116,8 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         this.renderInGameBackground(drawContext);
-        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), I18n.translate("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
-        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
+        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), Text.translatable("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);
+        drawContext.drawTextWithShadow(this.getFontRenderer(), Text.translatable("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
         this.subworldNameField.render(drawContext, mouseX, mouseY, delta);
         super.render(drawContext, mouseX, mouseY, delta);
     }
