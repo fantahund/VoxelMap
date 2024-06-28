@@ -25,6 +25,7 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -49,6 +50,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.border.WorldBorder;
 import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
@@ -671,6 +673,42 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
 
+            if (VoxelMap.mapOptions.worldborder) {
+                RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+
+                WorldBorder worldBorder = MinecraftClient.getInstance().world.getWorldBorder();
+                float scale = 1.0f / (float) MinecraftClient.getInstance().getWindow().getScaleFactor();
+
+                float x1 = (float) (worldBorder.getBoundWest() * this.mapToGui);
+                float z1 = (float) (worldBorder.getBoundNorth() * this.mapToGui);
+                float x2 = (float) (worldBorder.getBoundEast() * this.mapToGui);
+                float z2 = (float) (worldBorder.getBoundSouth() * this.mapToGui);
+
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+                vertexBuffer.vertex(x1, z1, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x1, z2, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x2, z2, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x2, z1, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x1, z1, 0).color(255, 0, 0, 255);
+
+                vertexBuffer.vertex(x1 - scale, z1 - scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x1 - scale, z2 + scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x2 + scale, z2 + scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x2 + scale, z1 - scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x1 - scale, z1 - scale, 0).color(255, 0, 0, 255);
+
+                vertexBuffer.vertex(x1 + scale, z1 + scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x1 + scale, z2 - scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x2 - scale, z2 - scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x2 - scale, z1 + scale, 0).color(255, 0, 0, 255);
+                vertexBuffer.vertex(x1 + scale, z1 + scale, 0).color(255, 0, 0, 255);
+
+                BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+
+                RenderSystem.setShader(GameRenderer::getPositionTexProgram);
+            }
+
             float cursorX;
             float cursorY;
             if (this.mouseCursorShown) {
@@ -791,8 +829,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     int minimumSize = (int) (20.0F * this.scScale / biomeScaleX);
                     minimumSize *= minimumSize;
                     ArrayList<AbstractMapData.BiomeLabel> labels = this.biomeMapData.getBiomeLabels();
-                    OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-
+                    RenderSystem.disableDepthTest();
                     for (AbstractMapData.BiomeLabel biomeLabel : labels) {
                         if (biomeLabel.segmentSize > minimumSize) {
                             int nameWidth = this.chkLen(biomeLabel.name);
@@ -801,8 +838,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                             this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
                         }
                     }
-
-                    OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+                    RenderSystem.enableDepthTest();
                 }
             }
         }

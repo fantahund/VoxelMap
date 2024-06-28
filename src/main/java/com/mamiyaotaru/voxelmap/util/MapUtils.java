@@ -34,16 +34,16 @@ public class MapUtils {
             }
         }
 
-        if (options.worldborder) {
-            int wbEast = (int) Math.round(world.getWorldBorder().getBoundEast()); // +x
-            int wbWest = (int) Math.round(world.getWorldBorder().getBoundWest()); // -x
-            int wbSouth = (int) Math.round(world.getWorldBorder().getBoundSouth()); // +z
-            int wbNorth = (int) Math.round(world.getWorldBorder().getBoundNorth()); // -z
-            if (((mcX == wbEast || mcX == wbWest) && mcZ >= wbNorth && mcZ <= wbSouth) ||
-                    ((mcZ == wbNorth || mcZ == wbSouth) && mcX >= wbWest && mcX <= wbEast)) {
-                color24 = ColorUtils.colorAdder(0xADFF0000, color24);
-            }
-        }
+        // if (options.worldborder) {
+        // int wbEast = (int) Math.round(world.getWorldBorder().getBoundEast()); // +x
+        // int wbWest = (int) Math.round(world.getWorldBorder().getBoundWest()); // -x
+        // int wbSouth = (int) Math.round(world.getWorldBorder().getBoundSouth()); // +z
+        // int wbNorth = (int) Math.round(world.getWorldBorder().getBoundNorth()); // -z
+        // if (((mcX == wbEast || mcX == wbWest) && mcZ >= wbNorth && mcZ <= wbSouth) ||
+        // ((mcZ == wbNorth || mcZ == wbSouth) && mcX >= wbWest && mcX <= wbEast)) {
+        // color24 = ColorUtils.colorAdder(0xADFF0000, color24);
+        // }
+        // }
 
         return color24;
     }
