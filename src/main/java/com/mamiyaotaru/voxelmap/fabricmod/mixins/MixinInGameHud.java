@@ -24,7 +24,7 @@ public class MixinInGameHud {
     @ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/hud/InGameHud$SidebarEntry;Lnet/minecraft/client/gui/DrawContext;ILnet/minecraft/text/Text;I)V", at = @At("STORE"), ordinal = 4)
     private int injected(int bottomX, @Local(ordinal = 3) int entriesHeight) {
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (VoxelMap.mapOptions.hide || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
+        if (VoxelMap.mapOptions.hide || !VoxelMap.mapOptions.minimapAllowed || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = MinecraftClient.getInstance().getWindow().getScaleFactor(); // 1x 2x 3x, ...

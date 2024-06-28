@@ -236,7 +236,7 @@ public class Map implements Runnable, IChangeObserver {
         if (VoxelConstants.getMinecraft() != null) {
             while (true) {
                 if (this.world != null) {
-                    if (!this.options.hide) {
+                    if (!this.options.hide && this.options.minimapAllowed) {
                         try {
                             this.mapCalc(this.doFullRender);
                             if (!this.doFullRender) {
@@ -409,7 +409,7 @@ public class Map implements Runnable, IChangeObserver {
                 // }
             }
         } else {
-            if (!this.options.hide && this.world != null) {
+            if (!this.options.hide && this.options.minimapAllowed && this.world != null) {
                 this.mapCalc(this.doFullRender);
                 if (!this.doFullRender) {
                     MutableBlockPos blockPos = MutableBlockPosCache.get();
