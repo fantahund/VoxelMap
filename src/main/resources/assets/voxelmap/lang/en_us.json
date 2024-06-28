@@ -141,6 +141,7 @@
   "options.worldmap.maxzoom": "Max Zoom",
   "options.worldmap.cachesize": "Regions Cache Size",
   "options.worldmap.multiworld": "Multiworld...",
+  "worldmap.disabled": "The Worldmap is disabled on this server.",
   "worldmap.multiworld.title": "VoxelMap - Multiworld Selection",
   "worldmap.multiworld.select": "Which world are you in?",
   "worldmap.multiworld.newname": "New Name",

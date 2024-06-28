@@ -138,6 +138,7 @@
   "options.worldmap.maxzoom": "Max. Zoom",
   "options.worldmap.cachesize": "Regionpuffer Größe",
   "options.worldmap.multiworld": "Multiworld...",
+  "worldmap.disabled": "Die Weltkarte ist auf diesem Server deaktiviert.",
   "worldmap.multiworld.title": "VoxelMap - Multiworld Wählen",
   "worldmap.multiworld.select": "In welcher Welt bist du?",
   "worldmap.multiworld.newname": "Neuer Name",

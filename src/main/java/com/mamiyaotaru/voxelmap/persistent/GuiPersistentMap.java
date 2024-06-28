@@ -892,6 +892,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     this.buttonMultiworld.setMessage(this.multiworldButtonName);
                 }
             }
+        } else {
+            drawContext.drawTextWithShadow(this.getFontRenderer(), Text.translatable("worldmap.disabled"), this.sideMargin, 16, 0xFFFFFF);
         }
         super.render(drawContext, mouseX, mouseY, delta);
     }
