@@ -390,7 +390,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
 
                 this.coordinates.setText(x + ", " + z);
-                this.coordinates.setEditableColor(16777215);
+                this.coordinates.setEditableColor(0xFFFFFF);
             }
 
             this.lastEditingCoordinates = this.editingCoordinates;
@@ -421,7 +421,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (this.editingCoordinates) {
             this.coordinates.keyPressed(keyCode, scanCode, modifiers);
             boolean isGood = this.isAcceptable(this.coordinates.getText());
-            this.coordinates.setEditableColor(isGood ? 16777215 : 16711680);
+            this.coordinates.setEditableColor(isGood ? 0xFFFFFF : 0xFF0000);
             if ((keyCode == 257 || keyCode == 335) && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getText().split(",");
                 this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
@@ -451,7 +451,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (this.editingCoordinates) {
             this.coordinates.charTyped(chr, modifiers);
             boolean isGood = this.isAcceptable(this.coordinates.getText());
-            this.coordinates.setEditableColor(isGood ? 16777215 : 16711680);
+            this.coordinates.setEditableColor(isGood ? 0xFFFFFF : 0xFF0000);
             if (chr == '\r' && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getText().split(",");
                 this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
@@ -835,7 +835,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                             int nameWidth = this.chkLen(biomeLabel.name);
                             float x = biomeLabel.x * biomeScaleX / this.scScale;
                             float z = biomeLabel.z * biomeScaleY / this.scScale;
-                            this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 16777215);
+                            this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 0xFFFFFF);
                         }
                     }
                     RenderSystem.enableDepthTest();
@@ -863,13 +863,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.overlayBackground(0, this.top, 255, 255);
         this.overlayBackground(this.bottom, this.getHeight(), 255, 255);
         if (VoxelMap.mapOptions.worldmapAllowed) {
-            drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 16777215);
+            drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 0xFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
             int z = (int) Math.floor(cursorCoordZ);
             if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
                 if (!this.editingCoordinates) {
-                    drawContext.drawTextWithShadow(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 16777215);
-                    drawContext.drawTextWithShadow(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 16777215);
+                    drawContext.drawTextWithShadow(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 0xFFFFFF);
+                    drawContext.drawTextWithShadow(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 0xFFFFFF);
                 } else {
                     this.coordinates.render(drawContext, mouseX, mouseY, delta);
                 }
@@ -880,7 +880,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 this.buildWorldName();
             }
 
-            drawContext.drawTextWithShadow(this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 16777215);
+            drawContext.drawTextWithShadow(this.getFontRenderer(), this.worldNameDisplay, this.getWidth() - this.sideMargin - this.worldNameDisplayLength, 16, 0xFFFFFF);
             if (this.buttonMultiworld != null) {
                 if ((this.subworldName == null || this.subworldName.isEmpty()) && VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld()) {
                     if ((int) (System.currentTimeMillis() / 1000L % 2L) == 0) {
@@ -963,7 +963,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         RenderSystem.applyModelViewMatrix();
                     }
 
-                    this.write(drawContext, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 1442840575 : 16777215);
+                    this.write(drawContext, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
                     matrixStack.pop();
                     RenderSystem.applyModelViewMatrix();
                     OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
