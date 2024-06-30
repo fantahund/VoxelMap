@@ -2022,10 +2022,14 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.scale(scale, scale, 1.0F);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.chkLen(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale, 16777215); //X, Z
-            xy = Integer.toString(GameVariableAccessShim.yCoord());
-            m = this.chkLen(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 16777215); //Y
+            String xCoord = Integer.toString(GameVariableAccessShim.xCoord());
+            String yCoord = Integer.toString(GameVariableAccessShim.yCoord());
+            String zCoord = Integer.toString(GameVariableAccessShim.zCoord());
+
+            String coordinates = xCoord + ", " + yCoord + ", " + zCoord;
+            int centerPos = this.chkLen(coordinates) / 2;
+
+            this.write(matrixStack, coordinates, x / scale - centerPos, textStart / scale, 16777215);
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
                 this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); //WORLD NAME
