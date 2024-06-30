@@ -628,6 +628,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     public void drawMinimap(DrawContext drawContext) {
+        this.write(drawContext, "hey, was geht?", 0, -20.0F, 16777215);
         int scScaleOrig = 1;
 
         while (VoxelConstants.getMinecraft().getWindow().getFramebufferWidth() / (scScaleOrig + 1) >= 320 && VoxelConstants.getMinecraft().getWindow().getFramebufferHeight() / (scScaleOrig + 1) >= 240) {
