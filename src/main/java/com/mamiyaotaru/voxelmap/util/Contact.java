@@ -2,9 +2,8 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import net.minecraft.entity.Entity;
-
 import java.util.UUID;
+import net.minecraft.world.entity.Entity;
 
 public class Contact {
     public double x;
@@ -28,7 +27,7 @@ public class Contact {
     public Contact(Entity entity, EnumMobs type) {
         this.entity = entity;
         this.type = type;
-        this.uuid = entity.getUuid();
+        this.uuid = entity.getUUID();
         this.vanillaType = type != EnumMobs.GENERICNEUTRAL && type != EnumMobs.GENERICHOSTILE && type != EnumMobs.GENERICTAME && type != EnumMobs.UNKNOWN;
     }
 
@@ -41,8 +40,8 @@ public class Contact {
     public void setArmorColor(int armorColor) { this.armorColor = armorColor; }
 
     public void updateLocation() {
-        this.x = this.entity.prevX + (this.entity.getX() - this.entity.prevX) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
+        this.x = this.entity.xo + (this.entity.getX() - this.entity.xo) * VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false);
         this.y = (int) this.entity.getY() + this.yFudge;
-        this.z = this.entity.prevZ + (this.entity.getZ() - this.entity.prevZ) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
+        this.z = this.entity.zo + (this.entity.getZ() - this.entity.zo) * VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false);
     }
 }

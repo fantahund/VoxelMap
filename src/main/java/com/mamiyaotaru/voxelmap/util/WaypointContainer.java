@@ -6,27 +6,27 @@ import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.font.TextRenderer.TextLayerType;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.entity.Entity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.chunk.WorldChunk;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Axis;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.Font.DisplayMode;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class WaypointContainer {
     private final List<Waypoint> wayPts = new ArrayList<>();
@@ -65,16 +65,16 @@ public class WaypointContainer {
             OpenGL.glDepthMask(false);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 1);
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
             // Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
 
             for (Waypoint pt : this.wayPts) {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
                     int z = pt.getZ();
-                    WorldChunk chunk = VoxelConstants.getPlayer().getWorld().getChunk(x >> 4, z >> 4);
-                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(x >> 4, z >> 4)) {
-                        double bottomOfWorld = VoxelConstants.getPlayer().getWorld().getBottomY() - renderPosY;
+                    LevelChunk chunk = VoxelConstants.getPlayer().level().getChunk(x >> 4, z >> 4);
+                    if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(x >> 4, z >> 4)) {
+                        double bottomOfWorld = VoxelConstants.getPlayer().level().getMinBuildHeight() - renderPosY;
                         this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, matrixStack);
                     }
                 }
@@ -94,7 +94,7 @@ public class WaypointContainer {
                     int z = pt.getZ();
                     int y = pt.getY();
                     double distance = Math.sqrt(pt.getDistanceSqToEntity(cameraEntity));
-                    if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hudHidden) {
+                    if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hideGui) {
                         boolean isPointedAt = this.isPointedAt(pt, distance, cameraEntity, partialTicks);
                         String label = pt.name;
                         this.renderLabel(matrixStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, withDepth, withoutDepth);
@@ -102,7 +102,7 @@ public class WaypointContainer {
                 }
             }
 
-            if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hudHidden) {
+            if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hideGui) {
                 int x = this.highlightedWaypoint.getX();
                 int z = this.highlightedWaypoint.getZ();
                 int y = this.highlightedWaypoint.getY();
@@ -119,14 +119,14 @@ public class WaypointContainer {
     }
 
     private boolean isPointedAt(Waypoint waypoint, double distance, Entity cameraEntity, Float partialTicks) {
-        Vec3d cameraPos = cameraEntity.getCameraPosVec(partialTicks);
+        Vec3 cameraPos = cameraEntity.getEyePosition(partialTicks);
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * 0.0174533;
         double size = Math.sin(angle) * distance;
-        Vec3d cameraPosPlusDirection = cameraEntity.getRotationVec(partialTicks);
-        Vec3d cameraPosPlusDirectionTimesDistance = cameraPos.add(cameraPosPlusDirection.x * distance, cameraPosPlusDirection.y * distance, cameraPosPlusDirection.z * distance);
-        Box axisalignedbb = new Box((waypoint.getX() + 0.5F) - size, (waypoint.getY() + 1.5F) - size, (waypoint.getZ() + 0.5F) - size, (waypoint.getX() + 0.5F) + size, (waypoint.getY() + 1.5F) + size, (waypoint.getZ() + 0.5F) + size);
-        Optional<Vec3d> raytraceresult = axisalignedbb.raycast(cameraPos, cameraPosPlusDirectionTimesDistance);
+        Vec3 cameraPosPlusDirection = cameraEntity.getViewVector(partialTicks);
+        Vec3 cameraPosPlusDirectionTimesDistance = cameraPos.add(cameraPosPlusDirection.x * distance, cameraPosPlusDirection.y * distance, cameraPosPlusDirection.z * distance);
+        AABB axisalignedbb = new AABB((waypoint.getX() + 0.5F) - size, (waypoint.getY() + 1.5F) - size, (waypoint.getZ() + 0.5F) - size, (waypoint.getX() + 0.5F) + size, (waypoint.getY() + 1.5F) + size, (waypoint.getZ() + 0.5F) + size);
+        Optional<Vec3> raytraceresult = axisalignedbb.clip(cameraPos, cameraPosPlusDirectionTimesDistance);
         if (axisalignedbb.contains(cameraPos)) {
             return distance >= 1.0;
         } else
@@ -134,7 +134,7 @@ public class WaypointContainer {
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, Matrix4f matrix4f) {
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         int height = VoxelConstants.getClientWorld().getHeight();
         float brightness = 0.06F;
         double topWidthFactor = 1.05;
@@ -144,7 +144,7 @@ public class WaypointContainer {
         float g = par1EntityWaypoint.green;
 
         for (int width = 0; width < 4; ++width) {
-            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             double d6 = 0.1 + width * 0.2;
             d6 *= topWidthFactor;
             double d7 = 0.1 + width * 0.2;
@@ -171,11 +171,11 @@ public class WaypointContainer {
                     vertZ1 = (float) (vertZ1 + d7 * 2.0);
                 }
 
-                vertexBuffer.vertex(matrix4f, vertX1, (float) baseY + 0.0F, vertZ1).color(r * brightness, g * brightness, b * brightness, 0.8F);
-                vertexBuffer.vertex(matrix4f, vertX2, (float) baseY + height, vertZ2).color(r * brightness, g * brightness, b * brightness, 0.8F);
+                vertexBuffer.addVertex(matrix4f, vertX1, (float) baseY + 0.0F, vertZ1).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
+                vertexBuffer.addVertex(matrix4f, vertX2, (float) baseY + height, vertZ2).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
             }
 
-            BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+            BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
 
     }
@@ -190,7 +190,7 @@ public class WaypointContainer {
         }
 
         name = name + " (" + (int) distance + "m)";
-        double maxDistance = VoxelConstants.getMinecraft().options.getSimulationDistance().getValue() * 16.0 * 0.99;
+        double maxDistance = VoxelConstants.getMinecraft().options.simulationDistance().get() * 16.0 * 0.99;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;
@@ -202,11 +202,11 @@ public class WaypointContainer {
         float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
         matrixStack.pushMatrix();
         matrixStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
-        matrixStack.rotate(RotationAxis.POSITIVE_Y.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYaw()));
-        matrixStack.rotate(RotationAxis.POSITIVE_X.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getPitch()));
+        matrixStack.rotate(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
+        matrixStack.rotate(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
         matrixStack.scale(-var14, -var14, -var14);
         // Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
-        Tessellator tessellator = Tessellator.getInstance();
+        Tesselator tessellator = Tesselator.getInstance();
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
         fade = Math.min(fade, !pt.enabled && !target ? 0.3F : 1.0F);
         float width = 10.0F;
@@ -219,82 +219,82 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        OpenGL.Utils.disp2(textureAtlas.getGlId());
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        OpenGL.Utils.disp2(textureAtlas.getId());
         if (withDepth) {
             OpenGL.glDepthMask(distance < maxDistance);
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(matrixStack, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, fade);
-            vertexBuffer.vertex(matrixStack, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, fade);
-            vertexBuffer.vertex(matrixStack, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, fade);
-            vertexBuffer.vertex(matrixStack, width, -width, 0.0F).texture(icon.getMaxU(), icon.getMinV()).color(r, g, b, fade);
-            BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            vertexBuffer.addVertex(matrixStack, -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fade);
+            vertexBuffer.addVertex(matrixStack, -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fade);
+            vertexBuffer.addVertex(matrixStack, width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, fade);
+            vertexBuffer.addVertex(matrixStack, width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fade);
+            BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
 
         if (withoutDepth) {
             OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             OpenGL.glDepthMask(false);
-            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-            vertexBuffer.vertex(matrixStack, -width, -width, 0.0F).texture(icon.getMinU(), icon.getMinV()).color(r, g, b, 0.3F * fade);
-            vertexBuffer.vertex(matrixStack, -width, width, 0.0F).texture(icon.getMinU(), icon.getMaxV()).color(r, g, b, 0.3F * fade);
-            vertexBuffer.vertex(matrixStack, width, width, 0.0F).texture(icon.getMaxU(), icon.getMaxV()).color(r, g, b, 0.3F * fade);
-            vertexBuffer.vertex(matrixStack, width, -width, 0.0F).texture(icon.getMaxU(), icon.getMinV()).color(r, g, b, 0.3F * fade);
-            BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+            vertexBuffer.addVertex(matrixStack, -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, 0.3F * fade);
+            vertexBuffer.addVertex(matrixStack, -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, 0.3F * fade);
+            vertexBuffer.addVertex(matrixStack, width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, 0.3F * fade);
+            vertexBuffer.addVertex(matrixStack, width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, 0.3F * fade);
+            BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
 
-        TextRenderer fontRenderer = VoxelConstants.getMinecraft().textRenderer;
+        Font fontRenderer = VoxelConstants.getMinecraft().font;
         if (isPointedAt && fontRenderer != null) {
             byte elevateBy = -19;
             OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
-            int halfStringWidth = fontRenderer.getWidth(name) / 2;
-            RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+            int halfStringWidth = fontRenderer.width(name) / 2;
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
             if (withDepth) {
                 OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
                 OpenGL.glDepthMask(distance < maxDistance);
                 OpenGL.glPolygonOffset(1.0F, 7.0F);
-                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 2), (-2 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.6F * fade);
-                BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
                 OpenGL.glPolygonOffset(1.0F, 5.0F);
-                vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 1), (8 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 1), (8 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 1), (-1 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+                vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
             }
 
             if (withoutDepth) {
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
                 OpenGL.glDepthMask(false);
                 OpenGL.glPolygonOffset(1.0F, 11.0F);
-                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 2), (-2 + elevateBy), 0.0F).color(pt.red, pt.green, pt.blue, 0.15F * fade);
-                BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
                 OpenGL.glPolygonOffset(1.0F, 9.0F);
-                vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (-halfStringWidth - 1), (8 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 1), (8 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBuffer.vertex(matrixStack, (halfStringWidth + 1), (-1 + elevateBy), 0.0F).color(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+                vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBuffer.addVertex(matrixStack, (halfStringWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
             }
 
             OpenGL.glDisable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             OpenGL.glDepthMask(false);
-            VertexConsumerProvider.Immediate vertexConsumerProvider = VoxelConstants.getMinecraft().getBufferBuilders().getEntityVertexConsumers();
+            MultiBufferSource.BufferSource vertexConsumerProvider = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
             if (withoutDepth) {
                 int textColor = (int) (255.0F * fade) << 24 | 13421772;
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-                fontRenderer.draw(Text.literal(name), (-fontRenderer.getWidth(name) / 2f), elevateBy, textColor, false, matrixStack, vertexConsumerProvider, TextLayerType.SEE_THROUGH, 0, 15728880);
-                vertexConsumerProvider.draw();
+                fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, matrixStack, vertexConsumerProvider, DisplayMode.SEE_THROUGH, 0, 15728880);
+                vertexConsumerProvider.endBatch();
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);

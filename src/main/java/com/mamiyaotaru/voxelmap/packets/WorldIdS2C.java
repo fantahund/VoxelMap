@@ -2,20 +2,20 @@ package com.mamiyaotaru.voxelmap.packets;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.nio.charset.StandardCharsets;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record WorldIdS2C(String worldName) implements CustomPayload {
-    public static final CustomPayload.Id<WorldIdS2C> PACKET_ID = new CustomPayload.Id<>(Identifier.of("worldinfo", "world_id"));
-    public static final PacketCodec<PacketByteBuf, WorldIdS2C> PACKET_CODEC = PacketCodec.of(WorldIdS2C::write, WorldIdS2C::new);
+public record WorldIdS2C(String worldName) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<WorldIdS2C> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("worldinfo", "world_id"));
+    public static final StreamCodec<FriendlyByteBuf, WorldIdS2C> PACKET_CODEC = StreamCodec.ofMember(WorldIdS2C::write, WorldIdS2C::new);
 
-    public WorldIdS2C(PacketByteBuf buf) {
+    public WorldIdS2C(FriendlyByteBuf buf) {
         this(parse(buf));
     }
 
-    private static String parse(PacketByteBuf buf) {
+    private static String parse(FriendlyByteBuf buf) {
         buf.readByte(); // ignore
         int length;
         int b = buf.readUnsignedByte();
@@ -37,7 +37,7 @@ public record WorldIdS2C(String worldName) implements CustomPayload {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeByte(0);
         buf.writeByte(42);
         byte[] bytes = worldName.getBytes(StandardCharsets.UTF_8);
@@ -46,7 +46,7 @@ public record WorldIdS2C(String worldName) implements CustomPayload {
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 }

@@ -7,31 +7,30 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.NarratorManager;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 class GuiSlotWaypoints extends GuiSlotMinimap {
     private final ArrayList<WaypointItem> waypoints;
     private ArrayList<?> waypointsFiltered;
     final GuiWaypoints parentGui;
     private String filterString = "";
-    static final Text ENABLE = Text.translatable("minimap.waypoints.enable");
-    static final Text DISABLE = Text.translatable("minimap.waypoints.disable");
-    final Identifier visibleIconIdentifier = Identifier.of("textures/mob_effect/night_vision.png");
-    final Identifier invisibleIconIdentifier = Identifier.of("textures/mob_effect/blindness.png");
+    static final Component ENABLE = Component.translatable("minimap.waypoints.enable");
+    static final Component DISABLE = Component.translatable("minimap.waypoints.disable");
+    final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/mob_effect/night_vision.png");
+    final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/mob_effect/blindness.png");
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
         super(par1GuiWaypoints.getWidth(), par1GuiWaypoints.getHeight(), 54, par1GuiWaypoints.getHeight() - 90 + 4, 18);
@@ -50,30 +49,30 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
 
     public void setSelected(WaypointItem entry) {
         super.setSelected(entry);
-        if (this.getSelectedOrNull() instanceof WaypointItem) {
-            NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
-            narratorManager.narrate((Text.translatable("narrator.select", ((WaypointItem) this.getSelectedOrNull()).waypoint.name)).getString());
+        if (this.getSelected() instanceof WaypointItem) {
+            GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
+            narratorManager.sayNow((Component.translatable("narrator.select", ((WaypointItem) this.getSelected()).waypoint.name)).getString());
         }
 
         this.parentGui.setSelectedWaypoint(entry.waypoint);
     }
 
-    protected boolean isSelectedEntry(int index) {
+    protected boolean isSelectedItem(int index) {
         return ((WaypointItem) this.waypointsFiltered.get(index)).waypoint.equals(this.parentGui.selectedWaypoint);
     }
 
     protected int getMaxPosition() {
-        return this.getEntryCount() * this.itemHeight;
+        return this.getItemCount() * this.itemHeight;
     }
 
     public void drawTexturedModalRect(int xCoord, int yCoord, Sprite textureSprite, int widthIn, int heightIn) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexbuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexbuffer.vertex(xCoord, yCoord + heightIn, 1.0F).texture(textureSprite.getMinU(), textureSprite.getMaxV());
-        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 1.0F).texture(textureSprite.getMaxU(), textureSprite.getMaxV());
-        vertexbuffer.vertex(xCoord + widthIn, yCoord, 1.0F).texture(textureSprite.getMaxU(), textureSprite.getMinV());
-        vertexbuffer.vertex(xCoord, yCoord, 1.0F).texture(textureSprite.getMinU(), textureSprite.getMinV());
-        BufferRenderer.drawWithGlobalProgram(vertexbuffer.end());
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder vertexbuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        vertexbuffer.addVertex(xCoord, yCoord + heightIn, 1.0F).setUv(textureSprite.getMinU(), textureSprite.getMaxV());
+        vertexbuffer.addVertex(xCoord + widthIn, yCoord + heightIn, 1.0F).setUv(textureSprite.getMaxU(), textureSprite.getMaxV());
+        vertexbuffer.addVertex(xCoord + widthIn, yCoord, 1.0F).setUv(textureSprite.getMaxU(), textureSprite.getMinV());
+        vertexbuffer.addVertex(xCoord, yCoord, 1.0F).setUv(textureSprite.getMinU(), textureSprite.getMinV());
+        BufferUploader.drawWithShader(vertexbuffer.buildOrThrow());
     }
 
     protected void sortBy(int sortKey, boolean ascending) {
@@ -122,7 +121,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
         this.waypointsFiltered.forEach(x -> this.addEntry((Entry) x));
     }
 
-    public class WaypointItem extends EntryListWidget.Entry<WaypointItem> implements Comparable<WaypointItem> {
+    public class WaypointItem extends AbstractSelectionList.Entry<WaypointItem> implements Comparable<WaypointItem> {
         private final GuiWaypoints parentGui;
         private final Waypoint waypoint;
 
@@ -131,20 +130,20 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
             this.waypoint = waypoint;
         }
 
-        public void render(DrawContext drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawContext.drawCenteredTextWithShadow(this.parentGui.getFontRenderer(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 3, this.waypoint.getUnifiedColor());
+        public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 3, this.waypoint.getUnifiedColor());
             byte padding = 3;
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + entryHeight) {
-                Text tooltip;
+                Component tooltip;
                 if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
                     tooltip = this.waypoint.enabled ? GuiSlotWaypoints.DISABLE : GuiSlotWaypoints.ENABLE;
                 } else {
                     String tooltipText = "X: " + this.waypoint.getX() + " Z: " + this.waypoint.getZ();
-                    if (this.waypoint.getY() > client.world.getBottomY()) {
+                    if (this.waypoint.getY() > minecraft.level.getMinBuildHeight()) {
                         tooltipText = tooltipText + " Y: " + this.waypoint.getY();
                     }
 
-                    tooltip = Text.literal(tooltipText);
+                    tooltip = Component.literal(tooltipText);
                 }
 
                 if (mouseX >= GuiSlotWaypoints.this.getX() && mouseX <= GuiSlotWaypoints.this.getRight() && mouseY >= GuiSlotWaypoints.this.getY() && mouseY <= GuiSlotWaypoints.this.getBottom()) {
@@ -154,13 +153,13 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             OpenGL.Utils.img2(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier);
-            drawContext.drawTexture(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
                 int x1 = x + 199;
                 int y1 = y - 1;
                 OpenGL.glColor4f(1.0F, 0.0F, 0.0F, 1.0F);
                 TextureAtlas textureAtlas = this.parentGui.waypointManager.getTextureAtlas();
-                OpenGL.Utils.disp(textureAtlas.getGlId());
+                OpenGL.Utils.disp(textureAtlas.getId());
                 Sprite icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png");
                 GuiSlotWaypoints.this.drawTexturedModalRect(x1, y1, icon, 16, 16);
             }

@@ -1,40 +1,40 @@
 package com.mamiyaotaru.voxelmap;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 
 public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
-    private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.of("textures/block/dirt.png");
+    private static final ResourceLocation OPTIONS_BACKGROUND_TEXTURE = ResourceLocation.parse("textures/block/dirt.png");
     public static final boolean DEBUG = false;
 
     private VoxelConstants() {}
 
     @NotNull
-    public static MinecraftClient getMinecraft() { return MinecraftClient.getInstance(); }
+    public static Minecraft getMinecraft() { return Minecraft.getInstance(); }
 
-    public static boolean isSystemMacOS() { return MinecraftClient.IS_SYSTEM_MAC; }
+    public static boolean isSystemMacOS() { return Minecraft.ON_OSX; }
 
-    public static boolean isFabulousGraphicsOrBetter() { return MinecraftClient.isFabulousGraphicsOrBetter(); }
+    public static boolean isFabulousGraphicsOrBetter() { return Minecraft.useShaderTransparency(); }
 
-    public static boolean isSinglePlayer() { return getMinecraft().isInSingleplayer(); }
+    public static boolean isSinglePlayer() { return getMinecraft().isLocalServer(); }
     public static boolean isRealmServer() {
-        ClientPlayNetworkHandler playNetworkHandler = getMinecraft().getNetworkHandler();
-        ServerInfo serverInfo = playNetworkHandler != null ? getMinecraft().getNetworkHandler().getServerInfo() : null;
+        ClientPacketListener playNetworkHandler = getMinecraft().getConnection();
+        ServerData serverInfo = playNetworkHandler != null ? getMinecraft().getConnection().getServerData() : null;
         return serverInfo != null && serverInfo.isRealm();
     }
 
@@ -42,17 +42,17 @@ public final class VoxelConstants {
     public static Logger getLogger() { return LOGGER; }
 
     @NotNull
-    public static Optional<IntegratedServer> getIntegratedServer() { return Optional.ofNullable(getMinecraft().getServer()); }
+    public static Optional<IntegratedServer> getIntegratedServer() { return Optional.ofNullable(getMinecraft().getSingleplayerServer()); }
 
     @NotNull
-    public static Optional<World> getWorldByKey(RegistryKey<World> key) { return getIntegratedServer().map(integratedServer -> integratedServer.getWorld(key)); }
+    public static Optional<Level> getWorldByKey(ResourceKey<Level> key) { return getIntegratedServer().map(integratedServer -> integratedServer.getLevel(key)); }
 
     @NotNull
-    public static ClientWorld getClientWorld() { return getPlayer().clientWorld; }
+    public static ClientLevel getClientWorld() { return getPlayer().clientLevel; }
 
     @NotNull
-    public static ClientPlayerEntity getPlayer() {
-        ClientPlayerEntity player = getMinecraft().player;
+    public static LocalPlayer getPlayer() {
+        LocalPlayer player = getMinecraft().player;
 
         if (player == null) {
             String error = "Attempted to fetch player entity while not in-game!";
@@ -73,7 +73,7 @@ public final class VoxelConstants {
 
     static { elapsedTicks = 0; }
 
-    public static Identifier getOptionsBackgroundTexture() {
+    public static ResourceLocation getOptionsBackgroundTexture() {
         return OPTIONS_BACKGROUND_TEXTURE;
     }
 }

@@ -5,14 +5,13 @@ import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import net.minecraft.client.resource.language.I18n;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Objects;
+import net.minecraft.client.resources.language.I18n;
 
 public class RadarSettingsManager implements ISubSettingsManager {
     private boolean somethingChanged;
@@ -118,9 +117,9 @@ public class RadarSettingsManager implements ISubSettingsManager {
 
     @Override
     public String getKeyText(EnumOptionsMinimap options) {
-        String s = I18n.translate(options.getName()) + ": ";
+        String s = I18n.get(options.getName()) + ": ";
         if (options.isBoolean()) {
-            return this.getOptionBooleanValue(options) ? s + I18n.translate("options.on") : s + I18n.translate("options.off");
+            return this.getOptionBooleanValue(options) ? s + I18n.get("options.on") : s + I18n.get("options.off");
         } else if (options.isList()) {
             String state = this.getOptionListValue(options);
             return s + state;
@@ -149,10 +148,10 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {
         if (Objects.requireNonNull(par1EnumOptions) == EnumOptionsMinimap.RADARMODE) {
             if (this.radarMode == 2) {
-                return I18n.translate("options.minimap.radar.radarmode.full");
+                return I18n.get("options.minimap.radar.radarmode.full");
             }
 
-            return I18n.translate("options.minimap.radar.radarmode.simple");
+            return I18n.get("options.minimap.radar.radarmode.simple");
         }
         throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
     }

@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworkin
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking.Context;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public class VoxelmapSettingsChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<VoxelmapSettingsS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<VoxelmapSettingsS2C> {
     public VoxelmapSettingsChannelHandler() {
@@ -37,7 +37,7 @@ public class VoxelmapSettingsChannelHandler implements ClientPlayNetworking.Play
             switch (setting) {
                 case "worldName" -> {
                     if (value instanceof String worldName) {
-                        MinecraftClient.getInstance().execute(() -> {
+                        Minecraft.getInstance().execute(() -> {
                             VoxelConstants.getLogger().info("Received world name from settings: " + worldName);
                             VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
                         });

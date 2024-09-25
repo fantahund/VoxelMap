@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.client.texture.NativeImage;
+import com.mojang.blaze3d.platform.NativeImage;
 
 public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBackedTexture {
     private final NativeImage image;
@@ -9,7 +9,7 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
     public ScaledMutableNativeImageBackedTexture(int width, int height, boolean useStb) {
         super(512, 512, useStb);
         this.scale = 512 / width;
-        this.image = this.getImage();
+        this.image = this.getPixels();
         String info = this.image.toString();
         String pointerString = info.substring(info.indexOf("@") + 1, info.indexOf("]") - 1);
         long pointer = Long.parseLong(pointerString);
@@ -46,7 +46,7 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
 
         for (int t = 0; t < this.scale; ++t) {
             for (int s = 0; s < this.scale; ++s) {
-                this.image.setColor(x * this.scale + t, y * this.scale + s, color);
+                this.image.setPixelRGBA(x * this.scale + t, y * this.scale + s, color);
             }
         }
 

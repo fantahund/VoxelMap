@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.Objects;
 import java.util.Random;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
 
 public class MapUtils {
     private static MapSettingsManager options;
@@ -19,7 +19,7 @@ public class MapUtils {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
-    public static int doSlimeAndGrid(int color24, ClientWorld world, int mcX, int mcZ) {
+    public static int doSlimeAndGrid(int color24, ClientLevel world, int mcX, int mcZ) {
         if (options.slimeChunks && isSlimeChunk(mcX, mcZ)) {
             color24 = ColorUtils.colorAdder(0x7D00FF00, color24);
         }

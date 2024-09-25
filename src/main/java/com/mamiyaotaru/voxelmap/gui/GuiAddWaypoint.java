@@ -13,17 +13,17 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
     final WaypointManager waypointManager;
@@ -32,11 +32,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private PopupGuiButton doneButton;
     private GuiSlotDimensions dimensionList;
     protected DimensionContainer selectedDimension;
-    private Text tooltip;
-    private TextFieldWidget waypointName;
-    private TextFieldWidget waypointX;
-    private TextFieldWidget waypointZ;
-    private TextFieldWidget waypointY;
+    private Component tooltip;
+    private EditBox waypointName;
+    private EditBox waypointX;
+    private EditBox waypointZ;
+    private EditBox waypointY;
     private PopupGuiButton buttonEnabled;
     protected final Waypoint waypoint;
     private boolean choosingColor;
@@ -47,8 +47,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final String suffix;
     private final boolean enabled;
     private final boolean editing;
-    private final Identifier pickerResourceLocation = Identifier.of("voxelmap", "images/colorpicker.png");
-    private final Identifier blank = Identifier.of("textures/misc/white.png");
+    private final ResourceLocation pickerResourceLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/colorpicker.png");
+    private final ResourceLocation blank = ResourceLocation.parse("textures/misc/white.png");
 
     public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, Waypoint par2Waypoint, boolean editing) {
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
@@ -67,34 +67,34 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void init() {
-        this.clearChildren();
-        this.waypointName = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
-        this.waypointName.setText(this.waypoint.name);
-        this.waypointX = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41 + 13, 56, 20, null);
+        this.clearWidgets();
+        this.waypointName = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
+        this.waypointName.setValue(this.waypoint.name);
+        this.waypointX = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointX.setMaxLength(128);
-        this.waypointX.setText(String.valueOf(this.waypoint.getX()));
-        this.waypointZ = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41 + 13, 56, 20, null);
+        this.waypointX.setValue(String.valueOf(this.waypoint.getX()));
+        this.waypointZ = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointZ.setMaxLength(128);
-        this.waypointZ.setText(String.valueOf(this.waypoint.getZ()));
-        this.waypointY = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41 + 13, 56, 20, null);
+        this.waypointZ.setValue(String.valueOf(this.waypoint.getZ()));
+        this.waypointY = new EditBox(this.getFontRenderer(), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointY.setMaxLength(128);
-        this.waypointY.setText(String.valueOf(this.waypoint.getY()));
-        this.addDrawableChild(this.waypointName);
-        this.addDrawableChild(this.waypointX);
-        this.addDrawableChild(this.waypointZ);
-        this.addDrawableChild(this.waypointY);
+        this.waypointY.setValue(String.valueOf(this.waypoint.getY()));
+        this.addRenderableWidget(this.waypointName);
+        this.addRenderableWidget(this.waypointX);
+        this.addRenderableWidget(this.waypointZ);
+        this.addRenderableWidget(this.waypointY);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
-        this.addDrawableChild(this.buttonEnabled = new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY, 100, 20, Text.literal("Enabled: " + (this.waypoint.enabled ? "On" : "Off")), button -> this.waypoint.enabled = !this.waypoint.enabled, this));
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, Text.literal(I18n.translate("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 48, 100, 20, Text.literal(I18n.translate("minimap.waypoints.sortbyicon") + ":     "), button -> this.choosingIcon = true, this));
-        this.doneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Text.translatable("addServer.add"), button -> this.acceptWaypoint(), this);
-        this.addDrawableChild(this.doneButton);
-        this.addDrawableChild(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Text.translatable("gui.cancel"), button -> this.cancelWaypoint(), this));
-        this.doneButton.active = !this.waypointName.getText().isEmpty();
+        this.addRenderableWidget(this.buttonEnabled = new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY, 100, 20, Component.literal("Enabled: " + (this.waypoint.enabled ? "On" : "Off")), button -> this.waypoint.enabled = !this.waypoint.enabled, this));
+        this.addRenderableWidget(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, Component.literal(I18n.get("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
+        this.addRenderableWidget(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 48, 100, 20, Component.literal(I18n.get("minimap.waypoints.sortbyicon") + ":     "), button -> this.choosingIcon = true, this));
+        this.doneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20, Component.translatable("addServer.add"), button -> this.acceptWaypoint(), this);
+        this.addRenderableWidget(this.doneButton);
+        this.addRenderableWidget(new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20, Component.translatable("gui.cancel"), button -> this.cancelWaypoint(), this));
+        this.doneButton.active = !this.waypointName.getValue().isEmpty();
         this.setFocused(this.waypointName);
         this.waypointName.setFocused(true);
         this.dimensionList = new GuiSlotDimensions(this);
-        this.addDrawableChild(dimensionList);
+        this.addRenderableWidget(dimensionList);
     }
 
     @Override
@@ -117,10 +117,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     protected void acceptWaypoint() {
-        waypoint.name = waypointName.getText();
-        waypoint.setX(Integer.parseInt(waypointX.getText()));
-        waypoint.setZ(Integer.parseInt(waypointZ.getText()));
-        waypoint.setY(Integer.parseInt(waypointY.getText()));
+        waypoint.name = waypointName.getValue();
+        waypoint.setX(Integer.parseInt(waypointX.getValue()));
+        waypoint.setZ(Integer.parseInt(waypointZ.getValue()));
+        waypoint.setY(Integer.parseInt(waypointY.getValue()));
 
         if (parentGui != null) {
             parentGui.accept(true);
@@ -143,12 +143,12 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         boolean OK = false;
         if (this.popupOpen()) {
             OK = super.keyPressed(keyCode, scanCode, modifiers);
-            boolean acceptable = !this.waypointName.getText().isEmpty();
+            boolean acceptable = !this.waypointName.getValue().isEmpty();
 
             try {
-                Integer.parseInt(this.waypointX.getText());
-                Integer.parseInt(this.waypointZ.getText());
-                Integer.parseInt(this.waypointY.getText());
+                Integer.parseInt(this.waypointX.getValue());
+                Integer.parseInt(this.waypointZ.getValue());
+                Integer.parseInt(this.waypointY.getValue());
             } catch (NumberFormatException var7) {
                 acceptable = false;
             }
@@ -166,12 +166,12 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         boolean OK = false;
         if (this.popupOpen()) {
             OK = super.charTyped(chr, modifiers);
-            boolean acceptable = !this.waypointName.getText().isEmpty();
+            boolean acceptable = !this.waypointName.getValue().isEmpty();
 
             try {
-                Integer.parseInt(this.waypointX.getText());
-                Integer.parseInt(this.waypointZ.getText());
-                Integer.parseInt(this.waypointY.getText());
+                Integer.parseInt(this.waypointX.getValue());
+                Integer.parseInt(this.waypointZ.getValue());
+                Integer.parseInt(this.waypointY.getValue());
             } catch (NumberFormatException var6) {
                 acceptable = false;
             }
@@ -199,20 +199,20 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 this.choosingColor = false;
             }
         } else if (this.choosingIcon) {
-            float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
+            float scScale = (float) VoxelConstants.getMinecraft().getWindow().getGuiScale();
             TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
             float scale = scScale / 2.0F;
             float displayWidthFloat = chooser.getWidth() / scale;
             float displayHeightFloat = chooser.getHeight() / scale;
-            if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
-                float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
+            if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getWidth()) {
+                float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getWidth();
                 scale *= adj;
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
 
-            if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
-                float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
+            if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getHeight()) {
+                float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getHeight();
                 scale *= adj;
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
@@ -268,33 +268,33 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     public void popupAction(Popup popup, int action) {
     }
 
-    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        float scScale = (float) VoxelConstants.getMinecraft().getWindow().getScaleFactor();
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        float scScale = (float) VoxelConstants.getMinecraft().getWindow().getGuiScale();
         this.tooltip = null;
-        this.buttonEnabled.setMessage(Text.literal(I18n.translate("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.translate("options.on") : I18n.translate("options.off"))));
+        this.buttonEnabled.setMessage(Component.literal(I18n.get("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.get("options.on") : I18n.get("options.off"))));
         if (!this.choosingColor && !this.choosingIcon) {
-            this.renderInGameBackground(drawContext);
+            this.renderTransparentBackground(drawContext);
         }
 
-        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.translate("minimap.waypoints.new") : I18n.translate("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
-        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
-        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
-        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
-        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
+        drawContext.drawCenteredString(this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         super.render(drawContext, mouseX, mouseY, delta);
         OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, this.blank);
-        drawContext.drawTexture(this.blank, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10);
+        drawContext.blit(this.blank, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10);
         TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        OpenGL.Utils.disp2(chooser.getGlId());
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        OpenGL.Utils.disp2(chooser.getId());
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
         this.drawTexturedModalRect((this.getWidth() / 2f - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         if (this.choosingColor || this.choosingIcon) {
-            this.renderInGameBackground(drawContext);
+            this.renderTransparentBackground(drawContext);
         }
 
         if (this.choosingColor) {
@@ -302,7 +302,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             OpenGL.Utils.img2(this.pickerResourceLocation);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             RenderSystem.disableDepthTest();
-            drawContext.drawTexture(pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256);
+            drawContext.blit(pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256);
             RenderSystem.enableDepthTest();
         }
 
@@ -310,14 +310,14 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             float scale = scScale / 2.0F;
             float displayWidthFloat = chooser.getWidth() / scale;
             float displayHeightFloat = chooser.getHeight() / scale;
-            if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferWidth()) {
-                float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferWidth();
+            if (displayWidthFloat > VoxelConstants.getMinecraft().getWindow().getWidth()) {
+                float adj = displayWidthFloat / VoxelConstants.getMinecraft().getWindow().getWidth();
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
 
-            if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getFramebufferHeight()) {
-                float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getFramebufferHeight();
+            if (displayHeightFloat > VoxelConstants.getMinecraft().getWindow().getHeight()) {
+                float adj = displayHeightFloat / VoxelConstants.getMinecraft().getWindow().getHeight();
                 displayWidthFloat /= adj;
                 displayHeightFloat /= adj;
             }
@@ -325,17 +325,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             int displayWidth = (int) displayWidthFloat;
             int displayHeight = (int) displayHeightFloat;
             RenderSystem.disableDepthTest();
-            RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
             RenderSystem.setShaderTexture(0, this.blank);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
-            drawContext.drawTexture(blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2);
+            drawContext.blit(blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2);
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            drawContext.drawTexture(blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight);
+            drawContext.blit(blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight);
             OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-            OpenGL.Utils.disp2(chooser.getGlId());
+            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            OpenGL.Utils.disp2(chooser.getId());
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
 
             this.drawTexturedModalRect(this.getWidth() / 2f - displayWidth / 2f, this.getHeight() / 2f - displayHeight / 2f, displayWidth, displayHeight);
@@ -344,7 +344,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 float y = (mouseY - (this.getHeight() / 2f - displayHeight / 2f)) * scale;
                 icon = chooser.getIconAt(x, y);
                 if (icon != chooser.getMissingImage()) {
-                    this.tooltip = Text.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));
+                    this.tooltip = Component.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));
                 }
             }
             RenderSystem.enableDepthTest();
@@ -363,34 +363,34 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     public void toggleDimensionSelected() {
-        if (this.waypoint.dimensions.size() > 1 && this.waypoint.dimensions.contains(this.selectedDimension) && this.selectedDimension != VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld())) {
+        if (this.waypoint.dimensions.size() > 1 && this.waypoint.dimensions.contains(this.selectedDimension) && this.selectedDimension != VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level())) {
             this.waypoint.dimensions.remove(this.selectedDimension);
         } else
             this.waypoint.dimensions.add(this.selectedDimension);
 
     }
 
-    static void setTooltip(GuiAddWaypoint par0GuiWaypoint, Text par1Str) {
+    static void setTooltip(GuiAddWaypoint par0GuiWaypoint, Component par1Str) {
         par0GuiWaypoint.tooltip = par1Str;
     }
 
     public void drawTexturedModalRect(float xCoord, float yCoord, Sprite icon, float widthIn, float heightIn) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexbuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexbuffer.vertex(xCoord + 0.0F, yCoord + heightIn, 0).texture(icon.getMinU(), icon.getMaxV());
-        vertexbuffer.vertex(xCoord + widthIn, yCoord + heightIn, 0).texture(icon.getMaxU(), icon.getMaxV());
-        vertexbuffer.vertex(xCoord + widthIn, yCoord + 0.0F, 0).texture(icon.getMaxU(), icon.getMinV());
-        vertexbuffer.vertex(xCoord + 0.0F, yCoord + 0.0F, 0).texture(icon.getMinU(), icon.getMinV());
-        BufferRenderer.drawWithGlobalProgram(vertexbuffer.end());
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder vertexbuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        vertexbuffer.addVertex(xCoord + 0.0F, yCoord + heightIn, 0).setUv(icon.getMinU(), icon.getMaxV());
+        vertexbuffer.addVertex(xCoord + widthIn, yCoord + heightIn, 0).setUv(icon.getMaxU(), icon.getMaxV());
+        vertexbuffer.addVertex(xCoord + widthIn, yCoord + 0.0F, 0).setUv(icon.getMaxU(), icon.getMinV());
+        vertexbuffer.addVertex(xCoord + 0.0F, yCoord + 0.0F, 0).setUv(icon.getMinU(), icon.getMinV());
+        BufferUploader.drawWithShader(vertexbuffer.buildOrThrow());
     }
 
     public void drawTexturedModalRect(float x, float y, float width, float height) {
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-        vertexBuffer.vertex(x + 0.0F, y + height, 0).texture(0.0F, 1.0F);
-        vertexBuffer.vertex(x + width, y + height, 0).texture(1.0F, 1.0F);
-        vertexBuffer.vertex(x + width, y + 0.0F, 0).texture(1.0F, 0.0F);
-        vertexBuffer.vertex(x + 0.0F, y + 0.0F, 0).texture(0.0F, 0.0F);
-        BufferRenderer.drawWithGlobalProgram(vertexBuffer.end());
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        vertexBuffer.addVertex(x + 0.0F, y + height, 0).setUv(0.0F, 1.0F);
+        vertexBuffer.addVertex(x + width, y + height, 0).setUv(1.0F, 1.0F);
+        vertexBuffer.addVertex(x + width, y + 0.0F, 0).setUv(1.0F, 0.0F);
+        vertexBuffer.addVertex(x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F);
+        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 }

@@ -20,18 +20,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.resource.ReloadableResourceManagerImpl;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceReloader;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Unit;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.World;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.Level;
 
-public class VoxelMap implements ResourceReloader {
+public class VoxelMap implements PreparableReloadListener {
     public static MapSettingsManager mapOptions;
     public static RadarSettingsManager radarOptions;
     private PersistentMapSettingsManager persistentMapOptions;
@@ -44,7 +44,7 @@ public class VoxelMap implements ResourceReloader {
     private ColorManager colorManager;
     private WaypointManager waypointManager;
     private DimensionManager dimensionManager;
-    private ClientWorld world;
+    private ClientLevel world;
     private String worldName = "";
     private static String passMessage;
     private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque();
@@ -91,14 +91,14 @@ public class VoxelMap implements ResourceReloader {
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
-        ReloadableResourceManagerImpl resourceManager = (ReloadableResourceManagerImpl) VoxelConstants.getMinecraft().getResourceManager();
-        resourceManager.registerReloader(this);
+        ReloadableResourceManager resourceManager = (ReloadableResourceManager) VoxelConstants.getMinecraft().getResourceManager();
+        resourceManager.registerReloadListener(this);
         this.apply(resourceManager);
     }
 
     @Override
-    public CompletableFuture<Void> reload(Synchronizer synchronizer, ResourceManager manager, Profiler prepareProfiler, Profiler applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-        return synchronizer.whenPrepared((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(manager), applyExecutor);
+    public CompletableFuture<Void> reload(PreparationBarrier synchronizer, ResourceManager manager, ProfilerFiller prepareProfiler, ProfilerFiller applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
+        return synchronizer.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(manager), applyExecutor);
     }
 
     private void apply(ResourceManager resourceManager) {
@@ -114,10 +114,10 @@ public class VoxelMap implements ResourceReloader {
         this.colorManager.onResourceManagerReload(resourceManager);
     }
 
-    public void onTickInGame(DrawContext drawContext) {
+    public void onTickInGame(GuiGraphics drawContext) {
         this.map.onTickInGame(drawContext);
         if (passMessage != null) {
-            VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(Text.literal(passMessage));
+            VoxelConstants.getMinecraft().gui.getChat().addMessage(Component.literal(passMessage));
             passMessage = null;
         }
 
@@ -160,7 +160,7 @@ public class VoxelMap implements ResourceReloader {
         this.persistentMap.onTick();
     }
 
-    public static void checkPermissionMessages(Text message) {
+    public static void checkPermissionMessages(Component message) {
         String msg = TextUtils.asFormattedString(message);
         msg = msg.replaceAll("§r", "");
 
@@ -263,7 +263,7 @@ public class VoxelMap implements ResourceReloader {
     }
 
     public String getWorldSeed() {
-        return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(World.OVERWORLD).map(value -> Long.toString(((ServerWorld) value).getSeed())).orElse("") : waypointManager.getWorldSeed();
+        return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(Level.OVERWORLD).map(value -> Long.toString(((ServerLevel) value).getSeed())).orElse("") : waypointManager.getWorldSeed();
     }
 
     public void setWorldSeed(String newSeed) {

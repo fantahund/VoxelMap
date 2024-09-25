@@ -1,15 +1,15 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.google.common.collect.BiMap;
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.registry.Registries;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 
 public final class BlockStateParser {
     private BlockStateParser() {}
@@ -31,16 +31,16 @@ public final class BlockStateParser {
         int curlyBracketCloseIndex = resourceString.indexOf('}');
         resourceString = resourceString.substring(curlyBracketOpenIndex == -1 ? 0 : curlyBracketOpenIndex + 1, curlyBracketCloseIndex == -1 ? resourceString.length() : curlyBracketCloseIndex);
         String[] resourceStringParts = resourceString.split(":");
-        Identifier resourceLocation = null;
+        ResourceLocation resourceLocation = null;
 
-        if (resourceStringParts.length == 1) resourceLocation = Identifier.of(resourceStringParts[0]);
-        else if (resourceStringParts.length == 2) resourceLocation = Identifier.of(resourceStringParts[0], resourceStringParts[1]);
+        if (resourceStringParts.length == 1) resourceLocation = ResourceLocation.parse(resourceStringParts[0]);
+        else if (resourceStringParts.length == 2) resourceLocation = ResourceLocation.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
 
-        Block block = Registries.BLOCK.get(resourceLocation);
+        Block block = BuiltInRegistries.BLOCK.get(resourceLocation);
 
         if (!(!(block instanceof AirBlock) || resourceString.equals("minecraft:air"))) return null;
 
-        BlockState blockState = block.getDefaultState();
+        BlockState blockState = block.defaultBlockState();
 
         if (bracketIndex == -1) return blockState;
 
@@ -49,7 +49,7 @@ public final class BlockStateParser {
 
         for (String propertiesStringPart : propertiesStringParts) {
             String[] propertyStringParts = propertiesStringPart.split("=");
-            Property<?> property = block.getStateManager().getProperty(propertyStringParts[0]);
+            Property<?> property = block.getStateDefinition().getProperty(propertyStringParts[0]);
 
             if (property != null) blockState = withValue(blockState, property, propertyStringParts[1]);
         }
@@ -58,8 +58,8 @@ public final class BlockStateParser {
     }
 
     private static <T extends Comparable<T>> BlockState withValue(BlockState state, Property<T> property, String string) {
-        Optional<T> value = property.parse(string);
+        Optional<T> value = property.getValue(string);
 
-        return value.isPresent() ? state.with(property, value.get()) : state;
+        return value.isPresent() ? state.setValue(property, value.get()) : state;
     }
 }

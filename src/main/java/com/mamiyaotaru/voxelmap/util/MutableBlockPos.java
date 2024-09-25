@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public class MutableBlockPos extends BlockPos {
     public int x;

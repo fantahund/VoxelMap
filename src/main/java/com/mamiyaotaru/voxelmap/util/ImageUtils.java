@@ -2,13 +2,13 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
-import net.minecraft.util.Identifier;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
+import net.minecraft.resources.ResourceLocation;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -61,9 +61,9 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage createBufferedImageFromResourceLocation(Identifier resourceLocation) {
+    public static BufferedImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
             BufferedImage image = ImageIO.read(is);
             is.close();
             if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
@@ -124,7 +124,7 @@ public class ImageUtils {
             RenderSystem.backupProjectionMatrix();
             OpenGL.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = new Matrix4f().ortho(fboWidth, (-(fboHeight)), 1000.0F, 3000.0F, -1.0f, 1.0f);
-            RenderSystem.setProjectionMatrix(matrix4f, VertexSorter.BY_DISTANCE);
+            RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.DISTANCE_TO_ORIGIN);
             Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.identity();
             matrixStack.translate(0.0f, 0.0f, -2000.0f);
@@ -163,26 +163,26 @@ public class ImageUtils {
             OpenGL.Utils.unbindFramebuffer();
             RenderSystem.restoreProjectionMatrix();
             OpenGL.glPopAttrib();
-            OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getFramebufferWidth(), VoxelConstants.getMinecraft().getWindow().getFramebufferHeight());
+            OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
         }
         return image;
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h) {
+    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h) {
         return blankImage(resourceLocation, w, h, 64, 32);
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight) {
+    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h, int imageWidth, int imageHeight) {
         return blankImage(resourceLocation, w, h, imageWidth, imageHeight, 0, 0, 0, 0);
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int r, int g, int b, int a) {
+    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h, int r, int g, int b, int a) {
         return blankImage(resourceLocation, w, h, 64, 32, r, g, b, a);
     }
 
-    public static BufferedImage blankImage(Identifier resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
+    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().getInputStream();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
             BufferedImage mobSkin = ImageIO.read(is);
             is.close();
             BufferedImage temp = new BufferedImage(w * mobSkin.getWidth() / imageWidth, h * mobSkin.getWidth() / imageWidth, 6);
@@ -244,11 +244,11 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage loadImage(Identifier resourceLocation, int x, int y, int w, int h) {
+    public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h) {
         return loadImage(resourceLocation, x, y, w, h, 64, 32);
     }
 
-    public static BufferedImage loadImage(Identifier resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
+    public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
         BufferedImage mobSkin = createBufferedImageFromResourceLocation(resourceLocation);
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);

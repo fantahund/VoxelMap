@@ -1,7 +1,5 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.client.render.model.BakedQuad;
-
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -10,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 
 public class BlockModel {
     final ArrayList<BlockFace> faces;
@@ -23,7 +22,7 @@ public class BlockModel {
         this.failedToLoadY = failedToLoadY;
         this.faces = new ArrayList<>();
         for (BakedQuad quad2 : quads) {
-            face = new BlockFace(quad2.getVertexData());
+            face = new BlockFace(quad2.getVertices());
             if (!face.isClockwise || face.isVertical)
                 continue;
             this.faces.add(face);

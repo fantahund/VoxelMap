@@ -3,12 +3,12 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.DebugRenderState;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class MapChunk {
     private final int x;
     private final int z;
-    private WorldChunk chunk;
+    private LevelChunk chunk;
     private boolean isChanged;
     private boolean isLoaded;
     private boolean isSurroundedByLoaded;
@@ -16,8 +16,8 @@ public class MapChunk {
     public MapChunk(int x, int z) {
         this.x = x;
         this.z = z;
-        this.chunk = VoxelConstants.getPlayer().getWorld().getChunk(x, z);
-        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(x, z);
+        this.chunk = VoxelConstants.getPlayer().level().getChunk(x, z);
+        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(x, z);
         this.isSurroundedByLoaded = false;
         this.isChanged = true;
     }
@@ -36,12 +36,12 @@ public class MapChunk {
     private boolean hasChunkLoadedOrUnloaded() {
         boolean hasChanged = false;
         if (!this.isLoaded) {
-            this.chunk = VoxelConstants.getPlayer().getWorld().getChunk(this.x, this.z);
-            if (this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(this.x, this.z)) {
+            this.chunk = VoxelConstants.getPlayer().level().getChunk(this.x, this.z);
+            if (this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(this.x, this.z)) {
                 this.isLoaded = true;
                 hasChanged = true;
             }
-        } else if (this.chunk == null || this.chunk.isEmpty() || !VoxelConstants.getPlayer().getWorld().isChunkLoaded(this.x, this.z)) {
+        } else if (this.chunk == null || this.chunk.isEmpty() || !VoxelConstants.getPlayer().level().hasChunk(this.x, this.z)) {
             this.isLoaded = false;
             hasChanged = true;
         }
@@ -50,8 +50,8 @@ public class MapChunk {
     }
 
     public void checkIfChunkBecameSurroundedByLoaded(IChangeObserver changeObserver) {
-        this.chunk = VoxelConstants.getPlayer().getWorld().getChunk(this.x, this.z);
-        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(this.x, this.z);
+        this.chunk = VoxelConstants.getPlayer().level().getChunk(this.x, this.z);
+        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(this.x, this.z);
         if (this.isLoaded) {
             boolean formerSurroundedByLoaded = this.isSurroundedByLoaded;
             this.isSurroundedByLoaded = this.isSurroundedByLoaded();
@@ -65,14 +65,14 @@ public class MapChunk {
     }
 
     public boolean isSurroundedByLoaded() {
-        this.chunk = VoxelConstants.getPlayer().getWorld().getChunk(this.x, this.z);
-        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(this.x, this.z);
+        this.chunk = VoxelConstants.getPlayer().level().getChunk(this.x, this.z);
+        this.isLoaded = this.chunk != null && !this.chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(this.x, this.z);
         boolean neighborsLoaded = this.isLoaded;
 
         for (int t = this.x - 1; t <= this.x + 1 && neighborsLoaded; ++t) {
             for (int s = this.z - 1; s <= this.z + 1 && neighborsLoaded; ++s) {
-                WorldChunk neighborChunk = VoxelConstants.getPlayer().getWorld().getChunk(t, s);
-                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && VoxelConstants.getPlayer().getWorld().isChunkLoaded(t, s);
+                LevelChunk neighborChunk = VoxelConstants.getPlayer().level().getChunk(t, s);
+                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(t, s);
             }
         }
 

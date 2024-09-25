@@ -5,20 +5,19 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.crash.CrashException;
-import net.minecraft.util.crash.CrashReport;
-import net.minecraft.util.crash.CrashReportSection;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class TextureAtlas extends AbstractTexture {
     private final HashMap<String, Sprite> mapRegisteredSprites;
@@ -82,10 +81,10 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitch();
 
         VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-        TextureUtilLegacy.allocateTexture(this.getGlId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        TextureUtilLegacy.allocateTexture(this.getId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
         Arrays.fill(zeros, 0);
-        TextureUtilLegacy.uploadTexture(this.getGlId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
 
         for (Sprite icon : this.stitcher.getStitchSlots()) {
@@ -96,11 +95,11 @@ public class TextureAtlas extends AbstractTexture {
             try {
                 TextureUtilLegacy.uploadSubTexture(icon.getTextureData(), icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY());
             } catch (Throwable var10) {
-                CrashReport crashReport = CrashReport.create(var10, "Stitching texture atlas");
-                CrashReportSection crashReportCategory = crashReport.addElement("Texture being stitched together");
-                crashReportCategory.add("Atlas path", this.basePath);
-                crashReportCategory.add("Sprite", icon);
-                throw new CrashException(crashReport);
+                CrashReport crashReport = CrashReport.forThrowable(var10, "Stitching texture atlas");
+                CrashReportCategory crashReportCategory = crashReport.addCategory("Texture being stitched together");
+                crashReportCategory.setDetail("Atlas path", this.basePath);
+                crashReportCategory.setDetail("Sprite", icon);
+                throw new ReportedException(crashReport);
             }
         }
 
@@ -112,7 +111,7 @@ public class TextureAtlas extends AbstractTexture {
         this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         if (VoxelConstants.DEBUG) {
-            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         }
     }
 
@@ -128,13 +127,13 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitchNew();
 
         if (oldWidth == this.stitcher.getCurrentImageWidth() && oldHeight == this.stitcher.getCurrentImageHeight()) {
-            OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.glId);
+            OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.id);
         } else {
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-            TextureUtilLegacy.allocateTexture(this.getGlId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            TextureUtilLegacy.allocateTexture(this.getId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
             int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
             Arrays.fill(zeros, 0);
-            TextureUtilLegacy.uploadTexture(this.getGlId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         }
 
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
@@ -147,11 +146,11 @@ public class TextureAtlas extends AbstractTexture {
             try {
                 TextureUtilLegacy.uploadSubTexture(icon.getTextureData(), icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY());
             } catch (Throwable var11) {
-                CrashReport crashReport = CrashReport.create(var11, "Stitching texture atlas");
-                CrashReportSection crashReportCategory = crashReport.addElement("Texture being stitched together");
-                crashReportCategory.add("Atlas path", this.basePath);
-                crashReportCategory.add("Sprite", icon);
-                throw new CrashException(crashReport);
+                CrashReport crashReport = CrashReport.forThrowable(var11, "Stitching texture atlas");
+                CrashReportCategory crashReportCategory = crashReport.addCategory("Texture being stitched together");
+                crashReportCategory.setDetail("Atlas path", this.basePath);
+                crashReportCategory.setDetail("Sprite", icon);
+                throw new ReportedException(crashReport);
             }
         }
 
@@ -164,7 +163,7 @@ public class TextureAtlas extends AbstractTexture {
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         if (VoxelConstants.DEBUG) {
             if (oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
-                ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getGlId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+                ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
             }
         }
     }
@@ -195,7 +194,7 @@ public class TextureAtlas extends AbstractTexture {
         return icon;
     }
 
-    public Sprite registerIconForResource(Identifier resourceLocation, ResourceManager resourceManager) {
+    public Sprite registerIconForResource(ResourceLocation resourceLocation, ResourceManager resourceManager) {
         if (resourceLocation == null) {
             throw new IllegalArgumentException("Location cannot be null!");
         } else {
@@ -205,7 +204,7 @@ public class TextureAtlas extends AbstractTexture {
 
                 try {
                     Optional<Resource> entryResource = resourceManager.getResource(resourceLocation);
-                    BufferedImage entryBufferedImage = TextureUtilLegacy.readBufferedImage(entryResource.get().getInputStream());
+                    BufferedImage entryBufferedImage = TextureUtilLegacy.readBufferedImage(entryResource.get().open());
                     icon.bufferedImageToIntData(entryBufferedImage);
                     entryBufferedImage.flush();
                 } catch (RuntimeException var6) {

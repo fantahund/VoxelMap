@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.multiplayer.ClientLevel;
 
 public class GameVariableAccessShim {
-    public static ClientWorld getWorld() {
-        return VoxelConstants.getMinecraft().world;
+    public static ClientLevel getWorld() {
+        return VoxelConstants.getMinecraft().level;
     }
 
     public static int xCoord() {
@@ -21,18 +21,18 @@ public class GameVariableAccessShim {
     }
 
     public static double xCoordDouble() {
-        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getX() : VoxelConstants.getMinecraft().getCameraEntity().prevX + (VoxelConstants.getMinecraft().getCameraEntity().getX() - VoxelConstants.getMinecraft().getCameraEntity().prevX) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
+        return VoxelConstants.getMinecraft().screen != null && VoxelConstants.getMinecraft().screen.isPauseScreen() ? VoxelConstants.getMinecraft().getCameraEntity().getX() : VoxelConstants.getMinecraft().getCameraEntity().xo + (VoxelConstants.getMinecraft().getCameraEntity().getX() - VoxelConstants.getMinecraft().getCameraEntity().xo) * VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false);
     }
 
     public static double zCoordDouble() {
-        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getZ() : VoxelConstants.getMinecraft().getCameraEntity().prevZ + (VoxelConstants.getMinecraft().getCameraEntity().getZ() - VoxelConstants.getMinecraft().getCameraEntity().prevZ) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
+        return VoxelConstants.getMinecraft().screen != null && VoxelConstants.getMinecraft().screen.isPauseScreen() ? VoxelConstants.getMinecraft().getCameraEntity().getZ() : VoxelConstants.getMinecraft().getCameraEntity().zo + (VoxelConstants.getMinecraft().getCameraEntity().getZ() - VoxelConstants.getMinecraft().getCameraEntity().zo) * VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false);
     }
 
     public static double yCoordDouble() {
-        return VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen.shouldPause() ? VoxelConstants.getMinecraft().getCameraEntity().getY() : VoxelConstants.getMinecraft().getCameraEntity().prevY + (VoxelConstants.getMinecraft().getCameraEntity().getY() - VoxelConstants.getMinecraft().getCameraEntity().prevY) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
+        return VoxelConstants.getMinecraft().screen != null && VoxelConstants.getMinecraft().screen.isPauseScreen() ? VoxelConstants.getMinecraft().getCameraEntity().getY() : VoxelConstants.getMinecraft().getCameraEntity().yo + (VoxelConstants.getMinecraft().getCameraEntity().getY() - VoxelConstants.getMinecraft().getCameraEntity().yo) * VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false);
     }
 
     public static float rotationYaw() {
-        return VoxelConstants.getMinecraft().getCameraEntity().prevYaw + (VoxelConstants.getMinecraft().getCameraEntity().getYaw() - VoxelConstants.getMinecraft().getCameraEntity().prevYaw) * VoxelConstants.getMinecraft().getRenderTickCounter().getTickDelta(false);
+        return VoxelConstants.getMinecraft().getCameraEntity().yRotO + (VoxelConstants.getMinecraft().getCameraEntity().getYRot() - VoxelConstants.getMinecraft().getCameraEntity().yRotO) * VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false);
     }
 }

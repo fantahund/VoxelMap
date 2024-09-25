@@ -1,16 +1,15 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.world.dimension.DimensionType;
-
 import java.util.Objects;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class DimensionContainer implements Comparable<DimensionContainer> {
     public DimensionType type;
     public final String name;
-    public final Identifier resourceLocation;
+    public final ResourceLocation resourceLocation;
 
-    public DimensionContainer(DimensionType type, String name, Identifier resourceLocation) {
+    public DimensionContainer(DimensionType type, String name, ResourceLocation resourceLocation) {
         this.type = type;
         this.name = name;
         this.resourceLocation = resourceLocation;

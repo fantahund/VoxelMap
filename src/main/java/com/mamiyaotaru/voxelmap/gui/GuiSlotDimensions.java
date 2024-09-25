@@ -5,19 +5,18 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.EntryListWidget;
-import net.minecraft.client.util.NarratorManager;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
+import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 class GuiSlotDimensions extends GuiSlotMinimap {
     final GuiAddWaypoint parentGui;
     private final ArrayList<DimensionItem> dimensions;
-    static final Text APPLIES = Text.translatable("minimap.waypoints.dimension.applies");
-    static final Text NOT_APPLIES = Text.translatable("minimap.waypoints.dimension.notapplies");
+    static final Component APPLIES = Component.translatable("minimap.waypoints.dimension.applies");
+    static final Component NOT_APPLIES = Component.translatable("minimap.waypoints.dimension.notapplies");
 
     GuiSlotDimensions(GuiAddWaypoint par1GuiWaypoints) {
         super(101, par1GuiWaypoints.getHeight(), par1GuiWaypoints.getHeight() / 6 + 82 + 6, par1GuiWaypoints.getHeight() / 6 + 164 + 3, 18);
@@ -48,19 +47,19 @@ class GuiSlotDimensions extends GuiSlotMinimap {
 
     public void setSelected(DimensionItem entry) {
         super.setSelected(entry);
-        if (this.getSelectedOrNull() instanceof DimensionItem) {
-            NarratorManager narratorManager = new NarratorManager(VoxelConstants.getMinecraft());
-            narratorManager.narrate((Text.translatable("narrator.select", ((DimensionItem) this.getSelectedOrNull()).dim.name)).getString());
+        if (this.getSelected() instanceof DimensionItem) {
+            GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
+            narratorManager.sayNow((Component.translatable("narrator.select", ((DimensionItem) this.getSelected()).dim.name)).getString());
         }
 
         this.parentGui.setSelectedDimension(entry.dim);
     }
 
-    protected boolean isSelectedEntry(int index) {
+    protected boolean isSelectedItem(int index) {
         return this.dimensions.get(index).dim.equals(this.parentGui.selectedDimension);
     }
 
-    public class DimensionItem extends EntryListWidget.Entry<DimensionItem> {
+    public class DimensionItem extends AbstractSelectionList.Entry<DimensionItem> {
         private final GuiAddWaypoint parentGui;
         private final DimensionContainer dim;
 
@@ -69,14 +68,14 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             this.dim = dim;
         }
 
-        public void render(DrawContext drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawContext.drawCenteredTextWithShadow(this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.slotWidth / 2, y + 3, 16777215);
+        public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.slotWidth / 2, y + 3, 16777215);
             byte padding = 4;
             byte iconWidth = 16;
             x = this.parentGui.getWidth() / 2;
             int width = GuiSlotDimensions.this.slotWidth;
             if (mouseX >= x + padding && mouseY >= y && mouseX <= x + width + padding && mouseY <= y + GuiSlotDimensions.this.itemHeight) {
-                Text tooltip;
+                Component tooltip;
                 if (this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
                     tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES;
                 } else {
@@ -90,7 +89,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             OpenGL.Utils.img2("textures/gui/container/beacon.png");
             int xOffset = this.parentGui.waypoint.dimensions.contains(this.dim) ? 91 : 113;
             int yOffset = 222;
-            drawContext.drawTexture(Identifier.of("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
+            drawContext.blit(ResourceLocation.parse("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

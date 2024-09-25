@@ -3,14 +3,14 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.DebugRenderState;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class MapChunkCache {
     private final int width;
     private final int height;
-    private WorldChunk lastCenterChunk;
+    private LevelChunk lastCenterChunk;
     private final MapChunk[] mapChunks;
     private int left;
     private int right;
@@ -27,7 +27,7 @@ public class MapChunkCache {
     }
 
     public void centerChunks(BlockPos blockPos) {
-        WorldChunk currentChunk = VoxelConstants.getPlayer().getWorld().getWorldChunk(blockPos);
+        LevelChunk currentChunk = VoxelConstants.getPlayer().level().getChunkAt(blockPos);
         if (currentChunk != this.lastCenterChunk) {
             if (this.lastCenterChunk == null) {
                 this.fillAllChunks(blockPos);
@@ -39,7 +39,7 @@ public class MapChunkCache {
             int middleZ = this.height / 2;
             int movedX = currentChunk.getPos().x - this.lastCenterChunk.getPos().x;
             int movedZ = currentChunk.getPos().z - this.lastCenterChunk.getPos().z;
-            if (Math.abs(movedX) < this.width && Math.abs(movedZ) < this.height && currentChunk.getWorld().equals(this.lastCenterChunk.getWorld())) {
+            if (Math.abs(movedX) < this.width && Math.abs(movedZ) < this.height && currentChunk.getLevel().equals(this.lastCenterChunk.getLevel())) {
                 this.moveX(movedX);
                 this.moveZ(movedZ);
 
@@ -68,7 +68,7 @@ public class MapChunkCache {
     }
 
     private void fillAllChunks(BlockPos blockPos) {
-        Chunk currentChunk = VoxelConstants.getPlayer().getWorld().getChunk(blockPos);
+        ChunkAccess currentChunk = VoxelConstants.getPlayer().level().getChunk(blockPos);
         int middleX = this.width / 2;
         int middleZ = this.height / 2;
 

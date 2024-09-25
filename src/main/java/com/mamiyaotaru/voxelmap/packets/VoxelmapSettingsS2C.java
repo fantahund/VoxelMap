@@ -1,30 +1,30 @@
 package com.mamiyaotaru.voxelmap.packets;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record VoxelmapSettingsS2C(String settingsJson) implements CustomPayload {
-    public static final CustomPayload.Id<VoxelmapSettingsS2C> PACKET_ID = new CustomPayload.Id<>(Identifier.of("voxelmap", "settings"));
-    public static final PacketCodec<PacketByteBuf, VoxelmapSettingsS2C> PACKET_CODEC = PacketCodec.of(VoxelmapSettingsS2C::write, VoxelmapSettingsS2C::new);
+public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<VoxelmapSettingsS2C> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("voxelmap", "settings"));
+    public static final StreamCodec<FriendlyByteBuf, VoxelmapSettingsS2C> PACKET_CODEC = StreamCodec.ofMember(VoxelmapSettingsS2C::write, VoxelmapSettingsS2C::new);
 
-    public VoxelmapSettingsS2C(PacketByteBuf buf) {
+    public VoxelmapSettingsS2C(FriendlyByteBuf buf) {
         this(parse(buf));
     }
 
-    private static String parse(PacketByteBuf buf) {
+    private static String parse(FriendlyByteBuf buf) {
         buf.readByte(); // ignore
-        return buf.readString();
+        return buf.readUtf();
     }
 
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeByte(0);
-        buf.writeString(settingsJson);
+        buf.writeUtf(settingsJson);
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 }

@@ -8,9 +8,9 @@ import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.MessageIndicator;
-import net.minecraft.text.Text;
+import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.Level;
 import org.joml.Matrix4fStack;
 
@@ -44,7 +44,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
 
     }
 
-    public void renderOverlay(DrawContext drawContext) {
+    public void renderOverlay(GuiGraphics drawContext) {
         if (!this.initialized) {
             this.lateInit();
         }
@@ -56,7 +56,7 @@ public class FabricModVoxelMap implements ClientModInitializer {
         }
     }
 
-    public boolean onChat(Text chat, MessageIndicator indicator) {
+    public boolean onChat(Component chat, GuiMessageTag indicator) {
         return CommandUtils.checkForWaypoints(chat, indicator);
     }
 
@@ -157,6 +157,6 @@ public class FabricModVoxelMap implements ClientModInitializer {
         MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
         cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
-        VoxelConstants.getPlayer().networkHandler.sendCommand(cmd);
+        VoxelConstants.getPlayer().connection.sendUnsignedCommand(cmd);
     }
 }

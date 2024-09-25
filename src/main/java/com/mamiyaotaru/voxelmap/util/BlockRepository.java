@@ -1,19 +1,18 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import net.minecraft.block.AbstractSignBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.block.PistonExtensionBlock;
-import net.minecraft.registry.Registries;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.piston.MovingPistonBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockRepository {
     public static Block air = Blocks.AIR;
@@ -22,7 +21,7 @@ public class BlockRepository {
     public static int airID;
     public static int voidAirID;
     public static int caveAirID;
-    public static PistonExtensionBlock pistonTechBlock;
+    public static MovingPistonBlock pistonTechBlock;
     public static Block water;
     public static Block lava;
     public static Block ice;
@@ -61,12 +60,12 @@ public class BlockRepository {
 
     public static void getBlocks() {
         air = Blocks.AIR;
-        airID = getStateId(air.getDefaultState());
+        airID = getStateId(air.defaultBlockState());
         voidAir = Blocks.VOID_AIR;
-        voidAirID = getStateId(voidAir.getDefaultState());
+        voidAirID = getStateId(voidAir.defaultBlockState());
         caveAir = Blocks.CAVE_AIR;
-        caveAirID = getStateId(caveAir.getDefaultState());
-        pistonTechBlock = (PistonExtensionBlock) Blocks.MOVING_PISTON;
+        caveAirID = getStateId(caveAir.defaultBlockState());
+        pistonTechBlock = (MovingPistonBlock) Blocks.MOVING_PISTON;
         water = Blocks.WATER;
         lava = Blocks.LAVA;
         ice = Blocks.ICE;
@@ -98,8 +97,8 @@ public class BlockRepository {
         shapedBlocksArray = new Block[]{ladder, vine};
         shapedBlocks = new HashSet<>(Arrays.asList(shapedBlocksArray));
 
-        for (Block block : Registries.BLOCK) {
-            if (block instanceof DoorBlock || block instanceof AbstractSignBlock) {
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (block instanceof DoorBlock || block instanceof SignBlock) {
                 shapedBlocks.add(block);
             }
         }
@@ -128,7 +127,7 @@ public class BlockRepository {
     }
 
     static {
-        BlockState airBlockState = Blocks.AIR.getDefaultState();
+        BlockState airBlockState = Blocks.AIR.defaultBlockState();
         stateToInt.put(airBlockState, 0);
         blockStates.add(airBlockState);
     }

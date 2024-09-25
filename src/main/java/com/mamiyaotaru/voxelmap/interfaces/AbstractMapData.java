@@ -2,10 +2,10 @@ package com.mamiyaotaru.voxelmap.interfaces;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
-import net.minecraft.block.BlockState;
-import net.minecraft.world.biome.Biome;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class AbstractMapData {
     protected int width;
@@ -324,7 +324,7 @@ public abstract class AbstractMapData {
         }
 
         public void morphologicallyErode(boolean horizontalBias) {
-            float labelWidth = (VoxelConstants.getMinecraft().textRenderer.getWidth(this.name) + 8);
+            float labelWidth = (VoxelConstants.getMinecraft().font.width(this.name) + 8);
             float multi = (AbstractMapData.this.width / 32f);
             float shellWidth = 2.0F;
             float labelPadding = labelWidth / 16.0F * multi / shellWidth;

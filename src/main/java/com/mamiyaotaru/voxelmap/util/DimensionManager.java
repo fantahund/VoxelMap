@@ -1,56 +1,55 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
-
 import java.util.ArrayList;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class DimensionManager {
     public final ArrayList<DimensionContainer> dimensions;
-    private final ArrayList<RegistryKey<World>> vanillaWorlds = new ArrayList<>();
+    private final ArrayList<ResourceKey<Level>> vanillaWorlds = new ArrayList<>();
 
     public DimensionManager() {
         this.dimensions = new ArrayList<>();
-        this.vanillaWorlds.add(World.OVERWORLD);
-        this.vanillaWorlds.add(World.NETHER);
-        this.vanillaWorlds.add(World.END);
+        this.vanillaWorlds.add(Level.OVERWORLD);
+        this.vanillaWorlds.add(Level.NETHER);
+        this.vanillaWorlds.add(Level.END);
     }
 
     public ArrayList<DimensionContainer> getDimensions() {
         return this.dimensions;
     }
 
-    public void populateDimensions(World world) {
+    public void populateDimensions(Level world) {
         this.dimensions.clear();
-        Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getNetworkHandler().getRegistryManager().get(RegistryKeys.DIMENSION_TYPE);
+        Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getConnection().registryAccess().registryOrThrow(Registries.DIMENSION_TYPE);
 
-        for (RegistryKey<World> vanillaWorldKey : this.vanillaWorlds) {
-            RegistryKey<DimensionType> typeKey = RegistryKey.of(RegistryKeys.DIMENSION_TYPE, vanillaWorldKey.getValue());
+        for (ResourceKey<Level> vanillaWorldKey : this.vanillaWorlds) {
+            ResourceKey<DimensionType> typeKey = ResourceKey.create(Registries.DIMENSION_TYPE, vanillaWorldKey.location());
             DimensionType dimensionType = dimensionTypeRegistry.get(typeKey);
-            DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.getValue().getPath(), vanillaWorldKey.getValue());
+            DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.location().getPath(), vanillaWorldKey.location());
             this.dimensions.add(dimensionContainer);
         }
 
         this.sort();
     }
 
-    public void enteredWorld(World world) {
-        Identifier resourceLocation = world.getRegistryKey().getValue();
+    public void enteredWorld(Level world) {
+        ResourceLocation resourceLocation = world.dimension().location();
         DimensionContainer dim = this.getDimensionContainerByResourceLocation(resourceLocation);
         if (dim == null) {
-            dim = new DimensionContainer(world.getDimension(), resourceLocation.getPath(), resourceLocation);
+            dim = new DimensionContainer(world.dimensionType(), resourceLocation.getPath(), resourceLocation);
             this.dimensions.add(dim);
             this.sort();
         }
 
         if (dim.type == null) {
             try {
-                dim.type = world.getDimension();
+                dim.type = world.dimensionType();
             } catch (RuntimeException ignored) {}
         }
 
@@ -58,21 +57,21 @@ public class DimensionManager {
 
     private void sort() {
         this.dimensions.sort((dim1, dim2) -> {
-            if (dim1.resourceLocation.equals(World.OVERWORLD.getValue())) {
+            if (dim1.resourceLocation.equals(Level.OVERWORLD.location())) {
                 return -1;
-            } else if (dim1.resourceLocation.equals(World.NETHER.getValue()) && !dim2.resourceLocation.equals(World.OVERWORLD.getValue())) {
+            } else if (dim1.resourceLocation.equals(Level.NETHER.location()) && !dim2.resourceLocation.equals(Level.OVERWORLD.location())) {
                 return -1;
             } else {
-                return dim1.resourceLocation.equals(World.END.getValue()) && !dim2.resourceLocation.equals(World.OVERWORLD.getValue()) && !dim2.resourceLocation.equals(World.NETHER.getValue()) ? -1 : String.CASE_INSENSITIVE_ORDER.compare(dim1.name, dim2.name);
+                return dim1.resourceLocation.equals(Level.END.location()) && !dim2.resourceLocation.equals(Level.OVERWORLD.location()) && !dim2.resourceLocation.equals(Level.NETHER.location()) ? -1 : String.CASE_INSENSITIVE_ORDER.compare(dim1.name, dim2.name);
             }
         });
     }
 
-    public DimensionContainer getDimensionContainerByWorld(World world) {
-        Identifier resourceLocation = world.getRegistryKey().getValue();
+    public DimensionContainer getDimensionContainerByWorld(Level world) {
+        ResourceLocation resourceLocation = world.dimension().location();
         DimensionContainer dim = this.getDimensionContainerByResourceLocation(resourceLocation);
         if (dim == null) {
-            dim = new DimensionContainer(world.getDimension(), resourceLocation.getPath(), resourceLocation);
+            dim = new DimensionContainer(world.dimensionType(), resourceLocation.getPath(), resourceLocation);
             this.dimensions.add(dim);
             this.sort();
         }
@@ -82,7 +81,7 @@ public class DimensionManager {
 
     public DimensionContainer getDimensionContainerByIdentifier(String ident) {
         DimensionContainer dim;
-        Identifier resourceLocation = Identifier.of(ident);
+        ResourceLocation resourceLocation = ResourceLocation.parse(ident);
         dim = this.getDimensionContainerByResourceLocation(resourceLocation);
         if (dim == null) {
             dim = new DimensionContainer(null, resourceLocation.getPath(), resourceLocation);
@@ -93,7 +92,7 @@ public class DimensionManager {
         return dim;
     }
 
-    public DimensionContainer getDimensionContainerByResourceLocation(Identifier resourceLocation) {
+    public DimensionContainer getDimensionContainerByResourceLocation(ResourceLocation resourceLocation) {
         return this.dimensions.stream().filter(dim -> resourceLocation.equals(dim.resourceLocation)).findFirst().orElse(null);
     }
 }

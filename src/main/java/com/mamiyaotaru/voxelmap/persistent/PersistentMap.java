@@ -15,25 +15,6 @@ import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import net.minecraft.block.AirBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.block.StainedGlassBlock;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.WorldChunk;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +25,24 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.StainedGlassBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PersistentMap implements IChangeObserver {
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
@@ -52,7 +51,7 @@ public class PersistentMap implements IChangeObserver {
     PersistentMapSettingsManager options;
     WorldMatcher worldMatcher;
     final int[] lightmapColors;
-    ClientWorld world;
+    ClientLevel world;
     String subworldName = "";
     protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
     protected final ConcurrentHashMap<String, CachedRegion> cachedRegions = new ConcurrentHashMap<>(150, 0.9F, 2);
@@ -91,7 +90,7 @@ public class PersistentMap implements IChangeObserver {
         Arrays.fill(this.lightmapColors, -16777216);
     }
 
-    public void newWorld(ClientWorld world) {
+    public void newWorld(ClientLevel world) {
         this.subworldName = "";
         this.purgeCachedRegions();
         this.queuedChangedChunks = false;
@@ -125,9 +124,9 @@ public class PersistentMap implements IChangeObserver {
 
     private void newWorldStuff() {
         String worldName = TextUtils.scrubNameFile(VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName());
-        File oldCacheDir = new File(VoxelConstants.getMinecraft().runDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
+        File oldCacheDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
         if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
-            File newCacheDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + worldName + "/");
+            File newCacheDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + worldName + "/");
             newCacheDir.getParentFile().mkdirs();
             boolean success = oldCacheDir.renameTo(newCacheDir);
             if (!success) {
@@ -149,7 +148,7 @@ public class PersistentMap implements IChangeObserver {
         if (VoxelConstants.getMinecraft().cameraEntity == null) {
             return;
         }
-        if (VoxelConstants.getMinecraft().currentScreen == null) {
+        if (VoxelConstants.getMinecraft().screen == null) {
             this.options.mapX = GameVariableAccessShim.xCoord();
             this.options.mapZ = GameVariableAccessShim.zCoord();
         }
@@ -222,16 +221,16 @@ public class PersistentMap implements IChangeObserver {
 
     }
 
-    public void getAndStoreData(AbstractMapData mapData, World world, WorldChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
-        int bottomY = world.getBottomY();
+    public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
+        int bottomY = world.getMinBuildHeight();
         int surfaceHeight;
         int seafloorHeight = bottomY;
         int transparentHeight = bottomY;
         int foliageHeight = bottomY;
         BlockState surfaceBlockState;
-        BlockState transparentBlockState = BlockRepository.air.getDefaultState();
-        BlockState foliageBlockState = BlockRepository.air.getDefaultState();
-        BlockState seafloorBlockState = BlockRepository.air.getDefaultState();
+        BlockState transparentBlockState = BlockRepository.air.defaultBlockState();
+        BlockState foliageBlockState = BlockRepository.air.defaultBlockState();
+        BlockState seafloorBlockState = BlockRepository.air.defaultBlockState();
         pos = pos.withXYZ(startX + imageX, 64, startZ + imageY);
         Biome biome;
         if (!chunk.isEmpty()) {
@@ -256,22 +255,22 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
             } else {
-                transparentHeight = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, pos.getX() & 15, pos.getZ() & 15) + 1;
+                transparentHeight = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX() & 15, pos.getZ() & 15) + 1;
                 transparentBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, transparentHeight - 1, startZ + imageY));
                 FluidState fluidState = transparentBlockState.getFluidState();
-                if (fluidState != Fluids.EMPTY.getDefaultState()) {
-                    transparentBlockState = fluidState.getBlockState();
+                if (fluidState != Fluids.EMPTY.defaultFluidState()) {
+                    transparentBlockState = fluidState.createLegacyBlock();
                 }
 
                 surfaceHeight = transparentHeight;
                 surfaceBlockState = transparentBlockState;
                 VoxelShape voxelShape;
-                boolean hasOpacity = transparentBlockState.getOpacity(world, pos) > 0;
-                if (!hasOpacity && transparentBlockState.isOpaque() && transparentBlockState.hasSidedTransparency()) {
-                    voxelShape = transparentBlockState.getCullingFace(world, pos, Direction.DOWN);
-                    hasOpacity = VoxelShapes.unionCoversFullCube(voxelShape, VoxelShapes.empty());
-                    voxelShape = transparentBlockState.getCullingFace(world, pos, Direction.UP);
-                    hasOpacity = hasOpacity || VoxelShapes.unionCoversFullCube(VoxelShapes.empty(), voxelShape);
+                boolean hasOpacity = transparentBlockState.getLightBlock(world, pos) > 0;
+                if (!hasOpacity && transparentBlockState.canOcclude() && transparentBlockState.useShapeForLightOcclusion()) {
+                    voxelShape = transparentBlockState.getFaceOcclusionShape(world, pos, Direction.DOWN);
+                    hasOpacity = Shapes.faceShapeOccludes(voxelShape, Shapes.empty());
+                    voxelShape = transparentBlockState.getFaceOcclusionShape(world, pos, Direction.UP);
+                    hasOpacity = hasOpacity || Shapes.faceShapeOccludes(Shapes.empty(), voxelShape);
                 }
 
                 while (!hasOpacity && surfaceHeight > bottomY) {
@@ -279,48 +278,48 @@ public class PersistentMap implements IChangeObserver {
                     --surfaceHeight;
                     surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                     fluidState = surfaceBlockState.getFluidState();
-                    if (fluidState != Fluids.EMPTY.getDefaultState()) {
-                        surfaceBlockState = fluidState.getBlockState();
+                    if (fluidState != Fluids.EMPTY.defaultFluidState()) {
+                        surfaceBlockState = fluidState.createLegacyBlock();
                     }
 
-                    hasOpacity = surfaceBlockState.getOpacity(world, pos) > 0;
-                    if (!hasOpacity && surfaceBlockState.isOpaque() && surfaceBlockState.hasSidedTransparency()) {
-                        voxelShape = surfaceBlockState.getCullingFace(world, pos, Direction.DOWN);
-                        hasOpacity = VoxelShapes.unionCoversFullCube(voxelShape, VoxelShapes.empty());
-                        voxelShape = surfaceBlockState.getCullingFace(world, pos, Direction.UP);
-                        hasOpacity = hasOpacity || VoxelShapes.unionCoversFullCube(VoxelShapes.empty(), voxelShape);
+                    hasOpacity = surfaceBlockState.getLightBlock(world, pos) > 0;
+                    if (!hasOpacity && surfaceBlockState.canOcclude() && surfaceBlockState.useShapeForLightOcclusion()) {
+                        voxelShape = surfaceBlockState.getFaceOcclusionShape(world, pos, Direction.DOWN);
+                        hasOpacity = Shapes.faceShapeOccludes(voxelShape, Shapes.empty());
+                        voxelShape = surfaceBlockState.getFaceOcclusionShape(world, pos, Direction.UP);
+                        hasOpacity = hasOpacity || Shapes.faceShapeOccludes(Shapes.empty(), voxelShape);
                     }
                 }
 
                 if (surfaceHeight == transparentHeight) {
                     transparentHeight = bottomY;
-                    transparentBlockState = BlockRepository.air.getDefaultState();
+                    transparentBlockState = BlockRepository.air.defaultBlockState();
                     foliageBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight, startZ + imageY));
                 }
 
                 if (foliageBlockState.getBlock() == Blocks.SNOW) {
                     surfaceBlockState = foliageBlockState;
-                    foliageBlockState = BlockRepository.air.getDefaultState();
+                    foliageBlockState = BlockRepository.air.defaultBlockState();
                 }
 
                 if (foliageBlockState == transparentBlockState) {
-                    foliageBlockState = BlockRepository.air.getDefaultState();
+                    foliageBlockState = BlockRepository.air.defaultBlockState();
                 }
 
                 if (foliageBlockState != null && !(foliageBlockState.getBlock() instanceof AirBlock)) {
                     foliageHeight = surfaceHeight + 1;
                 } else {
-                    foliageBlockState = BlockRepository.air.getDefaultState();
+                    foliageBlockState = BlockRepository.air.defaultBlockState();
                 }
 
                 Block material = surfaceBlockState.getBlock();
                 if (material == Blocks.WATER || material == Blocks.ICE) {
                     seafloorHeight = surfaceHeight;
 
-                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getOpacity(world, pos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
+                    for (seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getLightBlock(world, pos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
                             && seafloorHeight > bottomY + 1; seafloorBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                         material = seafloorBlockState.getBlock();
-                        if (transparentHeight == bottomY && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMovement()) {
+                        if (transparentHeight == bottomY && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMotion()) {
                             transparentHeight = seafloorHeight;
                             transparentBlockState = seafloorBlockState;
                         }
@@ -334,7 +333,7 @@ public class PersistentMap implements IChangeObserver {
                     }
 
                     if (seafloorBlockState.getBlock() == Blocks.WATER) {
-                        seafloorBlockState = BlockRepository.air.getDefaultState();
+                        seafloorBlockState = BlockRepository.air.defaultBlockState();
                     }
                 }
             }
@@ -363,19 +362,19 @@ public class PersistentMap implements IChangeObserver {
 
             mapData.setLight(imageX, imageY, light);
             int seafloorLight = 0;
-            if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.getDefaultState()) {
+            if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.defaultBlockState()) {
                 seafloorLight = this.getLight(seafloorBlockState, world, pos, startX + imageX, startZ + imageY, seafloorHeight, solid);
             }
 
             mapData.setOceanFloorLight(imageX, imageY, seafloorLight);
             int transparentLight = 0;
-            if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
+            if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
                 transparentLight = this.getLight(transparentBlockState, world, pos, startX + imageX, startZ + imageY, transparentHeight, solid);
             }
 
             mapData.setTransparentLight(imageX, imageY, transparentLight);
             int foliageLight = 0;
-            if (foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
+            if (foliageBlockState != null && foliageBlockState != BlockRepository.air.defaultBlockState()) {
                 foliageLight = this.getLight(foliageBlockState, world, pos, startX + imageX, startZ + imageY, foliageHeight, solid);
             }
 
@@ -383,17 +382,17 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int getNetherHeight(WorldChunk chunk, int x, int z) {
-        int bottomY = chunk.getBottomY();
+    private int getNetherHeight(LevelChunk chunk, int x, int z) {
+        int bottomY = chunk.getMinBuildHeight();
         int y = 80;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = chunk.getBlockState(this.blockPos);
-        if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
+        if (blockState.getLightBlock(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
             while (y > bottomY) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = chunk.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) > 0 || blockState.getBlock() == Blocks.LAVA) {
+                if (blockState.getLightBlock(this.world, this.blockPos) > 0 || blockState.getBlock() == Blocks.LAVA) {
                     return y + 1;
                 }
             }
@@ -404,7 +403,7 @@ public class PersistentMap implements IChangeObserver {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = chunk.getBlockState(this.blockPos);
-                if (blockState.getOpacity(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
+                if (blockState.getLightBlock(this.world, this.blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
                     return y;
                 }
             }
@@ -413,14 +412,14 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int getLight(BlockState blockState, World world, MutableBlockPos blockPos, int x, int z, int height, boolean solid) {
+    private int getLight(BlockState blockState, Level world, MutableBlockPos blockPos, int x, int z, int height, boolean solid) {
         int lightCombined = 255;
         if (solid) {
             lightCombined = 0;
         } else if (blockState != null && !(blockState.getBlock() instanceof AirBlock)) {
-            blockPos.setXYZ(x, Math.max(Math.min(height, world.getTopY()), world.getBottomY()), z);
-            int blockLight = world.getLightLevel(LightType.BLOCK, blockPos) & 15;
-            int skyLight = world.getLightLevel(LightType.SKY, blockPos);
+            blockPos.setXYZ(x, Math.max(Math.min(height, world.getMaxBuildHeight()), world.getMinBuildHeight()), z);
+            int blockLight = world.getBrightness(LightLayer.BLOCK, blockPos) & 15;
+            int skyLight = world.getBrightness(LightLayer.SKY, blockPos);
             if (blockState.getBlock() == Blocks.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {
                 blockLight = 14;
             }
@@ -431,8 +430,8 @@ public class PersistentMap implements IChangeObserver {
         return lightCombined;
     }
 
-    public int getPixelColor(AbstractMapData mapData, ClientWorld world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
-        int bottomY = world.getBottomY();
+    public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
+        int bottomY = world.getMinBuildHeight();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
         BlockState surfaceBlockState;
@@ -459,7 +458,7 @@ public class PersistentMap implements IChangeObserver {
                 int blockStateID;
                 surfaceHeight = mapData.getHeight(imageX, imageY);
                 blockStateID = BlockRepository.getStateId(surfaceBlockState);
-                if (surfaceHeight < bottomY || surfaceHeight == world.getTopY()) {
+                if (surfaceHeight < bottomY || surfaceHeight == world.getMaxBuildHeight()) {
                     surfaceHeight = 80;
                     solid = true;
                 }
@@ -494,7 +493,7 @@ public class PersistentMap implements IChangeObserver {
                     if (seafloorHeight > bottomY) {
                         blockPos.setXYZ(mcX, seafloorHeight - 1, mcZ);
                         seafloorBlockState = mapData.getOceanFloorBlockstate(imageX, imageY);
-                        if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.getDefaultState()) {
+                        if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(seafloorBlockState);
                             if (mapOptions.biomes) {
                                 seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
@@ -523,7 +522,7 @@ public class PersistentMap implements IChangeObserver {
                     if (transparentHeight > bottomY) {
                         blockPos.setXYZ(mcX, transparentHeight - 1, mcZ);
                         transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
-                        if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
+                        if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(transparentBlockState);
                             if (mapOptions.biomes) {
                                 transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
@@ -550,7 +549,7 @@ public class PersistentMap implements IChangeObserver {
                     if (foliageHeight > bottomY) {
                         blockPos.setXYZ(mcX, foliageHeight - 1, mcZ);
                         foliageBlockState = mapData.getFoliageBlockstate(imageX, imageY);
-                        if (foliageBlockState != null && foliageBlockState != BlockRepository.air.getDefaultState()) {
+                        if (foliageBlockState != null && foliageBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(foliageBlockState);
                             if (mapOptions.biomes) {
                                 foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
@@ -645,7 +644,7 @@ public class PersistentMap implements IChangeObserver {
                             heightComp = mapData.getTransparentHeight(imageX - 1, imageY + 1);
                             if (heightComp == Short.MIN_VALUE) {
                                 BlockState transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
-                                if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
+                                if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
                                     Block block = transparentBlockState.getBlock();
                                     if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
                                         heightComp = mapData.getHeight(imageX - 1, imageY + 1);
@@ -670,7 +669,7 @@ public class PersistentMap implements IChangeObserver {
                             heightComp = mapData.getTransparentHeight(imageX + 1, imageY - 1);
                             if (heightComp == Short.MIN_VALUE) {
                                 BlockState transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
-                                if (transparentBlockState != null && transparentBlockState != BlockRepository.air.getDefaultState()) {
+                                if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
                                     Block block = transparentBlockState.getBlock();
                                     if (block == Blocks.GLASS || block instanceof StainedGlassBlock) {
                                         heightComp = mapData.getHeight(imageX + 1, imageY - 1);
@@ -825,7 +824,7 @@ public class PersistentMap implements IChangeObserver {
 
     public void handleChangeInWorld(int chunkX, int chunkZ) {
         if (this.world != null) {
-            WorldChunk chunk = this.world.getChunk(chunkX, chunkZ);
+            LevelChunk chunk = this.world.getChunk(chunkX, chunkZ);
             if (chunk != null && !chunk.isEmpty()) {
                 if (this.isChunkReady(this.world, chunk)) {
                     this.processChunk(chunk);
@@ -835,13 +834,13 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    public void processChunk(WorldChunk chunk) {
+    public void processChunk(LevelChunk chunk) {
         if (VoxelMap.mapOptions.worldmapAllowed) {
             this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
         }
     }
 
-    private void doProcessChunk(WorldChunk chunk) {
+    private void doProcessChunk(LevelChunk chunk) {
         this.queuedChangedChunks = true;
 
         try {
@@ -878,7 +877,7 @@ public class PersistentMap implements IChangeObserver {
                 }
             }
 
-            if (VoxelConstants.getMinecraft().currentScreen != null && VoxelConstants.getMinecraft().currentScreen instanceof GuiPersistentMap) {
+            if (VoxelConstants.getMinecraft().screen != null && VoxelConstants.getMinecraft().screen instanceof GuiPersistentMap) {
                 cachedRegion.registerChangeAt(chunkX, chunkZ);
                 cachedRegion.refresh(false);
             } else {
@@ -890,7 +889,7 @@ public class PersistentMap implements IChangeObserver {
 
     }
 
-    private boolean isChunkReady(ClientWorld world, WorldChunk chunk) {
+    private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
         return this.chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x, chunk.getPos().z);
     }
 
@@ -933,11 +932,11 @@ public class PersistentMap implements IChangeObserver {
                 VoxelConstants.getLogger().info("  Foilage: " + data.getFoliageHeight(localx, localz) + " Block: " + data.getFoliageBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getFoliageLight(localx, localz)));
                 VoxelConstants.getLogger().info("  Ocean Floor: " + data.getOceanFloorHeight(localx, localz) + " Block: " + data.getOceanFloorBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getOceanFloorLight(localx, localz)));
                 VoxelConstants.getLogger().info("  Transparent: " + data.getTransparentHeight(localx, localz) + " Block: " + data.getTransparentBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getTransparentLight(localx, localz)));
-                VoxelConstants.getLogger().info("  Biome: " + world.getRegistryManager().get(RegistryKeys.BIOME).getId(data.getBiome(localx, localz)) + " (" + data.getBiomeId(localx, localz) + ")");
+                VoxelConstants.getLogger().info("  Biome: " + world.registryAccess().registryOrThrow(Registries.BIOME).getKey(data.getBiome(localx, localz)) + " (" + data.getBiomeId(localx, localz) + ")");
             }
         }
     }
 
-    private record ChunkWithAge(WorldChunk chunk, int tick) {}
+    private record ChunkWithAge(LevelChunk chunk, int tick) {}
     private record RegionCoordinates(int x, int z) {}
 }

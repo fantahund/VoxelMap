@@ -3,19 +3,18 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.world.ClientWorld;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.resources.language.I18n;
 
 public class WorldMatcher {
     private final PersistentMap map;
-    private final ClientWorld world;
+    private final ClientLevel world;
     private boolean cancelled;
 
-    public WorldMatcher(PersistentMap map, ClientWorld world) {
+    public WorldMatcher(PersistentMap map, ClientLevel world) {
         this.map = map;
         this.world = world;
     }
@@ -30,7 +29,7 @@ public class WorldMatcher {
             final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
             final String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
             final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
-            final File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().runDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
+            final File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
 
             public void run() {
                 try {
@@ -96,10 +95,10 @@ public class WorldMatcher {
                 MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
                 if (!WorldMatcher.this.cancelled && this.candidateRegions.size() == 1 && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
                     VoxelConstants.getVoxelMapInstance().newSubWorldName(this.candidateRegions.get(0).getSubworldName(), false);
-                    MessageUtils.chatInfo(I18n.translate("worldmap.multiworld.foundworld1") + ":" + " §a" + this.candidateRegions.get(0).getSubworldName() + ".§r" + " " + I18n.translate("worldmap.multiworld.foundworld2"));
+                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundworld1") + ":" + " §a" + this.candidateRegions.get(0).getSubworldName() + ".§r" + " " + I18n.get("worldmap.multiworld.foundworld2"));
                 } else if (!WorldMatcher.this.cancelled && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
                     MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
-                    MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18n.translate("worldmap.multiworld.unknownsubworld"));
+                    MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18n.get("worldmap.multiworld.unknownsubworld"));
                 }
 
             }

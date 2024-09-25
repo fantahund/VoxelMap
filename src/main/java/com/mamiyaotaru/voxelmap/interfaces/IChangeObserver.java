@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public interface IChangeObserver {
     void handleChangeInWorld(int chunkX, int chunkZ);
 
-    void processChunk(WorldChunk chunk);
+    void processChunk(LevelChunk chunk);
 }

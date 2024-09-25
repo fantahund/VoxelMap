@@ -1,27 +1,27 @@
 package com.mamiyaotaru.voxelmap.packets;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record WorldIdC2S() implements CustomPayload {
-    public static final CustomPayload.Id<WorldIdC2S> PACKET_ID = new CustomPayload.Id<>(Identifier.of("worldinfo", "world_id"));
-    public static final PacketCodec<PacketByteBuf, WorldIdC2S> PACKET_CODEC = PacketCodec.of(WorldIdC2S::write, WorldIdC2S::new);
+public record WorldIdC2S() implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<WorldIdC2S> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("worldinfo", "world_id"));
+    public static final StreamCodec<FriendlyByteBuf, WorldIdC2S> PACKET_CODEC = StreamCodec.ofMember(WorldIdC2S::write, WorldIdC2S::new);
 
-    public WorldIdC2S(PacketByteBuf buf) {
+    public WorldIdC2S(FriendlyByteBuf buf) {
         this();
         buf.skipBytes(buf.readableBytes());
     }
 
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeByte(0);
         buf.writeByte(42);
         buf.writeByte(0);
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 }

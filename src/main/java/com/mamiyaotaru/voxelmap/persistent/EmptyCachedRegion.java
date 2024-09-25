@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 public class EmptyCachedRegion extends CachedRegion {
     @Override
@@ -13,7 +13,7 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public void handleChangedChunk(WorldChunk chunk) {
+    public void handleChangedChunk(LevelChunk chunk) {
     }
 
     @Override

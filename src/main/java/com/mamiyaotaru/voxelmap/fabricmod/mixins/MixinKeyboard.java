@@ -1,33 +1,31 @@
 package com.mamiyaotaru.voxelmap.fabricmod.mixins;
 
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
-import net.minecraft.client.Keyboard;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.KeyboardHandler;
+import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(Keyboard.class)
+@Mixin(KeyboardHandler.class)
 public abstract class MixinKeyboard {
 
-    @Shadow
     @Final
-    private MinecraftClient client;
+    private Minecraft client;
 
-    @Inject(method = "onKey", at = @At(value = "RETURN"))
+    @Inject(method = "keyPress", at = @At(value = "RETURN"))
     public void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
-        if (this.client.currentScreen instanceof GuiPersistentMap guiPersistentMap && guiPersistentMap.passEvents) {
-            InputUtil.Key key2 = InputUtil.fromKeyCode(key, scancode);
+        if (this.client.screen instanceof GuiPersistentMap guiPersistentMap && guiPersistentMap.passEvents) {
+            InputConstants.Key key2 = InputConstants.getKey(key, scancode);
             if (action == 0) {
-                KeyBinding.setKeyPressed(key2, false);
+                KeyMapping.set(key2, false);
             } else {
-                KeyBinding.setKeyPressed(key2, true);
-                KeyBinding.onKeyPressed(key2);
+                KeyMapping.set(key2, true);
+                KeyMapping.click(key2);
             }
         }
     }

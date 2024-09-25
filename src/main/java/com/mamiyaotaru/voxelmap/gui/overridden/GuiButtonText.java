@@ -1,21 +1,21 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
 
-public class GuiButtonText extends ButtonWidget {
+public class GuiButtonText extends Button {
     private boolean editing;
-    private final TextFieldWidget textField;
+    private final EditBox textField;
 
-    public GuiButtonText(TextRenderer fontRenderer, int x, int y, int width, int height, Text message, PressAction onPress) {
-        super (x, y, width, height, message, onPress, DEFAULT_NARRATION_SUPPLIER);
-        this.textField = new TextFieldWidget(fontRenderer, x + 1, y + 1, width - 2, height - 2, null);
+    public GuiButtonText(Font fontRenderer, int x, int y, int width, int height, Component message, OnPress onPress) {
+        super (x, y, width, height, message, onPress, DEFAULT_NARRATION);
+        this.textField = new EditBox(fontRenderer, x + 1, y + 1, width - 2, height - 2, null);
     }
 
-    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         if (editing) {
             textField.render(drawContext, mouseX, mouseY, delta);
             return;
@@ -55,7 +55,7 @@ public class GuiButtonText extends ButtonWidget {
 
     public boolean isEditing() { return editing; }
 
-    public void setText(String text) { textField.setText(text); }
+    public void setText(String text) { textField.setValue(text); }
 
-    public String getText() { return textField.getText(); }
+    public String getText() { return textField.getValue(); }
 }

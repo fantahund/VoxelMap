@@ -1,17 +1,17 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
+import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.system.MemoryUtil;
 
-public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
+public class MutableNativeImageBackedTexture extends DynamicTexture {
     private final Object bufferLock = new Object();
     private final NativeImage image;
     private final long pointer;
 
     public MutableNativeImageBackedTexture(int width, int height, boolean useStb) {
         super(width, height, useStb);
-        this.image = this.getImage();
+        this.image = this.getPixels();
         String info = this.image.toString();
         String pointerString = info.substring(info.indexOf('@') + 1, info.indexOf(']') - 1);
         this.pointer = Long.parseLong(pointerString);
@@ -30,7 +30,7 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
     }
 
     public int getIndex() {
-        return this.getGlId();
+        return this.getId();
     }
 
     public void moveX(int offset) {
@@ -65,6 +65,6 @@ public class MutableNativeImageBackedTexture extends NativeImageBackedTexture {
         byte g = (byte) ((color24 >> 8 & 0xFF) * alpha / 255);
         byte b = (byte) ((color24 >> 16 & 0xFF) * alpha / 255);
         int color = (a & 255) << 24 | (r & 255) << 16 | (g & 255) << 8 | b & 255;
-        this.image.setColor(x, y, color);
+        this.image.setPixelRGBA(x, y, color);
     }
 }

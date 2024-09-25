@@ -1,8 +1,7 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import net.minecraft.util.Identifier;
-
 import java.awt.image.BufferedImage;
+import net.minecraft.resources.ResourceLocation;
 
 public class Sprite {
     private final String iconName;
@@ -20,7 +19,7 @@ public class Sprite {
         this.iconName = iconName;
     }
 
-    public static Sprite spriteFromResourceLocation(Identifier resourceLocation) {
+    public static Sprite spriteFromResourceLocation(ResourceLocation resourceLocation) {
         String name = resourceLocation.toString();
         return spriteFromString(name);
     }

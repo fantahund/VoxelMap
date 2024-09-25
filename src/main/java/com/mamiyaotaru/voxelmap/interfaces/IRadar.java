@@ -1,12 +1,12 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.joml.Matrix4fStack;
 
 public interface IRadar {
     void onResourceManagerReload(ResourceManager resourceManager);
 
-    void onTickInGame(DrawContext drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables);
+    void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables);
 }

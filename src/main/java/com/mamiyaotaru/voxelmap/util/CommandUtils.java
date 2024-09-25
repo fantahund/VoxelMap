@@ -4,29 +4,28 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.fabricmod.FabricModVoxelMap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.hud.MessageIndicator;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkStatus;
-
+import com.mojang.blaze3d.platform.InputConstants;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 public final class CommandUtils {
     private static final int NEW_WAYPOINT_COMMAND_LENGTH = "newWaypoint ".length();
@@ -36,8 +35,8 @@ public final class CommandUtils {
 
     private CommandUtils() {}
 
-    public static boolean checkForWaypoints(Text chat, MessageIndicator indicator) {
-        if (indicator != null && indicator.loggedName() != null && indicator.loggedName().equals("ModifiedbyVoxelMap")) {
+    public static boolean checkForWaypoints(Component chat, GuiMessageTag indicator) {
+        if (indicator != null && indicator.logTag() != null && indicator.logTag().equals("ModifiedbyVoxelMap")) {
             return true;
         }
 
@@ -47,20 +46,20 @@ public final class CommandUtils {
         if (waypointStrings.isEmpty()) {
             return true;
         } else {
-            ArrayList<Text> textComponents = new ArrayList<>();
+            ArrayList<Component> textComponents = new ArrayList<>();
             int count = 0;
 
             for (String waypointString : waypointStrings) {
                 int waypointStringLocation = message.indexOf(waypointString);
                 if (waypointStringLocation > count) {
-                    textComponents.add(Text.literal(message.substring(count, waypointStringLocation)));
+                    textComponents.add(Component.literal(message.substring(count, waypointStringLocation)));
                 }
 
-                MutableText clickableWaypoint = Text.literal(waypointString);
+                MutableComponent clickableWaypoint = Component.literal(waypointString);
                 Style chatStyle = clickableWaypoint.getStyle();
                 chatStyle = chatStyle.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/newWaypoint " + waypointString.substring(1, waypointString.length() - 1)));
-                chatStyle = chatStyle.withColor(Formatting.AQUA);
-                Text hover = Text.literal(I18n.translate("minimap.waypointshare.tooltip1") + "\n" + I18n.translate("minimap.waypointshare.tooltip2"));
+                chatStyle = chatStyle.withColor(ChatFormatting.AQUA);
+                Component hover = Component.literal(I18n.get("minimap.waypointshare.tooltip1") + "\n" + I18n.get("minimap.waypointshare.tooltip2"));
                 chatStyle = chatStyle.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
                 clickableWaypoint.setStyle(chatStyle);
                 textComponents.add(clickableWaypoint);
@@ -68,16 +67,16 @@ public final class CommandUtils {
             }
 
             if (count < message.length() - 1) {
-                textComponents.add(Text.literal(message.substring(count)));
+                textComponents.add(Component.literal(message.substring(count)));
             }
 
-            MutableText finalTextComponent = Text.literal("");
+            MutableComponent finalTextComponent = Component.literal("");
 
-            for (Text textComponent : textComponents) {
+            for (Component textComponent : textComponents) {
                 finalTextComponent.append(textComponent);
             }
 
-            VoxelConstants.getMinecraft().inGameHud.getChatHud().addMessage(finalTextComponent, null, new MessageIndicator(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
+            VoxelConstants.getMinecraft().gui.getChat().addMessage(finalTextComponent, null, new GuiMessageTag(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
             return false;
         }
     }
@@ -164,7 +163,7 @@ public final class CommandUtils {
             }
 
             if (dimensions.isEmpty()) {
-                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
+                dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
             }
 
             if (x != null && z != null) {
@@ -182,7 +181,7 @@ public final class CommandUtils {
     }
 
     public static void waypointClicked(String command) {
-        boolean control = InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.left.control").getCode()) || InputUtil.isKeyPressed(VoxelConstants.getMinecraft().getWindow().getHandle(), InputUtil.fromTranslationKey("key.keyboard.right.control").getCode());
+        boolean control = InputConstants.isKeyDown(VoxelConstants.getMinecraft().getWindow().getWindow(), InputConstants.getKey("key.keyboard.left.control").getValue()) || InputConstants.isKeyDown(VoxelConstants.getMinecraft().getWindow().getWindow(), InputConstants.getKey("key.keyboard.right.control").getValue());
         String details = command.substring(NEW_WAYPOINT_COMMAND_LENGTH);
         Waypoint newWaypoint = createWaypointFromChat(details);
         if (newWaypoint != null) {
@@ -208,7 +207,7 @@ public final class CommandUtils {
     }
 
     public static void sendWaypoint(Waypoint waypoint) {
-        Identifier resourceLocation = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()).resourceLocation;
+        ResourceLocation resourceLocation = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()).resourceLocation;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
         StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
@@ -247,52 +246,52 @@ public final class CommandUtils {
 
         for (Waypoint wp : VoxelConstants.getVoxelMapInstance().getWaypointManager().getWaypoints()) {
             if (wp.name.equalsIgnoreCase(details) && wp.inDimension && wp.inWorld) {
-                int y = wp.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ? wp.getY() : (!VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling() ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
+                int y = wp.getY() > VoxelConstants.getPlayer().level().getMinBuildHeight() ? wp.getY() : (!VoxelConstants.getPlayer().level().dimensionType().hasCeiling() ? VoxelConstants.getPlayer().level().getMaxBuildHeight() : 64);
                 FabricModVoxelMap.instance.playerRunTeleportCommand(wp.getX(), y, wp.getZ());
                 return;
             }
         }
     }
 
-    public static int getSafeHeight(int x, int y, int z, World worldObj) {
-        boolean inNetherDimension = worldObj.getDimension().hasCeiling();
+    public static int getSafeHeight(int x, int y, int z, Level worldObj) {
+        boolean inNetherDimension = worldObj.dimensionType().hasCeiling();
         BlockPos blockPos = new BlockPos(x, y, z);
         worldObj.getChunk(blockPos);
-        worldObj.getChunkManager().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FULL, true);
+        worldObj.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FULL, true);
         if (inNetherDimension) {
             int safeY = -1;
 
-            for (int t = worldObj.getBottomY(); t < worldObj.getTopY(); ++t) {
-                if (y + t < worldObj.getTopY() && isBlockStandable(worldObj, x, y + t, z) && isBlockOpen(worldObj, x, y + t + 1, z) && isBlockOpen(worldObj, x, y + t + 2, z)) {
+            for (int t = worldObj.getMinBuildHeight(); t < worldObj.getMaxBuildHeight(); ++t) {
+                if (y + t < worldObj.getMaxBuildHeight() && isBlockStandable(worldObj, x, y + t, z) && isBlockOpen(worldObj, x, y + t + 1, z) && isBlockOpen(worldObj, x, y + t + 2, z)) {
                     safeY = y + t + 1;
-                    t = worldObj.getTopY();
+                    t = worldObj.getMaxBuildHeight();
                 }
 
-                if (y - t > worldObj.getBottomY() && isBlockStandable(worldObj, x, y - t, z) && isBlockOpen(worldObj, x, y - t + 1, z) && isBlockOpen(worldObj, x, y - t + 2, z)) {
+                if (y - t > worldObj.getMinBuildHeight() && isBlockStandable(worldObj, x, y - t, z) && isBlockOpen(worldObj, x, y - t + 1, z) && isBlockOpen(worldObj, x, y - t + 2, z)) {
                     safeY = y - t + 1;
-                    t = worldObj.getTopY();
+                    t = worldObj.getMaxBuildHeight();
                 }
             }
 
             y = safeY;
-        } else if (y <= worldObj.getBottomY()) {
-            y = worldObj.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z) + 1;
+        } else if (y <= worldObj.getMinBuildHeight()) {
+            y = worldObj.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) + 1;
         }
 
         return y;
     }
 
-    private static boolean isBlockStandable(World worldObj, int par1, int par2, int par3) {
+    private static boolean isBlockStandable(Level worldObj, int par1, int par2, int par3) {
         BlockPos blockPos = new BlockPos(par1, par2, par3);
         BlockState blockState = worldObj.getBlockState(blockPos);
         Block block = blockState.getBlock();
         return block != null && blockState.isSolid();
     }
 
-    private static boolean isBlockOpen(World worldObj, int par1, int par2, int par3) {
+    private static boolean isBlockOpen(Level worldObj, int par1, int par2, int par3) {
         BlockPos blockPos = new BlockPos(par1, par2, par3);
         BlockState blockState = worldObj.getBlockState(blockPos);
         Block block = blockState.getBlock();
-        return block == null || !blockState.shouldSuffocate(worldObj, blockPos);
+        return block == null || !blockState.isSuffocating(worldObj, blockPos);
     }
 }

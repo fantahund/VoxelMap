@@ -9,39 +9,38 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ConfirmScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.text.Text;
-
 import java.util.Optional;
 import java.util.Random;
 import java.util.TreeSet;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.chat.Component;
 
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private final Screen parentScreen;
     protected final MapSettingsManager options;
     protected final WaypointManager waypointManager;
-    protected Text screenTitle;
+    protected Component screenTitle;
     private GuiSlotWaypoints waypointList;
-    private ButtonWidget buttonEdit;
+    private Button buttonEdit;
     private boolean editClicked;
-    private ButtonWidget buttonDelete;
+    private Button buttonDelete;
     private boolean deleteClicked;
-    private ButtonWidget buttonHighlight;
-    private ButtonWidget buttonShare;
-    private ButtonWidget buttonTeleport;
-    private ButtonWidget buttonSortName;
-    private ButtonWidget buttonSortCreated;
-    private ButtonWidget buttonSortDistance;
-    private ButtonWidget buttonSortColor;
-    protected TextFieldWidget filter;
+    private Button buttonHighlight;
+    private Button buttonShare;
+    private Button buttonTeleport;
+    private Button buttonSortName;
+    private Button buttonSortCreated;
+    private Button buttonSortDistance;
+    private Button buttonSortColor;
+    protected EditBox filter;
     private boolean addClicked;
-    private Text tooltip;
+    private Component tooltip;
     protected Waypoint selectedWaypoint;
     protected Waypoint highlightedWaypoint;
     protected Waypoint newWaypoint;
@@ -60,24 +59,24 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public void init() {
-        this.screenTitle = Text.translatable("minimap.waypoints.title");
+        this.screenTitle = Component.translatable("minimap.waypoints.title");
         this.waypointList = new GuiSlotWaypoints(this);
-        this.addDrawableChild(this.buttonSortName = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbyname"), button -> this.sortClicked(2)).dimensions(this.getWidth() / 2 - 154, 34, 77, 20).build());
-        this.addDrawableChild(this.buttonSortDistance = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbydistance"), button -> this.sortClicked(3)).dimensions(this.getWidth() / 2 - 77, 34, 77, 20).build());
-        this.addDrawableChild(this.buttonSortCreated = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbycreated"), button -> this.sortClicked(1)).dimensions(this.getWidth() / 2, 34, 77, 20).build());
-        this.addDrawableChild(this.buttonSortColor = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.sortbycolor"), button -> this.sortClicked(4)).dimensions(this.getWidth() / 2 + 77, 34, 77, 20).build());
-        int filterStringWidth = this.getFontRenderer().getWidth(I18n.translate("minimap.waypoints.filter") + ":");
-        this.filter = new TextFieldWidget(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 80, 305 - filterStringWidth - 5, 20, null);
+        this.addRenderableWidget(this.buttonSortName = new Button.Builder(Component.translatable("minimap.waypoints.sortbyname"), button -> this.sortClicked(2)).bounds(this.getWidth() / 2 - 154, 34, 77, 20).build());
+        this.addRenderableWidget(this.buttonSortDistance = new Button.Builder(Component.translatable("minimap.waypoints.sortbydistance"), button -> this.sortClicked(3)).bounds(this.getWidth() / 2 - 77, 34, 77, 20).build());
+        this.addRenderableWidget(this.buttonSortCreated = new Button.Builder(Component.translatable("minimap.waypoints.sortbycreated"), button -> this.sortClicked(1)).bounds(this.getWidth() / 2, 34, 77, 20).build());
+        this.addRenderableWidget(this.buttonSortColor = new Button.Builder(Component.translatable("minimap.waypoints.sortbycolor"), button -> this.sortClicked(4)).bounds(this.getWidth() / 2 + 77, 34, 77, 20).build());
+        int filterStringWidth = this.getFontRenderer().width(I18n.get("minimap.waypoints.filter") + ":");
+        this.filter = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 80, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
-        this.addDrawableChild(this.filter);
-        this.addDrawableChild(this.buttonEdit = new ButtonWidget.Builder(Text.translatable("selectServer.edit"), button -> this.editWaypoint(this.selectedWaypoint)).dimensions(this.getWidth() / 2 - 154, this.getHeight() - 52, 74, 20).build());
-        this.addDrawableChild(this.buttonDelete = new ButtonWidget.Builder(Text.translatable("selectServer.delete"), button -> this.deleteClicked()).dimensions(this.getWidth() / 2 - 76, this.getHeight() - 52, 74, 20).build());
-        this.addDrawableChild(this.buttonHighlight = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.highlight"), button -> this.setHighlightedWaypoint()).dimensions(this.getWidth() / 2 + 2, this.getHeight() - 52, 74, 20).build());
-        this.addDrawableChild(this.buttonTeleport = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.teleportto"), button -> this.teleportClicked()).dimensions(this.getWidth() / 2 + 80, this.getHeight() - 52, 74, 20).build());
-        this.addDrawableChild(this.buttonShare = new ButtonWidget.Builder(Text.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(this.selectedWaypoint)).dimensions(this.getWidth() / 2 - 154, this.getHeight() - 28, 74, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("minimap.waypoints.newwaypoint"), button -> this.addWaypoint()).dimensions(this.getWidth() / 2 - 76, this.getHeight() - 28, 74, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this, this.options))).dimensions(this.getWidth() / 2 + 2, this.getHeight() - 28, 74, 20).build());
-        this.addDrawableChild(new ButtonWidget.Builder(Text.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).dimensions(this.getWidth() / 2 + 80, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(this.filter);
+        this.addRenderableWidget(this.buttonEdit = new Button.Builder(Component.translatable("selectServer.edit"), button -> this.editWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonDelete = new Button.Builder(Component.translatable("selectServer.delete"), button -> this.deleteClicked()).bounds(this.getWidth() / 2 - 76, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonHighlight = new Button.Builder(Component.translatable("minimap.waypoints.highlight"), button -> this.setHighlightedWaypoint()).bounds(this.getWidth() / 2 + 2, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonTeleport = new Button.Builder(Component.translatable("minimap.waypoints.teleportto"), button -> this.teleportClicked()).bounds(this.getWidth() / 2 + 80, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonShare = new Button.Builder(Component.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("minimap.waypoints.newwaypoint"), button -> this.addWaypoint()).bounds(this.getWidth() / 2 - 76, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this, this.options))).bounds(this.getWidth() / 2 + 2, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 + 80, this.getHeight() - 28, 74, 20).build());
         this.setFocused(this.filter);
         this.filter.setFocused(true);
         boolean isSomethingSelected = this.selectedWaypoint != null;
@@ -95,27 +94,27 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.waypointList.sortBy(sortKey, ascending);
         String arrow = ascending ? "↑" : "↓";
         if (sortKey == 2) {
-            this.buttonSortName.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbyname") + " " + arrow));
+            this.buttonSortName.setMessage(Component.literal(arrow + " " + I18n.get("minimap.waypoints.sortbyname") + " " + arrow));
         } else {
-            this.buttonSortName.setMessage(Text.translatable("minimap.waypoints.sortbyname"));
+            this.buttonSortName.setMessage(Component.translatable("minimap.waypoints.sortbyname"));
         }
 
         if (sortKey == 3) {
-            this.buttonSortDistance.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbydistance") + " " + arrow));
+            this.buttonSortDistance.setMessage(Component.literal(arrow + " " + I18n.get("minimap.waypoints.sortbydistance") + " " + arrow));
         } else {
-            this.buttonSortDistance.setMessage(Text.translatable("minimap.waypoints.sortbydistance"));
+            this.buttonSortDistance.setMessage(Component.translatable("minimap.waypoints.sortbydistance"));
         }
 
         if (sortKey == 1) {
-            this.buttonSortCreated.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbycreated") + " " + arrow));
+            this.buttonSortCreated.setMessage(Component.literal(arrow + " " + I18n.get("minimap.waypoints.sortbycreated") + " " + arrow));
         } else {
-            this.buttonSortCreated.setMessage(Text.translatable("minimap.waypoints.sortbycreated"));
+            this.buttonSortCreated.setMessage(Component.translatable("minimap.waypoints.sortbycreated"));
         }
 
         if (sortKey == 4) {
-            this.buttonSortColor.setMessage(Text.literal(arrow + " " + I18n.translate("minimap.waypoints.sortbycolor") + " " + arrow));
+            this.buttonSortColor.setMessage(Component.literal(arrow + " " + I18n.get("minimap.waypoints.sortbycolor") + " " + arrow));
         } else {
-            this.buttonSortColor.setMessage(Text.translatable("minimap.waypoints.sortbycolor"));
+            this.buttonSortColor.setMessage(Component.translatable("minimap.waypoints.sortbycolor"));
         }
 
     }
@@ -124,10 +123,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         String var2 = this.selectedWaypoint.name;
         if (var2 != null) {
             this.deleteClicked = true;
-            Text title = Text.translatable("minimap.waypoints.deleteconfirm");
-            Text explanation = Text.translatable("selectServer.deleteWarning", var2);
-            Text affirm = Text.translatable("selectServer.deleteButton");
-            Text deny = Text.translatable("gui.cancel");
+            Component title = Component.translatable("minimap.waypoints.deleteconfirm");
+            Component explanation = Component.translatable("selectServer.deleteWarning", var2);
+            Component affirm = Component.translatable("selectServer.deleteButton");
+            Component deny = Component.translatable("gui.cancel");
             ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
             VoxelConstants.getMinecraft().setScreen(confirmScreen);
         }
@@ -135,7 +134,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void teleportClicked() {
-        int y = selectedWaypoint.getY() > VoxelConstants.getPlayer().getWorld().getBottomY() ? selectedWaypoint.getY() : (!(VoxelConstants.getPlayer().getWorld().getDimension().hasCeiling()) ? VoxelConstants.getPlayer().getWorld().getTopY() : 64);
+        int y = selectedWaypoint.getY() > VoxelConstants.getPlayer().level().getMinBuildHeight() ? selectedWaypoint.getY() : (!(VoxelConstants.getPlayer().level().dimensionType().hasCeiling()) ? VoxelConstants.getPlayer().level().getMaxBuildHeight() : 64);
         FabricModVoxelMap.instance.playerRunTeleportCommand(selectedWaypoint.getX(), y, selectedWaypoint.getZ());
         VoxelConstants.getMinecraft().setScreen(null);
     }
@@ -149,7 +148,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         if (this.filter.isFocused()) {
-            this.waypointList.updateFilter(this.filter.getText().toLowerCase());
+            this.waypointList.updateFilter(this.filter.getValue().toLowerCase());
         }
 
         return OK;
@@ -158,7 +157,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     public boolean charTyped(char chr, int modifiers) {
         boolean OK = super.charTyped(chr, modifiers);
         if (this.filter.isFocused()) {
-            this.waypointList.updateFilter(this.filter.getText().toLowerCase());
+            this.waypointList.updateFilter(this.filter.getValue().toLowerCase());
         }
 
         return OK;
@@ -225,7 +224,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.buttonEdit.active = isSomethingSelected;
         this.buttonDelete.active = isSomethingSelected;
         this.buttonHighlight.active = isSomethingSelected;
-        this.buttonHighlight.setMessage(Text.translatable(isSomethingSelected && this.selectedWaypoint == this.highlightedWaypoint ? "minimap.waypoints.removehighlight" : "minimap.waypoints.highlight"));
+        this.buttonHighlight.setMessage(Component.translatable(isSomethingSelected && this.selectedWaypoint == this.highlightedWaypoint ? "minimap.waypoints.removehighlight" : "minimap.waypoints.highlight"));
         this.buttonShare.active = isSomethingSelected;
         this.buttonTeleport.active = isSomethingSelected && this.canTeleport();
     }
@@ -234,7 +233,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.waypointManager.setHighlightedWaypoint(this.selectedWaypoint, true);
         this.highlightedWaypoint = this.waypointManager.getHighlightedWaypoint();
         boolean isSomethingSelected = this.selectedWaypoint != null;
-        this.buttonHighlight.setMessage(Text.translatable(isSomethingSelected && this.selectedWaypoint == this.highlightedWaypoint ? "minimap.waypoints.removehighlight" : "minimap.waypoints.highlight"));
+        this.buttonHighlight.setMessage(Component.translatable(isSomethingSelected && this.selectedWaypoint == this.highlightedWaypoint ? "minimap.waypoints.removehighlight" : "minimap.waypoints.highlight"));
     }
 
     protected void editWaypoint(Waypoint waypoint) {
@@ -258,8 +257,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         }
 
         TreeSet<DimensionContainer> dimensions = new TreeSet<>();
-        dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().getWorld()));
-        double dimensionScale = VoxelConstants.getPlayer().getWorld().getDimension().coordinateScale();
+        dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
+        double dimensionScale = VoxelConstants.getPlayer().level().dimensionType().coordinateScale();
         this.newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
         VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
     }
@@ -269,12 +268,12 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.waypointManager.saveWaypoints();
     }
 
-    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.tooltip = null;
         this.waypointList.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawCenteredTextWithShadow(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawTextWithShadow(this.getFontRenderer(), I18n.translate("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 75, 10526880);
         this.filter.render(drawContext, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);
@@ -282,7 +281,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     }
 
-    static void setTooltip(GuiWaypoints par0GuiWaypoints, Text par1Str) {
+    static void setTooltip(GuiWaypoints par0GuiWaypoints, Component par1Str) {
         par0GuiWaypoints.tooltip = par1Str;
     }
 
@@ -292,9 +291,9 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         if (integratedServer.isEmpty()) return true;
 
         try {
-            return integratedServer.get().getPlayerManager().isOperator(VoxelConstants.getPlayer().getGameProfile());
+            return integratedServer.get().getPlayerList().isOp(VoxelConstants.getPlayer().getGameProfile());
         } catch (RuntimeException exception) {
-            return integratedServer.get().getSaveProperties().areCommandsAllowed();
+            return integratedServer.get().getWorldData().isAllowCommands();
         }
     }
 

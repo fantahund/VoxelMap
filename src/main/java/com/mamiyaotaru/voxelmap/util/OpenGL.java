@@ -3,18 +3,15 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.util.Identifier;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -24,6 +21,9 @@ import java.awt.image.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.resources.ResourceLocation;
 
 public final class OpenGL {
     public static final int
@@ -187,7 +187,7 @@ public final class OpenGL {
     public static int glCheckFramebufferStatus(int target) { return GL30.glCheckFramebufferStatus(target); }
 
     public static final class Utils {
-        public static final Tessellator TESSELLATOR = Tessellator.getInstance();
+        public static final Tesselator TESSELLATOR = Tesselator.getInstance();
         private static BufferBuilder bufferBuilder;
         public static final IntBuffer DATA_BUFFER = MemoryUtil.memCallocInt(16777216 / 4);
 
@@ -304,49 +304,49 @@ public final class OpenGL {
             return glId;
         }
 
-        public static void img2(String param) { img2(Identifier.of(param)); }
+        public static void img2(String param) { img2(ResourceLocation.parse(param)); }
 
-        public static void img(Identifier param) { textureManager.bindTexture(param); }
+        public static void img(ResourceLocation param) { textureManager.bindForSetup(param); }
 
-        public static void img2(Identifier param) { RenderSystem.setShaderTexture(0, param); }
+        public static void img2(ResourceLocation param) { RenderSystem.setShaderTexture(0, param); }
 
         public static void disp(int param) { glBindTexture(GL11_GL_TEXTURE_2D, param); }
 
         public static void disp2(int param) { RenderSystem.setShaderTexture(0, param); }
 
-        public static void register(Identifier resource, AbstractTexture image) { textureManager.registerTexture(resource, image); }
+        public static void register(ResourceLocation resource, AbstractTexture image) { textureManager.register(resource, image); }
 
         @NotNull
         public static NativeImage nativeImageFromBufferedImage(BufferedImage image) {
             int glId = tex(image);
             NativeImage nativeImage = new NativeImage(image.getWidth(), image.getHeight(), false);
             RenderSystem.bindTexture(glId);
-            nativeImage.loadFromTextureImage(0, false);
+            nativeImage.downloadTexture(0, false);
 
             return nativeImage;
         }
 
-        public static void drawPre() { drawPre(VertexFormats.POSITION_TEXTURE); }
+        public static void drawPre() { drawPre(DefaultVertexFormat.POSITION_TEX); }
 
         public static void drawPre(VertexFormat format) {
-            bufferBuilder = TESSELLATOR.begin(VertexFormat.DrawMode.QUADS, format);
+            bufferBuilder = TESSELLATOR.begin(VertexFormat.Mode.QUADS, format);
         }
 
         public static void drawPost() {
-            BuiltBuffer builtBuffer = bufferBuilder.endNullable();
+            MeshData builtBuffer = bufferBuilder.build();
             if (builtBuffer != null) {
-                BufferRenderer.drawWithGlobalProgram(builtBuffer);
+                BufferUploader.drawWithShader(builtBuffer);
             }
         }
 
         public static void glah(int g) { glDeleteTexture(g); }
 
         public static void ldrawone(int x, int y, double z, float u, float v) {
-            bufferBuilder.vertex(x, y, (float) z).texture(u, v);
+            bufferBuilder.addVertex(x, y, (float) z).setUv(u, v);
         }
 
         public static void ldrawthree(double x, double y, double z, float u, float v) {
-            bufferBuilder.vertex((float) x, (float) y, (float) z).texture(u, v);
+            bufferBuilder.addVertex((float) x, (float) y, (float) z).setUv(u, v);
         }
     }
 }

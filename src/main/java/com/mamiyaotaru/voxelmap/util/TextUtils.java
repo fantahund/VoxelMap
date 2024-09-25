@@ -1,8 +1,5 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -10,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 
 public final class TextUtils {
     private static final Pattern CODE_SCRUBBING_PATTERN = Pattern.compile("(§.)");
@@ -85,11 +85,11 @@ public final class TextUtils {
     }
 
     @NotNull
-    public static String asFormattedString(Text text2) {
+    public static String asFormattedString(Component text2) {
         StringBuilder stringBuilder = new StringBuilder();
         String lastStyleString = "";
 
-        for (Text text : stream(text2)) {
+        for (Component text : stream(text2)) {
             String contentString = text.getString();
 
             if (contentString.isEmpty()) continue;
@@ -101,7 +101,7 @@ public final class TextUtils {
                 continue;
             }
 
-            if (!(lastStyleString.isEmpty())) stringBuilder.append(Formatting.RESET);
+            if (!(lastStyleString.isEmpty())) stringBuilder.append(ChatFormatting.RESET);
 
             stringBuilder.append(styleString);
             lastStyleString = styleString;
@@ -109,16 +109,16 @@ public final class TextUtils {
             stringBuilder.append(contentString);
         }
 
-        if (!(lastStyleString.isEmpty())) stringBuilder.append(Formatting.RESET);
+        if (!(lastStyleString.isEmpty())) stringBuilder.append(ChatFormatting.RESET);
         return stringBuilder.toString();
     }
 
     @NotNull
-    private static List<Text> stream(Text text) {
-        List<Text> stream = new ArrayList<>();
+    private static List<Component> stream(Component text) {
+        List<Component> stream = new ArrayList<>();
         stream.add(text);
 
-        for (@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Text sibling : text.getSiblings()) {
+        for (@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Component sibling : text.getSiblings()) {
             stream.addAll(stream(sibling));
         }
 
@@ -132,16 +132,16 @@ public final class TextUtils {
         StringBuilder stringBuilder = new StringBuilder();
 
         if (style.getColor() != null) {
-            Formatting colorFormat = Formatting.byName(style.getColor().getName());
+            ChatFormatting colorFormat = ChatFormatting.getByName(style.getColor().serialize());
 
             if (colorFormat != null) stringBuilder.append(colorFormat);
         }
 
-        if (style.isBold()) stringBuilder.append(Formatting.BOLD);
-        if (style.isItalic()) stringBuilder.append(Formatting.ITALIC);
-        if (style.isUnderlined()) stringBuilder.append(Formatting.UNDERLINE);
-        if (style.isObfuscated()) stringBuilder.append(Formatting.OBFUSCATED);
-        if (style.isStrikethrough()) stringBuilder.append(Formatting.STRIKETHROUGH);
+        if (style.isBold()) stringBuilder.append(ChatFormatting.BOLD);
+        if (style.isItalic()) stringBuilder.append(ChatFormatting.ITALIC);
+        if (style.isUnderlined()) stringBuilder.append(ChatFormatting.UNDERLINE);
+        if (style.isObfuscated()) stringBuilder.append(ChatFormatting.OBFUSCATED);
+        if (style.isStrikethrough()) stringBuilder.append(ChatFormatting.STRIKETHROUGH);
         return stringBuilder.toString();
     }
 }

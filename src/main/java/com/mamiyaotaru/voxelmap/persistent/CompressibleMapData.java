@@ -4,14 +4,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class CompressibleMapData extends AbstractMapData {
     public final static int DATA_VERSION = 4;
@@ -44,9 +44,9 @@ public class CompressibleMapData extends AbstractMapData {
     int blockStateCount = 1;
     private BiMap<Biome, Integer> biomeToInt;
     int biomeCount = 1;
-    private final ClientWorld world;
+    private final ClientLevel world;
 
-    public CompressibleMapData(ClientWorld world) {
+    public CompressibleMapData(ClientLevel world) {
         this.width = REGION_SIZE;
         this.height = REGION_SIZE;
         this.data = compressedEmptyData;
@@ -153,7 +153,7 @@ public class CompressibleMapData extends AbstractMapData {
     public Biome getBiome(int x, int z) {
         int biomeId = getBiomeId(x, z);
         if (biomeId == 0 && getHeight(x, z) != Short.MIN_VALUE) {
-            return MinecraftClient.getInstance().world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+            return Minecraft.getInstance().level.registryAccess().registryOrThrow(Registries.BIOME).get(Biomes.PLAINS);
         }
         return this.getBiomeFromID(biomeId);
     }
@@ -585,7 +585,7 @@ public class CompressibleMapData extends AbstractMapData {
         if (biome != null) {
             return biome;
         }
-        return world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+        return world.registryAccess().registryOrThrow(Registries.BIOME).get(Biomes.PLAINS);
     }
 
     public BiMap<Biome, Integer> getBiomeToInt() {
@@ -603,7 +603,7 @@ public class CompressibleMapData extends AbstractMapData {
                 if (oldID != 0) {
                     Biome biome = oldMap.inverse().get(oldID);
                     if (biome == null) {
-                        biome = world.getRegistryManager().get(RegistryKeys.BIOME).get(BiomeKeys.PLAINS);
+                        biome = world.registryAccess().registryOrThrow(Registries.BIOME).get(Biomes.PLAINS);
                     }
                     Integer id = newMap.get(biome);
                     if (id == null && biome != null) {
