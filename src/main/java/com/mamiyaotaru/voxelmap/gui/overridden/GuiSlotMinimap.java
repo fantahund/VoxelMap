@@ -38,7 +38,7 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
         this.showSlotBG = showSlotBG;
     }
 
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         int scrollBarLeft = getScrollbarPositionX();
         int scrollBarRight = scrollBarLeft + 6;
 

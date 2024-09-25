@@ -15,13 +15,14 @@ public class GuiButtonText extends Button {
         this.textField = new EditBox(fontRenderer, x + 1, y + 1, width - 2, height - 2, null);
     }
 
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+
+    public void renderWidget(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         if (editing) {
             textField.render(drawContext, mouseX, mouseY, delta);
             return;
         }
 
-        super.render(drawContext, mouseX, mouseY, delta);
+        super.renderWidget(drawContext, mouseX, mouseY, delta);
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {

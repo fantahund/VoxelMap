@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import net.minecraft.core.BlockPos;
 
-public class MutableBlockPos extends BlockPos {
+public class MutableBlockPos extends BlockPos.MutableBlockPos {
     public int x;
     public int y;
     public int z;
@@ -14,7 +14,7 @@ public class MutableBlockPos extends BlockPos {
         this.z = z;
     }
 
-    public MutableBlockPos withXYZ(int x, int y, int z) {
+    public com.mamiyaotaru.voxelmap.util.MutableBlockPos withXYZ(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
