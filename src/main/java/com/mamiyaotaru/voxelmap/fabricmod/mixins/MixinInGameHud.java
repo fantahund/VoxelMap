@@ -21,7 +21,7 @@ public class MixinInGameHud {
     //
     // entriesHeight is: int l = k * this.getTextRenderer().fontHeight;
 
-    /*@ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/Gui$DisplayEntry;Lnet/minecraft/client/gui/GuiGraphics;ILnet/minecraft/network/chat/Component;I)V", at = @At("STORE"), ordinal = 4)
+    @ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/Gui$1DisplayEntry;Lnet/minecraft/client/gui/GuiGraphics;ILnet/minecraft/network/chat/Component;I)V", at = @At("STORE"), ordinal = 4)
     private int injected(int bottomX, @Local(ordinal = 3) int entriesHeight) {
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
         if (VoxelMap.mapOptions.hide || !VoxelMap.mapOptions.minimapAllowed || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
@@ -36,5 +36,5 @@ public class MixinInGameHud {
         int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
 
         return Math.max(bottomX, (int) minBottom);
-    }*/
+    }
 }
