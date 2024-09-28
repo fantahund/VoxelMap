@@ -23,7 +23,8 @@
     ]
   },
   "mixins": [
-    "mixin.voxelmap.json"
+    "mixin.voxelmap.json",
+    "mixin.voxelmap.fabric.json"
   ],
   "depends": {
     "fabricloader": ">=0.15.10",

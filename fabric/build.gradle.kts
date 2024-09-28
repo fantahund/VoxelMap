@@ -42,7 +42,7 @@ loom {
         accessWidenerPath.set(project(":common").file("src/main/resources/voxelmap.accesswidener"))
 
     @Suppress("UnstableApiUsage")
-    mixin { defaultRefmapName.set("voxelmap.refmap.json") }
+    mixin { defaultRefmapName.set("voxelmap-voxelmap.refmap.json") }
 
     runs {
         named("client") {

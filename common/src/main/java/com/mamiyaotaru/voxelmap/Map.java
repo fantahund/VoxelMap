@@ -2086,9 +2086,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private void drawWelcomeScreen(GuiGraphics drawContext, int scWidth, int scHeight) {
         if (this.welcomeText[1] == null || this.welcomeText[1].getString().equals("minimap.ui.welcome2")) {
-            //String zmodver = FabricLoader.getInstance().getModContainer("voxelmap").get().getMetadata().getVersion().getFriendlyString(); //FIXME GETVERSION
-            String zmodver = "Test Version (WIP)";
-            this.welcomeText[0] = (Component.literal("")).append((Component.literal("VoxelMap! ")).withStyle(ChatFormatting.RED)).append(zmodver + " ").append(Component.translatable("minimap.ui.welcome1"));
+            this.welcomeText[0] = (Component.literal("")).append((Component.literal("VoxelMap! ")).withStyle(ChatFormatting.RED)).append(Component.translatable("minimap.ui.welcome1"));
             this.welcomeText[1] = Component.translatable("minimap.ui.welcome2");
             this.welcomeText[2] = Component.translatable("minimap.ui.welcome3");
             this.welcomeText[3] = Component.translatable("minimap.ui.welcome4");

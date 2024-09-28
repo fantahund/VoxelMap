@@ -160,4 +160,20 @@ public final class VoxelConstants {
         cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
         VoxelConstants.getPlayer().connection.sendUnsignedCommand(cmd);
     }
+
+    public static int moveScoreboard(int bottomX, int entriesHeight) {
+        double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
+        if (VoxelMap.mapOptions.hide || !VoxelMap.mapOptions.minimapAllowed || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
+            return bottomX;
+        }
+        double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...
+        double mapHeightScaled = unscaledHeight * 1.37 / scaleFactor; // * 1.37 because unscaledHeight is just the map without the text around it
+
+        int fontHeight = Minecraft.getInstance().font.lineHeight; // height of the title line
+        float statusIconOffset = Map.getStatusIconOffset();
+        int statusIconOffsetInt = Float.isFinite(statusIconOffset) ? (int) statusIconOffset : 0;
+        int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
+
+        return Math.max(bottomX, minBottom);
+    }
 }

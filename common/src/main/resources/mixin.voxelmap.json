@@ -9,7 +9,6 @@
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
     "MixinChatHud",
-    "MixinInGameHud",
     "MixinKeyboard",
     "MixinMouse",
     "MixinWorldRenderer"

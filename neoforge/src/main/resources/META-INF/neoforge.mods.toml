@@ -28,3 +28,6 @@ side = "CLIENT"
 
 [[mixins]]
 config = "mixin.voxelmap.json"
+
+[[mixins]]
+config = "mixin.voxelmap.neoforge.json"

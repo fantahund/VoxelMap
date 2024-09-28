@@ -64,7 +64,7 @@ dependencies {
 tasks.jar {
     val main = project.project(":common").sourceSets.getByName("main")
     from(main.output.classesDirs) {
-        exclude("/coxelmap.refmap.json")
+        exclude("/voxelmap.refmap.json")
     }
     from(main.output.resourcesDir)
 
