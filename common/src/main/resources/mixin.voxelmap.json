@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_21",
+  "package": "com.mamiyaotaru.voxelmap.mixins",
+  "target": "@env(DEFAULT)",
+  "client": [
+    "APIMixinChatListenerHud",
+    "APIMixinMinecraftClient",
+    "APIMixinNetHandlerPlayClient",
+    "BiomeAccessor",
+    "MixinChatHud",
+    "MixinInGameHud",
+    "MixinKeyboard",
+    "MixinMouse",
+    "MixinWorldRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "BiomeAccessor"
+  ]
+}
