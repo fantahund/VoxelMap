@@ -28,36 +28,7 @@ dependencies {
 }
 
 sourceSets {
-    val main = getByName("main")
-    val api = create("api")
-    val workarounds = create("workarounds")
-    val desktop = create("desktop")
 
-    api.apply {
-        java {
-            compileClasspath += main.compileClasspath
-        }
-    }
-
-    workarounds.apply {
-        java {
-            compileClasspath += main.compileClasspath
-        }
-    }
-
-    desktop.apply {
-        java {
-            srcDir("src/desktop/java")
-        }
-    }
-
-    main.apply {
-        java {
-            compileClasspath += api.output
-            compileClasspath += workarounds.output
-            runtimeClasspath += api.output
-        }
-    }
 }
 
 loom {
@@ -69,19 +40,12 @@ loom {
 
     mods {
         val main by creating { // to match the default mod generated for Forge
-            sourceSet("api")
-            sourceSet("desktop")
             sourceSet("main")
         }
     }
 }
 
 tasks {
-    getByName<JavaCompile>("compileDesktopJava") {
-        sourceCompatibility = JavaVersion.VERSION_21.toString()
-        targetCompatibility = JavaVersion.VERSION_21.toString()
-    }
-
     jar {
         from(rootDir.resolve("LICENSE.md"))
     }
