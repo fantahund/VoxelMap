@@ -14,17 +14,11 @@ dependencies {
         officialMojangMappings()
     })
     compileOnly("net.fabricmc:sponge-mixin:0.13.2+mixin.0.8.5")
+
     compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
 
-    fun addDependentFabricModule(name: String) {
-        val module = fabricApi.module(name, FABRIC_API_VERSION)
-        modCompileOnly(module)
-    }
-
-    addDependentFabricModule("fabric-api-base")
-    addDependentFabricModule("fabric-networking-api-v1")
-    addDependentFabricModule("fabric-rendering-v1")
-    addDependentFabricModule("fabric-lifecycle-events-v1")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
 }
 
 sourceSets {

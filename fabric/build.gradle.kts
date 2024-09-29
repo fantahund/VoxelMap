@@ -20,12 +20,7 @@ dependencies {
     })
     modImplementation("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
 
-    fun addEmbeddedFabricModule(name: String) {
-        val module = fabricApi.module(name, FABRIC_API_VERSION)
-        modImplementation(module)
-        include(module)
-    }
-
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
     implementation(project.project(":common").sourceSets.getByName("main").output)
 }
 
@@ -42,7 +37,7 @@ loom {
         accessWidenerPath.set(project(":common").file("src/main/resources/voxelmap.accesswidener"))
 
     @Suppress("UnstableApiUsage")
-    mixin { defaultRefmapName.set("voxelmap-voxelmap.refmap.json") }
+    mixin { defaultRefmapName.set("voxelmap.refmap.json") }
 
     runs {
         named("client") {
