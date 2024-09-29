@@ -58,30 +58,6 @@ public final class ReflectionUtils {
         return matches;
     }
 
-    public static Field getFieldByType(Object o, Class<?> objectClasstype, Class<?> fieldClasstype, int index) {
-        Class<?> objectClass = o.getClass();
-
-        while (!objectClass.equals(objectClasstype) && objectClass.getSuperclass() != null) {
-            objectClass = objectClass.getSuperclass();
-        }
-
-        int counter = 0;
-        Field[] fields = objectClass.getDeclaredFields();
-
-        for (Field field : fields) {
-            if (fieldClasstype.equals(field.getType())) {
-                if (counter == index) {
-                    field.setAccessible(true);
-                    return field;
-                }
-
-                ++counter;
-            }
-        }
-
-        return null;
-    }
-
     public static boolean classExists(String className) {
         try {
             Class.forName(className);

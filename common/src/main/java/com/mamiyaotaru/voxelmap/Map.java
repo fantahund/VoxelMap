@@ -167,13 +167,7 @@ public class Map implements Runnable, IChangeObserver {
         ArrayList<KeyMapping> tempBindings = new ArrayList<>();
         tempBindings.addAll(Arrays.asList(VoxelConstants.getMinecraft().options.keyMappings));
         tempBindings.addAll(Arrays.asList(this.options.keyBindings));
-        Field f = ReflectionUtils.getFieldByType(VoxelConstants.getMinecraft().options, Options.class, KeyMapping[].class, 1);
-
-        try {
-            f.set(VoxelConstants.getMinecraft().options, tempBindings.toArray(new KeyMapping[0]));
-        } catch (IllegalArgumentException | IllegalAccessException var7) {
-            VoxelConstants.getLogger().error(var7);
-        }
+        VoxelConstants.getMinecraft().options.keyMappings = tempBindings.toArray(new KeyMapping[0]);
 
         java.util.Map<String, Integer> categoryOrder = KeyMapping.CATEGORY_SORT_ORDER;
         VoxelConstants.getLogger().warn("CATEGORY ORDER IS " + categoryOrder.size());
@@ -494,8 +488,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private DynamicTexture getLightmapTexture() {
         LightTexture lightTextureManager = VoxelConstants.getMinecraft().gameRenderer.lightTexture();
-        Object lightmapTextureObj = ReflectionUtils.getPrivateFieldValueByType(lightTextureManager, LightTexture.class, DynamicTexture.class);
-        return lightmapTextureObj == null ? null : (DynamicTexture) lightmapTextureObj;
+        return lightTextureManager.lightTexture;
     }
 
     public void calculateCurrentLightAndSkyColor() {

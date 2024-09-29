@@ -1,3 +1,20 @@
 accessWidener   v2  named
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 accessible field net/minecraft/client/KeyMapping CATEGORY_SORT_ORDER Ljava/util/Map;
+accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/texture/DynamicTexture;
+accessible field net/minecraft/client/model/WolfModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/QuadrupedModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/LavaSlimeModel bodyCubes [Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/OcelotModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/HoglinModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/ChickenModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/BeeModel bone Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/AxolotlModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/RabbitModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/RabbitModel rightEar Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/RabbitModel leftEar Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/RabbitModel nose Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
+accessible field net/minecraft/client/model/SkullModel root Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/model/SkullModel head Lnet/minecraft/client/model/geom/ModelPart;
+mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;

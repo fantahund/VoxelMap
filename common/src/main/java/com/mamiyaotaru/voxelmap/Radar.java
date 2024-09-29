@@ -985,18 +985,18 @@ public class Radar implements IRadar {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedModel<?>) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.hat, resourceLocations[1]));
-                    } else if (model instanceof AxolotlModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, AxolotlModel.class, ModelPart.class, 6)};
+                    } else if (model instanceof AxolotlModel<?> axolotlModel) {
+                        headBits = new ModelPart[]{axolotlModel.head};
                     } else if (model instanceof BatModel batEntityModel) {
                         headBits = new ModelPart[]{batEntityModel.root().getChild("head")};
-                    } else if (model instanceof BeeModel) {
-                        headBits = new ModelPart[]{((ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, BeeModel.class, ModelPart.class, 0)).getChild("body")};
+                    } else if (model instanceof BeeModel<?> beeModel) {
+                        headBits = new ModelPart[]{beeModel.bone.getChild("body")};
                     } else if (model instanceof HumanoidModel<?> bipedEntityModel) {
                         headBits = new ModelPart[]{bipedEntityModel.head, bipedEntityModel.hat};
                     } else if (model instanceof BlazeModel<?> blazeEntityModel) {
                         headBits = new ModelPart[]{blazeEntityModel.root().getChild("head")};
-                    } else if (model instanceof ChickenModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, ChickenModel.class, ModelPart.class)};
+                    } else if (model instanceof ChickenModel<?> chickenModel) {
+                        headBits = new ModelPart[]{chickenModel.head};
                     } else if (model instanceof CreeperModel<?> creeperEntityModel) {
                         headBits = new ModelPart[]{creeperEntityModel.root().getChild("head")};
                     } else if (model instanceof DolphinModel<?> dolphinEntityModel) {
@@ -1007,22 +1007,22 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{ghastEntityModel.root()};
                     } else if (model instanceof GuardianModel guardianEntityModel) {
                         headBits = new ModelPart[]{guardianEntityModel.root().getChild("head")};
-                    } else if (model instanceof HoglinModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, HoglinModel.class, ModelPart.class)};
+                    } else if (model instanceof HoglinModel<?> hoglinModel) {
+                        headBits = new ModelPart[]{hoglinModel.head};
                     } else if (model instanceof HorseModel<?> horseEntityModel) {
                         headBits = StreamSupport.stream(horseEntityModel.headParts().spliterator(), false).toArray(ModelPart[]::new);
                     } else if (model instanceof IllagerModel<?> illagerEntityModel) {
                         headBits = new ModelPart[]{illagerEntityModel.root().getChild("head")};
                     } else if (model instanceof IronGolemModel<?> ironGolemEntityModel) {
                         headBits = new ModelPart[]{ironGolemEntityModel.root().getChild("head")};
-                    } else if (model instanceof LavaSlimeModel) {
-                        headBits = (ModelPart[]) ReflectionUtils.getPrivateFieldValueByType(model, LavaSlimeModel.class, ModelPart[].class);
-                    } else if (model instanceof OcelotModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, OcelotModel.class, ModelPart.class, 6)};
+                    } else if (model instanceof LavaSlimeModel<?> lavaSlimeModel) {
+                        headBits = lavaSlimeModel.bodyCubes;
+                    } else if (model instanceof OcelotModel<?> ocelotModel) {
+                        headBits = new ModelPart[]{ocelotModel.head};
                     } else if (model instanceof PhantomModel<?> phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.root().getChild("body")};
-                    } else if (model instanceof RabbitModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitModel.class, ModelPart.class, 7), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitModel.class, ModelPart.class, 8), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitModel.class, ModelPart.class, 9), (ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, RabbitModel.class, ModelPart.class, 11)};
+                    } else if (model instanceof RabbitModel<?> rabbitModel) {
+                        headBits = new ModelPart[]{rabbitModel.head, rabbitModel.rightEar, rabbitModel.leftEar, rabbitModel.nose};
                     } else if (model instanceof RavagerModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.root().getChild("neck").getChild("head")};
                     } else if (model instanceof ShulkerModel<?> shulkerEntityModel) {
@@ -1045,10 +1045,10 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{striderEntityModel.root().getChild("body")};
                     } else if (model instanceof VillagerModel<?> villagerResemblingModel) {
                         headBits = new ModelPart[]{villagerResemblingModel.getHead()};
-                    } else if (model instanceof WolfModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, WolfModel.class, ModelPart.class)};
-                    } else if (model instanceof QuadrupedModel) {
-                        headBits = new ModelPart[]{(ModelPart) ReflectionUtils.getPrivateFieldValueByType(model, QuadrupedModel.class, ModelPart.class)};
+                    } else if (model instanceof WolfModel<?> wolfModel) {
+                        headBits = new ModelPart[]{wolfModel.head};
+                    } else if (model instanceof QuadrupedModel<?> quadrupedModel) {
+                        headBits = new ModelPart[]{quadrupedModel.head};
                     } else if (model instanceof HierarchicalModel<?> singlePartEntityModel) {
                         try {
                             headBits = new ModelPart[]{singlePartEntityModel.root().getChild("head")};
@@ -1094,14 +1094,7 @@ public class Radar implements IRadar {
                     }
 
                     for (ModelPart bit : headPartsArrayList) {
-                        try {
-                            Object childrenObj = ReflectionUtils.getPrivateFieldValueByType(bit, ModelPart.class, ObjectList.class, 1);
-                            if (childrenObj != null) {
-                                List<ModelPart> children = (List<ModelPart>) childrenObj;
-                                purge.addAll(children);
-                            }
-                        } catch (Exception ignored) {
-                        }
+                        purge.addAll(bit.children.values());
                     }
 
                     headPartsArrayList.removeAll(purge);
@@ -1427,8 +1420,8 @@ public class Radar implements IRadar {
 
                 icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head");
                 if (icon == this.textureAtlas.getMissingImage()) {
-                    ModelPart inner = (ModelPart) ReflectionUtils.getPrivateFieldValueByType(this.playerSkullModel, SkullModel.class, ModelPart.class, 0);
-                    ModelPart outer = (ModelPart) ReflectionUtils.getPrivateFieldValueByType(this.playerSkullModel, SkullModel.class, ModelPart.class, 1);
+                    ModelPart inner = this.playerSkullModel.root;
+                    ModelPart outer = this.playerSkullModel.head;
                     ModelPartWithResourceLocation[] headBits = {new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation)};
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
