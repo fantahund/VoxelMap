@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(Gui.class)
 public class MixinInGameHud {
-
     // this method: private void renderScoreboardSidebar(DrawContext context, ScoreboardObjective objective)
     // this lambda: context.draw(() -> {
     // this variable: int m = context.getScaledWindowHeight() / 2 + l / 3;
@@ -22,9 +21,8 @@ public class MixinInGameHud {
     //
     // entriesHeight is: int l = k * this.getTextRenderer().fontHeight;
 
-    //FIXME @Brokkonat
-    /*@ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/Gui$1DisplayEntry;Lnet/minecraft/client/gui/GuiGraphics;ILnet/minecraft/network/chat/Component;I)V", at = @At("STORE"), ordinal = 4)
+    @ModifyVariable(method = "lambda$displayScoreboardSidebar$14([Lnet/minecraft/client/gui/Gui$1DisplayEntry;Lnet/minecraft/client/gui/GuiGraphics;ILnet/minecraft/network/chat/Component;I)V", at = @At("STORE"), ordinal = 4)
     private int injected(int bottomX, @Local(ordinal = 3) int entriesHeight) {
         return VoxelConstants.moveScoreboard(bottomX, entriesHeight);
-    }*/
+    }
 }
