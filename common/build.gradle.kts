@@ -26,9 +26,8 @@ sourceSets {
 }
 
 loom {
-    mixin {
-        defaultRefmapName = "voxelmap.refmap.json"
-    }
+    @Suppress("UnstableApiUsage")
+    mixin { defaultRefmapName.set("voxelmap.refmap.json") }
 
     accessWidenerPath = file("src/main/resources/voxelmap.accesswidener")
 

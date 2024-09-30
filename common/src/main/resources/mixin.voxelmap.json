@@ -1,7 +1,14 @@
 {
-  "minVersion": "0.8",
-  "compatibilityLevel": "JAVA_21",
   "package": "com.mamiyaotaru.voxelmap.mixins",
+  "required": true,
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "com.mamiyaotaru.voxelmap.MixinPlugin",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "conformVisibility": true
+  },
   "client": [
     "APIMixinChatListenerHud",
     "APIMixinMinecraftClient",

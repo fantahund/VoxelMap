@@ -22,6 +22,7 @@
       "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricMod"
     ]
   },
+  "accessWidener" : "voxelmap.accesswidener",
   "mixins": [
     "mixin.voxelmap.json",
     "mixin.voxelmap.fabric.json"
