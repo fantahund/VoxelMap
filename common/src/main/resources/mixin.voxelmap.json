@@ -2,6 +2,7 @@
   "package": "com.mamiyaotaru.voxelmap.mixins",
   "required": true,
   "compatibilityLevel": "JAVA_21",
+  "refmap": "voxelmap.refmap.json",
   "plugin": "com.mamiyaotaru.voxelmap.MixinPlugin",
   "injectors": {
     "defaultRequire": 1
