@@ -74,13 +74,6 @@ neoForge {
     // Specify the version of NeoForge to use.
     version = NEOFORGE_VERSION
 
-    if (PARCHMENT_VERSION != null) {
-        parchment {
-            minecraftVersion = MINECRAFT_VERSION
-            mappingsVersion = PARCHMENT_VERSION
-        }
-    }
-
     runs {
         create("client") {
             client()
@@ -93,16 +86,6 @@ neoForge {
             sourceSet(project.project(":common").sourceSets.main.get())
         }
     }
-}
-
-fun includeDep(dependency: String, closure: Action<ExternalModuleDependency>) {
-    dependencies.implementation(dependency, closure)
-    dependencies.jarJar(dependency, closure)
-}
-
-fun includeDep(dependency: String) {
-    dependencies.implementation(dependency)
-    dependencies.jarJar(dependency)
 }
 
 tasks.named("compileTestJava").configure {
