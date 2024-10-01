@@ -1,6 +1,6 @@
 plugins {
     id("idea")
-    id("net.neoforged.moddev") version "2.0.28-beta"
+    id("net.neoforged.moddev") version "2.0.32-beta"
     id("java-library")
 }
 
@@ -18,13 +18,6 @@ sourceSets {
 }
 
 repositories {
-    maven("https://maven.pkg.github.com/ims212/Forge_Fabric_API") {
-        credentials {
-            username = "IMS212"
-            // Read only token
-            password = "ghp_" + "DEuGv0Z56vnSOYKLCXdsS9svK4nb9K39C1Hn"
-        }
-    }
     maven("https://maven.su5ed.dev/releases")
     maven("https://maven.neoforged.net/releases/")
 
