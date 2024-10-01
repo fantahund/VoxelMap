@@ -3,7 +3,6 @@
   "required": true,
   "compatibilityLevel": "JAVA_21",
   "refmap": "voxelmap.fabric.refmap.json",
-  "plugin": "com.mamiyaotaru.voxelmap.fabric.MixinPlugin",
   "injectors": {
     "defaultRequire": 1
   },

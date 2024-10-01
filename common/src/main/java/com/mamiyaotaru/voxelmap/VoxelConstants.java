@@ -91,7 +91,6 @@ public final class VoxelConstants {
     }
 
     public static void clientTick() {
-        getLogger().info("Tick Tack");
         if (!initialized) {
             boolean OK = VoxelConstants.getMinecraft().getResourceManager() != null && VoxelConstants.getMinecraft().getTextureManager() != null;
 
