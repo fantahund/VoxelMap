@@ -1359,7 +1359,7 @@ public class Radar implements IRadar {
                         throw new Exception("failed to get skin: image data was null");
                     }
 
-                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                    EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                     BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, skinIdentifier, null);
                     icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
                     this.newMobs = true;

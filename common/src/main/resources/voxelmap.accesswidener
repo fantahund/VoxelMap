@@ -14,7 +14,6 @@ accessible field net/minecraft/client/model/RabbitModel rightEar Lnet/minecraft/
 accessible field net/minecraft/client/model/RabbitModel leftEar Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/RabbitModel nose Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
-accessible field net/minecraft/client/model/SkullModel root Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/SkullModel head Lnet/minecraft/client/model/geom/ModelPart;
 mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;
 accessible field net/minecraft/client/model/ShulkerModel head Lnet/minecraft/client/model/geom/ModelPart;
