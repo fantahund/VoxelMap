@@ -74,6 +74,7 @@ import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -893,7 +894,7 @@ public class Radar implements IRadar {
         return hatType;
     }
 
-    private BufferedImage createAutoIconImageFromResourceLocations(Contact contact, EntityRenderer<Entity> entityRenderer, ResourceLocation... resourceLocations) {
+    private BufferedImage createAutoIconImageFromResourceLocations(Contact contact, EntityRenderer<Entity, EntityRenderState> entityRenderer, ResourceLocation... resourceLocations) {
         Entity entity = contact.entity;
         EnumMobs type = contact.type;
         UUID entityUUID = contact.uuid;
@@ -907,7 +908,7 @@ public class Radar implements IRadar {
 
         BufferedImage headImage = null;
         Model model = null;
-        if (entityRenderer instanceof LivingEntityRenderer<?, ?> render) {
+        if (entityRenderer instanceof LivingEntityRenderer<?, ?, ?> render) {
             try {
                 model = render.getModel();
                 ArrayList<Field> submodels = ReflectionUtils.getFieldsByType(model, Model.class, ModelPart.class);
@@ -1024,7 +1025,7 @@ public class Radar implements IRadar {
                     } else if (model instanceof RavagerModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.root().getChild("neck").getChild("head")};
                     } else if (model instanceof ShulkerModel<?> shulkerEntityModel) {
-                        headBits = new ModelPart[]{shulkerEntityModel.getHead()};
+                        headBits = new ModelPart[]{shulkerEntityModel.head};
                     } else if (model instanceof SilverfishModel<?> silverFishEntityModel) {
                         headBits = new ModelPart[]{silverFishEntityModel.root().getChild("segment0"), silverFishEntityModel.root().getChild("segment1")};
                     } else if (model instanceof SlimeModel<?> slimeEntityModel) {
