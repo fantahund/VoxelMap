@@ -75,6 +75,9 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
+import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -174,10 +177,10 @@ public class Radar implements IRadar {
     private Method getEntityMethod;
     private boolean lastOutlines = true;
     private SkullModel playerSkullModel;
-    private HumanoidModel<LivingEntity> bipedArmorModel;
-    private SkeletonModel<net.minecraft.world.entity.boss.wither.WitherBoss> strayOverlayModel;
-    private DrownedModel<net.minecraft.world.entity.monster.Zombie> drownedOverlayModel;
-    private HumanoidModel<LivingEntity> piglinArmorModel;
+    private HumanoidModel<HumanoidRenderState> bipedArmorModel;
+    private SkeletonModel<SkeletonRenderState> strayOverlayModel;
+    private DrownedModel<ZombieRenderState> drownedOverlayModel;
+    private HumanoidModel<HumanoidRenderState> piglinArmorModel;
     private DynamicTexture nativeBackedTexture = new DynamicTexture(2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
@@ -724,7 +727,7 @@ public class Radar implements IRadar {
     }
 
     private void tryAutoIcon(Contact contact) {
-        EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+        EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
         ResourceLocation resourceLocation = render.getTextureLocation(contact.entity);
         resourceLocation = this.getRandomizedResourceLocationForEntity(resourceLocation, contact.entity);
         ResourceLocation resourceLocationSecondary = null;
@@ -970,9 +973,9 @@ public class Radar implements IRadar {
                         }
 
                         if (showHat) {
-                            headBits = new ModelPart[]{((PlayerModel<?>) model).head, ((PlayerModel<?>) model).hat};
+                            headBits = new ModelPart[]{((PlayerModel) model).head, ((PlayerModel) model).hat};
                         } else {
-                            headBits = new ModelPart[]{((PlayerModel<?>) model).head};
+                            headBits = new ModelPart[]{((PlayerModel) model).head};
                         }
                     } else if (type == EnumMobs.STRAY) {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonModel<?>) model).head, resourceLocations[0]));
@@ -984,67 +987,67 @@ public class Radar implements IRadar {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedModel<?>) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.hat, resourceLocations[1]));
-                    } else if (model instanceof AxolotlModel<?> axolotlModel) {
+                    } else if (model instanceof AxolotlModel axolotlModel) {
                         headBits = new ModelPart[]{axolotlModel.head};
                     } else if (model instanceof BatModel batEntityModel) {
                         headBits = new ModelPart[]{batEntityModel.root().getChild("head")};
-                    } else if (model instanceof BeeModel<?> beeModel) {
+                    } else if (model instanceof BeeModel beeModel) {
                         headBits = new ModelPart[]{beeModel.bone.getChild("body")};
                     } else if (model instanceof HumanoidModel<?> bipedEntityModel) {
                         headBits = new ModelPart[]{bipedEntityModel.head, bipedEntityModel.hat};
-                    } else if (model instanceof BlazeModel<?> blazeEntityModel) {
+                    } else if (model instanceof BlazeModel blazeEntityModel) {
                         headBits = new ModelPart[]{blazeEntityModel.root().getChild("head")};
-                    } else if (model instanceof ChickenModel<?> chickenModel) {
+                    } else if (model instanceof ChickenModel chickenModel) {
                         headBits = new ModelPart[]{chickenModel.head};
-                    } else if (model instanceof CreeperModel<?> creeperEntityModel) {
+                    } else if (model instanceof CreeperModel creeperEntityModel) {
                         headBits = new ModelPart[]{creeperEntityModel.root().getChild("head")};
-                    } else if (model instanceof DolphinModel<?> dolphinEntityModel) {
+                    } else if (model instanceof DolphinModel dolphinEntityModel) {
                         headBits = new ModelPart[]{dolphinEntityModel.root().getChild("body").getChild("head")};
-                    } else if (model instanceof EndermiteModel<?> endermiteEntityModel) {
+                    } else if (model instanceof EndermiteModel endermiteEntityModel) {
                         headBits = new ModelPart[]{endermiteEntityModel.root().getChild("segment0"), endermiteEntityModel.root().getChild("segment1")};
-                    } else if (model instanceof GhastModel<?> ghastEntityModel) {
+                    } else if (model instanceof GhastModel ghastEntityModel) {
                         headBits = new ModelPart[]{ghastEntityModel.root()};
                     } else if (model instanceof GuardianModel guardianEntityModel) {
                         headBits = new ModelPart[]{guardianEntityModel.root().getChild("head")};
-                    } else if (model instanceof HoglinModel<?> hoglinModel) {
+                    } else if (model instanceof HoglinModel hoglinModel) {
                         headBits = new ModelPart[]{hoglinModel.head};
-                    } else if (model instanceof HorseModel<?> horseEntityModel) {
+                    } else if (model instanceof HorseModel horseEntityModel) {
                         headBits = StreamSupport.stream(horseEntityModel.headParts().spliterator(), false).toArray(ModelPart[]::new);
                     } else if (model instanceof IllagerModel<?> illagerEntityModel) {
                         headBits = new ModelPart[]{illagerEntityModel.root().getChild("head")};
-                    } else if (model instanceof IronGolemModel<?> ironGolemEntityModel) {
+                    } else if (model instanceof IronGolemModel ironGolemEntityModel) {
                         headBits = new ModelPart[]{ironGolemEntityModel.root().getChild("head")};
-                    } else if (model instanceof LavaSlimeModel<?> lavaSlimeModel) {
+                    } else if (model instanceof LavaSlimeModel lavaSlimeModel) {
                         headBits = lavaSlimeModel.bodyCubes;
-                    } else if (model instanceof OcelotModel<?> ocelotModel) {
+                    } else if (model instanceof OcelotModel ocelotModel) {
                         headBits = new ModelPart[]{ocelotModel.head};
-                    } else if (model instanceof PhantomModel<?> phantomEntityModel) {
+                    } else if (model instanceof PhantomModel phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.root().getChild("body")};
-                    } else if (model instanceof RabbitModel<?> rabbitModel) {
+                    } else if (model instanceof RabbitModel rabbitModel) {
                         headBits = new ModelPart[]{rabbitModel.head, rabbitModel.rightEar, rabbitModel.leftEar, rabbitModel.nose};
                     } else if (model instanceof RavagerModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.root().getChild("neck").getChild("head")};
-                    } else if (model instanceof ShulkerModel<?> shulkerEntityModel) {
+                    } else if (model instanceof ShulkerModel shulkerEntityModel) {
                         headBits = new ModelPart[]{shulkerEntityModel.head};
-                    } else if (model instanceof SilverfishModel<?> silverFishEntityModel) {
+                    } else if (model instanceof SilverfishModel silverFishEntityModel) {
                         headBits = new ModelPart[]{silverFishEntityModel.root().getChild("segment0"), silverFishEntityModel.root().getChild("segment1")};
-                    } else if (model instanceof SlimeModel<?> slimeEntityModel) {
+                    } else if (model instanceof SlimeModel slimeEntityModel) {
                         headBits = new ModelPart[]{slimeEntityModel.root()};
-                    } else if (model instanceof SnifferModel<?> snifferModel) {
+                    } else if (model instanceof SnifferModel snifferModel) {
                         headBits = new ModelPart[]{snifferModel.root().getChild("bone").getChild("body").getChild("head")};
-                    } else if (model instanceof SnowGolemModel<?> snowGolemEntityModel) {
+                    } else if (model instanceof SnowGolemModel snowGolemEntityModel) {
                         headBits = new ModelPart[]{snowGolemEntityModel.root().getChild("head")};
-                    } else if (model instanceof SpiderModel<?> spiderEntityModel) {
+                    } else if (model instanceof SpiderModel spiderEntityModel) {
                         headBits = new ModelPart[]{spiderEntityModel.root().getChild("head"), spiderEntityModel.root().getChild("body0")};
-                    } else if (model instanceof SquidModel<?> squidEntityModel) {
+                    } else if (model instanceof SquidModel squidEntityModel) {
                         headBits = new ModelPart[]{squidEntityModel.root().getChild("body")};
-                    } else if (model instanceof WardenModel<?> wardenEntityModel) {
+                    } else if (model instanceof WardenModel wardenEntityModel) {
                         headBits = new ModelPart[]{wardenEntityModel.root().getChild("bone").getChild("body").getChild("head")};
-                    } else if (model instanceof StriderModel<?> striderEntityModel) {
+                    } else if (model instanceof StriderModel striderEntityModel) {
                         headBits = new ModelPart[]{striderEntityModel.root().getChild("body")};
-                    } else if (model instanceof VillagerModel<?> villagerResemblingModel) {
+                    } else if (model instanceof VillagerModel villagerResemblingModel) {
                         headBits = new ModelPart[]{villagerResemblingModel.getHead()};
-                    } else if (model instanceof WolfModel<?> wolfModel) {
+                    } else if (model instanceof WolfModel wolfModel) {
                         headBits = new ModelPart[]{wolfModel.head};
                     } else if (model instanceof QuadrupedModel<?> quadrupedModel) {
                         headBits = new ModelPart[]{quadrupedModel.head};
