@@ -96,8 +96,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier synchronizer, ResourceManager manager, ProfilerFiller prepareProfiler, ProfilerFiller applyProfiler, Executor prepareExecutor, Executor applyExecutor) {
-        return synchronizer.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(manager), applyExecutor);
+    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2) {
+        return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(resourceManager), executor2);
     }
 
     private void apply(ResourceManager resourceManager) {
@@ -305,10 +305,5 @@ public class VoxelMap implements PreparableReloadListener {
     public void onClientStopping() {
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
-    }
-
-    @Override
-    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2) {
-        return null; //FIXME 1.21.2
     }
 }
