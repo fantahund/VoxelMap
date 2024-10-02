@@ -11,7 +11,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.util.Mth;
 
 public abstract class GuiSlotMinimap extends AbstractSelectionList {
@@ -48,7 +48,7 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
 
 
         if (this.showSlotBG) {
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             float f = 32.0f;
@@ -72,7 +72,7 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
         byte topBottomFadeHeight = 4;
 
         if (this.showTopBottomBG) {
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
             RenderSystem.enableDepthTest();
             RenderSystem.depthFunc(OpenGL.GL11_GL_ALWAYS);
@@ -93,7 +93,7 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
             RenderSystem.disableDepthTest();
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
-            RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
 
             vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
@@ -112,7 +112,7 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
         int maxScroll = getMaxScroll();
 
         if (maxScroll > 0) {
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
             int k1 = Mth.clamp((this.getBottom() - this.getY()) * (this.getBottom() - this.getY()) / getMaxPosition(), 32, this.getBottom() - this.getY() - 8);
             int l1 = (int) getScrollAmount() * (this.getBottom() - this.getY() - k1) / maxScroll + this.getY();

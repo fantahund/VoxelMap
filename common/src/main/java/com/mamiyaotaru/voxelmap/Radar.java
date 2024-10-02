@@ -24,7 +24,6 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.AxolotlModel;
@@ -40,7 +39,6 @@ import net.minecraft.client.model.EndermiteModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.GhastModel;
 import net.minecraft.client.model.GuardianModel;
-import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.HoglinModel;
 import net.minecraft.client.model.HorseModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -72,7 +70,7 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -1573,12 +1571,12 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
 
         for (Contact contact : this.contacts) {
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX);
             OpenGL.Utils.disp2(this.textureAtlas.getId());
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX);
             contact.updateLocation();
             double contactX = contact.x;
             double contactZ = contact.z;

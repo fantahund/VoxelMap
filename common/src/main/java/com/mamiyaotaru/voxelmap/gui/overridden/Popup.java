@@ -11,7 +11,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 
 public class Popup {
     final Font fontRendererObj;
@@ -89,7 +89,7 @@ public class Popup {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         float var6 = 32.0F;
@@ -100,7 +100,7 @@ public class Popup {
         BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
         vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         vertexBuffer.addVertex(this.x, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
         vertexBuffer.addVertex(this.x + this.w, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
@@ -125,7 +125,7 @@ public class Popup {
         vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
         vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
         BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX);
         OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
 
         for (int t = 0; t < this.entries.length; ++t) {

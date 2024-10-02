@@ -32,6 +32,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
@@ -49,7 +50,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.language.I18n;
@@ -646,7 +646,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         RenderSystem.applyModelViewMatrix();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
             OpenGL.Utils.disp2(this.backGroundImageInfo.glid);
@@ -674,7 +674,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             if (VoxelMap.mapOptions.worldborder) {
-                RenderSystem.setShader(GameRenderer::getPositionColorShader);
+                RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
                 WorldBorder worldBorder = Minecraft.getInstance().level.getWorldBorder();
                 float scale = 1.0f / (float) Minecraft.getInstance().getWindow().getGuiScale();
@@ -706,7 +706,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
                 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShader(CoreShaders.POSITION_TEX);
             }
 
             float cursorX;
@@ -727,7 +727,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
             }
 
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX);
             if (VoxelMap.mapOptions.waypointsAllowed && this.options.showWaypoints) {
                 for (Waypoint pt : this.waypointManager.getWaypoints()) {
                     this.drawWaypoint(drawContext, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
@@ -739,7 +739,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX);
             OpenGL.Utils.disp2(playerGLID);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
@@ -849,7 +849,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int scWidth = VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth();
             int scHeight = VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShader(GameRenderer::getPositionTexShader);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX);
             ResourceLocation GUI_ICONS_TEXTURE = ResourceLocation.parse("textures/gui/icons.png");
             RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
             RenderSystem.enableBlend();
@@ -921,7 +921,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 ptZ += 0.5F;
                 boolean hover = cursorCoordX > ptX - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordX < ptX + 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ > ptZ - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ < ptZ + 18.0F * this.guiToMap / this.guiToDirectMouse;
                 boolean target = false;
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShader(CoreShaders.POSITION_TEX);
                 TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
                 OpenGL.Utils.disp2(atlas.getId());
                 if (icon == null) {
@@ -1000,7 +1000,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.addVertex(0.0F, endY, 0.0F).setUv(0.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);

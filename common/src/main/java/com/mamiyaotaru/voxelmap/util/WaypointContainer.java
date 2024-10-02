@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.CoreShaders;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
@@ -64,7 +64,7 @@ public class WaypointContainer {
             OpenGL.glDepthMask(false);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 1);
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
             // Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
 
             for (Waypoint pt : this.wayPts) {
@@ -218,7 +218,7 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         OpenGL.Utils.disp2(textureAtlas.getId());
         if (withDepth) {
             OpenGL.glDepthMask(distance < maxDistance);
@@ -247,7 +247,7 @@ public class WaypointContainer {
             byte elevateBy = -19;
             OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.width(name) / 2;
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
             if (withDepth) {
                 OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
                 OpenGL.glDepthMask(distance < maxDistance);
