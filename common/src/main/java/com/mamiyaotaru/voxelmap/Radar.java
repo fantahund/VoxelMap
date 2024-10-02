@@ -1012,7 +1012,7 @@ public class Radar implements IRadar {
                     } else if (model instanceof HoglinModel hoglinModel) {
                         headBits = new ModelPart[]{hoglinModel.head};
                     } else if (model instanceof HorseModel horseEntityModel) {
-                        headBits = StreamSupport.stream(horseEntityModel.headParts().spliterator(), false).toArray(ModelPart[]::new);
+                        headBits = StreamSupport.stream(horseEntityModel.headParts.children.values().spliterator(), false).toArray(ModelPart[]::new); //FIXME 1.21.2
                     } else if (model instanceof IllagerModel<?> illagerEntityModel) {
                         headBits = new ModelPart[]{illagerEntityModel.root().getChild("head")};
                     } else if (model instanceof IronGolemModel ironGolemEntityModel) {
@@ -1497,7 +1497,7 @@ public class Radar implements IRadar {
         } catch (RuntimeException ignored) {
         }
 
-        HumanoidModel<LivingEntity> modelBiped;
+        HumanoidModel<HumanoidRenderState> modelBiped;
 
         float intendedWidth = 9.0F;
         float intendedHeight = 9.0F;
@@ -1647,17 +1647,17 @@ public class Radar implements IRadar {
                                         case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
                                     }
                                 } else {
-                                    EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                                    EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                                     String path = render.getTextureLocation(contact.entity).getPath();
                                     contact.type = path.endsWith("vex_charging.png") ? EnumMobs.VEXCHARGING : EnumMobs.VEX;
                                 }
                             } else {
-                                EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                                EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                                 String path = render.getTextureLocation(contact.entity).getPath();
                                 contact.type = path.endsWith("wither_invulnerable.png") ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER;
                             }
                         } else {
-                            EntityRenderer<Entity> render = (EntityRenderer<Entity>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                            EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
                             String path = render.getTextureLocation(contact.entity).getPath();
                             contact.type = path.endsWith("ghast_fire.png") ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST;
                         }
