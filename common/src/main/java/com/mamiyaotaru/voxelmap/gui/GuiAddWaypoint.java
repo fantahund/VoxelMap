@@ -21,6 +21,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -286,7 +287,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
         RenderSystem.setShaderTexture(0, this.blank);
-        drawContext.blit(this.blank, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10);
+        drawContext.blit(RenderType::guiTextured, this.blank, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10); //FIXME 1.21.2
         TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         OpenGL.Utils.disp2(chooser.getId());
@@ -302,7 +303,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             OpenGL.Utils.img2(this.pickerResourceLocation);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             RenderSystem.disableDepthTest();
-            drawContext.blit(pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256);
+            drawContext.blit(RenderType::guiTextured, pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256); //FIXME 1.21.2
             RenderSystem.enableDepthTest();
         }
 
@@ -329,9 +330,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             RenderSystem.setShaderTexture(0, this.blank);
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
-            drawContext.blit(blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2);
+            drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2);
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            drawContext.blit(blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight);
+            drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight);
             OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.setShader(GameRenderer::getPositionTexShader);

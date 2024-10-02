@@ -32,6 +32,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4fStack;
 import org.lwjgl.glfw.GLFW;
 
@@ -853,7 +854,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(775, 769, 1, 0);
-            drawContext.blit(GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 16, 16);
+            drawContext.blit(RenderType::guiTextured, GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 16, 16);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, 0);
         } else {
             this.switchToMouseInput();

@@ -13,6 +13,7 @@ import java.util.Iterator;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -148,7 +149,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             OpenGL.Utils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
-            drawContext.blit(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

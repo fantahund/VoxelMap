@@ -19,6 +19,7 @@ import java.util.Iterator;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -153,7 +154,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             OpenGL.Utils.img2(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier);
-            drawContext.blit(this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(RenderType::guiTextured, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 0, 18, 18, 18, 18);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
                 int x1 = x + 199;
                 int y1 = y - 1;

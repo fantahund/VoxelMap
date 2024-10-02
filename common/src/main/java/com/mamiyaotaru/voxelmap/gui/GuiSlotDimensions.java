@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -89,7 +90,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             OpenGL.Utils.img2("textures/gui/container/beacon.png");
             int xOffset = this.parentGui.waypoint.dimensions.contains(this.dim) ? 91 : 113;
             int yOffset = 222;
-            drawContext.blit(ResourceLocation.parse("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
+            drawContext.blit(RenderType::guiTextured, ResourceLocation.parse("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

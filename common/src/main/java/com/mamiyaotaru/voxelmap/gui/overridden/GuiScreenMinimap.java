@@ -7,6 +7,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 
 public class GuiScreenMinimap extends Screen {
@@ -36,7 +37,7 @@ public class GuiScreenMinimap extends Screen {
 
     public void renderBackgroundTexture(GuiGraphics context) {
         context.setColor(0.25F, 0.25F, 0.25F, 1.0F);
-        context.blit(VoxelConstants.getOptionsBackgroundTexture(), 0, 0, 0, 0.0F, 0.0F, this.width, this.height, 32, 32);
+        context.blit(RenderType::guiTextured, VoxelConstants.getOptionsBackgroundTexture(), 0, 0, 0.0F, 0.0F, 0, this.width, this.height, 32, 32);
         context.setColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }
