@@ -65,6 +65,7 @@ import net.minecraft.client.model.StriderModel;
 import net.minecraft.client.model.VillagerModel;
 import net.minecraft.client.model.WardenModel;
 import net.minecraft.client.model.WolfModel;
+import net.minecraft.client.model.ZombieModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
@@ -104,7 +105,10 @@ import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.Markings;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.monster.Ghast;
+import net.minecraft.world.entity.monster.Vex;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerDataHolder;
@@ -179,7 +183,7 @@ public class Radar implements IRadar {
     private SkullModel playerSkullModel;
     private HumanoidModel<HumanoidRenderState> bipedArmorModel;
     private SkeletonModel<SkeletonRenderState> strayOverlayModel;
-    private DrownedModel<ZombieRenderState> drownedOverlayModel;
+    private ZombieModel<ZombieRenderState> drownedOverlayModel;
     private HumanoidModel<HumanoidRenderState> piglinArmorModel;
     private DynamicTexture nativeBackedTexture = new DynamicTexture(2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
@@ -265,7 +269,7 @@ public class Radar implements IRadar {
             this.strayOverlayModel = new SkeletonModel<>(strayOverlayModelPart);
             LayerDefinition drownedModelData = DrownedModel.createBodyLayer(new CubeDeformation(0.25F));
             ModelPart drownedOverlayModelPart = drownedModelData.bakeRoot();
-            this.drownedOverlayModel = new DrownedModel<>(drownedOverlayModelPart);
+            this.drownedOverlayModel = new ZombieModel<>(drownedOverlayModelPart);
             LayerDefinition texturedModelData3 = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(1.02F), 0.0F), 64, 32);
             ModelPart piglinArmorModelPart = texturedModelData3.bakeRoot();
             this.piglinArmorModel = new HumanoidModel<>(piglinArmorModelPart);
@@ -983,8 +987,8 @@ public class Radar implements IRadar {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.strayOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.strayOverlayModel.hat, resourceLocations[1]));
                     } else if (type == EnumMobs.DROWNED) {
-                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedModel<?>) model).head, resourceLocations[0]));
-                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedModel<?>) model).hat, resourceLocations[0]));
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedModel) model).head, resourceLocations[0]));
+                        headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((DrownedModel) model).hat, resourceLocations[0]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.hat, resourceLocations[1]));
                     } else if (model instanceof AxolotlModel axolotlModel) {
@@ -1422,9 +1426,9 @@ public class Radar implements IRadar {
 
                 icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head");
                 if (icon == this.textureAtlas.getMissingImage()) {
-                    ModelPart inner = this.playerSkullModel.root;
+                    //ModelPart inner = this.playerSkullModel.root;
                     ModelPart outer = this.playerSkullModel.head;
-                    ModelPartWithResourceLocation[] headBits = {new ModelPartWithResourceLocation(inner, resourceLocation), new ModelPartWithResourceLocation(outer, resourceLocation)};
+                    ModelPartWithResourceLocation[] headBits = {new ModelPartWithResourceLocation(outer, resourceLocation)}; //FIXME 1.21.2
                     boolean success = this.drawModel(1.1875F, 1000, (LivingEntity) contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
@@ -1481,7 +1485,7 @@ public class Radar implements IRadar {
         ResourceLocation resourceLocation = null;
 
         try {
-            String materialName = ((ArmorItem) helmet).getMaterial().getRegisteredName(); // TODO 1.20.5 ???
+            String materialName = helmet.asItem().builtInRegistryHolder().getRegisteredName(); //FIXME 1.21.2 ???
             String domain = "minecraft";
             int sep = materialName.indexOf(58);
             if (sep != -1) {
@@ -1647,19 +1651,19 @@ public class Radar implements IRadar {
                                         case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
                                     }
                                 } else {
-                                    EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
-                                    String path = render.getTextureLocation(contact.entity).getPath();
-                                    contact.type = path.endsWith("vex_charging.png") ? EnumMobs.VEXCHARGING : EnumMobs.VEX;
+                                    if (contact.entity instanceof Vex vex) {
+                                        contact.type = vex.isCharging() ? EnumMobs.VEXCHARGING : EnumMobs.VEX; //FIXME 1.21.2
+                                    }
                                 }
                             } else {
-                                EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
-                                String path = render.getTextureLocation(contact.entity).getPath();
-                                contact.type = path.endsWith("wither_invulnerable.png") ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER;
+                                if (contact.entity instanceof WitherBoss witherBoss) {
+                                    contact.type = witherBoss.getInvulnerableTicks() > 0 ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER; //FIXME 1.21.2
+                                }
                             }
                         } else {
-                            EntityRenderer<Entity, EntityRenderState> render = (EntityRenderer<Entity, EntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
-                            String path = render.getTextureLocation(contact.entity).getPath();
-                            contact.type = path.endsWith("ghast_fire.png") ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST;
+                            if (contact.entity instanceof Ghast ghast) {
+                                contact.type = ghast.isCharging() ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST; //FIXME 1.21.2
+                            }
                         }
 
                         this.tryAutoIcon(contact);
