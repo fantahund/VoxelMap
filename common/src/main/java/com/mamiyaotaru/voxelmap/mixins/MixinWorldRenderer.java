@@ -42,7 +42,7 @@ public class MixinWorldRenderer {
             try {
                 matrixStack.pushMatrix();
                 matrixStack.mul(matrix4f);
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
                 VoxelConstants.onRenderHand(deltaTracker.getGameTimeDeltaPartialTick(false), new Matrix4fStack(5), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
             } finally {
                 matrixStack.popMatrix();
@@ -59,7 +59,7 @@ public class MixinWorldRenderer {
             try {
                 matrixStack.pushMatrix();
                 matrixStack.mul(matrix4f);
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
                 VoxelConstants.onRenderHand(VoxelConstants.getMinecraft().getDeltaTracker().getGameTimeDeltaPartialTick(false), new Matrix4fStack(5), false, true, true, false);
             } finally {
                 matrixStack.popMatrix();

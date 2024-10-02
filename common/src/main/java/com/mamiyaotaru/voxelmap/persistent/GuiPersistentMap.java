@@ -645,7 +645,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(90.0F));
         }
 
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
@@ -750,7 +750,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0f);
                 modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(-90.0F));
                 modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0f);
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
             }
 
             this.drawTexturedModalRect(-10.0F / this.scScale + playerX * this.mapToGui, -10.0F / this.scScale + playerZ * this.mapToGui, 20.0F / this.scScale, 20.0F / this.scScale);
@@ -763,7 +763,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             modelViewMatrixStack.translate(-(this.centerX - this.mapCenterX * this.mapToGui), -((this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0f);
-            RenderSystem.applyModelViewMatrix();
+            //1.21.2 RenderSystem.applyModelViewMatrix();
             if (mapOptions.biomeOverlay != 0) {
                 float biomeScaleX = this.mapPixelsX / 760.0F;
                 float biomeScaleY = this.mapPixelsY / 360.0F;
@@ -844,7 +844,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         modelViewMatrixStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
             int scWidth = VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth();
             int scHeight = VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight();
@@ -942,13 +942,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     matrixStack.translate(ptX * this.mapToGui, ptZ * this.mapToGui, 0.0);
                     matrixStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
                     matrixStack.translate(-(ptX * this.mapToGui), -(ptZ * this.mapToGui), 0.0);
-                    RenderSystem.applyModelViewMatrix();
+                    //1.21.2 RenderSystem.applyModelViewMatrix();
                 }
 
                 this.drawTexturedModalRect(-16.0F / this.scScale + ptX * this.mapToGui, -16.0F / this.scScale + ptZ * this.mapToGui, icon, 32.0F / this.scScale, 32.0F / this.scScale);
                 if (this.oldNorth) {
                     matrixStack.popPose();
-                    RenderSystem.applyModelViewMatrix();
+                    //1.21.2 RenderSystem.applyModelViewMatrix();
                 }
 
                 if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
@@ -960,12 +960,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         matrixStack.translate(ptX * this.mapToGui / fontScale, ptZ * this.mapToGui / fontScale, 0.0);
                         matrixStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
                         matrixStack.translate(-(ptX * this.mapToGui / fontScale), -(ptZ * this.mapToGui / fontScale), 0.0);
-                        RenderSystem.applyModelViewMatrix();
+                        //1.21.2 RenderSystem.applyModelViewMatrix();
                     }
 
                     this.write(drawContext, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
                     matrixStack.popPose();
-                    RenderSystem.applyModelViewMatrix();
+                    //1.21.2 RenderSystem.applyModelViewMatrix();
                     OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
                 }
             }

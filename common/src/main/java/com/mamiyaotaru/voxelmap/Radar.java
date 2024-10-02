@@ -1213,7 +1213,7 @@ public class Radar implements IRadar {
         matrixStack.pushMatrix();
         matrixStack.identity();
         matrixStack.translate(0.0f, 0.0f, -3000.0f + captureDepth);
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -1234,7 +1234,7 @@ public class Radar implements IRadar {
             matrixStack.rotate(Axis.XP.rotationDegrees(90.0F));
         }
 
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
         fullbright2.mul(matrixStack);
         Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
@@ -1282,7 +1282,7 @@ public class Radar implements IRadar {
 
         matrixStack.popMatrix();
         matrixStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
@@ -1630,7 +1630,7 @@ public class Radar implements IRadar {
                         matrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
                     }
 
-                    RenderSystem.applyModelViewMatrix();
+                    //1.21.2 RenderSystem.applyModelViewMatrix();
                     float yOffset = 0.0F;
                     if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
                         yOffset = -4.0F;
@@ -1762,7 +1762,7 @@ public class Radar implements IRadar {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
-                        RenderSystem.applyModelViewMatrix();
+                        //1.21.2 RenderSystem.applyModelViewMatrix();
 
                         String name = contact.entity.getDisplayName().getString();
                         int m = VoxelConstants.getMinecraft().font.width(name) / 2;
@@ -1778,7 +1778,7 @@ public class Radar implements IRadar {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.popMatrix();
-                    RenderSystem.applyModelViewMatrix();
+                    //1.21.2 RenderSystem.applyModelViewMatrix();
                 }
             }
         }

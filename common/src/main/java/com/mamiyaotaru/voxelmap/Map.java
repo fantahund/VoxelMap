@@ -635,7 +635,7 @@ public class Map implements Runnable, IChangeObserver {
         modelViewMatrixStack.pushMatrix();
         modelViewMatrixStack.identity();
         modelViewMatrixStack.translate(0.0f, 0.0f, -2000.0f);
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         Lighting.setupFor3DItems();
         int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
@@ -708,7 +708,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.popMatrix();
         RenderSystem.restoreProjectionMatrix();
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
@@ -1566,7 +1566,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.pushMatrix();
         matrixStack.identity();
         matrixStack.translate(0.0f, 0.0f, -2000.0f);
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(false);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
@@ -1610,7 +1610,7 @@ public class Map implements Runnable, IChangeObserver {
 
         matrixStack.translate(-256.0f, -256.0f, 0.0f);
         matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.drawPre();
         OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
         OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
@@ -1618,7 +1618,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
         OpenGL.Utils.drawPost();
         matrixStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(GL30C.GL_DEPTH_TEST);
         OpenGL.Utils.unbindFramebuffer();
@@ -1638,7 +1638,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.drawPost();
         OpenGL.glDisable(GL30C.GL_SCISSOR_TEST);
         matrixStack.popMatrix();
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glBlendFunc(GL30C.GL_SRC_ALPHA, GL30C.GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.options.squareMap) {
@@ -1748,7 +1748,7 @@ public class Map implements Runnable, IChangeObserver {
                     matrixStack.translate(0.0f, -hypot, 0.0f);
                 }
 
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
@@ -1758,7 +1758,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.error = "Error: marker overlay not found!";
             } finally {
                 matrixStack.popMatrix();
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
             }
         } else {
             try {
@@ -1785,7 +1785,7 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
                 matrixStack.translate(0.0f, -hypot, 0.0f);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-(-locate)));
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
@@ -1795,7 +1795,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
                 matrixStack.popMatrix();
-                RenderSystem.applyModelViewMatrix();
+                //1.21.2 RenderSystem.applyModelViewMatrix();
             }
         }
 
@@ -1813,7 +1813,7 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.translate(x, y, 0.0f);
             matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
             matrixStack.translate(-x, -y, 0.0f);
-            RenderSystem.applyModelViewMatrix();
+            //1.21.2 RenderSystem.applyModelViewMatrix();
             OpenGL.Utils.drawPre();
             OpenGL.Utils.setMap(x, y, 16);
             OpenGL.Utils.drawPost();
@@ -1821,7 +1821,7 @@ public class Map implements Runnable, IChangeObserver {
             this.error = "Error: minimap arrow not found!";
         } finally {
             matrixStack.popMatrix();
-            RenderSystem.applyModelViewMatrix();
+            //1.21.2 RenderSystem.applyModelViewMatrix();
         }
 
     }
@@ -1845,7 +1845,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
         matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.Utils.drawPre();
         int left = scWidth / 2 - 128;
@@ -1856,7 +1856,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
         OpenGL.Utils.drawPost();
         matrixStack.popPose();
-        RenderSystem.applyModelViewMatrix();
+        //1.21.2 RenderSystem.applyModelViewMatrix();
         if (this.options.biomeOverlay != 0) {
             double factor = Math.pow(2.0, 3 - this.zoom);
             int minimumSize = (int) Math.pow(2.0, this.zoom);
@@ -1865,7 +1865,7 @@ public class Map implements Runnable, IChangeObserver {
             OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             matrixStack.pushPose();
             matrixStack.translate(0.0, 0.0, 1160.0);
-            RenderSystem.applyModelViewMatrix();
+            //1.21.2 RenderSystem.applyModelViewMatrix();
 
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
@@ -1882,7 +1882,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             matrixStack.popPose();
-            RenderSystem.applyModelViewMatrix();
+            //1.21.2 RenderSystem.applyModelViewMatrix();
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
         }
 
