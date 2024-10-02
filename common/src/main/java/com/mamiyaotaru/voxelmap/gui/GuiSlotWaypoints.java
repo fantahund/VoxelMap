@@ -139,7 +139,7 @@ class GuiSlotWaypoints extends GuiSlotMinimap {
                     tooltip = this.waypoint.enabled ? GuiSlotWaypoints.DISABLE : GuiSlotWaypoints.ENABLE;
                 } else {
                     String tooltipText = "X: " + this.waypoint.getX() + " Z: " + this.waypoint.getZ();
-                    if (this.waypoint.getY() > minecraft.level.getMinBuildHeight()) {
+                    if (this.waypoint.getY() > minecraft.level.getMinY()) {
                         tooltipText = tooltipText + " Y: " + this.waypoint.getY();
                     }
 

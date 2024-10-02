@@ -574,7 +574,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 MutableBlockPos blockPos = MutableBlockPosCache.get();
-                int biomeID = this.world.registryAccess().registryOrThrow(Registries.BIOME).getId(this.world.getBiome(blockPos.withXYZ(GameVariableAccessShim.xCoord(), GameVariableAccessShim.yCoord(), GameVariableAccessShim.zCoord())).value());
+                int biomeID = this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(this.world.getBiome(blockPos.withXYZ(GameVariableAccessShim.xCoord(), GameVariableAccessShim.yCoord(), GameVariableAccessShim.zCoord())).value());
                 MutableBlockPosCache.release(blockPos);
                 if (biomeID != this.lastBiome) {
                     this.needSkyColor = true;
@@ -595,7 +595,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean aboveHorizon = this.lastAboveHorizon;
         float[] fogColors = new float[4];
         FloatBuffer temp = BufferUtils.createFloatBuffer(4);
-        FogRenderer.setupColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F));
+        FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F)); //FIXME 1.21.2
         OpenGL.glGetFloatv(OpenGL.GL11_GL_COLOR_CLEAR_VALUE, temp);
         temp.get(fogColors);
         float r = fogColors[0];
@@ -605,10 +605,9 @@ public class Map implements Runnable, IChangeObserver {
             return 167772160 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
         } else {
             int backgroundColor = -16777216 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
-            float[] sunsetColors = this.world.effects().getSunriseColor(this.world.getTimeOfDay(0.0F), 0.0F);
-            if (sunsetColors != null && VoxelConstants.getMinecraft().options.renderDistance().get() >= 4) {
-                int sunsetColor = (int) (sunsetColors[3] * 128.0F) * 16777216 + (int) (sunsetColors[0] * 255.0F) * 65536 + (int) (sunsetColors[1] * 255.0F) * 256 + (int) (sunsetColors[2] * 255.0F);
-                return ColorUtils.colorAdder(sunsetColor, backgroundColor);
+            int sunsetColor = this.world.effects().getSunriseOrSunsetColor(this.world.getTimeOfDay(0.0F));
+            if (VoxelConstants.getMinecraft().options.renderDistance().get() >= 4) {
+                return ColorUtils.colorAdder(sunsetColor, backgroundColor); //FIXME 1.21.2
             } else {
                 return backgroundColor;
             }
@@ -813,7 +812,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean caves = false;
         boolean netherPlayerInOpen;
         MutableBlockPos blockPos = MutableBlockPosCache.get();
-        blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getMaxBuildHeight() - 1), world.getMinBuildHeight()), this.lastZ);
+        blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getMaxY() - 1), world.getMinY()), this.lastZ);
         if (VoxelConstants.getPlayer().level().dimensionType().hasCeiling()) {
 
             netherPlayerInOpen = world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
@@ -913,7 +912,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean caves = false;
         boolean netherPlayerInOpen;
         MutableBlockPos blockPos = MutableBlockPosCache.get();
-        blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getMaxBuildHeight()), world.getMinBuildHeight()), this.lastZ);
+        blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getMaxY()), world.getMinY()), this.lastZ);
         int currentY = GameVariableAccessShim.yCoord();
         if (VoxelConstants.getPlayer().level().dimensionType().hasCeiling()) {
             netherPlayerInOpen = this.world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
@@ -1018,15 +1017,15 @@ public class Map implements Runnable, IChangeObserver {
                     surfaceHeight = transparentHeight;
                     this.surfaceBlockState = this.transparentBlockState;
                     VoxelShape voxelShape;
-                    boolean hasOpacity = this.surfaceBlockState.getLightBlock(world, blockPos) > 0;
+                    boolean hasOpacity = this.surfaceBlockState.getLightBlock() > 0;
                     if (!hasOpacity && this.surfaceBlockState.canOcclude() && this.surfaceBlockState.useShapeForLightOcclusion()) {
-                        voxelShape = this.surfaceBlockState.getFaceOcclusionShape(world, blockPos, Direction.DOWN);
+                        voxelShape = this.surfaceBlockState.getFaceOcclusionShape(Direction.DOWN);
                         hasOpacity = Shapes.faceShapeOccludes(voxelShape, Shapes.empty());
-                        voxelShape = this.surfaceBlockState.getFaceOcclusionShape(world, blockPos, Direction.UP);
+                        voxelShape = this.surfaceBlockState.getFaceOcclusionShape(Direction.UP);
                         hasOpacity = hasOpacity || Shapes.faceShapeOccludes(Shapes.empty(), voxelShape);
                     }
 
-                    while (!hasOpacity && surfaceHeight > world.getMinBuildHeight()) {
+                    while (!hasOpacity && surfaceHeight > world.getMinY()) {
                         foliageBlockState = this.surfaceBlockState;
                         --surfaceHeight;
                         this.surfaceBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
@@ -1035,11 +1034,11 @@ public class Map implements Runnable, IChangeObserver {
                             this.surfaceBlockState = fluidState.createLegacyBlock();
                         }
 
-                        hasOpacity = this.surfaceBlockState.getLightBlock(world, blockPos) > 0;
+                        hasOpacity = this.surfaceBlockState.getLightBlock() > 0;
                         if (!hasOpacity && this.surfaceBlockState.canOcclude() && this.surfaceBlockState.useShapeForLightOcclusion()) {
-                            voxelShape = this.surfaceBlockState.getFaceOcclusionShape(world, blockPos, Direction.DOWN);
+                            voxelShape = this.surfaceBlockState.getFaceOcclusionShape(Direction.DOWN);
                             hasOpacity = Shapes.faceShapeOccludes(voxelShape, Shapes.empty());
-                            voxelShape = this.surfaceBlockState.getFaceOcclusionShape(world, blockPos, Direction.UP);
+                            voxelShape = this.surfaceBlockState.getFaceOcclusionShape(Direction.UP);
                             hasOpacity = hasOpacity || Shapes.faceShapeOccludes(Shapes.empty(), voxelShape);
                         }
                     }
@@ -1069,8 +1068,8 @@ public class Map implements Runnable, IChangeObserver {
                     if (material == Blocks.WATER || material == Blocks.ICE) {
                         seafloorHeight = surfaceHeight;
 
-                        for (seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getLightBlock(world, blockPos) < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
-                                && seafloorHeight > world.getMinBuildHeight() + 1; seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
+                        for (seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getLightBlock() < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
+                                && seafloorHeight > world.getMinY() + 1; seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                             material = seafloorBlockState.getBlock();
                             if (transparentHeight == Short.MIN_VALUE && material != Blocks.ICE && material != Blocks.WATER && seafloorBlockState.blocksMotion()) {
                                 transparentHeight = seafloorHeight;
@@ -1351,7 +1350,7 @@ public class Map implements Runnable, IChangeObserver {
             blockState = fluidState.createLegacyBlock();
         }
 
-        while (blockState.getLightBlock(world, blockPos) == 0 && height > world.getMinBuildHeight()) {
+        while (blockState.getLightBlock() == 0 && height > world.getMinY()) {
             --height;
             blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z));
             fluidState = this.surfaceBlockState.getFluidState();
@@ -1368,12 +1367,12 @@ public class Map implements Runnable, IChangeObserver {
         int y = this.lastY;
         blockPos.setXYZ(x, y, z);
         BlockState blockState = this.world.getBlockState(blockPos);
-        if (blockState.getLightBlock(this.world, blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
-            while (y > world.getMinBuildHeight()) {
+        if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
+            while (y > world.getMinY()) {
                 --y;
                 blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(blockPos);
-                if (blockState.getLightBlock(this.world, blockPos) > 0 || blockState.getBlock() == Blocks.LAVA) {
+                if (blockState.getLightBlock() > 0 || blockState.getBlock() == Blocks.LAVA) {
                     MutableBlockPosCache.release(blockPos);
                     return y + 1;
                 }
@@ -1381,11 +1380,11 @@ public class Map implements Runnable, IChangeObserver {
             MutableBlockPosCache.release(blockPos);
             return y;
         } else {
-            while (y <= this.lastY + 10 && y < world.getMaxBuildHeight()) {
+            while (y <= this.lastY + 10 && y < world.getMaxY()) {
                 ++y;
                 blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(blockPos);
-                if (blockState.getLightBlock(this.world, blockPos) == 0 && blockState.getBlock() != Blocks.LAVA) {
+                if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
                     MutableBlockPosCache.release(blockPos);
                     return y;
                 }
@@ -1397,7 +1396,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private int getSeafloorHeight(Level world, int x, int z, int height) {
         MutableBlockPos blockPos = MutableBlockPosCache.get();
-        for (BlockState blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z)); blockState.getLightBlock(world, blockPos) < 5 && !(blockState.getBlock() instanceof LeavesBlock) && height > world.getMinBuildHeight() + 1; blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z))) {
+        for (BlockState blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z)); blockState.getLightBlock() < 5 && !(blockState.getBlock() instanceof LeavesBlock) && height > world.getMinY() + 1; blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z))) {
             --height;
         }
         MutableBlockPosCache.release(blockPos);
@@ -1541,7 +1540,7 @@ public class Map implements Runnable, IChangeObserver {
             combinedLight = 0;
         } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.lightmap) {
             MutableBlockPos blockPos = MutableBlockPosCache.get();
-            blockPos.setXYZ(x, Math.max(Math.min(height, world.getMaxBuildHeight()), world.getMinBuildHeight()), z);
+            blockPos.setXYZ(x, Math.max(Math.min(height, world.getMaxY()), world.getMinY()), z);
             int blockLight = world.getBrightness(LightLayer.BLOCK, blockPos);
             int skyLight = world.getBrightness(LightLayer.SKY, blockPos);
             if (blockState.getBlock() == Blocks.LAVA || blockState.getBlock() == Blocks.MAGMA_BLOCK) {

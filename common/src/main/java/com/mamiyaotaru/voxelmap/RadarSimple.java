@@ -39,7 +39,6 @@ public class RadarSimple implements IRadar {
     private int timer = 500;
     private float direction;
     private final ArrayList<Contact> contacts = new ArrayList<>(40);
-    final UUID devUUID = UUID.fromString("9b37abb9-2487-4712-bb96-21a1e0b2023c");
 
     public RadarSimple() {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();

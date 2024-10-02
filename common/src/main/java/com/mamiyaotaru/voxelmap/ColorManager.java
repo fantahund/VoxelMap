@@ -156,8 +156,8 @@ public class ColorManager {
             this.world = VoxelConstants.getClientWorld();
             int largestBiomeID = 0;
 
-            for (Biome biome : this.world.registryAccess().registryOrThrow(Registries.BIOME)) {
-                int biomeID = this.world.registryAccess().registryOrThrow(Registries.BIOME).getId(biome);
+            for (Biome biome : this.world.registryAccess().lookupOrThrow(Registries.BIOME)) {
+                int biomeID = this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
                 if (biomeID > largestBiomeID) {
                     largestBiomeID = biomeID;
                 }
@@ -621,10 +621,10 @@ public class ColorManager {
                             }
 
                             if (biome == null) {
-                                biome = world.registryAccess().registryOrThrow(Registries.BIOME).get(Biomes.PLAINS);
+                                biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
                             }
 
-                            int biomeID = world.registryAccess().registryOrThrow(Registries.BIOME).getId(biome);
+                            int biomeID = world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
                             int biomeTint = tints[biomeID][loopBlockPos.y / 8];
                             r += (biomeTint & 0xFF0000) >> 16;
                             g += (biomeTint & 0xFF00) >> 8;
@@ -1090,8 +1090,8 @@ public class ColorManager {
     }
 
     private int parseBiomeName(String name) {
-        Biome biome = this.world.registryAccess().registryOrThrow(Registries.BIOME).get(ResourceLocation.parse(name));
-        return biome != null ? this.world.registryAccess().registryOrThrow(Registries.BIOME).getId(biome) : -1;
+        Biome biome = this.world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(name)).get().value(); //FIXME 1.21.2
+        return biome != null ? this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome) : -1;
     }
 
     private List<ResourceLocation> findResources(String namespace, String startingPath, String suffixMaybeNull, boolean recursive, boolean directories, boolean sortByFilename) {
@@ -1275,7 +1275,7 @@ public class ColorManager {
         int numBiomesToCheck = grid ? Math.min(tintColorsBuff.getWidth(), this.sizeOfBiomeArray) : this.sizeOfBiomeArray;
 
         for (int t = 0; t < numBiomesToCheck; ++t) {
-            Biome biome = this.world.registryAccess().registryOrThrow(Registries.BIOME).byId(t);
+            Biome biome = this.world.registryAccess().lookupOrThrow(Registries.BIOME).byId(t);
             if (biome != null) {
                 int tintMult;
                 int heightMultiplier = tintColorsBuff.getHeight() / 32;
@@ -1344,7 +1344,7 @@ public class ColorManager {
     private Block getBlockFromName(String name) {
         try {
             ResourceLocation resourceLocation = ResourceLocation.parse(name);
-            return BuiltInRegistries.BLOCK.containsKey(resourceLocation) ? BuiltInRegistries.BLOCK.get(resourceLocation) : null;
+            return BuiltInRegistries.BLOCK.containsKey(resourceLocation) ? BuiltInRegistries.BLOCK.get(resourceLocation).get().value() : null; //FIXME 1.21.2
         } catch (ResourceLocationException | NumberFormatException var3) {
             return null;
         }

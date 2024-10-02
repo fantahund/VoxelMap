@@ -306,4 +306,9 @@ public class VoxelMap implements PreparableReloadListener {
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
     }
+
+    @Override
+    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2) {
+        return null; //FIXME 1.21.2
+    }
 }

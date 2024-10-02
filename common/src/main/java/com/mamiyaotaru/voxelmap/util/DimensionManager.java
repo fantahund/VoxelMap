@@ -26,11 +26,11 @@ public class DimensionManager {
 
     public void populateDimensions(Level world) {
         this.dimensions.clear();
-        Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getConnection().registryAccess().registryOrThrow(Registries.DIMENSION_TYPE);
+        Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getConnection().registryAccess().lookupOrThrow(Registries.DIMENSION_TYPE);
 
         for (ResourceKey<Level> vanillaWorldKey : this.vanillaWorlds) {
             ResourceKey<DimensionType> typeKey = ResourceKey.create(Registries.DIMENSION_TYPE, vanillaWorldKey.location());
-            DimensionType dimensionType = dimensionTypeRegistry.get(typeKey);
+            DimensionType dimensionType = dimensionTypeRegistry.get(typeKey).get().value(); //FIXME 1.21.2
             DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.location().getPath(), vanillaWorldKey.location());
             this.dimensions.add(dimensionContainer);
         }

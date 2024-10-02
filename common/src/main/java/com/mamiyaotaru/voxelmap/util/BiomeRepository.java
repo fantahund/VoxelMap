@@ -139,7 +139,7 @@ public final class BiomeRepository {
             return 0;
         }
 
-        String identifier = VoxelConstants.getPlayer().level().registryAccess().registryOrThrow(Registries.BIOME).getKey(biome).toString();
+        String identifier = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome).toString();
         color = nameToColor.get(identifier);
 
         if (color == null) {
@@ -170,7 +170,7 @@ public final class BiomeRepository {
 
     @NotNull
     public static String getName(Biome biome) {
-        ResourceLocation resourceLocation = VoxelConstants.getPlayer().level().registryAccess().registryOrThrow(Registries.BIOME).getKey(biome);
+        ResourceLocation resourceLocation = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome);
         String translationKey = Util.makeDescriptionId("biome", resourceLocation);
 
         String name = I18n.get(translationKey);
@@ -181,7 +181,7 @@ public final class BiomeRepository {
 
     @NotNull
     public static String getName(int biomeID) {
-        Biome biome = VoxelConstants.getPlayer().level().registryAccess().registryOrThrow(Registries.BIOME).byId(biomeID);
+        Biome biome = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).byId(biomeID);
 
         if (biome != null) return getName(biome);
         return "Unknown";

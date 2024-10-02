@@ -594,7 +594,7 @@ public class CachedRegion {
                 while (iterator.hasNext()) {
                     Map.Entry<Biome, Integer> entry = iterator.next();
                     try {
-                        String nextLine = entry.getValue() + " " + world.registryAccess().registryOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
+                        String nextLine = entry.getValue() + " " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
                         stringBuffer.append(nextLine);
                     } catch (NullPointerException ex) {
                         VoxelConstants.getLogger().warn("Nullpointer for Biome: " + entry.getValue() + " at " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);

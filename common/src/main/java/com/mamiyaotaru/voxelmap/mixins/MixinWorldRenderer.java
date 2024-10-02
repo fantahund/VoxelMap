@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -27,7 +28,7 @@ public class MixinWorldRenderer {
     @Shadow @Nullable private RenderTarget translucentTarget;
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
-    private void postRender(DeltaTracker tickCounter, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+    private void postRender(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (VoxelMap.mapOptions.waypointsAllowed && (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints)) {
             if (VoxelConstants.isFabulousGraphicsOrBetter()) {
                 RenderTarget framebuffer = VoxelConstants.getMinecraft().getMainRenderTarget();
@@ -42,7 +43,7 @@ public class MixinWorldRenderer {
                 matrixStack.pushMatrix();
                 matrixStack.mul(matrix4f);
                 RenderSystem.applyModelViewMatrix();
-                VoxelConstants.onRenderHand(tickCounter.getGameTimeDeltaPartialTick(false), new Matrix4fStack(5), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
+                VoxelConstants.onRenderHand(deltaTracker.getGameTimeDeltaPartialTick(false), new Matrix4fStack(5), VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons, VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints, drawSignForeground, true);
             } finally {
                 matrixStack.popMatrix();
             }
@@ -59,7 +60,7 @@ public class MixinWorldRenderer {
                 matrixStack.pushMatrix();
                 matrixStack.mul(matrix4f);
                 RenderSystem.applyModelViewMatrix();
-                VoxelConstants.onRenderHand(VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false), new Matrix4fStack(5), false, true, true, false);
+                VoxelConstants.onRenderHand(VoxelConstants.getMinecraft().getDeltaTracker().getGameTimeDeltaPartialTick(false), new Matrix4fStack(5), false, true, true, false);
             } finally {
                 matrixStack.popMatrix();
             }

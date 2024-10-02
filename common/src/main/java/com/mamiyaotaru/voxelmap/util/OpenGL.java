@@ -111,7 +111,7 @@ public final class OpenGL {
 
     public static void glBlendFuncSeparate(int srcFactorRGB, int dstFactorRGB, int srcFactorAlpha, int dstFactorAlpha) { RenderSystem.blendFuncSeparate(srcFactorRGB, dstFactorRGB, srcFactorAlpha, dstFactorAlpha); }
 
-    public static void glClear(int mask) { RenderSystem.clear(mask, VoxelConstants.isSystemMacOS()); }
+    public static void glClear(int mask) { RenderSystem.clear(mask); } //FIXME 1.21.2
 
     public static void glClearColor(float red, float green, float blue, float alpha) { RenderSystem.clearColor(red, green, blue, alpha); }
 

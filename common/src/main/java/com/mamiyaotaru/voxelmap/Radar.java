@@ -1702,7 +1702,7 @@ public class Radar implements IRadar {
                                     int numDyeColors = DyeColor.values().length;
                                     int colorID1 = semiRandom % numDyeColors;
                                     int colorID2 = (semiRandom + 1) % numDyeColors;
-                                    float lerpVal = ((sheepEntity.tickCount % 25) + VoxelConstants.getMinecraft().getTimer().getGameTimeDeltaPartialTick(false)) / 25.0F;
+                                    float lerpVal = ((sheepEntity.tickCount % 25) + VoxelConstants.getMinecraft().getDeltaTracker().getGameTimeDeltaPartialTick(false)) / 25.0F;
                                     Color sheepColors1 = new Color(Sheep.getColor(DyeColor.byId(colorID1)));
                                     Color sheepColors2 = new Color(Sheep.getColor(DyeColor.byId(colorID2)));
                                     red = (sheepColors1.getRed() * (1.0F - lerpVal) + sheepColors2.getRed() * lerpVal) / 255.0F;

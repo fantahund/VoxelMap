@@ -46,7 +46,7 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
 
         for (int t = 0; t < this.scale; ++t) {
             for (int s = 0; s < this.scale; ++s) {
-                this.image.setPixelRGBA(x * this.scale + t, y * this.scale + s, color);
+                this.image.setPixel(x * this.scale + t, y * this.scale + s, color); //FIXME 1.21.2
             }
         }
 

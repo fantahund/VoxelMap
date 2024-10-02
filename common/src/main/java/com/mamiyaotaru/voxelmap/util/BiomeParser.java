@@ -16,14 +16,14 @@ public class BiomeParser {
         String[] lineParts = line.split(" ");
 
         int id = Integer.parseInt(lineParts[0]);
-        Biome biome = world.registryAccess().registryOrThrow(Registries.BIOME).get(ResourceLocation.parse(lineParts[1]));
+        Biome biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(lineParts[1])).get().value(); //FIXME 1.21.2
         if (biome != null) {
             map.forcePut(biome, id);
         }
     }
 
     public static void populateLegacyBiomeMap(ClientLevel world, BiMap<Biome, Integer> map) {
-        Registry<Biome> registry = world.registryAccess().registryOrThrow(Registries.BIOME);
+        Registry<Biome> registry = world.registryAccess().lookupOrThrow(Registries.BIOME);
         registry.forEach(biome -> {
             map.forcePut(biome, registry.getId(biome));
         });

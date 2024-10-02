@@ -73,7 +73,7 @@ public class WaypointContainer {
                     int z = pt.getZ();
                     LevelChunk chunk = VoxelConstants.getPlayer().level().getChunk(x >> 4, z >> 4);
                     if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(x >> 4, z >> 4)) {
-                        double bottomOfWorld = VoxelConstants.getPlayer().level().getMinBuildHeight() - renderPosY;
+                        double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
                         this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, matrixStack);
                     }
                 }
