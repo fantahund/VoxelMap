@@ -141,7 +141,7 @@ public class RadarSimple implements IRadar {
 
     private boolean isHostile(Entity entity) {
         if (entity instanceof ZombifiedPiglin zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.isPreventingPlayerRest(VoxelConstants.getPlayer());
+            return zombifiedPiglinEntity.getPersistentAngerTarget() != null && zombifiedPiglinEntity.getPersistentAngerTarget().equals(VoxelConstants.getPlayer().getUUID());
         } else if (entity instanceof Enemy) {
             return true;
         } else if (entity instanceof Bee beeEntity) {
