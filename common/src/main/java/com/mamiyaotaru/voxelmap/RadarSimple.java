@@ -157,7 +157,7 @@ public class RadarSimple implements IRadar {
             }
 
             if (entity instanceof Rabbit rabbitEntity) {
-                return rabbitEntity.getVariant().id() == 99;
+                return rabbitEntity.getVariant() == Rabbit.Variant.EVIL;
             } else if (entity instanceof Wolf wolfEntity) {
                 return wolfEntity.isAngry();
             } else {

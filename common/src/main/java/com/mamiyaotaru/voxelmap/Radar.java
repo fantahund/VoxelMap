@@ -1810,7 +1810,6 @@ public class Radar implements IRadar {
             return beeEntity.isAngry();
         } else {
             if (entity instanceof PolarBear polarBearEntity) {
-
                 for (PolarBear object : polarBearEntity.level().getEntitiesOfClass(PolarBear.class, polarBearEntity.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
                     if (object.isBaby()) {
                         return true;
@@ -1819,7 +1818,7 @@ public class Radar implements IRadar {
             }
 
             if (entity instanceof Rabbit rabbitEntity) {
-                return rabbitEntity.getVariant().id() == 99;
+                return rabbitEntity.getVariant() == Rabbit.Variant.EVIL;
             } else if (entity instanceof Wolf wolfEntity) {
                 return wolfEntity.isAngry();
             } else {
