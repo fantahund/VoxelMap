@@ -325,7 +325,7 @@ public class ColorManager {
     private void loadTexturePackTerrainImage() {
         try {
             TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
-            textureManager.bindForSetup(InventoryMenu.BLOCK_ATLAS);
+            //textureManager.bindForSetup(InventoryMenu.BLOCK_ATLAS); //FIXME 1.21.2
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();

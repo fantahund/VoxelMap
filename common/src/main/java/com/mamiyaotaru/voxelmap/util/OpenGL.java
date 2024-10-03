@@ -306,7 +306,9 @@ public final class OpenGL {
 
         public static void img2(String param) { img2(ResourceLocation.parse(param)); }
 
-        public static void img(ResourceLocation param) { textureManager.bindForSetup(param); }
+        public static void img(ResourceLocation param) {
+            //textureManager.bindForSetup(param); //FIXME 1.21.2
+        }
 
         public static void img2(ResourceLocation param) { RenderSystem.setShaderTexture(0, param); }
 

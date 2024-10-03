@@ -19,8 +19,8 @@ public class MixinInGameHud {
     //
     // entriesHeight is: int l = k * this.getTextRenderer().fontHeight;
 
-    @ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/Gui$1DisplayEntry;Lnet/minecraft/client/gui/GuiGraphics;ILnet/minecraft/network/chat/Component;I)V", at = @At("STORE"), ordinal = 4)
+    /*@ModifyVariable(method = "method_55440([Lnet/minecraft/client/gui/Gui$1DisplayEntry;Lnet/minecraft/client/gui/GuiGraphics;ILnet/minecraft/network/chat/Component;I)V", at = @At("STORE"), ordinal = 4)
     private int injected(int bottomX, @Local(ordinal = 3) int entriesHeight) {
         return VoxelConstants.moveScoreboard(bottomX, entriesHeight);
-    }
+    }*/
 }

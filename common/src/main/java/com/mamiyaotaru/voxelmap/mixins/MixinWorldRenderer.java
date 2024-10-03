@@ -23,18 +23,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
-public class MixinWorldRenderer {
+public abstract class MixinWorldRenderer {
 
-    @Shadow @Nullable private RenderTarget translucentTarget;
+
+    @Shadow @Nullable public abstract RenderTarget getTranslucentTarget();
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void postRender(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (VoxelMap.mapOptions.waypointsAllowed && (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints)) {
             if (VoxelConstants.isFabulousGraphicsOrBetter()) {
                 RenderTarget framebuffer = VoxelConstants.getMinecraft().getMainRenderTarget();
-                GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, this.translucentTarget.frameBufferId);
+                GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, this.getTranslucentTarget().frameBufferId);
                 GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, framebuffer.frameBufferId);
-                GlStateManager._glBlitFrameBuffer(0, 0, this.translucentTarget.width, this.translucentTarget.height, 0, 0, framebuffer.width, framebuffer.height, 256, OpenGL.GL11_GL_NEAREST);
+                GlStateManager._glBlitFrameBuffer(0, 0, this.getTranslucentTarget().width, this.getTranslucentTarget().height, 0, 0, framebuffer.width, framebuffer.height, 256, OpenGL.GL11_GL_NEAREST);
             }
 
             boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter();
