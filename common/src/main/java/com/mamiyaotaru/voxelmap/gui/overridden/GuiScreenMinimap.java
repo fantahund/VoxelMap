@@ -3,12 +3,14 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.List;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ARGB;
 
 public class GuiScreenMinimap extends Screen {
     protected GuiScreenMinimap() { this (Component.literal("")); }
@@ -36,8 +38,7 @@ public class GuiScreenMinimap extends Screen {
     }
 
     public void renderBackgroundTexture(GuiGraphics context) {
-        context.setColor(0.25F, 0.25F, 0.25F, 1.0F);
-        context.blit(RenderType::guiTextured, VoxelConstants.getOptionsBackgroundTexture(), 0, 0, 0.0F, 0.0F, 0, this.width, this.height, 32, 32);
-        context.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+        int color = ARGB.colorFromFloat(1.0F, 0.25F, 0.25F, 0.25F);
+        context.blit(RenderType::guiTextured, VoxelConstants.getOptionsBackgroundTexture(), 0, 0, 0.0F, 0.0F, 0, this.width, this.height, 32, 32, color);
     }
 }
