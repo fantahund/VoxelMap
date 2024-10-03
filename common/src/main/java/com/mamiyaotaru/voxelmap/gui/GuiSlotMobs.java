@@ -30,7 +30,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/mob_effect/blindness.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
-        super (par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
+        super(par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
 
         this.parentGui = par1GuiMobs;
         RadarSettingsManager options = this.parentGui.options;
@@ -75,10 +75,12 @@ class GuiSlotMobs extends GuiSlotMinimap {
         this.parentGui.setSelectedMob(entry.id);
     }
 
+    @Override
     protected boolean isSelectedItem(int index) {
         return ((MobItem) this.mobsFiltered.get(index)).id.equals(this.parentGui.selectedMobId);
     }
 
+    @Override
     protected int getMaxPosition() {
         return this.getItemCount() * this.itemHeight;
     }
@@ -113,6 +115,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             this.name = GuiSlotMobs.getTranslatedName(id);
         }
 
+        @Override
         public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             boolean isHostile = false;
             boolean isNeutral = false;
@@ -149,9 +152,10 @@ class GuiSlotMobs extends GuiSlotMinimap {
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             OpenGL.Utils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
-            drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
+        @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             GuiSlotMobs.this.setSelected(this);
             int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;

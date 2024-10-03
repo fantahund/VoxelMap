@@ -18,3 +18,4 @@ accessible field net/minecraft/client/model/SkullModel head Lnet/minecraft/clien
 mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;
 accessible field net/minecraft/client/model/ShulkerModel head Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/AbstractEquineModel headParts Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/renderer/LightTexture target Lcom/mojang/blaze3d/pipeline/TextureTarget;

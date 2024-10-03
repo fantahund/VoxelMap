@@ -28,6 +28,20 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.math.Axis;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
+import java.util.TreeSet;
+import javax.imageio.ImageIO;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.Font;
@@ -40,7 +54,6 @@ import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -67,19 +80,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL30C;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.TreeSet;
+import org.lwjgl.opengl.GL11C;
 
 public class Map implements Runnable, IChangeObserver {
     private final float[] lastLightBrightnessTable = new float[16];
@@ -108,7 +109,7 @@ public class Map implements Runnable, IChangeObserver {
     private BlockState transparentBlockState;
     private BlockState surfaceBlockState;
     private boolean imageChanged = true;
-    private DynamicTexture lightmapTexture;
+    private LightTexture lightmapTexture;
     private boolean needLightmapRefresh = true;
     private int tickWithLightChange;
     private boolean lastPaused = true;
@@ -116,7 +117,7 @@ public class Map implements Runnable, IChangeObserver {
     private float lastSunBrightness;
     private float lastLightning;
     private float lastPotion;
-    private final int[] lastLightmapValues = {-16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216};
+    private final int[] lastLightmapValues = { -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216 };
     private boolean lastBeneathRendering;
     private boolean needSkyColor;
     private boolean lastAboveHorizon = true;
@@ -483,16 +484,16 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private DynamicTexture getLightmapTexture() {
+    private LightTexture getLightmapTexture() {
         LightTexture lightTextureManager = VoxelConstants.getMinecraft().gameRenderer.lightTexture();
-        return lightTextureManager.lightTexture;
+        return lightTextureManager;
     }
 
     public void calculateCurrentLightAndSkyColor() {
         try {
             if (this.world != null) {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !VoxelConstants.getMinecraft().isPaused() || this.options.realTimeTorches) {
-                    OpenGL.Utils.disp(this.lightmapTexture.getId());
+                    OpenGL.Utils.disp(this.lightmapTexture.target.getColorTextureId());
                     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
 
@@ -592,7 +593,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean aboveHorizon = this.lastAboveHorizon;
         float[] fogColors = new float[4];
         FloatBuffer temp = BufferUtils.createFloatBuffer(4);
-        FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F)); //FIXME 1.21.2
+        FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F)); // FIXME 1.21.2
         OpenGL.glGetFloatv(OpenGL.GL11_GL_COLOR_CLEAR_VALUE, temp);
         temp.get(fogColors);
         float r = fogColors[0];
@@ -604,7 +605,7 @@ public class Map implements Runnable, IChangeObserver {
             int backgroundColor = -16777216 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
             int sunsetColor = this.world.effects().getSunriseOrSunsetColor(this.world.getTimeOfDay(0.0F));
             if (VoxelConstants.getMinecraft().options.renderDistance().get() >= 4) {
-                return ColorUtils.colorAdder(sunsetColor, backgroundColor); //FIXME 1.21.2
+                return ColorUtils.colorAdder(sunsetColor, backgroundColor); // FIXME 1.21.2
             } else {
                 return backgroundColor;
             }
@@ -635,7 +636,7 @@ public class Map implements Runnable, IChangeObserver {
         modelViewMatrixStack.pushMatrix();
         modelViewMatrixStack.identity();
         modelViewMatrixStack.translate(0.0f, 0.0f, -2000.0f);
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         Lighting.setupFor3DItems();
         int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
@@ -708,7 +709,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.popMatrix();
         RenderSystem.restoreProjectionMatrix();
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
@@ -1566,7 +1567,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.pushMatrix();
         matrixStack.identity();
         matrixStack.translate(0.0f, 0.0f, -2000.0f);
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(false);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
@@ -1580,7 +1581,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
         OpenGL.Utils.drawPost();
         // BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        //BufferRenderer.drawWithShader(bb.end());
+        // BufferRenderer.drawWithShader(bb.end());
         // BufferRenderer.drawWithGlobalProgram(bb.end());
         OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
         synchronized (this.coordinateLock) {
@@ -1610,7 +1611,7 @@ public class Map implements Runnable, IChangeObserver {
 
         matrixStack.translate(-256.0f, -256.0f, 0.0f);
         matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.drawPre();
         OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
         OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
@@ -1618,28 +1619,28 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
         OpenGL.Utils.drawPost();
         matrixStack.popMatrix();
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(true);
-        OpenGL.glEnable(GL30C.GL_DEPTH_TEST);
+        OpenGL.glEnable(GL11C.GL_DEPTH_TEST);
         OpenGL.Utils.unbindFramebuffer();
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
         matrixStack.popMatrix();
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorting.DISTANCE_TO_ORIGIN);
         matrixStack.pushMatrix();
-        OpenGL.glBlendFunc(GL30C.GL_SRC_ALPHA, GL30C.GL_ZERO);
+        OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
         OpenGL.Utils.disp2(OpenGL.Utils.fboTextureId);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
-        OpenGL.glEnable(GL30C.GL_SCISSOR_TEST);
+        OpenGL.glEnable(GL11C.GL_SCISSOR_TEST);
         OpenGL.glScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
         OpenGL.Utils.drawPre();
         OpenGL.Utils.setMapWithScale(x, y, scale);
         OpenGL.Utils.drawPost();
-        OpenGL.glDisable(GL30C.GL_SCISSOR_TEST);
+        OpenGL.glDisable(GL11C.GL_SCISSOR_TEST);
         matrixStack.popMatrix();
-        //1.21.2 RenderSystem.applyModelViewMatrix();
-        OpenGL.glBlendFunc(GL30C.GL_SRC_ALPHA, GL30C.GL_ONE_MINUS_SRC_ALPHA);
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
+        OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.options.squareMap) {
             this.drawSquareMapFrame(x, y);
@@ -1748,7 +1749,7 @@ public class Map implements Runnable, IChangeObserver {
                     matrixStack.translate(0.0f, -hypot, 0.0f);
                 }
 
-                //1.21.2 RenderSystem.applyModelViewMatrix();
+                // 1.21.2 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
@@ -1758,7 +1759,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.error = "Error: marker overlay not found!";
             } finally {
                 matrixStack.popMatrix();
-                //1.21.2 RenderSystem.applyModelViewMatrix();
+                // 1.21.2 RenderSystem.applyModelViewMatrix();
             }
         } else {
             try {
@@ -1785,7 +1786,7 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
                 matrixStack.translate(0.0f, -hypot, 0.0f);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-(-locate)));
-                //1.21.2 RenderSystem.applyModelViewMatrix();
+                // 1.21.2 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
@@ -1795,7 +1796,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
                 matrixStack.popMatrix();
-                //1.21.2 RenderSystem.applyModelViewMatrix();
+                // 1.21.2 RenderSystem.applyModelViewMatrix();
             }
         }
 
@@ -1813,7 +1814,7 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.translate(x, y, 0.0f);
             matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
             matrixStack.translate(-x, -y, 0.0f);
-            //1.21.2 RenderSystem.applyModelViewMatrix();
+            // 1.21.2 RenderSystem.applyModelViewMatrix();
             OpenGL.Utils.drawPre();
             OpenGL.Utils.setMap(x, y, 16);
             OpenGL.Utils.drawPost();
@@ -1821,7 +1822,7 @@ public class Map implements Runnable, IChangeObserver {
             this.error = "Error: minimap arrow not found!";
         } finally {
             matrixStack.popMatrix();
-            //1.21.2 RenderSystem.applyModelViewMatrix();
+            // 1.21.2 RenderSystem.applyModelViewMatrix();
         }
 
     }
@@ -1845,7 +1846,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
         matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.Utils.drawPre();
         int left = scWidth / 2 - 128;
@@ -1856,7 +1857,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
         OpenGL.Utils.drawPost();
         matrixStack.popPose();
-        //1.21.2 RenderSystem.applyModelViewMatrix();
+        // 1.21.2 RenderSystem.applyModelViewMatrix();
         if (this.options.biomeOverlay != 0) {
             double factor = Math.pow(2.0, 3 - this.zoom);
             int minimumSize = (int) Math.pow(2.0, this.zoom);
@@ -1865,7 +1866,7 @@ public class Map implements Runnable, IChangeObserver {
             OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             matrixStack.pushPose();
             matrixStack.translate(0.0, 0.0, 1160.0);
-            //1.21.2 RenderSystem.applyModelViewMatrix();
+            // 1.21.2 RenderSystem.applyModelViewMatrix();
 
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
@@ -1882,7 +1883,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             matrixStack.popPose();
-            //1.21.2 RenderSystem.applyModelViewMatrix();
+            // 1.21.2 RenderSystem.applyModelViewMatrix();
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
         }
 
@@ -2010,13 +2011,13 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.scale(scale, scale, 1.0F);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.chkLen(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale, 16777215); //X, Z
+            this.write(drawContext, xy, x / scale - m, textStart / scale, 16777215); // X, Z
             xy = Integer.toString(GameVariableAccessShim.yCoord());
             m = this.chkLen(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 16777215); //Y
+            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 16777215); // Y
             if (this.ztimer > 0) {
                 m = this.chkLen(this.error) / 2;
-                this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); //WORLD NAME
+                this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); // WORLD NAME
             }
 
             matrixStack.popPose();
@@ -2079,7 +2080,8 @@ public class Map implements Runnable, IChangeObserver {
             this.welcomeText[1] = Component.translatable("minimap.ui.welcome2");
             this.welcomeText[2] = Component.translatable("minimap.ui.welcome3");
             this.welcomeText[3] = Component.translatable("minimap.ui.welcome4");
-            this.welcomeText[4] = (Component.literal("")).append((Component.keybind(this.options.keyBindZoom.getName())).withStyle(ChatFormatting.AQUA)).append(": ").append(Component.translatable("minimap.ui.welcome5a")).append(", ").append((Component.keybind(this.options.keyBindMenu.getName())).withStyle(ChatFormatting.AQUA)).append(": ").append(Component.translatable("minimap.ui.welcome5b"));
+            this.welcomeText[4] = (Component.literal("")).append((Component.keybind(this.options.keyBindZoom.getName())).withStyle(ChatFormatting.AQUA)).append(": ").append(Component.translatable("minimap.ui.welcome5a")).append(", ")
+                    .append((Component.keybind(this.options.keyBindMenu.getName())).withStyle(ChatFormatting.AQUA)).append(": ").append(Component.translatable("minimap.ui.welcome5b"));
             this.welcomeText[5] = (Component.literal("")).append((Component.keybind(this.options.keyBindFullscreen.getName())).withStyle(ChatFormatting.AQUA)).append(": ").append(Component.translatable("minimap.ui.welcome6"));
             this.welcomeText[6] = (Component.literal("")).append((Component.keybind(this.options.keyBindWaypoint.getName())).withStyle(ChatFormatting.AQUA)).append(": ").append(Component.translatable("minimap.ui.welcome7"));
             this.welcomeText[7] = this.options.keyBindZoom.getTranslatedKeyMessage().copy().append(": ").append((Component.translatable("minimap.ui.welcome8")).withStyle(ChatFormatting.GRAY));

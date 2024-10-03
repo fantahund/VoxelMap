@@ -8,13 +8,10 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
-import org.joml.Matrix4fStack;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.UUID;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +26,7 @@ import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
+import org.joml.Matrix4fStack;
 
 public class RadarSimple implements IRadar {
     private LayoutVariables layoutVariables;
@@ -109,14 +107,15 @@ public class RadarSimple implements IRadar {
 
         for (Entity entity : VoxelConstants.getClientWorld().entitiesForRendering()) {
             try {
-                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity) || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
+                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity)
+                        || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.position().x();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.position().z();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
                     double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
                     if (hypot < 961.0) {
-                        Contact contact = new Contact(entity, this.getUnknownMobNeutrality(entity));
+                        Contact contact = new Contact((LivingEntity) entity, this.getUnknownMobNeutrality(entity));
                         String unscrubbedName = contact.entity.getDisplayName().getString();
                         contact.setName(unscrubbedName);
                         contact.updateLocation();
@@ -233,7 +232,7 @@ public class RadarSimple implements IRadar {
                     matrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
                     matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
                     matrixStack.translate(-x, -y, 0.0f);
-                    //1.21.2 RenderSystem.applyModelViewMatrix();
+                    // 1.21.2 RenderSystem.applyModelViewMatrix();
 
                     this.applyFilteringParameters();
                     OpenGL.Utils.drawPre();
@@ -249,7 +248,7 @@ public class RadarSimple implements IRadar {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.popMatrix();
-                    //1.21.2 RenderSystem.applyModelViewMatrix();
+                    // 1.21.2 RenderSystem.applyModelViewMatrix();
                 }
             }
         }
