@@ -326,6 +326,7 @@ public class ColorManager {
         try {
             TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
             //textureManager.bindForSetup(InventoryMenu.BLOCK_ATLAS); //FIXME 1.21.2
+            textureManager.register(InventoryMenu.BLOCK_ATLAS, VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS));
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();
@@ -623,7 +624,7 @@ public class ColorManager {
                             if (biome == null) {
                                 biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
                             }
-
+                            System.out.println(biome.toString());
                             int biomeID = world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
                             int biomeTint = tints[biomeID][loopBlockPos.y / 8];
                             r += (biomeTint & 0xFF0000) >> 16;
