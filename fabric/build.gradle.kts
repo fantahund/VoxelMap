@@ -67,3 +67,16 @@ tasks {
 
     remapJar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 }
+
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            artifactId = base.archivesName.get()
+            from(components["java"])
+        }
+    }
+
+    repositories {
+        maven("file://${System.getenv("local_maven")}")
+    }
+}
