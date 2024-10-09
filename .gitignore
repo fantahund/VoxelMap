@@ -6,10 +6,11 @@
 *.iws
 
 # Eclipse
-/.classpath
-/.project
-/.settings
-/bin
+.classpath
+.project
+.settings
+.eclipse
+bin
 
 # IntelliJ
 out/
