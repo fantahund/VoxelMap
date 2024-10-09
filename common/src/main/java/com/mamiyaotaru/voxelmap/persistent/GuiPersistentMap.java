@@ -202,6 +202,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         playerGLID = OpenGL.Utils.tex(skinImage);
     }
 
+    @Override
     public void init() {
         this.passEvents = true;
         this.oldNorth = mapOptions.oldNorth;
@@ -226,11 +227,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("menu.options"), null, this) {
+            @Override
             public void onPress() {
                 VoxelConstants.getMinecraft().setScreen(new GuiMinimapOptions(GuiPersistentMap.this));
             }
         });
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("gui.done"), null, this) {
+            @Override
             public void onPress() {
                 VoxelConstants.getMinecraft().setScreen(GuiPersistentMap.this.parent);
             }
@@ -275,13 +278,21 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         VoxelConstants.getIntegratedServer().ifPresentOrElse(integratedServer -> {
             worldName.set(integratedServer.getWorldData().getLevelName());
 
-            if (worldName.get() == null || worldName.get().isBlank()) worldName.set("Singleplayer World");
+            if (worldName.get() == null || worldName.get().isBlank()) {
+                worldName.set("Singleplayer World");
+            }
         }, () -> {
             ServerData info = VoxelConstants.getMinecraft().getCurrentServer();
 
-            if (info != null) worldName.set(info.name);
-            if (worldName.get() == null || worldName.get().isBlank()) worldName.set("Multiplayer Server");
-            if (VoxelConstants.isRealmServer()) worldName.set("Realms");
+            if (info != null) {
+                worldName.set(info.name);
+            }
+            if (worldName.get() == null || worldName.get().isBlank()) {
+                worldName.set("Multiplayer Server");
+            }
+            if (VoxelConstants.isRealmServer()) {
+                worldName.set("Realms");
+            }
         });
 
         StringBuilder worldNameBuilder = (new StringBuilder("§r")).append(worldName.get());
@@ -338,6 +349,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return value;
     }
 
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         this.timeOfLastMouseInput = System.currentTimeMillis();
         this.switchToMouseInput();
@@ -360,6 +372,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return true;
     }
 
+    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (mouseY > this.top && mouseY < this.bottom && button == 1) {
             this.timeOfLastKBInput = 0L;
@@ -399,6 +412,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return super.mouseClicked(mouseX, mouseY, button) || button == 1;
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!this.editingCoordinates && (VoxelConstants.getMinecraft().options.keyJump.matches(keyCode, scanCode) || VoxelConstants.getMinecraft().options.keyShift.matches(keyCode, scanCode))) {
             if (VoxelConstants.getMinecraft().options.keyJump.matches(keyCode, scanCode)) {
@@ -446,6 +460,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    @Override
     public boolean charTyped(char chr, int modifiers) {
         this.clearPopups();
         if (this.editingCoordinates) {
@@ -898,6 +913,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         super.render(drawContext, mouseX, mouseY, delta);
     }
 
+    @Override
+    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        // nothing
+    }
+
     private void drawWaypoint(GuiGraphics drawContext, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon, Float r, Float g, Float b) {
         PoseStack matrixStack = drawContext.pose();
         if (pt.inWorld && pt.inDimension && this.isOnScreen(pt.getX(), pt.getZ())) {
@@ -995,6 +1015,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     public void renderBackground(GuiGraphics drawContext) {
         drawContext.fill(0, 0, this.getWidth(), this.getHeight(), -16777216);
+        drawContext.flush();
     }
 
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
@@ -1010,6 +1031,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 
+    @Override
     public void tick() {
         //this.coordinates.setFocused(true);
     }
@@ -1194,8 +1216,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
             case 3 -> {
                 if (hovered == null) {
-                    if (y < VoxelConstants.getPlayer().level().getMinY())
+                    if (y < VoxelConstants.getPlayer().level().getMinY()) {
                         y = (!(VoxelConstants.getPlayer().level().dimensionType().hasCeiling()) ? VoxelConstants.getPlayer().level().getMaxY() : 64);
+                    }
                     VoxelConstants.playerRunTeleportCommand(x, y, z);
                     break;
                 }
@@ -1233,6 +1256,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return this.editClicked;
     }
 
+    @Override
     public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
