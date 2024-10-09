@@ -618,6 +618,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     public void drawMinimap(GuiGraphics drawContext) {
+        this.write(drawContext, "Hey, I am important don't delete me!", 0, -20.0F, 16777215);
         int scScaleOrig = 1;
 
         while (VoxelConstants.getMinecraft().getWindow().getWidth() / (scScaleOrig + 1) >= 320 && VoxelConstants.getMinecraft().getWindow().getHeight() / (scScaleOrig + 1) >= 240) {
