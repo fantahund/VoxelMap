@@ -41,6 +41,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -326,7 +327,8 @@ public class ColorManager {
         try {
             TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
             //textureManager.bindForSetup(InventoryMenu.BLOCK_ATLAS); //FIXME 1.21.2
-            textureManager.register(InventoryMenu.BLOCK_ATLAS, VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS));
+            //textureManager.register(InventoryMenu.BLOCK_ATLAS, VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS));
+            VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).bind();
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();
@@ -360,7 +362,7 @@ public class ColorManager {
                 col = this.blockColorsWithDefaultTint[blockStateID];
             } catch (ArrayIndexOutOfBoundsException ignored) {}
 
-            return col != -16842497 ? col : this.getBlockColor(blockPos, blockStateID);
+            return ARGB.toABGR(col != -16842497 ? col : this.getBlockColor(blockPos, blockStateID));
         } else {
             return 0;
         }
@@ -371,11 +373,11 @@ public class ColorManager {
             if (this.optifineInstalled && this.biomeTextureAvailable.contains(blockStateID)) {
                 Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
                 if (col != null) {
-                    return col;
+                    return ARGB.toABGR(col);
                 }
             }
 
-            return this.getBlockColor(blockPos, blockStateID);
+            return ARGB.toABGR(this.getBlockColor(blockPos, blockStateID));
         } else {
             return 0;
         }
@@ -642,7 +644,7 @@ public class ColorManager {
             tint = this.getBuiltInBiomeTint(mapData, world, blockState, blockStateID, blockPos, loopBlockPos, startX, startZ, live);
         }
 
-        return tint;
+        return ARGB.toABGR(tint);
     }
 
     private int getBuiltInBiomeTint(AbstractMapData mapData, Level world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, boolean live) {

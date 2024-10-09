@@ -59,6 +59,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -1547,7 +1548,7 @@ public class Map implements Runnable, IChangeObserver {
             combinedLight = this.lightmapColors[blockLight + skyLight * 16];
         }
 
-        return combinedLight;
+        return ARGB.toABGR(combinedLight);
     }
 
     private void renderMap(Matrix4fStack matrixStack, int x, int y, int scScale) {

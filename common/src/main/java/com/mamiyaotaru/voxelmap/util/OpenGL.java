@@ -234,7 +234,9 @@ public final class OpenGL {
         public static void checkFramebufferStatus() {
             int status = glCheckFramebufferStatus(GL30_GL_FRAMEBUFFER);
 
-            if (status == GL30_GL_FRAMEBUFFER_COMPLETE) return;
+            if (status == GL30_GL_FRAMEBUFFER_COMPLETE) {
+                return;
+            }
 
             switch (status) {
                 case GL30_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
@@ -308,7 +310,8 @@ public final class OpenGL {
 
         public static void img(ResourceLocation param) {
             //textureManager.bindForSetup(param); //FIXME 1.21.2
-            textureManager.register(param, VoxelConstants.getMinecraft().getTextureManager().getTexture(param));
+            // textureManager.register(param, VoxelConstants.getMinecraft().getTextureManager().getTexture(param));
+            textureManager.getTexture(param).bind();
         }
 
         public static void img2(ResourceLocation param) { RenderSystem.setShaderTexture(0, param); }

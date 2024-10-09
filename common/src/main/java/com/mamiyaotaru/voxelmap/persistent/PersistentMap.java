@@ -28,6 +28,7 @@ import java.util.stream.IntStream;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -104,6 +105,7 @@ public class PersistentMap implements IChangeObserver {
             this.newWorldStuff();
         } else {
             Thread pauseForSubworldNamesThread = new Thread(null, null, "VoxelMap Pause for Subworld Name Thread") {
+                @Override
                 public void run() {
                     try {
                         Thread.sleep(2000L);
@@ -607,7 +609,7 @@ public class PersistentMap implements IChangeObserver {
                 }
 
             }
-            return MapUtils.doSlimeAndGrid(color24, world, mcX, mcZ);
+            return MapUtils.doSlimeAndGrid(ARGB.toABGR(color24), world, mcX, mcZ);
         } else {
             return 0;
         }
@@ -728,7 +730,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private int getLight(int light) {
-        return this.lightmapColors[light];
+        return ARGB.toABGR(this.lightmapColors[light]);
     }
 
     public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
@@ -822,6 +824,7 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
+    @Override
     public void handleChangeInWorld(int chunkX, int chunkZ) {
         if (this.world != null) {
             LevelChunk chunk = this.world.getChunk(chunkX, chunkZ);
@@ -834,6 +837,7 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
+    @Override
     public void processChunk(LevelChunk chunk) {
         if (VoxelMap.mapOptions.worldmapAllowed) {
             this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
