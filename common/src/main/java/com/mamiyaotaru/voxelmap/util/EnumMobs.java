@@ -80,6 +80,7 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.ZombieVillager;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.monster.breeze.Breeze;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.monster.piglin.PiglinBrute;
@@ -106,6 +107,7 @@ public enum EnumMobs {
     CHICKEN(Chicken.class, "Chicken", true, 6.0F, "textures/entity/chicken.png", "", false, true),
     COD(Cod.class, "Cod", true, 8.0F, "textures/entity/fish/cod.png", "", false, true),
     COW(Cow.class, "Cow", true, 0.0F, "textures/entity/cow/cow.png", "", false, true),
+    CREAKING(Creaking.class, "Creaking", true, 0.0F, "textures/entity/creaking/creaking.png", "textures/entity/creaking/creaking_eyes.png", true, false),
     CREEPER(Creeper.class, "Creeper", true, 0.0F, "textures/entity/creeper/creeper.png", "", true, false),
     DOLPHIN(Dolphin.class, "Dolphin", true, 0.0F, "textures/entity/dolphin.png", "", false, true),
     DROWNED(Drowned.class, "Drowned", true, 0.0F, "textures/entity/zombie/drowned.png", "textures/entity/zombie/drowned_outer_layer.png", true, false),

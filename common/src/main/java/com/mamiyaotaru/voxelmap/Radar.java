@@ -301,7 +301,7 @@ public class Radar implements IRadar {
                 }
             }
 
-            BufferedImage[] armorImages = { ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8),
+            /*BufferedImage[] armorImages = { ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8),
                     ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
 
             for (int t = 0; t < armorImages.length; ++t) {
@@ -311,7 +311,7 @@ public class Radar implements IRadar {
                 if (t == 0) {
                     this.clothIcon = icon;
                 }
-            }
+            }*/ //FIXME 1.21.2
 
             BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
             float scale = zombie.getWidth() / 8.0F;

@@ -626,7 +626,6 @@ public class ColorManager {
                             if (biome == null) {
                                 biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
                             }
-                            System.out.println(biome.toString());
                             int biomeID = world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
                             int biomeTint = tints[biomeID][loopBlockPos.y / 8];
                             r += (biomeTint & 0xFF0000) >> 16;
