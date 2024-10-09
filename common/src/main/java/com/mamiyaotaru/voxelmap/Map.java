@@ -689,7 +689,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             if (!this.fullscreenMap) {
-                this.drawDirections(drawContext, mapX, mapY);
+                this.drawDirections(drawContext, mapX, mapY, ((float) scScale) / scScaleOrig);
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -701,7 +701,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (this.options.coords) {
-            this.showCoords(drawContext, mapX, mapY);
+            this.showCoords(drawContext, mapX, mapY, ((float) scScale) / scScaleOrig);
         }
 
         OpenGL.glDepthMask(true);
@@ -1949,7 +1949,7 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private void drawDirections(GuiGraphics drawContext, int x, int y) {
+    private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
         PoseStack matrixStack = drawContext.pose();
         boolean unicode = VoxelConstants.getMinecraft().options.forceUnicodeFont().get();
         float scale = unicode ? 0.65F : 0.5F;
@@ -1974,6 +1974,9 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         matrixStack.pushPose();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
+
+        matrixStack.pushPose();
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate - 90.0))), distance * Math.cos(Math.toRadians(-(rotate - 90.0))), 100.0);
         this.write(drawContext, "N", x / scale - 2.0F, y / scale - 4.0F, 16777215);
@@ -1993,9 +1996,11 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 180.0))), distance * Math.cos(Math.toRadians(-(rotate + 180.0))), 10.0);
         this.write(drawContext, "W", x / scale - 2.0F, y / scale - 4.0F, 16777215);
         matrixStack.popPose();
+
+        matrixStack.popPose();
     }
 
-    private void showCoords(GuiGraphics drawContext, int x, int y) {
+    private void showCoords(GuiGraphics drawContext, int x, int y, float scaleProj) {
         PoseStack matrixStack = drawContext.pose();
         int textStart;
         if (y > this.scHeight - 37 - 32 - 4 - 15) {
@@ -2003,6 +2008,9 @@ public class Map implements Runnable, IChangeObserver {
         } else {
             textStart = y + 32 + 4;
         }
+
+        matrixStack.pushPose();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         if (!this.options.hide && !this.fullscreenMap) {
             boolean unicode = VoxelConstants.getMinecraft().options.forceUnicodeFont().get();
@@ -2048,6 +2056,7 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
+        matrixStack.popPose();
     }
 
     private String dCoord(int paramInt1) {
