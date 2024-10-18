@@ -23,10 +23,10 @@ import com.mamiyaotaru.voxelmap.util.MutableNativeImageBackedTexture;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ScaledMutableNativeImageBackedTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.math.Axis;
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -632,7 +632,7 @@ public class Map implements Runnable, IChangeObserver {
         this.scHeight = Mth.ceil(scaledHeightD);
         RenderSystem.backupProjectionMatrix();
         Matrix4f matrix4f = new Matrix4f().ortho(0.0f, (float) scaledWidthD, (float) scaledHeightD, 0.0f, 1000.0f, 3000.0f);
-        RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.DISTANCE_TO_ORIGIN);
+        RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.PERSPECTIVE);
         Matrix4fStack modelViewMatrixStack = RenderSystem.getModelViewStack();
         modelViewMatrixStack.pushMatrix();
         modelViewMatrixStack.identity();
@@ -1562,7 +1562,7 @@ public class Map implements Runnable, IChangeObserver {
         Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
         Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.DISTANCE_TO_ORIGIN);
+        RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.PERSPECTIVE);
         OpenGL.Utils.bindFramebuffer();
         OpenGL.glViewport(0, 0, 512, 512);
         matrixStack.pushMatrix();
@@ -1626,7 +1626,7 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.unbindFramebuffer();
         OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
         matrixStack.popMatrix();
-        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, VertexSorting.DISTANCE_TO_ORIGIN);
+        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.PERSPECTIVE);
         matrixStack.pushMatrix();
         OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
         OpenGL.Utils.disp2(OpenGL.Utils.fboTextureId);
