@@ -91,6 +91,7 @@ class GuiSlotDimensions extends GuiSlotMinimap {
             int xOffset = this.parentGui.waypoint.dimensions.contains(this.dim) ? 91 : 113;
             int yOffset = 222;
             drawContext.blit(RenderType::guiTextured, ResourceLocation.parse("textures/gui/container/beacon.png"), x + width - iconWidth, y - 2, xOffset, yOffset, 16, 16, 256, 256);
+            drawContext.flush();
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
