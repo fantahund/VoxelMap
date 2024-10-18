@@ -65,6 +65,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         renderTransparentBackground(drawContext);
+        drawContext.flush();
         drawContext.drawCenteredString(getFontRenderer(), screenTitle, getWidth() / 2, 20, 16777215);
 
         super.render(drawContext, mouseX, mouseY, delta);
