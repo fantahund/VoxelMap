@@ -297,6 +297,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         RenderSystem.setShaderTexture(0, this.blank);
         drawContext.blit(RenderType::guiTextured, this.blank, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 256, 256); // FIXME 1.21.2
+        drawContext.flush();
         TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
         OpenGL.Utils.disp2(chooser.getId());
@@ -314,6 +315,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             RenderSystem.disableDepthTest();
             drawContext.blit(RenderType::guiTextured, pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256, 256, 256); // FIXME 1.21.2
+            drawContext.flush();
             RenderSystem.enableDepthTest();
         }
 
@@ -341,8 +343,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
             OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
             drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2, 256, 256);
+            drawContext.flush();
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight, 256, 256);
+            drawContext.flush();
             OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.setShader(CoreShaders.POSITION_TEX);
