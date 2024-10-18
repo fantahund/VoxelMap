@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
@@ -125,7 +125,7 @@ public class ImageUtils {
             RenderSystem.backupProjectionMatrix();
             OpenGL.glViewport(0, 0, fboWidth, fboHeight);
             Matrix4f matrix4f = new Matrix4f().ortho(fboWidth, (-(fboHeight)), 1000.0F, 3000.0F, -1.0f, 1.0f);
-            RenderSystem.setProjectionMatrix(matrix4f, VertexSorting.DISTANCE_TO_ORIGIN);
+            RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.PERSPECTIVE);
             Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
             matrixStack.identity();
             matrixStack.translate(0.0f, 0.0f, -2000.0f);

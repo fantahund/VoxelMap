@@ -1,12 +1,12 @@
 plugins {
     id("java")
-    id("fabric-loom") version ("1.7.3") apply (false)
+    id("fabric-loom") version ("1.8.9") apply (false)
 }
 
-val MINECRAFT_VERSION by extra { "1.21.2-pre1" }
+val MINECRAFT_VERSION by extra { "1.21.2-rc1" }
 val NEOFORGE_VERSION by extra { "21.1.65" }
-val FABRIC_LOADER_VERSION by extra { "0.16.5" }
-val FABRIC_API_VERSION by extra { "0.105.3+1.21.2" }
+val FABRIC_LOADER_VERSION by extra { "0.16.7" }
+val FABRIC_API_VERSION by extra { "0.106.0+1.21.2" }
 
 val MOD_VERSION by extra { "1.21.2-1.14-beta.1" }
 
