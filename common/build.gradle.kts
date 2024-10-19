@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version ("1.8.9")
+    id("fabric-loom") version ("1.8-SNAPSHOT")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
@@ -27,7 +27,10 @@ sourceSets {
 
 loom {
     @Suppress("UnstableApiUsage")
-    mixin { defaultRefmapName.set("voxelmap.refmap.json") }
+    mixin {
+        defaultRefmapName.set("voxelmap.refmap.json")
+        useLegacyMixinAp = false
+    }
 
     accessWidenerPath = file("src/main/resources/voxelmap.accesswidener")
 
