@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.fabric.mixins;
+package com.mamiyaotaru.voxelmap.mixins;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mamiyaotaru.voxelmap.VoxelConstants;

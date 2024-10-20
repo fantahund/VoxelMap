@@ -6,7 +6,6 @@
   "package": "com.mamiyaotaru.voxelmap.neoforge.mixins",
   "target": "@env(DEFAULT)",
   "client": [
-    "MixinInGameHud"
   ],
   "injectors": {
     "defaultRequire": 1

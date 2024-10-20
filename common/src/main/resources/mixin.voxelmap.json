@@ -13,10 +13,11 @@
     "APIMixinChatListenerHud",
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
+    "BiomeAccessor",
     "MixinChatHud",
+    "MixinInGameHud",
     "MixinKeyboard",
     "MixinMouse",
-    "MixinWorldRenderer",
-    "BiomeAccessor"
+    "MixinWorldRenderer"
   ]
 }

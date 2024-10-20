@@ -19,6 +19,7 @@ sourceSets {
 }
 
 repositories {
+    mavenLocal()
     maven("https://maven.su5ed.dev/releases")
     maven("https://maven.neoforged.net/releases/")
 
