@@ -625,6 +625,7 @@ public class Map implements Runnable, IChangeObserver {
             ++scScaleOrig;
         }
 
+
         int scScale = scScaleOrig + (this.fullscreenMap ? 0 : this.options.sizeModifier);
         double scaledWidthD = (double) VoxelConstants.getMinecraft().getWindow().getWidth() / scScale;
         double scaledHeightD = (double) VoxelConstants.getMinecraft().getWindow().getHeight() / scScale;
@@ -690,7 +691,7 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             if (!this.fullscreenMap) {
-                this.drawDirections(drawContext, mapX, mapY, ((float) scScale) / scScaleOrig);
+                this.drawDirections(drawContext, mapX, mapY, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
@@ -702,7 +703,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (this.options.coords) {
-            this.showCoords(drawContext, mapX, mapY, ((float) scScale) / scScaleOrig);
+            this.showCoords(drawContext, mapX, mapY, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
         }
 
         OpenGL.glDepthMask(true);
