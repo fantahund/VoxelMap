@@ -35,6 +35,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.image.BufferedImage;
@@ -976,15 +977,17 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     float fontScale = 2.0F / this.scScale;
                     int m = this.chkLen(name) / 2;
                     matrixStack.pushPose();
-                    matrixStack.scale(fontScale, fontScale, 1.0F);
+                    // matrixStack.scale(fontScale, fontScale, 1.0F);
                     if (this.oldNorth) {
                         matrixStack.translate(ptX * this.mapToGui / fontScale, ptZ * this.mapToGui / fontScale, 0.0);
                         matrixStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
                         matrixStack.translate(-(ptX * this.mapToGui / fontScale), -(ptZ * this.mapToGui / fontScale), 0.0);
                         //1.21.2 RenderSystem.applyModelViewMatrix();
                     }
-
-                    this.write(drawContext, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 16.0F / this.scScale / fontScale, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
+                    Vector3f f = new Vector3f(ptX * this.mapToGui - m, ptZ * this.mapToGui + 16.0F / (float) VoxelConstants.getMinecraft().getWindow().getGuiScale(), 0);
+                    matrixStack.last().pose().transformPosition(f);
+                    RenderSystem.getModelViewStack().transformPosition(f);
+                    this.write(drawContext, name, f.x, f.y, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
                     matrixStack.popPose();
                     //1.21.2 RenderSystem.applyModelViewMatrix();
                     OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
