@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.AirBlock;
@@ -35,8 +36,11 @@ public final class BlockStateParser {
 
         if (resourceStringParts.length == 1) resourceLocation = ResourceLocation.parse(resourceStringParts[0]);
         else if (resourceStringParts.length == 2) resourceLocation = ResourceLocation.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
-
-        Block block = BuiltInRegistries.BLOCK.get(resourceLocation).get().value(); //FIXME 1.21.2
+        Reference<Block> blockRef = BuiltInRegistries.BLOCK.get(resourceLocation).orElse(null);
+        if (blockRef == null) {
+            return null;
+        }
+        Block block = blockRef.value();
 
         if (!(!(block instanceof AirBlock) || resourceString.equals("minecraft:air"))) return null;
 
