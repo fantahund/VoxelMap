@@ -20,6 +20,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import javax.imageio.ImageIO;
+
 import net.minecraft.ResourceLocationException;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -63,6 +64,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
@@ -360,7 +362,8 @@ public class ColorManager {
 
             try {
                 col = this.blockColorsWithDefaultTint[blockStateID];
-            } catch (ArrayIndexOutOfBoundsException ignored) {}
+            } catch (ArrayIndexOutOfBoundsException ignored) {
+            }
 
             return ARGB.toABGR(col != -16842497 ? col : this.getBlockColor(blockPos, blockStateID));
         } else {
@@ -473,7 +476,7 @@ public class ColorManager {
                     if (modelImage != null) {
                         color = this.getColorForCoordinatesAndImage(new float[]{0.0F, 1.0F, 0.0F, 1.0F}, modelImage);
                     } else {
-                        VoxelConstants.getLogger().warn("image was null");
+                        VoxelConstants.getLogger().warn(String.format("Block texture for block %s is missing!", blockState.getBlockHolder().getRegisteredName()));
                     }
                 }
             }
@@ -587,7 +590,8 @@ public class ColorManager {
                     this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 452984832;
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
     }
 
@@ -636,7 +640,8 @@ public class ColorManager {
 
                     tint = 0xFF000000 | (r / 9 & 0xFF) << 16 | (g / 9 & 0xFF) << 8 | b / 9 & 0xFF;
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         if (tint == -2) {
@@ -656,7 +661,8 @@ public class ColorManager {
                     DebugRenderState.blockY = blockPos.y;
                     DebugRenderState.blockZ = blockPos.z;
                     tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
 
             if (tint == -1) {
@@ -778,7 +784,8 @@ public class ColorManager {
         for (ResourceLocation s : this.findResources(namespace, "/optifine/ctm", ".properties", true, false, true)) {
             try {
                 this.loadCTM(s);
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ignored) {
+            }
         }
 
         for (int t = 0; t < this.blockColors.length; ++t) {
@@ -889,7 +896,8 @@ public class ColorManager {
                                             }
                                         }
                                     }
-                                } catch (Exception ignored) {}
+                                } catch (Exception ignored) {
+                                }
                             }
                         }
 
@@ -1001,7 +1009,8 @@ public class ColorManager {
                 } else if (!token.isEmpty()) {
                     tmpList.add(token);
                 }
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         return tmpList.toArray(String[]::new);
