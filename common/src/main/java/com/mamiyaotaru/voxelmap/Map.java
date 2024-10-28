@@ -1535,7 +1535,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private int getLight(int color24, BlockState blockState, Level world, int x, int z, int height, boolean solid) {
-        int combinedLight = 255;
+        int combinedLight = 0xffffffff;
         if (solid) {
             combinedLight = 0;
         } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.lightmap) {
