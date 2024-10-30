@@ -28,6 +28,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -42,6 +43,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeSet;
 import javax.imageio.ImageIO;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.Font;
@@ -118,7 +120,7 @@ public class Map implements Runnable, IChangeObserver {
     private float lastSunBrightness;
     private float lastLightning;
     private float lastPotion;
-    private final int[] lastLightmapValues = { -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216 };
+    private final int[] lastLightmapValues = {-16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216};
     private boolean lastBeneathRendering;
     private boolean needSkyColor;
     private boolean lastAboveHorizon = true;
@@ -997,7 +999,7 @@ public class Map implements Runnable, IChangeObserver {
 
         if (this.options.biomeOverlay == 1) {
             if (biome != null) {
-                color24 = BiomeRepository.getBiomeColor(biome) | 0xFF000000;
+                color24 = ARGB.toABGR(BiomeRepository.getBiomeColor(biome) | 0xFF000000);
             } else {
                 color24 = 0;
             }
@@ -1325,7 +1327,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.biomeOverlay == 2) {
                 int bc = 0;
                 if (biome != null) {
-                    bc = BiomeRepository.getBiomeColor(biome);
+                    bc = ARGB.toABGR(BiomeRepository.getBiomeColor(biome));
                 }
 
                 bc = 2130706432 | bc;
