@@ -27,7 +27,6 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Unit;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
 
 public class VoxelMap implements PreparableReloadListener {
@@ -84,7 +83,7 @@ public class VoxelMap implements PreparableReloadListener {
             this.radarSimple = null;
         }
 
-        Events.initEvents(this);
+        VoxelConstants.getEvents().initEvents(this);
         this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
         this.worldUpdateListener = new WorldUpdateListener();

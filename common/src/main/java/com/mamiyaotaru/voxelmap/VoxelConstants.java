@@ -29,6 +29,7 @@ public final class VoxelConstants {
     private static final ResourceLocation OPTIONS_BACKGROUND_TEXTURE = ResourceLocation.parse("textures/block/dirt.png");
     public static final boolean DEBUG = false;
     private static boolean initialized;
+    private static Events events;
 
     private VoxelConstants() {}
 
@@ -175,5 +176,13 @@ public final class VoxelConstants {
         int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
 
         return Math.max(bottomX, minBottom);
+    }
+
+    public static void setEvents(Events events) {
+        VoxelConstants.events = events;
+    }
+
+    public static Events getEvents() {
+        return events;
     }
 }
