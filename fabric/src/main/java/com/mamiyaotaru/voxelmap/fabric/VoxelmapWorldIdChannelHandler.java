@@ -1,5 +1,6 @@
-package com.mamiyaotaru.voxelmap;
+package com.mamiyaotaru.voxelmap.fabric;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.packets.WorldIdC2S;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;

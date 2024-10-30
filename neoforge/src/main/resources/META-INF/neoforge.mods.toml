@@ -1,4 +1,4 @@
-modLoader = "lowcodefml"
+modLoader = "javafml"
 loaderVersion = "*"
 license = "All Rights Reserved"
 issueTrackerURL = "https://github.com/fantahund/Voxelmap/issues"
@@ -22,7 +22,7 @@ side = "CLIENT"
 [[dependencies.voxelmap]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.1]"
+versionRange = "[1.21.2, 1.21.3]"
 ordering = "NONE"
 side = "CLIENT"
 

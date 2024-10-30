@@ -12,6 +12,7 @@ public class FabricEvents implements Events {
     FabricEvents() {
     }
 
+    @Override
     public void initEvents(VoxelMap map) {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> map.onDisconnect());
         ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.onConfigurationInit());

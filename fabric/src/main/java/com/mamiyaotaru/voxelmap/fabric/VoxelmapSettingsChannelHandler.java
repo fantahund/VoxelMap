@@ -1,6 +1,7 @@
-package com.mamiyaotaru.voxelmap;
+package com.mamiyaotaru.voxelmap.fabric;
 
 import com.google.gson.Gson;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
 import java.util.Map;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
