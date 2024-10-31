@@ -30,6 +30,7 @@ public final class VoxelConstants {
     public static final boolean DEBUG = false;
     private static boolean initialized;
     private static Events events;
+    private static PacketBridge packetBridge;
 
     private VoxelConstants() {}
 
@@ -184,5 +185,13 @@ public final class VoxelConstants {
 
     public static Events getEvents() {
         return events;
+    }
+
+    public static PacketBridge getPacketBridge() {
+        return packetBridge;
+    }
+
+    public static void setPacketBridge(PacketBridge packetBridge) {
+        VoxelConstants.packetBridge = packetBridge;
     }
 }

@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.fabric;
 
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.packets.WorldIdC2S;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
@@ -21,17 +20,11 @@ public class VoxelmapWorldIdChannelHandler implements ClientPlayNetworking.PlayP
 
     @Override
     public void receive(WorldIdS2C payload, Context context) {
-        updateWorld(payload.worldName());
+        WorldIdS2C.updateWorld(payload);
     }
 
     @Override
     public void receive(WorldIdS2C payload, net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.Context context) {
-        updateWorld(payload.worldName());
-    }
-
-    private void updateWorld(String worldName) {
-        VoxelConstants.getLogger().info("Received world_id: " + worldName);
-        if (worldName != null)
-            VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
+        WorldIdS2C.updateWorld(payload);
     }
 }

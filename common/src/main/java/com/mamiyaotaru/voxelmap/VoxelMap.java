@@ -134,10 +134,7 @@ public class VoxelMap implements PreparableReloadListener {
                 wIdRequestBuf.writeByte(42);
                 wIdRequestBuf.writeByte(0);
 
-                //TODO NEOFORGE
-                /*if (ClientPlayNetworking.canSend(WorldIdC2S.PACKET_ID)) {
-                    ClientPlayNetworking.send(new WorldIdC2S());
-                }*/
+                VoxelConstants.getPacketBridge().sendWorldIDPacket();
 
                 //FIXME 1.20.2 VoxelConstants.getPlayer().getSkinTexture();
                 /*java.util.Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
