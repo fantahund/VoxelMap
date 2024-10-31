@@ -34,10 +34,9 @@ public class ForgeEvents implements Events {
 
     public void registerPackets(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
-        registrar.optional().playToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
-        registrar.optional().playToClient(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+        registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
+        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
     }
-
 
     private static class ForgeEventListener {
         private final VoxelMap map;

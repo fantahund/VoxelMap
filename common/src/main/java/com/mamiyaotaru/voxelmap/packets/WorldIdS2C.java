@@ -40,9 +40,7 @@ public record WorldIdS2C(String worldName) implements CustomPacketPayload {
     public void write(FriendlyByteBuf buf) {
         buf.writeByte(0);
         buf.writeByte(42);
-        byte[] bytes = worldName.getBytes(StandardCharsets.UTF_8);
-        buf.writeByte(bytes.length);
-        buf.writeBytes(bytes);
+        buf.writeByte(0);
     }
 
     @Override
