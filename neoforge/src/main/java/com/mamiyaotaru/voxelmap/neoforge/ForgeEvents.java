@@ -12,7 +12,6 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class ForgeEvents implements Events {
@@ -25,12 +24,18 @@ public class ForgeEvents implements Events {
     public void initEvents(VoxelMap map) {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
         NeoForge.EVENT_BUS.register(new ForgeEventListener(map));
-        NeoForge.EVENT_BUS.register(new ForgeEventPacketListener());
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
         map.onConfigurationInit();
+    }
+
+    public void registerPackets(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("1");
+        registrar.optional().playToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
+        registrar.optional().playToClient(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
     }
 
 
@@ -59,15 +64,6 @@ public class ForgeEvents implements Events {
         @SubscribeEvent
         public void onClientShutdown(GameShuttingDownEvent event) {
             map.onClientStopping();
-        }
-    }
-
-    private static class ForgeEventPacketListener {
-        @SubscribeEvent
-        public void register(final RegisterPayloadHandlersEvent event) {
-            final PayloadRegistrar registrar = event.registrar("1");
-            registrar.playBidirectional(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, new DirectionalPayloadHandler<>(VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain));
-            registrar.playBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, new DirectionalPayloadHandler<>(VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain));
         }
     }
 }
