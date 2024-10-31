@@ -151,7 +151,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     public void tick() {
-        //this.newNameField.setFocused(true);
         super.tick();
     }
 

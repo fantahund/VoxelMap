@@ -54,7 +54,6 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public void tick() {
-        //this.filter.setFocused(true);
     }
 
     public void init() {

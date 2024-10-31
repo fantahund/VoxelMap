@@ -153,7 +153,7 @@ public class CompressibleMapData extends AbstractMapData {
     public Biome getBiome(int x, int z) {
         int biomeId = getBiomeId(x, z);
         if (biomeId == 0 && getHeight(x, z) != Short.MIN_VALUE) {
-            return Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
+            return Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
         }
         return this.getBiomeFromID(biomeId);
     }
@@ -585,7 +585,7 @@ public class CompressibleMapData extends AbstractMapData {
         if (biome != null) {
             return biome;
         }
-        return world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
+        return world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
     }
 
     public BiMap<Biome, Integer> getBiomeToInt() {
@@ -603,7 +603,7 @@ public class CompressibleMapData extends AbstractMapData {
                 if (oldID != 0) {
                     Biome biome = oldMap.inverse().get(oldID);
                     if (biome == null) {
-                        biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
+                        biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
                     }
                     Integer id = newMap.get(biome);
                     if (id == null && biome != null) {

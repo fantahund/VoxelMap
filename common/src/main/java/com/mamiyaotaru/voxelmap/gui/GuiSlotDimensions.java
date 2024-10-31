@@ -24,7 +24,6 @@ class GuiSlotDimensions extends GuiSlotMinimap {
         this.parentGui = par1GuiWaypoints;
         this.setSlotWidth(88);
         this.setLeftPos(this.parentGui.getWidth() / 2);
-        //this.setRenderSelection(false); //TODO 1.20.2
         this.setShowTopBottomBG(false);
         this.setShowSlotBG(false);
         DimensionManager dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();

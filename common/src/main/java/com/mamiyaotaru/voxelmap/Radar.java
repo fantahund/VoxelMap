@@ -780,7 +780,7 @@ public class Radar implements IRadar {
                                 if (var30 instanceof AnimalArmorItem horseArmorItem) {
                                     // VoxelConstants.getMinecraft().getItemRenderer().getModel(itemStack,contact.entity.level(), horse, 0);
                                     // resourceLocationTertiary = horseArmorItem.getTexture();
-                                    // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1));
+                                    // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1)); //FIXME
                                 }
                             }
                             break label166;
@@ -815,7 +815,7 @@ public class Radar implements IRadar {
                 }
             } else {
                 TropicalFish fish = (TropicalFish) contact.entity;
-                // TODO 1.19.3
+                // FIXME
                 // resourceLocationSecondary = fish.getVarietyId();
                 // color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
             }
@@ -1042,7 +1042,7 @@ public class Radar implements IRadar {
                     } else if (model instanceof HoglinModel hoglinModel) {
                         headBits = new ModelPart[] { hoglinModel.head };
                     } else if (model instanceof HorseModel horseEntityModel) {
-                        headBits = StreamSupport.stream(horseEntityModel.headParts.children.values().spliterator(), false).toArray(ModelPart[]::new); // FIXME 1.21.2
+                        headBits = StreamSupport.stream(horseEntityModel.headParts.children.values().spliterator(), false).toArray(ModelPart[]::new);
                     } else if (model instanceof IllagerModel<?> illagerEntityModel) {
                         headBits = new ModelPart[] { illagerEntityModel.root().getChild("head") };
                     } else if (model instanceof IronGolemModel ironGolemEntityModel) {
@@ -1248,7 +1248,6 @@ public class Radar implements IRadar {
         matrixStack.pushMatrix();
         matrixStack.identity();
         matrixStack.translate(0.0f, 0.0f, -3000.0f + captureDepth);
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -1269,7 +1268,6 @@ public class Radar implements IRadar {
             matrixStack.rotate(Axis.XP.rotationDegrees(90.0F));
         }
 
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
         fullbright2.mul(matrixStack);
         Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
@@ -1317,7 +1315,6 @@ public class Radar implements IRadar {
 
         matrixStack.popMatrix();
         matrixStack.popMatrix();
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
@@ -1388,7 +1385,6 @@ public class Radar implements IRadar {
                         throw new Exception("failed to get skin: skin is default");
                     }
 
-                    // FIXME 1.20.2 AbstractClientPlayerEntity.loadSkin(skinIdentifier, player.getName().getString());
                     imageData = (HttpTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinIdentifier);
                     if (imageData == null) {
                         throw new Exception("failed to get skin: image data was null");
@@ -1449,19 +1445,12 @@ public class Radar implements IRadar {
                 ResourceLocation resourceLocation = DefaultPlayerSkin.getDefaultTexture();
                 if (gameProfile != null) {
                     resourceLocation = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(gameProfile).texture();
-                    // FIXME 1.20.2
-                    /*
-                     * if (map.containsKey(Type.SKIN)) {
-                     * resourceLocation = VoxelConstants.getMinecraft().getSkinProvider().loadSkin(map.get(Type.SKIN), Type.SKIN);
-                     * }
-                     */
                 }
 
                 icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head");
                 if (icon == this.textureAtlas.getMissingImage()) {
-                    // ModelPart inner = this.playerSkullModel.root;
                     ModelPart outer = this.playerSkullModel.head;
-                    ModelPartWithResourceLocation[] headBits = { new ModelPartWithResourceLocation(outer, resourceLocation) }; // FIXME 1.21.2
+                    ModelPartWithResourceLocation[] headBits = { new ModelPartWithResourceLocation(outer, resourceLocation) };
                     boolean success = this.drawModel(1.1875F, 1000, contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         BufferedImage headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
@@ -1667,7 +1656,6 @@ public class Radar implements IRadar {
                         matrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
                     }
 
-                    // 1.21.2 RenderSystem.applyModelViewMatrix();
                     float yOffset = 0.0F;
                     if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
                         yOffset = -4.0F;
@@ -1685,17 +1673,17 @@ public class Radar implements IRadar {
                                     }
                                 } else {
                                     if (contact.entity instanceof Vex vex) {
-                                        contact.type = vex.isCharging() ? EnumMobs.VEXCHARGING : EnumMobs.VEX; // FIXME 1.21.2
+                                        contact.type = vex.isCharging() ? EnumMobs.VEXCHARGING : EnumMobs.VEX;
                                     }
                                 }
                             } else {
                                 if (contact.entity instanceof WitherBoss witherBoss) {
-                                    contact.type = witherBoss.getInvulnerableTicks() > 0 ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER; // FIXME 1.21.2
+                                    contact.type = witherBoss.getInvulnerableTicks() > 0 ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER;
                                 }
                             }
                         } else {
                             if (contact.entity instanceof Ghast ghast) {
-                                contact.type = ghast.isCharging() ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST; // FIXME 1.21.2
+                                contact.type = ghast.isCharging() ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST;
                             }
                         }
 
@@ -1799,7 +1787,6 @@ public class Radar implements IRadar {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
-                        // 1.21.2 RenderSystem.applyModelViewMatrix();
 
                         String name = contact.entity.getDisplayName().getString();
                         int m = VoxelConstants.getMinecraft().font.width(name) / 2;
@@ -1815,7 +1802,6 @@ public class Radar implements IRadar {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.popMatrix();
-                    // 1.21.2 RenderSystem.applyModelViewMatrix();
                 }
             }
         }

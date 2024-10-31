@@ -30,7 +30,7 @@ public class DimensionManager {
 
         for (ResourceKey<Level> vanillaWorldKey : this.vanillaWorlds) {
             ResourceKey<DimensionType> typeKey = ResourceKey.create(Registries.DIMENSION_TYPE, vanillaWorldKey.location());
-            DimensionType dimensionType = dimensionTypeRegistry.get(typeKey).get().value(); //FIXME 1.21.2
+            DimensionType dimensionType = dimensionTypeRegistry.get(typeKey).get().value();
             DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.location().getPath(), vanillaWorldKey.location());
             this.dimensions.add(dimensionContainer);
         }

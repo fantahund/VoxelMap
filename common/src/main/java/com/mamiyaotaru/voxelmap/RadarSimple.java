@@ -232,7 +232,6 @@ public class RadarSimple implements IRadar {
                     matrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
                     matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
                     matrixStack.translate(-x, -y, 0.0f);
-                    // 1.21.2 RenderSystem.applyModelViewMatrix();
 
                     this.applyFilteringParameters();
                     OpenGL.Utils.drawPre();
@@ -248,7 +247,6 @@ public class RadarSimple implements IRadar {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
                     matrixStack.popMatrix();
-                    // 1.21.2 RenderSystem.applyModelViewMatrix();
                 }
             }
         }

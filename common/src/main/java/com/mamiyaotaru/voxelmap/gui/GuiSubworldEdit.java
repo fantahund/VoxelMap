@@ -31,7 +31,6 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void tick() {
-        //this.subworldNameField.setFocused(true);
     }
 
     public void init() {

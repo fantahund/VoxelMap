@@ -136,12 +136,6 @@ public class VoxelMap implements PreparableReloadListener {
 
                 VoxelConstants.getPacketBridge().sendWorldIDPacket();
 
-                //FIXME 1.20.2 VoxelConstants.getPlayer().getSkinTexture();
-                /*java.util.Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> skinMap = VoxelConstants.getMinecraft().getSkinProvider().getTextures(VoxelConstants.getPlayer().getGameProfile());
-                if (skinMap.containsKey(MinecraftProfileTexture.Type.SKIN)) {
-                    VoxelConstants.getMinecraft().getSkinProvider().loadSkin(skinMap.get(MinecraftProfileTexture.Type.SKIN), MinecraftProfileTexture.Type.SKIN);
-                }*/
-
                 if (!this.worldName.equals(this.waypointManager.getCurrentWorldName())) {
                     this.worldName = this.waypointManager.getCurrentWorldName();
                 }

@@ -30,7 +30,6 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public void tick() {
-        //this.filter.setFocused(true);
     }
 
     public void init() {

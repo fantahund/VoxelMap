@@ -111,7 +111,7 @@ public final class OpenGL {
 
     public static void glBlendFuncSeparate(int srcFactorRGB, int dstFactorRGB, int srcFactorAlpha, int dstFactorAlpha) { RenderSystem.blendFuncSeparate(srcFactorRGB, dstFactorRGB, srcFactorAlpha, dstFactorAlpha); }
 
-    public static void glClear(int mask) { RenderSystem.clear(mask); } //FIXME 1.21.2
+    public static void glClear(int mask) { RenderSystem.clear(mask); }
 
     public static void glClearColor(float red, float green, float blue, float alpha) { RenderSystem.clearColor(red, green, blue, alpha); }
 
@@ -309,8 +309,6 @@ public final class OpenGL {
         public static void img2(String param) { img2(ResourceLocation.parse(param)); }
 
         public static void img(ResourceLocation param) {
-            //textureManager.bindForSetup(param); //FIXME 1.21.2
-            // textureManager.register(param, VoxelConstants.getMinecraft().getTextureManager().getTexture(param));
             textureManager.getTexture(param).bind();
         }
 

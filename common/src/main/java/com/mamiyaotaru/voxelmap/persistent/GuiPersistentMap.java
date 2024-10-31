@@ -172,7 +172,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         try {
             if (skinLocation != DefaultPlayerSkin.get(VoxelConstants.getPlayer().getUUID()).texture()) {
-                //FIXME 1.20.2 AbstractClientPlayerEntity.loadSkin(skinLocation, VoxelConstants.getPlayer().getName().getString());
                 imageData = (HttpTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
         } catch (RuntimeException ignored) {
@@ -661,7 +660,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(90.0F));
         }
 
-        //1.21.2 RenderSystem.applyModelViewMatrix();
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
@@ -766,7 +764,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 modelViewMatrixStack.translate(playerX * this.mapToGui, playerZ * this.mapToGui, 0.0f);
                 modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(-90.0F));
                 modelViewMatrixStack.translate(-(playerX * this.mapToGui), -(playerZ * this.mapToGui), 0.0f);
-                //1.21.2 RenderSystem.applyModelViewMatrix();
             }
 
             this.drawTexturedModalRect(-10.0F / this.scScale + playerX * this.mapToGui, -10.0F / this.scScale + playerZ * this.mapToGui, 20.0F / this.scScale, 20.0F / this.scScale);
@@ -779,7 +776,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             modelViewMatrixStack.translate(-(this.centerX - this.mapCenterX * this.mapToGui), -((this.top + this.centerY) - this.mapCenterZ * this.mapToGui), 0.0f);
-            //1.21.2 RenderSystem.applyModelViewMatrix();
             if (mapOptions.biomeOverlay != 0) {
                 float biomeScaleX = this.mapPixelsX / 760.0F;
                 float biomeScaleY = this.mapPixelsY / 360.0F;
@@ -860,7 +856,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         modelViewMatrixStack.popMatrix();
-        //1.21.2 RenderSystem.applyModelViewMatrix();
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
             int scWidth = VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth();
             int scHeight = VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight();
@@ -964,13 +959,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     matrixStack.translate(ptX * this.mapToGui, ptZ * this.mapToGui, 0.0);
                     matrixStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
                     matrixStack.translate(-(ptX * this.mapToGui), -(ptZ * this.mapToGui), 0.0);
-                    //1.21.2 RenderSystem.applyModelViewMatrix();
                 }
 
                 this.drawTexturedModalRect(-16.0F / this.scScale + ptX * this.mapToGui, -16.0F / this.scScale + ptZ * this.mapToGui, icon, 32.0F / this.scScale, 32.0F / this.scScale);
                 if (this.oldNorth) {
                     matrixStack.popPose();
-                    //1.21.2 RenderSystem.applyModelViewMatrix();
                 }
 
                 if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
@@ -982,14 +975,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         matrixStack.translate(ptX * this.mapToGui / fontScale, ptZ * this.mapToGui / fontScale, 0.0);
                         matrixStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
                         matrixStack.translate(-(ptX * this.mapToGui / fontScale), -(ptZ * this.mapToGui / fontScale), 0.0);
-                        //1.21.2 RenderSystem.applyModelViewMatrix();
                     }
                     Vector3f f = new Vector3f(ptX * this.mapToGui - m, ptZ * this.mapToGui + 16.0F / (float) VoxelConstants.getMinecraft().getWindow().getGuiScale(), 0);
                     matrixStack.last().pose().transformPosition(f);
                     RenderSystem.getModelViewStack().transformPosition(f);
                     this.write(drawContext, name, f.x, f.y, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
                     matrixStack.popPose();
-                    //1.21.2 RenderSystem.applyModelViewMatrix();
                     OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
                 }
             }
@@ -1037,7 +1028,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void tick() {
-        //this.coordinates.setFocused(true);
     }
 
     @Override

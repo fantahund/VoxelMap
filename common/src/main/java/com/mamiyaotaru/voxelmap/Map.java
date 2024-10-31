@@ -107,8 +107,6 @@ public class Map implements Runnable, IChangeObserver {
     private MutableNativeImageBackedTexture[] mapImages;
     private final MutableNativeImageBackedTexture[] mapImagesFiltered = new MutableNativeImageBackedTexture[5];
     private final MutableNativeImageBackedTexture[] mapImagesUnfiltered = new MutableNativeImageBackedTexture[5];
-    // private MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
-    // private final MutableBlockPos tempBlockPos = new MutableBlockPos(0, 0, 0);
     private BlockState transparentBlockState;
     private BlockState surfaceBlockState;
     private boolean imageChanged = true;
@@ -395,12 +393,10 @@ public class Map implements Runnable, IChangeObserver {
                     ex.setStackTrace(this.zCalc.getStackTrace());
                     DebugRenderState.print();
                     VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread is hanging?", ex);
-                    // this.zCalc.stop();
-                } // else {
+                }
                 synchronized (this.zCalc) {
                     this.zCalc.notify();
                 }
-                // }
             }
         } else {
             if (!this.options.hide && this.options.minimapAllowed && this.world != null) {
@@ -596,7 +592,7 @@ public class Map implements Runnable, IChangeObserver {
         boolean aboveHorizon = this.lastAboveHorizon;
         float[] fogColors = new float[4];
         FloatBuffer temp = BufferUtils.createFloatBuffer(4);
-        FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F)); // FIXME 1.21.2
+        FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F)); // FIXME 1.21.2 Wrong Background Color??
         OpenGL.glGetFloatv(OpenGL.GL11_GL_COLOR_CLEAR_VALUE, temp);
         temp.get(fogColors);
         float r = fogColors[0];
@@ -608,7 +604,7 @@ public class Map implements Runnable, IChangeObserver {
             int backgroundColor = -16777216 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
             int sunsetColor = this.world.effects().getSunriseOrSunsetColor(this.world.getTimeOfDay(0.0F));
             if (VoxelConstants.getMinecraft().options.renderDistance().get() >= 4) {
-                return ColorUtils.colorAdder(sunsetColor, backgroundColor); // FIXME 1.21.2
+                return ColorUtils.colorAdder(sunsetColor, backgroundColor); // FIXME 1.21.2 Wrong background color?
             } else {
                 return backgroundColor;
             }
@@ -640,7 +636,6 @@ public class Map implements Runnable, IChangeObserver {
         modelViewMatrixStack.pushMatrix();
         modelViewMatrixStack.identity();
         modelViewMatrixStack.translate(0.0f, 0.0f, -2000.0f);
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         Lighting.setupFor3DItems();
         int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
@@ -713,7 +708,6 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.popMatrix();
         RenderSystem.restoreProjectionMatrix();
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
@@ -1571,7 +1565,6 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.pushMatrix();
         matrixStack.identity();
         matrixStack.translate(0.0f, 0.0f, -2000.0f);
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(false);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
@@ -1584,9 +1577,6 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
         OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
         OpenGL.Utils.drawPost();
-        // BufferBuilder bb = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        // BufferRenderer.drawWithShader(bb.end());
-        // BufferRenderer.drawWithGlobalProgram(bb.end());
         OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
@@ -1615,7 +1605,6 @@ public class Map implements Runnable, IChangeObserver {
 
         matrixStack.translate(-256.0f, -256.0f, 0.0f);
         matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.drawPre();
         OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
         OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
@@ -1623,7 +1612,6 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
         OpenGL.Utils.drawPost();
         matrixStack.popMatrix();
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(GL11C.GL_DEPTH_TEST);
         OpenGL.Utils.unbindFramebuffer();
@@ -1643,7 +1631,6 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.drawPost();
         OpenGL.glDisable(GL11C.GL_SCISSOR_TEST);
         matrixStack.popMatrix();
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.options.squareMap) {
@@ -1753,7 +1740,6 @@ public class Map implements Runnable, IChangeObserver {
                     matrixStack.translate(0.0f, -hypot, 0.0f);
                 }
 
-                // 1.21.2 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
@@ -1763,7 +1749,6 @@ public class Map implements Runnable, IChangeObserver {
                 this.error = "Error: marker overlay not found!";
             } finally {
                 matrixStack.popMatrix();
-                // 1.21.2 RenderSystem.applyModelViewMatrix();
             }
         } else {
             try {
@@ -1790,7 +1775,6 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
                 matrixStack.translate(0.0f, -hypot, 0.0f);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-(-locate)));
-                // 1.21.2 RenderSystem.applyModelViewMatrix();
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
@@ -1800,7 +1784,6 @@ public class Map implements Runnable, IChangeObserver {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
                 matrixStack.popMatrix();
-                // 1.21.2 RenderSystem.applyModelViewMatrix();
             }
         }
 
@@ -1818,7 +1801,6 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.translate(x, y, 0.0f);
             matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
             matrixStack.translate(-x, -y, 0.0f);
-            // 1.21.2 RenderSystem.applyModelViewMatrix();
             OpenGL.Utils.drawPre();
             OpenGL.Utils.setMap(x, y, 16);
             OpenGL.Utils.drawPost();
@@ -1826,7 +1808,6 @@ public class Map implements Runnable, IChangeObserver {
             this.error = "Error: minimap arrow not found!";
         } finally {
             matrixStack.popMatrix();
-            // 1.21.2 RenderSystem.applyModelViewMatrix();
         }
 
     }
@@ -1850,7 +1831,6 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
         matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.Utils.drawPre();
         int left = scWidth / 2 - 128;
@@ -1861,7 +1841,6 @@ public class Map implements Runnable, IChangeObserver {
         OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
         OpenGL.Utils.drawPost();
         matrixStack.popPose();
-        // 1.21.2 RenderSystem.applyModelViewMatrix();
         if (this.options.biomeOverlay != 0) {
             double factor = Math.pow(2.0, 3 - this.zoom);
             int minimumSize = (int) Math.pow(2.0, this.zoom);
@@ -1870,7 +1849,6 @@ public class Map implements Runnable, IChangeObserver {
             OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             matrixStack.pushPose();
             matrixStack.translate(0.0, 0.0, 1160.0);
-            // 1.21.2 RenderSystem.applyModelViewMatrix();
 
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
@@ -1887,7 +1865,6 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             matrixStack.popPose();
-            // 1.21.2 RenderSystem.applyModelViewMatrix();
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
         }
 

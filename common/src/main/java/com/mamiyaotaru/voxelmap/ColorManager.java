@@ -129,14 +129,6 @@ public class ColorManager {
 
         }
 
-        // TODO 1.19.3
-        /*for (Biome biome : BuiltinRegistries.BIOME) {
-            int biomeID = BuiltinRegistries.BIOME.getRawId(biome);
-            if (biomeID > this.sizeOfBiomeArray) {
-                this.sizeOfBiomeArray = biomeID;
-            }
-        }*/
-
         ++this.sizeOfBiomeArray;
     }
 
@@ -182,7 +174,6 @@ public class ColorManager {
     }
 
     private void loadColors() {
-        //TODO 1.20.2 //VoxelConstants.getPlayer().getSkinTexture();
         VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile());
         BlockRepository.getBlocks();
         this.loadColorPicker();
@@ -259,7 +250,6 @@ public class ColorManager {
         matrixStack.pushMatrix();
         matrixStack.identity();
         matrixStack.translate(0.0f, 0.0f, -3000.0f + (captureDepth * scale));
-        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.Utils.bindFramebuffer();
         OpenGL.glDepthMask(true);
         OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -284,7 +274,6 @@ public class ColorManager {
             matrixStack.rotate(Axis.XP.rotationDegrees(90.0F));
         }
 
-        //1.21.2 RenderSystem.applyModelViewMatrix();
         Vector4f fullbright2 = new Vector4f(this.fullbright.x, fullbright.y, fullbright.z, 0);
         fullbright2.mul(matrixStack);
         Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
@@ -295,7 +284,6 @@ public class ColorManager {
         immediate.endBatch();
         matrixStack.popMatrix();
         matrixStack.popMatrix();
-        //1.21.2 RenderSystem.applyModelViewMatrix();
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         OpenGL.glDepthMask(false);
@@ -327,9 +315,6 @@ public class ColorManager {
 
     private void loadTexturePackTerrainImage() {
         try {
-            TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
-            //textureManager.bindForSetup(InventoryMenu.BLOCK_ATLAS); //FIXME 1.21.2
-            //textureManager.register(InventoryMenu.BLOCK_ATLAS, VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS));
             VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).bind();
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
@@ -628,7 +613,7 @@ public class ColorManager {
                             }
 
                             if (biome == null) {
-                                biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value(); //FIXME 1.21.2
+                                biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
                             }
                             int biomeID = world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
                             int biomeTint = tints[biomeID][loopBlockPos.y / 8];
@@ -1101,7 +1086,7 @@ public class ColorManager {
     }
 
     private int parseBiomeName(String name) {
-        Biome biome = this.world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(name)).get().value(); //FIXME 1.21.2
+        Biome biome = this.world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(name)).get().value();
         return biome != null ? this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome) : -1;
     }
 
@@ -1355,7 +1340,7 @@ public class ColorManager {
     private Block getBlockFromName(String name) {
         try {
             ResourceLocation resourceLocation = ResourceLocation.parse(name);
-            return BuiltInRegistries.BLOCK.containsKey(resourceLocation) ? BuiltInRegistries.BLOCK.get(resourceLocation).get().value() : null; //FIXME 1.21.2
+            return BuiltInRegistries.BLOCK.containsKey(resourceLocation) ? BuiltInRegistries.BLOCK.get(resourceLocation).get().value() : null;
         } catch (ResourceLocationException | NumberFormatException var3) {
             return null;
         }

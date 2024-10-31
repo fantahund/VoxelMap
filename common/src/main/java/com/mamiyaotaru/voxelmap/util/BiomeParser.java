@@ -16,7 +16,7 @@ public class BiomeParser {
         String[] lineParts = line.split(" ");
 
         int id = Integer.parseInt(lineParts[0]);
-        Biome biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(lineParts[1])).get().value(); //FIXME 1.21.2
+        Biome biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(lineParts[1])).get().value();
         if (biome != null) {
             map.forcePut(biome, id);
         }

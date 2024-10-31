@@ -65,7 +65,6 @@ public class WaypointContainer {
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 1);
             RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-            // Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
 
             for (Waypoint pt : this.wayPts) {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
@@ -204,7 +203,6 @@ public class WaypointContainer {
         matrixStack.rotate(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
         matrixStack.rotate(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
         matrixStack.scale(-var14, -var14, -var14);
-        // Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         Tesselator tessellator = Tesselator.getInstance();
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
         fade = Math.min(fade, !pt.enabled && !target ? 0.3F : 1.0F);

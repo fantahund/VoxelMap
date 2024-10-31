@@ -65,6 +65,6 @@ public class MutableNativeImageBackedTexture extends DynamicTexture {
         byte g = (byte) ((color24 >> 8 & 0xFF) * alpha / 255);
         byte b = (byte) ((color24 >> 16 & 0xFF) * alpha / 255);
         int color = (a & 255) << 24 | (r & 255) << 16 | (g & 255) << 8 | b & 255;
-        this.image.setPixel(x, y, color); //FIXME 1.21.2
+        this.image.setPixel(x, y, color);
     }
 }

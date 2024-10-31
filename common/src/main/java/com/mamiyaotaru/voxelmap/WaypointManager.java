@@ -93,7 +93,7 @@ public class WaypointManager {
         IIconCreator iconCreator = textureAtlas -> {
 
             Map<ResourceLocation, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().listResources("images", asset -> asset.getPath().endsWith(".png"));
-            for (ResourceLocation candidate : resourceMap.keySet()) { //TODO 1.19
+            for (ResourceLocation candidate : resourceMap.keySet()) {
                 if (candidate.getNamespace().equals("voxelmap") && candidate.getPath().contains("images/waypoints")) {
                     images.add(candidate);
                 }
