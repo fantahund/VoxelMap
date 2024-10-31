@@ -26,7 +26,7 @@ public class ForgeEvents implements Events {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
         NeoForge.EVENT_BUS.register(new ForgeEventListener(map));
-        NeoForge.EVENT_BUS.register(ForgeEventPacketListener.class);
+        NeoForge.EVENT_BUS.register(new ForgeEventPacketListener());
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
@@ -52,13 +52,13 @@ public class ForgeEvents implements Events {
         }
 
         @SubscribeEvent
-        public void onJoin(ClientPlayerNetworkEvent.LoggingOut event) {
+        public void onQuit(ClientPlayerNetworkEvent.LoggingOut event) {
             map.onDisconnect();
         }
 
         @SubscribeEvent
-        public void onJoin(GameShuttingDownEvent event) {
-            map.onDisconnect();
+        public void onClientShutdown(GameShuttingDownEvent event) {
+            map.onClientStopping();
         }
     }
 
