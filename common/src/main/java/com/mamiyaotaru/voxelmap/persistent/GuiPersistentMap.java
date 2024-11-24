@@ -34,6 +34,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -51,7 +52,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -168,11 +168,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     private void getSkin() {
         ResourceLocation skinLocation = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile()).texture();
-        HttpTexture imageData = null;
+        AbstractTexture imageData = null; //TODO 1.21.4
 
         try {
             if (skinLocation != DefaultPlayerSkin.get(VoxelConstants.getPlayer().getUUID()).texture()) {
-                imageData = (HttpTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
+                imageData = VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
             }
         } catch (RuntimeException ignored) {
         }

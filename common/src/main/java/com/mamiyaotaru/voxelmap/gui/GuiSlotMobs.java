@@ -80,9 +80,14 @@ class GuiSlotMobs extends GuiSlotMinimap {
         return ((MobItem) this.mobsFiltered.get(index)).id.equals(this.parentGui.selectedMobId);
     }
 
+//    @Override
+//    protected int getMaxPosition() {
+//        return this.getItemCount() * this.itemHeight;
+//    }
+
     @Override
-    protected int getMaxPosition() {
-        return this.getItemCount() * this.itemHeight;
+    public int maxScrollAmount() {
+        return this.getItemCount() * this.itemHeight; //TODO 1.21.4
     }
 
     protected void updateFilter(String filterString) {

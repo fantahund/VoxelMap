@@ -62,8 +62,8 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         return 400;
     }
 
-    protected int getScrollbarPositionX() {
-        return super.getScrollbarPosition() + 32;
+    protected int scrollBarX() {
+        return super.scrollBarX() + 32;
     }
 
     protected void sort() {

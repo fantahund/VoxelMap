@@ -14,6 +14,7 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
@@ -33,7 +34,6 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -45,7 +45,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.FoliageColor;
@@ -108,8 +107,8 @@ public class ColorManager {
     private boolean loaded;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
-    private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColor.getEvergreenColor();
-    private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColor.getBirchColor();
+    private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
+    private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
     private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColor(blockPos.getX(), blockPos.getZ());
     private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor();
     private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
@@ -178,7 +177,7 @@ public class ColorManager {
         BlockRepository.getBlocks();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
-        TextureAtlasSprite missing = VoxelConstants.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.parse("missingno"));
+        TextureAtlasSprite missing = VoxelConstants.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("missingno"));
         this.failedToLoadX = missing.getU0();
         this.failedToLoadY = missing.getV0();
         this.loaded = false;
@@ -215,7 +214,7 @@ public class ColorManager {
 
     public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, Level world, float iconScale, float captureDepth) {
         try {
-            BakedModel model = VoxelConstants.getMinecraft().getItemRenderer().getModel(stack, world, null, 0);
+            BakedModel model = VoxelConstants.getMinecraft().getItemRenderer().getModel(stack, world, null, 0); //FIXME 1.21.4
             this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
             BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
             ImageIO.write(blockImage, "png", new File(VoxelConstants.getMinecraft().gameDirectory, blockState.getBlock().getName().getString() + "-" + Block.getId(blockState) + ".png"));
@@ -229,7 +228,7 @@ public class ColorManager {
     private void drawModel(Direction facing, BlockState blockState, BakedModel model, ItemStack stack, float scale, float captureDepth) {
         float size = 8.0F * scale;
         ItemTransforms transforms = model.getTransforms();
-        ItemTransform headTransforms = transforms.head;
+        ItemTransform headTransforms = transforms.head();
         Vector3f translations = headTransforms.translation;
         float transX = -translations.x() * size + 0.5F * size;
         float transY = translations.y() * size + 0.5F * size;
@@ -264,8 +263,8 @@ public class ColorManager {
         matrixStack.pushMatrix();
         matrixStack.translate((width / 2f) - size / 2.0F + transX, (height / 2f) - size / 2.0F + transY, 0.0F + transZ);
         matrixStack.scale(size, size, size);
-        VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).setFilter(false, false);
-        OpenGL.Utils.img2(InventoryMenu.BLOCK_ATLAS);
+        VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false);
+        OpenGL.Utils.img2(TextureAtlas.LOCATION_BLOCKS);
         matrixStack.rotate(Axis.YP.rotationDegrees(180.0F));
         matrixStack.rotate(Axis.YP.rotationDegrees(rotY));
         matrixStack.rotate(Axis.XP.rotationDegrees(rotX));
@@ -280,7 +279,7 @@ public class ColorManager {
         RenderSystem.setShaderLights(fullbright3, fullbright3);
         PoseStack newMatrixStack = new PoseStack();
         MultiBufferSource.BufferSource immediate = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-        VoxelConstants.getMinecraft().getItemRenderer().render(stack, ItemDisplayContext.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.NO_OVERLAY, model);
+        VoxelConstants.getMinecraft().getItemRenderer().render(stack, ItemDisplayContext.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.NO_OVERLAY, model); //FIXME 1.21.4
         immediate.endBatch();
         matrixStack.popMatrix();
         matrixStack.popMatrix();
@@ -315,7 +314,7 @@ public class ColorManager {
 
     private void loadTexturePackTerrainImage() {
         try {
-            VoxelConstants.getMinecraft().getTextureManager().getTexture(InventoryMenu.BLOCK_ATLAS).bind();
+            VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).bind();
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();
@@ -480,14 +479,14 @@ public class ColorManager {
             Block material = blockState.getBlock();
             if (block instanceof LiquidBlock) {
                 if (material == Blocks.WATER) {
-                    icon = VoxelConstants.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.parse("minecraft:blocks/water_flow"));
+                    icon = VoxelConstants.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("minecraft:blocks/water_flow"));
                 } else if (material == Blocks.LAVA) {
-                    icon = VoxelConstants.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.parse("minecraft:blocks/lava_flow"));
+                    icon = VoxelConstants.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("minecraft:blocks/lava_flow"));
                 }
             } else if (material == Blocks.WATER) {
-                icon = VoxelConstants.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.parse("minecraft:blocks/water_still"));
+                icon = VoxelConstants.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("minecraft:blocks/water_still"));
             } else if (material == Blocks.LAVA) {
-                icon = VoxelConstants.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.parse("minecraft:blocks/lava_still"));
+                icon = VoxelConstants.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(ResourceLocation.parse("minecraft:blocks/lava_still"));
             }
         }
 
@@ -854,7 +853,7 @@ public class ColorManager {
                     }
 
                     ResourceLocation matchID = ResourceLocation.parse(matchTiles);
-                    TextureAtlasSprite compareIcon = VoxelConstants.getMinecraft().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(matchID);
+                    TextureAtlasSprite compareIcon = VoxelConstants.getMinecraft().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(matchID);
                     if (compareIcon.atlasLocation() != MissingTextureAtlasSprite.getLocation()) {
                         ArrayList<BlockState> tmpList = new ArrayList<>();
 

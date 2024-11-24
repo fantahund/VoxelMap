@@ -42,7 +42,7 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
         int scrollBarLeft = getScrollbarPositionX();
         int scrollBarRight = scrollBarLeft + 6;
 
-        setScrollAmount(getScrollAmount());
+        setScrollAmount(scrollAmount());
 
         Tesselator tessellator = Tesselator.getInstance();
 
@@ -53,16 +53,16 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             float f = 32.0f;
             BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-            vertexBuffer.addVertex(this.getX(), bottom, 0.0F).setUv(this.getX() / f, (bottom + (int) getScrollAmount()) / f).setColor(32, 32, 32, 255);
-            vertexBuffer.addVertex(this.getRight(), bottom, 0.0F).setUv(this.getRight() / f, (bottom + (int) getScrollAmount()) / f).setColor(32, 32, 32, 255);
-            vertexBuffer.addVertex(this.getRight(), this.getY(), 0.0F).setUv(this.getRight() / f, (this.getY() + (int) getScrollAmount()) / f).setColor(32, 32, 32, 255);
-            vertexBuffer.addVertex(this.getX(), this.getY(), 0.0F).setUv(this.getX() / f, (this.getY() + (int) getScrollAmount()) / f).setColor(32, 32, 32, 255);
+            vertexBuffer.addVertex(this.getX(), bottom, 0.0F).setUv(this.getX() / f, (bottom + (int) scrollAmount()) / f).setColor(32, 32, 32, 255);
+            vertexBuffer.addVertex(this.getRight(), bottom, 0.0F).setUv(this.getRight() / f, (bottom + (int) scrollAmount()) / f).setColor(32, 32, 32, 255);
+            vertexBuffer.addVertex(this.getRight(), this.getY(), 0.0F).setUv(this.getRight() / f, (this.getY() + (int) scrollAmount()) / f).setColor(32, 32, 32, 255);
+            vertexBuffer.addVertex(this.getX(), this.getY(), 0.0F).setUv(this.getX() / f, (this.getY() + (int) scrollAmount()) / f).setColor(32, 32, 32, 255);
 
             BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
 
         int leftEdge = this.getX() + width / 2 - getRowWidth() / 2 + 2;
-        int topOfListYPos = this.getY() + 4 - (int) getScrollAmount();
+        int topOfListYPos = this.getY() + 4 - (int) scrollAmount();
 
         if (this.hasListHeader) renderHeader(drawContext, leftEdge, topOfListYPos);
 
@@ -109,13 +109,13 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
             BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
 
-        int maxScroll = getMaxScroll();
+        int maxScroll = maxScrollAmount();
 
         if (maxScroll > 0) {
             RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
-            int k1 = Mth.clamp((this.getBottom() - this.getY()) * (this.getBottom() - this.getY()) / getMaxPosition(), 32, this.getBottom() - this.getY() - 8);
-            int l1 = (int) getScrollAmount() * (this.getBottom() - this.getY() - k1) / maxScroll + this.getY();
+            int k1 = Mth.clamp((this.getBottom() - this.getY()) * (this.getBottom() - this.getY()) / maxScrollAmount(), 32, this.getBottom() - this.getY() - 8);
+            int l1 = (int) scrollAmount() * (this.getBottom() - this.getY() - k1) / maxScroll + this.getY();
 
             if (l1 < this.getY()) l1 = this.getY();
 
