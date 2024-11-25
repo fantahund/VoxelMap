@@ -29,7 +29,7 @@ public abstract class MixinWorldRenderer {
     @Shadow @Nullable public abstract RenderTarget getTranslucentTarget();
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
-    private void postRender(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
+    private void postRender(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
         if (VoxelMap.mapOptions.waypointsAllowed && (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints)) {
             if (VoxelConstants.isFabulousGraphicsOrBetter()) {
                 RenderTarget framebuffer = VoxelConstants.getMinecraft().getMainRenderTarget();
