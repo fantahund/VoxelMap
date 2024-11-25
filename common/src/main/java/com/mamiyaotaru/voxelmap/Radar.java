@@ -112,6 +112,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
@@ -924,7 +925,7 @@ public class Radar implements IRadar {
             try {
                 Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation);
                 if (resource.isPresent()) {
-                    VillagerMetadataSection villagerResourceMetadata = (VillagerMetadataSection) resource.get().metadata(); //FIXME 1.21.4
+                    VillagerMetadataSection villagerResourceMetadata = resource.get().metadata().getSection(VillagerMetadataSection.TYPE).orElse(null);
                     if (villagerResourceMetadata != null) {
                         hatType = villagerResourceMetadata.hat();
                     }
@@ -1487,26 +1488,27 @@ public class Radar implements IRadar {
                 }
 
                 contact.setArmorColor(DyedItemColor.getOrDefault(stack, -1));
-            } else if (helmet instanceof BlockItem blockItem) {
-                Block block = blockItem.getBlock();
-                BlockState blockState = block.defaultBlockState();
-                int stateID = Block.getId(blockState);
-                icon = this.textureAtlas.getAtlasSprite("blockArmor " + stateID);
-                if (icon == this.textureAtlas.getMissingImage()) {
-                    BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, -8.0F);
-                    if (blockImage != null) {
-                        int width = blockImage.getWidth();
-                        int height = blockImage.getHeight();
-                        ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
-                        BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, 7.25F);
-                        blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
-                        ImageUtils.addImages(blockImage, blockImageFront, (width / 2f - 15), (height / 2f - 15), width, height);
-                        blockImageFront.flush();
-                        blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
-                        icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
-                        this.newMobs = true;
-                    }
-                }
+                // FIXME 1.21.4
+                // } else if (helmet instanceof BlockItem blockItem) {
+                // Block block = blockItem.getBlock();
+                // BlockState blockState = block.defaultBlockState();
+                // int stateID = Block.getId(blockState);
+                // icon = this.textureAtlas.getAtlasSprite("blockArmor " + stateID);
+                // if (icon == this.textureAtlas.getMissingImage()) {
+                // BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, -8.0F);
+                // if (blockImage != null) {
+                // int width = blockImage.getWidth();
+                // int height = blockImage.getHeight();
+                // ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
+                // BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, 7.25F);
+                // blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
+                // ImageUtils.addImages(blockImage, blockImageFront, (width / 2f - 15), (height / 2f - 15), width, height);
+                // blockImageFront.flush();
+                // blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
+                // icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
+                // this.newMobs = true;
+                // }
+                // }
             }
         }
 
