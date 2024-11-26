@@ -636,7 +636,7 @@ public class Map implements Runnable, IChangeObserver {
         modelViewMatrixStack.pushMatrix();
         modelViewMatrixStack.identity();
         modelViewMatrixStack.translate(0.0f, 0.0f, -2000.0f);
-        Lighting.setupFor3DItems();
+        // Lighting.setupFor3DItems();
         int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
             mapX = this.scWidth - 37;
@@ -1825,6 +1825,7 @@ public class Map implements Runnable, IChangeObserver {
 
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
         OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
+        RenderSystem.bindTextureForSetup(this.mapImages[this.zoom].getIndex());
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         matrixStack.pushPose();

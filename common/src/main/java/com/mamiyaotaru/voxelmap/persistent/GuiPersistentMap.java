@@ -755,8 +755,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShader(CoreShaders.POSITION_TEX);
             OpenGL.Utils.disp2(playerGLID);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
             if (this.oldNorth) {
@@ -952,8 +952,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
 
                 OpenGL.glColor4f(r, g, b, !pt.enabled && !target && !hover ? 0.3F : 1.0F);
-                OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-                OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+                // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+                // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 if (this.oldNorth) {
                     matrixStack.pushPose();
                     matrixStack.translate(ptX * this.mapToGui, ptZ * this.mapToGui, 0.0);
