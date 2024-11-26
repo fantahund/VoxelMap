@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -155,8 +154,6 @@ class GuiSlotMobs extends GuiSlotMinimap {
                 GuiMobs.setTooltip(this.parentGui, tooltip);
             }
 
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            OpenGL.Utils.img2(isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier);
             drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
             drawContext.flush();
         }
