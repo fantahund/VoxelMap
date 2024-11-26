@@ -82,6 +82,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11C;
 
@@ -549,7 +550,7 @@ public class Map implements Runnable, IChangeObserver {
                     lightChanged = true;
                 }
 
-                boolean scheduledUpdate = (this.timer - 50) % (this.lastLightBrightnessTable[0] == 0.0F ? 250 : 2000) == 0;
+                boolean scheduledUpdate = (this.timer - 50) % (this.lastLightBrightnessTable[0] == 0.0F ? 50 : 100) == 0;
                 if (lightChanged || scheduledUpdate) {
                     this.tickWithLightChange = VoxelConstants.getElapsedTicks();
                     this.needLightmapRefresh = true;
@@ -585,23 +586,19 @@ public class Map implements Runnable, IChangeObserver {
     private int getSkyColor() {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
-        float[] fogColors = new float[4];
-        FloatBuffer temp = BufferUtils.createFloatBuffer(4);
-        FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F)); // FIXME 1.21.2 Wrong Background Color??
-        OpenGL.glGetFloatv(OpenGL.GL11_GL_COLOR_CLEAR_VALUE, temp);
-        temp.get(fogColors);
-        float r = fogColors[0];
-        float g = fogColors[1];
-        float b = fogColors[2];
-        if (!aboveHorizon && VoxelConstants.getMinecraft().options.renderDistance().get() >= 4) {
-            return 167772160 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
+        Vector4f color = FogRenderer.computeFogColor(VoxelConstants.getMinecraft().gameRenderer.getMainCamera(), 0.0F, this.world, VoxelConstants.getMinecraft().options.renderDistance().get(), VoxelConstants.getMinecraft().gameRenderer.getDarkenWorldAmount(0.0F));
+        float r = color.x;
+        float g = color.y;
+        float b = color.z;
+        if (!aboveHorizon) {
+            return 0x0A000000 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
         } else {
-            int backgroundColor = -16777216 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
-            int sunsetColor = this.world.effects().getSunriseOrSunsetColor(this.world.getTimeOfDay(0.0F));
-            if (VoxelConstants.getMinecraft().options.renderDistance().get() >= 4) {
-                return ColorUtils.colorAdder(sunsetColor, backgroundColor); // FIXME 1.21.2 Wrong background color?
-            } else {
+            int backgroundColor = 0xFF000000 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
+            if (!this.world.effects().isSunriseOrSunset(this.world.getTimeOfDay(0.0F))) {
                 return backgroundColor;
+            } else {
+                int sunsetColor = this.world.effects().getSunriseOrSunsetColor(this.world.getTimeOfDay(0.0F));
+                return ColorUtils.colorAdder(sunsetColor, backgroundColor);
             }
         }
     }
