@@ -192,8 +192,8 @@ public class Radar implements IRadar {
     private DynamicTexture nativeBackedTexture = new DynamicTexture(2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
-    private HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
-    private HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
+    private final HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
+    private final HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
 
     private static final Int2ObjectMap<ResourceLocation> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
@@ -254,6 +254,7 @@ public class Radar implements IRadar {
     public void onResourceManagerReload(ResourceManager resourceManager) {
         cachedImages.clear();
         cachedSprites.clear();
+        entityIconMap.clear();
         this.loadTexturePackIcons();
     }
 
