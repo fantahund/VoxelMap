@@ -192,6 +192,8 @@ public class Radar implements IRadar {
     private DynamicTexture nativeBackedTexture = new DynamicTexture(2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
+    private HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
+    private HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
 
     private static final Int2ObjectMap<ResourceLocation> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
@@ -250,6 +252,8 @@ public class Radar implements IRadar {
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
+        cachedImages.clear();
+        cachedSprites.clear();
         this.loadTexturePackIcons();
     }
 
@@ -890,19 +894,25 @@ public class Radar implements IRadar {
             }
 
             if (mobImage != null) {
-                try {
-                    icon = this.textureAtlas.registerIconForBufferedImage(name, mobImage);
-                    contact.icon = icon;
-                    this.newMobs = true;
-                    this.contactsSkinGetTries.remove(name);
-                } catch (Exception var16) {
-                    checkCount = checkCount + 1;
-                    if (checkCount > 4) {
-                        this.textureAtlas.registerFailedIcon(name);
+                icon = cachedSprites.get(mobImage);
+                if (icon == null) {
+                    try {
+                        icon = this.textureAtlas.registerIconForBufferedImage(name, mobImage);
+                        contact.icon = icon;
+                        this.newMobs = true;
                         this.contactsSkinGetTries.remove(name);
-                    } else {
-                        this.contactsSkinGetTries.put(name, checkCount);
+                    } catch (Exception var16) {
+                        checkCount = checkCount + 1;
+                        if (checkCount > 4) {
+                            this.textureAtlas.registerFailedIcon(name);
+                            this.contactsSkinGetTries.remove(name);
+                        } else {
+                            this.contactsSkinGetTries.put(name, checkCount);
+                        }
                     }
+                } else {
+                    contact.icon = icon;
+                    this.contactsSkinGetTries.remove(name);
                 }
             } else {
                 checkCount = checkCount + 1;
@@ -953,6 +963,8 @@ public class Radar implements IRadar {
         }
 
         BufferedImage headImage = null;
+        boolean cachedImage = false;
+        List<ModelPartWithResourceLocation> bitsList = null;
         Model model = null;
         if (entityRenderer instanceof LivingEntityRenderer<?, ?, ?> render) {
             try {
@@ -1169,25 +1181,35 @@ public class Radar implements IRadar {
                     }
 
                     ModelPartWithResourceLocation[] headBitsWithLocations = headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[0]);
-                    boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
-                    if (VoxelConstants.DEBUG) {
-                        ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
-                    }
-                    if (success) {
-                        headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
+                    bitsList = Arrays.asList(headBitsWithLocations);
+                    headImage = cachedImages.get(bitsList);
+                    if (headImage == null) {
+                        boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
+                        if (VoxelConstants.DEBUG) {
+                            ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
+                        }
+                        if (success) {
+                            headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
+                        }
+                        // System.out.println("cache miss!");
+                    } else {
+                        cachedImage = true;
+                        // System.out.println("cache hit!");
                     }
                 }
             } catch (Exception exception) {
                 VoxelConstants.getLogger().error(exception);
             }
         }
+        if (!cachedImage) {
+            if (headImage != null) {
+                headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof HumanoidModel);
 
-        if (headImage != null) {
-            headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof HumanoidModel);
-        }
-
-        if (contact.type == EnumMobs.CAMEL || contact.type == EnumMobs.SNIFFER) {
-            headImage = resizeBufferedImage(headImage, headImage.getHeight() / 2, headImage.getHeight() / 2);
+                if (contact.type == EnumMobs.CAMEL || contact.type == EnumMobs.SNIFFER) {
+                    headImage = resizeBufferedImage(headImage, headImage.getHeight() / 2, headImage.getHeight() / 2);
+                }
+                cachedImages.put(bitsList, headImage);
+            }
         }
 
         entityIconMap.put(entityUUID, headImage);
@@ -1532,17 +1554,31 @@ public class Radar implements IRadar {
         ResourceLocation resourceLocation = null;
 
         try {
-            String materialName = helmet.asItem().builtInRegistryHolder().getRegisteredName(); // FIXME 1.21.2 ???
+            String materialName = helmet.builtInRegistryHolder().getRegisteredName(); // FIXME 1.21.2 ???
             String domain = "minecraft";
             int sep = materialName.indexOf(58);
             if (sep != -1) {
                 domain = materialName.substring(0, sep);
                 materialName = materialName.substring(sep + 1);
+                if (materialName.startsWith("leather")) {
+                    materialName = "leather";
+                } else if (materialName.startsWith("iron")) {
+                    materialName = "iron";
+                } else if (materialName.startsWith("gold")) {
+                    materialName = "gold";
+                } else if (materialName.startsWith("diamond")) {
+                    materialName = "diamond";
+                } else if (materialName.startsWith("netherite")) {
+                    materialName = "netherite";
+                } else if (materialName.startsWith("chainmail")) {
+                    materialName = "chainmail";
+                } else if (materialName.startsWith("turtle")) {
+                    materialName = "turtle_scute";
+                }
             }
+            // System.out.println("createUnknownArmorIconsmaterialName materialName " + materialName);
 
-            String suffix;
-            suffix = "";
-            String resourcePath = String.format("%s:textures/models/armor/%s_layer_%d%s.png", domain, materialName, 1, suffix);
+            String resourcePath = String.format("%s:textures/entity/equipment/humanoid/%s.png", domain, materialName);
 
             resourceLocation = ResourceLocation.parse(resourcePath);
         } catch (RuntimeException ignored) {
