@@ -173,7 +173,7 @@ public enum EnumMobs {
     WITCH(Witch.class, "Witch", true, 0.0F, "textures/entity/witch.png", "", true, false),
     WITHER(WitherBoss.class, "Wither", true, 24.0F, "textures/entity/wither/wither.png", "", true, false),
     WITHERINVULNERABLE(null, "Wither", false, 24.0F, "textures/entity/wither/wither_invulnerable.png", "", true, false),
-    WARDEN(Warden.class, "Wolf", true, 0.0F, "textures/entity/warden/warden.png", "", true, false),
+    WARDEN(Warden.class, "Warden", true, 0.0F, "textures/entity/warden/warden.png", "", true, false),
     WOLF(Wolf.class, "Wolf", true, 0.0F, "textures/entity/wolf/wolf.png", "", true, true),
     ZOGLIN(Zoglin.class, "Zoglin", true, 0.0F, "textures/entity/hoglin/zoglin.png", "", true, false),
     ZOMBIE(Zombie.class, "Zombie", true, 0.0F, "textures/entity/zombie/zombie.png", "", true, false),
