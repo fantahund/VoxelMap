@@ -62,6 +62,7 @@ public class RadarSimple implements IRadar {
             facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
             this.textureAtlas.stitch();
+            applyFilteringParameters();
             this.completedLoading = true;
         } catch (Exception var4) {
             VoxelConstants.getLogger().error("Failed getting mobs " + var4.getLocalizedMessage(), var4);
@@ -233,12 +234,12 @@ public class RadarSimple implements IRadar {
                     matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
                     matrixStack.translate(-x, -y, 0.0f);
 
-                    this.applyFilteringParameters();
+                    // this.applyFilteringParameters();
                     OpenGL.Utils.drawPre();
                     OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
                     OpenGL.Utils.drawPost();
                     if (this.options.showFacing) {
-                        this.applyFilteringParameters();
+                        // this.applyFilteringParameters();
                         OpenGL.Utils.drawPre();
                         OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
                         OpenGL.Utils.drawPost();

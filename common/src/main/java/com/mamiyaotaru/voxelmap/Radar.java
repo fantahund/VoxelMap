@@ -366,6 +366,7 @@ public class Radar implements IRadar {
             }
 
             this.textureAtlas.stitch();
+            applyFilteringParameters();
             this.completedLoading = true;
         } catch (Exception var30) {
             VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
@@ -1764,7 +1765,7 @@ public class Radar implements IRadar {
                         this.newMobs = false;
                     }
 
-                    this.applyFilteringParameters();
+                    // this.applyFilteringParameters();
                     OpenGL.Utils.drawPre();
                     OpenGL.Utils.setMap(contact.icon, x, y + yOffset, ((int) (contact.icon.getIconWidth() / 4.0F)));
                     OpenGL.Utils.drawPost();
@@ -1808,7 +1809,7 @@ public class Radar implements IRadar {
                             }
                         }
 
-                        this.applyFilteringParameters();
+                        // this.applyFilteringParameters();
                         OpenGL.Utils.drawPre();
                         OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, ((int) (icon.getIconWidth() / 4.0F * armorScale)));
                         OpenGL.Utils.drawPost();
@@ -1820,7 +1821,7 @@ public class Radar implements IRadar {
                             }
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[2]);
-                            this.applyFilteringParameters();
+                            // this.applyFilteringParameters();
                             OpenGL.Utils.drawPre();
                             OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
                             OpenGL.Utils.drawPost();
@@ -1831,13 +1832,13 @@ public class Radar implements IRadar {
                             }
 
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[1]);
-                            this.applyFilteringParameters();
+                            // this.applyFilteringParameters();
                             OpenGL.Utils.drawPre();
                             OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             OpenGL.Utils.drawPost();
                             OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
                             icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[3]);
-                            this.applyFilteringParameters();
+                            // this.applyFilteringParameters();
                             OpenGL.Utils.drawPre();
                             OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             OpenGL.Utils.drawPost();
