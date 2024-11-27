@@ -1317,9 +1317,19 @@ public class Radar implements IRadar {
                 }
 
                 float y = headBit.modelPart.y;
+                float xRot = headBit.modelPart.xRot;
+                float yRot = headBit.modelPart.yRot;
+                float zRot = headBit.modelPart.zRot;
                 headBit.modelPart.y += offsetByY;
-                headBit.modelPart.render(newMatrixStack, vertexConsumer, 15728880, OverlayTexture.NO_OVERLAY);
+                headBit.modelPart.xRot = 0;
+                headBit.modelPart.yRot = 0;
+                headBit.modelPart.zRot = 0;
+                headBit.modelPart.render(newMatrixStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY);
                 headBit.modelPart.y = y;
+                headBit.modelPart.xRot = xRot;
+                headBit.modelPart.yRot = yRot;
+                headBit.modelPart.zRot = zRot;
+
                 immediate.endBatch();
             }
         } catch (Exception var25) {
