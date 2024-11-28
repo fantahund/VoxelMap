@@ -1,23 +1,25 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.util.Mth;
 
 public class GameVariableAccessShim {
     public static ClientLevel getWorld() {
-        return VoxelConstants.getMinecraft().level;
+        return Minecraft.getInstance().level;
     }
 
     public static int xCoord() {
-        return (int) (VoxelConstants.getMinecraft().getCameraEntity().getX() < 0.0 ? VoxelConstants.getMinecraft().getCameraEntity().getX() - 1.0 : VoxelConstants.getMinecraft().getCameraEntity().getX());
+        return Mth.floor(Minecraft.getInstance().getCameraEntity().getX());
     }
 
     public static int zCoord() {
-        return (int) (VoxelConstants.getMinecraft().getCameraEntity().getZ() < 0.0 ? VoxelConstants.getMinecraft().getCameraEntity().getZ() - 1.0 : VoxelConstants.getMinecraft().getCameraEntity().getZ());
+        return Mth.floor(Minecraft.getInstance().getCameraEntity().getZ());
     }
 
     public static int yCoord() {
-        return (int) Math.ceil(VoxelConstants.getMinecraft().getCameraEntity().getY());
+        return Mth.floor(Minecraft.getInstance().getCameraEntity().getY());
     }
 
     public static double xCoordDouble() {
