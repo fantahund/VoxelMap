@@ -192,8 +192,8 @@ public class Radar implements IRadar {
     private DynamicTexture nativeBackedTexture = new DynamicTexture(2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
-    private final HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
-    private final HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
+    // private HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
+    // private HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
 
     private static final Int2ObjectMap<ResourceLocation> LEVEL_TO_ID = Util.make(new Int2ObjectOpenHashMap<>(), int2ObjectOpenHashMap -> {
@@ -252,8 +252,8 @@ public class Radar implements IRadar {
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
-        cachedImages.clear();
-        cachedSprites.clear();
+        // cachedImages.clear();
+        // cachedSprites.clear();
         entityIconMap.clear();
         this.loadTexturePackIcons();
     }
@@ -664,7 +664,7 @@ public class Radar implements IRadar {
     private void tryCustomIcon(Contact contact) {
         String identifier = contact.vanillaType ? "minecraft." + contact.type.id : contact.entity.getClass().getName();
         String identifierSimple = contact.vanillaType ? contact.type.id : contact.entity.getClass().getSimpleName();
-        Sprite icon = this.textureAtlas.getAtlasSprite(identifier + "custom");
+        Sprite icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched(identifier + "custom");
         if (icon == this.textureAtlas.getMissingImage()) {
             boolean isHostile = this.isHostile(contact.entity);
             CustomMobsManager.add(contact.entity.getType().getDescriptionId(), isHostile, !isHostile);
@@ -858,8 +858,11 @@ public class Radar implements IRadar {
         resourceLocationString = resourceLocationString + (resourceLocationTertiary != null ? resourceLocationTertiary.toString() : "") + (resourceLocationQuaternary != null ? resourceLocationQuaternary.toString() : "");
         resourceLocationString = resourceLocationString + (contact.armorColor != -1 ? contact.armorColor : "");
         String name = entityName + color + resourceLocationString;
-        Sprite icon = this.textureAtlas.getAtlasSprite(name);
+        Sprite icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched(name);
         if (icon == this.textureAtlas.getMissingImage()) {
+            if (VoxelConstants.DEBUG) {
+                VoxelConstants.getLogger().info("Radar: Creating icon: " + name);
+            }
             Integer checkCount = this.contactsSkinGetTries.get(name);
             if (checkCount == null) {
                 checkCount = 0;
@@ -896,26 +899,26 @@ public class Radar implements IRadar {
             }
 
             if (mobImage != null) {
-                icon = cachedSprites.get(mobImage);
-                if (icon == null) {
-                    try {
-                        icon = this.textureAtlas.registerIconForBufferedImage(name, mobImage);
-                        contact.icon = icon;
-                        this.newMobs = true;
-                        this.contactsSkinGetTries.remove(name);
-                    } catch (Exception var16) {
-                        checkCount = checkCount + 1;
-                        if (checkCount > 4) {
-                            this.textureAtlas.registerFailedIcon(name);
-                            this.contactsSkinGetTries.remove(name);
-                        } else {
-                            this.contactsSkinGetTries.put(name, checkCount);
-                        }
-                    }
-                } else {
+                // icon = cachedSprites.get(mobImage);
+                // if (icon == null) {
+                try {
+                    icon = this.textureAtlas.registerIconForBufferedImage(name, mobImage);
                     contact.icon = icon;
+                    this.newMobs = true;
                     this.contactsSkinGetTries.remove(name);
+                } catch (Exception var16) {
+                    checkCount = checkCount + 1;
+                    if (checkCount > 4) {
+                        this.textureAtlas.registerFailedIcon(name);
+                        this.contactsSkinGetTries.remove(name);
+                    } else {
+                        this.contactsSkinGetTries.put(name, checkCount);
+                    }
                 }
+                // } else {
+                // contact.icon = icon;
+                // this.contactsSkinGetTries.remove(name);
+                // }
             } else {
                 checkCount = checkCount + 1;
                 if (checkCount > 4) {
@@ -965,8 +968,8 @@ public class Radar implements IRadar {
         }
 
         BufferedImage headImage = null;
-        boolean cachedImage = false;
-        List<ModelPartWithResourceLocation> bitsList = null;
+        // boolean cachedImage = false;
+        // List<ModelPartWithResourceLocation> bitsList = null;
         Model model = null;
         if (entityRenderer instanceof LivingEntityRenderer<?, ?, ?> render) {
             try {
@@ -1082,7 +1085,7 @@ public class Radar implements IRadar {
                     } else if (model instanceof PhantomModel phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.root().getChild("body")};
                     } else if (model instanceof RabbitModel rabbitModel) {
-                        headBits = new ModelPart[]{rabbitModel.root().getChild("head"), rabbitModel.root().getChild("right_ear"), rabbitModel.root().getChild("left_ear"), rabbitModel.root().getChild("nose")};
+                        headBits = new ModelPart[] { rabbitModel.root().getChild("head"), rabbitModel.root().getChild("right_ear"), rabbitModel.root().getChild("left_ear"), rabbitModel.root().getChild("nose") };
                     } else if (model instanceof RavagerModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.root().getChild("neck").getChild("head")};
                     } else if (model instanceof ShulkerModel shulkerEntityModel) {
@@ -1183,36 +1186,36 @@ public class Radar implements IRadar {
                     }
 
                     ModelPartWithResourceLocation[] headBitsWithLocations = headPartsWithResourceLocationList.toArray(new ModelPartWithResourceLocation[0]);
-                    bitsList = Arrays.asList(headBitsWithLocations);
-                    headImage = cachedImages.get(bitsList);
-                    if (headImage == null) {
-                        boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
-                        if (VoxelConstants.DEBUG) {
-                            ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
-                        }
-                        if (success) {
-                            headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
-                        }
-                        // System.out.println("cache miss!");
-                    } else {
-                        cachedImage = true;
-                        // System.out.println("cache hit!");
+                    // bitsList = Arrays.asList(headBitsWithLocations);
+                    // headImage = cachedImages.get(bitsList);
+                    // if (headImage == null) {
+                    boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
+                    if (VoxelConstants.DEBUG) {
+                        ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
                     }
+                    if (success) {
+                        headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
+                    }
+                        // System.out.println("cache miss!");
+                    // } else {
+                    // cachedImage = true;
+                    // // System.out.println("cache hit!");
+                    // }
                 }
             } catch (Exception exception) {
                 VoxelConstants.getLogger().error(exception);
             }
         }
-        if (!cachedImage) {
-            if (headImage != null) {
-                headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof HumanoidModel);
+        // if (!cachedImage) {
+        if (headImage != null) {
+            headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof HumanoidModel);
 
-                if (contact.type == EnumMobs.CAMEL || contact.type == EnumMobs.SNIFFER) {
-                    headImage = resizeBufferedImage(headImage, headImage.getHeight() / 2, headImage.getHeight() / 2);
-                }
-                cachedImages.put(bitsList, headImage);
+            if (contact.type == EnumMobs.CAMEL || contact.type == EnumMobs.SNIFFER) {
+                headImage = resizeBufferedImage(headImage, headImage.getHeight() / 2, headImage.getHeight() / 2);
             }
+            // cachedImages.put(bitsList, headImage);
         }
+        // }
 
         entityIconMap.put(entityUUID, headImage);
         return headImage;
@@ -1375,7 +1378,7 @@ public class Radar implements IRadar {
     private void getGenericIcon(Contact contact) {
         contact.type = this.getUnknownMobNeutrality(contact.entity);
         String name = "minecraft." + contact.type.id + contact.type.resourceLocation.toString();
-        contact.icon = this.textureAtlas.getAtlasSprite(name);
+        contact.icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched(name);
     }
 
     private ResourceLocation getRandomizedResourceLocationForEntity(ResourceLocation resourceLocation, Entity entity) {
@@ -1416,7 +1419,7 @@ public class Radar implements IRadar {
         UUID uuid = gameProfile.getId();
         contact.setUUID(uuid);
         String playerName = this.scrubCodes(gameProfile.getName());
-        Sprite icon = this.textureAtlas.getAtlasSprite(playerName);
+        Sprite icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched(playerName);
         Integer checkCount;
         if (icon == this.textureAtlas.getMissingImage()) {
             checkCount = this.mpContactsSkinGetTries.get(playerName);
@@ -1444,7 +1447,7 @@ public class Radar implements IRadar {
                     this.newMobs = true;
                     this.mpContactsSkinGetTries.remove(playerName);
                 } catch (Exception var11) {
-                    icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.PLAYER.id + EnumMobs.PLAYER.resourceLocation.toString());
+                    icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + EnumMobs.PLAYER.resourceLocation.toString());
                     checkCount = checkCount + 1;
                     this.mpContactsSkinGetTries.put(playerName, checkCount);
                 }
@@ -1468,21 +1471,21 @@ public class Radar implements IRadar {
         if (contact.type == EnumMobs.SHEEP) {
             Sheep sheepEntity = (Sheep) contact.entity;
             if (!sheepEntity.isSheared()) {
-                icon = this.textureAtlas.getAtlasSprite("sheepfur");
+                icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("sheepfur");
                 int sheepColors = Sheep.getColor(sheepEntity.getColor());
                 contact.setArmorColor(sheepColors);
             }
         } else if (helmet != null) {
             if (helmet == Items.SKELETON_SKULL) {
-                icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head");
+                icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head");
             } else if (helmet == Items.WITHER_SKELETON_SKULL) {
-                icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head");
+                icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head");
             } else if (helmet == Items.ZOMBIE_HEAD) {
-                icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head");
+                icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head");
             } else if (helmet == Items.CREEPER_HEAD) {
-                icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head");
+                icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head");
             } else if (helmet == Items.DRAGON_HEAD) {
-                icon = this.textureAtlas.getAtlasSprite("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head");
+                icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head");
             } else if (helmet == Items.PLAYER_HEAD) {
                 GameProfile gameProfile = null;
                 ResolvableProfile profileComponent = stack.get(DataComponents.PROFILE);
@@ -1510,10 +1513,10 @@ public class Radar implements IRadar {
             } else if (helmet instanceof ArmorItem helmetArmor) {
                 int armorType = this.getArmorType(helmetArmor);
                 if (armorType != UNKNOWN) {
-                    icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[armorType]);
+                    icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[armorType]);
                 } else {
                     boolean isPiglin = contact.type == EnumMobs.PIGLIN || contact.type == EnumMobs.PIGLINZOMBIE;
-                    icon = this.textureAtlas.getAtlasSprite("armor " + helmet.getDescriptionId() + (isPiglin ? "_piglin" : ""));
+                    icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + helmet.getDescriptionId() + (isPiglin ? "_piglin" : ""));
                     if (icon == this.textureAtlas.getMissingImage()) {
                         icon = this.createUnknownArmorIcons(contact, stack, helmet);
                     } else if (icon == this.textureAtlas.getFailedImage()) {
@@ -1821,7 +1824,7 @@ public class Radar implements IRadar {
                                 OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
                             }
 
-                            icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[2]);
+                            icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[2]);
                             // this.applyFilteringParameters();
                             OpenGL.Utils.drawPre();
                             OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
@@ -1832,13 +1835,13 @@ public class Radar implements IRadar {
                                 OpenGL.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
                             }
 
-                            icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[1]);
+                            icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[1]);
                             // this.applyFilteringParameters();
                             OpenGL.Utils.drawPre();
                             OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             OpenGL.Utils.drawPost();
                             OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
-                            icon = this.textureAtlas.getAtlasSprite("armor " + this.armorNames[3]);
+                            icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[3]);
                             // this.applyFilteringParameters();
                             OpenGL.Utils.drawPre();
                             OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
