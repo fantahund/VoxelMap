@@ -10,7 +10,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -27,6 +26,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
+    private static final ResourceLocation PICKER = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/colorpicker.png");
+    private static final ResourceLocation BLANK = ResourceLocation.parse("textures/misc/white.png");
+
     final WaypointManager waypointManager;
     final ColorManager colorManager;
     private final IGuiWaypoints parentGui;
@@ -48,8 +50,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final String suffix;
     private final boolean enabled;
     private final boolean editing;
-    private final ResourceLocation pickerResourceLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/colorpicker.png");
-    private final ResourceLocation blank = ResourceLocation.parse("textures/misc/white.png");
 
     public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, Waypoint par2Waypoint, boolean editing) {
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
@@ -292,33 +292,26 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         drawContext.drawString(this.getFontRenderer(), I18n.get("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
         drawContext.drawString(this.getFontRenderer(), I18n.get("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
-        super.render(drawContext, mouseX, mouseY, delta);
-        OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        RenderSystem.setShaderTexture(0, this.blank);
-        drawContext.blit(RenderType::guiTextured, this.blank, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 256, 256); // FIXME 1.21.2
+        super.render(drawContext, this.choosingColor || this.choosingIcon ? 0 : mouseX, this.choosingColor || this.choosingIcon ? 0 : mouseY, delta);
+        RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
+        drawContext.blit(RenderType::guiTextured, BLANK, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 256, 256);
         drawContext.flush();
         TextureAtlas chooser = this.waypointManager.getTextureAtlasChooser();
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        OpenGL.Utils.disp2(chooser.getId());
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        RenderSystem.setShaderTexture(0, chooser.getId());
         Sprite icon = chooser.getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
         this.drawTexturedModalRect((this.getWidth() / 2f - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.choosingColor || this.choosingIcon) {
             this.renderTransparentBackground(drawContext);
             drawContext.flush();
         }
 
         if (this.choosingColor) {
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            // OpenGL.Utils.img2(this.pickerResourceLocation);
             drawContext.pose().pushPose();
             drawContext.pose().translate(0, 0, 300);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-            // RenderSystem.disableDepthTest();
-            drawContext.blit(RenderType::guiTextured, pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256, 256, 256); // FIXME 1.21.2
+            drawContext.blit(RenderType::guiTextured, PICKER, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256, 256, 256);
             drawContext.flush();
-            // RenderSystem.enableDepthTest();
             drawContext.pose().popPose();
         }
 
@@ -340,25 +333,18 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             int displayWidth = (int) displayWidthFloat;
             int displayHeight = (int) displayHeightFloat;
-            RenderSystem.disableDepthTest();
-            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-            RenderSystem.setShaderTexture(0, this.blank);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
 
             drawContext.pose().pushPose();
             drawContext.pose().translate(0, 0, 300);
-
-            OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
-            drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2, 256, 256);
+            RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+            drawContext.blit(RenderType::guiTextured, BLANK, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2, 256, 256);
             drawContext.flush();
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight, 256, 256);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            drawContext.blit(RenderType::guiTextured, BLANK, this.getWidth() / 2 - displayWidth / 2, this.getHeight() / 2 - displayHeight / 2, 0, 0, displayWidth, displayHeight, 256, 256);
             drawContext.flush();
-            OpenGL.glColor4f(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
-            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+            RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
             RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            OpenGL.Utils.disp2(chooser.getId());
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+            RenderSystem.setShaderTexture(0, chooser.getId());
             this.drawTexturedModalRect(this.getWidth() / 2f - displayWidth / 2f, this.getHeight() / 2f - displayHeight / 2f, displayWidth, displayHeight);
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
                 float x = (mouseX - (this.getWidth() / 2f - displayWidth / 2f)) * scale;
@@ -369,9 +355,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 }
             }
             drawContext.pose().popPose();
-            RenderSystem.enableDepthTest();
-            OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
         if (this.tooltip != null) {
