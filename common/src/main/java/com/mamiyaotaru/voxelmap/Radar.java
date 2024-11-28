@@ -652,6 +652,7 @@ public class Radar implements IRadar {
         if (this.newMobs) {
             try {
                 this.textureAtlas.stitchNew();
+                applyFilteringParameters();
             } catch (StitcherException var14) {
                 VoxelConstants.getLogger().warn("Stitcher exception!  Resetting mobs texture atlas.");
                 this.loadTexturePackIcons();
