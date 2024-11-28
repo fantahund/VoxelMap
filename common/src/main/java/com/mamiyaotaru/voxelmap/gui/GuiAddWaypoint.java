@@ -311,12 +311,15 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
         if (this.choosingColor) {
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            OpenGL.Utils.img2(this.pickerResourceLocation);
+            // OpenGL.Utils.img2(this.pickerResourceLocation);
+            drawContext.pose().pushPose();
+            drawContext.pose().translate(0, 0, 300);
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-            RenderSystem.disableDepthTest();
+            // RenderSystem.disableDepthTest();
             drawContext.blit(RenderType::guiTextured, pickerResourceLocation, this.getWidth() / 2 - 128, this.getHeight() / 2 - 128, 0, 0, 256, 256, 256, 256); // FIXME 1.21.2
             drawContext.flush();
-            RenderSystem.enableDepthTest();
+            // RenderSystem.enableDepthTest();
+            drawContext.pose().popPose();
         }
 
         if (this.choosingIcon) {
@@ -341,6 +344,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
             RenderSystem.setShaderTexture(0, this.blank);
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+
+            drawContext.pose().pushPose();
+            drawContext.pose().translate(0, 0, 300);
+
             OpenGL.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
             drawContext.blit(RenderType::guiTextured, blank, this.getWidth() / 2 - displayWidth / 2 - 1, this.getHeight() / 2 - displayHeight / 2 - 1, 0, 0, displayWidth + 2, displayHeight + 2, 256, 256);
             drawContext.flush();
@@ -352,7 +359,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             RenderSystem.setShader(CoreShaders.POSITION_TEX);
             OpenGL.Utils.disp2(chooser.getId());
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-
             this.drawTexturedModalRect(this.getWidth() / 2f - displayWidth / 2f, this.getHeight() / 2f - displayHeight / 2f, displayWidth, displayHeight);
             if (mouseX >= this.getWidth() / 2 - displayWidth / 2 && mouseX <= this.getWidth() / 2 + displayWidth / 2 && mouseY >= this.getHeight() / 2 - displayHeight / 2 && mouseY <= this.getHeight() / 2 + displayHeight / 2) {
                 float x = (mouseX - (this.getWidth() / 2f - displayWidth / 2f)) * scale;
@@ -362,6 +368,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     this.tooltip = Component.literal(icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", ""));
                 }
             }
+            drawContext.pose().popPose();
             RenderSystem.enableDepthTest();
             OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
