@@ -497,7 +497,7 @@ public class ImageUtils {
 
         foundColor = false;
 
-        while (!foundColor && right > left + 1) {
+        while (!foundColor && right > left) {
             --right;
 
             for (int t = 0; t < image.getHeight(); ++t) {
@@ -523,7 +523,7 @@ public class ImageUtils {
 
         foundColor = false;
 
-        while (!foundColor && bottom > top + 1) {
+        while (!foundColor && bottom > top) {
             --bottom;
 
             for (int t = 0; t < image.getWidth(); ++t) {

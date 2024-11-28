@@ -54,6 +54,7 @@ import net.minecraft.client.model.AxolotlModel;
 import net.minecraft.client.model.BatModel;
 import net.minecraft.client.model.BeeModel;
 import net.minecraft.client.model.BlazeModel;
+import net.minecraft.client.model.CamelModel;
 import net.minecraft.client.model.ChickenModel;
 import net.minecraft.client.model.CreeperModel;
 import net.minecraft.client.model.DolphinModel;
@@ -1085,7 +1086,7 @@ public class Radar implements IRadar {
                     } else if (model instanceof PhantomModel phantomEntityModel) {
                         headBits = new ModelPart[]{phantomEntityModel.root().getChild("body")};
                     } else if (model instanceof RabbitModel rabbitModel) {
-                        headBits = new ModelPart[] { rabbitModel.root().getChild("head"), rabbitModel.root().getChild("right_ear"), rabbitModel.root().getChild("left_ear"), rabbitModel.root().getChild("nose") };
+                        headBits = new ModelPart[] { rabbitModel.root().getChild("head") };
                     } else if (model instanceof RavagerModel ravagerEntityModel) {
                         headBits = new ModelPart[]{ravagerEntityModel.root().getChild("neck").getChild("head")};
                     } else if (model instanceof ShulkerModel shulkerEntityModel) {
@@ -1110,6 +1111,8 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{villagerResemblingModel.getHead()};
                     } else if (model instanceof WolfModel wolfModel) {
                         headBits = new ModelPart[]{wolfModel.head};
+                    } else if (model instanceof CamelModel camelModel) {
+                        headBits = new ModelPart[] { camelModel.root().getChild("body").getChild("head") };
                     } else if (model instanceof QuadrupedModel<?> quadrupedModel) {
                         headBits = new ModelPart[]{quadrupedModel.head};
                     } else if (model instanceof EntityModel<?> singlePartEntityModel) {
@@ -1210,9 +1213,6 @@ public class Radar implements IRadar {
         if (headImage != null) {
             headImage = this.trimAndOutlineImage(contact, headImage, true, model instanceof HumanoidModel);
 
-            if (contact.type == EnumMobs.CAMEL || contact.type == EnumMobs.SNIFFER) {
-                headImage = resizeBufferedImage(headImage, headImage.getHeight() / 2, headImage.getHeight() / 2);
-            }
             // cachedImages.put(bitsList, headImage);
         }
         // }
