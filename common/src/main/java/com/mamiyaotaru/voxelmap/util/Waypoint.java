@@ -6,7 +6,9 @@ import java.util.Locale;
 import java.util.TreeSet;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public class Waypoint implements Serializable, Comparable<Waypoint> {
     @Serial
@@ -81,6 +83,14 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
         double var2 = this.getX() + 0.5 - par1Entity.getX();
         double var4 = this.getY() + 0.5 - par1Entity.getY();
         double var6 = this.getZ() + 0.5 - par1Entity.getZ();
+        return var2 * var2 + var4 * var4 + var6 * var6;
+    }
+
+    public double getDistanceSqToCamera(Camera par1Entity) {
+        Vec3 pos = par1Entity.getPosition();
+        double var2 = this.getX() + 0.5 - pos.x;
+        double var4 = this.getY() + 0.5 - pos.y;
+        double var6 = this.getZ() + 0.5 - pos.z;
         return var2 * var2 + var4 * var4 + var6 * var6;
     }
 

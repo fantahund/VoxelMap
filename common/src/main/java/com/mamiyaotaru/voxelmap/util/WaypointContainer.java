@@ -14,15 +14,17 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.CoreShaders;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -54,10 +56,11 @@ public class WaypointContainer {
 
     public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
         this.sortWaypoints();
-        Entity cameraEntity = VoxelConstants.getMinecraft().getCameraEntity();
-        double renderPosX = GameVariableAccessShim.xCoordDouble();
-        double renderPosY = GameVariableAccessShim.yCoordDouble();
-        double renderPosZ = GameVariableAccessShim.zCoordDouble();
+        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 cameraPos = camera.getPosition();
+        double renderPosX = cameraPos.x;
+        double renderPosY = cameraPos.y;
+        double renderPosZ = cameraPos.z;
         OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         if (this.options.showBeacons && beacons) {
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -91,11 +94,11 @@ public class WaypointContainer {
                     int x = pt.getX();
                     int z = pt.getZ();
                     int y = pt.getY();
-                    double distance = Math.sqrt(pt.getDistanceSqToEntity(cameraEntity));
+                    double distance = Math.sqrt(pt.getDistanceSqToCamera(camera));
                     if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hideGui) {
-                        boolean isPointedAt = this.isPointedAt(pt, distance, cameraEntity, partialTicks);
+                        boolean isPointedAt = this.isPointedAt(pt, distance, camera);
                         String label = pt.name;
-                        this.renderLabel(matrixStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, withDepth, withoutDepth);
+                        this.renderLabel(matrixStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ, withDepth, withoutDepth);
                     }
                 }
             }
@@ -104,9 +107,9 @@ public class WaypointContainer {
                 int x = this.highlightedWaypoint.getX();
                 int z = this.highlightedWaypoint.getZ();
                 int y = this.highlightedWaypoint.getY();
-                double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToEntity(cameraEntity));
-                boolean isPointedAt = this.isPointedAt(this.highlightedWaypoint, distance, cameraEntity, partialTicks);
-                this.renderLabel(matrixStack, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY - 0.5, z - renderPosZ, withDepth, withoutDepth);
+                double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToCamera(camera));
+                boolean isPointedAt = this.isPointedAt(this.highlightedWaypoint, distance, camera);
+                this.renderLabel(matrixStack, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ, withDepth, withoutDepth);
             }
 
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -116,14 +119,14 @@ public class WaypointContainer {
 
     }
 
-    private boolean isPointedAt(Waypoint waypoint, double distance, Entity cameraEntity, Float partialTicks) {
-        Vec3 cameraPos = cameraEntity.getEyePosition(partialTicks);
+    private boolean isPointedAt(Waypoint waypoint, double distance, Camera camera) {
+        Vec3 cameraPos = camera.getPosition();
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * 0.0174533;
         double size = Math.sin(angle) * distance;
-        Vec3 cameraPosPlusDirection = cameraEntity.getViewVector(partialTicks);
+        Vector3f cameraPosPlusDirection = camera.getLookVector();
         Vec3 cameraPosPlusDirectionTimesDistance = cameraPos.add(cameraPosPlusDirection.x * distance, cameraPosPlusDirection.y * distance, cameraPosPlusDirection.z * distance);
-        AABB axisalignedbb = new AABB((waypoint.getX() + 0.5F) - size, (waypoint.getY() + 1.5F) - size, (waypoint.getZ() + 0.5F) - size, (waypoint.getX() + 0.5F) + size, (waypoint.getY() + 1.5F) + size, (waypoint.getZ() + 0.5F) + size);
+        AABB axisalignedbb = new AABB((waypoint.getX() + 0.5F) - size, (waypoint.getY() + 1.65F) - size, (waypoint.getZ() + 0.5F) - size, (waypoint.getX() + 0.5F) + size, (waypoint.getY() + 1.5F) + size, (waypoint.getZ() + 0.5F) + size);
         Optional<Vec3> raytraceresult = axisalignedbb.clip(cameraPos, cameraPosPlusDirectionTimesDistance);
         if (axisalignedbb.contains(cameraPos)) {
             return distance >= 1.0;
