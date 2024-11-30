@@ -113,7 +113,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
@@ -144,15 +143,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.AnimalArmorItem;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.ResolvableProfile;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
@@ -1850,7 +1846,7 @@ public class Radar implements IRadar {
                         }
                     }
 
-                    if (contact.name != null && (this.options.showPlayerNames && contact.type == EnumMobs.PLAYER || this.options.showMobNames && contact.type != EnumMobs.PLAYER)) {
+                    if (contact.name != null && ((this.options.showPlayerNames && contact.type == EnumMobs.PLAYER) || (this.options.showMobNames && contact.type != EnumMobs.PLAYER))) {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
@@ -1861,7 +1857,21 @@ public class Radar implements IRadar {
                         PoseStack textMatrixStack = drawContext.pose();
                         textMatrixStack.pushPose();
                         textMatrixStack.setIdentity();
+
+                        if (this.options.filtering) {
+                            textMatrixStack.translate(x, y, 0.0f);
+                            textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(-contact.angle));
+                            textMatrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
+                            textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                            textMatrixStack.translate((-x), (-y), 0.0f);
+                        } else {
+                            wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
+                            wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
+                            textMatrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
+                        }
+
                         textMatrixStack.translate(0, 0, 900);
+                        textMatrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
                         drawContext.drawString(VoxelConstants.getMinecraft().font, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
                         textMatrixStack.popPose();
                     }
