@@ -1677,14 +1677,21 @@ public class Radar implements IRadar {
             double wayX = lastX - contactX;
             double wayZ = lastZ - contactZ;
             int wayY = lastY - contactY;
-            double adjustedDiff = max - Math.max(Math.abs(wayY), 0);
-            contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
+            double entityMax = max;
+            if (contact.type == EnumMobs.PHANTOM) {
+                entityMax *= 2;
+            }
+            double adjustedDiff = entityMax - Math.max(Math.abs(wayY), 0);
+            contact.brightness = (float) Math.max(adjustedDiff / entityMax, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
             if (wayY < 0) {
                 OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
+                if (contact.brightness < 0.3f) {
+                    contact.brightness = 0.3f;
+                }
                 OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
             }
 
