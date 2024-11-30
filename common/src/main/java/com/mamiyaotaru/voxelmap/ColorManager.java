@@ -217,7 +217,9 @@ public class ColorManager {
     // BakedModel model = VoxelConstants.getMinecraft().getModelManager().getModel(stack, world, null, 0); //FIXME 1.21.4
     // this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
     // BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
+    // if (VoxelConstants.DEBUG) {
     // ImageIO.write(blockImage, "png", new File(VoxelConstants.getMinecraft().gameDirectory, blockState.getBlock().getName().getString() + "-" + Block.getId(blockState) + ".png"));
+    // }
     // return blockImage;
     // } catch (Exception var8) {
     // VoxelConstants.getLogger().error("error getting block armor image for " + blockState.toString() + ": " + var8.getLocalizedMessage(), var8);
