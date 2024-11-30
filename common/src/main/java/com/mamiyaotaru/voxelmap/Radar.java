@@ -1846,7 +1846,7 @@ public class Radar implements IRadar {
                         }
                     }
 
-                    if (contact.name != null && ((this.options.showPlayerNames && contact.type == EnumMobs.PLAYER) || (this.options.showMobNames && contact.type != EnumMobs.PLAYER))) {
+                    if (contact.name != null && ((this.options.showPlayerNames && contact.type == EnumMobs.PLAYER) || (this.options.showMobNames && contact.type != EnumMobs.PLAYER && contact.entity.hasCustomName()))) {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
                         matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
