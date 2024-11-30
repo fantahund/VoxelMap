@@ -49,6 +49,7 @@ import java.util.stream.StreamSupport;
 import javax.imageio.ImageIO;
 
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.AxolotlModel;
 import net.minecraft.client.model.BatModel;
@@ -99,7 +100,9 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.HorseRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.state.HorseRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
@@ -781,75 +784,67 @@ public class Radar implements IRadar {
         ResourceLocation resourceLocationTertiary = null;
         ResourceLocation resourceLocationQuaternary = null;
         String color = "";
-        if (contact.type.secondaryResourceLocation != null) {
-            if (contact.type == EnumMobs.MOOSHROOM) {
-                if (!((MushroomCow) contact.entity).isBaby()) {
-                    resourceLocationSecondary = EnumMobs.MOOSHROOM.secondaryResourceLocation;
-                }
-            } else if (contact.type != EnumMobs.TROPICALFISHA && contact.type != EnumMobs.TROPICALFISHB) {
-                label166: {
-                    if (contact.type == EnumMobs.HORSE) {
-                        Entity var22 = contact.entity;
-                        if (var22 instanceof Horse horse) {
-                            resourceLocationSecondary = (ResourceLocation) TEXTURES.get(horse.getMarkings());
-                            if (this.options.showHelmetsMobs) {
-                                ItemStack itemStack = horse.getBodyArmorItem();
-                                Item var30 = itemStack.getItem();
-                                if (var30 instanceof AnimalArmorItem horseArmorItem) {
-                                    // VoxelConstants.getMinecraft().getItemRenderer().getModel(itemStack,contact.entity.level(), horse, 0);
-                                    // resourceLocationTertiary = horseArmorItem.getTexture();
-                                    // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1)); //FIXME
-                                }
-                            }
-                            break label166;
-                        }
-                    }
-
-                    if (contact.type != EnumMobs.VILLAGER && contact.type != EnumMobs.ZOMBIEVILLAGER) {
-                        resourceLocationSecondary = contact.type.secondaryResourceLocation;
-                    } else {
-                        String zombie = contact.type == EnumMobs.ZOMBIEVILLAGER ? "zombie_" : "";
-                        VillagerData villagerData = ((VillagerDataHolder) contact.entity).getVillagerData();
-                        VillagerType villagerType = villagerData.getType();
-                        VillagerProfession villagerProfession = villagerData.getProfession();
-                        resourceLocationSecondary = BuiltInRegistries.VILLAGER_TYPE.getKey(villagerType);
-                        resourceLocationSecondary = ResourceLocation.fromNamespaceAndPath(resourceLocationSecondary.getNamespace(), "textures/entity/" + zombie + "villager/type/" + resourceLocationSecondary.getPath() + ".png");
-                        if (villagerProfession != VillagerProfession.NONE && !contact.entity.isBaby()) {
-                            resourceLocationTertiary = BuiltInRegistries.VILLAGER_PROFESSION.getKey(villagerProfession);
-                            resourceLocationTertiary = ResourceLocation.fromNamespaceAndPath(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
-                            if (villagerProfession != VillagerProfession.NITWIT) {
-                                resourceLocationQuaternary = LEVEL_TO_ID.get(Mth.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
-                                resourceLocationQuaternary = ResourceLocation.fromNamespaceAndPath(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
-                            }
-                        }
-
-                        VillagerMetadataSection.Hat biomeHatType = this.getHatType(resourceLocationSecondary);
-                        VillagerMetadataSection.Hat professionHatType = this.getHatType(resourceLocationTertiary);
-                        boolean showBiomeHat = professionHatType == VillagerMetadataSection.Hat.NONE || professionHatType == VillagerMetadataSection.Hat.PARTIAL && biomeHatType != VillagerMetadataSection.Hat.FULL;
-                        if (!showBiomeHat) {
-                            resourceLocationSecondary = null;
-                        }
+        if (contact.type == EnumMobs.MOOSHROOM) {
+            if (!((MushroomCow) contact.entity).isBaby()) {
+                resourceLocationSecondary = EnumMobs.MOOSHROOM.secondaryResourceLocation;
+            }
+        } else if (contact.type == EnumMobs.HORSE) {
+            if (contact.entity instanceof Horse horse) {
+                resourceLocationSecondary = ((HorseRenderer) Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(horse)).getTextureLocation((HorseRenderState) render.createRenderState(horse, 0f));
+                resourceLocationTertiary = (ResourceLocation) TEXTURES.get(horse.getMarkings());
+                if (this.options.showHelmetsMobs) {
+                    ItemStack itemStack = horse.getBodyArmorItem();
+                    Item var30 = itemStack.getItem();
+                    if (var30 instanceof AnimalArmorItem horseArmorItem) {
+                        // VoxelConstants.getMinecraft().getItemRenderer().getModel(itemStack, contact.entity.level(), horse, 0);
+                        // resourceLocationQuaternary = horseArmorItem.getTexture();
+                        // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1)); // FIXME
                     }
                 }
-            } else {
-                TropicalFish fish = (TropicalFish) contact.entity;
-                // FIXME
-                // resourceLocationSecondary = fish.getVarietyId();
-                // color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
+            }
+        } else if (contact.type == EnumMobs.TROPICALFISHA || contact.type == EnumMobs.TROPICALFISHB) {
+            TropicalFish fish = (TropicalFish) contact.entity;
+            // FIXME
+            // resourceLocationSecondary = fish.getVarietyId();
+            // color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
+        } else if (contact.type == EnumMobs.VILLAGER || contact.type == EnumMobs.ZOMBIEVILLAGER) {
+            String zombie = contact.type == EnumMobs.ZOMBIEVILLAGER ? "zombie_" : "";
+            VillagerData villagerData = ((VillagerDataHolder) contact.entity).getVillagerData();
+            VillagerType villagerType = villagerData.getType();
+            VillagerProfession villagerProfession = villagerData.getProfession();
+            resourceLocationSecondary = BuiltInRegistries.VILLAGER_TYPE.getKey(villagerType);
+            resourceLocationSecondary = ResourceLocation.fromNamespaceAndPath(resourceLocationSecondary.getNamespace(), "textures/entity/" + zombie + "villager/type/" + resourceLocationSecondary.getPath() + ".png");
+            if (villagerProfession != VillagerProfession.NONE && !contact.entity.isBaby()) {
+                resourceLocationTertiary = BuiltInRegistries.VILLAGER_PROFESSION.getKey(villagerProfession);
+                resourceLocationTertiary = ResourceLocation.fromNamespaceAndPath(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
+                if (villagerProfession != VillagerProfession.NITWIT) {
+                    resourceLocationQuaternary = LEVEL_TO_ID.get(Mth.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
+                    resourceLocationQuaternary = ResourceLocation.fromNamespaceAndPath(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
+                }
             }
 
-            if (resourceLocationSecondary != null) {
-                resourceLocationSecondary = this.getRandomizedResourceLocationForEntity(resourceLocationSecondary, contact.entity);
+            VillagerMetadataSection.Hat biomeHatType = this.getHatType(resourceLocationSecondary);
+            VillagerMetadataSection.Hat professionHatType = this.getHatType(resourceLocationTertiary);
+            boolean showBiomeHat = professionHatType == VillagerMetadataSection.Hat.NONE || professionHatType == VillagerMetadataSection.Hat.PARTIAL && biomeHatType != VillagerMetadataSection.Hat.FULL;
+            if (!showBiomeHat) {
+                resourceLocationSecondary = null;
             }
-
-            if (resourceLocationTertiary != null) {
-                resourceLocationTertiary = this.getRandomizedResourceLocationForEntity(resourceLocationTertiary, contact.entity);
-            }
-
-            if (resourceLocationQuaternary != null) {
-                resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, contact.entity);
-            }
+        } else {
+            resourceLocationSecondary = contact.type.secondaryResourceLocation;
         }
+
+        if (resourceLocationSecondary != null) {
+            resourceLocationSecondary = this.getRandomizedResourceLocationForEntity(resourceLocationSecondary, contact.entity);
+        }
+
+        if (resourceLocationTertiary != null) {
+            resourceLocationTertiary = this.getRandomizedResourceLocationForEntity(resourceLocationTertiary, contact.entity);
+        }
+
+        if (resourceLocationQuaternary != null) {
+            resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, contact.entity);
+        }
+
 
         String entityName = contact.vanillaType ? "minecraft." + contact.type.id : contact.entity.getClass().getName();
         String resourceLocationString = (resourceLocation != null ? resourceLocation.toString() : "") + (resourceLocationSecondary != null ? resourceLocationSecondary.toString() : "");
@@ -870,14 +865,22 @@ public class Radar implements IRadar {
             if (contact.type == EnumMobs.HORSE) {
                 BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
                 if (resourceLocationSecondary != null && base != null) {
-                    BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
+                    BufferedImage variant = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
+                    variant = ImageUtils.scaleImage(variant, (float) base.getWidth() / variant.getWidth(), (float) base.getHeight() / variant.getHeight());
+                    base = ImageUtils.addImages(base, variant, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                    variant.flush();
+                }
+
+                if (resourceLocationTertiary != null && base != null) {
+                    BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
                     pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / pattern.getWidth(), (float) base.getHeight() / pattern.getHeight());
+                    pattern = ImageUtils.colorify(pattern, contact.armorColor);
                     base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                     pattern.flush();
                 }
 
-                if (resourceLocationTertiary != null && base != null) {
-                    BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
+                if (resourceLocationQuaternary != null && base != null) {
+                    BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationQuaternary);
                     armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / armor.getWidth(), (float) base.getHeight() / armor.getHeight());
                     armor = ImageUtils.colorify(armor, contact.armorColor);
                     base = ImageUtils.addImages(base, armor, 0.0F, 0.0F, base.getWidth(), base.getHeight());
@@ -1116,6 +1119,14 @@ public class Radar implements IRadar {
                         try {
                             headBits = new ModelPart[]{singlePartEntityModel.root().getChild("head")};
                         } catch (Exception ignored) {
+                            try {
+                                headBits = new ModelPart[] { singlePartEntityModel.root().getChild("body").getChild("head") };
+                            } catch (Exception ignored2) {
+                                try {
+                                    headBits = new ModelPart[] { singlePartEntityModel.root().getChild("body") };
+                                } catch (Exception ignored3) {
+                                }
+                            }
                         }
                     }
                 }
