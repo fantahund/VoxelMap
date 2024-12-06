@@ -22,7 +22,7 @@ side = "CLIENT"
 [[dependencies.voxelmap]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.2, 1.21.3]"
+versionRange = "[1.21.4]"
 ordering = "NONE"
 side = "CLIENT"
 
