@@ -67,12 +67,12 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.filter = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 80, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addRenderableWidget(this.filter);
-        this.addRenderableWidget(this.buttonEdit = new Button.Builder(Component.translatable("selectServer.edit"), button -> this.editWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 52, 74, 20).build());
-        this.addRenderableWidget(this.buttonDelete = new Button.Builder(Component.translatable("selectServer.delete"), button -> this.deleteClicked()).bounds(this.getWidth() / 2 - 76, this.getHeight() - 52, 74, 20).build());
-        this.addRenderableWidget(this.buttonHighlight = new Button.Builder(Component.translatable("minimap.waypoints.highlight"), button -> this.setHighlightedWaypoint()).bounds(this.getWidth() / 2 + 2, this.getHeight() - 52, 74, 20).build());
-        this.addRenderableWidget(this.buttonTeleport = new Button.Builder(Component.translatable("minimap.waypoints.teleportto"), button -> this.teleportClicked()).bounds(this.getWidth() / 2 + 80, this.getHeight() - 52, 74, 20).build());
-        this.addRenderableWidget(this.buttonShare = new Button.Builder(Component.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 28, 74, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("minimap.waypoints.newwaypoint"), button -> this.addWaypoint()).bounds(this.getWidth() / 2 - 76, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("minimap.waypoints.add"), button -> this.addWaypoint()).bounds(this.getWidth() / 2 - 154, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonEdit = new Button.Builder(Component.translatable("selectServer.edit"), button -> this.editWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 76, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonDelete = new Button.Builder(Component.translatable("selectServer.delete"), button -> this.deleteClicked()).bounds(this.getWidth() / 2 + 2, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonHighlight = new Button.Builder(Component.translatable("minimap.waypoints.highlight"), button -> this.setHighlightedWaypoint()).bounds(this.getWidth() / 2 + 80, this.getHeight() - 52, 74, 20).build());
+        this.addRenderableWidget(this.buttonTeleport = new Button.Builder(Component.translatable("minimap.waypoints.teleportto"), button -> this.teleportClicked()).bounds(this.getWidth() / 2 - 154, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(this.buttonShare = new Button.Builder(Component.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 76, this.getHeight() - 28, 74, 20).build());
         this.addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this, this.options))).bounds(this.getWidth() / 2 + 2, this.getHeight() - 28, 74, 20).build());
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 + 80, this.getHeight() - 28, 74, 20).build());
         this.setFocused(this.filter);
@@ -267,6 +267,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        this.renderBlurredBackground();
+        this.renderMenuBackground(drawContext);
         this.tooltip = null;
         this.waypointList.render(drawContext, mouseX, mouseY, delta);
         drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);

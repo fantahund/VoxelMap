@@ -120,6 +120,7 @@
   "minimap.waypoints.sortbycreated": "Created",
   "minimap.waypoints.sortbycolor": "Color ",
   "minimap.waypoints.sortbyicon": "Icon",
+  "minimap.waypoints.add": "Add",
   "minimap.waypointshare.title": "Share Waypoint",
   "minimap.waypointshare.titlecoordinate": "Share Coordinate",
   "minimap.waypointshare.sharemessage": "Add Message (optional)",

@@ -120,6 +120,7 @@
   "minimap.waypoints.sortbycreated": "날짜",
   "minimap.waypoints.sortbycolor": "색상",
   "minimap.waypoints.sortbyicon": "아이콘",
+  "minimap.waypoints.add": "추가",
   "minimap.waypointshare.title": "웨이포인트 공유",
   "minimap.waypointshare.titlecoordinate": "좌표 공유",
   "minimap.waypointshare.sharemessage": "메시지 추가 (선택)",
