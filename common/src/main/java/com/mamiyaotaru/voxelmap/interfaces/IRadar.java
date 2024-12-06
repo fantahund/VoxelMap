@@ -8,5 +8,5 @@ import org.joml.Matrix4fStack;
 public interface IRadar {
     void onResourceManagerReload(ResourceManager resourceManager);
 
-    void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables);
+    void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj);
 }

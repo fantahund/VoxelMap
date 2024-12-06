@@ -522,7 +522,7 @@ public class Radar implements IRadar {
     }
 
     @Override
-    public void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables) {
+    public void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -550,7 +550,7 @@ public class Radar implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(drawContext, matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+                this.renderMapMobs(drawContext, matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -1113,6 +1113,9 @@ public class Radar implements IRadar {
                         headBits = new ModelPart[]{wolfModel.head};
                     } else if (model instanceof CamelModel camelModel) {
                         headBits = new ModelPart[] { camelModel.root().getChild("body").getChild("head") };
+                    } else if (model instanceof EndermanModel endermanModel) {
+                        headBits = new ModelPart[] { endermanModel.root().getChild("head") };
+                        endermanModel.root().getChild("head").getChild("hat").visible = false;
                     } else if (model instanceof QuadrupedModel<?> quadrupedModel) {
                         headBits = new ModelPart[]{quadrupedModel.head};
                     } else if (model instanceof EntityModel<?> singlePartEntityModel) {
@@ -1201,6 +1204,9 @@ public class Radar implements IRadar {
                     // headImage = cachedImages.get(bitsList);
                     // if (headImage == null) {
                     boolean success = this.drawModel(scale, 1000, (LivingEntity) entity, facing, model, headBitsWithLocations);
+                    if (model instanceof EndermanModel endermanModel) {
+                        endermanModel.root().getChild("head").getChild("hat").visible = true;
+                    }
                     if (VoxelConstants.DEBUG) {
                         ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
                     }
@@ -1668,7 +1674,7 @@ public class Radar implements IRadar {
         return helmet.getDescriptionId().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
     }
 
-    public void renderMapMobs(GuiGraphics drawContext, Matrix4fStack matrixStack, int x, int y) {
+    public void renderMapMobs(GuiGraphics drawContext, Matrix4fStack matrixStack, int x, int y, float scaleProj) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
@@ -1875,6 +1881,7 @@ public class Radar implements IRadar {
                         PoseStack textMatrixStack = drawContext.pose();
                         textMatrixStack.pushPose();
                         textMatrixStack.setIdentity();
+                        textMatrixStack.scale(scaleProj, scaleProj, 1.0F);
 
                         if (this.options.filtering) {
                             textMatrixStack.translate(x, y, 0.0f);
