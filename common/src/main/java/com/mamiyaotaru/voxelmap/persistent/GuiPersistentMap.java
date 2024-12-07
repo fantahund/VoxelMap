@@ -861,11 +861,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int scHeight = VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            ResourceLocation GUI_ICONS_TEXTURE = ResourceLocation.parse("textures/gui/icons.png");
+            ResourceLocation GUI_ICONS_TEXTURE = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
             RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(775, 769, 1, 0);
-            drawContext.blit(RenderType::guiTextured, GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 16, 16, 256, 256);
+            drawContext.blit(RenderType::guiTextured, GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 15, 15, 15, 15);
             drawContext.flush();
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, 0);
         } else {
