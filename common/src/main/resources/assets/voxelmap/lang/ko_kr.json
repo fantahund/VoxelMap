@@ -70,7 +70,7 @@
   "options.minimap.worldborder": "월드보더",
   "options.minimap.worldseed": "시드",
   "options.minimap.teleportcommand": "순간이동 명령어",
-  "options.minimap.waypoints": "웨이포인트 설정...",
+  "options.minimap.waypoints": "웨이포인트...",
   "options.minimap.waypoints.title": "웨이포인트 설정",
   "options.minimap.waypoints.distance": "최대 거리",
   "options.minimap.waypoints.infinite": "무제한",
