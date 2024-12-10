@@ -139,7 +139,7 @@ public enum EnumMobs {
     PIG(Pig.class, "Pig", true, 0.0F, "textures/entity/pig/pig.png", "", false, true),
     PIGLIN(Piglin.class, "Piglin", true, 0.0F, "textures/entity/piglin/piglin.png", "", true, false),
     PIGLINBRUTE(PiglinBrute.class, "Piglin_Brute", true, 0.0F, "textures/entity/piglin/piglin_brute.png", "", true, false),
-    PIGLINZOMBIE(ZombifiedPiglin.class, "Zombie_Piglin", true, 0.0F, "textures/entity/piglin/zombified_piglin.png", "", true, true),
+    PIGLINZOMBIE(ZombifiedPiglin.class, "Zombified_Piglin", true, 0.0F, "textures/entity/piglin/zombified_piglin.png", "", true, true),
     PILLAGER(Pillager.class, "Pillager", true, 0.0F, "textures/entity/illager/pillager.png", "", true, false),
     PLAYER(RemotePlayer.class, "Player", false, 8.0F, "textures/entity/steve.png", "", false, false),
     POLARBEAR(PolarBear.class, "Polar_Bear", true, 0.0F, "textures/entity/bear/polarbear.png", "", true, true),
