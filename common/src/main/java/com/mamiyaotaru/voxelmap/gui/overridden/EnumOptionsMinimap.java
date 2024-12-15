@@ -42,7 +42,9 @@ public enum EnumOptionsMinimap {
     MAXZOOM("options.worldmap.maxzoom", true, false, false),
     CACHESIZE("options.worldmap.cachesize", true, false, false),
     MOVEMAPDOWNWHILESTATSUEFFECT("options.minimap.movemapdownwhilestatuseffect", false, true, false),
-    MOVESCOREBOARDDOWN("options.minimap.movescoreboarddown", false, true, false);
+    MOVESCOREBOARDDOWN("options.minimap.movescoreboarddown", false, true, false),
+    DISTANCEUNITCONVERSION("options.minimap.waypoints.distanceunitconversion", false, true, false),
+    WAYPOINTNAMEBELOWICON("options.minimap.waypoints.waypointnamebelowicon", false, true, false);
 
     private final boolean isFloat;
     private final boolean isBoolean;

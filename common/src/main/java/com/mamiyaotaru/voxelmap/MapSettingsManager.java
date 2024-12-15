@@ -63,6 +63,8 @@ public class MapSettingsManager implements ISettingsManager {
 
     public boolean moveMapDownWhileStatusEffect = true;
     public boolean moveScoreBoardDown = true;
+    public boolean distanceUnitConversion = true;
+    public boolean waypointNameBelowIcon = true;
     public int sort = 1;
     protected boolean realTimeTorches;
     public final KeyMapping keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), "controls.minimap.title");
@@ -136,6 +138,8 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Teleport Command" -> this.teleportCommand = curLine[1];
                         case "Move Map Down While Status Effect" -> this.moveMapDownWhileStatusEffect = Boolean.parseBoolean(curLine[1]);
                         case "Move ScoreBoard Down" -> this.moveScoreBoardDown = Boolean.parseBoolean(curLine[1]);
+                        case "Distance Unit Conversion" -> this.distanceUnitConversion = Boolean.parseBoolean(curLine[1]);
+                        case "Waypoint Name Below Icon" -> this.waypointNameBelowIcon = Boolean.parseBoolean(curLine[1]);
                     }
                 }
 
@@ -208,6 +212,8 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Teleport Command:" + this.teleportCommand);
             out.println("Move Map Down While Status Effect:" + this.moveMapDownWhileStatusEffect);
             out.println("Move ScoreBoard Down:" + this.moveScoreBoardDown);
+            out.println("Distance Unit Conversion:" + this.distanceUnitConversion);
+            out.println("Waypoint Name Below Icon:" + this.waypointNameBelowIcon);
 
             for (ISubSettingsManager subSettingsManager : this.subSettingsManagers) {
                 subSettingsManager.saveAll(out);
@@ -270,6 +276,8 @@ public class MapSettingsManager implements ISettingsManager {
             case WORLDBORDER -> this.worldborder;
             case MOVEMAPDOWNWHILESTATSUEFFECT -> this.moveMapDownWhileStatusEffect;
             case MOVESCOREBOARDDOWN -> this.moveScoreBoardDown;
+            case DISTANCEUNITCONVERSION -> this.distanceUnitConversion;
+            case WAYPOINTNAMEBELOWICON -> this.waypointNameBelowIcon;
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
         };
     }
@@ -394,6 +402,8 @@ public class MapSettingsManager implements ISettingsManager {
             case WORLDBORDER -> this.worldborder = !this.worldborder;
             case MOVEMAPDOWNWHILESTATSUEFFECT -> this.moveMapDownWhileStatusEffect = !this.moveMapDownWhileStatusEffect;
             case MOVESCOREBOARDDOWN -> this.moveScoreBoardDown = !this.moveScoreBoardDown;
+            case DISTANCEUNITCONVERSION -> this.distanceUnitConversion = !this.distanceUnitConversion;
+            case WAYPOINTNAMEBELOWICON -> this.waypointNameBelowIcon = !this.waypointNameBelowIcon;
             case TERRAIN -> {
                 if (this.slopemap && this.heightmap) {
                     this.slopemap = false;

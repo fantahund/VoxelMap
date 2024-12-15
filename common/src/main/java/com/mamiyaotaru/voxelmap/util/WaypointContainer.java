@@ -189,8 +189,12 @@ public class WaypointContainer {
                 isPointedAt = false;
             }
         }
-
-        name = name + " (" + (int) distance + "m)";
+        if (this.options.distanceUnitConversion && distance > 10000.0){
+            name = name + " (" + Math.round(distance / 100.0) / 10.0 + "km)";
+        }
+        else {
+            name = name + " (" + Math.round(distance * 10.0) / 10.0 + "m)";
+        }
         double maxDistance = VoxelConstants.getMinecraft().options.simulationDistance().get() * 16.0 * 0.99;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
@@ -245,7 +249,7 @@ public class WaypointContainer {
 
         Font fontRenderer = VoxelConstants.getMinecraft().font;
         if (isPointedAt && fontRenderer != null) {
-            byte elevateBy = -19;
+            byte elevateBy = options.waypointNameBelowIcon ? (byte) 10 : (byte) -19;
             OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.width(name) / 2;
             RenderSystem.setShader(CoreShaders.POSITION_COLOR);
