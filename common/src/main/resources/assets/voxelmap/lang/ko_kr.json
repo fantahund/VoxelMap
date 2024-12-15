@@ -79,6 +79,8 @@
   "options.minimap.waypoints.deathpoints.all": "전부",
   "options.minimap.waypoints.deathpoints.tooltip": "다음 사망 시 적용됩니다",
   "options.minimap.waypoints.showwaypointnames": "미니맵에 웨이포인트 이름 표시",
+  "options.minimap.waypoints.distanceunitconversion": "거리 단위 변환 사용",
+  "options.minimap.waypoints.waypointnamebelowicon": "아이콘 아래에 이름 배치",
   "options.minimap.mobs.title": "개별 몹 유형 표시/숨기기",
   "options.minimap.mobs.enable": "몹 아이콘 표시",
   "options.minimap.mobs.disable": "몹 아이콘 숨기기",
