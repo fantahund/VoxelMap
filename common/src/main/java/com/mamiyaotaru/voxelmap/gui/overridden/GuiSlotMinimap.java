@@ -48,16 +48,19 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
 
 
         if (this.showSlotBG) {
+            // I don't know much about OpenGL code :(
+            // If this code is weird, please fix it.
+
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
             RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             float f = 32.0f;
             BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            vertexBuffer.addVertex(this.getX(), bottom, 0.0F).setUv(this.getX() / f, (bottom + (int) scrollAmount()) / f).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getRight(), bottom, 0.0F).setUv(this.getRight() / f, (bottom + (int) scrollAmount()) / f).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getRight(), this.getY(), 0.0F).setUv(this.getRight() / f, (this.getY() + (int) scrollAmount()) / f).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getX(), this.getY(), 0.0F).setUv(this.getX() / f, (this.getY() + (int) scrollAmount()) / f).setColor(0, 0, 0, 127);
+            vertexBuffer.addVertex(this.getX(), bottom, 0.0F).setUv(0.0F, 1.0F).setColor(0, 0, 0, 127);
+            vertexBuffer.addVertex(this.getRight(), bottom, 0.0F).setUv(1.0F, 1.0F).setColor(0, 0, 0, 127);
+            vertexBuffer.addVertex(this.getRight(), this.getY(), 0.0F).setUv(1.0F, 0.0F).setColor(0, 0, 0, 127);
+            vertexBuffer.addVertex(this.getX(), this.getY(), 0.0F).setUv(0.0F, 0.0F).setColor(0, 0, 0, 127);
 
             BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
@@ -71,36 +74,38 @@ public abstract class GuiSlotMinimap extends AbstractSelectionList {
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
 
         //byte topBottomFadeHeight = 4;
+        byte separatorHeight = 2;
 
         if (this.showTopBottomBG) {
+            // I don't know much about OpenGL code :(
+            // If this code is weird, please fix it.
+
+            // header separator
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
-            RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+            RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsSeparatorHeader());
+            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
-            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            // white bar top
-            vertexBuffer.addVertex(this.getX(), this.getY() + 1, 0.0F).setUv(0.0F, 1.0F).setColor(255, 255, 255, 84);
-            vertexBuffer.addVertex(this.getRight(), this.getY() + 1, 0.0F).setUv(1.0F, 1.0F).setColor(255, 255, 255, 84);
-            vertexBuffer.addVertex(this.getRight(), this.getY(), 0.0F).setUv(1.0F, 0.0F).setColor(255, 255, 255, 84);
-            vertexBuffer.addVertex(this.getX(), this.getY(), 0.0F).setUv(0.0F, 0.0F).setColor(255, 255, 255, 84);
+            vertexBuffer.addVertex(this.getX(), this.getY(), 0.0F).setUv(0.0F, 1.0F).setColor(255, 255, 255, 255);
+            vertexBuffer.addVertex(this.getRight(), this.getY(), 0.0F).setUv(getWidth() / 32.0F, 1.0F).setColor(255, 255, 255, 255);
+            vertexBuffer.addVertex(this.getRight(), this.getY() - separatorHeight, 0.0F).setUv(getWidth() / 32.0F, 0.0F).setColor(255, 255, 255, 255);
+            vertexBuffer.addVertex(this.getX(), this.getY() - separatorHeight, 0.0F).setUv(0.0F, 0.0F).setColor(255, 255, 255, 255);
 
-            // white bar bottom
-            vertexBuffer.addVertex(this.getX(), bottom, 0.0F).setUv(0.0F, 1.0F).setColor(255, 255, 255, 84);
-            vertexBuffer.addVertex(this.getRight(), bottom, 0.0F).setUv(1.0F, 1.0F).setColor(255, 255, 255, 84);
-            vertexBuffer.addVertex(this.getRight(), bottom - 1, 0.0F).setUv(1.0F, 0.0F).setColor(255, 255, 255, 84);
-            vertexBuffer.addVertex(this.getX(), bottom - 1, 0.0F).setUv(0.0F, 0.0F).setColor(255, 255, 255, 84);
+            BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
-            // black bar top
-            vertexBuffer.addVertex(this.getX(), this.getY() + 2, 0.0F).setUv(0.0F, 1.0F).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getRight(), this.getY() + 2, 0.0F).setUv(1.0F, 1.0F).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getRight(), this.getY() + 1, 0.0F).setUv(1.0F, 0.0F).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getX(), this.getY() + 1, 0.0F).setUv(0.0F, 0.0F).setColor(0, 0, 0, 127);
 
-            // black bar bottom
-            vertexBuffer.addVertex(this.getX(), bottom - 1, 0.0F).setUv(0.0F, 1.0F).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getRight(), bottom - 1, 0.0F).setUv(1.0F, 1.0F).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getRight(), bottom - 2, 0.0F).setUv(1.0F, 0.0F).setColor(0, 0, 0, 127);
-            vertexBuffer.addVertex(this.getX(), bottom - 2, 0.0F).setUv(0.0F, 0.0F).setColor(0, 0, 0, 127);
+            // footer separator
+            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+            RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 0, 1);
+            RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+            RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsSeparatorFooter());
+            vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+
+            vertexBuffer.addVertex(this.getX(), bottom + separatorHeight, 0.0F).setUv(0.0F, 1.0F).setColor(255, 255, 255, 255);
+            vertexBuffer.addVertex(this.getRight(), bottom + separatorHeight, 0.0F).setUv(getWidth() / 32.0F, 1.0F).setColor(255, 255, 255, 255);
+            vertexBuffer.addVertex(this.getRight(), bottom, 0.0F).setUv(getWidth() / 32.0F, 0.0F).setColor(255, 255, 255, 255);
+            vertexBuffer.addVertex(this.getX(), bottom, 0.0F).setUv(0.0F, 0.0F).setColor(255, 255, 255, 255);
 
             BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
