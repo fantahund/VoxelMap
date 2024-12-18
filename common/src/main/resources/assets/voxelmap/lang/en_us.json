@@ -81,6 +81,7 @@
   "options.minimap.waypoints.showwaypointnames": "Point Names on Map",
   "options.minimap.waypoints.distanceunitconversion": "Distance Unit Conversion",
   "options.minimap.waypoints.waypointnamebelowicon": "Waypoint Name Below Icon",
+  "options.minimap.waypoints.waypointdistancebelowname": "Distance Text Below Name",
   "options.minimap.mobs.title": "Show or Hide Individual Mob Types",
   "options.minimap.mobs.enable": "Enable Mob Icon",
   "options.minimap.mobs.disable": "Disable Mob Icon",

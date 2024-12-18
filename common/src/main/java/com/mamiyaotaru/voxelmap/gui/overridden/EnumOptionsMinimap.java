@@ -44,7 +44,8 @@ public enum EnumOptionsMinimap {
     MOVEMAPDOWNWHILESTATSUEFFECT("options.minimap.movemapdownwhilestatuseffect", false, true, false),
     MOVESCOREBOARDDOWN("options.minimap.movescoreboarddown", false, true, false),
     DISTANCEUNITCONVERSION("options.minimap.waypoints.distanceunitconversion", false, true, false),
-    WAYPOINTNAMEBELOWICON("options.minimap.waypoints.waypointnamebelowicon", false, true, false);
+    WAYPOINTNAMEBELOWICON("options.minimap.waypoints.waypointnamebelowicon", false, true, false),
+    WAYPOINTDISTANCEBELOWNAME("options.minimap.waypoints.waypointdistancebelowname", false, true, false);
 
     private final boolean isFloat;
     private final boolean isBoolean;
