@@ -254,8 +254,8 @@ public class WaypointContainer {
         Font fontRenderer = VoxelConstants.getMinecraft().font;
         if (isPointedAt && fontRenderer != null) {
             byte elevateBy = this.options.waypointNameBelowIcon ? (byte) 10 : (byte) -19;
-            byte elevateDistBy = this.options.waypointNameBelowIcon ? (byte) 21 : (byte) -30;
-
+            byte elevateDistBy = this.options.waypointNameBelowIcon ? (byte) 30: (byte) -39;
+            float distTextScale = 0.65F;
             OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.width(name) / 2;
             int halfDistStringWidth = fontRenderer.width(distStr) / 2;
@@ -279,6 +279,7 @@ public class WaypointContainer {
                 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
                 if (this.options.waypointDistanceBelowName){
+                    matrixStack.scale(distTextScale);
                     OpenGL.glPolygonOffset(1.0F, 7.0F);
                     vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                     vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
@@ -293,6 +294,7 @@ public class WaypointContainer {
                     vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (6 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
                     vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
                     BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+                    matrixStack.scale(1.0F / distTextScale);
                 }
             }
 
@@ -315,6 +317,7 @@ public class WaypointContainer {
                 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
                 if (this.options.waypointDistanceBelowName){
+                    matrixStack.scale(distTextScale);
                     OpenGL.glPolygonOffset(1.0F, 11.0F);
                     vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                     vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
@@ -329,6 +332,7 @@ public class WaypointContainer {
                     vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (6 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
                     vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
                     BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+                    matrixStack.scale(1.0F / distTextScale);
                 }
             }
 
@@ -340,7 +344,9 @@ public class WaypointContainer {
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
                 fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, matrixStack, vertexConsumerProvider, DisplayMode.SEE_THROUGH, 0, 15728880);
                 if (this.options.waypointDistanceBelowName){
+                    matrixStack.scale(distTextScale);
                     fontRenderer.drawInBatch(Component.literal(distStr), (-fontRenderer.width(distStr) / 2f), elevateDistBy, textColor, false, matrixStack, vertexConsumerProvider, DisplayMode.SEE_THROUGH, 0, 15728880);
+                    matrixStack.scale(1.0F / distTextScale);
                 }
                 vertexConsumerProvider.endBatch();
             }
