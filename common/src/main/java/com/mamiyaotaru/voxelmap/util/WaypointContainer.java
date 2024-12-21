@@ -193,7 +193,10 @@ public class WaypointContainer {
         if (this.options.distanceUnitConversion && distance > 10000.0){
             distStr = (Math.round(distance / 100.0) / 10.0) + "km";
         }
-        else {
+        else if (distance >= 9999999.0F) {
+            distStr = (int) distance  + "m";
+        }
+        else{
             distStr = (Math.round(distance * 10.0) / 10.0) + "m";
         }
         if (!this.options.waypointDistanceBelowName){
