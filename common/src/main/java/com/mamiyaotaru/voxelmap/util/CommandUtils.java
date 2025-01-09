@@ -59,10 +59,10 @@ public final class CommandUtils {
 
                 MutableComponent clickableWaypoint = Component.literal(waypointString);
                 Style chatStyle = clickableWaypoint.getStyle();
-                chatStyle = chatStyle.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/newWaypoint " + waypointString.substring(1, waypointString.length() - 1)));
+                chatStyle = chatStyle.withClickEvent(new ClickEvent.RunCommand("/newWaypoint " + waypointString.substring(1, waypointString.length() - 1)));
                 chatStyle = chatStyle.withColor(ChatFormatting.AQUA);
                 Component hover = Component.literal(I18n.get("minimap.waypointshare.tooltip1") + "\n" + I18n.get("minimap.waypointshare.tooltip2"));
-                chatStyle = chatStyle.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hover));
+                chatStyle = chatStyle.withHoverEvent(new HoverEvent.ShowText(hover));
                 clickableWaypoint.setStyle(chatStyle);
                 textComponents.add(clickableWaypoint);
                 count = waypointStringLocation + waypointString.length();

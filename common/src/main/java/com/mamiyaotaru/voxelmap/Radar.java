@@ -145,7 +145,6 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.AnimalArmorItem;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -1524,7 +1523,7 @@ public class Radar implements IRadar {
                         this.newMobs = true;
                     }
                 }
-            } else if (helmet instanceof ArmorItem helmetArmor) {
+            } else if (helmet instanceof AnimalArmorItem helmetArmor) {
                 int armorType = this.getArmorType(helmetArmor);
                 if (armorType != UNKNOWN) {
                     icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[armorType]);
@@ -1670,7 +1669,7 @@ public class Radar implements IRadar {
         }
     }
 
-    private int getArmorType(ArmorItem helmet) {
+    private int getArmorType(AnimalArmorItem helmet) {
         return helmet.getDescriptionId().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
     }
 
