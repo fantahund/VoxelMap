@@ -75,7 +75,8 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.renderTransparentBackground(drawContext);
+        this.renderBlurredBackground();
+        this.renderMenuBackground(drawContext);
         drawContext.flush();
         drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
         int leftBorder = this.getLeftBorder();

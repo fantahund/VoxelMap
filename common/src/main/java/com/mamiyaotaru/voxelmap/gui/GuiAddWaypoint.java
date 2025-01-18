@@ -38,8 +38,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private Component tooltip;
     private EditBox waypointName;
     private EditBox waypointX;
-    private EditBox waypointZ;
     private EditBox waypointY;
+    private EditBox waypointZ;
     private PopupGuiButton buttonEnabled;
     protected final Waypoint waypoint;
     private boolean choosingColor;
@@ -76,16 +76,16 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.waypointX = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointX.setMaxLength(128);
         this.waypointX.setValue(String.valueOf(this.waypoint.getX()));
-        this.waypointZ = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41 + 13, 56, 20, null);
-        this.waypointZ.setMaxLength(128);
-        this.waypointZ.setValue(String.valueOf(this.waypoint.getZ()));
-        this.waypointY = new EditBox(this.getFontRenderer(), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41 + 13, 56, 20, null);
+        this.waypointY = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41 + 13, 56, 20, null);
         this.waypointY.setMaxLength(128);
         this.waypointY.setValue(String.valueOf(this.waypoint.getY()));
+        this.waypointZ = new EditBox(this.getFontRenderer(), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41 + 13, 56, 20, null);
+        this.waypointZ.setMaxLength(128);
+        this.waypointZ.setValue(String.valueOf(this.waypoint.getZ()));
         this.addRenderableWidget(this.waypointName);
         this.addRenderableWidget(this.waypointX);
-        this.addRenderableWidget(this.waypointZ);
         this.addRenderableWidget(this.waypointY);
+        this.addRenderableWidget(this.waypointZ);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         this.addRenderableWidget(this.buttonEnabled = new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY, 100, 20, Component.literal("Enabled: " + (this.waypoint.enabled ? "On" : "Off")), button -> this.waypoint.enabled = !this.waypoint.enabled, this));
         this.addRenderableWidget(new PopupGuiButton(this.getWidth() / 2 - 101, buttonListY + 24, 100, 20, Component.literal(I18n.get("minimap.waypoints.sortbycolor") + ":     "), button -> this.choosingColor = true, this));
@@ -122,8 +122,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     protected void acceptWaypoint() {
         waypoint.name = waypointName.getValue();
         waypoint.setX(Integer.parseInt(waypointX.getValue()));
-        waypoint.setZ(Integer.parseInt(waypointZ.getValue()));
         waypoint.setY(Integer.parseInt(waypointY.getValue()));
+        waypoint.setZ(Integer.parseInt(waypointZ.getValue()));
 
         if (parentGui != null) {
             parentGui.accept(true);
@@ -151,8 +151,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             try {
                 Integer.parseInt(this.waypointX.getValue());
-                Integer.parseInt(this.waypointZ.getValue());
                 Integer.parseInt(this.waypointY.getValue());
+                Integer.parseInt(this.waypointZ.getValue());
             } catch (NumberFormatException var7) {
                 acceptable = false;
             }
@@ -175,8 +175,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             try {
                 Integer.parseInt(this.waypointX.getValue());
-                Integer.parseInt(this.waypointZ.getValue());
                 Integer.parseInt(this.waypointY.getValue());
+                Integer.parseInt(this.waypointZ.getValue());
             } catch (NumberFormatException var6) {
                 acceptable = false;
             }
@@ -193,8 +193,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             super.mouseClicked(mouseX, mouseY, button);
             this.waypointName.mouseClicked(mouseX, mouseY, button);
             this.waypointX.mouseClicked(mouseX, mouseY, button);
-            this.waypointZ.mouseClicked(mouseX, mouseY, button);
             this.waypointY.mouseClicked(mouseX, mouseY, button);
+            this.waypointZ.mouseClicked(mouseX, mouseY, button);
         } else if (this.choosingColor) {
             if (mouseX >= (this.getWidth() / 2f - 128) && mouseX < (this.getWidth() / 2f + 128) && mouseY >= (this.getHeight() / 2f - 128) && mouseY < (this.getHeight() / 2f + 128)) {
                 int color = this.colorManager.getColorPicker().getRGB((int) mouseX - (this.getWidth() / 2 - 128), (int) mouseY - (this.getHeight() / 2 - 128));
@@ -282,15 +282,16 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.tooltip = null;
         this.buttonEnabled.setMessage(Component.literal(I18n.get("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.get("options.on") : I18n.get("options.off"))));
         if (!this.choosingColor && !this.choosingIcon) {
-            this.renderTransparentBackground(drawContext);
+            this.renderBlurredBackground();
+            this.renderMenuBackground(drawContext);
             drawContext.flush();
         }
 
         drawContext.drawCenteredString(this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 10526880);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 10526880);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("Z"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 10526880);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("Y"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 10526880);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 16777215);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 16777215);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("Y"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 16777215);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("Z"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 16777215);
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         super.render(drawContext, this.choosingColor || this.choosingIcon ? 0 : mouseX, this.choosingColor || this.choosingIcon ? 0 : mouseY, delta);
         RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
@@ -303,7 +304,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.drawTexturedModalRect((this.getWidth() / 2f - 25), (buttonListY + 48 + 2), icon, 16.0F, 16.0F);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.choosingColor || this.choosingIcon) {
-            this.renderTransparentBackground(drawContext);
+            this.renderBlurredBackground();
+            this.renderMenuBackground(drawContext);
             drawContext.flush();
         }
 

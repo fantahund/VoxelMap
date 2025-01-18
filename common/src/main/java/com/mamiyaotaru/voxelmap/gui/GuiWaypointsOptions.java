@@ -12,7 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DEATHPOINTS };
+    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DISTANCEUNITCONVERSION, EnumOptionsMinimap.WAYPOINTNAMEBELOWICON, EnumOptionsMinimap.WAYPOINTDISTANCEBELOWNAME, EnumOptionsMinimap.DEATHPOINTS};
     private final Screen parent;
     private final MapSettingsManager options;
     protected Component screenTitle;
@@ -53,7 +53,8 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.renderTransparentBackground(drawContext);
+        this.renderBlurredBackground();
+        this.renderMenuBackground(drawContext);
         drawContext.flush();
         drawContext.drawCenteredString(this.font, this.screenTitle, this.getWidth() / 2, 20, 16777215);
         super.render(drawContext, mouseX, mouseY, delta);

@@ -120,6 +120,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        this.renderBlurredBackground();
+        this.renderMenuBackground(drawContext);
         renderBackgroundTexture(drawContext);
         this.tooltip = null;
         this.playerList.render(drawContext, mouseX, mouseY, delta);

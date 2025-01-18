@@ -12,8 +12,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiRadarOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] FULL_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWPLAYERNAMES, EnumOptionsMinimap.SHOWMOBNAMES, EnumOptionsMinimap.SHOWPLAYERHELMETS, EnumOptionsMinimap.SHOWMOBHELMETS, EnumOptionsMinimap.RADARFILTERING, EnumOptionsMinimap.RADAROUTLINES };
-    private static final EnumOptionsMinimap[] SIMPLE_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWFACING };
+    private static final EnumOptionsMinimap[] FULL_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE,  EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWMOBNAMES, EnumOptionsMinimap.SHOWPLAYERNAMES, EnumOptionsMinimap.SHOWMOBHELMETS, EnumOptionsMinimap.SHOWPLAYERHELMETS, EnumOptionsMinimap.RADARFILTERING, EnumOptionsMinimap.RADAROUTLINES };
+    private static final EnumOptionsMinimap[] SIMPLE_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWFACING };
 
     private final Screen parent;
     private final RadarSettingsManager options;
@@ -42,7 +42,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
 
         iterateButtonOptions();
 
-        if (options.radarMode == 2) addRenderableWidget(new Button.Builder(Component.translatable("options.minimap.radar.selectmobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, options))).bounds(getWidth() / 2 - 155, getHeight() / 6 + 144 - 6, 150, 20).build());
+        if (options.radarMode == 2) addRenderableWidget(new Button.Builder(Component.translatable("options.minimap.radar.selectmobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, options))).bounds(getWidth() / 2 + 5, getHeight() / 6 + 120, 150, 20).build());
 
         addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), x -> VoxelConstants.getMinecraft().setScreen(parent)).bounds(getWidth() / 2 - 100, getHeight() / 6 + 168, 200, 20).build());
     }
@@ -64,7 +64,8 @@ public class GuiRadarOptions extends GuiScreenMinimap {
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        renderTransparentBackground(drawContext);
+        this.renderBlurredBackground();
+        this.renderMenuBackground(drawContext);
         drawContext.flush();
         drawContext.drawCenteredString(getFontRenderer(), screenTitle, getWidth() / 2, 20, 16777215);
 
