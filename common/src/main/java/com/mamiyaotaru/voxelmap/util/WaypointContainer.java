@@ -349,9 +349,10 @@ public class WaypointContainer {
                 OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
                 fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, matrixStack, vertexConsumerProvider, DisplayMode.SEE_THROUGH, 0, 15728880);
                 if (this.options.waypointDistanceBelowName){
+                    matrixStack.pushMatrix();
                     matrixStack.scale(distTextScale);
                     fontRenderer.drawInBatch(Component.literal(distStr), (-fontRenderer.width(distStr) / 2f), elevateDistBy, textColor, false, matrixStack, vertexConsumerProvider, DisplayMode.SEE_THROUGH, 0, 15728880);
-                    matrixStack.scale(1.0F / distTextScale);
+                    matrixStack.popMatrix();
                 }
                 vertexConsumerProvider.endBatch();
             }
