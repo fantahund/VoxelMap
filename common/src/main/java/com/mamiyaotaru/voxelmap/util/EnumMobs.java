@@ -197,7 +197,8 @@ public enum EnumMobs {
     public static EnumMobs getMobTypeByEntity(Entity entity) {
         Class<? extends Entity> clazz = entity.getClass();
         if (clazz.equals(TropicalFish.class)) {
-            return ((TropicalFish) entity).getVariant().getPackedId() == 0 ? TROPICALFISHA : TROPICALFISHB;
+            //return ((TropicalFish) entity).getVariant().getPackedId() == 0 ? TROPICALFISHA : TROPICALFISHB;
+            return TROPICALFISHA;
         } else {
             return getMobTypeByClass(clazz);
         }

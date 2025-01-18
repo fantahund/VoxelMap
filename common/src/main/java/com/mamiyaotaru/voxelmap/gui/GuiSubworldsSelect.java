@@ -17,6 +17,7 @@ import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.Vec3;
 
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
     private Component title;
@@ -39,7 +40,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.thePlayer = VoxelConstants.getPlayer();
         this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), false, false);
         this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
-        this.camera.moveTo(this.thePlayer.getX(), this.thePlayer.getY() + 0.35, this.thePlayer.getZ(), this.thePlayer.getYRot(), 0.0F);
+        this.camera.moveOrInterpolateTo(new Vec3(this.thePlayer.getX(), this.thePlayer.getY() + 0.35, this.thePlayer.getZ()), this.thePlayer.getYRot(), 0.0F);
         this.yaw = this.thePlayer.getYRot();
         this.thirdPersonViewOrig = VoxelConstants.getMinecraft().options.getCameraType();
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();

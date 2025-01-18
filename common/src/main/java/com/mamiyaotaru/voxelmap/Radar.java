@@ -809,15 +809,15 @@ public class Radar implements IRadar {
         } else if (contact.type == EnumMobs.VILLAGER || contact.type == EnumMobs.ZOMBIEVILLAGER) {
             String zombie = contact.type == EnumMobs.ZOMBIEVILLAGER ? "zombie_" : "";
             VillagerData villagerData = ((VillagerDataHolder) contact.entity).getVillagerData();
-            VillagerType villagerType = villagerData.getType();
-            VillagerProfession villagerProfession = villagerData.getProfession();
+            VillagerType villagerType = villagerData.type().value();
+            VillagerProfession villagerProfession = villagerData.profession().value();
             resourceLocationSecondary = BuiltInRegistries.VILLAGER_TYPE.getKey(villagerType);
             resourceLocationSecondary = ResourceLocation.fromNamespaceAndPath(resourceLocationSecondary.getNamespace(), "textures/entity/" + zombie + "villager/type/" + resourceLocationSecondary.getPath() + ".png");
-            if (villagerProfession != VillagerProfession.NONE && !contact.entity.isBaby()) {
+            if (villagerProfession != BuiltInRegistries.VILLAGER_PROFESSION.getValue(VillagerProfession.NONE) && !contact.entity.isBaby()) {
                 resourceLocationTertiary = BuiltInRegistries.VILLAGER_PROFESSION.getKey(villagerProfession);
                 resourceLocationTertiary = ResourceLocation.fromNamespaceAndPath(resourceLocationTertiary.getNamespace(), "textures/entity/" + zombie + "villager/profession/" + resourceLocationTertiary.getPath() + ".png");
-                if (villagerProfession != VillagerProfession.NITWIT) {
-                    resourceLocationQuaternary = LEVEL_TO_ID.get(Mth.clamp(villagerData.getLevel(), 1, LEVEL_TO_ID.size()));
+                if (villagerProfession != BuiltInRegistries.VILLAGER_PROFESSION.getValue(VillagerProfession.NITWIT)) {
+                    resourceLocationQuaternary = LEVEL_TO_ID.get(Mth.clamp(villagerData.level(), 1, LEVEL_TO_ID.size()));
                     resourceLocationQuaternary = ResourceLocation.fromNamespaceAndPath(resourceLocationQuaternary.getNamespace(), "textures/entity/" + zombie + "villager/profession_level/" + resourceLocationQuaternary.getPath() + ".png");
                 }
             }
