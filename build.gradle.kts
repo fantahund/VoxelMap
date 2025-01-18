@@ -8,7 +8,7 @@ val NEOFORGE_VERSION by extra { "21.4.6-beta" }
 val FABRIC_LOADER_VERSION by extra { "0.16.9" }
 val FABRIC_API_VERSION by extra { "0.110.5+1.21.4" }
 
-val MOD_VERSION by extra { "$MINECRAFT_VERSION-1.14.7" }
+val MOD_VERSION by extra { "$MINECRAFT_VERSION-1.14.8" }
 
 allprojects {
     apply(plugin = "java")

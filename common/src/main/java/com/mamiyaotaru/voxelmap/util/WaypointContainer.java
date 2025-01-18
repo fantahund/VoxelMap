@@ -282,22 +282,23 @@ public class WaypointContainer {
                 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
                 if (this.options.waypointDistanceBelowName){
+                    matrixStack.pushMatrix();
                     matrixStack.scale(distTextScale);
                     OpenGL.glPolygonOffset(1.0F, 7.0F);
                     vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (7 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (7 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                     BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
                     OpenGL.glPolygonOffset(1.0F, 5.0F);
                     vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (6 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (6 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                     BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-                    matrixStack.scale(1.0F / distTextScale);
+                    matrixStack.popMatrix();
                 }
             }
 
@@ -320,22 +321,23 @@ public class WaypointContainer {
                 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
                 if (this.options.waypointDistanceBelowName){
+                    matrixStack.pushMatrix();
                     matrixStack.scale(distTextScale);
                     OpenGL.glPolygonOffset(1.0F, 11.0F);
                     vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (7 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (7 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.6F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
                     BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
                     OpenGL.glPolygonOffset(1.0F, 9.0F);
                     vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
-                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (6 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (6 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
-                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(1.0F, 1.0F, 1.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                    vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                     BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-                    matrixStack.scale(1.0F / distTextScale);
+                    matrixStack.popMatrix();
                 }
             }
 
