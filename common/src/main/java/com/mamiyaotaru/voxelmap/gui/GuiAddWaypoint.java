@@ -323,7 +323,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     ResourceLocation currentIcon = ResourceLocation.parse(icon.getIconName());
                     int iconSnappedX = icon.getOriginX() + (int) chooserCenterX;
                     int iconSnappedY = icon.getOriginY() + (int) chooserCenterY;
-                    RenderSystem.setShaderColor(this.red, this.green, this.blue, 1f);
+                    RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1f);
                     drawContext.blit(RenderType::guiTextured, currentIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40);
                     drawContext.flush();
                     RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
