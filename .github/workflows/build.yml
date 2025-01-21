@@ -26,4 +26,4 @@ jobs:
           prerelease: false
           title: "VoxelMap"
           files: |
-            build/libs/voxelmap-*([0-9\.\-]).jar
+            build/libs/voxelmap-*.jar
