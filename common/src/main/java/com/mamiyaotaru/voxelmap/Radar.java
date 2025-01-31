@@ -24,30 +24,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import javax.imageio.ImageIO;
-
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -144,17 +120,36 @@ import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
-import net.minecraft.world.item.AnimalArmorItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class Radar implements IRadar {
     private LayoutVariables layoutVariables;
@@ -794,11 +789,11 @@ public class Radar implements IRadar {
                 if (this.options.showHelmetsMobs) {
                     ItemStack itemStack = horse.getBodyArmorItem();
                     Item var30 = itemStack.getItem();
-                    if (var30 instanceof AnimalArmorItem horseArmorItem) {
+                    // if (var30 instanceof AnimalArmorItem horseArmorItem) {
                         // VoxelConstants.getMinecraft().getItemRenderer().getModel(itemStack, contact.entity.level(), horse, 0);
                         // resourceLocationQuaternary = horseArmorItem.getTexture();
                         // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1)); // FIXME
-                    }
+                    // }
                 }
             }
         } else if (contact.type == EnumMobs.TROPICALFISHA || contact.type == EnumMobs.TROPICALFISHB) {
@@ -1523,7 +1518,7 @@ public class Radar implements IRadar {
                         this.newMobs = true;
                     }
                 }
-            } else if (helmet instanceof AnimalArmorItem helmetArmor) {
+            } /*else if (helmet instanceof Armor helmetArmor) {
                 int armorType = this.getArmorType(helmetArmor);
                 if (armorType != UNKNOWN) {
                     icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[armorType]);
@@ -1559,7 +1554,7 @@ public class Radar implements IRadar {
                 // this.newMobs = true;
                 // }
                 // }
-            }
+            }*/
         }
 
         contact.armorIcon = icon;
@@ -1669,9 +1664,9 @@ public class Radar implements IRadar {
         }
     }
 
-    private int getArmorType(AnimalArmorItem helmet) {
+    /*private int getArmorType(AnimalArmorItem helmet) {
         return helmet.getDescriptionId().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
-    }
+    }*/
 
     public void renderMapMobs(GuiGraphics drawContext, Matrix4fStack matrixStack, int x, int y, float scaleProj) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
