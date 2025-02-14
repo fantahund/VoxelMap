@@ -706,7 +706,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.defaultBlendFunc();
         VoxelConstants.getMinecraft().font.getClass();
         MultiBufferSource.BufferSource vertexConsumerProvider = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-        VoxelConstants.getMinecraft().font.drawInBatch(Component.literal("Hey, I am important don't delete me!"), 100.0F, 100.0F, -1, true, matrix4f, vertexConsumerProvider, Font.DisplayMode.NORMAL, 0, 15728880);
+        VoxelConstants.getMinecraft().font.drawInBatch(Component.literal("Hey, I am important don't delete me!"), 10000.0F, 100.0F, -1, true, matrix4f, vertexConsumerProvider, Font.DisplayMode.NORMAL, 0, 15728880);
         if (this.showWelcomeScreen) {
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             this.drawWelcomeScreen(drawContext, VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth(), VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight());
