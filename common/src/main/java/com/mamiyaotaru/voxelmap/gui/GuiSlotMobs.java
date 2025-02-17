@@ -28,9 +28,6 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disabletooltip");
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
-    final ResourceLocation passiveMobIconIdentifier = ResourceLocation.parse("voxelmap:images/radar/tame.png");
-    final ResourceLocation neutralMobIconIdentifier = ResourceLocation.parse("voxelmap:images/radar/neutral.png");
-    final ResourceLocation hostileMobIconIdentifier = ResourceLocation.parse("voxelmap:images/radar/hostile.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
         super(VoxelConstants.getMinecraft(), par1GuiMobs.getWidth(), par1GuiMobs.getHeight() - 110, 40, 18);
