@@ -19,13 +19,14 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.HashMap;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
     private static final ResourceLocation BLANK = ResourceLocation.parse("textures/misc/white.png");
@@ -52,6 +53,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final String suffix;
     private final boolean enabled;
     private final boolean editing;
+    private HashMap<String, ResourceLocation> waypointIconMap = new HashMap<>();
 
     public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, Waypoint par2Waypoint, boolean editing) {
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
@@ -199,7 +201,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             this.waypointZ.mouseClicked(mouseX, mouseY, button);
         }
         else if (choosingColor){
-            int pickerSize = (int) (80 * VoxelConstants.getMinecraft().getWindow().getGuiScale());
+            int pickerSize = 200;
             int pickerCenterX = this.getWidth() / 2 - pickerSize / 2;
             int pickerCenterY = this.getHeight() / 2 - pickerSize / 2;
             if (mouseX >= pickerCenterX && mouseX <= pickerCenterX + pickerSize && mouseY >= pickerCenterY && mouseY <= pickerCenterY + pickerSize){
@@ -278,7 +280,14 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         super.render(drawContext, this.choosingColor || this.choosingIcon ? 0 : mouseX, this.choosingColor || this.choosingIcon ? 0 : mouseY, delta);
 
         int buttonListY = this.getHeight() / 6 + 88;
-        ResourceLocation waypointIcon = ResourceLocation.parse("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png");
+        String iconLocation = "voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png";
+        ResourceLocation waypointIcon;
+        if (this.waypointIconMap.containsKey(iconLocation)) {
+            waypointIcon = this.waypointIconMap.get(iconLocation);
+        } else {
+            waypointIcon = ResourceLocation.parse(iconLocation);
+            this.waypointIconMap.put(iconLocation, waypointIcon);
+        }
         RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0F);
         drawContext.blit(RenderType::guiTextured, BLANK, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 256, 256);
         drawContext.blit(RenderType::guiTextured, waypointIcon, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 0.0F, 0.0F, 16, 16, 16, 16);
@@ -288,7 +297,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             renderBackgroundTexture(drawContext);
 
             if (this.choosingColor) {
-                int pickerSize = (int) (80 * VoxelConstants.getMinecraft().getWindow().getGuiScale());
+                int pickerSize = 200;
                 int pickerCenterX = this.getWidth() / 2 - pickerSize / 2;
                 int pickerCenterY = this.getHeight() / 2 - pickerSize / 2;
                 drawContext.blit(RenderType::guiTextured, PICKER, pickerCenterX, pickerCenterY, 0f, 0f, pickerSize, pickerSize, pickerSize, pickerSize);
@@ -304,6 +313,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 }
                 drawContext.flush();
             }
+
             if (this.choosingIcon) {
                 TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
                 float chooserCenterX = this.getWidth() / 2f - chooser.getWidth() / 2f;
@@ -320,11 +330,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
                 if (icon != chooser.getMissingImage()){
-                    ResourceLocation currentIcon = ResourceLocation.parse(icon.getIconName());
+                    iconLocation = icon.getIconName();
+                    if (this.waypointIconMap.containsKey(iconLocation)) {
+                        waypointIcon = this.waypointIconMap.get(iconLocation);
+                    } else {
+                        waypointIcon = ResourceLocation.parse(iconLocation);
+                        this.waypointIconMap.put(iconLocation, waypointIcon);
+                    }
                     int iconSnappedX = icon.getOriginX() + (int) chooserCenterX;
                     int iconSnappedY = icon.getOriginY() + (int) chooserCenterY;
                     RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1f);
-                    drawContext.blit(RenderType::guiTextured, currentIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40);
+                    drawContext.blit(RenderType::guiTextured, waypointIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40);
                     drawContext.flush();
                     RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
@@ -332,7 +348,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     if (iconName.length() > 1){
                         iconName = iconName.substring(0, 1).toUpperCase() + iconName.substring(1).toLowerCase();
                     }
-                    tooltip = Component.literal(iconName);
+                    this.tooltip = Component.literal(iconName);
                 }
             }
         }

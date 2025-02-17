@@ -48,11 +48,16 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
 
     }
 
+    @Override
+    public int getRowWidth() {
+        return 100;
+    }
+
     public void setSelected(DimensionItem entry) {
         super.setSelected(entry);
         if (this.getSelected() instanceof DimensionItem) {
             GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
-            narratorManager.sayNow((Component.translatable("narrator.select", ((DimensionItem) this.getSelected()).dim.name)).getString());
+            narratorManager.sayNow((Component.translatable("narrator.select", (this.getSelected()).dim.name)).getString());
         }
 
         this.parentGui.setSelectedDimension(entry.dim);
@@ -68,7 +73,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 150L;
+        this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 200L;
         this.lastClicked = System.currentTimeMillis();
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -111,13 +116,10 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             GuiSlotDimensions.this.setSelected(this);
-            int leftEdge = this.parentGui.getWidth() / 2;
-            byte padding = 4;
             byte iconWidth = 18;
-            int width = GuiSlotDimensions.this.width;
-            if (mouseX >= (leftEdge + width - iconWidth - padding) && mouseX <= (leftEdge + width)) {
-                this.parentGui.toggleDimensionSelected();
-            } else if (GuiSlotDimensions.this.doubleClicked) {
+            int rightEdge = GuiSlotDimensions.this.getX() + GuiSlotDimensions.this.getWidth();
+            boolean inRange = mouseX >= (rightEdge - iconWidth) && mouseX <= rightEdge;
+            if (inRange && GuiSlotDimensions.this.doubleClicked) {
                 this.parentGui.toggleDimensionSelected();
             }
 

@@ -1,17 +1,10 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,10 +22,10 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     private ArrayList<?> waypointsFiltered;
     final GuiWaypoints parentGui;
     private String filterString = "";
-    static final Component ENABLETOOLTIP = Component.translatable("minimap.waypoints.enabletooltip");
-    static final Component DISABLETOOLTIP = Component.translatable("minimap.waypoints.disabletooltip");
-    static final Component HIGHLIGHTTOOLTIP = Component.translatable("minimap.waypoints.highlighttooltip");
-    static final Component REMOVEHIGHLIGHTTOOLTIP = Component.translatable("minimap.waypoints.removehighlighttooltip");
+    static final Component TOOLTIP_ENABLE = Component.translatable("minimap.waypoints.enabletooltip");
+    static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disabletooltip");
+    static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlighttooltip");
+    static final Component TOOLTIP_HIGHLIGHT_REMOVE = Component.translatable("minimap.waypoints.removehighlighttooltip");
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     final ResourceLocation highlightedIconIdentifier = ResourceLocation.parse("voxelmap:images/waypoints/target.png");
@@ -143,10 +136,10 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + entryHeight) {
                 Component tooltip;
                 if (mouseX >= x + 215 - iconWidth - padding && mouseX <= x + 215 + padding) {
-                    tooltip = this.waypoint.enabled ? GuiSlotWaypoints.DISABLETOOLTIP : GuiSlotWaypoints.ENABLETOOLTIP;
-                } else if (mouseX >= x + padding && mouseX <= x + iconWidth + padding){
-                    tooltip = this.waypoint == this.parentGui.highlightedWaypoint ? REMOVEHIGHLIGHTTOOLTIP : HIGHLIGHTTOOLTIP;
-                } else{
+                    tooltip = this.waypoint.enabled ? GuiSlotWaypoints.TOOLTIP_DISABLE : GuiSlotWaypoints.TOOLTIP_ENABLE;
+                } else if (mouseX >= x + padding && mouseX <= x + iconWidth + padding) {
+                    tooltip = this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_HIGHLIGHT_REMOVE : TOOLTIP_HIGHLIGHT;
+                } else {
                     String tooltipText = "X: " + this.waypoint.getX() + " Z: " + this.waypoint.getZ();
                     if (this.waypoint.getY() > minecraft.level.getMinY()) {
                         tooltipText = tooltipText + " Y: " + this.waypoint.getY();
@@ -181,7 +174,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             int width = 215;
             if (mouseX >= (leftEdge + width - iconWidth - padding) && mouseX <= (leftEdge + width + padding)) {
                 this.parentGui.toggleWaypointVisibility();
-            } else if (mouseX >= (leftEdge + padding) && mouseX <= (leftEdge + iconWidth + padding)){
+            } else if (mouseX >= (leftEdge + padding) && mouseX <= (leftEdge + iconWidth + padding)) {
                 this.parentGui.setHighlightedWaypoint();
             } else if (GuiSlotWaypoints.this.doubleClicked) {
                 this.parentGui.editWaypoint(this.parentGui.selectedWaypoint);

@@ -2,11 +2,12 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.*;
+import com.mamiyaotaru.voxelmap.util.EnumMobs;
+import com.mamiyaotaru.voxelmap.util.CustomMob;
+import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
+import com.mamiyaotaru.voxelmap.util.TextUtils;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,7 +17,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Mob;
 
 class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
@@ -24,8 +24,8 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     final GuiMobs parentGui;
     static final Component ENABLED = Component.translatable("options.minimap.mobs.enabled");
     static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
-    static final Component ENABLETOOLTIP = Component.translatable("options.minimap.mobs.enabletooltip");
-    static final Component DISABLETOOLTIP = Component.translatable("options.minimap.mobs.disabletooltip");
+    static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enabletooltip");
+    static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disabletooltip");
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     final ResourceLocation passiveMobIconIdentifier = ResourceLocation.parse("voxelmap:images/radar/tame.png");
@@ -54,9 +54,9 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         this.mobs.sort((mob1, mob2) -> {
             EnumMobs em1 = EnumMobs.getMobByName(mob1.id);
             EnumMobs em2 = EnumMobs.getMobByName(mob2.id);
-            if (em1.isHostile != em2.isHostile){
+            if (em1.isHostile != em2.isHostile) {
                 return Boolean.compare(em1.isHostile, em2.isHostile);
-            } else if (em1.isNeutral != em2.isNeutral){
+            } else if (em1.isNeutral != em2.isNeutral) {
                 return Boolean.compare(em1.isNeutral, em2.isNeutral);
             }
             return String.CASE_INSENSITIVE_ORDER.compare(mob1.name, mob2.name);
@@ -154,7 +154,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {
                 Component tooltip;
                 if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
-                    tooltip = isEnabled ? GuiSlotMobs.DISABLETOOLTIP : GuiSlotMobs.ENABLETOOLTIP;
+                    tooltip = isEnabled ? GuiSlotMobs.TOOLTIP_DISABLE : GuiSlotMobs.TOOLTIP_ENABLE;
                 } else {
                     tooltip = isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED;
                 }
@@ -163,15 +163,6 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
 
             drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-            if (isHostile && isNeutral){
-                drawContext.blit(RenderType::guiTextured, GuiSlotMobs.this.neutralMobIconIdentifier, x, y + 1, 0.0F, 0.0F, 12, 12, 12, 12);
-            }
-            else if (isHostile){
-                drawContext.blit(RenderType::guiTextured, GuiSlotMobs.this.hostileMobIconIdentifier, x, y + 1, 0.0F, 0.0F, 12, 12, 12, 12);
-            }
-            else if (isNeutral){
-                drawContext.blit(RenderType::guiTextured, GuiSlotMobs.this.passiveMobIconIdentifier, x, y + 1, 0.0F, 0.0F, 12, 12, 12, 12);
-            }
             drawContext.flush();
         }
 
