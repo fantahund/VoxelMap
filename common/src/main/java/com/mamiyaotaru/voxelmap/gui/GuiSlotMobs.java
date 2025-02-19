@@ -2,34 +2,35 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiSlotMinimap;
+import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
-import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-class GuiSlotMobs extends GuiSlotMinimap {
+class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
     private ArrayList<Entry<?>> mobsFiltered;
     final GuiMobs parentGui;
-    static final Component ENABLE = Component.translatable("options.minimap.mobs.enable");
-    static final Component DISABLE = Component.translatable("options.minimap.mobs.disable");
     static final Component ENABLED = Component.translatable("options.minimap.mobs.enabled");
     static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
-    final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/mob_effect/night_vision.png");
-    final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/mob_effect/blindness.png");
+    static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enabletooltip");
+    static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disabletooltip");
+    final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
+    final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
-        super(par1GuiMobs.getWidth(), par1GuiMobs.getHeight(), 32, par1GuiMobs.getHeight() - 65 + 4, 18);
+        super(VoxelConstants.getMinecraft(), par1GuiMobs.getWidth(), par1GuiMobs.getHeight() - 110, 40, 18);
 
         this.parentGui = par1GuiMobs;
         RadarSettingsManager options = this.parentGui.options;
@@ -47,9 +48,18 @@ class GuiSlotMobs extends GuiSlotMinimap {
             }
         }
 
-        this.mobs.sort((mob1, mob2) -> String.CASE_INSENSITIVE_ORDER.compare(mob1.name, mob2.name));
+        this.mobs.sort((mob1, mob2) -> {
+            EnumMobs em1 = EnumMobs.getMobByName(mob1.id);
+            EnumMobs em2 = EnumMobs.getMobByName(mob2.id);
+            if (em1.isHostile != em2.isHostile) {
+                return Boolean.compare(em1.isHostile, em2.isHostile);
+            } else if (em1.isNeutral != em2.isNeutral) {
+                return Boolean.compare(em1.isNeutral, em2.isNeutral);
+            }
+            return String.CASE_INSENSITIVE_ORDER.compare(mob1.name, mob2.name);
+        });
         this.mobsFiltered = new ArrayList<>(this.mobs);
-        this.mobsFiltered.forEach(this::addEntry);
+        this.mobsFiltered.forEach(x -> addEntry((MobItem) x));
     }
 
     private static String getTranslatedName(String name) {
@@ -79,16 +89,6 @@ class GuiSlotMobs extends GuiSlotMinimap {
         return ((MobItem) this.mobsFiltered.get(index)).id.equals(this.parentGui.selectedMobId);
     }
 
-//    @Override
-//    protected int getMaxPosition() {
-//        return this.getItemCount() * this.itemHeight;
-//    }
-
-    @Override
-    public int maxScrollAmount() {
-        return this.getItemCount() * this.itemHeight; //TODO 1.21.4
-    }
-
     protected void updateFilter(String filterString) {
         this.clearEntries();
         this.mobsFiltered = new ArrayList<>(this.mobs);
@@ -105,7 +105,12 @@ class GuiSlotMobs extends GuiSlotMinimap {
             }
         }
 
-        this.mobsFiltered.forEach(this::addEntry);
+        this.mobsFiltered.forEach(x -> this.addEntry((MobItem) x));
+    }
+
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+
     }
 
     public class MobItem extends AbstractSelectionList.Entry<MobItem> {
@@ -146,7 +151,7 @@ class GuiSlotMobs extends GuiSlotMinimap {
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {
                 Component tooltip;
                 if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
-                    tooltip = isEnabled ? GuiSlotMobs.DISABLE : GuiSlotMobs.ENABLE;
+                    tooltip = isEnabled ? GuiSlotMobs.TOOLTIP_DISABLE : GuiSlotMobs.TOOLTIP_ENABLE;
                 } else {
                     tooltip = isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED;
                 }
@@ -165,8 +170,6 @@ class GuiSlotMobs extends GuiSlotMinimap {
             byte padding = 3;
             int width = 215;
             if (mouseX >= (leftEdge + width - 16 - padding) && mouseX <= (leftEdge + width + padding)) {
-                this.parentGui.toggleMobVisibility();
-            } else if (GuiSlotMobs.this.doubleclick) {
                 this.parentGui.toggleMobVisibility();
             }
 
