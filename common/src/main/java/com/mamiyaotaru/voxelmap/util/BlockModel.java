@@ -22,7 +22,7 @@ public class BlockModel {
         this.failedToLoadY = failedToLoadY;
         this.faces = new ArrayList<>();
         for (BakedQuad quad2 : quads) {
-            face = new BlockFace(quad2.getVertices());
+            face = new BlockFace(quad2.vertices());
             if (!face.isClockwise || face.isVertical)
                 continue;
             this.faces.add(face);

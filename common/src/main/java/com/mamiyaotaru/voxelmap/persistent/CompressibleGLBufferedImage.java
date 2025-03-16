@@ -51,7 +51,7 @@ public class CompressibleGLBufferedImage {
     public void baleet() {
         int currentIndex = this.index;
         this.index = 0;
-        if (currentIndex != 0 && RenderSystem.isOnRenderThreadOrInit()) {
+        if (currentIndex != 0 && RenderSystem.isOnRenderThread()) {
             OpenGL.glDeleteTexture(currentIndex);
         }
 

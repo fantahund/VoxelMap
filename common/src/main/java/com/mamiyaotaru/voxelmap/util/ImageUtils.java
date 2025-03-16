@@ -2,7 +2,9 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
@@ -23,8 +25,8 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 
 public class ImageUtils {
-    public static void saveImage(String name, int glid, int maxMipmapLevel, int width, int height) {
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, glid);
+    public static void saveImage(String name, GpuTexture glid, int maxMipmapLevel, int width, int height) {
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) glid).glId());
         OpenGL.glPixelStorei(OpenGL.GL11_GL_PACK_ALIGNMENT, 1);
         OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ALIGNMENT, 1);
 

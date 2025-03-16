@@ -62,7 +62,7 @@ public class TextureAtlas extends AbstractTexture {
         this.mapRegisteredSprites.clear();
         this.mapUploadedSprites.clear();
         this.initMissingImage();
-        int glMaxTextureSize = RenderSystem.maxSupportedTextureSize();
+        int glMaxTextureSize = RenderSystem.tryGetDevice().getMaxTextureSize();
         this.stitcher = new Stitcher(glMaxTextureSize, glMaxTextureSize, 0);
     }
 
@@ -81,10 +81,10 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitch();
 
         VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-        TextureUtilLegacy.allocateTexture(this.getId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        TextureUtilLegacy.allocateTexture(this.getTexture(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
         Arrays.fill(zeros, 0);
-        TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        TextureUtilLegacy.uploadTexture(this.getTexture(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
 
         for (Sprite icon : this.stitcher.getStitchSlots()) {
@@ -111,7 +111,7 @@ public class TextureAtlas extends AbstractTexture {
         this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         if (VoxelConstants.DEBUG) {
-            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         }
     }
 
@@ -163,7 +163,7 @@ public class TextureAtlas extends AbstractTexture {
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         if (VoxelConstants.DEBUG) {
             if (oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
-                ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getId(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+                ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
             }
         }
     }

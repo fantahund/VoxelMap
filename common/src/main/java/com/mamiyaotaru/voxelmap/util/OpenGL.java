@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -316,7 +317,9 @@ public final class OpenGL {
 
         public static void disp(int param) { glBindTexture(GL11_GL_TEXTURE_2D, param); }
 
-        public static void disp2(int param) { RenderSystem.setShaderTexture(0, param); }
+        public static void disp2(GpuTexture param) {
+            RenderSystem.setShaderTexture(0, param);
+        }
 
         public static void register(ResourceLocation resource, AbstractTexture image) { textureManager.register(resource, image); }
 

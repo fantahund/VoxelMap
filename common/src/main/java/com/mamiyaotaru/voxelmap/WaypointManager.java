@@ -207,7 +207,7 @@ public class WaypointManager {
                     serverName = serverData.name;
                 } else if (isRealm) {
                     VoxelConstants.getLogger().info("Server is a Realm.");
-                    RealmsClient realmsClient = RealmsClient.create(Minecraft.getInstance());
+                    RealmsClient realmsClient = RealmsClient.getOrCreate(Minecraft.getInstance());
                     RealmsServerList realmsServerList = realmsClient.listRealms();
                     for (RealmsServer realmsServer : realmsServerList.servers) {
                         if (realmsServer.name.equals(serverData.name)) {

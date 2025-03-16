@@ -22,7 +22,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.animal.PolarBear;
 import net.minecraft.world.entity.animal.Rabbit;
-import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
@@ -180,7 +180,7 @@ public class RadarSimple implements IRadar {
 
     public void renderMapMobs(Matrix4fStack matrixStack, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
-        OpenGL.Utils.disp2(this.textureAtlas.getId());
+        OpenGL.Utils.disp2(this.textureAtlas.getTexture());
 
         for (Contact contact : this.contacts) {
             contact.updateLocation();

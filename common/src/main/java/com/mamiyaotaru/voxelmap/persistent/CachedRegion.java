@@ -328,18 +328,18 @@ public class CachedRegion {
                                             ChunkPos chunkPos = new ChunkPos(this.x * 16 + tx, this.z * 16 + sx);
                                             CompoundTag rawNbt = this.chunkLoader.read(chunkPos).join().get();
                                             CompoundTag nbt = this.chunkLoader.upgradeChunkTag(this.worldServer.dimension(), () -> this.worldServer.getDataStorage(), rawNbt, Optional.empty());
-                                            if (!this.closed && nbt.contains("Level", 10)) {
-                                                CompoundTag level = nbt.getCompound("Level");
-                                                int chunkX = level.getInt("xPos");
-                                                int chunkZ = level.getInt("zPos");
-                                                if (chunkPos.x == chunkX && chunkPos.z == chunkZ && level.contains("Status", 8) && ChunkStatus.byName(level.getString("Status")).isOrAfter(ChunkStatus.SPAWN) && level.contains("Sections")) {
-                                                    ListTag sections = level.getList("Sections", 10);
+                                            if (!this.closed && nbt.contains("Level")) {
+                                                CompoundTag level = nbt.getCompound("Level").get();
+                                                int chunkX = level.getInt("xPos").get();
+                                                int chunkZ = level.getInt("zPos").get();
+                                                if (chunkPos.x == chunkX && chunkPos.z == chunkZ && level.contains("Status") && ChunkStatus.byName(level.getString("Status").get()).isOrAfter(ChunkStatus.SPAWN) && level.contains("Sections")) {
+                                                    ListTag sections = level.getListOrEmpty("Sections");
                                                     if (!sections.isEmpty()) {
                                                         boolean hasInfo = false;
 
                                                         for (int i = 0; i < sections.size() && !hasInfo && !this.closed; ++i) {
-                                                            CompoundTag section = sections.getCompound(i);
-                                                            if (section.contains("Palette", 9) && section.contains("BlockStates", 12)) {
+                                                            CompoundTag section = sections.getCompound(i).get();
+                                                            if (section.contains("Palette") && section.contains("BlockStates")) {
                                                                 hasInfo = true;
                                                             }
                                                         }
