@@ -183,7 +183,7 @@ public class Radar implements IRadar {
     private SkeletonModel<SkeletonRenderState> strayOverlayModel;
     private ZombieModel<ZombieRenderState> drownedOverlayModel;
     private HumanoidModel<HumanoidRenderState> piglinArmorModel;
-    private DynamicTexture nativeBackedTexture = new DynamicTexture(2, 2, false);
+    private DynamicTexture nativeBackedTexture = new DynamicTexture("voxelmap_nativeBackedTexture", 2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     // private HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
@@ -1270,7 +1270,7 @@ public class Radar implements IRadar {
                     NativeImage nativeImage = OpenGL.Utils.nativeImageFromBufferedImage(base);
                     base.flush();
                     this.nativeBackedTexture.close();
-                    this.nativeBackedTexture = new DynamicTexture(nativeImage);
+                    this.nativeBackedTexture = new DynamicTexture(() -> "voxelmap_combine", nativeImage);
                     OpenGL.Utils.register(this.nativeBackedTextureLocation, this.nativeBackedTexture);
                     resourceLocation = this.nativeBackedTextureLocation;
                 }
@@ -1676,7 +1676,7 @@ public class Radar implements IRadar {
 
         for (Contact contact : this.contacts) {
             RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            OpenGL.Utils.disp2(this.textureAtlas.getId());
+            OpenGL.Utils.disp2(this.textureAtlas.getTexture());
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
@@ -1778,7 +1778,7 @@ public class Radar implements IRadar {
                                 this.loadTexturePackIcons();
                             }
 
-                            OpenGL.Utils.disp2(this.textureAtlas.getId());
+                            OpenGL.Utils.disp2(this.textureAtlas.getTexture());
                         }
 
                         this.newMobs = false;

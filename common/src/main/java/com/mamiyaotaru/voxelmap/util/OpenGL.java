@@ -2,11 +2,17 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.opengl.GlDevice;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -202,66 +208,59 @@ public final class OpenGL {
         private Utils() {}
 
         public static void setupFramebuffer() {
-            previousFboId = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
-            fboId = glGenFramebuffers();
-            fboTextureId = glGenTextures();
+            // previousFboId = glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+            // fboId = glGenFramebuffers();
+            // fboTextureId = glGenTextures();
+
 
             int width = 512;
             int height = 512;
-            ByteBuffer buffer = BufferUtils.createByteBuffer(4 * width * height);
 
-            glBindFramebuffer(GL30_GL_FRAMEBUFFER, fboId);
-            glBindTexture(GL11_GL_TEXTURE_2D, fboTextureId);
-            glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_WRAP_S, GL12_GL_CLAMP_TO_EDGE);
-            glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_WRAP_T, GL12_GL_CLAMP_TO_EDGE);
-            glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MIN_FILTER, GL11_GL_LINEAR);
-            glTexParameterf(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MAG_FILTER, GL11_GL_LINEAR);
-            glTexImage2D(GL11_GL_TEXTURE_2D, 0, GL11_GL_RGBA, width, height, 0, GL11_GL_RGBA, GL11_GL_BYTE, buffer);
-            glFramebufferTexture2D(GL30_GL_FRAMEBUFFER, GL30_GL_COLOR_ATTACHMENT0, GL11_GL_TEXTURE_2D, fboTextureId, 0);
+            GpuTexture texture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", TextureFormat.RGBA8, width, height, 1);
+            texture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
+            texture.setTextureFilter(FilterMode.LINEAR, false);
+            GpuTexture textureDepth = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", TextureFormat.DEPTH32, width, height, 1);
+            fboTextureId = ((GlTexture) texture).glId();
+            fboId = ((GlTexture) texture).getFbo(((GlDevice) RenderSystem.getDevice()).directStateAccess(), textureDepth);
 
-            int rboId = glGenRenderbuffers();
-
-            glBindRenderbuffer(GL30_GL_RENDERBUFFER, rboId);
-            glRenderbufferStorage(GL30_GL_RENDERBUFFER, GL14_GL_DEPTH_COMPONENT24, width, height);
-            glFramebufferRenderbuffer(GL30_GL_FRAMEBUFFER, GL30_GL_DEPTH_ATTACHMENT, GL30_GL_RENDERBUFFER, rboId);
-            glBindRenderbuffer(GL30_GL_RENDERBUFFER, 0);
+            GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fboId);
 
             checkFramebufferStatus();
 
-            glBindRenderbuffer(GL30_GL_RENDERBUFFER, previousFboId);
-            GlStateManager._bindTexture(0);
+            // glBindRenderbuffer(GL30.GL_RENDERBUFFER, previousFboId);
+            // GlStateManager._bindTexture(0);
         }
 
         public static void checkFramebufferStatus() {
-            int status = glCheckFramebufferStatus(GL30_GL_FRAMEBUFFER);
+            int status = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER);
 
-            if (status == GL30_GL_FRAMEBUFFER_COMPLETE) {
+            if (status == GL30.GL_FRAMEBUFFER_COMPLETE) {
                 return;
             }
 
             switch (status) {
-                case GL30_GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
-                case GL30_GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
-                case GL30_GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
-                case GL30_GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+                case GL30.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+                case GL30.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+                case GL30.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+                case GL30.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER -> throw new RuntimeException("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
                 default -> throw new RuntimeException("glCheckFramebufferStatus returned unknown status: " + status);
             }
         }
 
         public static void bindFramebuffer() {
-            previousFboId = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
-            previousFboIdRead = glGetInteger(GL30_GL_READ_FRAMEBUFFER_BINDING);
-            previousFboIdDraw = glGetInteger(GL30_GL_FRAMEBUFFER_BINDING);
+            previousFboId = glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
+            previousFboIdRead = glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+            previousFboIdDraw = glGetInteger(GL30.GL_FRAMEBUFFER_BINDING);
 
-            glBindFramebuffer(GL30_GL_FRAMEBUFFER, fboId);
-            glBindFramebuffer(GL30_GL_READ_FRAMEBUFFER, fboId);
-            glBindFramebuffer(GL30_GL_DRAW_FRAMEBUFFER, fboId);
+            glBindFramebuffer(GL30.GL_FRAMEBUFFER, fboId);
+            glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, fboId);
+            glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, fboId);
         }
 
         public static void unbindFramebuffer() {
-            glBindFramebuffer(GL30_GL_FRAMEBUFFER, previousFboId);
-            glBindFramebuffer(GL30_GL_READ_FRAMEBUFFER, previousFboIdRead);
-            glBindFramebuffer(GL30_GL_DRAW_FRAMEBUFFER, previousFboIdDraw);
+            glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFboId);
+            glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, previousFboIdRead);
+            glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, previousFboIdDraw);
         }
 
         public static void setMapWithScale(int x, int y, float scale) { setMap(x, y, (int) (128f * scale)); }
@@ -313,7 +312,9 @@ public final class OpenGL {
             textureManager.getTexture(param).bind();
         }
 
-        public static void img2(ResourceLocation param) { RenderSystem.setShaderTexture(0, param); }
+        public static void img2(GpuTexture param) {
+            RenderSystem.setShaderTexture(0, param);
+        }
 
         public static void disp(int param) { glBindTexture(GL11_GL_TEXTURE_2D, param); }
 

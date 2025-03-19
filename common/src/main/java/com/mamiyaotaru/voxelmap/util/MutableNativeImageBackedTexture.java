@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.system.MemoryUtil;
@@ -9,8 +10,8 @@ public class MutableNativeImageBackedTexture extends DynamicTexture {
     private final NativeImage image;
     private final long pointer;
 
-    public MutableNativeImageBackedTexture(int width, int height, boolean useStb) {
-        super(width, height, useStb);
+    public MutableNativeImageBackedTexture(String label, int width, int height, boolean useStb) {
+        super(label, width, height, useStb);
         this.image = this.getPixels();
         String info = this.image.toString();
         String pointerString = info.substring(info.indexOf('@') + 1, info.indexOf(']') - 1);
@@ -30,7 +31,7 @@ public class MutableNativeImageBackedTexture extends DynamicTexture {
     }
 
     public int getIndex() {
-        return this.getId();
+        return ((GlTexture) this.getTexture()).glId();
     }
 
     public void moveX(int offset) {

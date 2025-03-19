@@ -189,16 +189,16 @@ public class Map implements Runnable, IChangeObserver {
         this.chunkCache[2] = new MapChunkCache(9, 9, this);
         this.chunkCache[3] = new MapChunkCache(17, 17, this);
         this.chunkCache[4] = new MapChunkCache(33, 33, this);
-        this.mapImagesFiltered[0] = new MutableNativeImageBackedTexture(32, 32, true);
-        this.mapImagesFiltered[1] = new MutableNativeImageBackedTexture(64, 64, true);
-        this.mapImagesFiltered[2] = new MutableNativeImageBackedTexture(128, 128, true);
-        this.mapImagesFiltered[3] = new MutableNativeImageBackedTexture(256, 256, true);
-        this.mapImagesFiltered[4] = new MutableNativeImageBackedTexture(512, 512, true);
-        this.mapImagesUnfiltered[0] = new ScaledMutableNativeImageBackedTexture(32, 32, true);
-        this.mapImagesUnfiltered[1] = new ScaledMutableNativeImageBackedTexture(64, 64, true);
-        this.mapImagesUnfiltered[2] = new ScaledMutableNativeImageBackedTexture(128, 128, true);
-        this.mapImagesUnfiltered[3] = new ScaledMutableNativeImageBackedTexture(256, 256, true);
-        this.mapImagesUnfiltered[4] = new ScaledMutableNativeImageBackedTexture(512, 512, true);
+        this.mapImagesFiltered[0] = new MutableNativeImageBackedTexture("voxelmap-map-32", 32, 32, true);
+        this.mapImagesFiltered[1] = new MutableNativeImageBackedTexture("voxelmap-map-64", 64, 64, true);
+        this.mapImagesFiltered[2] = new MutableNativeImageBackedTexture("voxelmap-map-128", 128, 128, true);
+        this.mapImagesFiltered[3] = new MutableNativeImageBackedTexture("voxelmap-map-256", 256, 256, true);
+        this.mapImagesFiltered[4] = new MutableNativeImageBackedTexture("voxelmap-map-512", 512, 512, true);
+        this.mapImagesUnfiltered[0] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-32", 32, 32, true);
+        this.mapImagesUnfiltered[1] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-64", 64, 64, true);
+        this.mapImagesUnfiltered[2] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-128", 128, 128, true);
+        this.mapImagesUnfiltered[3] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-256", 256, 256, true);
+        this.mapImagesUnfiltered[4] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-512", 512, 512, true);
         if (this.options.filtering) {
             this.mapImages = this.mapImagesFiltered;
         } else {
@@ -1634,7 +1634,7 @@ public class Map implements Runnable, IChangeObserver {
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        OpenGL.Utils.disp2(textureAtlas.getId());
+        RenderSystem.setShaderTexture(0, textureAtlas.getTexture());
         OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);

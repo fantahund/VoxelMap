@@ -1,73 +1,20 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
-import com.mamiyaotaru.voxelmap.mixins.BiomeAccessor;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.mixins.BiomeAccessor;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
-import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
-import javax.imageio.ImageIO;
-
-import net.minecraft.ResourceLocationException;
-import net.minecraft.client.Options;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.BlockModelShaper;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemTransform;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.FoliageColor;
-import net.minecraft.world.level.GrassColor;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.DoorBlock;
-import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.RedStoneWireBlock;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.SignBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
-
-import java.awt.*;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.opengl.GlTexture;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -86,6 +33,45 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.imageio.ImageIO;
+import net.minecraft.ResourceLocationException;
+import net.minecraft.client.Options;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockModelShaper;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.FoliageColor;
+import net.minecraft.world.level.GrassColor;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
+import org.joml.Vector3f;
 
 public class ColorManager {
     private boolean resourcePacksChanged;
@@ -316,7 +302,7 @@ public class ColorManager {
 
     private void loadTexturePackTerrainImage() {
         try {
-            VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).bind();
+            GlStateManager._bindTexture(((GlTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture()).glId());
             BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
             this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
             Graphics gfx = this.terrainBuff.createGraphics();
@@ -452,10 +438,12 @@ public class ColorManager {
             RenderShape blockRenderType = blockState.getRenderShape();
             BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
             if (blockRenderType == RenderShape.MODEL) {
-                BakedModel iBakedModel = blockRendererDispatcher.getBlockModel(blockState);
+                BlockStateModel iBakedModel = blockRendererDispatcher.getBlockModel(blockState);
                 List<BakedQuad> quads = new ArrayList<>();
-                quads.addAll(iBakedModel.getQuads(blockState, facing, this.random));
-                quads.addAll(iBakedModel.getQuads(blockState, null, this.random));
+                for (BlockModelPart modelPart : iBakedModel.collectParts(this.random)) {
+                    quads.addAll(modelPart.getQuads(facing));
+                    quads.addAll(modelPart.getQuads(null));
+                }
                 BlockModel model = new BlockModel(quads, this.failedToLoadX, this.failedToLoadY);
                 if (model.numberOfFaces() > 0) {
                     BufferedImage modelImage = model.getImage(this.terrainBuff);
@@ -476,7 +464,7 @@ public class ColorManager {
     private int getColorForTerrainSprite(BlockState blockState, BlockRenderDispatcher blockRendererDispatcher) {
         BlockModelShaper blockModelShapes = blockRendererDispatcher.getBlockModelShaper();
         TextureAtlasSprite icon = blockModelShapes.getParticleIcon(blockState);
-        if (icon == blockModelShapes.getModelManager().getMissingModel().getParticleIcon()) {
+        if (icon == blockModelShapes.getModelManager().getMissingBlockStateModel().particleIcon()) {
             Block block = blockState.getBlock();
             Block material = blockState.getBlock();
             if (block instanceof LiquidBlock) {
@@ -863,10 +851,12 @@ public class ColorManager {
 
                             for (BlockState blockState : testBlock.getStateDefinition().getPossibleStates()) {
                                 try {
-                                    BakedModel bakedModel = blockModelShapes.getBlockModel(blockState);
+                                    BlockStateModel bakedModel = blockModelShapes.getBlockModel(blockState);
                                     List<BakedQuad> quads = new ArrayList<>();
-                                    quads.addAll(bakedModel.getQuads(blockState, Direction.UP, this.random));
-                                    quads.addAll(bakedModel.getQuads(blockState, null, this.random));
+                                    for (BlockModelPart modelPart : bakedModel.collectParts(this.random)) {
+                                        quads.addAll(modelPart.getQuads(Direction.UP));
+                                        quads.addAll(modelPart.getQuads(null));
+                                    }
                                     BlockModel model = new BlockModel(quads, this.failedToLoadX, this.failedToLoadY);
                                     if (model.numberOfFaces() > 0) {
                                         ArrayList<BlockModel.BlockFace> blockFaces = model.getFaces();

@@ -231,7 +231,7 @@ public class WaypointContainer {
         }
 
         RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        OpenGL.Utils.disp2(textureAtlas.getId());
+        OpenGL.Utils.disp2(textureAtlas.getTexture());
         if (withDepth) {
             OpenGL.glDepthMask(distance < maxDistance);
             OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
