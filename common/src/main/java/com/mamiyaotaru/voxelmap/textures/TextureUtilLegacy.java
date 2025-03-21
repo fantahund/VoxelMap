@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import org.apache.commons.io.IOUtils;
@@ -34,19 +33,6 @@ public final class TextureUtilLegacy {
         }
     }
 
-    public static void allocateTexture(GpuTexture glTextureId, int width, int height) {
-        RenderSystem.bindTexture(glTextureId);
-        RenderSystem.pixelStore(GL30C.GL_UNPACK_ROW_LENGTH, 0);
-        RenderSystem.pixelStore(GL30C.GL_UNPACK_SKIP_PIXELS, 0);
-        RenderSystem.pixelStore(GL30C.GL_UNPACK_SKIP_ROWS, 0);
-        GlStateManager._texImage2D(GL30C.GL_TEXTURE_2D, 0, GL30C.GL_RGBA, width, height, 0, GL30C.GL_BGRA, GL30C.GL_UNSIGNED_INT_8_8_8_8_REV, null);
-    }
-
-    public static void uploadTexture(GpuTexture glTextureId, int[] zeros, int currentImageWidth, int currentImageHeight) {
-        RenderSystem.bindTexture(glTextureId);
-        uploadTextureSub(zeros, currentImageWidth, currentImageHeight, 0, 0);
-    }
-
     public static void uploadSubTexture(int[] textureData, int width, int height, int originX, int originY) {
         uploadTextureSub(textureData, width, height, originX, originY);
     }
@@ -58,13 +44,14 @@ public final class TextureUtilLegacy {
     }
 
     private static void uploadTextureSub(int[] imageData, int width, int height, int originX, int originY) {
-        RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_MIN_FILTER, GL30C.GL_NEAREST);
-        RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_MAG_FILTER, GL30C.GL_NEAREST);
-        RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_WRAP_S, GL30C.GL_REPEAT);
-        RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_WRAP_T, GL30C.GL_REPEAT);
-        RenderSystem.pixelStore(GL30C.GL_UNPACK_ROW_LENGTH, width);
-        RenderSystem.pixelStore(GL30C.GL_UNPACK_SKIP_PIXELS, 0);
-        RenderSystem.pixelStore(GL30C.GL_UNPACK_SKIP_ROWS, 0);
+        // FIXME 1.21.5
+        // RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_MIN_FILTER, GL30C.GL_NEAREST);
+        // RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_MAG_FILTER, GL30C.GL_NEAREST);
+        // RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_WRAP_S, GL30C.GL_REPEAT);
+        // RenderSystem.texParameter(GL30C.GL_TEXTURE_2D, GL30C.GL_TEXTURE_WRAP_T, GL30C.GL_REPEAT);
+        // RenderSystem.pixelStore(GL30C.GL_UNPACK_ROW_LENGTH, width);
+        // RenderSystem.pixelStore(GL30C.GL_UNPACK_SKIP_PIXELS, 0);
+        // RenderSystem.pixelStore(GL30C.GL_UNPACK_SKIP_ROWS, 0);
 
         int maxRows = DATA_BUFFER_SIZE / width;
         int rowsToCopy;

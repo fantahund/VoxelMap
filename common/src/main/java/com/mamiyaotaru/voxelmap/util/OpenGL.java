@@ -201,6 +201,7 @@ public final class OpenGL {
         public static final TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
         public static int fboId = -1;
         public static int fboTextureId = -1;
+        public static GpuTexture fboTexture;
         public static int previousFboId = -1;
         public static int previousFboIdRead = -1;
         public static int previousFboIdDraw = -1;
@@ -216,12 +217,12 @@ public final class OpenGL {
             int width = 512;
             int height = 512;
 
-            GpuTexture texture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", TextureFormat.RGBA8, width, height, 1);
-            texture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
-            texture.setTextureFilter(FilterMode.LINEAR, false);
-            GpuTexture textureDepth = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", TextureFormat.DEPTH32, width, height, 1);
-            fboTextureId = ((GlTexture) texture).glId();
-            fboId = ((GlTexture) texture).getFbo(((GlDevice) RenderSystem.getDevice()).directStateAccess(), textureDepth);
+            fboTexture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", TextureFormat.RGBA8, width, height, 1);
+            fboTexture.setAddressMode(AddressMode.CLAMP_TO_EDGE);
+            fboTexture.setTextureFilter(FilterMode.LINEAR, false);
+            GpuTexture textureDepth = RenderSystem.getDevice().createTexture("voxelmap-fbodepthtexture", TextureFormat.DEPTH32, width, height, 1);
+            fboTextureId = ((GlTexture) fboTexture).glId();
+            fboId = ((GlTexture) fboTexture).getFbo(((GlDevice) RenderSystem.getDevice()).directStateAccess(), textureDepth);
 
             GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fboId);
 
@@ -306,17 +307,24 @@ public final class OpenGL {
             return glId;
         }
 
-        public static void img2(String param) { img2(ResourceLocation.parse(param)); }
+        // public static void img2(String param) { img2(ResourceLocation.parse(param)); }
 
         public static void img(ResourceLocation param) {
-            textureManager.getTexture(param).bind();
+            disp(textureManager.getTexture(param).getTexture());
         }
 
         public static void img2(GpuTexture param) {
             RenderSystem.setShaderTexture(0, param);
         }
 
-        public static void disp(int param) { glBindTexture(GL11_GL_TEXTURE_2D, param); }
+        public static void disp(GpuTexture param) {
+            glBindTexture(GL11_GL_TEXTURE_2D, ((GlTexture) param).glId());
+        }
+
+        @Deprecated
+        public static void dispId(int id) {
+            glBindTexture(GL11_GL_TEXTURE_2D, id);
+        }
 
         public static void disp2(GpuTexture param) {
             RenderSystem.setShaderTexture(0, param);

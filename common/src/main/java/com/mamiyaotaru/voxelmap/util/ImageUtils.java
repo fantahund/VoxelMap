@@ -2,7 +2,13 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import org.joml.Matrix4f;
@@ -22,34 +28,12 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class ImageUtils {
-    public static void saveImage(String name, GpuTexture glid, int maxMipmapLevel, int width, int height) {
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) glid).glId());
-        OpenGL.glPixelStorei(OpenGL.GL11_GL_PACK_ALIGNMENT, 1);
-        OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ALIGNMENT, 1);
-
-        for (int mipmapLevel = 0; mipmapLevel <= maxMipmapLevel; ++mipmapLevel) {
-            File file = new File(name + "_" + mipmapLevel + ".png");
-            int destWidth = width >> mipmapLevel;
-            int destHeight = height >> mipmapLevel;
-            int numPixels = destWidth * destHeight;
-            IntBuffer pixelBuffer = BufferUtils.createIntBuffer(numPixels);
-            int[] pixelArray = new int[numPixels];
-            OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, mipmapLevel, OpenGL.GL12_GL_BGRA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8_REV, pixelBuffer);
-            pixelBuffer.get(pixelArray);
-            BufferedImage bufferedImage = new BufferedImage(destWidth, destHeight, 2);
-            bufferedImage.setRGB(0, 0, destWidth, destHeight, pixelArray, 0, destWidth);
-
-            try {
-                ImageIO.write(bufferedImage, "png", file);
-                VoxelConstants.getLogger().debug("Exported png to: {}", new Object[]{file.getAbsolutePath()});
-            } catch (IOException var15) {
-                VoxelConstants.getLogger().debug("Unable to write: ", var15);
-            }
-        }
-
+    public static void saveImage(String name, GpuTexture texture, int maxMipmapLevel, int width, int height) {
+        TextureUtil.writeAsPNG(Paths.get(""), name, texture, maxMipmapLevel, i -> i);
     }
 
     public static BufferedImage validateImage(BufferedImage image) {
@@ -134,7 +118,7 @@ public class ImageUtils {
             OpenGL.Utils.bindFramebuffer();
             for (int startX = 0; startX + fboWidth < imageWidth; startX += fboWidth) {
                 for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
-                    OpenGL.Utils.disp(glid);
+                    OpenGL.Utils.dispId(glid);
                     OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
                     OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
                     OpenGL.Utils.drawPre();
@@ -143,7 +127,7 @@ public class ImageUtils {
                     OpenGL.Utils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + fboWidth) / imageWidth, ((float) startY + fboHeight) / imageHeight);
                     OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, (float) startX / imageWidth, ((float) startY + fboHeight) / imageHeight);
                     OpenGL.Utils.drawPost();
-                    OpenGL.Utils.disp(OpenGL.Utils.fboTextureId);
+                    OpenGL.Utils.disp(OpenGL.Utils.fboTexture);
                     byteBuffer.position(0);
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
                     byteBuffer.position(0);

@@ -179,7 +179,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         if (imageData != null) {
             gotSkin = true;
-            OpenGL.Utils.disp(imageData.getId());
+            OpenGL.Utils.disp(imageData.getTexture());
         } else {
             ++skinTries;
             OpenGL.Utils.img(skinLocation);

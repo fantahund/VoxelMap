@@ -33,10 +33,11 @@ public abstract class MixinWorldRenderer {
         if (VoxelMap.mapOptions.waypointsAllowed && (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints)) {
             boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter() || this.getTranslucentTarget() == null;
             if (!drawSignForeground) {
-                RenderTarget framebuffer = VoxelConstants.getMinecraft().getMainRenderTarget();
-                GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, this.getTranslucentTarget().frameBufferId);
-                GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, framebuffer.frameBufferId);
-                GlStateManager._glBlitFrameBuffer(0, 0, this.getTranslucentTarget().width, this.getTranslucentTarget().height, 0, 0, framebuffer.width, framebuffer.height, 256, OpenGL.GL11_GL_NEAREST);
+                // FIXME 1.21.5
+                // RenderTarget framebuffer = VoxelConstants.getMinecraft().getMainRenderTarget();
+                // GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_READ_FRAMEBUFFER, this.getTranslucentTarget().frameBufferId);
+                // GlStateManager._glBindFramebuffer(OpenGL.GL30_GL_DRAW_FRAMEBUFFER, framebuffer.frameBufferId);
+                // GlStateManager._glBlitFrameBuffer(0, 0, this.getTranslucentTarget().width, this.getTranslucentTarget().height, 0, 0, framebuffer.width, framebuffer.height, 256, OpenGL.GL11_GL_NEAREST);
             }
 
             Matrix4fStack matrixStack = RenderSystem.getModelViewStack();

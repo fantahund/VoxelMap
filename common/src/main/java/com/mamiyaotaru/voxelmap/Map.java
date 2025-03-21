@@ -1612,7 +1612,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.ORTHOGRAPHIC);
         matrixStack.pushMatrix();
         OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
-        OpenGL.Utils.disp2(OpenGL.Utils.fboTextureId);
+        OpenGL.Utils.disp2(OpenGL.Utils.fboTexture);
 
         double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
@@ -1816,7 +1816,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
+        OpenGL.Utils.disp2(this.mapImages[this.zoom].getTexture());
         RenderSystem.bindTextureForSetup(this.mapImages[this.zoom].getIndex());
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
         OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);

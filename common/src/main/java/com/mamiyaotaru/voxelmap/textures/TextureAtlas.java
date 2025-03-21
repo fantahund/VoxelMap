@@ -4,7 +4,9 @@ import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.TextureFormat;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
@@ -81,12 +83,11 @@ public class TextureAtlas extends AbstractTexture {
         this.stitcher.doStitch();
 
         VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-        TextureUtilLegacy.allocateTexture(this.getTexture(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
-        int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
-        Arrays.fill(zeros, 0);
-        TextureUtilLegacy.uploadTexture(this.getTexture(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+
+        texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
 
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
         for (Sprite icon : this.stitcher.getStitchSlots()) {
             String iconName = icon.getIconName();
             tempMapRegisteredSprites.remove(iconName);
@@ -126,15 +127,20 @@ public class TextureAtlas extends AbstractTexture {
 
         this.stitcher.doStitchNew();
 
-        if (oldWidth == this.stitcher.getCurrentImageWidth() && oldHeight == this.stitcher.getCurrentImageHeight()) {
-            OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.id);
-        } else {
+        if (texture == null || oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
+            if (texture != null) {
+                texture.close();
+                texture = null;
+            }
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
-            TextureUtilLegacy.allocateTexture(this.getId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
-            int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
-            Arrays.fill(zeros, 0);
-            TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
+            // TextureUtilLegacy.allocateTexture(this.getId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            // int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
+            // Arrays.fill(zeros, 0);
+            // TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         }
+
+        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
 
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
 

@@ -73,7 +73,6 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.HorseRenderer;
@@ -1202,7 +1201,7 @@ public class Radar implements IRadar {
                         endermanModel.root().getChild("head").getChild("hat").visible = true;
                     }
                     if (VoxelConstants.DEBUG) {
-                        ImageUtils.saveImage(type.id, OpenGL.Utils.fboTextureId, 0, 512, 512);
+                        ImageUtils.saveImage(type.id, OpenGL.Utils.fboTexture, 0, 512, 512);
                     }
                     if (success) {
                         headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
@@ -1675,12 +1674,12 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
 
         for (Contact contact : this.contacts) {
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
+            // RenderSystem.setShader(CoreShaders.POSITION_TEX); FIXME 1.21.5
             OpenGL.Utils.disp2(this.textureAtlas.getTexture());
             OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
             OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
 
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
+            // RenderSystem.setShader(CoreShaders.POSITION_TEX); FIXME 1.21.5
             contact.updateLocation();
             double contactX = contact.x;
             double contactZ = contact.z;
