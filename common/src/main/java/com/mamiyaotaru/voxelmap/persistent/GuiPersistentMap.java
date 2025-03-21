@@ -168,6 +168,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     private void getSkin() {
         ResourceLocation skinLocation = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile()).texture();
+        // PlayerTabOverlay
+        // PlayerFaceRenderer.draw(guiGraphics, playerInfo2.getSkin().texture(), z, aa, 8, playerInfo2.showHat(), bl2, -1);
+
         AbstractTexture imageData = null; //TODO 1.21.4
 
         try {
