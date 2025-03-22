@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import java.awt.image.BufferedImage;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.resources.ResourceLocation;
 
 public class Sprite {
     private final String iconName;
-    protected int[] imageData;
+    protected NativeImage imageData;
     protected int originX;
     protected int originY;
     protected int width;
@@ -33,8 +33,8 @@ public class Sprite {
         this.originY = originY;
         float var6 = (float) (0.01F / (double) sheetWidth);
         float var7 = (float) (0.01F / (double) sheetHeight);
-        this.minU = originX / (float) ((double) sheetWidth) + var6;
-        this.maxU = (originX + this.width) / (float) ((double) sheetWidth) - var6;
+        this.minU = originX / (float) (sheetWidth) + var6;
+        this.maxU = (originX + this.width) / (float) (sheetWidth) - var6;
         this.minV = (float) originY / sheetHeight + var7;
         this.maxV = (float) (originY + this.height) / sheetHeight - var7;
     }
@@ -86,7 +86,7 @@ public class Sprite {
         return this.iconName;
     }
 
-    public int[] getTextureData() {
+    public NativeImage getTextureData() {
         return this.imageData;
     }
 
@@ -98,29 +98,15 @@ public class Sprite {
         this.height = height;
     }
 
-    public void bufferedImageToIntData(BufferedImage bufferedImage) {
-        this.resetSprite();
-        int var3 = bufferedImage.getWidth();
-        int var4 = bufferedImage.getHeight();
-        this.width = var3;
-        this.height = var4;
-        int[] imageData;
-        imageData = new int[bufferedImage.getWidth() * bufferedImage.getHeight()];
-        bufferedImage.getRGB(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), imageData, 0, bufferedImage.getWidth());
-
-        if (var4 != var3) {
-            throw new RuntimeException("broken aspect ratio");
-        } else {
-            this.imageData = imageData;
+    public void setTextureData(NativeImage imageData) {
+        if (this.imageData != null) {
+            this.imageData.close();
         }
-    }
-
-    public void setTextureData(int[] imageData) {
         this.imageData = imageData;
-    }
-
-    private void resetSprite() {
-        this.imageData = new int[0];
+        if (imageData != null) {
+            this.width = imageData.getWidth();
+            this.height = imageData.getHeight();
+        }
     }
 
     public String toString() {

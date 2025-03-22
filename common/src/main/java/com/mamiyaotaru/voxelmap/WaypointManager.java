@@ -83,9 +83,9 @@ public class WaypointManager {
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");
-        // FIXME 1.21.5 this.textureAtlas.setFilter(false, false);
+        this.textureAtlas.setFilter(false, false);
         this.textureAtlasChooser = new TextureAtlas("chooser");
-        // FIXME 1.21.5 this.textureAtlasChooser.setFilter(false, false);
+        this.textureAtlasChooser.setFilter(false, false);
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
@@ -100,11 +100,11 @@ public class WaypointManager {
                 }
             }
 
-            Sprite markerIcon = textureAtlas.registerIconForResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/waypoints/marker.png"), VoxelConstants.getMinecraft().getResourceManager());
-            Sprite markerIconSmall = textureAtlas.registerIconForResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/waypoints/markersmall.png"), VoxelConstants.getMinecraft().getResourceManager());
+            Sprite markerIcon = textureAtlas.registerIconForResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/waypoints/marker.png"));
+            Sprite markerIconSmall = textureAtlas.registerIconForResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/waypoints/markersmall.png"));
 
             for (ResourceLocation resourceLocation : images) {
-                Sprite icon = textureAtlas.registerIconForResource(resourceLocation, VoxelConstants.getMinecraft().getResourceManager());
+                Sprite icon = textureAtlas.registerIconForResource(resourceLocation);
                 String name = resourceLocation.toString();
                 if (name.toLowerCase().contains("waypoints/waypoint") && !name.toLowerCase().contains("small")) {
                     textureAtlas.registerMaskedIcon(name.replace(".png", "Small.png"), icon);
@@ -120,21 +120,11 @@ public class WaypointManager {
         // FIXME 1.21.5 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
         // FIXME 1.21.5 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         this.textureAtlasChooser.reset();
-        int expectedSize = 32;
 
         for (ResourceLocation resourceLocation : images) {
             String name = resourceLocation.toString();
             if (name.toLowerCase().contains("waypoints/waypoint") && !name.toLowerCase().contains("small")) {
-                try {
-                    Optional<Resource> imageResource = resourceManager.getResource(resourceLocation);
-                    BufferedImage bufferedImage = ImageIO.read(imageResource.get().open());
-                    imageResource.get().openAsReader().close();
-                    float scale = expectedSize / (float) bufferedImage.getWidth();
-                    bufferedImage = ImageUtils.scaleImage(bufferedImage, scale);
-                    this.textureAtlasChooser.registerIconForBufferedImage(name, bufferedImage);
-                } catch (IOException var11) {
-                    this.textureAtlasChooser.registerIconForResource(resourceLocation, VoxelConstants.getMinecraft().getResourceManager());
-                }
+                this.textureAtlasChooser.registerIconForResource(resourceLocation);
             }
         }
 

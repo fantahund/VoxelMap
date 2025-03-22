@@ -208,7 +208,7 @@ public class Radar implements IRadar {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("mobs");
-        // FIXME 1.21.5 this.textureAtlas.setFilter(false, false);
+        this.textureAtlas.setFilter(false, false);
 
         try {
             Class<?> randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
@@ -253,262 +253,260 @@ public class Radar implements IRadar {
 
     private void loadTexturePackIcons() {
         // FIXME 1.21.5
-        if (true) {
-            return;
-        }
-        this.completedLoading = false;
-
-        try {
-            this.mpContactsSkinGetTries.clear();
-            this.contactsSkinGetTries.clear();
-            this.textureAtlas.reset();
-            LayerDefinition texturedModelData12 = SkullModel.createHumanoidHeadLayer();
-            ModelPart skullModelPart = texturedModelData12.bakeRoot();
-            this.playerSkullModel = new SkullModel(skullModelPart);
-            CubeDeformation ARMOR_DILATION = new CubeDeformation(1.0F);
-            LayerDefinition texturedModelData2 = LayerDefinition.create(HumanoidModel.createMesh(ARMOR_DILATION, 0.0F), 64, 32);
-            ModelPart bipedArmorModelPart = texturedModelData2.bakeRoot();
-            this.bipedArmorModel = new HumanoidModel<>(bipedArmorModelPart);
-            LayerDefinition strayModelData = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32);
-            ModelPart strayOverlayModelPart = strayModelData.bakeRoot();
-            this.strayOverlayModel = new SkeletonModel<>(strayOverlayModelPart);
-            LayerDefinition drownedModelData = DrownedModel.createBodyLayer(new CubeDeformation(0.25F));
-            ModelPart drownedOverlayModelPart = drownedModelData.bakeRoot();
-            this.drownedOverlayModel = new ZombieModel<>(drownedOverlayModelPart);
-            LayerDefinition texturedModelData3 = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(1.02F), 0.0F), 64, 32);
-            ModelPart piglinArmorModelPart = texturedModelData3.bakeRoot();
-            this.piglinArmorModel = new HumanoidModel<>(piglinArmorModelPart);
-            if (ReflectionUtils.classExists("com.prupe.mcpatcher.mob.MobOverlay") && ImageUtils.loadImage(ResourceLocation.parse("mcpatcher/mob/cow/mooshroom_overlay.png"), 0, 0, 1, 1) != null) {
-                EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("mcpatcher/mob/cow/mooshroom_overlay.png");
-            } else {
-                EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("textures/block/red_mushroom.png");
-            }
-
-            for (int t = 0; t < EnumMobs.values().length - 1; ++t) {
-                String identifier = "minecraft." + EnumMobs.values()[t].id;
-                String identifierSimple = EnumMobs.values()[t].id;
-                String spriteName = identifier + EnumMobs.values()[t].resourceLocation.toString();
-                spriteName = spriteName + (EnumMobs.values()[t].secondaryResourceLocation != null ? EnumMobs.values()[t].secondaryResourceLocation.toString() : "");
-                BufferedImage mobImage = this.getCustomMobImage(identifier, identifierSimple);
-                if (mobImage != null) {
-                    Sprite sprite = this.textureAtlas.registerIconForBufferedImage(identifier + "custom", mobImage);
-                    this.textureAtlas.registerMaskedIcon(spriteName, sprite);
-                } else {
-                    this.textureAtlas.registerFailedIcon(identifier + "custom");
-                    if (EnumMobs.values()[t].expectedWidth > 0.5) {
-                        mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
-                        if (mobImage != null) {
-                            float scale = mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
-                            mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
-                            this.textureAtlas.registerIconForBufferedImage(spriteName, mobImage);
-                        }
-                    }
-                }
-            }
-
-            /*BufferedImage[] armorImages = { ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8),
-                    ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
-
-            for (int t = 0; t < armorImages.length; ++t) {
-                float scale = armorImages[t].getWidth() / 8.0F;
-                armorImages[t] = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorImages[t], 4.0F / scale * 47.0F / 38.0F)), this.options.outlines && t != 2 && t != 3, true, 37.6F, 37.6F, 2);
-                Sprite icon = this.textureAtlas.registerIconForBufferedImage("armor " + this.armorNames[t], armorImages[t]);
-                if (t == 0) {
-                    this.clothIcon = icon;
-                }
-            }*/ //FIXME 1.21.2
-
-            BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
-            float scale = zombie.getWidth() / 8.0F;
-            zombie = ImageUtils.scaleImage(zombie, 4.0F / scale * 47.0F / 38.0F);
-            BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64);
-            zombieHat = ImageUtils.scaleImage(zombieHat, 4.0F / scale * 47.0F / 35.0F);
-            zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8),
-                    zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
-            zombieHat.flush();
-            zombie = ImageUtils.fillOutline(ImageUtils.pad(zombie), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head", zombie);
-            BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32);
-            scale = skeleton.getWidth() / 8.0F;
-            skeleton = ImageUtils.scaleImage(skeleton, 4.0F / scale * 47.0F / 38.0F);
-            skeleton = ImageUtils.addImages(new BufferedImage(skeleton.getWidth(), skeleton.getHeight() + 8, 6), skeleton, 0.0F, 0.0F, skeleton.getWidth(), skeleton.getHeight() + 8);
-            skeleton = ImageUtils.fillOutline(ImageUtils.pad(skeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head", skeleton);
-            BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32);
-            scale = witherSkeleton.getWidth() / 8.0F;
-            witherSkeleton = ImageUtils.scaleImage(witherSkeleton, 4.0F / scale * 47.0F / 38.0F);
-            witherSkeleton = ImageUtils.addImages(new BufferedImage(witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8, 6), witherSkeleton, 0.0F, 0.0F, witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8);
-            witherSkeleton = ImageUtils.fillOutline(ImageUtils.pad(witherSkeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head", witherSkeleton);
-            BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8), 0.0F, 0.0F, 8, 10);
-            scale = creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
-            creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
-            BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
-            scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
-            dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
-            BufferedImage sheepFur = ImageUtils.loadImage(ResourceLocation.parse("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
-            scale = sheepFur.getWidth() / 6.0F;
-            sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
-            int chop = (int) Math.max(1.0F, 2.0F);
-            ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
-            sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
-            this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
-            ResourceLocation fontResourceLocation = ResourceLocation.parse("textures/font/ascii.png");
-            BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
-            if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
-                int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
-                float scaleBy = 512.0F / maxDim;
-                fontImage = ImageUtils.scaleImage(fontImage, scaleBy);
-            }
-
-            this.textureAtlas.stitch();
-            applyFilteringParameters();
-            this.completedLoading = true;
-        } catch (Exception var30) {
-            VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
-        }
+        // this.completedLoading = false;
+        //
+        // try {
+        // this.mpContactsSkinGetTries.clear();
+        // this.contactsSkinGetTries.clear();
+        // this.textureAtlas.reset();
+        // LayerDefinition texturedModelData12 = SkullModel.createHumanoidHeadLayer();
+        // ModelPart skullModelPart = texturedModelData12.bakeRoot();
+        // this.playerSkullModel = new SkullModel(skullModelPart);
+        // CubeDeformation ARMOR_DILATION = new CubeDeformation(1.0F);
+        // LayerDefinition texturedModelData2 = LayerDefinition.create(HumanoidModel.createMesh(ARMOR_DILATION, 0.0F), 64, 32);
+        // ModelPart bipedArmorModelPart = texturedModelData2.bakeRoot();
+        // this.bipedArmorModel = new HumanoidModel<>(bipedArmorModelPart);
+        // LayerDefinition strayModelData = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32);
+        // ModelPart strayOverlayModelPart = strayModelData.bakeRoot();
+        // this.strayOverlayModel = new SkeletonModel<>(strayOverlayModelPart);
+        // LayerDefinition drownedModelData = DrownedModel.createBodyLayer(new CubeDeformation(0.25F));
+        // ModelPart drownedOverlayModelPart = drownedModelData.bakeRoot();
+        // this.drownedOverlayModel = new ZombieModel<>(drownedOverlayModelPart);
+        // LayerDefinition texturedModelData3 = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(1.02F), 0.0F), 64, 32);
+        // ModelPart piglinArmorModelPart = texturedModelData3.bakeRoot();
+        // this.piglinArmorModel = new HumanoidModel<>(piglinArmorModelPart);
+        // if (ReflectionUtils.classExists("com.prupe.mcpatcher.mob.MobOverlay") && ImageUtils.loadImage(ResourceLocation.parse("mcpatcher/mob/cow/mooshroom_overlay.png"), 0, 0, 1, 1) != null) {
+        // EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("mcpatcher/mob/cow/mooshroom_overlay.png");
+        // } else {
+        // EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("textures/block/red_mushroom.png");
+        // }
+        //
+        // for (int t = 0; t < EnumMobs.values().length - 1; ++t) {
+        // String identifier = "minecraft." + EnumMobs.values()[t].id;
+        // String identifierSimple = EnumMobs.values()[t].id;
+        // String spriteName = identifier + EnumMobs.values()[t].resourceLocation.toString();
+        // spriteName = spriteName + (EnumMobs.values()[t].secondaryResourceLocation != null ? EnumMobs.values()[t].secondaryResourceLocation.toString() : "");
+        // BufferedImage mobImage = this.getCustomMobImage(identifier, identifierSimple);
+        // if (mobImage != null) {
+        // Sprite sprite = this.textureAtlas.registerIconForBufferedImage(identifier + "custom", mobImage);
+        // this.textureAtlas.registerMaskedIcon(spriteName, sprite);
+        // } else {
+        // this.textureAtlas.registerFailedIcon(identifier + "custom");
+        // if (EnumMobs.values()[t].expectedWidth > 0.5) {
+        // mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
+        // if (mobImage != null) {
+        // float scale = mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
+        // mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
+        // this.textureAtlas.registerIconForBufferedImage(spriteName, mobImage);
+        // }
+        // }
+        // }
+        // }
+        //
+        // /*BufferedImage[] armorImages = { ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8),
+        // ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
+        //
+        // for (int t = 0; t < armorImages.length; ++t) {
+        // float scale = armorImages[t].getWidth() / 8.0F;
+        // armorImages[t] = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorImages[t], 4.0F / scale * 47.0F / 38.0F)), this.options.outlines && t != 2 && t != 3, true, 37.6F, 37.6F, 2);
+        // Sprite icon = this.textureAtlas.registerIconForBufferedImage("armor " + this.armorNames[t], armorImages[t]);
+        // if (t == 0) {
+        // this.clothIcon = icon;
+        // }
+        // }*/ //FIXME 1.21.2
+        //
+        // BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
+        // float scale = zombie.getWidth() / 8.0F;
+        // zombie = ImageUtils.scaleImage(zombie, 4.0F / scale * 47.0F / 38.0F);
+        // BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64);
+        // zombieHat = ImageUtils.scaleImage(zombieHat, 4.0F / scale * 47.0F / 35.0F);
+        // zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8),
+        // zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
+        // zombieHat.flush();
+        // zombie = ImageUtils.fillOutline(ImageUtils.pad(zombie), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head", zombie);
+        // BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32);
+        // scale = skeleton.getWidth() / 8.0F;
+        // skeleton = ImageUtils.scaleImage(skeleton, 4.0F / scale * 47.0F / 38.0F);
+        // skeleton = ImageUtils.addImages(new BufferedImage(skeleton.getWidth(), skeleton.getHeight() + 8, 6), skeleton, 0.0F, 0.0F, skeleton.getWidth(), skeleton.getHeight() + 8);
+        // skeleton = ImageUtils.fillOutline(ImageUtils.pad(skeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head", skeleton);
+        // BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32);
+        // scale = witherSkeleton.getWidth() / 8.0F;
+        // witherSkeleton = ImageUtils.scaleImage(witherSkeleton, 4.0F / scale * 47.0F / 38.0F);
+        // witherSkeleton = ImageUtils.addImages(new BufferedImage(witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8, 6), witherSkeleton, 0.0F, 0.0F, witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8);
+        // witherSkeleton = ImageUtils.fillOutline(ImageUtils.pad(witherSkeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head", witherSkeleton);
+        // BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8), 0.0F, 0.0F, 8, 10);
+        // scale = creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
+        // creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
+        // BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
+        // scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
+        // dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
+        // BufferedImage sheepFur = ImageUtils.loadImage(ResourceLocation.parse("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
+        // scale = sheepFur.getWidth() / 6.0F;
+        // sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
+        // int chop = (int) Math.max(1.0F, 2.0F);
+        // ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
+        // sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
+        // this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
+        // ResourceLocation fontResourceLocation = ResourceLocation.parse("textures/font/ascii.png");
+        // BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
+        // if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
+        // int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
+        // float scaleBy = 512.0F / maxDim;
+        // fontImage = ImageUtils.scaleImage(fontImage, scaleBy);
+        // }
+        //
+        // this.textureAtlas.stitch();
+        // applyFilteringParameters();
+        // this.completedLoading = true;
+        // } catch (Exception var30) {
+        // VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
+        // }
 
     }
 
     private BufferedImage createImageFromTypeAndResourceLocations(EnumMobs type, ResourceLocation resourceLocation, ResourceLocation resourceLocationSecondary, Entity entity) {
-        BufferedImage mobImage = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
-        BufferedImage mobImageSecondary = null;
+        NativeImage mobImage = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+        NativeImage mobImageSecondary = null;
         if (resourceLocationSecondary != null) {
             mobImageSecondary = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
         }
 
         try {
-            return this.createImageFromTypeAndImages(type, mobImage, mobImageSecondary, entity);
+            // FIXME 1.21.5 return this.createImageFromTypeAndImages(type, mobImage, mobImageSecondary, entity);
         } catch (Exception var8) {
-            return null;
         }
+        return null;
     }
 
     private BufferedImage createImageFromTypeAndImages(EnumMobs type, BufferedImage mobImage, BufferedImage mobImageSecondary, Entity entity) {
         BufferedImage image = null;
-        switch (type) {
-            case GENERICHOSTILE ->
-                    image = ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
-            case GENERICNEUTRAL ->
-                    image = ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
-            case GENERICTAME ->
-                    image = ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
-            case BAT ->
-                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 64, 64), ImageUtils.loadImage(mobImage, 25, 1, 3, 4), 0.0F, 0.0F, 8, 12), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 25, 1, 3, 4)), 5.0F, 0.0F, 8, 12),
-                            ImageUtils.loadImage(mobImage, 6, 6, 6, 6), 1.0F, 3.0F, 8, 12);
-            case CHICKEN ->
-                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 2, 3, 6, 6), ImageUtils.loadImage(mobImage, 16, 2, 4, 2), 1.0F, 2.0F, 6, 6), ImageUtils.loadImage(mobImage, 16, 6, 2, 2), 2.0F, 4.0F, 6, 6);
-            case COD -> image = ImageUtils.addImages(
-                    ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 5, 32, 32), ImageUtils.loadImage(mobImage, 15, 3, 1, 3, 32, 32), 1.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 16, 3, 3, 4, 32, 32), 2.0F, 1.0F, 16, 5),
-                            ImageUtils.loadImage(mobImage, 9, 7, 7, 4, 32, 32), 5.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 26, 7, 4, 4, 32, 32), 12.0F, 1.0F, 16, 5),
-                    ImageUtils.loadImage(mobImage, 26, 0, 6, 1, 32, 32), 4.0F, 0.0F, 16, 5);
-            case ENDERDRAGON -> image = ImageUtils.addImages(ImageUtils.addImages(
-                    ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 20, 256, 256), ImageUtils.loadImage(mobImage, 128, 46, 16, 16, 256, 256), 0.0F, 4.0F, 16, 16), ImageUtils.loadImage(mobImage, 192, 60, 12, 5, 256, 256), 2.0F, 11.0F, 16, 16),
-                            ImageUtils.loadImage(mobImage, 192, 81, 12, 4, 256, 256), 2.0F, 16.0F, 16, 16),
-                    ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256), 3.0F, 0.0F, 16, 16), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256)), 11.0F, 0.0F, 16, 16);
-            case GHAST, GHASTATTACKING -> image = ImageUtils.loadImage(mobImage, 16, 16, 16, 16);
-            case GUARDIAN ->
-                    image = ImageUtils.scaleImage(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12), 0.5F);
-            case GUARDIANELDER ->
-                    image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12);
-            case HORSE -> image = ImageUtils.addImages(
-                    ImageUtils.addImages(ImageUtils.addImages(
-                            ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 24, 64, 64), ImageUtils.loadImage(mobImage, 56, 38, 2, 16, 64, 64), 1.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 42, 7, 12, 64, 64), 3.0F, 12.0F, 16, 24),
-                                    ImageUtils.loadImage(mobImage, 0, 20, 7, 5, 64, 64), 3.0F, 7.0F, 16, 24),
-                            ImageUtils.loadImage(mobImage, 0, 30, 5, 5, 64, 64), 10.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 19, 17, 1, 3, 64, 64), 3.0F, 4.0F, 16, 24),
-                    ImageUtils.loadImage(mobImage, 0, 13, 1, 7, 64, 64), 3.0F, 0.0F, 16, 24);
-            case IRONGOLEM ->
-                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 128, 128), ImageUtils.loadImage(mobImage, 8, 8, 8, 10, 128, 128), 0.0F, 1.0F, 8, 12), ImageUtils.loadImage(mobImage, 26, 2, 2, 4, 128, 128), 3.0F, 8.0F, 8, 12);
-            case LLAMA, LLAMATRADER -> image = ImageUtils
-                    .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 14, 128, 64), ImageUtils.loadImage(mobImage, 6, 20, 8, 8, 128, 64), 0.0F, 3.0F, 8, 14), ImageUtils.loadImage(mobImage, 9, 9, 4, 4, 128, 64), 2.0F, 5.0F, 8, 14),
-                            ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 0.0F, 0.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 5.0F, 0.0F, 8, 14);
-            case MAGMA ->
-                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 8, 8, 8, 8), ImageUtils.loadImage(mobImage, 32, 18, 8, 1), 0.0F, 3.0F, 8, 8), ImageUtils.loadImage(mobImage, 32, 27, 8, 1), 0.0F, 4.0F, 8, 8);
-            case MOOSHROOM -> {
-                image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 40, 40), ImageUtils.loadImage(mobImage, 6, 6, 8, 8), 16.0F, 16.0F, 40, 40), ImageUtils.loadImage(mobImage, 23, 1, 1, 3), 15.0F, 15.0F, 40, 40),
-                        ImageUtils.loadImage(mobImage, 23, 1, 1, 3), 24.0F, 15.0F, 40, 40);
-                if (mobImageSecondary != null) {
-                    BufferedImage mushroomImage;
-                    if (mobImageSecondary.getWidth() != mobImageSecondary.getHeight()) {
-                        mushroomImage = ImageUtils.loadImage(mobImageSecondary, 32, 0, 16, 16, 48, 16);
-                    } else {
-                        mushroomImage = ImageUtils.loadImage(mobImageSecondary, 0, 0, 16, 16, 16, 16);
-                    }
-
-                    float ratio = (float) image.getWidth() / mushroomImage.getWidth();
-                    if (ratio < 2.5) {
-                        image = ImageUtils.scaleImage(image, 2.5F / ratio);
-                    } else if (ratio > 2.5) {
-                        mushroomImage = ImageUtils.scaleImage(mushroomImage, ratio / 2.5F);
-                    }
-
-                    ImageUtils.addImages(image, mushroomImage, 12.0F, 0.0F, 40, 40);
-                }
-            }
-            case PARROT -> image = ImageUtils.addImages(
-                    ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8, 32, 32), ImageUtils.loadImage(mobImage, 2, 22, 3, 5, 32, 32), 1.0F, 0.0F, 8, 8), ImageUtils.loadImage(mobImage, 10, 4, 4, 1, 32, 32), 2.0F, 4.0F, 8, 8),
-                            ImageUtils.loadImage(mobImage, 2, 4, 2, 3, 32, 32), 2.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 11, 8, 1, 2, 32, 32), 4.0F, 5.0F, 8, 8),
-                    ImageUtils.loadImage(mobImage, 16, 8, 1, 2, 32, 32), 5.0F, 5.0F, 8, 8);
-            case PHANTOM ->
-                    image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 5, 5, 7, 3, 64, 64), ImageUtils.loadImage(mobImageSecondary, 5, 5, 7, 3, 64, 64), 0.0F, 0.0F, 7, 3);
-            case PUFFERFISH ->
-                    image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 3, 3, 32, 32), ImageUtils.loadImage(mobImage, 3, 30, 3, 2, 32, 32), 0.0F, 1.0F, 3, 3), ImageUtils.loadImage(mobImage, 3, 29, 1, 1, 32, 32), 0.0F, 0.0F, 3, 3),
-                            ImageUtils.loadImage(mobImage, 5, 29, 1, 1, 32, 32), 2.0F, 0.0F, 3, 3);
-            case PUFFERFISHHALF -> image = ImageUtils.loadImage(mobImage, 17, 27, 5, 5, 32, 32);
-            case PUFFERFISHFULL -> image = ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 32, 32);
-            case SALMON -> image = ImageUtils.addImages(
-                    ImageUtils.addImages(ImageUtils
-                                    .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 26, 7, 32, 32), ImageUtils.loadImage(mobImage, 27, 3, 3, 4, 32, 32), 1.0F, 2.5F, 26, 7), ImageUtils.loadImage(mobImage, 11, 8, 8, 5, 32, 32), 4.0F, 2.0F, 26, 7),
-                                            ImageUtils.loadImage(mobImage, 11, 21, 8, 5, 32, 32), 12.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 26, 16, 6, 5, 32, 32), 20.0F, 2.0F, 26, 7),
-                            ImageUtils.loadImage(mobImage, 0, 0, 2, 2, 32, 32), 10.0F, 0.0F, 26, 7),
-                    ImageUtils.loadImage(mobImage, 5, 6, 3, 2, 32, 32), 12.0F, 0.0F, 26, 7);
-            case SLIME -> image = ImageUtils
-                    .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8),
-                            ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-            case TROPICALFISHA -> {
-                if (entity instanceof TropicalFish fish) {
-                    Color primaryColorsA = new Color(fish.getBaseColor().getTextureDiffuseColor());
-                    Color secondaryColorsA = new Color(fish.getPatternColor().getTextureDiffuseColor());
-                    BufferedImage baseA = ImageUtils
-                            .colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 10, 6, 32, 32), ImageUtils.loadImage(mobImage, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImage, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6),
-                                    ImageUtils.loadImage(mobImage, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), primaryColorsA.getRed(), primaryColorsA.getGreen(), primaryColorsA.getBlue());
-                    BufferedImage patternA = ImageUtils.colorify(ImageUtils.addImages(
-                            ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 10, 6, 32, 32), ImageUtils.loadImage(mobImageSecondary, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6),
-                            ImageUtils.loadImage(mobImageSecondary, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), secondaryColorsA.getRed(), secondaryColorsA.getGreen(), secondaryColorsA.getBlue());
-                    image = ImageUtils.addImages(baseA, patternA, 0.0F, 0.0F, 10, 6);
-                    baseA.flush();
-                    patternA.flush();
-                }
-            }
-            case TROPICALFISHB -> {
-                if (entity instanceof TropicalFish fish) {
-                    Color primaryColorsB = new Color(fish.getBaseColor().getTextureDiffuseColor());
-                    Color secondaryColorsB = new Color(fish.getPatternColor().getTextureDiffuseColor());
-                    BufferedImage baseB = ImageUtils.colorify(ImageUtils
-                                    .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 12, 12, 32, 32), ImageUtils.loadImage(mobImage, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12),
-                                            ImageUtils.loadImage(mobImage, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12),
-                            primaryColorsB.getRed(), primaryColorsB.getGreen(), primaryColorsB.getBlue());
-                    BufferedImage patternB = ImageUtils
-                            .colorify(
-                                    ImageUtils.addImages(
-                                            ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 12, 12, 32, 32), ImageUtils.loadImage(mobImageSecondary, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12),
-                                                    ImageUtils.loadImage(mobImageSecondary, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12),
-                                            ImageUtils.loadImage(mobImageSecondary, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12),
-                                    secondaryColorsB.getRed(), secondaryColorsB.getGreen(), secondaryColorsB.getBlue());
-                    image = ImageUtils.addImages(baseB, patternB, 0.0F, 0.0F, 12, 12);
-                    baseB.flush();
-                    patternB.flush();
-                }
-
-            }
-            case WITHER, WITHERINVULNERABLE -> image = ImageUtils.addImages(
-                    ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 24, 10, 64, 64), ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 64, 64), 8.0F, 0.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 0.0F, 2.0F, 24, 10),
-                    ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 18.0F, 2.0F, 24, 10);
-            default -> {
-            }
-        }
+        // FIXME 1.21.5
+        // switch (type) {
+        // case GENERICHOSTILE ->
+        // image = ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16);
+        // case GENERICNEUTRAL ->
+        // image = ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16);
+        // case GENERICTAME ->
+        // image = ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16);
+        // case BAT ->
+        // image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 64, 64), ImageUtils.loadImage(mobImage, 25, 1, 3, 4), 0.0F, 0.0F, 8, 12), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 25, 1, 3, 4)), 5.0F, 0.0F, 8, 12),
+        // ImageUtils.loadImage(mobImage, 6, 6, 6, 6), 1.0F, 3.0F, 8, 12);
+        // case CHICKEN ->
+        // image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 2, 3, 6, 6), ImageUtils.loadImage(mobImage, 16, 2, 4, 2), 1.0F, 2.0F, 6, 6), ImageUtils.loadImage(mobImage, 16, 6, 2, 2), 2.0F, 4.0F, 6, 6);
+        // case COD -> image = ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 5, 32, 32), ImageUtils.loadImage(mobImage, 15, 3, 1, 3, 32, 32), 1.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 16, 3, 3, 4, 32, 32), 2.0F, 1.0F, 16, 5),
+        // ImageUtils.loadImage(mobImage, 9, 7, 7, 4, 32, 32), 5.0F, 1.0F, 16, 5), ImageUtils.loadImage(mobImage, 26, 7, 4, 4, 32, 32), 12.0F, 1.0F, 16, 5),
+        // ImageUtils.loadImage(mobImage, 26, 0, 6, 1, 32, 32), 4.0F, 0.0F, 16, 5);
+        // case ENDERDRAGON -> image = ImageUtils.addImages(ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 20, 256, 256), ImageUtils.loadImage(mobImage, 128, 46, 16, 16, 256, 256), 0.0F, 4.0F, 16, 16), ImageUtils.loadImage(mobImage, 192, 60, 12, 5, 256, 256), 2.0F, 11.0F, 16, 16),
+        // ImageUtils.loadImage(mobImage, 192, 81, 12, 4, 256, 256), 2.0F, 16.0F, 16, 16),
+        // ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256), 3.0F, 0.0F, 16, 16), ImageUtils.flipHorizontal(ImageUtils.loadImage(mobImage, 6, 6, 2, 4, 256, 256)), 11.0F, 0.0F, 16, 16);
+        // case GHAST, GHASTATTACKING -> image = ImageUtils.loadImage(mobImage, 16, 16, 16, 16);
+        // case GUARDIAN ->
+        // image = ImageUtils.scaleImage(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12), 0.5F);
+        // case GUARDIANELDER ->
+        // image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 16, 16, 12, 12), ImageUtils.loadImage(mobImage, 9, 1, 2, 2), 5.0F, 5.5F, 12, 12);
+        // case HORSE -> image = ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 16, 24, 64, 64), ImageUtils.loadImage(mobImage, 56, 38, 2, 16, 64, 64), 1.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 0, 42, 7, 12, 64, 64), 3.0F, 12.0F, 16, 24),
+        // ImageUtils.loadImage(mobImage, 0, 20, 7, 5, 64, 64), 3.0F, 7.0F, 16, 24),
+        // ImageUtils.loadImage(mobImage, 0, 30, 5, 5, 64, 64), 10.0F, 7.0F, 16, 24), ImageUtils.loadImage(mobImage, 19, 17, 1, 3, 64, 64), 3.0F, 4.0F, 16, 24),
+        // ImageUtils.loadImage(mobImage, 0, 13, 1, 7, 64, 64), 3.0F, 0.0F, 16, 24);
+        // case IRONGOLEM ->
+        // image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 12, 128, 128), ImageUtils.loadImage(mobImage, 8, 8, 8, 10, 128, 128), 0.0F, 1.0F, 8, 12), ImageUtils.loadImage(mobImage, 26, 2, 2, 4, 128, 128), 3.0F, 8.0F, 8, 12);
+        // case LLAMA, LLAMATRADER -> image = ImageUtils
+        // .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 14, 128, 64), ImageUtils.loadImage(mobImage, 6, 20, 8, 8, 128, 64), 0.0F, 3.0F, 8, 14), ImageUtils.loadImage(mobImage, 9, 9, 4, 4, 128, 64), 2.0F, 5.0F, 8, 14),
+        // ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 0.0F, 0.0F, 8, 14), ImageUtils.loadImage(mobImage, 19, 2, 3, 3, 128, 64), 5.0F, 0.0F, 8, 14);
+        // case MAGMA ->
+        // image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.loadImage(mobImage, 8, 8, 8, 8), ImageUtils.loadImage(mobImage, 32, 18, 8, 1), 0.0F, 3.0F, 8, 8), ImageUtils.loadImage(mobImage, 32, 27, 8, 1), 0.0F, 4.0F, 8, 8);
+        // case MOOSHROOM -> {
+        // image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 40, 40), ImageUtils.loadImage(mobImage, 6, 6, 8, 8), 16.0F, 16.0F, 40, 40), ImageUtils.loadImage(mobImage, 23, 1, 1, 3), 15.0F, 15.0F, 40, 40),
+        // ImageUtils.loadImage(mobImage, 23, 1, 1, 3), 24.0F, 15.0F, 40, 40);
+        // if (mobImageSecondary != null) {
+        // BufferedImage mushroomImage;
+        // if (mobImageSecondary.getWidth() != mobImageSecondary.getHeight()) {
+        // mushroomImage = ImageUtils.loadImage(mobImageSecondary, 32, 0, 16, 16, 48, 16);
+        // } else {
+        // mushroomImage = ImageUtils.loadImage(mobImageSecondary, 0, 0, 16, 16, 16, 16);
+        // }
+        //
+        // float ratio = (float) image.getWidth() / mushroomImage.getWidth();
+        // if (ratio < 2.5) {
+        // image = ImageUtils.scaleImage(image, 2.5F / ratio);
+        // } else if (ratio > 2.5) {
+        // mushroomImage = ImageUtils.scaleImage(mushroomImage, ratio / 2.5F);
+        // }
+        //
+        // ImageUtils.addImages(image, mushroomImage, 12.0F, 0.0F, 40, 40);
+        // }
+        // }
+        // case PARROT -> image = ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8, 32, 32), ImageUtils.loadImage(mobImage, 2, 22, 3, 5, 32, 32), 1.0F, 0.0F, 8, 8), ImageUtils.loadImage(mobImage, 10, 4, 4, 1, 32, 32), 2.0F, 4.0F, 8, 8),
+        // ImageUtils.loadImage(mobImage, 2, 4, 2, 3, 32, 32), 2.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 11, 8, 1, 2, 32, 32), 4.0F, 5.0F, 8, 8),
+        // ImageUtils.loadImage(mobImage, 16, 8, 1, 2, 32, 32), 5.0F, 5.0F, 8, 8);
+        // case PHANTOM ->
+        // image = ImageUtils.addImages(ImageUtils.loadImage(mobImage, 5, 5, 7, 3, 64, 64), ImageUtils.loadImage(mobImageSecondary, 5, 5, 7, 3, 64, 64), 0.0F, 0.0F, 7, 3);
+        // case PUFFERFISH ->
+        // image = ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 3, 3, 32, 32), ImageUtils.loadImage(mobImage, 3, 30, 3, 2, 32, 32), 0.0F, 1.0F, 3, 3), ImageUtils.loadImage(mobImage, 3, 29, 1, 1, 32, 32), 0.0F, 0.0F, 3, 3),
+        // ImageUtils.loadImage(mobImage, 5, 29, 1, 1, 32, 32), 2.0F, 0.0F, 3, 3);
+        // case PUFFERFISHHALF -> image = ImageUtils.loadImage(mobImage, 17, 27, 5, 5, 32, 32);
+        // case PUFFERFISHFULL -> image = ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 32, 32);
+        // case SALMON -> image = ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils
+        // .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 26, 7, 32, 32), ImageUtils.loadImage(mobImage, 27, 3, 3, 4, 32, 32), 1.0F, 2.5F, 26, 7), ImageUtils.loadImage(mobImage, 11, 8, 8, 5, 32, 32), 4.0F, 2.0F, 26, 7),
+        // ImageUtils.loadImage(mobImage, 11, 21, 8, 5, 32, 32), 12.0F, 2.0F, 26, 7), ImageUtils.loadImage(mobImage, 26, 16, 6, 5, 32, 32), 20.0F, 2.0F, 26, 7),
+        // ImageUtils.loadImage(mobImage, 0, 0, 2, 2, 32, 32), 10.0F, 0.0F, 26, 7),
+        // ImageUtils.loadImage(mobImage, 5, 6, 3, 2, 32, 32), 12.0F, 0.0F, 26, 7);
+        // case SLIME -> image = ImageUtils
+        // .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 8, 8), ImageUtils.loadImage(mobImage, 6, 22, 6, 6), 1.0F, 1.0F, 8, 8), ImageUtils.loadImage(mobImage, 34, 6, 2, 2), 5.0F, 2.0F, 8, 8),
+        // ImageUtils.loadImage(mobImage, 34, 2, 2, 2), 1.0F, 2.0F, 8, 8), ImageUtils.loadImage(mobImage, 33, 9, 1, 1), 4.0F, 5.0F, 8, 8), ImageUtils.loadImage(mobImage, 8, 8, 8, 8), 0.0F, 0.0F, 8, 8);
+        // case TROPICALFISHA -> {
+        // if (entity instanceof TropicalFish fish) {
+        // Color primaryColorsA = new Color(fish.getBaseColor().getTextureDiffuseColor());
+        // Color secondaryColorsA = new Color(fish.getPatternColor().getTextureDiffuseColor());
+        // BufferedImage baseA = ImageUtils
+        // .colorify(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 10, 6, 32, 32), ImageUtils.loadImage(mobImage, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImage, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6),
+        // ImageUtils.loadImage(mobImage, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), primaryColorsA.getRed(), primaryColorsA.getGreen(), primaryColorsA.getBlue());
+        // BufferedImage patternA = ImageUtils.colorify(ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 10, 6, 32, 32), ImageUtils.loadImage(mobImageSecondary, 8, 6, 6, 3, 32, 32), 0.0F, 3.0F, 10, 6), ImageUtils.loadImage(mobImageSecondary, 17, 1, 5, 3, 32, 32), 1.0F, 0.0F, 10, 6),
+        // ImageUtils.loadImage(mobImageSecondary, 28, 0, 4, 3, 32, 32), 6.0F, 3.0F, 10, 6), secondaryColorsA.getRed(), secondaryColorsA.getGreen(), secondaryColorsA.getBlue());
+        // image = ImageUtils.addImages(baseA, patternA, 0.0F, 0.0F, 10, 6);
+        // baseA.flush();
+        // patternA.flush();
+        // }
+        // }
+        // case TROPICALFISHB -> {
+        // if (entity instanceof TropicalFish fish) {
+        // Color primaryColorsB = new Color(fish.getBaseColor().getTextureDiffuseColor());
+        // Color secondaryColorsB = new Color(fish.getPatternColor().getTextureDiffuseColor());
+        // BufferedImage baseB = ImageUtils.colorify(ImageUtils
+        // .addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 12, 12, 32, 32), ImageUtils.loadImage(mobImage, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12),
+        // ImageUtils.loadImage(mobImage, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12), ImageUtils.loadImage(mobImage, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12),
+        // primaryColorsB.getRed(), primaryColorsB.getGreen(), primaryColorsB.getBlue());
+        // BufferedImage patternB = ImageUtils
+        // .colorify(
+        // ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImageSecondary, 12, 12, 32, 32), ImageUtils.loadImage(mobImageSecondary, 0, 26, 6, 6, 32, 32), 6.0F, 3.0F, 12, 12),
+        // ImageUtils.loadImage(mobImageSecondary, 20, 21, 6, 6, 32, 32), 0.0F, 3.0F, 12, 12), ImageUtils.loadImage(mobImageSecondary, 20, 18, 5, 3, 32, 32), 6.0F, 0.0F, 12, 12),
+        // ImageUtils.loadImage(mobImageSecondary, 20, 27, 5, 3, 32, 32), 6.0F, 9.0F, 12, 12),
+        // secondaryColorsB.getRed(), secondaryColorsB.getGreen(), secondaryColorsB.getBlue());
+        // image = ImageUtils.addImages(baseB, patternB, 0.0F, 0.0F, 12, 12);
+        // baseB.flush();
+        // patternB.flush();
+        // }
+        //
+        // }
+        // case WITHER, WITHERINVULNERABLE -> image = ImageUtils.addImages(
+        // ImageUtils.addImages(ImageUtils.addImages(ImageUtils.blankImage(mobImage, 24, 10, 64, 64), ImageUtils.loadImage(mobImage, 8, 8, 8, 8, 64, 64), 8.0F, 0.0F, 24, 10), ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 0.0F, 2.0F, 24, 10),
+        // ImageUtils.loadImage(mobImage, 38, 6, 6, 6, 64, 64), 18.0F, 2.0F, 24, 10);
+        // default -> {
+        // }
+        // }
 
         mobImage.flush();
         if (mobImageSecondary != null) {
@@ -666,23 +664,24 @@ public class Radar implements IRadar {
         if (icon == this.textureAtlas.getMissingImage()) {
             boolean isHostile = this.isHostile(contact.entity);
             CustomMobsManager.add(contact.entity.getType().getDescriptionId(), isHostile, !isHostile);
-            BufferedImage mobSkin = this.getCustomMobImage(identifier, identifierSimple);
-            if (mobSkin != null) {
-                icon = this.textureAtlas.registerIconForBufferedImage(identifier + "custom", mobSkin);
-                this.newMobs = true;
-                contact.icon = icon;
-                contact.custom = true;
-            } else {
-                this.textureAtlas.registerFailedIcon(identifier + "custom");
-            }
+            // FIXME 1.21.5
+            // BufferedImage mobSkin = this.getCustomMobImage(identifier, identifierSimple);
+            // if (mobSkin != null) {
+            // icon = this.textureAtlas.registerIconForBufferedImage(identifier + "custom", mobSkin);
+            // this.newMobs = true;
+            // contact.icon = icon;
+            // contact.custom = true;
+            // } else {
+            // this.textureAtlas.registerFailedIcon(identifier + "custom");
+            // }
         } else if (icon != this.textureAtlas.getFailedImage()) {
             contact.custom = true;
             contact.icon = icon;
         }
     }
 
-    private BufferedImage getCustomMobImage(String identifier, String identifierSimple) {
-        BufferedImage mobSkin = null;
+    private NativeImage getCustomMobImage(String identifier, String identifierSimple) {
+        NativeImage mobSkin = null;
 
         try {
             int intendedSize = 8;
@@ -760,11 +759,12 @@ public class Radar implements IRadar {
             }
 
             if (is != null) {
-                mobSkin = ImageIO.read(is);
-                is.close();
-                mobSkin = ImageUtils.validateImage(mobSkin);
-                float scale = (float) mobSkin.getWidth() / intendedSize;
-                mobSkin = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobSkin, 4.0F / scale)), this.options.outlines, 2);
+                // FIXME 1.21.5
+                // mobSkin = ImageIO.read(is);
+                // is.close();
+                // mobSkin = ImageUtils.validateImage(mobSkin);
+                // float scale = (float) mobSkin.getWidth() / intendedSize;
+                // mobSkin = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobSkin, 4.0F / scale)), this.options.outlines, 2);
             }
         } catch (Exception var16) {
             mobSkin = null;
@@ -858,42 +858,43 @@ public class Radar implements IRadar {
                 checkCount = 0;
             }
 
-            BufferedImage mobImage = null;
+            NativeImage mobImage = null;
             if (contact.type == EnumMobs.HORSE) {
-                BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
-                if (resourceLocationSecondary != null && base != null) {
-                    BufferedImage variant = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
-                    variant = ImageUtils.scaleImage(variant, (float) base.getWidth() / variant.getWidth(), (float) base.getHeight() / variant.getHeight());
-                    base = ImageUtils.addImages(base, variant, 0.0F, 0.0F, base.getWidth(), base.getHeight());
-                    variant.flush();
-                }
-
-                if (resourceLocationTertiary != null && base != null) {
-                    BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
-                    pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / pattern.getWidth(), (float) base.getHeight() / pattern.getHeight());
-                    pattern = ImageUtils.colorify(pattern, contact.armorColor);
-                    base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
-                    pattern.flush();
-                }
-
-                if (resourceLocationQuaternary != null && base != null) {
-                    BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationQuaternary);
-                    armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / armor.getWidth(), (float) base.getHeight() / armor.getHeight());
-                    armor = ImageUtils.colorify(armor, contact.armorColor);
-                    base = ImageUtils.addImages(base, armor, 0.0F, 0.0F, base.getWidth(), base.getHeight());
-                    armor.flush();
-                }
-
-                mobImage = this.createImageFromTypeAndImages(contact.type, base, null, contact.entity);
-                base.flush();
+                // FIXME 1.21.5
+                // NativeImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+                // if (resourceLocationSecondary != null && base != null) {
+                // NativeImage variant = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
+                // variant = ImageUtils.scaleImage(variant, (float) base.getWidth() / variant.getWidth(), (float) base.getHeight() / variant.getHeight());
+                // base = ImageUtils.addImages(base, variant, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                // variant.flush();
+                // }
+                //
+                // if (resourceLocationTertiary != null && base != null) {
+                // NativeImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
+                // pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / pattern.getWidth(), (float) base.getHeight() / pattern.getHeight());
+                // pattern = ImageUtils.colorify(pattern, contact.armorColor);
+                // base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                // pattern.flush();
+                // }
+                //
+                // if (resourceLocationQuaternary != null && base != null) {
+                // NativeImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationQuaternary);
+                // armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / armor.getWidth(), (float) base.getHeight() / armor.getHeight());
+                // armor = ImageUtils.colorify(armor, contact.armorColor);
+                // base = ImageUtils.addImages(base, armor, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                // armor.flush();
+                // }
+                //
+                // mobImage = this.createImageFromTypeAndImages(contact.type, base, null, contact.entity);
+                // base.flush();
             } else if (contact.type.expectedWidth > 0.5) {
-                mobImage = this.createImageFromTypeAndResourceLocations(contact.type, resourceLocation, resourceLocationSecondary, contact.entity);
+                // FIXME 1.21.5 mobImage = this.createImageFromTypeAndResourceLocations(contact.type, resourceLocation, resourceLocationSecondary, contact.entity);
             }
 
             if (mobImage != null) {
-                mobImage = this.trimAndOutlineImage(contact, mobImage, false, true);
+                // FIXME 1.21.5 mobImage = this.trimAndOutlineImage(contact, mobImage, false, true);
             } else {
-                mobImage = this.createAutoIconImageFromResourceLocations(contact, render, resourceLocation, resourceLocationSecondary, resourceLocationTertiary, resourceLocationQuaternary);
+                // FIXME 1.21.5 mobImage = this.createAutoIconImageFromResourceLocations(contact, render, resourceLocation, resourceLocationSecondary, resourceLocationTertiary, resourceLocationQuaternary);
             }
 
             if (mobImage != null) {
@@ -1248,7 +1249,7 @@ public class Radar implements IRadar {
             boolean hasAdditional = false;
 
             try {
-                BufferedImage base = null;
+                NativeImage base = null;
 
                 for (int t = 1; t < resourceLocations.length; ++t) {
                     if (resourceLocations[t] != null) {
@@ -1257,15 +1258,15 @@ public class Radar implements IRadar {
                         }
 
                         hasAdditional = true;
-                        BufferedImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]);
+                        NativeImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]);
                         float xScale = ((float) base.getWidth() / overlay.getWidth());
                         float yScale = ((float) base.getHeight() / overlay.getHeight());
                         if (xScale != 1.0F || yScale != 1.0F) {
-                            overlay = ImageUtils.scaleImage(overlay, xScale, yScale);
+                            // FIXME 1.21.5 overlay = ImageUtils.scaleImage(overlay, xScale, yScale);
                         }
 
-                        ImageUtils.addImages(base, overlay, 0.0F, 0.0F, base.getWidth(), base.getHeight());
-                        overlay.flush();
+                        // FIXME 1.21.5 ImageUtils.addImages(base, overlay, 0.0F, 0.0F, base.getWidth(), base.getHeight());
+                        // FIXME 1.21.5 overlay.flush();
                     }
                 }
 
@@ -1419,11 +1420,12 @@ public class Radar implements IRadar {
 
             int maxDimension = Math.max(image.getWidth(), image.getHeight());
             float scale = (float) Math.ceil(maxDimension / acceptableMax);
-            return ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(image, 1.0F / scale)), this.options.outlines, 2);
+            // FIXME 1.21.5 return ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(image, 1.0F / scale)), this.options.outlines, 2);
         } else {
             float scale = image.getWidth() / contact.type.expectedWidth;
-            return ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(image, 4.0F / scale)), this.options.outlines, 2);
+            // FIXME 1.21.5 return ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(image, 4.0F / scale)), this.options.outlines, 2);
         }
+        return new BufferedImage(1, timer, BufferedImage.TYPE_4BYTE_ABGR);
     }
 
     private void handleMPplayer(Contact contact) {
@@ -1453,11 +1455,11 @@ public class Radar implements IRadar {
                     if (imageData == null) {
                         throw new Exception("failed to get skin: image data was null");
                     }
-
-                    EntityRenderer<LivingEntity, LivingEntityRenderState> render = (EntityRenderer<LivingEntity, LivingEntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
-                    BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, skinIdentifier, null);
-                    icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
-                    this.newMobs = true;
+                    // FIXME 1.21.5
+                    // EntityRenderer<LivingEntity, LivingEntityRenderState> render = (EntityRenderer<LivingEntity, LivingEntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
+                    // BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, skinIdentifier, null);
+                    // icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
+                    // this.newMobs = true;
                     this.mpContactsSkinGetTries.remove(playerName);
                 } catch (Exception var11) {
                     icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + EnumMobs.PLAYER.resourceLocation.toString());
@@ -1627,21 +1629,22 @@ public class Radar implements IRadar {
         }
 
         if (icon == null && resourceLocation != null) {
-            BufferedImage armorTexture = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
+            NativeImage armorTexture = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
             if (armorTexture != null) {
-                if (!isPiglin) {
-                    armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-                    float scale = armorTexture.getWidth() / 8.0F;
-                    BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
-                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation, armorImage);
-                } else {
-                    armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-                    float scale = armorTexture.getWidth() / 8.0F;
-                    BufferedImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 47.0F, 37.6F, 2);
-                    icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation + "_piglin", armorImage);
-                }
-
-                this.newMobs = true;
+                // FIXME 1.21.5
+                // if (!isPiglin) {
+                // armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
+                // float scale = armorTexture.getWidth() / 8.0F;
+                // NativeImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
+                // icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation, armorImage);
+                // } else {
+                // armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
+                // float scale = armorTexture.getWidth() / 8.0F;
+                // NativeImage armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorTexture, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 47.0F, 37.6F, 2);
+                // icon = this.textureAtlas.registerIconForBufferedImage("armor " + resourceLocation + "_piglin", armorImage);
+                // }
+                //
+                // this.newMobs = true;
             }
         }
 

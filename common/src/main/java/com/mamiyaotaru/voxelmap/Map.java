@@ -46,6 +46,7 @@ import javax.imageio.ImageIO;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.DeathScreen;
@@ -479,8 +480,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private LightTexture getLightmapTexture() {
-        LightTexture lightTextureManager = VoxelConstants.getMinecraft().gameRenderer.lightTexture();
-        return lightTextureManager;
+        return Minecraft.getInstance().gameRenderer.lightTexture();
     }
 
     public void calculateCurrentLightAndSkyColor() {

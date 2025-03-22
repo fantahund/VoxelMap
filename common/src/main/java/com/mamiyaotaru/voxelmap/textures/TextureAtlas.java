@@ -3,24 +3,20 @@ package com.mamiyaotaru.voxelmap.textures;
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
-import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import org.lwjgl.opengl.GL11;
 
 public class TextureAtlas extends AbstractTexture {
     private final HashMap<String, Sprite> mapRegisteredSprites;
@@ -30,6 +26,8 @@ public class TextureAtlas extends AbstractTexture {
     private final Sprite missingImage;
     private final Sprite failedImage;
     private Stitcher stitcher;
+    private boolean linearFilter;
+    private boolean mipmap;
 
     public TextureAtlas(String basePath) {
         this(basePath, null);
@@ -44,14 +42,19 @@ public class TextureAtlas extends AbstractTexture {
         this.iconCreator = iconCreator;
     }
 
+    @Override
+    public void setFilter(boolean linearFilter, boolean mipmap) {
+        this.linearFilter = linearFilter;
+        this.mipmap = mipmap;
+        if (texture != null) {
+            super.setFilter(linearFilter, mipmap);
+        }
+    }
+
     private void initMissingImage() {
-        int[] missingTextureData = new int[1];
-        Arrays.fill(missingTextureData, 0);
-        this.missingImage.setIconWidth(1);
-        this.missingImage.setIconHeight(1);
-        this.missingImage.setTextureData(missingTextureData);
+        this.missingImage.setTextureData(new NativeImage(1, 1, true));
         this.failedImage.copyFrom(this.missingImage);
-        this.failedImage.setTextureData(missingTextureData);
+        this.failedImage.setTextureData(new NativeImage(1, 1, true));
     }
 
     public void load(ResourceManager manager) {
@@ -62,6 +65,9 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void reset() {
+        for (Sprite e : this.mapRegisteredSprites.values()) {
+            e.setTextureData(null);
+        }
         this.mapRegisteredSprites.clear();
         this.mapUploadedSprites.clear();
         this.initMissingImage();
@@ -86,18 +92,15 @@ public class TextureAtlas extends AbstractTexture {
         VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
 
         texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
+        super.setFilter(linearFilter, mipmap);
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
-
-        // FIXME 1.21.5 RenderSystem.getDevice().createCommandEncoder().writeToTexture();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) texture).glId());
-        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
         for (Sprite icon : this.stitcher.getStitchSlots()) {
             String iconName = icon.getIconName();
             tempMapRegisteredSprites.remove(iconName);
             this.mapUploadedSprites.put(iconName, icon);
 
             try {
-                TextureUtilLegacy.uploadSubTexture(icon.getTextureData(), icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY());
+                RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
             } catch (Throwable var10) {
                 CrashReport crashReport = CrashReport.forThrowable(var10, "Stitching texture atlas");
                 CrashReportCategory crashReportCategory = crashReport.addCategory("Texture being stitched together");
@@ -137,25 +140,17 @@ public class TextureAtlas extends AbstractTexture {
             }
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
             texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
-            // TextureUtilLegacy.allocateTexture(this.getId(), this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
-            // int[] zeros = new int[this.stitcher.getCurrentImageWidth() * this.stitcher.getCurrentImageHeight()];
-            // Arrays.fill(zeros, 0);
-            // TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            super.setFilter(linearFilter, mipmap);
         }
 
-        // FIXME 1.21.5 RenderSystem.getDevice().createCommandEncoder().writeToTexture();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) texture).glId());
-        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
-
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
-
         for (Sprite icon : this.stitcher.getStitchSlots()) {
             String iconName = icon.getIconName();
             tempMapRegisteredSprites.remove(iconName);
             this.mapUploadedSprites.put(iconName, icon);
 
             try {
-                TextureUtilLegacy.uploadSubTexture(icon.getTextureData(), icon.getIconWidth(), icon.getIconHeight(), icon.getOriginX(), icon.getOriginY());
+                RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
             } catch (Throwable var11) {
                 CrashReport crashReport = CrashReport.forThrowable(var11, "Stitching texture atlas");
                 CrashReportCategory crashReportCategory = crashReport.addCategory("Texture being stitched together");
@@ -205,7 +200,7 @@ public class TextureAtlas extends AbstractTexture {
         return icon;
     }
 
-    public Sprite registerIconForResource(ResourceLocation resourceLocation, ResourceManager resourceManager) {
+    public Sprite registerIconForResource(ResourceLocation resourceLocation) {
         if (resourceLocation == null) {
             throw new IllegalArgumentException("Location cannot be null!");
         } else {
@@ -214,10 +209,8 @@ public class TextureAtlas extends AbstractTexture {
                 icon = Sprite.spriteFromResourceLocation(resourceLocation);
 
                 try {
-                    Optional<Resource> entryResource = resourceManager.getResource(resourceLocation);
-                    BufferedImage entryBufferedImage = TextureUtilLegacy.readBufferedImage(entryResource.get().open());
-                    icon.bufferedImageToIntData(entryBufferedImage);
-                    entryBufferedImage.flush();
+                    TextureContents image = TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceLocation);
+                    icon.setTextureData(image.image());
                 } catch (RuntimeException var6) {
                     VoxelConstants.getLogger().error("Unable to parse metadata from " + resourceLocation, var6);
                 } catch (IOException var7) {
@@ -231,27 +224,26 @@ public class TextureAtlas extends AbstractTexture {
         }
     }
 
-    public Sprite registerIconForBufferedImage(String name, BufferedImage bufferedImage) {
+    public Sprite registerIconForBufferedImage(String name, NativeImage bufferedImage) {
         if (name != null && !name.isEmpty()) {
             Sprite icon = this.mapRegisteredSprites.get(name);
             if (icon == null) {
                 icon = Sprite.spriteFromString(name);
-                icon.bufferedImageToIntData(bufferedImage);
-                bufferedImage.flush();
-
-                for (Sprite existing : this.mapUploadedSprites.values()) {
-                    if (Arrays.equals(existing.imageData, icon.imageData)) {
-                        this.registerMaskedIcon(name, existing);
-                        return existing;
-                    }
-                }
-
-                for (Sprite existing : this.mapRegisteredSprites.values()) {
-                    if (Arrays.equals(existing.imageData, icon.imageData)) {
-                        this.registerMaskedIcon(name, existing);
-                        return existing;
-                    }
-                }
+                icon.setTextureData(bufferedImage);
+                // FIXME 1.21.5
+                // for (Sprite existing : this.mapUploadedSprites.values()) {
+                // if (Arrays.equals(existing.imageData, icon.imageData)) {
+                // this.registerMaskedIcon(name, existing);
+                // return existing;
+                // }
+                // }
+                //
+                // for (Sprite existing : this.mapRegisteredSprites.values()) {
+                // if (Arrays.equals(existing.imageData, icon.imageData)) {
+                // this.registerMaskedIcon(name, existing);
+                // return existing;
+                // }
+                // }
 
                 this.mapRegisteredSprites.put(name, icon);
             }

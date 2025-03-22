@@ -16,6 +16,8 @@ import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.ResourceLocation;
 
 import java.awt.*;
@@ -48,20 +50,9 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
+    public static NativeImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
-            BufferedImage image = ImageIO.read(is);
-            is.close();
-            if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
-                BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-                Graphics2D g2 = temp.createGraphics();
-                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
-                g2.dispose();
-                image = temp;
-            }
-
-            return image;
+            return TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceLocation).image();
         } catch (Exception var5) {
             return null;
         }
@@ -231,12 +222,12 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h) {
+    public static NativeImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h) {
         return loadImage(resourceLocation, x, y, w, h, 64, 32);
     }
 
-    public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        BufferedImage mobSkin = createBufferedImageFromResourceLocation(resourceLocation);
+    public static NativeImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
+        NativeImage mobSkin = createBufferedImageFromResourceLocation(resourceLocation);
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
         } else {
@@ -245,21 +236,24 @@ public class ImageUtils {
         }
     }
 
-    public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h) {
+    public static NativeImage loadImage(NativeImage mobSkin, int x, int y, int w, int h) {
         return loadImage(mobSkin, x, y, w, h, 64, 32);
     }
 
-    public static BufferedImage loadImage(BufferedImage mobSkin, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        float scale = ((float) mobSkin.getWidth(null) / imageWidth);
+    public static NativeImage loadImage(NativeImage mobSkin, int x, int y, int w, int h, int imageWidth, int imageHeight) {
+        float scale = ((float) mobSkin.getWidth() / imageWidth);
         x = (int) (x * scale);
         y = (int) (y * scale);
         w = (int) (w * scale);
         h = (int) (h * scale);
         w = Math.max(1, w);
         h = Math.max(1, h);
-        x = Math.min(mobSkin.getWidth(null) - w, x);
-        y = Math.min(mobSkin.getHeight(null) - h, y);
-        return mobSkin.getSubimage(x, y, w, h);
+        x = Math.min(mobSkin.getWidth() - w, x);
+        y = Math.min(mobSkin.getHeight() - h, y);
+        NativeImage copy = new NativeImage(w, h, false);
+        mobSkin.copyRect(copy, x, y, 0, 0, w, h, false, false);
+        mobSkin.close();
+        return copy;
     }
 
     public static BufferedImage addImages(BufferedImage base, BufferedImage overlay, float x, float y, int baseWidth, int baseHeight) {
@@ -270,23 +264,25 @@ public class ImageUtils {
         return base;
     }
 
-    public static BufferedImage scaleImage(BufferedImage image, float scaleBy) {
-        if (scaleBy == 1.0F) {
-            return image;
-        } else {
-            int type = image.getType();
-            if (type == 13) {
-                type = 6;
-            }
-
-            int newWidth = Math.max(1, (int) (image.getWidth() * scaleBy));
-            int newHeight = Math.max(1, (int) (image.getHeight() * scaleBy));
-            BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
-            Graphics2D g2 = tmp.createGraphics();
-            g2.drawImage(image, 0, 0, newWidth, newHeight, null);
-            g2.dispose();
-            return tmp;
-        }
+    public static NativeImage scaleImage(NativeImage image, float scaleBy) {
+        return image;
+        // FIXME 1.21.5
+        // if (scaleBy == 1.0F) {
+        // return image;
+        // } else {
+        // int type = image.getType();
+        // if (type == 13) {
+        // type = 6;
+        // }
+        //
+        // int newWidth = Math.max(1, (int) (image.getWidth() * scaleBy));
+        // int newHeight = Math.max(1, (int) (image.getHeight() * scaleBy));
+        // BufferedImage tmp = new BufferedImage(newWidth, newHeight, type);
+        // Graphics2D g2 = tmp.createGraphics();
+        // g2.drawImage(image, 0, 0, newWidth, newHeight, null);
+        // g2.dispose();
+        // return tmp;
+        // }
     }
 
     public static BufferedImage scaleImage(BufferedImage image, float xScaleBy, float yScaleBy) {
@@ -339,22 +335,24 @@ public class ImageUtils {
         return frame;
     }
 
-    public static BufferedImage pad(BufferedImage base) {
-        int dim = Math.max(base.getWidth(), base.getHeight());
-        int outlineWidth = 3;
-        int size = dim + outlineWidth * 2;
-        BufferedImage frame = new BufferedImage(size, size, base.getType());
-        Graphics gfx = frame.getGraphics();
-        gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
-        gfx.dispose();
-        return frame;
+    public static NativeImage pad(NativeImage base) {
+        return base;
+        // FIXME 1.21.5
+        // int dim = Math.max(base.getWidth(), base.getHeight());
+        // int outlineWidth = 3;
+        // int size = dim + outlineWidth * 2;
+        // BufferedImage frame = new BufferedImage(size, size, base.getType());
+        // Graphics gfx = frame.getGraphics();
+        // gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
+        // gfx.dispose();
+        // return frame;
     }
 
-    public static BufferedImage fillOutline(BufferedImage image, boolean outline, int passes) {
+    public static NativeImage fillOutline(NativeImage image, boolean outline, int passes) {
         return fillOutline(image, outline, false, 0.0F, 0.0F, passes);
     }
 
-    public static BufferedImage fillOutline(BufferedImage image, boolean outline, boolean armor, float intendedWidth, float intendedHeight, int passes) {
+    public static NativeImage fillOutline(NativeImage image, boolean outline, boolean armor, float intendedWidth, float intendedHeight, int passes) {
         if (outline) {
             for (int t = 0; t < passes; ++t) {
                 image = fillOutline(image, true, armor, intendedWidth, intendedHeight);
@@ -364,21 +362,19 @@ public class ImageUtils {
         return fillOutline(image, false, armor, intendedWidth, intendedHeight);
     }
 
-    private static BufferedImage fillOutline(BufferedImage image, boolean solid, boolean armor, float intendedWidth, float intendedHeight) {
+    private static NativeImage fillOutline(NativeImage image, boolean solid, boolean armor, float intendedWidth, float intendedHeight) {
         float armorOutlineFractionHorizontal = intendedWidth / 2.0F - 1.0F;
         float armorOutlineFractionVertical = intendedHeight / 2.0F - 1.0F;
-        BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-        Graphics gfx = temp.getGraphics();
-        gfx.drawImage(image, 0, 0, null);
-        gfx.dispose();
+        NativeImage temp = new NativeImage(image.getWidth(), image.getHeight(), false);
+        temp.copyFrom(image);
         int imageWidth = image.getWidth();
         int imageHeight = image.getHeight();
 
         for (int t = 0; t < image.getWidth(); ++t) {
             for (int s = 0; s < image.getHeight(); ++s) {
-                int color = image.getRGB(t, s);
+                int color = temp.getPixel(t, s);
                 if ((color >> 24 & 0xFF) == 0) {
-                    int newColor = sampleNonTransparentNeighborPixel(t, s, image);
+                    int newColor = sampleNonTransparentNeighborPixel(t, s, temp);
                     if (newColor != -420) {
                         if (solid) {
                             if (armor && !(t <= (imageWidth / 2f) - armorOutlineFractionHorizontal) && !(t >= (imageWidth / 2f) + armorOutlineFractionHorizontal - 1.0F) && !(s <= (imageHeight / 2f) - armorOutlineFractionVertical) && !(s >= (imageHeight / 2f) + armorOutlineFractionVertical - 1.0F)) {
@@ -393,67 +389,67 @@ public class ImageUtils {
                             newColor = (red & 0xFF) << 16 | (green & 0xFF) << 8 | blue & 0xFF;
                         }
 
-                        temp.setRGB(t, s, newColor);
+                        image.setPixel(t, s, newColor);
                     }
                 }
             }
         }
-
-        return temp;
+        temp.close();
+        return image;
     }
 
-    private static int sampleNonTransparentNeighborPixel(int x, int y, BufferedImage image) {
+    private static int sampleNonTransparentNeighborPixel(int x, int y, NativeImage image) {
         if (x > 0) {
-            int color = image.getRGB(x - 1, y);
+            int color = image.getPixel(x - 1, y);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (x < image.getWidth() - 1) {
-            int color = image.getRGB(x + 1, y);
+            int color = image.getPixel(x + 1, y);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (y > 0) {
-            int color = image.getRGB(x, y - 1);
+            int color = image.getPixel(x, y - 1);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (y < image.getHeight() - 1) {
-            int color = image.getRGB(x, y + 1);
+            int color = image.getPixel(x, y + 1);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (x > 0 && y > 0) {
-            int color = image.getRGB(x - 1, y - 1);
+            int color = image.getPixel(x - 1, y - 1);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (x > 0 && y < image.getHeight() - 1) {
-            int color = image.getRGB(x - 1, y + 1);
+            int color = image.getPixel(x - 1, y + 1);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (x < image.getWidth() - 1 && y > 0) {
-            int color = image.getRGB(x + 1, y - 1);
+            int color = image.getPixel(x + 1, y - 1);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }
         }
 
         if (x < image.getWidth() - 1 && y < image.getHeight() - 1) {
-            int color = image.getRGB(x + 1, y + 1);
+            int color = image.getPixel(x + 1, y + 1);
             if ((color >> 24 & 0xFF) > 50) {
                 return color;
             }

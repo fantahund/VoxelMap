@@ -122,17 +122,14 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onTick() {
-        if (!Objects.equals(this.world, GameVariableAccessShim.getWorld())) {
-            this.world = GameVariableAccessShim.getWorld();
+        ClientLevel newWorld = GameVariableAccessShim.getWorld();
+        if (this.world != newWorld) {
+            this.world = newWorld;
             this.waypointManager.newWorld(this.world);
             this.persistentMap.newWorld(this.world);
             if (this.world != null) {
                 MapUtils.reset();
                 // send "new" world_id packet
-                ByteBuf wIdRequestBuf = Unpooled.buffer(3);
-                wIdRequestBuf.writeByte(0);
-                wIdRequestBuf.writeByte(42);
-                wIdRequestBuf.writeByte(0);
 
                 VoxelConstants.getPacketBridge().sendWorldIDPacket();
 
@@ -140,15 +137,15 @@ public class VoxelMap implements PreparableReloadListener {
                     this.worldName = this.waypointManager.getCurrentWorldName();
                 }
 
-                this.map.newWorld(this.world);
-                while (!runOnWorldSet.isEmpty()) {
-                    runOnWorldSet.removeFirst().run();
-                }
+                // this.map.newWorld(this.world);
+                 while (!runOnWorldSet.isEmpty()) {
+                 runOnWorldSet.removeFirst().run();
+                 }
             }
         }
 
         VoxelConstants.tick();
-        this.persistentMap.onTick();
+        // FIXME 1.21.5 this.persistentMap.onTick();
     }
 
     public static void checkPermissionMessages(Component message) {
