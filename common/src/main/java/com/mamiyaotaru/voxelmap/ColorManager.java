@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -35,8 +36,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
 import net.minecraft.ResourceLocationException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -45,6 +48,8 @@ import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.AtlasIds;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -198,6 +203,7 @@ public class ColorManager {
         this.loaded = true;
     }
 
+    // FIXME 1.21.5
     // public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, Level world, float iconScale, float captureDepth) {
     // try {
     // BakedModel model = VoxelConstants.getMinecraft().getModelManager().getModel(stack, world, null, 0); //FIXME 1.21.4
@@ -213,6 +219,7 @@ public class ColorManager {
     // }
     // }
 
+    // FIXME 1.21.5
     // private void drawModel(Direction facing, BlockState blockState, BakedModel model, ItemStack stack, float scale, float captureDepth) {
     // float size = 8.0F * scale;
     // ItemTransforms transforms = model.getTransforms();
@@ -303,12 +310,11 @@ public class ColorManager {
     private void loadTexturePackTerrainImage() {
         try {
             GlStateManager._bindTexture(((GlTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture()).glId());
-            // FIXME 1.21.5
-            // BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
-            // this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
-            // Graphics gfx = this.terrainBuff.createGraphics();
-            // gfx.drawImage(terrainStitched, 0, 0, null);
-            // gfx.dispose();
+            BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
+            this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
+            Graphics gfx = this.terrainBuff.createGraphics();
+            gfx.drawImage(terrainStitched, 0, 0, null);
+            gfx.dispose();
         } catch (Exception var4) {
             VoxelConstants.getLogger().error("Error processing new resource pack: " + var4.getLocalizedMessage(), var4);
         }

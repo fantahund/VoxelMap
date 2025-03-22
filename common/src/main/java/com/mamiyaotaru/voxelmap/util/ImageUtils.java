@@ -14,7 +14,7 @@ import com.mojang.blaze3d.textures.GpuTexture;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.lwjgl.BufferUtils;
-
+import org.lwjgl.opengl.GL11;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureContents;
@@ -63,88 +63,28 @@ public class ImageUtils {
     // return createBufferedImageFromCurrentGLImage();
     // }
 
-    // public static BufferedImage createBufferedImageFromCurrentGLImage() {
-    // int imageWidth = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
-    // int imageHeight = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
-    // long size = (long) imageWidth * imageHeight * 4L;
-    // BufferedImage image;
-    // if (size < 2147483647L) {
-    // image = new BufferedImage(imageWidth, imageHeight, 6);
-    // ByteBuffer byteBuffer = ByteBuffer.allocateDirect(imageWidth * imageHeight * 4).order(ByteOrder.nativeOrder());
-    // OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
-    // byteBuffer.position(0);
-    // byte[] bytes = new byte[byteBuffer.remaining()];
-    // byteBuffer.get(bytes);
-    // for (int x = 0; x < imageWidth; ++x) {
-    // for (int y = 0; y < imageHeight; ++y) {
-    // int index = y * imageWidth * 4 + x * 4;
-    // byte var8 = 0;
-    // int color24 = var8 | (bytes[index + 2] & 255);
-    // color24 |= (bytes[index + 1] & 255) << 8;
-    // color24 |= (bytes[index] & 255) << 16;
-    // color24 |= (bytes[index + 3] & 255) << 24;
-    // image.setRGB(x, y, color24);
-    // }
-    // }
-    // } else {
-    // while (size > 2147483647L) {
-    // imageWidth /= 2;
-    // imageHeight /= 2;
-    // size = (long) imageWidth * imageHeight * 4L;
-    // }
-    // int glid = OpenGL.glGetInteger(OpenGL.GL11_GL_TEXTURE_BINDING_2D);
-    // image = new BufferedImage(imageWidth, imageHeight, 6);
-    // int fboWidth = 512;
-    // int fboHeight = 512;
-    // ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fboWidth * fboHeight * 4).order(ByteOrder.nativeOrder());
-    // byte[] bytes = new byte[byteBuffer.remaining()];
-    // OpenGL.glPushAttrib(OpenGL.GL11_GL_TRANSFORM_BIT);
-    // RenderSystem.backupProjectionMatrix();
-    // OpenGL.glViewport(0, 0, fboWidth, fboHeight);
-    // Matrix4f matrix4f = new Matrix4f().ortho(fboWidth, (-(fboHeight)), 1000.0F, 3000.0F, -1.0f, 1.0f);
-    // RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
-    // Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
-    // matrixStack.identity();
-    // matrixStack.translate(0.0f, 0.0f, -2000.0f);
-    // OpenGL.Utils.bindFramebuffer();
-    // for (int startX = 0; startX + fboWidth < imageWidth; startX += fboWidth) {
-    // for (int startY = 0; startY + fboWidth < imageHeight; startY += fboHeight) {
-    // OpenGL.Utils.dispId(glid);
-    // OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-    // OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
-    // OpenGL.Utils.drawPre();
-    // OpenGL.Utils.ldrawthree(0.0, fboHeight, 1.0, (float) startX / imageWidth, (float) startY / imageHeight);
-    // OpenGL.Utils.ldrawthree(fboWidth, fboHeight, 1.0, ((float) startX + fboWidth) / imageWidth, (float) startY / imageHeight);
-    // OpenGL.Utils.ldrawthree(fboWidth, 0.0, 1.0, ((float) startX + fboWidth) / imageWidth, ((float) startY + fboHeight) / imageHeight);
-    // OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, (float) startX / imageWidth, ((float) startY + fboHeight) / imageHeight);
-    // OpenGL.Utils.drawPost();
-    // OpenGL.Utils.disp(OpenGL.Utils.fboTexture);
-    // byteBuffer.position(0);
-    // OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
-    // byteBuffer.position(0);
-    // byteBuffer.get(bytes);
-    //
-    // for (int x = 0; x < fboWidth && startX + x < imageWidth; ++x) {
-    // for (int y = 0; y < fboHeight && startY + y < imageHeight; ++y) {
-    // int index = y * fboWidth * 4 + x * 4;
-    // byte var8 = 0;
-    // int color24 = var8 | (bytes[index + 2] & 255);
-    // color24 |= (bytes[index + 1] & 255) << 8;
-    // color24 |= (bytes[index] & 255) << 16;
-    // color24 |= (bytes[index + 3] & 255) << 24;
-    // image.setRGB(startX + x, startY + y, color24);
-    // }
-    // }
-    // }
-    // }
-    //
-    // OpenGL.Utils.unbindFramebuffer();
-    // RenderSystem.restoreProjectionMatrix();
-    // OpenGL.glPopAttrib();
-    // OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
-    // }
-    // return image;
-    // }
+    public static BufferedImage createBufferedImageFromCurrentGLImage() {
+        int imageWidth = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
+        int imageHeight = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
+        BufferedImage image = new BufferedImage(imageWidth, imageHeight, 6);
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(imageWidth * imageHeight * 4).order(ByteOrder.nativeOrder());
+        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
+        byteBuffer.position(0);
+        byte[] bytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytes);
+        for (int x = 0; x < imageWidth; ++x) {
+            for (int y = 0; y < imageHeight; ++y) {
+                int index = y * imageWidth * 4 + x * 4;
+                byte var8 = 0;
+                int color24 = var8 | (bytes[index + 2] & 255);
+                color24 |= (bytes[index + 1] & 255) << 8;
+                color24 |= (bytes[index] & 255) << 16;
+                color24 |= (bytes[index + 3] & 255) << 24;
+                image.setRGB(x, y, color24);
+            }
+        }
+        return image;
+    }
 
     public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h) {
         return blankImage(resourceLocation, w, h, 64, 32);

@@ -159,9 +159,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             PlayerInfo networkPlayerInfo = GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.getId());
-            // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
             ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(gameProfile).texture();
-            // FIXME 1.21.5 RenderSystem.setShaderTexture(0, skinIdentifier);
             drawContext.blit(RenderType::guiTextured, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
             drawContext.flush();
             if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
