@@ -4,14 +4,12 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.ArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.CoreShaders;
 
 public class Popup {
     final Font fontRendererObj;
@@ -86,48 +84,49 @@ public class Popup {
     }
 
     public void drawPopup(GuiGraphics drawContext, int mouseX, int mouseY) {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        float var6 = 32.0F;
-        vertexBuffer.addVertex(this.x, this.y + this.h, 0.0F).setUv(this.x / var6, this.y / var6).setColor(64, 64, 64, 255);
-        vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setUv((this.x + this.w) / var6, this.y / var6).setColor(64, 64, 64, 255);
-        vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setUv((this.x + this.w) / var6, (this.y + this.h) / var6).setColor(64, 64, 64, 255);
-        vertexBuffer.addVertex(this.x, this.y, 0.0F).setUv(this.x / var6, (this.y + this.h) / var6).setColor(64, 64, 64, 255);
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-        vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        vertexBuffer.addVertex(this.x, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x, this.y, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x + this.w, this.y + this.h - 4, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x, this.y + this.h - 4, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x, this.y, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x + 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + 4, this.y, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w - 4, this.y, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w - 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-        vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        vertexBuffer.addVertex(this.x + this.w - 4, this.y, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w - 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
-        vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
-
+        // FIXME 1.21.5
+        // Tesselator tessellator = Tesselator.getInstance();
+        // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+        // RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // float var6 = 32.0F;
+        // vertexBuffer.addVertex(this.x, this.y + this.h, 0.0F).setUv(this.x / var6, this.y / var6).setColor(64, 64, 64, 255);
+        // vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setUv((this.x + this.w) / var6, this.y / var6).setColor(64, 64, 64, 255);
+        // vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setUv((this.x + this.w) / var6, (this.y + this.h) / var6).setColor(64, 64, 64, 255);
+        // vertexBuffer.addVertex(this.x, this.y, 0.0F).setUv(this.x / var6, (this.y + this.h) / var6).setColor(64, 64, 64, 255);
+        // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        // RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+        // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // vertexBuffer.addVertex(this.x, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x, this.y, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x + this.w, this.y + this.h - 4, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x, this.y + this.h - 4, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x, this.y, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x + 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + 4, this.y, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w - 4, this.y, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w - 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
+        // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        // vertexBuffer.addVertex(this.x + this.w - 4, this.y, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w - 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
+        // vertexBuffer.addVertex(this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
+        // vertexBuffer.addVertex(this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
+        // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // RenderSystem.setShader(CoreShaders.POSITION_TEX);
+        // OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
+        //
         for (int t = 0; t < this.entries.length; ++t) {
             int color = !this.entries[t].enabled ? 10526880 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 16777120 : 14737632);
             drawContext.drawString(this.fontRendererObj, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);

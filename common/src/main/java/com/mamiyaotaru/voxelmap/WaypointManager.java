@@ -16,6 +16,7 @@ import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerList;
 import org.joml.Matrix4fStack;
+import org.lwjgl.opengl.GL11;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
@@ -82,9 +83,9 @@ public class WaypointManager {
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");
-        this.textureAtlas.setFilter(false, false);
+        // FIXME 1.21.5 this.textureAtlas.setFilter(false, false);
         this.textureAtlasChooser = new TextureAtlas("chooser");
-        this.textureAtlasChooser.setFilter(false, false);
+        // FIXME 1.21.5 this.textureAtlasChooser.setFilter(false, false);
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
@@ -116,8 +117,8 @@ public class WaypointManager {
 
         };
         this.textureAtlas.loadTextureAtlas(iconCreator);
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // FIXME 1.21.5 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        // FIXME 1.21.5 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         this.textureAtlasChooser.reset();
         int expectedSize = 32;
 
@@ -755,7 +756,7 @@ public class WaypointManager {
 
     private void loadBackgroundMapImage() {
         if (this.backgroundImageInfo != null) {
-            OpenGL.Utils.glah(this.backgroundImageInfo.glid);
+            // FIXME 1.21.5 OpenGL.Utils.glah(this.backgroundImageInfo.glid);
             this.backgroundImageInfo = null;
         }
 

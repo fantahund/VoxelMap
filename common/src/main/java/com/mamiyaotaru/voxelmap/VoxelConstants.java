@@ -94,15 +94,11 @@ public final class VoxelConstants {
 
     public static void clientTick() {
         if (!initialized) {
-            boolean OK = VoxelConstants.getMinecraft().getResourceManager() != null && VoxelConstants.getMinecraft().getTextureManager() != null;
-
-            if (OK) {
-                lateInit();
-            }
+            lateInit();
         }
 
         if (initialized) {
-            VoxelConstants.getVoxelMapInstance().onTick();
+            // VoxelConstants.getVoxelMapInstance().onTick();
         }
 
     }

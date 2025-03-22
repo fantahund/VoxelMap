@@ -52,7 +52,6 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -488,7 +487,7 @@ public class Map implements Runnable, IChangeObserver {
         try {
             if (this.world != null) {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !VoxelConstants.getMinecraft().isPaused() || this.options.realTimeTorches) {
-                    OpenGL.Utils.disp(this.lightmapTexture.target.getColorTextureId());
+                    // FIXME 1.21.5 OpenGL.Utils.disp(this.lightmapTexture.target.getColorTextureId());
                     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder());
                     OpenGL.glGetTexImage(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, OpenGL.GL11_GL_UNSIGNED_BYTE, byteBuffer);
 
@@ -663,61 +662,64 @@ public class Map implements Runnable, IChangeObserver {
         }
         Map.statusIconOffset = statusIconOffset;
 
-        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        if (!this.options.hide) {
-            if (this.fullscreenMap) {
-                this.renderMapFull(drawContext, this.scWidth, this.scHeight);
-            } else {
-                this.renderMap(modelViewMatrixStack, mapX, mapY, scScale);
-            }
-
-            OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-            if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
-                this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
-                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, modelViewMatrixStack, this.layoutVariables, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
-            }
-
-            if (!this.fullscreenMap) {
-                this.drawDirections(drawContext, mapX, mapY, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
-            }
-
-            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            if (this.fullscreenMap) {
-                this.drawArrow(modelViewMatrixStack, this.scWidth / 2, this.scHeight / 2);
-            } else {
-                this.drawArrow(modelViewMatrixStack, mapX, mapY);
-            }
-        }
-
-        if (this.options.coords) {
-            this.showCoords(drawContext, mapX, mapY, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
-        }
-
-        OpenGL.glDepthMask(true);
-        OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // FIXME 1.21.5
+        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // if (!this.options.hide) {
+        // if (this.fullscreenMap) {
+        // this.renderMapFull(drawContext, this.scWidth, this.scHeight);
+        // } else {
+        // this.renderMap(modelViewMatrixStack, mapX, mapY, scScale);
+        // }
+        //
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
+        // this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
+        // VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, modelViewMatrixStack, this.layoutVariables, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
+        // }
+        //
+        // if (!this.fullscreenMap) {
+        // this.drawDirections(drawContext, mapX, mapY, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
+        // }
+        //
+        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        // if (this.fullscreenMap) {
+        // this.drawArrow(modelViewMatrixStack, this.scWidth / 2, this.scHeight / 2);
+        // } else {
+        // this.drawArrow(modelViewMatrixStack, mapX, mapY);
+        // }
+        // }
+        //
+        // if (this.options.coords) {
+        // this.showCoords(drawContext, mapX, mapY, (float) (scScale / VoxelConstants.getMinecraft().getWindow().getGuiScale()));
+        // }
+        //
+        // OpenGL.glDepthMask(true);
+        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.popMatrix();
         RenderSystem.restoreProjectionMatrix();
-        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        VoxelConstants.getMinecraft().font.getClass();
-        MultiBufferSource.BufferSource vertexConsumerProvider = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-        VoxelConstants.getMinecraft().font.drawInBatch(Component.literal("Hey, I am important don't delete me!"), 10000.0F, 100.0F, -1, true, matrix4f, vertexConsumerProvider, Font.DisplayMode.NORMAL, 0, 15728880);
-        if (this.showWelcomeScreen) {
-            OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            this.drawWelcomeScreen(drawContext, VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth(), VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight());
-        }
 
-        OpenGL.glDepthMask(true);
-        OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
+        // FIXME 1.21.5
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // RenderSystem.enableBlend();
+        // RenderSystem.defaultBlendFunc();
+        // VoxelConstants.getMinecraft().font.getClass();
+        // MultiBufferSource.BufferSource vertexConsumerProvider = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
+        // VoxelConstants.getMinecraft().font.drawInBatch(Component.literal("Hey, I am important don't delete me!"), 10000.0F, 100.0F, -1, true, matrix4f, vertexConsumerProvider, Font.DisplayMode.NORMAL, 0, 15728880);
+        // if (this.showWelcomeScreen) {
+        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        // this.drawWelcomeScreen(drawContext, VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth(), VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight());
+        // }
+        //
+        // OpenGL.glDepthMask(true);
+        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+        // OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
     }
 
     private void checkForChanges() {
@@ -1546,115 +1548,115 @@ public class Map implements Runnable, IChangeObserver {
         if (this.options.squareMap && this.options.rotates) {
             scale = 1.4142F;
         }
-
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
-        Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
-        OpenGL.Utils.bindFramebuffer();
-        OpenGL.glViewport(0, 0, 512, 512);
-        matrixStack.pushMatrix();
-        matrixStack.identity();
-        matrixStack.translate(0.0f, 0.0f, -2000.0f);
-        OpenGL.glDepthMask(false);
-        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        OpenGL.glClear(16384);
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        OpenGL.Utils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
-        OpenGL.Utils.drawPre();
-        OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
-        OpenGL.Utils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
-        OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
-        OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
-        OpenGL.Utils.drawPost();
-        OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
-        synchronized (this.coordinateLock) {
-            if (this.imageChanged) {
-                this.imageChanged = false;
-                this.mapImages[this.zoom].write();
-                this.lastImageX = this.lastX;
-                this.lastImageZ = this.lastZ;
-            }
-        }
-
-        float multi = (float) (1.0 / this.zoomScale);
-        this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
-        this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
-        this.percentX *= multi;
-        this.percentY *= multi;
-        OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        matrixStack.pushMatrix();
-        matrixStack.translate(256.0f, 256.0f, 0.0f);
-        if (!this.options.rotates) {
-            matrixStack.rotate(Axis.ZP.rotationDegrees((-this.northRotate)));
-        } else {
-            matrixStack.rotate(Axis.ZP.rotationDegrees(this.direction));
-        }
-
-        matrixStack.translate(-256.0f, -256.0f, 0.0f);
-        matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
-        OpenGL.Utils.drawPre();
-        OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
-        OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
-        OpenGL.Utils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
-        OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
-        OpenGL.Utils.drawPost();
-        matrixStack.popMatrix();
-        OpenGL.glDepthMask(true);
-        OpenGL.glEnable(GL11C.GL_DEPTH_TEST);
-        OpenGL.Utils.unbindFramebuffer();
-        OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
-        matrixStack.popMatrix();
-        RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.ORTHOGRAPHIC);
-        matrixStack.pushMatrix();
-        OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
-        OpenGL.Utils.disp2(OpenGL.Utils.fboTexture);
-
-        double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getWidth() / this.scWidth;
-        minTablistOffset = guiScale * 63;
-        OpenGL.glEnable(GL11C.GL_SCISSOR_TEST);
-        OpenGL.glScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
-        OpenGL.Utils.drawPre();
-        OpenGL.Utils.setMapWithScale(x, y, scale);
-        OpenGL.Utils.drawPost();
-        OpenGL.glDisable(GL11C.GL_SCISSOR_TEST);
-        matrixStack.popMatrix();
-        OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ONE_MINUS_SRC_ALPHA);
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        if (this.options.squareMap) {
-            this.drawSquareMapFrame(x, y);
-        } else {
-            this.drawRoundMapFrame(x, y);
-        }
-
-        double lastXDouble = GameVariableAccessShim.xCoordDouble();
-        double lastZDouble = GameVariableAccessShim.zCoordDouble();
-        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        RenderSystem.setShaderTexture(0, textureAtlas.getTexture());
-        OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        if (VoxelMap.mapOptions.waypointsAllowed) {
-            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
-
-            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                if (pt.isActive() || pt == highlightedPoint) {
-                    double distanceSq = pt.getDistanceSqToEntity(VoxelConstants.getMinecraft().getCameraEntity());
-                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                        this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
-                    }
-                }
-            }
-
-            if (highlightedPoint != null) {
-                this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
-            }
-        }
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // FIXME 1.21.5
+        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
+        // Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
+        // RenderSystem.setShader(CoreShaders.POSITION_TEX);
+        // Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
+        // RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
+        // OpenGL.Utils.bindFramebuffer();
+        // OpenGL.glViewport(0, 0, 512, 512);
+        // matrixStack.pushMatrix();
+        // matrixStack.identity();
+        // matrixStack.translate(0.0f, 0.0f, -2000.0f);
+        // OpenGL.glDepthMask(false);
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
+        // OpenGL.glClear(16384);
+        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
+        // OpenGL.Utils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
+        // OpenGL.Utils.drawPre();
+        // OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
+        // OpenGL.Utils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
+        // OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
+        // OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
+        // OpenGL.Utils.drawPost();
+        // OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
+        // synchronized (this.coordinateLock) {
+        // if (this.imageChanged) {
+        // this.imageChanged = false;
+        // this.mapImages[this.zoom].write();
+        // this.lastImageX = this.lastX;
+        // this.lastImageZ = this.lastZ;
+        // }
+        // }
+        //
+        // float multi = (float) (1.0 / this.zoomScale);
+        // this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
+        // this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
+        // this.percentX *= multi;
+        // this.percentY *= multi;
+        // OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // matrixStack.pushMatrix();
+        // matrixStack.translate(256.0f, 256.0f, 0.0f);
+        // if (!this.options.rotates) {
+        // matrixStack.rotate(Axis.ZP.rotationDegrees((-this.northRotate)));
+        // } else {
+        // matrixStack.rotate(Axis.ZP.rotationDegrees(this.direction));
+        // }
+        //
+        // matrixStack.translate(-256.0f, -256.0f, 0.0f);
+        // matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
+        // OpenGL.Utils.drawPre();
+        // OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
+        // OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
+        // OpenGL.Utils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
+        // OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
+        // OpenGL.Utils.drawPost();
+        // matrixStack.popMatrix();
+        // OpenGL.glDepthMask(true);
+        // OpenGL.glEnable(GL11C.GL_DEPTH_TEST);
+        // OpenGL.Utils.unbindFramebuffer();
+        // OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
+        // matrixStack.popMatrix();
+        // RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.ORTHOGRAPHIC);
+        // matrixStack.pushMatrix();
+        // OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
+        // OpenGL.Utils.disp2(OpenGL.Utils.fboTexture);
+        //
+        // double guiScale = (double) VoxelConstants.getMinecraft().getWindow().getWidth() / this.scWidth;
+        // minTablistOffset = guiScale * 63;
+        // OpenGL.glEnable(GL11C.GL_SCISSOR_TEST);
+        // OpenGL.glScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
+        // OpenGL.Utils.drawPre();
+        // OpenGL.Utils.setMapWithScale(x, y, scale);
+        // OpenGL.Utils.drawPost();
+        // OpenGL.glDisable(GL11C.GL_SCISSOR_TEST);
+        // matrixStack.popMatrix();
+        // OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ONE_MINUS_SRC_ALPHA);
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // if (this.options.squareMap) {
+        // this.drawSquareMapFrame(x, y);
+        // } else {
+        // this.drawRoundMapFrame(x, y);
+        // }
+        //
+        // double lastXDouble = GameVariableAccessShim.xCoordDouble();
+        // double lastZDouble = GameVariableAccessShim.zCoordDouble();
+        // TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+        // RenderSystem.setShaderTexture(0, textureAtlas.getTexture());
+        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // if (VoxelMap.mapOptions.waypointsAllowed) {
+        // Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
+        //
+        // for (Waypoint pt : this.waypointManager.getWaypoints()) {
+        // if (pt.isActive() || pt == highlightedPoint) {
+        // double distanceSq = pt.getDistanceSqToEntity(VoxelConstants.getMinecraft().getCameraEntity());
+        // if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
+        // this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
+        // }
+        // }
+        // }
+        //
+        // if (highlightedPoint != null) {
+        // this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+        // }
+        // }
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void drawWaypoint(Matrix4fStack matrixStack, Waypoint pt, TextureAtlas textureAtlas, int x, int y, int scScale, double lastXDouble, double lastZDouble, Sprite icon, Float r, Float g, Float b) {
@@ -1736,7 +1738,7 @@ public class Map implements Runnable, IChangeObserver {
                 // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
                 OpenGL.Utils.setMap(icon, x, y, 16.0F);
-                OpenGL.Utils.drawPost();
+                // FIXME 1.21.5 OpenGL.Utils.drawPost();
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
@@ -1771,7 +1773,7 @@ public class Map implements Runnable, IChangeObserver {
                 // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 OpenGL.Utils.drawPre();
                 OpenGL.Utils.setMap(icon, x, y, 16.0F);
-                OpenGL.Utils.drawPost();
+                // FIXME 1.21.5 OpenGL.Utils.drawPost();
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
@@ -1782,25 +1784,26 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void drawArrow(Matrix4fStack matrixStack, int x, int y) {
-        try {
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            matrixStack.pushMatrix();
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-            OpenGL.Utils.img2(this.arrowResourceLocation);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            matrixStack.translate(x, y, 0.0f);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
-            matrixStack.translate(-x, -y, 0.0f);
-            OpenGL.Utils.drawPre();
-            OpenGL.Utils.setMap(x, y, 16);
-            OpenGL.Utils.drawPost();
-        } catch (Exception var8) {
-            this.error = "Error: minimap arrow not found!";
-        } finally {
-            matrixStack.popMatrix();
-        }
+        // FIXME 1.21.5
+        // try {
+        // RenderSystem.setShader(CoreShaders.POSITION_TEX);
+        // matrixStack.pushMatrix();
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        // OpenGL.Utils.img2(this.arrowResourceLocation);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // matrixStack.translate(x, y, 0.0f);
+        // matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
+        // matrixStack.translate(-x, -y, 0.0f);
+        // OpenGL.Utils.drawPre();
+        // OpenGL.Utils.setMap(x, y, 16);
+        // OpenGL.Utils.drawPost();
+        // } catch (Exception var8) {
+        // this.error = "Error: minimap arrow not found!";
+        // } finally {
+        // matrixStack.popMatrix();
+        // }
 
     }
 
@@ -1814,112 +1817,115 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        OpenGL.Utils.disp2(this.mapImages[this.zoom].getTexture());
-        RenderSystem.bindTextureForSetup(this.mapImages[this.zoom].getIndex());
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        matrixStack.pushPose();
-        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
-        matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
-        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
-        OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        OpenGL.Utils.drawPre();
-        int left = scWidth / 2 - 128;
-        int top = scHeight / 2 - 128;
-        OpenGL.Utils.ldrawone(left, top + 256, 160.0, 0.0F, 1.0F);
-        OpenGL.Utils.ldrawone(left + 256, top + 256, 160.0, 1.0F, 1.0F);
-        OpenGL.Utils.ldrawone(left + 256, top, 160.0, 1.0F, 0.0F);
-        OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
-        OpenGL.Utils.drawPost();
-        matrixStack.popPose();
-        if (this.options.biomeOverlay != 0) {
-            double factor = Math.pow(2.0, 3 - this.zoom);
-            int minimumSize = (int) Math.pow(2.0, this.zoom);
-            minimumSize *= minimumSize;
-            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
-            OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-            matrixStack.pushPose();
-            matrixStack.translate(0.0, 0.0, 1160.0);
-
-            for (AbstractMapData.BiomeLabel o : labels) {
-                if (o.segmentSize > minimumSize) {
-                    String name = o.name;
-                    int nameWidth = this.chkLen(name);
-                    float x = (float) (o.x * factor);
-                    float z = (float) (o.z * factor);
-                    if (this.options.oldNorth) {
-                        this.write(drawContext, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
-                    } else {
-                        this.write(drawContext, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
-                    }
-                }
-            }
-
-            matrixStack.popPose();
-            OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        }
+        // FIXME 1.21.5
+        // RenderSystem.setShader(CoreShaders.POSITION_TEX);
+        // OpenGL.Utils.disp2(this.mapImages[this.zoom].getTexture());
+        // RenderSystem.bindTextureForSetup(this.mapImages[this.zoom].getIndex());
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // matrixStack.pushPose();
+        // matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
+        // matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
+        // matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // OpenGL.Utils.drawPre();
+        // int left = scWidth / 2 - 128;
+        // int top = scHeight / 2 - 128;
+        // OpenGL.Utils.ldrawone(left, top + 256, 160.0, 0.0F, 1.0F);
+        // OpenGL.Utils.ldrawone(left + 256, top + 256, 160.0, 1.0F, 1.0F);
+        // OpenGL.Utils.ldrawone(left + 256, top, 160.0, 1.0F, 0.0F);
+        // OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
+        // OpenGL.Utils.drawPost();
+        // matrixStack.popPose();
+        // if (this.options.biomeOverlay != 0) {
+        // double factor = Math.pow(2.0, 3 - this.zoom);
+        // int minimumSize = (int) Math.pow(2.0, this.zoom);
+        // minimumSize *= minimumSize;
+        // ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
+        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
+        // matrixStack.pushPose();
+        // matrixStack.translate(0.0, 0.0, 1160.0);
+        //
+        // for (AbstractMapData.BiomeLabel o : labels) {
+        // if (o.segmentSize > minimumSize) {
+        // String name = o.name;
+        // int nameWidth = this.chkLen(name);
+        // float x = (float) (o.x * factor);
+        // float z = (float) (o.z * factor);
+        // if (this.options.oldNorth) {
+        // this.write(drawContext, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
+        // } else {
+        // this.write(drawContext, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
+        // }
+        // }
+        // }
+        //
+        // matrixStack.popPose();
+        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        // }
 
     }
 
     private void drawSquareMapFrame(int x, int y) {
-        try {
-            OpenGL.Utils.disp2(this.mapImageInt);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-            OpenGL.Utils.drawPre();
-            OpenGL.Utils.setMap(x, y, 128);
-            OpenGL.Utils.drawPost();
-        } catch (Exception var4) {
-            this.error = "error: minimap overlay not found!";
-        }
+        // FIXME 1.21.5
+        // try {
+        // OpenGL.Utils.disp2(this.mapImageInt);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        // OpenGL.Utils.drawPre();
+        // OpenGL.Utils.setMap(x, y, 128);
+        // OpenGL.Utils.drawPost();
+        // } catch (Exception var4) {
+        // this.error = "error: minimap overlay not found!";
+        // }
 
     }
 
     private void loadMapImage() {
-        if (this.mapImageInt != -1) {
-            OpenGL.Utils.glah(this.mapImageInt);
-        }
-
-        try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/squaremap.png")).get().open();
-            BufferedImage mapImage = ImageIO.read(is);
-            is.close();
-            this.mapImageInt = OpenGL.Utils.tex(mapImage);
-        } catch (Exception var8) {
-            try {
-                InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.parse("textures/map/map_background.png")).get().open();
-                Image tpMap = ImageIO.read(is);
-                is.close();
-                BufferedImage mapImage = new BufferedImage(tpMap.getWidth(null), tpMap.getHeight(null), 2);
-                Graphics2D gfx = mapImage.createGraphics();
-                gfx.drawImage(tpMap, 0, 0, null);
-                int border = mapImage.getWidth() * 8 / 128;
-                gfx.setComposite(AlphaComposite.Clear);
-                gfx.fillRect(border, border, mapImage.getWidth() - border * 2, mapImage.getHeight() - border * 2);
-                gfx.dispose();
-                this.mapImageInt = OpenGL.Utils.tex(mapImage);
-            } catch (Exception var7) {
-                VoxelConstants.getLogger().warn("Error loading texture pack's map image: " + var7.getLocalizedMessage());
-            }
-        }
+        // FIXME 1.21.5
+        // if (this.mapImageInt != -1) {
+        // OpenGL.Utils.glah(this.mapImageInt);
+        // }
+        //
+        // try {
+        // InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/squaremap.png")).get().open();
+        // BufferedImage mapImage = ImageIO.read(is);
+        // is.close();
+        // this.mapImageInt = OpenGL.Utils.tex(mapImage);
+        // } catch (Exception var8) {
+        // try {
+        // InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.parse("textures/map/map_background.png")).get().open();
+        // Image tpMap = ImageIO.read(is);
+        // is.close();
+        // BufferedImage mapImage = new BufferedImage(tpMap.getWidth(null), tpMap.getHeight(null), 2);
+        // Graphics2D gfx = mapImage.createGraphics();
+        // gfx.drawImage(tpMap, 0, 0, null);
+        // int border = mapImage.getWidth() * 8 / 128;
+        // gfx.setComposite(AlphaComposite.Clear);
+        // gfx.fillRect(border, border, mapImage.getWidth() - border * 2, mapImage.getHeight() - border * 2);
+        // gfx.dispose();
+        // this.mapImageInt = OpenGL.Utils.tex(mapImage);
+        // } catch (Exception var7) {
+        // VoxelConstants.getLogger().warn("Error loading texture pack's map image: " + var7.getLocalizedMessage());
+        // }
+        // }
 
     }
 
     private void drawRoundMapFrame(int x, int y) {
-        try {
-            OpenGL.Utils.img2(this.roundmapResourceLocation);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-            // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            OpenGL.Utils.drawPre();
-            OpenGL.Utils.setMap(x, y, 128);
-            OpenGL.Utils.drawPost();
-        } catch (Exception var4) {
-            this.error = "Error: minimap overlay not found!";
-        }
+        // FIXME 1.21.5
+        // try {
+        // OpenGL.Utils.img2(this.roundmapResourceLocation);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // OpenGL.Utils.drawPre();
+        // OpenGL.Utils.setMap(x, y, 128);
+        // OpenGL.Utils.drawPost();
+        // } catch (Exception var4) {
+        // this.error = "Error: minimap overlay not found!";
+        // }
 
     }
 
@@ -2070,7 +2076,7 @@ public class Map implements Runnable, IChangeObserver {
             this.welcomeText[7] = this.options.keyBindZoom.getTranslatedKeyMessage().copy().append(": ").append((Component.translatable("minimap.ui.welcome8")).withStyle(ChatFormatting.GRAY));
         }
 
-        OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+        // FIXME 1.21.5 OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
         int maxSize = 0;
         int border = 2;
         Component head = this.welcomeText[0];

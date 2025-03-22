@@ -42,7 +42,7 @@ public class RadarSimple implements IRadar {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("pings");
-        this.textureAtlas.setFilter(false, false);
+        // FIXME 1.21.5 this.textureAtlas.setFilter(false, false);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class RadarSimple implements IRadar {
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
-            OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+            // FIXME 1.21.5 OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
             if (wayY < 0) {
                 OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
@@ -237,12 +237,12 @@ public class RadarSimple implements IRadar {
                     // this.applyFilteringParameters();
                     OpenGL.Utils.drawPre();
                     OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
-                    OpenGL.Utils.drawPost();
+                    // FIXME 1.21.5 OpenGL.Utils.drawPost();
                     if (this.options.showFacing) {
                         // this.applyFilteringParameters();
                         OpenGL.Utils.drawPre();
                         OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
-                        OpenGL.Utils.drawPost();
+                        // FIXME 1.21.5 OpenGL.Utils.drawPost();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
@@ -255,15 +255,16 @@ public class RadarSimple implements IRadar {
     }
 
     private void applyFilteringParameters() {
-        if (this.options.filtering) {
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        } else {
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-            OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        }
+        // FIXME 1.21.5
+        // if (this.options.filtering) {
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
+        // } else {
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
+        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+        // }
 
     }
 }

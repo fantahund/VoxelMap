@@ -2,35 +2,27 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import org.jetbrains.annotations.NotNull;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.system.MemoryUtil;
-import java.awt.image.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.MemoryUtil;
 
 public final class OpenGL {
     public static final int
@@ -92,70 +84,70 @@ public final class OpenGL {
 
     private OpenGL() {}
 
-    public static void glEnable(int target) {
-        switch (target) {
-            case GL11_GL_CULL_FACE -> RenderSystem.enableCull();
-            case GL11_GL_DEPTH_TEST -> RenderSystem.enableDepthTest();
-            case GL11_GL_BLEND -> RenderSystem.enableBlend();
-            case GL11_GL_SCISSOR_TEST -> GL11.glEnable(GL11_GL_SCISSOR_TEST);
-            case GL11_GL_POLYGON_OFFSET_FILL -> RenderSystem.enablePolygonOffset();
-            default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received by Enable (" + target + ")");
-        }
-    }
+    // public static void glEnable(int target) {
+    // switch (target) {
+    // case GL11_GL_CULL_FACE -> RenderSystem.enableCull();
+    // case GL11_GL_DEPTH_TEST -> RenderSystem.enableDepthTest();
+    // case GL11_GL_BLEND -> RenderSystem.enableBlend();
+    // case GL11_GL_SCISSOR_TEST -> GL11.glEnable(GL11_GL_SCISSOR_TEST);
+    // case GL11_GL_POLYGON_OFFSET_FILL -> RenderSystem.enablePolygonOffset();
+    // default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received by Enable (" + target + ")");
+    // }
+    // }
+    //
+    // public static void glDisable(int target) {
+    // switch (target) {
+    // case GL11_GL_CULL_FACE -> RenderSystem.disableCull();
+    // case GL11_GL_DEPTH_TEST -> RenderSystem.disableDepthTest();
+    // case GL11_GL_BLEND -> RenderSystem.disableBlend();
+    // case GL11_GL_SCISSOR_TEST -> GL11.glDisable(GL11.GL_SCISSOR_TEST);
+    // case GL11_GL_POLYGON_OFFSET_FILL -> RenderSystem.disablePolygonOffset();
+    // default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received by Disable (" + target + ")");
+    // }
+    // }
 
-    public static void glDisable(int target) {
-        switch (target) {
-            case GL11_GL_CULL_FACE -> RenderSystem.disableCull();
-            case GL11_GL_DEPTH_TEST -> RenderSystem.disableDepthTest();
-            case GL11_GL_BLEND -> RenderSystem.disableBlend();
-            case GL11_GL_SCISSOR_TEST -> GL11.glDisable(GL11.GL_SCISSOR_TEST);
-            case GL11_GL_POLYGON_OFFSET_FILL -> RenderSystem.disablePolygonOffset();
-            default -> VoxelConstants.getLogger().warn("OpenGL - Invalid state received by Disable (" + target + ")");
-        }
-    }
-
-    public static void glBlendFunc(int srcFactor, int dstFactor) { RenderSystem.blendFunc(srcFactor, dstFactor); }
-
-    public static void glBlendFuncSeparate(int srcFactorRGB, int dstFactorRGB, int srcFactorAlpha, int dstFactorAlpha) { RenderSystem.blendFuncSeparate(srcFactorRGB, dstFactorRGB, srcFactorAlpha, dstFactorAlpha); }
-
-    public static void glClear(int mask) { RenderSystem.clear(mask); }
-
-    public static void glClearColor(float red, float green, float blue, float alpha) { RenderSystem.clearColor(red, green, blue, alpha); }
-
-    public static void glClearDepth(double depth) { RenderSystem.clearDepth(depth); }
+    // public static void glBlendFunc(int srcFactor, int dstFactor) { RenderSystem.blendFunc(srcFactor, dstFactor); }
+    //
+    // public static void glBlendFuncSeparate(int srcFactorRGB, int dstFactorRGB, int srcFactorAlpha, int dstFactorAlpha) { RenderSystem.blendFuncSeparate(srcFactorRGB, dstFactorRGB, srcFactorAlpha, dstFactorAlpha); }
+    //
+    // public static void glClear(int mask) { RenderSystem.clear(mask); }
+    //
+    // public static void glClearColor(float red, float green, float blue, float alpha) { RenderSystem.clearColor(red, green, blue, alpha); }
+    //
+    // public static void glClearDepth(double depth) { RenderSystem.clearDepth(depth); }
 
     public static void glColor3f(float red, float green, float blue) { glColor4f(red, green, blue, 1.0f); }
 
     public static void glColor4f(float red, float green, float blue, float alpha) { RenderSystem.setShaderColor(red, green, blue, alpha); }
 
-    public static void glDeleteTexture(int texture) { RenderSystem.deleteTexture(texture); }
-
-    public static void glDepthMask(boolean mask) { RenderSystem.depthMask(mask); }
+    // public static void glDeleteTexture(int texture) { RenderSystem.deleteTexture(texture); }
+    //
+    // public static void glDepthMask(boolean mask) { RenderSystem.depthMask(mask); }
 
     public static int glGenTextures() { return GlStateManager._genTexture(); }
 
     public static int glGetTexLevelParameteri(int target, int level, int pname) { return GlStateManager._getTexLevelParameter(target, level, pname); }
 
-    public static void glPixelStorei(int pname, int param) { RenderSystem.pixelStore(pname, param); }
-
-    public static void glPolygonOffset(float factor, float units) { RenderSystem.polygonOffset(factor, units); }
+    // public static void glPixelStorei(int pname, int param) { RenderSystem.pixelStore(pname, param); }
+    //
+    // public static void glPolygonOffset(float factor, float units) { RenderSystem.polygonOffset(factor, units); }
 
     public static void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, IntBuffer pixels) { GlStateManager._texImage2D(target, level, internalFormat, width, height, border, format, type, pixels); }
 
-    public static void glTexParameterf(int target, int pname, float param) { GlStateManager._texParameter(target, pname, param); }
+    // public static void glTexParameterf(int target, int pname, float param) { GlStateManager._texParameter(target, pname, param); }
+    //
+    // public static void glTexParameteri(int target, int pname, int param) { RenderSystem.texParameter(target, pname, param); }
+    //
+    // public static void glViewport(int x, int y, int width, int height) { RenderSystem.viewport(x, y, width, height); }
 
-    public static void glTexParameteri(int target, int pname, int param) { RenderSystem.texParameter(target, pname, param); }
-
-    public static void glViewport(int x, int y, int width, int height) { RenderSystem.viewport(x, y, width, height); }
-
-    public static void glBindTexture(int target, int texture) {
-        if (target == GL11_GL_TEXTURE_2D) {
-            RenderSystem.bindTexture(texture);
-            return;
-        }
-
-        GL11.glBindTexture(target, texture);
-    }
+    // public static void glBindTexture(int target, int texture) {
+    // if (target == GL11_GL_TEXTURE_2D) {
+    // RenderSystem.bindTexture(texture);
+    // return;
+    // }
+    //
+    // GL11.glBindTexture(target, texture);
+    // }
 
     public static void glGenerateMipmap(int target) { GL30.glGenerateMipmap(target); }
 
@@ -284,28 +276,28 @@ public final class OpenGL {
             ldrawthree(x - half, y - half, 1.0, icon.getMinU(), icon.getMinV());
         }
 
-        public static int tex(BufferedImage image) {
-            int glId = TextureUtil.generateTextureId();
-            int width = image.getWidth();
-            int height = image.getHeight();
-            int[] data = new int[width * height];
-
-            image.getRGB(0, 0, width, height, data, 0, width);
-            glBindTexture(GL11_GL_TEXTURE_2D, glId);
-
-            DATA_BUFFER.clear();
-            DATA_BUFFER.put(data, 0, width * height);
-            DATA_BUFFER.position(0).limit(width * height);
-
-            glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MIN_FILTER, GL11_GL_LINEAR);
-            glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MAG_FILTER, GL11_GL_LINEAR);
-            glPixelStorei(GL11_GL_UNPACK_ROW_LENGTH, 0);
-            glPixelStorei(GL11_GL_UNPACK_SKIP_PIXELS, 0);
-            glPixelStorei(GL11_GL_UNPACK_SKIP_ROWS, 0);
-            glTexImage2D(GL11_GL_TEXTURE_2D, 0, GL11_GL_RGBA, width, height, 0, GL12_GL_BGRA, GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
-
-            return glId;
-        }
+        // public static int tex(BufferedImage image) {
+        // int glId = TextureUtil.generateTextureId();
+        // int width = image.getWidth();
+        // int height = image.getHeight();
+        // int[] data = new int[width * height];
+        //
+        // image.getRGB(0, 0, width, height, data, 0, width);
+        // glBindTexture(GL11_GL_TEXTURE_2D, glId);
+        //
+        // DATA_BUFFER.clear();
+        // DATA_BUFFER.put(data, 0, width * height);
+        // DATA_BUFFER.position(0).limit(width * height);
+        //
+        // glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MIN_FILTER, GL11_GL_LINEAR);
+        // glTexParameteri(GL11_GL_TEXTURE_2D, GL11_GL_TEXTURE_MAG_FILTER, GL11_GL_LINEAR);
+        // glPixelStorei(GL11_GL_UNPACK_ROW_LENGTH, 0);
+        // glPixelStorei(GL11_GL_UNPACK_SKIP_PIXELS, 0);
+        // glPixelStorei(GL11_GL_UNPACK_SKIP_ROWS, 0);
+        // glTexImage2D(GL11_GL_TEXTURE_2D, 0, GL11_GL_RGBA, width, height, 0, GL12_GL_BGRA, GL12_GL_UNSIGNED_INT_8_8_8_8_REV, DATA_BUFFER);
+        //
+        // return glId;
+        // }
 
         // public static void img2(String param) { img2(ResourceLocation.parse(param)); }
 
@@ -317,13 +309,15 @@ public final class OpenGL {
             RenderSystem.setShaderTexture(0, param);
         }
 
+        @Deprecated
         public static void disp(GpuTexture param) {
-            glBindTexture(GL11_GL_TEXTURE_2D, ((GlTexture) param).glId());
+            // RenderSystem.setShaderTexture(0, param);
+            dispId(((GlTexture) param).glId());
         }
 
         @Deprecated
         public static void dispId(int id) {
-            glBindTexture(GL11_GL_TEXTURE_2D, id);
+            GL11.glBindTexture(GL11_GL_TEXTURE_2D, id);
         }
 
         public static void disp2(GpuTexture param) {
@@ -332,30 +326,30 @@ public final class OpenGL {
 
         public static void register(ResourceLocation resource, AbstractTexture image) { textureManager.register(resource, image); }
 
-        @NotNull
-        public static NativeImage nativeImageFromBufferedImage(BufferedImage image) {
-            int glId = tex(image);
-            NativeImage nativeImage = new NativeImage(image.getWidth(), image.getHeight(), false);
-            RenderSystem.bindTexture(glId);
-            nativeImage.downloadTexture(0, false);
-
-            return nativeImage;
-        }
+        // @NotNull
+        // public static NativeImage nativeImageFromBufferedImage(BufferedImage image) {
+        // int glId = tex(image);
+        // NativeImage nativeImage = new NativeImage(image.getWidth(), image.getHeight(), false);
+        // RenderSystem.bindTexture(glId);
+        // nativeImage.downloadTexture(0, false);
+        //
+        // return nativeImage;
+        // }
 
         public static void drawPre() { drawPre(DefaultVertexFormat.POSITION_TEX); }
 
         public static void drawPre(VertexFormat format) {
-            bufferBuilder = TESSELLATOR.begin(VertexFormat.Mode.QUADS, format);
+            // FIXME 1.21.5 bufferBuilder = TESSELLATOR.begin(VertexFormat.Mode.QUADS, format);
         }
 
-        public static void drawPost() {
-            MeshData builtBuffer = bufferBuilder.build();
-            if (builtBuffer != null) {
-                BufferUploader.drawWithShader(builtBuffer);
-            }
-        }
+        // public static void drawPost() {
+        // MeshData builtBuffer = bufferBuilder.build();
+        // if (builtBuffer != null) {
+        // BufferUploader.drawWithShader(builtBuffer);
+        // }
+        // }
 
-        public static void glah(int g) { glDeleteTexture(g); }
+        // public static void glah(int g) { glDeleteTexture(g); }
 
         public static void ldrawone(int x, int y, double z, float u, float v) {
             bufferBuilder.addVertex(x, y, (float) z).setUv(u, v);

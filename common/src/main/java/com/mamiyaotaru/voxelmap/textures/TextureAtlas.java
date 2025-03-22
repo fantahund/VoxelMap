@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.lwjgl.opengl.GL11;
 
 public class TextureAtlas extends AbstractTexture {
     private final HashMap<String, Sprite> mapRegisteredSprites;
@@ -87,7 +88,9 @@ public class TextureAtlas extends AbstractTexture {
         texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
 
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
+        // FIXME 1.21.5 RenderSystem.getDevice().createCommandEncoder().writeToTexture();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) texture).glId());
+        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
         for (Sprite icon : this.stitcher.getStitchSlots()) {
             String iconName = icon.getIconName();
             tempMapRegisteredSprites.remove(iconName);
@@ -140,7 +143,9 @@ public class TextureAtlas extends AbstractTexture {
             // TextureUtilLegacy.uploadTexture(this.getId(), zeros, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
         }
 
-        OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
+        // FIXME 1.21.5 RenderSystem.getDevice().createCommandEncoder().writeToTexture();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) texture).glId());
+        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, ((GlTexture) texture).glId());
 
         HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
 

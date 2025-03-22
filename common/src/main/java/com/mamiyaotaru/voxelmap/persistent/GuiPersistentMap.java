@@ -26,13 +26,11 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.joml.Matrix4fStack;
@@ -167,42 +165,43 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void getSkin() {
-        ResourceLocation skinLocation = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile()).texture();
-        // PlayerTabOverlay
-        // PlayerFaceRenderer.draw(guiGraphics, playerInfo2.getSkin().texture(), z, aa, 8, playerInfo2.showHat(), bl2, -1);
-
-        AbstractTexture imageData = null; //TODO 1.21.4
-
-        try {
-            if (skinLocation != DefaultPlayerSkin.get(VoxelConstants.getPlayer().getUUID()).texture()) {
-                imageData = VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
-            }
-        } catch (RuntimeException ignored) {
-        }
-
-        if (imageData != null) {
-            gotSkin = true;
-            OpenGL.Utils.disp(imageData.getTexture());
-        } else {
-            ++skinTries;
-            OpenGL.Utils.img(skinLocation);
-        }
-
-        BufferedImage skinImage = ImageUtils.createBufferedImageFromCurrentGLImage();
-        boolean showHat = VoxelConstants.getPlayer().isModelPartShown(PlayerModelPart.HAT);
-        if (showHat) {
-            skinImage = ImageUtils.addImages(ImageUtils.loadImage(skinImage, 8, 8, 8, 8), ImageUtils.loadImage(skinImage, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-        } else {
-            skinImage = ImageUtils.loadImage(skinImage, 8, 8, 8, 8);
-        }
-
-        float scale = skinImage.getWidth() / 8.0F;
-        skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
-        if (playerGLID != 0) {
-            OpenGL.Utils.glah(playerGLID);
-        }
-
-        playerGLID = OpenGL.Utils.tex(skinImage);
+        // ResourceLocation skinLocation = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile()).texture();
+        // // FIXME 1.21.5
+        // // PlayerTabOverlay
+        // // PlayerFaceRenderer.draw(guiGraphics, playerInfo2.getSkin().texture(), z, aa, 8, playerInfo2.showHat(), bl2, -1);
+        //
+        // AbstractTexture imageData = null; //TODO 1.21.4
+        //
+        // try {
+        // if (skinLocation != DefaultPlayerSkin.get(VoxelConstants.getPlayer().getUUID()).texture()) {
+        // imageData = VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
+        // }
+        // } catch (RuntimeException ignored) {
+        // }
+        //
+        // if (imageData != null) {
+        // gotSkin = true;
+        // OpenGL.Utils.disp(imageData.getTexture());
+        // } else {
+        // ++skinTries;
+        // OpenGL.Utils.img(skinLocation);
+        // }
+        //
+        // BufferedImage skinImage = ImageUtils.createBufferedImageFromCurrentGLImage();
+        // boolean showHat = VoxelConstants.getPlayer().isModelPartShown(PlayerModelPart.HAT);
+        // if (showHat) {
+        // skinImage = ImageUtils.addImages(ImageUtils.loadImage(skinImage, 8, 8, 8, 8), ImageUtils.loadImage(skinImage, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
+        // } else {
+        // skinImage = ImageUtils.loadImage(skinImage, 8, 8, 8, 8);
+        // }
+        //
+        // float scale = skinImage.getWidth() / 8.0F;
+        // skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
+        // if (playerGLID != 0) {
+        // OpenGL.Utils.glah(playerGLID);
+        // }
+        //
+        // playerGLID = OpenGL.Utils.tex(skinImage);
     }
 
     @Override
@@ -663,10 +662,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(90.0F));
         }
 
-        RenderSystem.setShader(CoreShaders.POSITION_TEX);
+        // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
-            OpenGL.Utils.disp2(this.backGroundImageInfo.glid);
+            // OpenGL.Utils.disp2(this.backGroundImageInfo.glid);
             this.drawTexturedModalRect(this.backGroundImageInfo.left * this.mapToGui, this.backGroundImageInfo.top * this.mapToGui, this.backGroundImageInfo.width * this.mapToGui, this.backGroundImageInfo.height * this.mapToGui);
         }
 
@@ -676,22 +675,22 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             for (CachedRegion region : this.regions) {
                 int glid = region.getGLID();
                 if (glid != 0) {
-                    OpenGL.Utils.disp2(glid);
-                    RenderSystem.bindTextureForSetup(glid);
-                    if (mapOptions.filtering) {
-                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-                    } else {
-                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-                        OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-                    }
+                    OpenGL.Utils.dispId(glid); // FIXME 1.21.5
+                    // FIXME 1.21.5 RenderSystem.bindTextureForSetup(glid);
+                    // if (mapOptions.filtering) {
+                    // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+                    // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
+                    // } else {
+                    // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
+                    // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
+                    // }
 
                     this.drawTexturedModalRect((region.getX() * 256) * this.mapToGui, (region.getZ() * 256) * this.mapToGui, region.getWidth() * this.mapToGui, region.getWidth() * this.mapToGui);
                 }
             }
 
             if (VoxelMap.mapOptions.worldborder) {
-                RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+                // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
                 WorldBorder worldBorder = Minecraft.getInstance().level.getWorldBorder();
                 float scale = 1.0f / (float) Minecraft.getInstance().getWindow().getGuiScale();
@@ -721,9 +720,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 vertexBuffer.addVertex(x2 - scale, z1 + scale, 0).setColor(255, 0, 0, 255);
                 vertexBuffer.addVertex(x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
 
-                BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+                // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
-                RenderSystem.setShader(CoreShaders.POSITION_TEX);
+                // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
             }
 
             float cursorX;
@@ -744,7 +743,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
             }
 
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
+            // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
             if (VoxelMap.mapOptions.waypointsAllowed && this.options.showWaypoints) {
                 for (Waypoint pt : this.waypointManager.getWaypoints()) {
                     this.drawWaypoint(drawContext, pt, cursorCoordX, cursorCoordZ, null, null, null, null);
@@ -756,8 +755,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            OpenGL.Utils.disp2(playerGLID);
+            // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
+            // FIXME 1.21.5 OpenGL.Utils.disp2(playerGLID);
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
@@ -844,7 +843,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     int minimumSize = (int) (20.0F * this.scScale / biomeScaleX);
                     minimumSize *= minimumSize;
                     ArrayList<AbstractMapData.BiomeLabel> labels = this.biomeMapData.getBiomeLabels();
-                    RenderSystem.disableDepthTest();
+                    // FIXME 1.21.5 RenderSystem.disableDepthTest();
                     for (AbstractMapData.BiomeLabel biomeLabel : labels) {
                         if (biomeLabel.segmentSize > minimumSize) {
                             int nameWidth = this.chkLen(biomeLabel.name);
@@ -853,7 +852,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                             this.write(drawContext, biomeLabel.name, x - (nameWidth / 2f), this.top + z - 3.0F, 0xFFFFFF);
                         }
                     }
-                    RenderSystem.enableDepthTest();
+                    // FIXME 1.21.5 RenderSystem.enableDepthTest();
                 }
             }
         }
@@ -863,14 +862,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             int scWidth = VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth();
             int scHeight = VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.setShader(CoreShaders.POSITION_TEX);
+            // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
             ResourceLocation GUI_ICONS_TEXTURE = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
-            RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(775, 769, 1, 0);
+            // FIXME 1.21.5 RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
+            // FIXME 1.21.5 RenderSystem.enableBlend();
+            // FIXME 1.21.5 RenderSystem.blendFuncSeparate(775, 769, 1, 0);
             drawContext.blit(RenderType::guiTextured, GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 15, 15, 15, 15);
             drawContext.flush();
-            RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+            // FIXME 1.21.5 RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, 0);
         } else {
             this.switchToMouseInput();
         }
@@ -941,9 +940,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 ptZ += 0.5F;
                 boolean hover = cursorCoordX > ptX - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordX < ptX + 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ > ptZ - 18.0F * this.guiToMap / this.guiToDirectMouse && cursorCoordZ < ptZ + 18.0F * this.guiToMap / this.guiToDirectMouse;
                 boolean target = false;
-                RenderSystem.setShader(CoreShaders.POSITION_TEX);
+             // FIXME 1.21.5    RenderSystem.setShader(CoreShaders.POSITION_TEX);
                 TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-                OpenGL.Utils.disp2(atlas.getId());
+                OpenGL.Utils.disp2(atlas.getTexture());
                 if (icon == null) {
                     icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
                     if (icon == atlas.getMissingImage()) {
@@ -984,7 +983,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     RenderSystem.getModelViewStack().transformPosition(f);
                     this.write(drawContext, name, f.x, f.y, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
                     matrixStack.popPose();
-                    OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+                    // FIXME 1.21.5 OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
                 }
             }
         }
@@ -1019,14 +1018,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
+        // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+        // FIXME 1.21.5 RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.addVertex(0.0F, endY, 0.0F).setUv(0.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);
         vertexBuffer.addVertex(this.getWidth(), endY, 0.0F).setUv(this.width / 32.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);
         vertexBuffer.addVertex(this.getWidth(), startY, 0.0F).setUv(this.width / 32.0F, startY / 32.0F).setColor(64, 64, 64, startAlpha);
         vertexBuffer.addVertex(0.0F, startY, 0.0F).setUv(0.0F, startY / 32.0F).setColor(64, 64, 64, startAlpha);
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 
     @Override
@@ -1061,7 +1060,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         vertexBuffer.addVertex(x + width, y + height, 0).setUv(1.0F, 1.0F);
         vertexBuffer.addVertex(x + width, y + 0.0F, 0).setUv(1.0F, 0.0F);
         vertexBuffer.addVertex(x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F);
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 
     public void drawTexturedModalRect(float xCoord, float yCoord, Sprite icon, float widthIn, float heightIn) {
@@ -1071,7 +1070,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         vertexBuffer.addVertex(xCoord + widthIn, yCoord + heightIn, 0).setUv(icon.getMaxU(), icon.getMaxV());
         vertexBuffer.addVertex(xCoord + widthIn, yCoord + 0.0F, 0).setUv(icon.getMaxU(), icon.getMinV());
         vertexBuffer.addVertex(xCoord + 0.0F, yCoord + 0.0F, 0).setUv(icon.getMinU(), icon.getMinV());
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 
     private void createPopup(int x, int y, int directX, int directY) {

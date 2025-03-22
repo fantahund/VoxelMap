@@ -14,13 +14,11 @@ import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -320,14 +318,15 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 float chooserCenterY = this.getHeight() / 2f - chooser.getHeight() / 2f;
                 Sprite icon = chooser.getIconAt(mouseX - chooserCenterX, mouseY - chooserCenterY);
 
-                RenderSystem.setShader(CoreShaders.POSITION_TEX);
-                RenderSystem.setShaderColor(1f, 1f, 1f, 0.75f);
-                RenderSystem.setShaderTexture(0, chooser.getId());
-                RenderSystem.enableBlend();
-                RenderSystem.blendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-                drawTexturedModalRect(chooserCenterX, chooserCenterY, chooser.getWidth(), chooser.getHeight());
-                RenderSystem.disableBlend();
-                RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+                // FIXME 1.21.5
+                // RenderSystem.setShader(CoreShaders.POSITION_TEX);
+                // RenderSystem.setShaderColor(1f, 1f, 1f, 0.75f);
+                // RenderSystem.setShaderTexture(0, chooser.getId());
+                // RenderSystem.enableBlend();
+                // RenderSystem.blendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+                // drawTexturedModalRect(chooserCenterX, chooserCenterY, chooser.getWidth(), chooser.getHeight());
+                // RenderSystem.disableBlend();
+                // RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
 
                 if (icon != chooser.getMissingImage()){
                     iconLocation = icon.getIconName();
@@ -383,6 +382,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         vertexBuffer.addVertex(x + width, y + height, 0).setUv(1.0F, 1.0F);
         vertexBuffer.addVertex(x + width, y + 0.0F, 0).setUv(1.0F, 0.0F);
         vertexBuffer.addVertex(x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F);
-        BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 }

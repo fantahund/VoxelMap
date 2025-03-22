@@ -303,11 +303,12 @@ public class ColorManager {
     private void loadTexturePackTerrainImage() {
         try {
             GlStateManager._bindTexture(((GlTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture()).glId());
-            BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
-            this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
-            Graphics gfx = this.terrainBuff.createGraphics();
-            gfx.drawImage(terrainStitched, 0, 0, null);
-            gfx.dispose();
+            // FIXME 1.21.5
+            // BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
+            // this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
+            // Graphics gfx = this.terrainBuff.createGraphics();
+            // gfx.drawImage(terrainStitched, 0, 0, null);
+            // gfx.dispose();
         } catch (Exception var4) {
             VoxelConstants.getLogger().error("Error processing new resource pack: " + var4.getLocalizedMessage(), var4);
         }
