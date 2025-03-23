@@ -45,7 +45,7 @@ public class VoxelMap implements PreparableReloadListener {
     private ClientLevel world;
     private String worldName = "";
     private static String passMessage;
-    private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque();
+    private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque<>();
     VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
@@ -112,8 +112,8 @@ public class VoxelMap implements PreparableReloadListener {
         this.colorManager.onResourceManagerReload(resourceManager);
     }
 
-    public void onTickInGame(GuiGraphics drawContext) {
-        this.map.onTickInGame(drawContext);
+    public void onTickInGame(GuiGraphics guiGraphics) {
+        this.map.onTickInGame(guiGraphics);
         if (passMessage != null) {
             VoxelConstants.getMinecraft().gui.getChat().addMessage(Component.literal(passMessage));
             passMessage = null;

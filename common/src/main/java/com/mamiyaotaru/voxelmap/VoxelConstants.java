@@ -103,13 +103,13 @@ public final class VoxelConstants {
 
     }
 
-    public static void renderOverlay(GuiGraphics drawContext) {
+    public static void renderOverlay(GuiGraphics guiGraphics) {
         if (!initialized) {
             lateInit();
         }
 
         try {
-            VoxelConstants.getVoxelMapInstance().onTickInGame(drawContext);
+            VoxelConstants.getVoxelMapInstance().onTickInGame(guiGraphics);
         } catch (RuntimeException e) {
             VoxelConstants.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Error while render overlay", e);
         }

@@ -656,7 +656,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         Matrix4fStack modelViewMatrixStack = RenderSystem.getModelViewStack();
         modelViewMatrixStack.pushMatrix();
-        OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         modelViewMatrixStack.translate(this.centerX - this.mapCenterX * this.mapToGui, (this.top + this.centerY) - this.mapCenterZ * this.mapToGui, 0.0f);
         if (this.oldNorth) {
             modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(90.0F));
@@ -700,25 +700,26 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float x2 = (float) (worldBorder.getMaxX() * this.mapToGui);
                 float z2 = (float) (worldBorder.getMaxZ() * this.mapToGui);
 
-                Tesselator tessellator = Tesselator.getInstance();
-                BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                vertexBuffer.addVertex(x1, z1, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x1, z2, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x2, z2, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x2, z1, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x1, z1, 0).setColor(255, 0, 0, 255);
-
-                vertexBuffer.addVertex(x1 - scale, z1 - scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x1 - scale, z2 + scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x2 + scale, z2 + scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x2 + scale, z1 - scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x1 - scale, z1 - scale, 0).setColor(255, 0, 0, 255);
-
-                vertexBuffer.addVertex(x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x1 + scale, z2 - scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x2 - scale, z2 - scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x2 - scale, z1 + scale, 0).setColor(255, 0, 0, 255);
-                vertexBuffer.addVertex(x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
+                // FIXME 1.21.5
+                // Tesselator tessellator = Tesselator.getInstance();
+                // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+                // vertexBuffer.addVertex(x1, z1, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x1, z2, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x2, z2, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x2, z1, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x1, z1, 0).setColor(255, 0, 0, 255);
+                //
+                // vertexBuffer.addVertex(x1 - scale, z1 - scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x1 - scale, z2 + scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x2 + scale, z2 + scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x2 + scale, z1 - scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x1 - scale, z1 - scale, 0).setColor(255, 0, 0, 255);
+                //
+                // vertexBuffer.addVertex(x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x1 + scale, z2 - scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x2 - scale, z2 - scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x2 - scale, z1 + scale, 0).setColor(255, 0, 0, 255);
+                // vertexBuffer.addVertex(x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
 
                 // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
 
@@ -754,7 +755,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
 
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
             // FIXME 1.21.5 OpenGL.Utils.disp2(playerGLID);
             // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
@@ -868,7 +869,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             // FIXME 1.21.5 RenderSystem.enableBlend();
             // FIXME 1.21.5 RenderSystem.blendFuncSeparate(775, 769, 1, 0);
             drawContext.blit(RenderType::guiTextured, GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 15, 15, 15, 15);
-            drawContext.flush();
+         // FIXME 1.21.5 drawContext.flush();
             // FIXME 1.21.5 RenderSystem.blendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, 0);
         } else {
             this.switchToMouseInput();
@@ -942,7 +943,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 boolean target = false;
              // FIXME 1.21.5    RenderSystem.setShader(CoreShaders.POSITION_TEX);
                 TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-                OpenGL.Utils.disp2(atlas.getTexture());
+                RenderSystem.setShaderTexture(0, atlas.getTexture());
                 if (icon == null) {
                     icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
                     if (icon == atlas.getMissingImage()) {
@@ -953,7 +954,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     target = true;
                 }
 
-                OpenGL.glColor4f(r, g, b, !pt.enabled && !target && !hover ? 0.3F : 1.0F);
+                RenderSystem.setShaderColor(r, g, b, !pt.enabled && !target && !hover ? 0.3F : 1.0F);
                 // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
                 // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
                 if (this.oldNorth) {
@@ -1011,21 +1012,21 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public void renderBackground(GuiGraphics drawContext) {
-        drawContext.fill(0, 0, this.getWidth(), this.getHeight(), -16777216);
-        drawContext.flush();
+        drawContext.fill(0, 0, this.getWidth(), this.getHeight(), 0xff000000);
     }
 
     protected void overlayBackground(int startY, int endY, int startAlpha, int endAlpha) {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-        // FIXME 1.21.5 RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        vertexBuffer.addVertex(0.0F, endY, 0.0F).setUv(0.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);
-        vertexBuffer.addVertex(this.getWidth(), endY, 0.0F).setUv(this.width / 32.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);
-        vertexBuffer.addVertex(this.getWidth(), startY, 0.0F).setUv(this.width / 32.0F, startY / 32.0F).setColor(64, 64, 64, startAlpha);
-        vertexBuffer.addVertex(0.0F, startY, 0.0F).setUv(0.0F, startY / 32.0F).setColor(64, 64, 64, startAlpha);
-        // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+        // FIXME 1.21.5
+        // Tesselator tessellator = Tesselator.getInstance();
+        // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        // // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+        // // FIXME 1.21.5 RenderSystem.setShaderTexture(0, VoxelConstants.getOptionsBackgroundTexture());
+        // RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        // vertexBuffer.addVertex(0.0F, endY, 0.0F).setUv(0.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);
+        // vertexBuffer.addVertex(this.getWidth(), endY, 0.0F).setUv(this.width / 32.0F, endY / 32.0F).setColor(64, 64, 64, endAlpha);
+        // vertexBuffer.addVertex(this.getWidth(), startY, 0.0F).setUv(this.width / 32.0F, startY / 32.0F).setColor(64, 64, 64, startAlpha);
+        // vertexBuffer.addVertex(0.0F, startY, 0.0F).setUv(0.0F, startY / 32.0F).setColor(64, 64, 64, startAlpha);
+        // // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 
     @Override
@@ -1054,22 +1055,24 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     public void drawTexturedModalRect(float x, float y, float width, float height) {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        vertexBuffer.addVertex(x + 0.0F, y + height, 0).setUv(0.0F, 1.0F);
-        vertexBuffer.addVertex(x + width, y + height, 0).setUv(1.0F, 1.0F);
-        vertexBuffer.addVertex(x + width, y + 0.0F, 0).setUv(1.0F, 0.0F);
-        vertexBuffer.addVertex(x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F);
+        // FIXME 1.21.5
+        // Tesselator tessellator = Tesselator.getInstance();
+        // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        // vertexBuffer.addVertex(x + 0.0F, y + height, 0).setUv(0.0F, 1.0F);
+        // vertexBuffer.addVertex(x + width, y + height, 0).setUv(1.0F, 1.0F);
+        // vertexBuffer.addVertex(x + width, y + 0.0F, 0).setUv(1.0F, 0.0F);
+        // vertexBuffer.addVertex(x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F);
         // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 
     public void drawTexturedModalRect(float xCoord, float yCoord, Sprite icon, float widthIn, float heightIn) {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        vertexBuffer.addVertex(xCoord + 0.0F, yCoord + heightIn, 0).setUv(icon.getMinU(), icon.getMaxV());
-        vertexBuffer.addVertex(xCoord + widthIn, yCoord + heightIn, 0).setUv(icon.getMaxU(), icon.getMaxV());
-        vertexBuffer.addVertex(xCoord + widthIn, yCoord + 0.0F, 0).setUv(icon.getMaxU(), icon.getMinV());
-        vertexBuffer.addVertex(xCoord + 0.0F, yCoord + 0.0F, 0).setUv(icon.getMinU(), icon.getMinV());
+        // FIXME 1.21.5
+        // Tesselator tessellator = Tesselator.getInstance();
+        // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        // vertexBuffer.addVertex(xCoord + 0.0F, yCoord + heightIn, 0).setUv(icon.getMinU(), icon.getMaxV());
+        // vertexBuffer.addVertex(xCoord + widthIn, yCoord + heightIn, 0).setUv(icon.getMaxU(), icon.getMaxV());
+        // vertexBuffer.addVertex(xCoord + widthIn, yCoord + 0.0F, 0).setUv(icon.getMaxU(), icon.getMinV());
+        // vertexBuffer.addVertex(xCoord + 0.0F, yCoord + 0.0F, 0).setUv(icon.getMinU(), icon.getMinV());
         // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 

@@ -58,6 +58,9 @@ public class CompressibleGLBufferedImage {
     }
 
     public void write() {
+        if (true) {
+            return; // FIXME 1.21.5
+        }
         if (this.isCompressed) {
             this.decompress();
         }
