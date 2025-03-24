@@ -674,7 +674,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.fullscreenMap) {
                 this.renderMapFull(drawContext, this.scWidth, this.scHeight);
             } else {
-                this.renderMap(drawContext, mapX, mapY, scScale);
+                this.renderMap(drawContext, mapX, mapY, scScale, (float) (scScale / minecraft.getWindow().getGuiScale()));
             }
             // FIXME 1.21.5
             // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -1523,7 +1523,10 @@ public class Map implements Runnable, IChangeObserver {
         return ARGB.toABGR(combinedLight);
     }
 
-    private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale) {
+    private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale, float scaleProj) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
+
         float scale = 1.0F;
         if (this.options.squareMap && this.options.rotates) {
             scale = 1.4142F;
@@ -1649,6 +1652,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
             }
         }
+        guiGraphics.pose().popPose();
     }
 
     private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, TextureAtlas textureAtlas, int x, int y, int scScale, double lastXDouble, double lastZDouble, Sprite icon, Float r, Float g, Float b) {
