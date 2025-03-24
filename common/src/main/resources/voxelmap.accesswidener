@@ -16,3 +16,6 @@ mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/Ke
 accessible field net/minecraft/client/model/ShulkerModel head Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/AbstractEquineModel headParts Lnet/minecraft/client/model/geom/ModelPart;
 # accessible field net/minecraft/client/renderer/LightTexture target Lcom/mojang/blaze3d/pipeline/TextureTarget;
+accessible field net/minecraft/client/renderer/RenderPipelines GUI_TEXTURED_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setTextureState (Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
+accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder createCompositeState (Z)Lnet/minecraft/client/renderer/RenderType$CompositeState;

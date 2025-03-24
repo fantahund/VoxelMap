@@ -1533,6 +1533,8 @@ public class Map implements Runnable, IChangeObserver {
         // this.location = ResourceLocation.withDefaultNamespace("map/" + i);
         // MapTextureManager.this.textureManager.register(this.location, this.texture);
 
+        guiGraphics.blit(RenderType::guiTextured, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+
         // FIXME 1.21.5
         // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
         // Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
