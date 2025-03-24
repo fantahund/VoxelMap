@@ -21,13 +21,14 @@ import net.minecraft.util.TriState;
 public class GLUtils {
     public static void readTextureContentsToPixelArray(GpuTexture gpuTexture, Consumer<int[]> resultConsumer) {
         Preconditions.checkNotNull(resultConsumer);
-        int bufferSize = gpuTexture.getFormat().pixelSize() * gpuTexture.getWidth(0) * gpuTexture.getHeight(0);
+        int size = gpuTexture.getWidth(0) * gpuTexture.getHeight(0);
+        int bufferSize = gpuTexture.getFormat().pixelSize() * size;
         GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, bufferSize);
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
         commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
             try (GpuBuffer.ReadView readView = commandEncoder.readBuffer(gpuBuffer)) {
-                int[] pixels = new int[bufferSize];
+                int[] pixels = new int[size];
                 readView.data().asIntBuffer().get(0, pixels);
                 resultConsumer.accept(pixels);
             } finally {

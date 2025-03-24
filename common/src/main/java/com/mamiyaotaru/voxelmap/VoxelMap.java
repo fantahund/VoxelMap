@@ -137,15 +137,15 @@ public class VoxelMap implements PreparableReloadListener {
                     this.worldName = this.waypointManager.getCurrentWorldName();
                 }
 
-                // this.map.newWorld(this.world);
-                 while (!runOnWorldSet.isEmpty()) {
-                 runOnWorldSet.removeFirst().run();
-                 }
+                this.map.newWorld(this.world);
+                while (!runOnWorldSet.isEmpty()) {
+                    runOnWorldSet.removeFirst().run();
+                }
             }
         }
 
         VoxelConstants.tick();
-        // FIXME 1.21.5 this.persistentMap.onTick();
+        this.persistentMap.onTick();
     }
 
     public static void checkPermissionMessages(Component message) {
