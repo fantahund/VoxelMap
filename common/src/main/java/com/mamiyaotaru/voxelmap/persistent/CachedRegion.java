@@ -689,7 +689,7 @@ public class CachedRegion {
                 synchronized (this.image) {
                     if (this.imageChanged) {
                         this.imageChanged = false;
-                        this.image.write();
+                        this.image.upload();
                     }
                 }
             }

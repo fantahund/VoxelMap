@@ -1,28 +1,21 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mojang.blaze3d.platform.NativeImage;
-
-public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBackedTexture {
-    private final NativeImage image;
+public class ScaledDynamicMutableTexture extends DynamicMoveableTexture {
     private final int scale;
 
-    public ScaledMutableNativeImageBackedTexture(String label, int width, int height, boolean useStb) {
-        super(label, 512, 512, useStb);
+    public ScaledDynamicMutableTexture(String label, int width, int height, boolean clear) {
+        super(label, 512, 512, clear);
         this.scale = 512 / width;
-        this.image = this.getPixels();
-        String info = this.image.toString();
-        String pointerString = info.substring(info.indexOf("@") + 1, info.indexOf("]") - 1);
-        long pointer = Long.parseLong(pointerString);
     }
 
     @Override
     public int getWidth() {
-        return this.image.getHeight();
+        return this.getPixels().getWidth();
     }
 
     @Override
     public int getHeight() {
-        return this.image.getHeight();
+        return this.getPixels().getHeight();
     }
 
     @Override
@@ -46,7 +39,7 @@ public class ScaledMutableNativeImageBackedTexture extends MutableNativeImageBac
 
         for (int t = 0; t < this.scale; ++t) {
             for (int s = 0; s < this.scale; ++s) {
-                this.image.setPixel(x * this.scale + t, y * this.scale + s, color);
+                this.getPixels().setPixel(x * this.scale + t, y * this.scale + s, color);
             }
         }
 

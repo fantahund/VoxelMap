@@ -662,11 +662,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             modelViewMatrixStack.rotate(Axis.ZP.rotationDegrees(90.0F));
         }
 
-        // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
-            // FIXME 1.21.5 OpenGL.Utils.disp2(this.backGroundImageInfo.glid);
-            // FIXME 1.21.5 this.drawTexturedModalRect(this.backGroundImageInfo.left * this.mapToGui, this.backGroundImageInfo.top * this.mapToGui, this.backGroundImageInfo.width * this.mapToGui, this.backGroundImageInfo.height * this.mapToGui);
+            // FIXME 1.21.5
+            // OpenGL.Utils.disp2(this.backGroundImageInfo.glid);
+            // this.drawTexturedModalRect(this.backGroundImageInfo.left * this.mapToGui, this.backGroundImageInfo.top * this.mapToGui, this.backGroundImageInfo.width * this.mapToGui, this.backGroundImageInfo.height * this.mapToGui);
         }
 
         float cursorCoordZ = 0.0f;

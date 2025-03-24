@@ -29,7 +29,7 @@ public abstract class MixinWorldRenderer {
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void postRender(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
-        // FIXME 1.21.5
+        // FIXME 1.21.5 sollte bei renderEntities aufgerufen werden
         // if (VoxelMap.mapOptions.waypointsAllowed && (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints)) {
         // boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter() || this.getTranslucentTarget() == null;
         // if (!drawSignForeground) {

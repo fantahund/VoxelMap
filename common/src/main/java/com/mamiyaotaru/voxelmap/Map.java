@@ -15,14 +15,15 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
+import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.MutableNativeImageBackedTexture;
+import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
-import com.mamiyaotaru.voxelmap.util.ScaledMutableNativeImageBackedTexture;
+import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.opengl.GlTexture;
@@ -117,9 +118,10 @@ public class Map implements Runnable, IChangeObserver {
     private final boolean threading = this.multicore;
     private final FullMapData[] mapData = new FullMapData[5];
     private final MapChunkCache[] chunkCache = new MapChunkCache[5];
-    private MutableNativeImageBackedTexture[] mapImages;
-    private final MutableNativeImageBackedTexture[] mapImagesFiltered = new MutableNativeImageBackedTexture[5];
-    private final MutableNativeImageBackedTexture[] mapImagesUnfiltered = new MutableNativeImageBackedTexture[5];
+    private DynamicMoveableTexture[] mapImages;
+    private ResourceLocation[] mapResources;
+    private final DynamicMoveableTexture[] mapImagesFiltered = new DynamicMoveableTexture[5];
+    private final DynamicMoveableTexture[] mapImagesUnfiltered = new DynamicMoveableTexture[5];
     private BlockState transparentBlockState;
     private BlockState surfaceBlockState;
     private boolean imageChanged = true;
@@ -170,7 +172,22 @@ public class Map implements Runnable, IChangeObserver {
     private static double minTablistOffset;
     private static float statusIconOffset = 0.0F;
 
+    private final ResourceLocation[] resourceMapImageFiltered = new ResourceLocation[5];
+    private final ResourceLocation[] resourceMapImageUnfiltered = new ResourceLocation[5];
+
     public Map() {
+        resourceMapImageFiltered[0] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/0");
+        resourceMapImageFiltered[1] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/1");
+        resourceMapImageFiltered[2] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/2");
+        resourceMapImageFiltered[3] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/3");
+        resourceMapImageFiltered[4] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/4");
+        resourceMapImageUnfiltered[0] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/0");
+        resourceMapImageUnfiltered[1] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/1");
+        resourceMapImageUnfiltered[2] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/2");
+        resourceMapImageUnfiltered[3] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/3");
+        resourceMapImageUnfiltered[4] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/4");
+
+
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
@@ -200,20 +217,33 @@ public class Map implements Runnable, IChangeObserver {
         this.chunkCache[2] = new MapChunkCache(9, 9, this);
         this.chunkCache[3] = new MapChunkCache(17, 17, this);
         this.chunkCache[4] = new MapChunkCache(33, 33, this);
-        this.mapImagesFiltered[0] = new MutableNativeImageBackedTexture("voxelmap-map-32", 32, 32, true);
-        this.mapImagesFiltered[1] = new MutableNativeImageBackedTexture("voxelmap-map-64", 64, 64, true);
-        this.mapImagesFiltered[2] = new MutableNativeImageBackedTexture("voxelmap-map-128", 128, 128, true);
-        this.mapImagesFiltered[3] = new MutableNativeImageBackedTexture("voxelmap-map-256", 256, 256, true);
-        this.mapImagesFiltered[4] = new MutableNativeImageBackedTexture("voxelmap-map-512", 512, 512, true);
-        this.mapImagesUnfiltered[0] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-32", 32, 32, true);
-        this.mapImagesUnfiltered[1] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-64", 64, 64, true);
-        this.mapImagesUnfiltered[2] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-128", 128, 128, true);
-        this.mapImagesUnfiltered[3] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-256", 256, 256, true);
-        this.mapImagesUnfiltered[4] = new ScaledMutableNativeImageBackedTexture("voxelmap-map-unfiltered-512", 512, 512, true);
+        this.mapImagesFiltered[0] = new DynamicMoveableTexture("voxelmap-map-32", 32, 32, true);
+        this.mapImagesFiltered[1] = new DynamicMoveableTexture("voxelmap-map-64", 64, 64, true);
+        this.mapImagesFiltered[2] = new DynamicMoveableTexture("voxelmap-map-128", 128, 128, true);
+        this.mapImagesFiltered[3] = new DynamicMoveableTexture("voxelmap-map-256", 256, 256, true);
+        this.mapImagesFiltered[4] = new DynamicMoveableTexture("voxelmap-map-512", 512, 512, true);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[0], this.mapImagesFiltered[0]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[1], this.mapImagesFiltered[1]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[2], this.mapImagesFiltered[2]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[3], this.mapImagesFiltered[3]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[4], this.mapImagesFiltered[4]);
+        this.mapImagesUnfiltered[0] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-32", 32, 32, true);
+        this.mapImagesUnfiltered[1] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-64", 64, 64, true);
+        this.mapImagesUnfiltered[2] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-128", 128, 128, true);
+        this.mapImagesUnfiltered[3] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-256", 256, 256, true);
+        this.mapImagesUnfiltered[4] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-512", 512, 512, true);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[0], this.mapImagesUnfiltered[0]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[1], this.mapImagesUnfiltered[1]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[2], this.mapImagesUnfiltered[2]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[3], this.mapImagesUnfiltered[3]);
+        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[4], this.mapImagesUnfiltered[4]);
+
         if (this.options.filtering) {
             this.mapImages = this.mapImagesFiltered;
+            this.mapResources = resourceMapImageFiltered;
         } else {
             this.mapImages = this.mapImagesUnfiltered;
+            this.mapResources = resourceMapImageUnfiltered;
         }
 
         OpenGL.Utils.setupFramebuffer();
@@ -455,6 +485,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void cycleZoomLevel() {
+        ImageUtils.saveImage("mapimage_" + zoom, mapImages[zoom].getTexture(), 0, mapImages[zoom].getWidth(), mapImages[zoom].getHeight());// TODO
         if (this.options.zoom == 4) {
             this.options.zoom = 3;
             this.error = I18n.get("minimap.ui.zoomlevel") + " (0.5x)";
@@ -711,8 +742,10 @@ public class Map implements Runnable, IChangeObserver {
         if (this.options.isChanged()) {
             if (this.options.filtering) {
                 this.mapImages = this.mapImagesFiltered;
+                this.mapResources = resourceMapImageFiltered;
             } else {
                 this.mapImages = this.mapImagesUnfiltered;
+                this.mapResources = resourceMapImageUnfiltered;
             }
 
             changed = true;
@@ -1526,6 +1559,7 @@ public class Map implements Runnable, IChangeObserver {
     private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale, float scaleProj) {
         guiGraphics.pose().pushPose();
         guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
+        guiGraphics.pose().translate(0, 0, 122);
 
         float scale = 1.0F;
         if (this.options.squareMap && this.options.rotates) {
@@ -1562,47 +1596,51 @@ public class Map implements Runnable, IChangeObserver {
         // OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
         // OpenGL.Utils.drawPost();
         // OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
-        // synchronized (this.coordinateLock) {
-        // if (this.imageChanged) {
-        // this.imageChanged = false;
-        // this.mapImages[this.zoom].write();
-        // this.lastImageX = this.lastX;
-        // this.lastImageZ = this.lastZ;
-        // }
-        // }
+        synchronized (this.coordinateLock) {
+            if (this.imageChanged) {
+                this.imageChanged = false;
+                this.mapImages[this.zoom].upload();
+                this.lastImageX = this.lastX;
+                this.lastImageZ = this.lastZ;
+            }
+        }
         //
-        // float multi = (float) (1.0 / this.zoomScale);
-        // this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
-        // this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
-        // this.percentX *= multi;
-        // this.percentY *= multi;
+        float multi = (float) (1.0 / this.zoomScale);
+        this.percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX);
+        this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
+        this.percentX *= multi;
+        this.percentY *= multi;
         // OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
         // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
         // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        // matrixStack.pushMatrix();
-        // matrixStack.translate(256.0f, 256.0f, 0.0f);
-        // if (!this.options.rotates) {
-        // matrixStack.rotate(Axis.ZP.rotationDegrees((-this.northRotate)));
-        // } else {
-        // matrixStack.rotate(Axis.ZP.rotationDegrees(this.direction));
-        // }
-        //
-        // matrixStack.translate(-256.0f, -256.0f, 0.0f);
-        // matrixStack.translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().translate(256.0f, 256.0f, 0.0f);
+        if (!this.options.rotates) {
+            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees((-this.northRotate)));
+        } else {
+            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.direction));
+        }
+
+        guiGraphics.pose().translate(-256.0f, -256.0f, 0.0f);
+        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
+
+        // guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, mapResources[this.zoom], x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.blit(RenderType::guiTextured, mapResources[this.zoom], x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+
         // OpenGL.Utils.drawPre();
         // OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
         // OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
         // OpenGL.Utils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
         // OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
         // OpenGL.Utils.drawPost();
-        // matrixStack.popMatrix();
+        guiGraphics.pose().popPose();
         // OpenGL.glDepthMask(true);
         // OpenGL.glEnable(GL11C.GL_DEPTH_TEST);
         // OpenGL.Utils.unbindFramebuffer();
         // OpenGL.glViewport(0, 0, minecraft.getWindow().getWidth(), minecraft.getWindow().getHeight());
         // matrixStack.popMatrix();
         // RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.ORTHOGRAPHIC);
-        guiGraphics.pose().pushPose();
+        // guiGraphics.pose().pushPose();
         // FIXME 1.21.5
         // OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
         // OpenGL.Utils.disp2(OpenGL.Utils.fboTexture);
@@ -1610,15 +1648,15 @@ public class Map implements Runnable, IChangeObserver {
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
         // FIXME 1.21.5 vielleicht so?
-        guiGraphics.flush();
-        RenderSystem.enableScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
+        // guiGraphics.flush();
+        // RenderSystem.enableScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
         // OpenGL.Utils.drawPre();
         // OpenGL.Utils.setMapWithScale(x, y, scale);
         // OpenGL.Utils.drawPost();
         // FIXME 1.21.5 vielleicht so?
-        guiGraphics.flush();
-        RenderSystem.disableScissor();
-        guiGraphics.pose().popPose();
+        // guiGraphics.flush();
+        // RenderSystem.disableScissor();
+        // guiGraphics.pose().popPose();
         // FIXME 1.21.5
         // OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ONE_MINUS_SRC_ALPHA);
         // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -1631,7 +1669,6 @@ public class Map implements Runnable, IChangeObserver {
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        RenderSystem.setShaderTexture(0, textureAtlas.getTexture());
         // FIXME 1.21.5
         // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
@@ -1730,7 +1767,7 @@ public class Map implements Runnable, IChangeObserver {
                     guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 }
 
-                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight());
+                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight()); // TODO 1.21.5 das muss besser
                 guiGraphics.flush();
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             } catch (Exception var40) {
@@ -1792,7 +1829,7 @@ public class Map implements Runnable, IChangeObserver {
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
-                this.mapImages[this.zoom].write();
+                this.mapImages[this.zoom].upload();
                 this.lastImageX = this.lastX;
                 this.lastImageZ = this.lastZ;
             }

@@ -10,21 +10,15 @@ import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import java.util.HashMap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.HashMap;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
     private static final ResourceLocation BLANK = ResourceLocation.parse("textures/misc/white.png");
@@ -203,8 +197,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             int pickerCenterX = this.getWidth() / 2 - pickerSize / 2;
             int pickerCenterY = this.getHeight() / 2 - pickerSize / 2;
             if (mouseX >= pickerCenterX && mouseX <= pickerCenterX + pickerSize && mouseY >= pickerCenterY && mouseY <= pickerCenterY + pickerSize){
-                int pickPointX = (int) ((mouseX - pickerCenterX) / (float) pickerSize * 255f);
-                int pickPointY = (int) ((mouseY - pickerCenterY) / (float) pickerSize * 255f);
+                int pickPointX = (int) ((mouseX - pickerCenterX) / pickerSize * 255f);
+                int pickPointY = (int) ((mouseY - pickerCenterY) / pickerSize * 255f);
                 int color = this.colorManager.getColorPicker().getRGB(pickPointX, pickPointY);
                 this.waypoint.red = (color >> 16 & 0xFF) / 255.0f;
                 this.waypoint.green = (color >> 8 & 0xFF) / 255.0f;
@@ -291,6 +285,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         drawContext.blit(RenderType::guiTextured, waypointIcon, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 0.0F, 0.0F, 16, 16, 16, 16);
         drawContext.flush();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        drawContext.pose().translate(0, 0, 20);
         if (this.choosingColor || this.choosingIcon) {
             renderBackgroundTexture(drawContext);
 
@@ -314,19 +309,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             if (this.choosingIcon) {
                 TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
-                float chooserCenterX = this.getWidth() / 2f - chooser.getWidth() / 2f;
-                float chooserCenterY = this.getHeight() / 2f - chooser.getHeight() / 2f;
+                int chooserCenterX = (int) (this.getWidth() / 2f - chooser.getWidth() / 2f);
+                int chooserCenterY = (int) (this.getHeight() / 2f - chooser.getHeight() / 2f);
                 Sprite icon = chooser.getIconAt(mouseX - chooserCenterX, mouseY - chooserCenterY);
 
-                // FIXME 1.21.5
-                // RenderSystem.setShader(CoreShaders.POSITION_TEX);
-                // RenderSystem.setShaderColor(1f, 1f, 1f, 0.75f);
-                // RenderSystem.setShaderTexture(0, chooser.getId());
-                // RenderSystem.enableBlend();
-                // RenderSystem.blendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-                // drawTexturedModalRect(chooserCenterX, chooserCenterY, chooser.getWidth(), chooser.getHeight());
-                // RenderSystem.disableBlend();
-                // RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+                drawContext.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypointChooser, chooserCenterX, chooserCenterY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight());
 
                 if (icon != chooser.getMissingImage()){
                     iconLocation = icon.getIconName();
@@ -336,8 +323,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                         waypointIcon = ResourceLocation.parse(iconLocation);
                         this.waypointIconMap.put(iconLocation, waypointIcon);
                     }
-                    int iconSnappedX = icon.getOriginX() + (int) chooserCenterX;
-                    int iconSnappedY = icon.getOriginY() + (int) chooserCenterY;
+                    int iconSnappedX = icon.getOriginX() + chooserCenterX;
+                    int iconSnappedY = icon.getOriginY() + chooserCenterY;
+                    drawContext.flush();
                     RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1f);
                     drawContext.blit(RenderType::guiTextured, waypointIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40);
                     drawContext.flush();
@@ -373,15 +361,5 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     static void setTooltip(GuiAddWaypoint par0GuiWaypoint, Component par1Str) {
         par0GuiWaypoint.tooltip = par1Str;
-    }
-
-    public void drawTexturedModalRect(float x, float y, float width, float height) {
-        Tesselator tessellator = Tesselator.getInstance();
-        BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        vertexBuffer.addVertex(x + 0.0F, y + height, 0).setUv(0.0F, 1.0F);
-        vertexBuffer.addVertex(x + width, y + height, 0).setUv(1.0F, 1.0F);
-        vertexBuffer.addVertex(x + width, y + 0.0F, 0).setUv(1.0F, 0.0F);
-        vertexBuffer.addVertex(x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F);
-        // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
     }
 }

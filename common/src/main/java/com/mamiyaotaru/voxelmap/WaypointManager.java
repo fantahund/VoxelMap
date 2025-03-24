@@ -121,8 +121,6 @@ public class WaypointManager {
 
         };
         this.textureAtlas.loadTextureAtlas(iconCreator);
-        // FIXME 1.21.5 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-        // FIXME 1.21.5 OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         this.textureAtlasChooser.reset();
 
         for (ResourceLocation resourceLocation : images) {
@@ -749,50 +747,53 @@ public class WaypointManager {
     }
 
     private void loadBackgroundMapImage() {
-        if (this.backgroundImageInfo != null) {
-            // FIXME 1.21.5 OpenGL.Utils.glah(this.backgroundImageInfo.glid);
-            this.backgroundImageInfo = null;
-        }
+        // ResourceManager.getResourceOrThrow(resourceLocation); zum checken
 
-        try {
-            String path = this.getCurrentWorldName();
-            String subworldDescriptor = this.getCurrentSubworldDescriptor(false);
-            if (subworldDescriptor != null && !subworldDescriptor.isEmpty()) {
-                path = path + "/" + subworldDescriptor;
-            }
-
-            path = path + "/" + this.currentDimension.getStorageName();
-            String tempPath = "images/backgroundmaps/" + path + "/map.png";
-            ResourceLocation identifier = ResourceLocation.fromNamespaceAndPath("voxelmap", tempPath);
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(identifier).get().open();
-            Image image = ImageIO.read(is);
-            is.close();
-            BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
-            Graphics gfx = mapImage.createGraphics();
-            gfx.drawImage(image, 0, 0, null);
-            gfx.dispose();
-            is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().open();
-            InputStreamReader isr = new InputStreamReader(is);
-            Properties mapProperties = new Properties();
-            mapProperties.load(isr);
-            String left = mapProperties.getProperty("left");
-            String right = mapProperties.getProperty("right");
-            String top = mapProperties.getProperty("top");
-            String bottom = mapProperties.getProperty("bottom");
-            String width = mapProperties.getProperty("width");
-            String height = mapProperties.getProperty("height");
-            String scale = mapProperties.getProperty("scale");
-            if (left != null && top != null && width != null && height != null) {
-                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Integer.parseInt(width), Integer.parseInt(height));
-            } else if (left != null && top != null && scale != null) {
-                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
-            } else if (left != null && top != null && right != null && bottom != null) {
-                int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
-                this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, widthInt);
-            }
-
-            isr.close();
-        } catch (Exception ignore) {}
+        // FIXME 1.21.5
+        // if (this.backgroundImageInfo != null) {
+        // OpenGL.Utils.glah(this.backgroundImageInfo.glid);
+        // this.backgroundImageInfo = null;
+        // }
+        //
+        // try {
+        // String path = this.getCurrentWorldName();
+        // String subworldDescriptor = this.getCurrentSubworldDescriptor(false);
+        // if (subworldDescriptor != null && !subworldDescriptor.isEmpty()) {
+        // path = path + "/" + subworldDescriptor;
+        // }
+        //
+        // path = path + "/" + this.currentDimension.getStorageName();
+        // String tempPath = "images/backgroundmaps/" + path + "/map.png";
+        // ResourceLocation identifier = ResourceLocation.fromNamespaceAndPath("voxelmap", tempPath);
+        // InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(identifier).get().open();
+        // Image image = ImageIO.read(is);
+        // is.close();
+        // BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
+        // Graphics gfx = mapImage.createGraphics();
+        // gfx.drawImage(image, 0, 0, null);
+        // gfx.dispose();
+        // is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().open();
+        // InputStreamReader isr = new InputStreamReader(is);
+        // Properties mapProperties = new Properties();
+        // mapProperties.load(isr);
+        // String left = mapProperties.getProperty("left");
+        // String right = mapProperties.getProperty("right");
+        // String top = mapProperties.getProperty("top");
+        // String bottom = mapProperties.getProperty("bottom");
+        // String width = mapProperties.getProperty("width");
+        // String height = mapProperties.getProperty("height");
+        // String scale = mapProperties.getProperty("scale");
+        // if (left != null && top != null && width != null && height != null) {
+        // this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Integer.parseInt(width), Integer.parseInt(height));
+        // } else if (left != null && top != null && scale != null) {
+        // this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
+        // } else if (left != null && top != null && right != null && bottom != null) {
+        // int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
+        // this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, widthInt);
+        // }
+        //
+        // isr.close();
+        // } catch (Exception ignore) {}
     }
 
     public BackgroundImageInfo getBackgroundImageInfo() {

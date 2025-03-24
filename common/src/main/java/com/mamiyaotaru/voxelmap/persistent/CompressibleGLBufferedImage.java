@@ -57,7 +57,7 @@ public class CompressibleGLBufferedImage {
 
     }
 
-    public void write() {
+    public void upload() {
         if (true) {
             return; // FIXME 1.21.5
         }
