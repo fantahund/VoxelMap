@@ -79,13 +79,17 @@ public class WaypointManager {
     private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
+    public static final ResourceLocation resourceTextureAtlasWaypoints = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/waypoints");
+    public static final ResourceLocation resourceTextureAtlasWaypointChooser = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/waypoint-chooser");
 
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");
         this.textureAtlas.setFilter(false, false);
+        Minecraft.getInstance().getTextureManager().register(resourceTextureAtlasWaypoints, textureAtlas);
         this.textureAtlasChooser = new TextureAtlas("chooser");
         this.textureAtlasChooser.setFilter(false, false);
+        Minecraft.getInstance().getTextureManager().register(resourceTextureAtlasWaypointChooser, textureAtlasChooser);
         this.waypointContainer = new WaypointContainer(this.options);
     }
 

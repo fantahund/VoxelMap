@@ -157,24 +157,24 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.getSkin();
         }
 
-        this.forwardCode = InputConstants.getKey(VoxelConstants.getMinecraft().options.keyUp.saveString());
-        this.leftCode = InputConstants.getKey(VoxelConstants.getMinecraft().options.keyLeft.saveString());
-        this.backCode = InputConstants.getKey(VoxelConstants.getMinecraft().options.keyDown.saveString());
-        this.rightCode = InputConstants.getKey(VoxelConstants.getMinecraft().options.keyRight.saveString());
-        this.sprintCode = InputConstants.getKey(VoxelConstants.getMinecraft().options.keySprint.saveString());
+        this.forwardCode = InputConstants.getKey(Minecraft.getInstance().options.keyUp.saveString());
+        this.leftCode = InputConstants.getKey(Minecraft.getInstance().options.keyLeft.saveString());
+        this.backCode = InputConstants.getKey(Minecraft.getInstance().options.keyDown.saveString());
+        this.rightCode = InputConstants.getKey(Minecraft.getInstance().options.keyRight.saveString());
+        this.sprintCode = InputConstants.getKey(Minecraft.getInstance().options.keySprint.saveString());
     }
 
     private void getSkin() {
-        // ResourceLocation skinLocation = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile()).texture();
+        // ResourceLocation skinLocation = minecraft.getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile()).texture();
         // // FIXME 1.21.5
         // // PlayerTabOverlay
         // // PlayerFaceRenderer.draw(guiGraphics, playerInfo2.getSkin().texture(), z, aa, 8, playerInfo2.showHat(), bl2, -1);
         //
-        // AbstractTexture imageData = null; //TODO 1.21.4
+        // AbstractTexture imageData = null;
         //
         // try {
         // if (skinLocation != DefaultPlayerSkin.get(VoxelConstants.getPlayer().getUUID()).texture()) {
-        // imageData = VoxelConstants.getMinecraft().getTextureManager().getTexture(skinLocation);
+        // imageData = minecraft.getTextureManager().getTexture(skinLocation);
         // }
         // } catch (RuntimeException ignored) {
         // }
@@ -209,7 +209,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.passEvents = true;
         this.oldNorth = mapOptions.oldNorth;
         this.centerAt(this.options.mapX, this.options.mapZ);
-        if (VoxelConstants.getMinecraft().screen == this) {
+        if (minecraft.screen == this) {
             this.closed = false;
         }
 
@@ -220,24 +220,24 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.buttonCount = 5;
         this.buttonSeparation = 4;
         this.buttonWidth = (this.width - this.sideMargin * 2 - this.buttonSeparation * (this.buttonCount - 1)) / this.buttonCount;
-        this.buttonWaypoints = new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("options.minimap.waypoints"), buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiWaypoints(this)), this);
+        this.buttonWaypoints = new PopupGuiButton(this.sideMargin, this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("options.minimap.waypoints"), buttonWidget_1 -> minecraft.setScreen(new GuiWaypoints(this)), this);
         this.addRenderableWidget(this.buttonWaypoints);
         this.multiworldButtonName = Component.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld");
         this.multiworldButtonNameRed = (Component.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld")).withStyle(ChatFormatting.RED);
-        if (!VoxelConstants.getMinecraft().hasSingleplayerServer() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
-            this.addRenderableWidget(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> VoxelConstants.getMinecraft().setScreen(new GuiSubworldsSelect(this)), this));
+        if (!minecraft.hasSingleplayerServer() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
+            this.addRenderableWidget(this.buttonMultiworld = new PopupGuiButton(this.sideMargin + (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, this.multiworldButtonName, buttonWidget_1 -> minecraft.setScreen(new GuiSubworldsSelect(this)), this));
         }
 
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("menu.options"), null, this) {
             @Override
             public void onPress() {
-                VoxelConstants.getMinecraft().setScreen(new GuiMinimapOptions(GuiPersistentMap.this));
+                minecraft.setScreen(new GuiMinimapOptions(GuiPersistentMap.this));
             }
         });
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("gui.done"), null, this) {
             @Override
             public void onPress() {
-                VoxelConstants.getMinecraft().setScreen(GuiPersistentMap.this.parent);
+                minecraft.setScreen(GuiPersistentMap.this.parent);
             }
         });
         this.coordinates = new EditBox(this.getFontRenderer(), this.sideMargin, 10, 140, 20, null);
@@ -245,9 +245,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.bottom = this.getHeight() - 32;
         this.centerX = this.getWidth() / 2;
         this.centerY = (this.bottom - this.top) / 2;
-        this.scScale = (float) VoxelConstants.getMinecraft().getWindow().getGuiScale();
-        this.mapPixelsX = VoxelConstants.getMinecraft().getWindow().getWidth();
-        this.mapPixelsY = (VoxelConstants.getMinecraft().getWindow().getHeight() - (int) (64.0F * this.scScale));
+        this.scScale = (float) minecraft.getWindow().getGuiScale();
+        this.mapPixelsX = minecraft.getWindow().getWidth();
+        this.mapPixelsY = (minecraft.getWindow().getHeight() - (int) (64.0F * this.scScale));
         this.lastStill = false;
         this.timeAtLastTick = System.currentTimeMillis();
         this.keyBindForward.setKey(this.forwardCode);
@@ -255,11 +255,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.keyBindBack.setKey(this.backCode);
         this.keyBindRight.setKey(this.rightCode);
         this.keyBindSprint.setKey(this.sprintCode);
-        VoxelConstants.getMinecraft().options.keyUp.setKey(this.nullInput);
-        VoxelConstants.getMinecraft().options.keyLeft.setKey(this.nullInput);
-        VoxelConstants.getMinecraft().options.keyDown.setKey(this.nullInput);
-        VoxelConstants.getMinecraft().options.keyRight.setKey(this.nullInput);
-        VoxelConstants.getMinecraft().options.keySprint.setKey(this.nullInput);
+        minecraft.options.keyUp.setKey(this.nullInput);
+        minecraft.options.keyLeft.setKey(this.nullInput);
+        minecraft.options.keyDown.setKey(this.nullInput);
+        minecraft.options.keyRight.setKey(this.nullInput);
+        minecraft.options.keySprint.setKey(this.nullInput);
         KeyMapping.resetMapping();
     }
 
@@ -284,7 +284,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 worldName.set("Singleplayer World");
             }
         }, () -> {
-            ServerData info = VoxelConstants.getMinecraft().getCurrentServer();
+            ServerData info = minecraft.getCurrentServer();
 
             if (info != null) {
                 worldName.set(info.name);
@@ -355,8 +355,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         this.timeOfLastMouseInput = System.currentTimeMillis();
         this.switchToMouseInput();
-        float mouseDirectX = (float) VoxelConstants.getMinecraft().mouseHandler.xpos();
-        float mouseDirectY = (float) VoxelConstants.getMinecraft().mouseHandler.ypos();
+        float mouseDirectX = (float) minecraft.mouseHandler.xpos();
+        float mouseDirectY = (float) minecraft.mouseHandler.ypos();
         if (amount != 0.0) {
             if (amount > 0.0) {
                 this.zoomGoal *= 1.26F;
@@ -378,8 +378,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (mouseY > this.top && mouseY < this.bottom && button == 1) {
             this.timeOfLastKBInput = 0L;
-            int mouseDirectX = (int) VoxelConstants.getMinecraft().mouseHandler.xpos();
-            int mouseDirectY = (int) VoxelConstants.getMinecraft().mouseHandler.ypos();
+            int mouseDirectX = (int) minecraft.mouseHandler.xpos();
+            int mouseDirectY = (int) minecraft.mouseHandler.ypos();
             if (VoxelMap.mapOptions.worldmapAllowed) {
                 this.createPopup((int) mouseX, (int) mouseY, mouseDirectX, mouseDirectY);
             }
@@ -416,20 +416,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!this.editingCoordinates && (VoxelConstants.getMinecraft().options.keyJump.matches(keyCode, scanCode) || VoxelConstants.getMinecraft().options.keyShift.matches(keyCode, scanCode))) {
-            if (VoxelConstants.getMinecraft().options.keyJump.matches(keyCode, scanCode)) {
+        if (!this.editingCoordinates && (minecraft.options.keyJump.matches(keyCode, scanCode) || minecraft.options.keyShift.matches(keyCode, scanCode))) {
+            if (minecraft.options.keyJump.matches(keyCode, scanCode)) {
                 this.zoomGoal /= 1.26F;
             }
 
-            if (VoxelConstants.getMinecraft().options.keyShift.matches(keyCode, scanCode)) {
+            if (minecraft.options.keyShift.matches(keyCode, scanCode)) {
                 this.zoomGoal *= 1.26F;
             }
 
             this.zoomStart = this.zoom;
             this.zoomGoal = this.bindZoom(this.zoomGoal);
             this.timeOfZoom = System.currentTimeMillis();
-            this.zoomDirectX = (VoxelConstants.getMinecraft().getWindow().getWidth() / 2f);
-            this.zoomDirectY = (VoxelConstants.getMinecraft().getWindow().getHeight() - VoxelConstants.getMinecraft().getWindow().getHeight() / 2f);
+            this.zoomDirectX = (minecraft.getWindow().getWidth() / 2f);
+            this.zoomDirectY = (minecraft.getWindow().getHeight() - minecraft.getWindow().getHeight() / 2f);
             this.switchToKeyboardInput();
         }
 
@@ -499,7 +499,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void switchToMouseInput() {
         this.timeOfLastKBInput = 0L;
         if (!this.mouseCursorShown) {
-            GLFW.glfwSetInputMode(VoxelConstants.getMinecraft().getWindow().getWindow(), 208897, 212993);
+            GLFW.glfwSetInputMode(minecraft.getWindow().getWindow(), 208897, 212993);
         }
 
         this.mouseCursorShown = true;
@@ -508,7 +508,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void switchToKeyboardInput() {
         this.timeOfLastKBInput = System.currentTimeMillis();
         this.mouseCursorShown = false;
-        GLFW.glfwSetInputMode(VoxelConstants.getMinecraft().getWindow().getWindow(), 208897, 212995);
+        GLFW.glfwSetInputMode(minecraft.getWindow().getWindow(), 208897, 212995);
     }
 
     @Override
@@ -522,8 +522,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.mouseX = mouseX;
         this.mouseY = mouseY;
-        float mouseDirectX = (float) VoxelConstants.getMinecraft().mouseHandler.xpos();
-        float mouseDirectY = (float) VoxelConstants.getMinecraft().mouseHandler.ypos();
+        float mouseDirectX = (float) minecraft.mouseHandler.xpos();
+        float mouseDirectY = (float) minecraft.mouseHandler.ypos();
         if (this.zoom != this.zoomGoal) {
             float previousZoom = this.zoom;
             long timeSinceZoom = System.currentTimeMillis() - this.timeOfZoom;
@@ -534,8 +534,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
 
             float scaledZoom = this.zoom;
-            if (VoxelConstants.getMinecraft().getWindow().getWidth() > 1600) {
-                scaledZoom = this.zoom * VoxelConstants.getMinecraft().getWindow().getWidth() / 1600.0F;
+            if (minecraft.getWindow().getWidth() > 1600) {
+                scaledZoom = this.zoom * minecraft.getWindow().getWidth() / 1600.0F;
             }
 
             float zoomDelta = this.zoom / previousZoom;
@@ -549,8 +549,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.options.zoom = this.zoomGoal;
         float scaledZoom = this.zoom;
-        if (VoxelConstants.getMinecraft().getWindow().getScreenWidth() > 1600) {
-            scaledZoom = this.zoom * VoxelConstants.getMinecraft().getWindow().getScreenWidth() / 1600.0F;
+        if (minecraft.getWindow().getScreenWidth() > 1600) {
+            scaledZoom = this.zoom * minecraft.getWindow().getScreenWidth() / 1600.0F;
         }
 
         this.guiToMap = this.scScale / scaledZoom;
@@ -558,7 +558,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.mouseDirectToMap = 1.0F / scaledZoom;
         this.guiToDirectMouse = this.scScale;
         this.renderBackground(drawContext);
-        if (VoxelConstants.getMinecraft().mouseHandler.isLeftPressed()) {
+        if (minecraft.mouseHandler.isLeftPressed()) {
             if (!this.leftMouseButtonDown && this.overPopup(mouseX, mouseY)) {
                 this.deltaX = 0.0F;
                 this.deltaY = 0.0F;
@@ -732,8 +732,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 cursorX = mouseDirectX;
                 cursorY = mouseDirectY - this.top * this.guiToDirectMouse;
             } else {
-                cursorX = (VoxelConstants.getMinecraft().getWindow().getWidth() / 2f);
-                cursorY = (VoxelConstants.getMinecraft().getWindow().getHeight() - VoxelConstants.getMinecraft().getWindow().getHeight() / 2f) - this.top * this.guiToDirectMouse;
+                cursorX = (minecraft.getWindow().getWidth() / 2f);
+                cursorY = (minecraft.getWindow().getHeight() - minecraft.getWindow().getHeight() / 2f) - this.top * this.guiToDirectMouse;
             }
 
             if (this.oldNorth) {
@@ -860,8 +860,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         modelViewMatrixStack.popMatrix();
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
-            int scWidth = VoxelConstants.getMinecraft().getWindow().getGuiScaledWidth();
-            int scHeight = VoxelConstants.getMinecraft().getWindow().getGuiScaledHeight();
+            int scWidth = minecraft.getWindow().getGuiScaledWidth();
+            int scHeight = minecraft.getWindow().getGuiScaledHeight();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             // FIXME 1.21.5 RenderSystem.setShader(CoreShaders.POSITION_TEX);
             ResourceLocation GUI_ICONS_TEXTURE = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
@@ -979,7 +979,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                         matrixStack.mulPose(Axis.ZP.rotationDegrees(-90.0F));
                         matrixStack.translate(-(ptX * this.mapToGui / fontScale), -(ptZ * this.mapToGui / fontScale), 0.0);
                     }
-                    Vector3f f = new Vector3f(ptX * this.mapToGui - m, ptZ * this.mapToGui + 16.0F / (float) VoxelConstants.getMinecraft().getWindow().getGuiScale(), 0);
+                    Vector3f f = new Vector3f(ptX * this.mapToGui - m, ptZ * this.mapToGui + 16.0F / (float) minecraft.getWindow().getGuiScale(), 0);
                     matrixStack.last().pose().transformPosition(f);
                     RenderSystem.getModelViewStack().transformPosition(f);
                     this.write(drawContext, name, f.x, f.y, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
@@ -1035,11 +1035,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void removed() {
-        VoxelConstants.getMinecraft().options.keyUp.setKey(this.forwardCode);
-        VoxelConstants.getMinecraft().options.keyLeft.setKey(this.leftCode);
-        VoxelConstants.getMinecraft().options.keyDown.setKey(this.backCode);
-        VoxelConstants.getMinecraft().options.keyRight.setKey(this.rightCode);
-        VoxelConstants.getMinecraft().options.keySprint.setKey(this.sprintCode);
+        minecraft.options.keyUp.setKey(this.forwardCode);
+        minecraft.options.keyLeft.setKey(this.leftCode);
+        minecraft.options.keyDown.setKey(this.backCode);
+        minecraft.options.keyRight.setKey(this.rightCode);
+        minecraft.options.keySprint.setKey(this.sprintCode);
         this.keyBindForward.setKey(this.nullInput);
         this.keyBindLeft.setKey(this.nullInput);
         this.keyBindBack.setKey(this.nullInput);
@@ -1192,7 +1192,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
                 y = y > VoxelConstants.getPlayer().level().getMinY() ? y : 64;
                 this.newWaypoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
-                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
+                minecraft.setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
             }
             case 1 -> {
                 if (hovered != null) {
@@ -1230,7 +1230,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.editClicked = true;
                     this.selectedWaypoint = hovered;
-                    VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, hovered, true));
+                    minecraft.setScreen(new GuiAddWaypoint(this, hovered, true));
                 }
             }
             case 5 -> {
@@ -1242,7 +1242,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     Component affirm = Component.translatable("selectServer.deleteButton");
                     Component deny = Component.translatable("gui.cancel");
                     ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
-                    VoxelConstants.getMinecraft().setScreen(confirmScreen);
+                    minecraft.setScreen(confirmScreen);
                 }
             }
             default -> VoxelConstants.getLogger().warn("unimplemented command");
@@ -1279,7 +1279,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        VoxelConstants.getMinecraft().setScreen(this);
+        minecraft.setScreen(this);
     }
 
     private int chkLen(String string) {
