@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.mixins.BiomeAccessor;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
+import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
@@ -16,6 +17,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -96,6 +98,7 @@ public class ColorManager {
     private String renderPassThreeBlendMode;
     private final RandomSource random = RandomSource.create();
     private boolean loaded;
+    private boolean loadedTerrainImage;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
@@ -164,6 +167,7 @@ public class ColorManager {
     }
 
     private void loadColors() {
+        this.loadedTerrainImage = false;
         VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile());
         BlockRepository.getBlocks();
         this.loadColorPicker();
@@ -174,8 +178,8 @@ public class ColorManager {
         this.loaded = false;
 
         try {
-            Arrays.fill(this.blockColors, -16842497);
-            Arrays.fill(this.blockColorsWithDefaultTint, -16842497);
+            Arrays.fill(this.blockColors, 0xFEFF00FF);
+            Arrays.fill(this.blockColorsWithDefaultTint, 0xFEFF00FF);
             this.loadSpecialColors();
             this.biomeTintsAvailable.clear();
             this.biomeTextureAvailable.clear();
@@ -308,17 +312,10 @@ public class ColorManager {
     }
 
     private void loadTexturePackTerrainImage() {
-        try {
-            GlStateManager._bindTexture(((GlTexture) VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture()).glId());
-            BufferedImage terrainStitched = ImageUtils.createBufferedImageFromCurrentGLImage();
-            this.terrainBuff = new BufferedImage(terrainStitched.getWidth(null), terrainStitched.getHeight(null), 6);
-            Graphics gfx = this.terrainBuff.createGraphics();
-            gfx.drawImage(terrainStitched, 0, 0, null);
-            gfx.dispose();
-        } catch (Exception var4) {
-            VoxelConstants.getLogger().error("Error processing new resource pack: " + var4.getLocalizedMessage(), var4);
-        }
-
+        GLUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
+            terrainBuff = image;
+            loadedTerrainImage = true;
+        });
     }
 
     private void loadSpecialColors() {
@@ -336,22 +333,21 @@ public class ColorManager {
     }
 
     public final int getBlockColorWithDefaultTint(MutableBlockPos blockPos, int blockStateID) {
-        if (this.loaded) {
-            int col = 452984832;
+        if (this.loaded && loadedTerrainImage) {
+            int col = 0x1B000000;
 
             try {
                 col = this.blockColorsWithDefaultTint[blockStateID];
             } catch (ArrayIndexOutOfBoundsException ignored) {
             }
-
-            return ARGB.toABGR(col != -16842497 ? col : this.getBlockColor(blockPos, blockStateID));
+            return ARGB.toABGR(col != 0xFEFF00FF ? col : this.getBlockColor(blockPos, blockStateID));
         } else {
             return 0;
         }
     }
 
     public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, Biome biomeID) {
-        if (this.loaded) {
+        if (this.loaded && loadedTerrainImage) {
             if (this.optifineInstalled && this.biomeTextureAvailable.contains(blockStateID)) {
                 Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
                 if (col != null) {
@@ -370,7 +366,7 @@ public class ColorManager {
     }
 
     private int getBlockColor(MutableBlockPos blockPos, int blockStateID) {
-        int col = 452984832;
+        int col = 0x1B000000;
 
         try {
             col = this.blockColors[blockStateID];
@@ -378,7 +374,7 @@ public class ColorManager {
             this.resizeColorArrays(blockStateID);
         }
 
-        if (col == -16842497 || col == 452984832) {
+        if (col == 0xFEFF00FF || col == 0x1B000000) {
             BlockState blockState = BlockRepository.getStateById(blockStateID);
             col = this.blockColors[blockStateID] = this.getColor(blockPos, blockState);
         }
@@ -392,8 +388,8 @@ public class ColorManager {
             int[] newBlockColorsWithDefaultTint = new int[this.blockColors.length * 2];
             System.arraycopy(this.blockColors, 0, newBlockColors, 0, this.blockColors.length);
             System.arraycopy(this.blockColorsWithDefaultTint, 0, newBlockColorsWithDefaultTint, 0, this.blockColorsWithDefaultTint.length);
-            Arrays.fill(newBlockColors, this.blockColors.length, newBlockColors.length, -16842497);
-            Arrays.fill(newBlockColorsWithDefaultTint, this.blockColorsWithDefaultTint.length, newBlockColorsWithDefaultTint.length, -16842497);
+            Arrays.fill(newBlockColors, this.blockColors.length, newBlockColors.length, 0xFEFF00FF);
+            Arrays.fill(newBlockColorsWithDefaultTint, this.blockColorsWithDefaultTint.length, newBlockColorsWithDefaultTint.length, 0xFEFF00FF);
             this.blockColors = newBlockColors;
             this.blockColorsWithDefaultTint = newBlockColorsWithDefaultTint;
         }
@@ -403,7 +399,7 @@ public class ColorManager {
     private int getColor(MutableBlockPos blockPos, BlockState state) {
         try {
             int color = this.getColorForBlockPosBlockStateAndFacing(blockPos, state, Direction.UP);
-            if (color == 452984832) {
+            if (color == 0x1B000000) {
                 BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
                 color = this.getColorForTerrainSprite(state, blockRendererDispatcher);
             }
@@ -428,18 +424,18 @@ public class ColorManager {
             }
 
             if ((color >> 24 & 0xFF) < 27) {
-                color |= 452984832;
+                color |= 0x1B000000;
             }
-
+            // VoxelConstants.getLogger().info("getColor " + state.toString() + " -> " + Integer.toHexString(color));
             return color;
         } catch (Exception var5) {
             VoxelConstants.getLogger().error("failed getting color: " + state.getBlock().getName().getString(), var5);
-            return 452984832;
+            return 0x1B000000;
         }
     }
 
     private int getColorForBlockPosBlockStateAndFacing(BlockPos blockPos, BlockState blockState, Direction facing) {
-        int color = 452984832;
+        int color = 0x1B000000;
 
         try {
             RenderShape blockRenderType = blockState.getRenderShape();
@@ -491,7 +487,7 @@ public class ColorManager {
     }
 
     private int getColorForIcon(TextureAtlasSprite icon) {
-        int color = 452984832;
+        int color = 0x1B000000;
         if (icon != null) {
             float left = icon.getU0();
             float right = icon.getU1();
@@ -504,7 +500,7 @@ public class ColorManager {
     }
 
     private int getColorForCoordinatesAndImage(float[] uv, BufferedImage imageBuff) {
-        int color = 452984832;
+        int color = 0x1B000000;
         if (uv[0] != this.failedToLoadX || uv[2] != this.failedToLoadY) {
             int left = (int) (uv[0] * imageBuff.getWidth());
             int right = (int) Math.ceil(uv[1] * imageBuff.getWidth());
@@ -568,7 +564,7 @@ public class ColorManager {
                     this.biomeTintsAvailable.add(blockStateID);
                     this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, tint);
                 } else {
-                    this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 452984832;
+                    this.blockColorsWithDefaultTint[BlockRepository.getStateId(blockState)] = 0x1B000000;
                 }
             }
         } catch (Exception ignored) {
@@ -770,9 +766,9 @@ public class ColorManager {
         }
 
         for (int t = 0; t < this.blockColors.length; ++t) {
-            if (this.blockColors[t] != 452984832 && this.blockColors[t] != -16842497) {
+            if (this.blockColors[t] != 0x1B000000 && this.blockColors[t] != 0xFEFF00FF) {
                 if ((this.blockColors[t] >> 24 & 0xFF) < 27) {
-                    this.blockColors[t] |= 452984832;
+                    this.blockColors[t] |= 0x1B000000;
                 }
 
                 this.checkForBiomeTinting(this.dummyBlockPos, BlockRepository.getStateById(t), this.blockColors[t]);
@@ -909,14 +905,14 @@ public class ColorManager {
                         for (BlockState blockState : blockStates) {
                             topRGB = topBuff.getRGB(0, 0);
                             if (blockState.getBlock() == BlockRepository.cobweb) {
-                                topRGB |= -16777216;
+                                topRGB |= 0xFF000000;
                             }
 
                             if (renderPass.equals("3")) {
                                 topRGB = this.processRenderPassThree(topRGB);
                                 int blockStateID = BlockRepository.getStateId(blockState);
                                 int baseRGB = this.blockColors[blockStateID];
-                                if (baseRGB != 452984832 && baseRGB != -16842497) {
+                                if (baseRGB != 0x1B000000 && baseRGB != 0xFEFF00FF) {
                                     topRGB = ColorUtils.colorMultiplier(baseRGB, topRGB);
                                 }
                             }

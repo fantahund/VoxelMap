@@ -85,7 +85,7 @@ public class WaypointManager {
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints");
-        this.textureAtlas.setFilter(false, false);
+        this.textureAtlas.setFilter(true, false);
         Minecraft.getInstance().getTextureManager().register(resourceTextureAtlasWaypoints, textureAtlas);
         this.textureAtlasChooser = new TextureAtlas("chooser");
         this.textureAtlasChooser.setFilter(false, false);

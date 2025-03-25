@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -12,46 +11,29 @@ import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.opengl.GlTexture;
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-
-import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeSet;
-import javax.imageio.ImageIO;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
@@ -59,11 +41,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
-import net.minecraft.client.resources.MapTextureManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -90,12 +68,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Vector4f;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL11C;
 
 public class Map implements Runnable, IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
@@ -168,7 +141,6 @@ public class Map implements Runnable, IChangeObserver {
     private int[] lightmapColors = new int[256];
     private double zoomScale = 1.0;
     private double zoomScaleAdjusted = 1.0;
-    private int mapImageInt = -1;
     private static double minTablistOffset;
     private static float statusIconOffset = 0.0F;
 
@@ -222,21 +194,31 @@ public class Map implements Runnable, IChangeObserver {
         this.mapImagesFiltered[2] = new DynamicMoveableTexture("voxelmap-map-128", 128, 128, true);
         this.mapImagesFiltered[3] = new DynamicMoveableTexture("voxelmap-map-256", 256, 256, true);
         this.mapImagesFiltered[4] = new DynamicMoveableTexture("voxelmap-map-512", 512, 512, true);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[0], this.mapImagesFiltered[0]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[1], this.mapImagesFiltered[1]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[2], this.mapImagesFiltered[2]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[3], this.mapImagesFiltered[3]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageFiltered[4], this.mapImagesFiltered[4]);
+        this.mapImagesFiltered[0].setFilter(true, false);
+        this.mapImagesFiltered[1].setFilter(true, false);
+        this.mapImagesFiltered[2].setFilter(true, false);
+        this.mapImagesFiltered[3].setFilter(true, false);
+        this.mapImagesFiltered[4].setFilter(true, false);
+        minecraft.getTextureManager().register(resourceMapImageFiltered[0], this.mapImagesFiltered[0]);
+        minecraft.getTextureManager().register(resourceMapImageFiltered[1], this.mapImagesFiltered[1]);
+        minecraft.getTextureManager().register(resourceMapImageFiltered[2], this.mapImagesFiltered[2]);
+        minecraft.getTextureManager().register(resourceMapImageFiltered[3], this.mapImagesFiltered[3]);
+        minecraft.getTextureManager().register(resourceMapImageFiltered[4], this.mapImagesFiltered[4]);
         this.mapImagesUnfiltered[0] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-32", 32, 32, true);
         this.mapImagesUnfiltered[1] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-64", 64, 64, true);
         this.mapImagesUnfiltered[2] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-128", 128, 128, true);
         this.mapImagesUnfiltered[3] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-256", 256, 256, true);
         this.mapImagesUnfiltered[4] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-512", 512, 512, true);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[0], this.mapImagesUnfiltered[0]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[1], this.mapImagesUnfiltered[1]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[2], this.mapImagesUnfiltered[2]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[3], this.mapImagesUnfiltered[3]);
-        minecraft.getInstance().getTextureManager().register(resourceMapImageUnfiltered[4], this.mapImagesUnfiltered[4]);
+        this.mapImagesUnfiltered[0].setFilter(true, false);
+        this.mapImagesUnfiltered[1].setFilter(true, false);
+        this.mapImagesUnfiltered[2].setFilter(true, false);
+        this.mapImagesUnfiltered[3].setFilter(true, false);
+        this.mapImagesUnfiltered[4].setFilter(true, false);
+        minecraft.getTextureManager().register(resourceMapImageUnfiltered[0], this.mapImagesUnfiltered[0]);
+        minecraft.getTextureManager().register(resourceMapImageUnfiltered[1], this.mapImagesUnfiltered[1]);
+        minecraft.getTextureManager().register(resourceMapImageUnfiltered[2], this.mapImagesUnfiltered[2]);
+        minecraft.getTextureManager().register(resourceMapImageUnfiltered[3], this.mapImagesUnfiltered[3]);
+        minecraft.getTextureManager().register(resourceMapImageUnfiltered[4], this.mapImagesUnfiltered[4]);
 
         if (this.options.filtering) {
             this.mapImages = this.mapImagesFiltered;
@@ -485,7 +467,6 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void cycleZoomLevel() {
-        ImageUtils.saveImage("mapimage_" + zoom, mapImages[zoom].getTexture(), 0, mapImages[zoom].getWidth(), mapImages[zoom].getHeight());// TODO
         if (this.options.zoom == 4) {
             this.options.zoom = 3;
             this.error = I18n.get("minimap.ui.zoomlevel") + " (0.5x)";
@@ -648,7 +629,7 @@ public class Map implements Runnable, IChangeObserver {
         if (this.lightmapColors == null) {
             return 0;
         }
-        return this.lightmapColors[blockLight + ((int) skyLight) * 16]; // TODO 1.21.5 interpolate
+        return ARGB.toABGR(this.lightmapColors[blockLight + ((int) skyLight) * 16]); // TODO 1.21.5 interpolate
     }
 
     public void drawMinimap(GuiGraphics drawContext) {
@@ -697,18 +678,12 @@ public class Map implements Runnable, IChangeObserver {
         }
         Map.statusIconOffset = statusIconOffset;
 
-        // FIXME 1.21.5
-        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (!this.options.hide) {
             if (this.fullscreenMap) {
                 this.renderMapFull(drawContext, this.scWidth, this.scHeight);
             } else {
                 this.renderMap(drawContext, mapX, mapY, scScale, (float) (scScale / minecraft.getWindow().getGuiScale()));
             }
-            // FIXME 1.21.5
-            // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
             if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
                 this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
                 // FIXME 1.21.5 VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, modelViewMatrixStack, this.layoutVariables, (float) (scScale / minecraft.getWindow().getGuiScale()));
@@ -719,9 +694,9 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             if (this.fullscreenMap) {
-                this.drawArrow(drawContext, this.scWidth / 2, this.scHeight / 2);
+                this.drawArrow(drawContext, this.scWidth / 2, this.scHeight / 2, (float) (scScale / minecraft.getWindow().getGuiScale()));
             } else {
-                this.drawArrow(drawContext, mapX, mapY);
+                this.drawArrow(drawContext, mapX, mapY, (float) (scScale / minecraft.getWindow().getGuiScale()));
             }
         }
         if (this.options.coords) {
@@ -1565,37 +1540,9 @@ public class Map implements Runnable, IChangeObserver {
         if (this.options.squareMap && this.options.rotates) {
             scale = 1.4142F;
         }
-        // FIXME 1.21.5 so etwa dynamic texture registrieren
-        // this.texture = new DynamicTexture(() -> "Map " + i, 128, 128, true);
-        // this.location = ResourceLocation.withDefaultNamespace("map/" + i);
-        // MapTextureManager.this.textureManager.register(this.location, this.texture);
 
         guiGraphics.blit(RenderType::guiTextured, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
-        // FIXME 1.21.5
-        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
-        // Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-        // RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        // Matrix4f matrix4f = new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 3000.0F);
-        // RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
-        // OpenGL.Utils.bindFramebuffer();
-        // OpenGL.glViewport(0, 0, 512, 512);
-        // matrixStack.pushMatrix();
-        // matrixStack.identity();
-        // matrixStack.translate(0.0f, 0.0f, -2000.0f);
-        // OpenGL.glDepthMask(false);
-        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        // OpenGL.glClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        // OpenGL.glClear(16384);
-        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 0);
-        // OpenGL.Utils.img2(this.options.squareMap ? this.squareStencil : this.circleStencil);
-        // OpenGL.Utils.drawPre();
-        // OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F + 256.0F / scale, 1.0, 0.0F, 0.0F);
-        // OpenGL.Utils.ldrawthree((256.0F + 256.0F / scale), 256.0F + 256.0F / scale, 1.0, 1.0F, 0.0F);
-        // OpenGL.Utils.ldrawthree(256.0F + 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 1.0F, 1.0F);
-        // OpenGL.Utils.ldrawthree(256.0F - 256.0F / scale, 256.0F - 256.0F / scale, 1.0, 0.0F, 1.0F);
-        // OpenGL.Utils.drawPost();
-        // OpenGL.glBlendFuncSeparate(1, 0, 774, 0);
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1610,56 +1557,22 @@ public class Map implements Runnable, IChangeObserver {
         this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
         this.percentX *= multi;
         this.percentY *= multi;
-        // OpenGL.Utils.disp2(this.mapImages[this.zoom].getIndex());
-        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-        // // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
         guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(256.0f, 256.0f, 0.0f);
+
+        guiGraphics.pose().translate(x, y, 0);
         if (!this.options.rotates) {
-            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees((-this.northRotate)));
+            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees((this.northRotate)));
         } else {
-            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.direction));
+            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-this.direction));
         }
+        guiGraphics.pose().scale(scale, scale, 1);
+        guiGraphics.pose().translate(-x, -y, 0);
+        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F / 4 / 2, -this.percentY * 512.0F / 64.0F / 4 / 2, 0.0f);
 
-        guiGraphics.pose().translate(-256.0f, -256.0f, 0.0f);
-        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
-
-        // guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, mapResources[this.zoom], x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-        guiGraphics.blit(RenderType::guiTextured, mapResources[this.zoom], x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-
-        // OpenGL.Utils.drawPre();
-        // OpenGL.Utils.ldrawthree(0.0, 512.0, 1.0, 0.0F, 0.0F);
-        // OpenGL.Utils.ldrawthree(512.0, 512.0, 1.0, 1.0F, 0.0F);
-        // OpenGL.Utils.ldrawthree(512.0, 0.0, 1.0, 1.0F, 1.0F);
-        // OpenGL.Utils.ldrawthree(0.0, 0.0, 1.0, 0.0F, 1.0F);
-        // OpenGL.Utils.drawPost();
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, mapResources[this.zoom], x - 32, y - 32, 0, 0, 64, 64, 64, 64);
         guiGraphics.pose().popPose();
-        // OpenGL.glDepthMask(true);
-        // OpenGL.glEnable(GL11C.GL_DEPTH_TEST);
-        // OpenGL.Utils.unbindFramebuffer();
-        // OpenGL.glViewport(0, 0, minecraft.getWindow().getWidth(), minecraft.getWindow().getHeight());
-        // matrixStack.popMatrix();
-        // RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.ORTHOGRAPHIC);
-        // guiGraphics.pose().pushPose();
-        // FIXME 1.21.5
-        // OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ZERO);
-        // OpenGL.Utils.disp2(OpenGL.Utils.fboTexture);
-        //
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
-        // FIXME 1.21.5 vielleicht so?
-        // guiGraphics.flush();
-        // RenderSystem.enableScissor((int) (guiScale * (x - 32)), (int) (guiScale * ((this.scHeight - y) - 32.0)), (int) (guiScale * 64.0), (int) (guiScale * 63.0));
-        // OpenGL.Utils.drawPre();
-        // OpenGL.Utils.setMapWithScale(x, y, scale);
-        // OpenGL.Utils.drawPost();
-        // FIXME 1.21.5 vielleicht so?
-        // guiGraphics.flush();
-        // RenderSystem.disableScissor();
-        // guiGraphics.pose().popPose();
-        // FIXME 1.21.5
-        // OpenGL.glBlendFunc(GL11C.GL_SRC_ALPHA, GL11C.GL_ONE_MINUS_SRC_ALPHA);
-        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.options.squareMap) {
             this.drawSquareMapFrame(guiGraphics, x, y);
         } else {
@@ -1669,10 +1582,6 @@ public class Map implements Runnable, IChangeObserver {
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        // FIXME 1.21.5
-        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         if (VoxelMap.mapOptions.waypointsAllowed) {
             Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
 
@@ -1812,12 +1721,15 @@ public class Map implements Runnable, IChangeObserver {
         }
     }
 
-    private void drawArrow(GuiGraphics guiGraphics, int x, int y) {
+    private void drawArrow(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
         guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(scaleProj, scaleProj, 1.0f);
 
         guiGraphics.pose().translate(x, y, 0.0f);
         guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
         guiGraphics.pose().translate(-x, -y, 0.0f);
+
+        guiGraphics.pose().translate(0, 0, 200.0f);
 
         guiGraphics.blit(RenderType::guiTextured, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
@@ -1918,7 +1830,7 @@ public class Map implements Runnable, IChangeObserver {
         poseStack.pushPose();
         poseStack.scale(scaleProj, scaleProj, 1.0F);
         poseStack.scale(scale, scale, 1.0F);
-        poseStack.translate(0, 0, 10);
+        poseStack.translate(0, 0, 150);
 
         poseStack.pushPose();
         poseStack.translate(distance * Math.sin(Math.toRadians(-(rotate - 90.0))), distance * Math.cos(Math.toRadians(-(rotate - 90.0))), 100.0);
