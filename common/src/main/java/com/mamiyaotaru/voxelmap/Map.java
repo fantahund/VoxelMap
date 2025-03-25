@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -1736,8 +1737,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().popPose();
     }
 
-    private void renderMapFull(GuiGraphics drawContext, int scWidth, int scHeight) {
-        PoseStack matrixStack = drawContext.pose();
+    private void renderMapFull(GuiGraphics guiGraphics, int scWidth, int scHeight) {
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1746,53 +1746,40 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-        // FIXME 1.21.5
-        // RenderSystem.setShader(CoreShaders.POSITION_TEX);
-        // OpenGL.Utils.disp2(this.mapImages[this.zoom].getTexture());
-        // RenderSystem.bindTextureForSetup(this.mapImages[this.zoom].getIndex());
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR_MIPMAP_LINEAR);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        // matrixStack.pushPose();
-        // matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
-        // matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
-        // matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
-        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        // OpenGL.Utils.drawPre();
-        // int left = scWidth / 2 - 128;
-        // int top = scHeight / 2 - 128;
-        // OpenGL.Utils.ldrawone(left, top + 256, 160.0, 0.0F, 1.0F);
-        // OpenGL.Utils.ldrawone(left + 256, top + 256, 160.0, 1.0F, 1.0F);
-        // OpenGL.Utils.ldrawone(left + 256, top, 160.0, 1.0F, 0.0F);
-        // OpenGL.Utils.ldrawone(left, top, 160.0, 0.0F, 0.0F);
-        // OpenGL.Utils.drawPost();
-        // matrixStack.popPose();
-        // if (this.options.biomeOverlay != 0) {
-        // double factor = Math.pow(2.0, 3 - this.zoom);
-        // int minimumSize = (int) Math.pow(2.0, this.zoom);
-        // minimumSize *= minimumSize;
-        // ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
-        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        // matrixStack.pushPose();
-        // matrixStack.translate(0.0, 0.0, 1160.0);
-        //
-        // for (AbstractMapData.BiomeLabel o : labels) {
-        // if (o.segmentSize > minimumSize) {
-        // String name = o.name;
-        // int nameWidth = this.chkLen(name);
-        // float x = (float) (o.x * factor);
-        // float z = (float) (o.z * factor);
-        // if (this.options.oldNorth) {
-        // this.write(drawContext, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
-        // } else {
-        // this.write(drawContext, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
-        // }
-        // }
-        // }
-        //
-        // matrixStack.popPose();
-        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        // }
+        PoseStack matrixStack = guiGraphics.pose();
+        matrixStack.pushPose();
+        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
+        matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
+        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
+        int left = scWidth / 2 - 128;
+        int top = scHeight / 2 - 128;
+        guiGraphics.blit(RenderType::guiTextured, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
+        matrixStack.popPose();
 
+        if (this.options.biomeOverlay != 0) {
+            double factor = Math.pow(2.0, 3 - this.zoom);
+            int minimumSize = (int) Math.pow(2.0, this.zoom);
+            minimumSize *= minimumSize;
+            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
+            matrixStack.pushPose();
+            matrixStack.translate(0.0, 0.0, 1160.0);
+
+            for (AbstractMapData.BiomeLabel o : labels) {
+                if (o.segmentSize > minimumSize) {
+                    String name = o.name;
+                    int nameWidth = this.textWidth(name);
+                    float x = (float) (o.x * factor);
+                    float z = (float) (o.z * factor);
+                    if (this.options.oldNorth) {
+                        this.write(guiGraphics, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
+                    } else {
+                        this.write(guiGraphics, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
+                    }
+                }
+            }
+
+            matrixStack.popPose();
+        }
     }
 
     private void drawSquareMapFrame(GuiGraphics guiGraphics, int x, int y) {
