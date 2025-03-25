@@ -517,7 +517,11 @@ public class Radar implements IRadar {
     }
 
     @Override
-    public void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj) {
+    public void onTickInGame(GuiGraphics drawContext, LayoutVariables layoutVariables, float scaleProj) {
+        // FIXME 1.21.5
+        if (true) {
+            return;
+        }
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -545,7 +549,7 @@ public class Radar implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(drawContext, matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
+                this.renderMapMobs(drawContext, null, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
             }
 
             OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);

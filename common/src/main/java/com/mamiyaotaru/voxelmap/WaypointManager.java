@@ -749,7 +749,7 @@ public class WaypointManager {
     private void loadBackgroundMapImage() {
         // ResourceManager.getResourceOrThrow(resourceLocation); zum checken
 
-        // FIXME 1.21.5
+        // FIXME 1.21.5 BackgroundImage
         // if (this.backgroundImageInfo != null) {
         // OpenGL.Utils.glah(this.backgroundImageInfo.glid);
         // this.backgroundImageInfo = null;

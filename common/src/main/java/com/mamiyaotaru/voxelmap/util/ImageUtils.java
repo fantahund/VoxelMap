@@ -206,7 +206,7 @@ public class ImageUtils {
 
     public static NativeImage scaleImage(NativeImage image, float scaleBy) {
         return image;
-        // FIXME 1.21.5
+        // FIXME 1.21.5 Scale NativeImage (for Mobicons)
         // if (scaleBy == 1.0F) {
         // return image;
         // } else {
@@ -277,7 +277,7 @@ public class ImageUtils {
 
     public static NativeImage pad(NativeImage base) {
         return base;
-        // FIXME 1.21.5
+        // FIXME 1.21.5 Pad NativeImage (for Mobicons)
         // int dim = Math.max(base.getWidth(), base.getHeight());
         // int outlineWidth = 3;
         // int size = dim + outlineWidth * 2;

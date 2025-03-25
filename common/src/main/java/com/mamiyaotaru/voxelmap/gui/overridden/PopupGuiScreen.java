@@ -7,11 +7,16 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     private final ArrayList<Popup> popups = new ArrayList<>();
 
     @Override
-    public void removed() {}
+    public void removed() {
+    }
 
-    public void createPopup(int x, int y, int directX, int directY, ArrayList<Popup.PopupEntry> entries) { popups.add(new Popup(x, y, directX, directY, entries, this)); }
+    public void createPopup(int x, int y, int directX, int directY, ArrayList<Popup.PopupEntry> entries) {
+        popups.add(new Popup(x, y, directX, directY, entries, this));
+    }
 
-    public void clearPopups() { popups.clear(); }
+    public void clearPopups() {
+        popups.clear();
+    }
 
     public boolean clickedPopup(double x, double y) {
         boolean clicked = false;
@@ -45,15 +50,16 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     }
 
     @Override
-    public boolean popupOpen() { return popups.isEmpty(); }
+    public boolean popupOpen() {
+        return popups.isEmpty();
+    }
 
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        super.render(drawContext, mouseX, mouseY, delta);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        super.render(guiGraphics, mouseX, mouseY, delta);
 
         for (Popup popup : this.popups) {
-            popup.drawPopup(drawContext, mouseX, mouseY);
+            popup.drawPopup(guiGraphics, mouseX, mouseY);
         }
-
     }
 
     @Override

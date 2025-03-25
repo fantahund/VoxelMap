@@ -7,6 +7,7 @@ import java.util.TreeSet;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.client.Camera;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -42,7 +43,11 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public int getUnifiedColor() {
-        return -16777216 + ((int) (this.red * 255.0F) << 16) + ((int) (this.green * 255.0F) << 8) + (int) (this.blue * 255.0F);
+        return getUnifiedColor(1.0f);
+    }
+
+    public int getUnifiedColor(float alpha) {
+        return ARGB.colorFromFloat(alpha, red, green, blue);
     }
 
     public boolean isActive() {

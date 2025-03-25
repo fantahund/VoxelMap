@@ -17,7 +17,8 @@ public class BackgroundImageInfo {
 
     public BackgroundImageInfo(BufferedImage image, int left, int top, int width, int height) {
         this.image = image;
-        // FIXME 1.21.5 this.glid = OpenGL.Utils.tex(image);
+        // FIXME 1.21.5 BackgroundImage
+        // this.glid = OpenGL.Utils.tex(image);
         this.left = left;
         this.top = top;
         this.right = left + width;

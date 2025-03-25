@@ -9,8 +9,8 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
 import net.minecraft.client.Minecraft;
@@ -29,7 +29,6 @@ import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
-import org.joml.Matrix4fStack;
 
 public class RadarSimple implements IRadar {
     private LayoutVariables layoutVariables;
@@ -65,7 +64,6 @@ public class RadarSimple implements IRadar {
             facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
             this.textureAtlas.stitch();
-            applyFilteringParameters();
             this.completedLoading = true;
         } catch (Exception var4) {
             VoxelConstants.getLogger().error("Failed getting mobs " + var4.getLocalizedMessage(), var4);
@@ -74,7 +72,7 @@ public class RadarSimple implements IRadar {
     }
 
     @Override
-    public void onTickInGame(GuiGraphics drawContext, Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj) {
+    public void onTickInGame(GuiGraphics guiGraphics, LayoutVariables layoutVariables, float scaleProj) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -98,11 +96,11 @@ public class RadarSimple implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY);
+                guiGraphics.flush();
+                this.renderMapMobs(guiGraphics, this.layoutVariables.mapX, this.layoutVariables.mapY);
+                guiGraphics.flush();
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
-
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-
         }
     }
 
@@ -181,7 +179,7 @@ public class RadarSimple implements IRadar {
         }
     }
 
-    public void renderMapMobs(Matrix4fStack matrixStack, int x, int y) {
+    public void renderMapMobs(GuiGraphics guiGraphics, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         OpenGL.Utils.disp2(this.textureAtlas.getTexture());
 
@@ -198,7 +196,6 @@ public class RadarSimple implements IRadar {
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
-            // FIXME 1.21.5 OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
             if (wayY < 0) {
                 OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
             } else {
@@ -223,7 +220,7 @@ public class RadarSimple implements IRadar {
 
             if (inRange) {
                 try {
-                    matrixStack.pushMatrix();
+                    guiGraphics.pose().pushPose();
                     float contactFacing = contact.entity.getYHeadRot();
                     if (this.minimapOptions.rotates) {
                         contactFacing -= this.direction;
@@ -231,43 +228,29 @@ public class RadarSimple implements IRadar {
                         contactFacing += 90.0F;
                     }
 
-                    matrixStack.translate(x, y, 0.0f);
-                    matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-                    matrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
-                    matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
-                    matrixStack.translate(-x, -y, 0.0f);
+                    guiGraphics.pose().translate(x, y, 0.0f);
+                    guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-contact.angle));
+                    guiGraphics.pose().translate(0.0f, (float) -contact.distance, 0.0f);
+                    guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
+                    guiGraphics.pose().translate(-x, -y, 0.0f);
 
                     // this.applyFilteringParameters();
-                    OpenGL.Utils.drawPre();
-                    OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
+                    // OpenGL.Utils.drawPre();
+                    // OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
                     // FIXME 1.21.5 OpenGL.Utils.drawPost();
                     if (this.options.showFacing) {
                         // this.applyFilteringParameters();
-                        OpenGL.Utils.drawPre();
-                        OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
+                        // OpenGL.Utils.drawPre();
+                        // OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
                         // FIXME 1.21.5 OpenGL.Utils.drawPost();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
-                    matrixStack.popMatrix();
+                    guiGraphics.pose().popPose();
                 }
             }
         }
-
-    }
-
-    private void applyFilteringParameters() {
-        // FIXME 1.21.5
-        // if (this.options.filtering) {
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        // } else {
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        // }
 
     }
 }

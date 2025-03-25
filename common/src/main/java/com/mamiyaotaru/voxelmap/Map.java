@@ -24,7 +24,6 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.awt.Color;
@@ -511,8 +510,6 @@ public class Map implements Runnable, IChangeObserver {
             if (this.world != null) {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !minecraft.isPaused() || this.options.realTimeTorches) {
                     this.needLightmapRefresh = false;
-                    // GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) this.lightmapTexture.getTarget()).glId());
-                    // GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
                     GLUtils.readTextureContentsToPixelArray(this.lightmapTexture.getTarget(), image -> {
                         this.lightmapColors = image;
                     });
@@ -687,7 +684,7 @@ public class Map implements Runnable, IChangeObserver {
             }
             if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
                 this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
-                // FIXME 1.21.5 VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, modelViewMatrixStack, this.layoutVariables, (float) (scScale / minecraft.getWindow().getGuiScale()));
+                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, this.layoutVariables, (float) (scScale / minecraft.getWindow().getGuiScale()));
             }
 
             if (!this.fullscreenMap) {
@@ -1662,10 +1659,10 @@ public class Map implements Runnable, IChangeObserver {
             } else {
                 target = true;
             }
+            int color = pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
+
             try {
                 guiGraphics.pose().pushPose();
-                guiGraphics.flush();
-                RenderSystem.setShaderColor(r, g, b, !pt.enabled && !target ? 0.3F : 1.0F);
                 guiGraphics.pose().translate(x, y, 0.0f);
                 guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-locate));
                 if (uprightIcon) {
@@ -1677,9 +1674,7 @@ public class Map implements Runnable, IChangeObserver {
                     guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 }
 
-                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight()); // TODO 1.21.5 das muss besser
-                guiGraphics.flush();
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight(), color); // TODO 1.21.5 das muss besser
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
@@ -1703,17 +1698,15 @@ public class Map implements Runnable, IChangeObserver {
             } else {
                 target = true;
             }
+            int color = pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
+
             try {
                 guiGraphics.pose().pushPose();
-                guiGraphics.flush();
-                RenderSystem.setShaderColor(r, g, b, !pt.enabled && !target ? 0.3F : 1.0F);
                 guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-locate));
                 guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-(-locate)));
 
-                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight());
-                guiGraphics.flush();
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight(), color);
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {

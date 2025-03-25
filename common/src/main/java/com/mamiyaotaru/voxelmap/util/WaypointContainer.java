@@ -53,7 +53,7 @@ public class WaypointContainer {
     }
 
     public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
-        // FIXME 1.21.5
+        // FIXME 1.21.5 In World Waypoints
         // this.sortWaypoints();
         // Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         // Vec3 cameraPos = camera.getPosition();
@@ -175,7 +175,8 @@ public class WaypointContainer {
                 vertexBuffer.addVertex(matrix4f, vertX2, (float) baseY + height, vertZ2).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
             }
 
-            // FIXME 1.21.5 BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
+            // FIXME 1.21.5 In World Waypoints
+            // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
 
     }
@@ -229,7 +230,7 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
         }
 
-        // FIXME 1.21.5
+        // FIXME 1.21.5 In World Waypoints
         // RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
         // OpenGL.Utils.disp2(textureAtlas.getTexture());
         // if (withDepth) {

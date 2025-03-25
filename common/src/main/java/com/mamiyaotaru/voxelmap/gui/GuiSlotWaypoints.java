@@ -16,6 +16,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
 
 class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointItem> {
     private final ArrayList<WaypointItem> waypoints;
@@ -153,17 +154,13 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                 }
             }
             drawContext.blit(RenderType::guiTextured, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            drawContext.blit(RenderType::guiTextured, this.iconSprite, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-            RenderSystem.setShaderColor(this.waypoint.red, this.waypoint.green, this.waypoint.blue, 1.0f);
+            drawContext.blit(RenderType::guiTextured, this.iconSprite, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18, waypoint.getUnifiedColor());
 
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                drawContext.blit(RenderType::guiTextured, GuiSlotWaypoints.this.highlightedIconIdentifier, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-                RenderSystem.setShaderColor(1.0f, 0.0f, 0.0f, 1.0f);
+                int redColor = ARGB.colorFromFloat(1.0f, 1.0f, 0.0f, 0.0f);
+                drawContext.blit(RenderType::guiTextured, GuiSlotWaypoints.this.highlightedIconIdentifier, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18, redColor);
             }
-            drawContext.flush();
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
