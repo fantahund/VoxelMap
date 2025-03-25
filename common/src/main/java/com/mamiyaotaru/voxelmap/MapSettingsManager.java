@@ -97,9 +97,9 @@ public class MapSettingsManager implements ISettingsManager {
 
         try {
             if (this.settingsFile.exists()) {
-                BufferedReader in;
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), StandardCharsets.UTF_8.newDecoder()));
                 String sCurrentLine;
-                for (in = new BufferedReader(new InputStreamReader(new FileInputStream(this.settingsFile), StandardCharsets.UTF_8.newDecoder())); (sCurrentLine = in.readLine()) != null; KeyMapping.resetMapping()) {
+                while ((sCurrentLine = in.readLine()) != null) {
                     String[] curLine = sCurrentLine.split(":");
                     switch (curLine[0]) {
                         case "Zoom Level" -> this.zoom = Math.max(0, Math.min(4, Integer.parseInt(curLine[1])));
@@ -144,7 +144,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Waypoint Distance Below Name" -> this.waypointDistanceBelowName  = Boolean.parseBoolean(curLine[1]);
                     }
                 }
-
+                KeyMapping.resetMapping();
                 for (ISubSettingsManager subSettingsManager : this.subSettingsManagers) {
                     subSettingsManager.loadSettings(this.settingsFile);
                 }

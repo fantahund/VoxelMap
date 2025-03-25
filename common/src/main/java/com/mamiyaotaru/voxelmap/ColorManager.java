@@ -207,7 +207,7 @@ public class ColorManager {
         this.loaded = true;
     }
 
-    // FIXME 1.21.5
+    // FIXME 1.21.5 Radar
     // public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, Level world, float iconScale, float captureDepth) {
     // try {
     // BakedModel model = VoxelConstants.getMinecraft().getModelManager().getModel(stack, world, null, 0); //FIXME 1.21.4
@@ -223,7 +223,7 @@ public class ColorManager {
     // }
     // }
 
-    // FIXME 1.21.5
+    // FIXME 1.21.5 Radar
     // private void drawModel(Direction facing, BlockState blockState, BakedModel model, ItemStack stack, float scale, float captureDepth) {
     // float size = 8.0F * scale;
     // ItemTransforms transforms = model.getTransforms();

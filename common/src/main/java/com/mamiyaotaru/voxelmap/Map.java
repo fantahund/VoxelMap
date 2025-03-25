@@ -44,7 +44,6 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -62,7 +61,6 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -958,13 +956,13 @@ public class Map implements Runnable, IChangeObserver {
         int color24;
         Biome biome;
         if (needBiome) {
-            int chunkX = SectionPos.blockToSectionCoord(blockPos.getX());
-            int chunkZ = SectionPos.blockToSectionCoord(blockPos.getZ());
-            if (world.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null) { // TODO 1.21.5 testen
-                biome = world.getBiome(blockPos).value();
-            } else {
-                biome = null;
-            }
+            // int chunkX = SectionPos.blockToSectionCoord(blockPos.getX());
+            // int chunkZ = SectionPos.blockToSectionCoord(blockPos.getZ());
+            // if (world.getChunk(chunkX, chunkZ, ChunkStatus.FULL, false) != null) { // TODO 1.21.5 testen
+            biome = world.getBiome(blockPos).value();
+            // } else {
+            // biome = null;
+            // }
 
             this.mapData[zoom].setBiome(imageX, imageY, biome);
         } else {

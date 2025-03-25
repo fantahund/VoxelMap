@@ -1147,8 +1147,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void popupAction(Popup popup, int action) {
-        int mouseDirectX = popup.clickedDirectX;
-        int mouseDirectY = popup.clickedDirectY;
+        int mouseDirectX = popup.getClickedDirectX();
+        int mouseDirectY = popup.getClickedDirectY();
         float cursorX = mouseDirectX;
         float cursorY = mouseDirectY - this.top * this.guiToDirectMouse;
         float cursorCoordX;
