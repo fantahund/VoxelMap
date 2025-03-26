@@ -4,10 +4,10 @@ import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
+import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
@@ -19,6 +19,7 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -45,7 +46,6 @@ public class RadarSimple implements IRadar {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("pings", resourceTextureAtlasMarker);
-        this.textureAtlas.setFilter(false, false);
     }
 
     @Override
@@ -182,7 +182,6 @@ public class RadarSimple implements IRadar {
 
     public void renderMapMobs(GuiGraphics guiGraphics, int x, int y) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
-        OpenGL.Utils.disp2(this.textureAtlas.getTexture());
 
         for (Contact contact : this.contacts) {
             contact.updateLocation();
@@ -192,16 +191,13 @@ public class RadarSimple implements IRadar {
             double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
             double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
             int wayY = GameVariableAccessShim.yCoord() - contactY;
-            double adjustedDiff = max - Math.max(Math.abs(wayY), 0);
+            double adjustedDiff = max - Math.abs(wayY);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
-            if (wayY < 0) {
-                OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
-            } else {
-                OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
-            }
+
+            int color = wayY < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
 
             if (this.minimapOptions.rotates) {
                 contact.angle += this.direction;
@@ -234,16 +230,11 @@ public class RadarSimple implements IRadar {
                     guiGraphics.pose().translate(0.0f, (float) -contact.distance, 0.0f);
                     guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
                     guiGraphics.pose().translate(-x, -y, 0.0f);
+                    guiGraphics.pose().translate(0, 0, 125);
 
-                    // this.applyFilteringParameters();
-                    // OpenGL.Utils.drawPre();
-                    // OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("contact"), x, y, 16.0F);
-                    // FIXME 1.21.5 OpenGL.Utils.drawPost();
+                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
                     if (this.options.showFacing) {
-                        // this.applyFilteringParameters();
-                        // OpenGL.Utils.drawPre();
-                        // OpenGL.Utils.setMap(this.textureAtlas.getAtlasSprite("facing"), x, y, 16.0F);
-                        // FIXME 1.21.5 OpenGL.Utils.drawPost();
+                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
