@@ -62,14 +62,26 @@ public class GLUtils {
         }, 0);
     }
 
-    private static final RenderPipeline GUI_TEXTURED_EQUAL_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_equal_depth").withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).build();
+    public static final RenderPipeline GUI_TEXTURED_EQUAL_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_equal_depth").withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).build();
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_EQUAL_DEPTH = Util.memoize(
             (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
-                    "gui_textured_equal_depth",
+                    "voxelmap_gui_textured_equal_depth",
                     0x00C000,
                     GUI_TEXTURED_EQUAL_DEPTH_PIPELINE,
                     RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.FALSE, false))
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
                             .createCompositeState(false))));
+
+    public static final RenderPipeline GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_equal_depth").withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
+
+    public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH = Util.memoize(
+            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
+                    "voxelmap_gui_textured_lequal_depth",
+                    0x00C000,
+                    GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE,
+                    RenderType.CompositeState.builder()
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .createCompositeState(false))));
+
 }

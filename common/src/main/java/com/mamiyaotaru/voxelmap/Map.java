@@ -21,14 +21,25 @@ import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.OptionalInt;
 import java.util.Random;
 import java.util.TreeSet;
 import net.minecraft.ChatFormatting;
@@ -41,7 +52,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -66,6 +79,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class Map implements Runnable, IChangeObserver {
@@ -144,6 +159,9 @@ public class Map implements Runnable, IChangeObserver {
 
     private final ResourceLocation[] resourceMapImageFiltered = new ResourceLocation[5];
     private final ResourceLocation[] resourceMapImageUnfiltered = new ResourceLocation[5];
+    private GpuTexture fboTexture;
+    private Tesselator fboTessellator = new Tesselator(4096);
+    private final ResourceLocation resourceFboTexture = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/fbo");
 
     public Map() {
         resourceMapImageFiltered[0] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/0");
@@ -226,9 +244,13 @@ public class Map implements Runnable, IChangeObserver {
             this.mapResources = resourceMapImageUnfiltered;
         }
 
-        OpenGL.Utils.setupFramebuffer();
         this.zoom = this.options.zoom;
         this.setZoomScale();
+
+        final int fboTextureSize = 512;
+        DynamicTexture fboTexture = new DynamicTexture("voxelmap-fbotexture", fboTextureSize, fboTextureSize, true);
+        minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
+        this.fboTexture = fboTexture.getTexture();
     }
 
     public void forceFullRender(boolean forceFullRender) {
@@ -1554,19 +1576,65 @@ public class Map implements Runnable, IChangeObserver {
         this.percentX *= multi;
         this.percentY *= multi;
         guiGraphics.pose().pushPose();
+        guiGraphics.pose().setIdentity();
 
-        guiGraphics.pose().translate(x, y, 0);
+        guiGraphics.pose().translate(256, 256, 0);
         if (!this.options.rotates) {
-            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees((this.northRotate)));
+            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-this.northRotate));
         } else {
-            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-this.direction));
+            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.direction));
         }
+        guiGraphics.pose().translate(-256, -256, 0);
+        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
         guiGraphics.pose().scale(scale, scale, 1);
-        guiGraphics.pose().translate(-x, -y, 0);
-        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F / 4 / 2, -this.percentY * 512.0F / 64.0F / 4 / 2, 0.0f);
 
-        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, mapResources[this.zoom], x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.flush();
+
+        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
+        Vector3f vector3f = new Vector3f();
+        guiGraphics.pose().last().pose().transformPosition(0, 512, 0, vector3f);
+        bufferBuilder.addVertex(vector3f).setUv(0, 0).setColor(255, 255, 255, 255);
+        guiGraphics.pose().last().pose().transformPosition(512, 512, 0, vector3f);
+        bufferBuilder.addVertex(vector3f).setUv(1, 0).setColor(255, 255, 255, 255);
+        guiGraphics.pose().last().pose().transformPosition(512, 0, 0, vector3f);
+        bufferBuilder.addVertex(vector3f).setUv(1, 1).setColor(255, 255, 255, 255);
+        guiGraphics.pose().last().pose().transformPosition(0, 0, 0, vector3f);
+        bufferBuilder.addVertex(vector3f).setUv(0, 1).setColor(255, 255, 255, 255);
+
+        ProjectionType originalProjectionType = RenderSystem.getProjectionType();
+        Matrix4f originalProjectionMatrix = RenderSystem.getProjectionMatrix();
+        RenderSystem.setProjectionMatrix(new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 21000.0F), ProjectionType.ORTHOGRAPHIC);
+
+        RenderPipeline renderPipeline = RenderPipelines.GUI_TEXTURED;
+        try (MeshData meshData = bufferBuilder.build()) {
+            GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+            GpuBuffer indexBuffer;
+            VertexFormat.IndexType indexType;
+            if (meshData.indexBuffer() == null) {
+                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().mode());
+                indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
+                indexType = autoStorageIndexBuffer.type();
+            } else {
+                indexBuffer = renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
+                indexType = meshData.drawState().indexType();
+            }
+
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(fboTexture, OptionalInt.of(0xff000000))) {
+                renderPass.setPipeline(renderPipeline);
+                renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTexture());
+                renderPass.setVertexBuffer(0, vertexBuffer);
+                renderPass.setIndexBuffer(indexBuffer, indexType);
+                renderPass.drawIndexed(0, meshData.drawState().indexCount());
+            }
+        }
+        RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
+        fboTessellator.clear();
+
         guiGraphics.pose().popPose();
+
+        // guiGraphics.blit(RenderType::guiTextured, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
         if (this.options.squareMap) {
@@ -1574,6 +1642,7 @@ public class Map implements Runnable, IChangeObserver {
         } else {
             this.drawRoundMapFrame(guiGraphics, x, y);
         }
+
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
@@ -1672,7 +1741,8 @@ public class Map implements Runnable, IChangeObserver {
                     guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 }
 
-                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight(), color); // TODO 1.21.5 das muss besser
+                guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
+                        textureAtlas.getImageHeight(), color); // TODO 1.21.5 das muss besser
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
@@ -1704,7 +1774,8 @@ public class Map implements Runnable, IChangeObserver {
                 guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-(-locate)));
 
-                guiGraphics.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(), textureAtlas.getImageHeight(), color);
+                guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
+                        textureAtlas.getImageHeight(), color);
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
@@ -1723,7 +1794,7 @@ public class Map implements Runnable, IChangeObserver {
 
         guiGraphics.pose().translate(0, 0, 200.0f);
 
-        guiGraphics.blit(RenderType::guiTextured, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
         guiGraphics.pose().popPose();
     }
