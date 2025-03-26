@@ -643,11 +643,11 @@ public class Map implements Runnable, IChangeObserver {
         return this.lightmapColors;
     }
 
-    public int getLightmapColor(float skyLight, int blockLight) {
+    public int getLightmapColor(int skyLight, int blockLight) {
         if (this.lightmapColors == null) {
             return 0;
         }
-        return ARGB.toABGR(this.lightmapColors[blockLight + ((int) skyLight) * 16]); // TODO 1.21.5 interpolate
+        return ARGB.toABGR(this.lightmapColors[blockLight + skyLight * 16]);
     }
 
     public void drawMinimap(GuiGraphics drawContext) {
@@ -1742,8 +1742,6 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
-                // guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
-                // textureAtlas.getImageHeight(), color); // TODO 1.21.5 das muss besser
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
@@ -1776,8 +1774,6 @@ public class Map implements Runnable, IChangeObserver {
                 guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-(-locate)));
 
                 icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
-                // guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
-                // textureAtlas.getImageHeight(), color);
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
