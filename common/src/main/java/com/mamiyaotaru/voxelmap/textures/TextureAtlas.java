@@ -28,18 +28,21 @@ public class TextureAtlas extends AbstractTexture {
     private Stitcher stitcher;
     private boolean linearFilter;
     private boolean mipmap;
+    private ResourceLocation resourceLocation;
 
-    public TextureAtlas(String basePath) {
-        this(basePath, null);
+    public TextureAtlas(String basePath, ResourceLocation resourceLocation) {
+        this(basePath, resourceLocation, null);
     }
 
-    public TextureAtlas(String basePath, IIconCreator iconCreator) {
+    public TextureAtlas(String basePath, ResourceLocation resourceLocation, IIconCreator iconCreator) {
         this.mapRegisteredSprites = Maps.newHashMap();
         this.mapUploadedSprites = Maps.newHashMap();
-        this.missingImage = new Sprite("missingno");
-        this.failedImage = new Sprite("notfound");
+        this.missingImage = new Sprite("missingno", this);
+        this.failedImage = new Sprite("notfound", this);
         this.basePath = basePath;
         this.iconCreator = iconCreator;
+        this.resourceLocation = resourceLocation;
+        Minecraft.getInstance().getTextureManager().register(resourceLocation, this);
     }
 
     @Override
@@ -206,7 +209,7 @@ public class TextureAtlas extends AbstractTexture {
         } else {
             Sprite icon = this.mapRegisteredSprites.get(resourceLocation.toString());
             if (icon == null) {
-                icon = Sprite.spriteFromResourceLocation(resourceLocation);
+                icon = Sprite.spriteFromResourceLocation(resourceLocation, this);
 
                 try {
                     TextureContents image = TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceLocation);
@@ -228,7 +231,7 @@ public class TextureAtlas extends AbstractTexture {
         if (name != null && !name.isEmpty()) {
             Sprite icon = this.mapRegisteredSprites.get(name);
             if (icon == null) {
-                icon = Sprite.spriteFromString(name);
+                icon = Sprite.spriteFromString(name, this);
                 icon.setTextureData(bufferedImage);
                 // FIXME 1.21.5
                 // for (Sprite existing : this.mapUploadedSprites.values()) {
@@ -292,5 +295,9 @@ public class TextureAtlas extends AbstractTexture {
 
     public int getImageHeight() {
         return this.stitcher.getCurrentImageHeight();
+    }
+
+    public ResourceLocation getResourceLocation() {
+        return resourceLocation;
     }
 }

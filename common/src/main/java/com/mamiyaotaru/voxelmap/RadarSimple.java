@@ -35,6 +35,7 @@ public class RadarSimple implements IRadar {
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
     private final TextureAtlas textureAtlas;
+    public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/radarsimple/marker");
     private boolean completedLoading;
     private int timer = 500;
     private float direction;
@@ -43,7 +44,7 @@ public class RadarSimple implements IRadar {
     public RadarSimple() {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-        this.textureAtlas = new TextureAtlas("pings");
+        this.textureAtlas = new TextureAtlas("pings", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(false, false);
     }
 

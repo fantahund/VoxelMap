@@ -1,6 +1,9 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import java.util.function.Function;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 
 public class Sprite {
@@ -14,18 +17,20 @@ public class Sprite {
     private float maxU;
     private float minV;
     private float maxV;
+    private TextureAtlas textureAtlas;
 
-    public Sprite(String iconName) {
+    public Sprite(String iconName, TextureAtlas textureAtlas) {
         this.iconName = iconName;
+        this.textureAtlas = textureAtlas;
     }
 
-    public static Sprite spriteFromResourceLocation(ResourceLocation resourceLocation) {
+    public static Sprite spriteFromResourceLocation(ResourceLocation resourceLocation, TextureAtlas textureAtlas) {
         String name = resourceLocation.toString();
-        return spriteFromString(name);
+        return spriteFromString(name, textureAtlas);
     }
 
-    public static Sprite spriteFromString(String name) {
-        return new Sprite(name);
+    public static Sprite spriteFromString(String name, TextureAtlas textureAtlas) {
+        return new Sprite(name, textureAtlas);
     }
 
     public void initSprite(int sheetWidth, int sheetHeight, int originX, int originY) {
@@ -111,5 +116,14 @@ public class Sprite {
 
     public String toString() {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
+    }
+
+    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, int x, int y, int w, int h) {
+        blit(guiGraphics, renderTypeMap, x, y, h, w, 0xffffffff);
+    }
+
+    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, int x, int y, int w, int h, int color) {
+        guiGraphics.blit(renderTypeMap, textureAtlas.getResourceLocation(), x, y, getMinU() * textureAtlas.getImageWidth(), getMinV() * textureAtlas.getImageHeight(), w, h, getIconWidth(), getIconHeight(), textureAtlas.getImageWidth(),
+                textureAtlas.getImageHeight(), color);
     }
 }

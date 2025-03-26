@@ -1741,8 +1741,9 @@ public class Map implements Runnable, IChangeObserver {
                     guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 }
 
-                guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
-                        textureAtlas.getImageHeight(), color); // TODO 1.21.5 das muss besser
+                icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
+                // guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
+                // textureAtlas.getImageHeight(), color); // TODO 1.21.5 das muss besser
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
@@ -1774,8 +1775,9 @@ public class Map implements Runnable, IChangeObserver {
                 guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
                 guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-(-locate)));
 
-                guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
-                        textureAtlas.getImageHeight(), color);
+                icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
+                // guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, WaypointManager.resourceTextureAtlasWaypoints, x - 4, y - 4, icon.getMinU() * textureAtlas.getImageWidth(), icon.getMinV() * textureAtlas.getImageHeight(), 8, 8, 32, 32, textureAtlas.getImageWidth(),
+                // textureAtlas.getImageHeight(), color);
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {

@@ -155,6 +155,7 @@ public class Radar implements IRadar {
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
     private final TextureAtlas textureAtlas;
+    public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/radar/marker");
     private boolean newMobs;
     private boolean completedLoading;
     private int timer = 500;
@@ -207,7 +208,7 @@ public class Radar implements IRadar {
     public Radar() {
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-        this.textureAtlas = new TextureAtlas("mobs");
+        this.textureAtlas = new TextureAtlas("mobs", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(false, false);
 
         try {
