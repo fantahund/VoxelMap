@@ -25,8 +25,8 @@ public class MixinMouse {
     @Inject(method = "onPress", at = @At(value = "RETURN"))
     private void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
         if (this.minecraft.screen instanceof GuiPersistentMap guiPersistentMap && button == 0) {
-            double d = this.xpos * (double) this.minecraft.getWindow().getGuiScaledWidth() / (double) this.minecraft.getWindow().getScreenWidth();
-            double e = this.ypos * (double) this.minecraft.getWindow().getGuiScaledHeight() / (double) this.minecraft.getWindow().getScreenHeight();
+            double d = this.xpos * this.minecraft.getWindow().getGuiScaledWidth() / this.minecraft.getWindow().getScreenWidth();
+            double e = this.ypos * this.minecraft.getWindow().getGuiScaledHeight() / this.minecraft.getWindow().getScreenHeight();
             if (!guiPersistentMap.mouseClicked(d, e, button) && (guiPersistentMap.passEvents && this.minecraft.getOverlay() == null)) this.isLeftPressed = action == 1;
         }
     }

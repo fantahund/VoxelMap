@@ -1,10 +1,12 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Function;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import org.joml.Matrix4f;
 
 public class Sprite {
     private final String iconName;
@@ -118,12 +120,19 @@ public class Sprite {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
     }
 
-    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, int x, int y, int w, int h) {
+    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, float x, float y, float w, float h) {
         blit(guiGraphics, renderTypeMap, x, y, h, w, 0xffffffff);
     }
 
-    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, int x, int y, int w, int h, int color) {
-        guiGraphics.blit(renderTypeMap, textureAtlas.getResourceLocation(), x, y, getMinU() * textureAtlas.getImageWidth(), getMinV() * textureAtlas.getImageHeight(), w, h, getIconWidth(), getIconHeight(), textureAtlas.getImageWidth(),
-                textureAtlas.getImageHeight(), color);
+    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, float x, float y, float w, float h, int color) {
+        guiGraphics.drawSpecial(bufferSource -> {
+            RenderType renderType = renderTypeMap.apply(textureAtlas.getResourceLocation());
+            Matrix4f matrix4f = guiGraphics.pose().last().pose();
+            VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
+            vertexConsumer.addVertex(matrix4f, x, y, 0.0F).setUv(getMinU(), getMinV()).setColor(color);
+            vertexConsumer.addVertex(matrix4f, x, y + h, 0.0F).setUv(getMinU(), getMaxV()).setColor(color);
+            vertexConsumer.addVertex(matrix4f, x + w, y + h, 0.0F).setUv(getMaxU(), getMaxV()).setColor(color);
+            vertexConsumer.addVertex(matrix4f, x + w, y, 0.0F).setUv(getMaxU(), getMinV()).setColor(color);
+        });
     }
 }

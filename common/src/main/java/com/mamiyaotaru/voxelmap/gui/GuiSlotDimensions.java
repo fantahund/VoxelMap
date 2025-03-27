@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import java.util.ArrayList;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;

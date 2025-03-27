@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
+import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -14,6 +15,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.Level;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 public class CompressibleGLBufferedImage {
@@ -80,6 +83,7 @@ public class CompressibleGLBufferedImage {
 
         if (this.texture == null) {
             this.texture = new DynamicTexture(() -> "", new NativeImage(Format.RGBA, width, height, false));
+            this.texture.setClamp(true);
             Minecraft.getInstance().getTextureManager().register(location, texture);
         }
 
@@ -98,8 +102,8 @@ public class CompressibleGLBufferedImage {
         ByteBuffer outBuffer = MemoryUtil.memByteBuffer(this.texture.getPixels().getPointer(), imageBytes);
         MemoryUtil.memCopy(buffer, outBuffer);
         this.texture.upload();
-
-        // FIXME 1.21.5 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) this.texture.getTexture()).glId());
+        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         this.compress();
     }
 

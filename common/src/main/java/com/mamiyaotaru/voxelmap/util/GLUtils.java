@@ -8,14 +8,19 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.TriState;
@@ -84,4 +89,44 @@ public class GLUtils {
                             .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
                             .createCompositeState(false))));
 
+    public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_FILTER_MIN = Util.memoize(
+            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
+                    "voxelmap_gui_textured_lequal_depth",
+                    0x00C000,
+                    GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE,
+                    RenderType.CompositeState.builder()
+                            .setTextureState(new ExtendedTextureStateShard(resourceLocation, FilterMode.LINEAR, FilterMode.NEAREST, true))
+                            .createCompositeState(false))));
+
+
+    public static class ExtendedTextureStateShard extends RenderStateShard.EmptyTextureStateShard {
+        private final Optional<ResourceLocation> texture;
+        private final FilterMode minFilter;
+        private final FilterMode magFilter;
+        private final boolean mipmap;
+
+        public ExtendedTextureStateShard(ResourceLocation resourceLocation, FilterMode minFilter, FilterMode magFilter, boolean mipmap) {
+            super(() -> {
+                TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+                AbstractTexture abstractTexture = textureManager.getTexture(resourceLocation);
+                abstractTexture.getTexture().setTextureFilter(minFilter, magFilter, mipmap);
+                RenderSystem.setShaderTexture(0, abstractTexture.getTexture());
+            }, () -> {
+            });
+            this.texture = Optional.of(resourceLocation);
+            this.minFilter = minFilter;
+            this.magFilter = magFilter;
+            this.mipmap = mipmap;
+        }
+
+        @Override
+        public String toString() {
+            return this.name + "[" + this.texture + "(minFilter=" + this.minFilter + ", magFilter=" + this.magFilter + ", mipmap=" + this.mipmap + ")]";
+        }
+
+        @Override
+        protected Optional<ResourceLocation> cutoutTexture() {
+            return this.texture;
+        }
+    }
 }

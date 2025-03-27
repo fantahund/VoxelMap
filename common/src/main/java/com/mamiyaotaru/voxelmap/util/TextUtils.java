@@ -118,7 +118,7 @@ public final class TextUtils {
         List<Component> stream = new ArrayList<>();
         stream.add(text);
 
-        for (@SuppressWarnings("ParameterNameDiffersFromOverriddenParameter") Component sibling : text.getSiblings()) {
+        for (Component sibling : text.getSiblings()) {
             stream.addAll(stream(sibling));
         }
 

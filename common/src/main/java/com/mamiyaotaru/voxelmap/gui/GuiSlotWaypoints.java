@@ -3,8 +3,6 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import com.mojang.blaze3d.systems.RenderSystem;
-
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;

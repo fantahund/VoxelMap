@@ -6,31 +6,15 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerList;
-import org.joml.Matrix4fStack;
-import org.lwjgl.opengl.GL11;
-import javax.imageio.ImageIO;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.network.Connection;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
-import net.minecraft.world.level.storage.LevelResource;
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,6 +39,20 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import javax.imageio.ImageIO;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.Connection;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
+import net.minecraft.world.level.storage.LevelResource;
+import org.joml.Matrix4fStack;
 
 public class WaypointManager {
     public final MapSettingsManager options;
@@ -81,6 +79,7 @@ public class WaypointManager {
     private final Object waypointLock = new Object();
     public static final ResourceLocation resourceTextureAtlasWaypoints = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/waypoints");
     public static final ResourceLocation resourceTextureAtlasWaypointChooser = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/waypoint-chooser");
+    public final Minecraft minecraft = Minecraft.getInstance();
 
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -402,10 +401,10 @@ public class WaypointManager {
             String worldName = this.getCurrentWorldName();
             String worldNamePathPart = TextUtils.scrubNameFile(worldName);
             String subWorldNamePathPart = TextUtils.scrubNameFile(oldName) + "/";
-            File oldCachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
+            File oldCachedRegionFileDir = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
             if (oldCachedRegionFileDir.exists() && oldCachedRegionFileDir.isDirectory()) {
                 subWorldNamePathPart = TextUtils.scrubNameFile(newName) + "/";
-                File newCachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
+                File newCachedRegionFileDir = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
                 boolean success = oldCachedRegionFileDir.renameTo(newCachedRegionFileDir);
                 if (!success) {
                     VoxelConstants.getLogger().warn("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
@@ -481,7 +480,7 @@ public class WaypointManager {
         }
 
         worldNameSave = TextUtils.scrubNameFile(worldNameSave);
-        File saveDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/");
+        File saveDir = new File(minecraft.gameDirectory, "/voxelmap/");
         if (!saveDir.exists()) {
             saveDir.mkdirs();
         }
@@ -561,8 +560,8 @@ public class WaypointManager {
     }
 
     private boolean loadWaypointsExtensible(String worldNameStandard) {
-        File settingsFileNew = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/" + worldNameStandard + ".points");
-        File settingsFileOld = new File(VoxelConstants.getMinecraft().gameDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileNew = new File(minecraft.gameDirectory, "/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileOld = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
         if (!settingsFileOld.exists() && !settingsFileNew.exists()) {
             return false;
         } else {
@@ -743,53 +742,53 @@ public class WaypointManager {
     }
 
     private void loadBackgroundMapImage() {
-        // ResourceManager.getResourceOrThrow(resourceLocation); zum checken
+        if (this.backgroundImageInfo != null) {
+            this.backgroundImageInfo.unregister();
+            this.backgroundImageInfo = null;
+        }
 
-        // FIXME 1.21.5 BackgroundImage
-        // if (this.backgroundImageInfo != null) {
-        // OpenGL.Utils.glah(this.backgroundImageInfo.glid);
-        // this.backgroundImageInfo = null;
-        // }
-        //
-        // try {
-        // String path = this.getCurrentWorldName();
-        // String subworldDescriptor = this.getCurrentSubworldDescriptor(false);
-        // if (subworldDescriptor != null && !subworldDescriptor.isEmpty()) {
-        // path = path + "/" + subworldDescriptor;
-        // }
-        //
-        // path = path + "/" + this.currentDimension.getStorageName();
-        // String tempPath = "images/backgroundmaps/" + path + "/map.png";
-        // ResourceLocation identifier = ResourceLocation.fromNamespaceAndPath("voxelmap", tempPath);
-        // InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(identifier).get().open();
-        // Image image = ImageIO.read(is);
-        // is.close();
-        // BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
-        // Graphics gfx = mapImage.createGraphics();
-        // gfx.drawImage(image, 0, 0, null);
-        // gfx.dispose();
-        // is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().open();
-        // InputStreamReader isr = new InputStreamReader(is);
-        // Properties mapProperties = new Properties();
-        // mapProperties.load(isr);
-        // String left = mapProperties.getProperty("left");
-        // String right = mapProperties.getProperty("right");
-        // String top = mapProperties.getProperty("top");
-        // String bottom = mapProperties.getProperty("bottom");
-        // String width = mapProperties.getProperty("width");
-        // String height = mapProperties.getProperty("height");
-        // String scale = mapProperties.getProperty("scale");
-        // if (left != null && top != null && width != null && height != null) {
-        // this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Integer.parseInt(width), Integer.parseInt(height));
-        // } else if (left != null && top != null && scale != null) {
-        // this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
-        // } else if (left != null && top != null && right != null && bottom != null) {
-        // int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
-        // this.backgroundImageInfo = new BackgroundImageInfo(mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, widthInt);
-        // }
-        //
-        // isr.close();
-        // } catch (Exception ignore) {}
+        try {
+            String path = this.getCurrentWorldName();
+            String subworldDescriptor = this.getCurrentSubworldDescriptor(false);
+            if (subworldDescriptor != null && !subworldDescriptor.isEmpty()) {
+                path = path + "/" + subworldDescriptor;
+            }
+            path = path + "/" + this.currentDimension.getStorageName();
+            String tempPath = "images/backgroundmaps/" + path + "/map.png";
+            ResourceLocation identifier = ResourceLocation.fromNamespaceAndPath("voxelmap", tempPath);
+
+            Minecraft.getInstance().getResourceManager().getResourceOrThrow(identifier); // check if it exists
+
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(identifier).get().open();
+            Image image = ImageIO.read(is);
+            is.close();
+            BufferedImage mapImage = new BufferedImage(image.getWidth(null), image.getHeight(null), 2);
+            Graphics gfx = mapImage.createGraphics();
+            gfx.drawImage(image, 0, 0, null);
+            gfx.dispose();
+            is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().open();
+            InputStreamReader isr = new InputStreamReader(is);
+            Properties mapProperties = new Properties();
+            mapProperties.load(isr);
+            String left = mapProperties.getProperty("left");
+            String right = mapProperties.getProperty("right");
+            String top = mapProperties.getProperty("top");
+            String bottom = mapProperties.getProperty("bottom");
+            String width = mapProperties.getProperty("width");
+            String height = mapProperties.getProperty("height");
+            String scale = mapProperties.getProperty("scale");
+            if (left != null && top != null && width != null && height != null) {
+                this.backgroundImageInfo = new BackgroundImageInfo(identifier, mapImage, Integer.parseInt(left), Integer.parseInt(top), Integer.parseInt(width), Integer.parseInt(height));
+            } else if (left != null && top != null && scale != null) {
+                this.backgroundImageInfo = new BackgroundImageInfo(identifier, mapImage, Integer.parseInt(left), Integer.parseInt(top), Float.parseFloat(scale));
+            } else if (left != null && top != null && right != null && bottom != null) {
+                int widthInt = Integer.parseInt(right) - Integer.parseInt(left);
+                this.backgroundImageInfo = new BackgroundImageInfo(identifier, mapImage, Integer.parseInt(left), Integer.parseInt(top), widthInt, widthInt);
+            }
+
+            isr.close();
+        } catch (Exception ignore) {
+        }
     }
 
     public BackgroundImageInfo getBackgroundImageInfo() {

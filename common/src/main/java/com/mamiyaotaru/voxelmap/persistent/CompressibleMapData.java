@@ -565,7 +565,7 @@ public class CompressibleMapData extends AbstractMapData {
             return 0;
         }
         Integer id = this.biomeToInt.get(biome);
-        if (id == null && biome != null) {
+        if (id == null) {
             while (this.biomeToInt.inverse().containsKey(this.biomeCount)) {
                 ++this.biomeCount;
             }

@@ -555,7 +555,6 @@ public class CachedRegion {
 
     }
 
-    @SuppressWarnings("OverlyBroadThrowsClause")
     private void doSave() throws IOException {
         BiMap<BlockState, Integer> stateToInt = this.data.getStateToInt();
         BiMap<Biome, Integer> biomeToInt = this.data.getBiomeToInt();
