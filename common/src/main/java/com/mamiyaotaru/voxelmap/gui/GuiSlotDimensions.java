@@ -105,7 +105,6 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             }
 
             // show check mark / cross
-            OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             // 2 int: x,y screen
             // 2 float: u,v start texture (in pixels - see last 2 int)
             // 2 int: height, width on screen

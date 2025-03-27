@@ -9,7 +9,6 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -97,10 +96,7 @@ public class RadarSimple implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                guiGraphics.flush();
                 this.renderMapMobs(guiGraphics, this.layoutVariables.mapX, this.layoutVariables.mapY);
-                guiGraphics.flush();
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
         }
     }

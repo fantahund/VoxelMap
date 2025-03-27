@@ -360,8 +360,7 @@ public class WaypointContainer {
         //
         // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         // }
-
-        OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         matrixStack.popMatrix();
     }
 }

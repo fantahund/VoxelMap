@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class EmptyCachedRegion extends CachedRegion {
@@ -42,8 +43,8 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public int getGLID() {
-        return 0;
+    public ResourceLocation getTextureLocation() {
+        return null;
     }
 
     @Override

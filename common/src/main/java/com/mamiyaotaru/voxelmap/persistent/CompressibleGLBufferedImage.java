@@ -2,17 +2,22 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
-import com.mamiyaotaru.voxelmap.util.OpenGL;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.systems.RenderSystem;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.zip.DataFormatException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.ResourceLocation;
+import org.apache.logging.log4j.Level;
+import org.lwjgl.system.MemoryUtil;
 
 public class CompressibleGLBufferedImage {
     private byte[] bytes;
-    private int index;
     private final int width;
     private final int height;
     private final Object bufferLock = new Object();
@@ -20,6 +25,8 @@ public class CompressibleGLBufferedImage {
     private static final HashMap<Integer, ByteBuffer> byteBuffers = new HashMap<>(4);
     private static final ByteBuffer defaultSizeBuffer = ByteBuffer.allocateDirect(262144).order(ByteOrder.nativeOrder());
     private final boolean compressNotDelete;
+    private final ResourceLocation location = ResourceLocation.fromNamespaceAndPath("voxelmap", "mapimage/" + UUID.randomUUID());
+    private DynamicTexture texture;
 
     public CompressibleGLBufferedImage(int width, int height, int imageType) {
         this.width = width;
@@ -36,8 +43,8 @@ public class CompressibleGLBufferedImage {
         return this.bytes;
     }
 
-    public int getIndex() {
-        return this.index;
+    public ResourceLocation getTextureLocation() {
+        return this.texture != null ? this.location : null;
     }
 
     public int getWidth() {
@@ -48,25 +55,30 @@ public class CompressibleGLBufferedImage {
         return this.height;
     }
 
-    public void baleet() {
-        int currentIndex = this.index;
-        this.index = 0;
-        if (currentIndex != 0 && RenderSystem.isOnRenderThread()) {
-            // FIXME 1.21.5 OpenGL.glDeleteTexture(currentIndex);
+    public void deleteTexture() {
+        if (!RenderSystem.isOnRenderThread()) {
+            VoxelConstants.getLogger().log(Level.WARN, "Texture unload call from wrong thread", new Exception());
+            return;
         }
-
+        if (this.texture != null) {
+            Minecraft.getInstance().getTextureManager().release(location);
+            this.texture = null;
+        }
     }
 
-    public void upload() {
-        if (true) {
-            return; // FIXME 1.21.5
+    public void uploadToTexture() {
+        if (!RenderSystem.isOnRenderThread()) {
+            VoxelConstants.getLogger().log(Level.WARN, "Texture upload call from wrong thread", new Exception());
+            return;
         }
+
         if (this.isCompressed) {
             this.decompress();
         }
 
-        if (this.index == 0) {
-            this.index = OpenGL.glGenTextures();
+        if (this.texture == null) {
+            this.texture = new DynamicTexture(() -> "", new NativeImage(Format.RGBA, width, height, false));
+            Minecraft.getInstance().getTextureManager().register(location, texture);
         }
 
         ByteBuffer buffer = byteBuffers.get(this.width * this.height);
@@ -74,24 +86,18 @@ public class CompressibleGLBufferedImage {
             buffer = ByteBuffer.allocateDirect(this.width * this.height * 4).order(ByteOrder.nativeOrder());
             byteBuffers.put(this.width * this.height, buffer);
         }
-
         buffer.clear();
         synchronized (this.bufferLock) {
             buffer.put(this.bytes);
         }
-
         buffer.position(0).limit(this.bytes.length);
-        // FIXME 1.21.5
-        // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, this.index);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        // OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_ROW_LENGTH, 0);
-        // OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_PIXELS, 0);
-        // OpenGL.glPixelStorei(OpenGL.GL11_GL_UNPACK_SKIP_ROWS, 0);
-        OpenGL.glTexImage2D(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_RGBA, this.getWidth(), this.getHeight(), 0, OpenGL.GL11_GL_RGBA, OpenGL.GL12_GL_UNSIGNED_INT_8_8_8_8, buffer);
-        OpenGL.glGenerateMipmap(OpenGL.GL11_GL_TEXTURE_2D);
+
+        int imageBytes = width * height * this.texture.getPixels().format().components();
+        ByteBuffer outBuffer = MemoryUtil.memByteBuffer(this.texture.getPixels().getPointer(), imageBytes);
+        MemoryUtil.memCopy(buffer, outBuffer);
+        this.texture.upload();
+
+        // FIXME 1.21.5 OpenGL.glGenerateMipmap(OpenGL.GL11_GL_TEXTURE_2D);
         this.compress();
     }
 
@@ -103,10 +109,10 @@ public class CompressibleGLBufferedImage {
         int index = (x + y * this.getWidth()) * 4;
         synchronized (this.bufferLock) {
             int alpha = color >> 24 & 0xFF;
-            this.bytes[index] = -1;
-            this.bytes[index + 1] = (byte) ((color & 0xFF) * alpha / 255);
-            this.bytes[index + 2] = (byte) ((color >> 8 & 0xFF) * alpha / 255);
-            this.bytes[index + 3] = (byte) ((color >> 16 & 0xFF) * alpha / 255);
+            this.bytes[index + 3] = -1;
+            this.bytes[index + 2] = (byte) ((color & 0xFF) * alpha / 255);
+            this.bytes[index + 1] = (byte) ((color >> 8 & 0xFF) * alpha / 255);
+            this.bytes[index + 0] = (byte) ((color >> 16 & 0xFF) * alpha / 255);
         }
     }
 

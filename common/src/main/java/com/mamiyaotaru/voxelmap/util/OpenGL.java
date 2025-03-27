@@ -306,7 +306,7 @@ public final class OpenGL {
         }
 
         public static void img2(GpuTexture param) {
-            RenderSystem.setShaderTexture(0, param);
+            // RenderSystem.setShaderTexture(0, param);
         }
 
         @Deprecated
@@ -317,11 +317,11 @@ public final class OpenGL {
 
         @Deprecated
         public static void dispId(int id) {
-            GL11.glBindTexture(GL11_GL_TEXTURE_2D, id);
+            // GL11.glBindTexture(GL11_GL_TEXTURE_2D, id);
         }
 
         public static void disp2(GpuTexture param) {
-            RenderSystem.setShaderTexture(0, param);
+            // RenderSystem.setShaderTexture(0, param);
         }
 
         public static void register(ResourceLocation resource, AbstractTexture image) { textureManager.register(resource, image); }
@@ -339,7 +339,7 @@ public final class OpenGL {
         public static void drawPre() { drawPre(DefaultVertexFormat.POSITION_TEX); }
 
         public static void drawPre(VertexFormat format) {
-            // FIXME 1.21.5 bufferBuilder = TESSELLATOR.begin(VertexFormat.Mode.QUADS, format);
+            // bufferBuilder = TESSELLATOR.begin(VertexFormat.Mode.QUADS, format);
         }
 
         // public static void drawPost() {
@@ -352,11 +352,11 @@ public final class OpenGL {
         // public static void glah(int g) { glDeleteTexture(g); }
 
         public static void ldrawone(int x, int y, double z, float u, float v) {
-            bufferBuilder.addVertex(x, y, (float) z).setUv(u, v);
+            // bufferBuilder.addVertex(x, y, (float) z).setUv(u, v);
         }
 
         public static void ldrawthree(double x, double y, double z, float u, float v) {
-            bufferBuilder.addVertex((float) x, (float) y, (float) z).setUv(u, v);
+            // bufferBuilder.addVertex((float) x, (float) y, (float) z).setUv(u, v);
         }
     }
 }
