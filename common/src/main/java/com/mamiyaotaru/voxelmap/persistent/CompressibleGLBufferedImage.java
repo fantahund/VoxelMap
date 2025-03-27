@@ -17,13 +17,15 @@ import org.apache.logging.log4j.Level;
 import org.lwjgl.system.MemoryUtil;
 
 public class CompressibleGLBufferedImage {
+    private static final HashMap<Integer, ByteBuffer> byteBuffers = new HashMap<>(4);
+    private static final int DEFAULT_SIZE = 256;
+    private static final ByteBuffer defaultSizeBuffer = ByteBuffer.allocateDirect(DEFAULT_SIZE * DEFAULT_SIZE * 4).order(ByteOrder.nativeOrder());
+
     private byte[] bytes;
     private final int width;
     private final int height;
     private final Object bufferLock = new Object();
     private boolean isCompressed;
-    private static final HashMap<Integer, ByteBuffer> byteBuffers = new HashMap<>(4);
-    private static final ByteBuffer defaultSizeBuffer = ByteBuffer.allocateDirect(262144).order(ByteOrder.nativeOrder());
     private final boolean compressNotDelete;
     private final ResourceLocation location = ResourceLocation.fromNamespaceAndPath("voxelmap", "mapimage/" + UUID.randomUUID());
     private DynamicTexture texture;
@@ -89,15 +91,15 @@ public class CompressibleGLBufferedImage {
         buffer.clear();
         synchronized (this.bufferLock) {
             buffer.put(this.bytes);
+            buffer.position(0).limit(this.bytes.length);
         }
-        buffer.position(0).limit(this.bytes.length);
 
         int imageBytes = width * height * this.texture.getPixels().format().components();
         ByteBuffer outBuffer = MemoryUtil.memByteBuffer(this.texture.getPixels().getPointer(), imageBytes);
         MemoryUtil.memCopy(buffer, outBuffer);
         this.texture.upload();
 
-        // FIXME 1.21.5 OpenGL.glGenerateMipmap(OpenGL.GL11_GL_TEXTURE_2D);
+        // FIXME 1.21.5 GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         this.compress();
     }
 
@@ -109,10 +111,10 @@ public class CompressibleGLBufferedImage {
         int index = (x + y * this.getWidth()) * 4;
         synchronized (this.bufferLock) {
             int alpha = color >> 24 & 0xFF;
-            this.bytes[index + 3] = -1;
-            this.bytes[index + 2] = (byte) ((color & 0xFF) * alpha / 255);
-            this.bytes[index + 1] = (byte) ((color >> 8 & 0xFF) * alpha / 255);
             this.bytes[index + 0] = (byte) ((color >> 16 & 0xFF) * alpha / 255);
+            this.bytes[index + 1] = (byte) ((color >> 8 & 0xFF) * alpha / 255);
+            this.bytes[index + 2] = (byte) ((color & 0xFF) * alpha / 255);
+            this.bytes[index + 3] = -1;
         }
     }
 
@@ -144,6 +146,6 @@ public class CompressibleGLBufferedImage {
     }
 
     static {
-        byteBuffers.put(65536, defaultSizeBuffer);
+        byteBuffers.put(DEFAULT_SIZE * DEFAULT_SIZE, defaultSizeBuffer);
     }
 }

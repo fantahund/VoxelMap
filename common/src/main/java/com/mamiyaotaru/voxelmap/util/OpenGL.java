@@ -149,8 +149,6 @@ public final class OpenGL {
     // GL11.glBindTexture(target, texture);
     // }
 
-    public static void glGenerateMipmap(int target) { GL30.glGenerateMipmap(target); }
-
     public static void glGetFloatv(int pname, FloatBuffer params) { GL11.glGetFloatv(pname, params); }
 
     public static int glGetInteger(int pname) { return GL11.glGetInteger(pname); }
