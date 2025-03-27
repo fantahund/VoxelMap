@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerList;
@@ -40,10 +41,12 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
@@ -734,11 +737,17 @@ public class WaypointManager {
         return this.highlightedWaypoint;
     }
 
-    public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
-        if (VoxelMap.mapOptions.waypointsAllowed && this.waypointContainer != null) {
-            this.waypointContainer.renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-        }
+    // public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
+    // if (VoxelMap.mapOptions.waypointsAllowed && this.waypointContainer != null) {
+    // this.waypointContainer.renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
+    // }
+    //
+    // }
 
+    public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+        if (VoxelMap.mapOptions.waypointsAllowed && this.waypointContainer != null) {
+            this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
+        }
     }
 
     private void loadBackgroundMapImage() {

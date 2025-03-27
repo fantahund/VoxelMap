@@ -4,12 +4,15 @@ import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -67,7 +70,11 @@ public class GLUtils {
         }, 0);
     }
 
-    public static final RenderPipeline GUI_TEXTURED_EQUAL_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_equal_depth").withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST).build();
+    public static final RenderPipeline GUI_TEXTURED_EQUAL_DEPTH_PIPELINE = RenderPipeline
+            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation("pipeline/gui_textured_equal_depth")
+            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
+            .build();
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_EQUAL_DEPTH = Util.memoize(
             (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
@@ -78,7 +85,10 @@ public class GLUtils {
                             .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
                             .createCompositeState(false))));
 
-    public static final RenderPipeline GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_equal_depth").withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
+    public static final RenderPipeline GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE = RenderPipeline
+            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation("pipeline/gui_textured_equal_depth")
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH = Util.memoize(
             (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
@@ -91,7 +101,7 @@ public class GLUtils {
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_FILTER_MIN = Util.memoize(
             (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
-                    "voxelmap_gui_textured_lequal_depth",
+                    "voxelmap_gui_textured_lequal_depth_filter_min",
                     0x00C000,
                     GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE,
                     RenderType.CompositeState.builder()
@@ -129,4 +139,21 @@ public class GLUtils {
             return this.texture;
         }
     }
+
+    public static final RenderPipeline WAYPOINT_BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
+            .withLocation("pipeline/voxelmap_waypoint_beam")
+            .withVertexShader("core/position_color")
+            .withFragmentShader("core/position_color")
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.TRIANGLE_STRIP)
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withBlend(BlendFunction.LIGHTNING)
+            .withDepthWrite(false)
+            .build();
+
+    public static final RenderType WAYPOINT_BEAM = RenderType.create(
+            "voxelmap_waypoint_beam",
+            0x00C000, // buffer size
+            WAYPOINT_BEAM_PIPELINE,
+            RenderType.CompositeState.builder()
+                    .createCompositeState(false));
 }

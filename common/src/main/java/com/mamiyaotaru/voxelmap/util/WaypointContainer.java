@@ -7,7 +7,9 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import org.joml.Matrix4f;
@@ -22,6 +24,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BeaconRenderer;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
@@ -52,70 +57,64 @@ public class WaypointContainer {
         this.wayPts.sort(Collections.reverseOrder());
     }
 
-    public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
-        // FIXME 1.21.5 In World Waypoints
-        // this.sortWaypoints();
-        // Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        // Vec3 cameraPos = camera.getPosition();
-        // double renderPosX = cameraPos.x;
-        // double renderPosY = cameraPos.y;
-        // double renderPosZ = cameraPos.z;
+    public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+        this.sortWaypoints();
+        Vec3 cameraPos = camera.getPosition();
+        double renderPosX = cameraPos.x;
+        double renderPosY = cameraPos.y;
+        double renderPosZ = cameraPos.z;
         // OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
-        // if (this.options.showBeacons && beacons) {
-        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        // OpenGL.glDepthMask(false);
-        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 1);
-        // RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-        //
-        // for (Waypoint pt : this.wayPts) {
-        // if (pt.isActive() || pt == this.highlightedWaypoint) {
-        // int x = pt.getX();
-        // int z = pt.getZ();
-        // LevelChunk chunk = VoxelConstants.getPlayer().level().getChunk(x >> 4, z >> 4);
-        // if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(x >> 4, z >> 4)) {
-        // double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
-        // this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, matrixStack);
-        // }
-        // }
-        // }
-        //
-        // OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
-        // OpenGL.glDepthMask(true);
-        // }
-        //
-        // if (this.options.showWaypoints && signs) {
-        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        // OpenGL.glBlendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        //
-        // for (Waypoint pt : this.wayPts) {
-        // if (pt.isActive() || pt == this.highlightedWaypoint) {
-        // int x = pt.getX();
-        // int z = pt.getZ();
-        // int y = pt.getY();
-        // double distance = Math.sqrt(pt.getDistanceSqToCamera(camera));
-        // if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hideGui) {
-        // boolean isPointedAt = this.isPointedAt(pt, distance, camera);
-        // String label = pt.name;
-        // this.renderLabel(matrixStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ, withDepth, withoutDepth);
-        // }
-        // }
-        // }
-        //
-        // if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hideGui) {
-        // int x = this.highlightedWaypoint.getX();
-        // int z = this.highlightedWaypoint.getZ();
-        // int y = this.highlightedWaypoint.getY();
-        // double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToCamera(camera));
-        // boolean isPointedAt = this.isPointedAt(this.highlightedWaypoint, distance, camera);
-        // this.renderLabel(matrixStack, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ, withDepth, withoutDepth);
-        // }
-        //
-        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        // OpenGL.glDepthMask(true);
-        // OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
-        // }
+        if (this.options.showBeacons) {
+            // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+            // OpenGL.glDepthMask(false);
+            // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+            // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 1);
+            // RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 
+            for (Waypoint pt : this.wayPts) {
+                if (pt.isActive() || pt == this.highlightedWaypoint) {
+                    int x = pt.getX();
+                    int z = pt.getZ();
+                    // LevelChunk chunk = VoxelConstants.getPlayer().level().getChunk(x >> 4, z >> 4);
+                    // if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(x >> 4, z >> 4)) {
+                    double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
+                    this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
+                    // }
+                }
+            }
+
+            // OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
+            // OpenGL.glDepthMask(true);
+        }
+
+        if (this.options.showWaypoints) {
+            // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+            // OpenGL.glBlendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+
+            for (Waypoint pt : this.wayPts) {
+                if (pt.isActive() || pt == this.highlightedWaypoint) {
+                    int x = pt.getX();
+                    int z = pt.getZ();
+                    int y = pt.getY();
+                    double distance = Math.sqrt(pt.getDistanceSqToCamera(camera));
+                    if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hideGui) {
+                        boolean isPointedAt = this.isPointedAt(pt, distance, camera);
+                        String label = pt.name;
+                        this.renderLabel(poseStack, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+                    }
+                }
+            }
+
+            if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hideGui) {
+                int x = this.highlightedWaypoint.getX();
+                int z = this.highlightedWaypoint.getZ();
+                int y = this.highlightedWaypoint.getY();
+                double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToCamera(camera));
+                boolean isPointedAt = this.isPointedAt(this.highlightedWaypoint, distance, camera);
+                this.renderLabel(poseStack, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+            }
+        }
+        // bufferSource.endBatch(GLUtils.WAYPOINT_BEAM);
     }
 
     private boolean isPointedAt(Waypoint waypoint, double distance, Camera camera) {
@@ -133,18 +132,18 @@ public class WaypointContainer {
             return raytraceresult.isPresent();
     }
 
-    private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, Matrix4f matrix4f) {
-        Tesselator tessellator = Tesselator.getInstance();
+    private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, PoseStack poseStack, BufferSource bufferSource) {
         int height = VoxelConstants.getClientWorld().getHeight();
-        float brightness = 0.06F;
+        float brightness = 0.1F;
         double topWidthFactor = 1.05;
         double bottomWidthFactor = 1.05;
         float r = par1EntityWaypoint.red;
         float b = par1EntityWaypoint.blue;
         float g = par1EntityWaypoint.green;
 
+        VertexConsumer vertexConsumerBeam = bufferSource.getBuffer(GLUtils.WAYPOINT_BEAM);
+
         for (int width = 0; width < 4; ++width) {
-            BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             double d6 = 0.1 + width * 0.2;
             d6 *= topWidthFactor;
             double d7 = 0.1 + width * 0.2;
@@ -171,17 +170,13 @@ public class WaypointContainer {
                     vertZ1 = (float) (vertZ1 + d7 * 2.0);
                 }
 
-                vertexBuffer.addVertex(matrix4f, vertX1, (float) baseY + 0.0F, vertZ1).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
-                vertexBuffer.addVertex(matrix4f, vertX2, (float) baseY + height, vertZ2).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
+                vertexConsumerBeam.addVertex(poseStack.last(), vertX1, (float) baseY + 0.0F, vertZ1).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
+                vertexConsumerBeam.addVertex(poseStack.last(), vertX2, (float) baseY + height, vertZ2).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
             }
-
-            // FIXME 1.21.5 In World Waypoints
-            // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
         }
-
     }
 
-    private void renderLabel(Matrix4fStack matrixStack, Waypoint pt, double distance, boolean isPointedAt, String name, boolean target, double baseX, double baseY, double baseZ, boolean withDepth, boolean withoutDepth) {
+    private void renderLabel(PoseStack poseStack, Waypoint pt, double distance, boolean isPointedAt, String name, boolean target, double baseX, double baseY, double baseZ/* , boolean withDepth, boolean withoutDepth */) {
         if (target) {
             if (pt.red == 2.0F && pt.green == 0.0F && pt.blue == 0.0F) {
                 name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
@@ -190,16 +185,14 @@ public class WaypointContainer {
             }
         }
         String distStr;
-        if (this.options.distanceUnitConversion && distance > 10000.0){
+        if (this.options.distanceUnitConversion && distance > 10000.0) {
             distStr = (Math.round(distance / 100.0) / 10.0) + "km";
-        }
-        else if (distance >= 9999999.0F) {
-            distStr = (int) distance  + "m";
-        }
-        else{
+        } else if (distance >= 9999999.0F) {
+            distStr = (int) distance + "m";
+        } else {
             distStr = (Math.round(distance * 10.0) / 10.0) + "m";
         }
-        if (!this.options.waypointDistanceBelowName){
+        if (!this.options.waypointDistanceBelowName) {
             name = name + " (" + distStr + ")";
         }
         double maxDistance = VoxelConstants.getMinecraft().options.simulationDistance().get() * 16.0 * 0.99;
@@ -212,12 +205,12 @@ public class WaypointContainer {
         }
 
         float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
-        matrixStack.pushMatrix();
-        matrixStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
-        matrixStack.rotate(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
-        matrixStack.rotate(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
-        matrixStack.scale(-var14, -var14, -var14);
-        Tesselator tessellator = Tesselator.getInstance();
+        poseStack.pushPose();
+        poseStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
+        poseStack.scale(-var14, -var14, -var14);
+        // Tesselator tessellator = Tesselator.getInstance();
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
         fade = Math.min(fade, !pt.enabled && !target ? 0.3F : 1.0F);
         float width = 10.0F;
@@ -361,6 +354,6 @@ public class WaypointContainer {
         // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         // }
         // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        matrixStack.popMatrix();
+        poseStack.popPose();
     }
 }
