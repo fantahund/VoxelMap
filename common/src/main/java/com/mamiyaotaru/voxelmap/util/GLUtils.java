@@ -7,6 +7,8 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -108,7 +110,6 @@ public class GLUtils {
                             .setTextureState(new ExtendedTextureStateShard(resourceLocation, FilterMode.LINEAR, FilterMode.NEAREST, true))
                             .createCompositeState(false))));
 
-
     public static class ExtendedTextureStateShard extends RenderStateShard.EmptyTextureStateShard {
         private final Optional<ResourceLocation> texture;
         private final FilterMode minFilter;
@@ -154,6 +155,53 @@ public class GLUtils {
             "voxelmap_waypoint_beam",
             0x00C000, // buffer size
             WAYPOINT_BEAM_PIPELINE,
+            RenderType.CompositeState.builder()
+                    .createCompositeState(false));
+
+    public static final RenderPipeline WAYPOINT_ICON_DEPTHTEST_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation("pipeline/voxelmap_waypoint_icon")
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
+            .withDepthWrite(true)
+            .build();
+
+    public static final RenderPipeline WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation("pipeline/voxelmap_waypoint_icon")
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
+            .withDepthWrite(true)
+            .build();
+
+    public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_DEPTHTEST = Util.memoize(
+            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
+                    "voxelmap_icon_depthtest",
+                    0x00C000, // buffer size
+                    WAYPOINT_ICON_DEPTHTEST_PIPELINE,
+                    RenderType.CompositeState.builder()
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .createCompositeState(false))));
+
+    public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_NO_DEPTHTEST = Util.memoize(
+            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
+                    "voxelmap_icon_no_depthtest",
+                    0x00C000, // buffer size
+                    WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE,
+                    RenderType.CompositeState.builder()
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .createCompositeState(false))));
+
+    public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+            .withLocation("pipeline/voxelmap_waypoint_background")
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthBias(1.0F, 7.0F)
+            .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
+            .withDepthWrite(false)
+            .build();
+
+    public static final RenderType WAYPOINT_TEXT_BACKGROUND = RenderType.create(
+            "voxelmap_beacon_text_background",
+            0x00C000, // buffer size
+            WAYPOINT_TEXT_BACKGROUND_PIPELINE,
             RenderType.CompositeState.builder()
                     .createCompositeState(false));
 }

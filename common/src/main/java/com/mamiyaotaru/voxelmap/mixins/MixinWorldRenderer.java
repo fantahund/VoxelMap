@@ -38,7 +38,6 @@ public abstract class MixinWorldRenderer {
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void postRender(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, Matrix4f matrix4f, Matrix4f matrix4f2, CallbackInfo ci) {
-        // FIXME 1.21.5 In World Waypoints: should be called from LevelRenderer.renderEntities
         // if (VoxelMap.mapOptions.waypointsAllowed && (VoxelConstants.getVoxelMapInstance().getMapOptions().showBeacons || VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints)) {
         // boolean drawSignForeground = !VoxelConstants.isFabulousGraphicsOrBetter() || this.getTranslucentTarget() == null;
         // if (!drawSignForeground) {
@@ -61,7 +60,6 @@ public abstract class MixinWorldRenderer {
 
     @Inject(method = "renderSectionLayer", at = @At("RETURN"))
     private void postRenderLayer(RenderType renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, CallbackInfo ci) {
-        // FIXME 1.21.5 In World Waypoints
         // if (VoxelConstants.isFabulousGraphicsOrBetter() && VoxelConstants.getVoxelMapInstance().getMapOptions().showWaypoints && renderLayer == RenderType.translucent() && VoxelConstants.getMinecraft().levelRenderer.getTranslucentTarget() != null) {
         // VoxelConstants.getMinecraft().levelRenderer.getTranslucentTarget().bindWrite(false);
         // Matrix4fStack matrixStack = RenderSystem.getModelViewStack();

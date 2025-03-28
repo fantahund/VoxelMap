@@ -135,4 +135,8 @@ public class Sprite {
             vertexConsumer.addVertex(matrix4f, x + w, y, 0.0F).setUv(getMaxU(), getMinV()).setColor(color);
         });
     }
+
+    public ResourceLocation getResourceLocation() {
+        return textureAtlas.getResourceLocation();
+    }
 }
