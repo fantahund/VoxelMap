@@ -96,7 +96,7 @@ public class RadarSimple implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(guiGraphics, this.layoutVariables.mapX, this.layoutVariables.mapY);
+                this.renderMapMobs(guiGraphics, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
             }
         }
     }
@@ -176,7 +176,7 @@ public class RadarSimple implements IRadar {
         }
     }
 
-    public void renderMapMobs(GuiGraphics guiGraphics, int x, int y) {
+    public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
 
         for (Contact contact : this.contacts) {
@@ -214,6 +214,7 @@ public class RadarSimple implements IRadar {
             if (inRange) {
                 try {
                     guiGraphics.pose().pushPose();
+                    guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
                     float contactFacing = contact.entity.getYHeadRot();
                     if (this.minimapOptions.rotates) {
                         contactFacing -= this.direction;

@@ -10,7 +10,6 @@ import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -185,7 +184,7 @@ public final class OpenGL {
 
     public static final class Utils {
         public static final Tesselator TESSELLATOR = Tesselator.getInstance();
-        private static BufferBuilder bufferBuilder;
+        // private static BufferBuilder bufferBuilder;
         public static final IntBuffer DATA_BUFFER = MemoryUtil.memCallocInt(16777216 / 4);
 
         public static final TextureManager textureManager = VoxelConstants.getMinecraft().getTextureManager();
@@ -323,16 +322,6 @@ public final class OpenGL {
         }
 
         public static void register(ResourceLocation resource, AbstractTexture image) { textureManager.register(resource, image); }
-
-        // @NotNull
-        // public static NativeImage nativeImageFromBufferedImage(BufferedImage image) {
-        // int glId = tex(image);
-        // NativeImage nativeImage = new NativeImage(image.getWidth(), image.getHeight(), false);
-        // RenderSystem.bindTexture(glId);
-        // nativeImage.downloadTexture(0, false);
-        //
-        // return nativeImage;
-        // }
 
         public static void drawPre() { drawPre(DefaultVertexFormat.POSITION_TEX); }
 

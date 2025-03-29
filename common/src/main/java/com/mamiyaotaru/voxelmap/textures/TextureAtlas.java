@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.TextureFormat;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -225,6 +226,11 @@ public class TextureAtlas extends AbstractTexture {
 
             return icon;
         }
+    }
+
+    public Sprite registerIconForBufferedImage(String name, BufferedImage bufferedImage) {
+        NativeImage img = ImageUtils.nativeImageFromBufferedImage(bufferedImage);
+        return registerIconForBufferedImage(name, img);
     }
 
     public Sprite registerIconForBufferedImage(String name, NativeImage bufferedImage) {
