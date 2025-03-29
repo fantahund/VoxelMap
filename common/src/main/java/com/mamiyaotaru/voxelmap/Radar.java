@@ -172,7 +172,7 @@ public class Radar implements IRadar {
     public final HashMap<String, Integer> contactsSkinGetTries = new HashMap<>();
     private Sprite clothIcon;
     private static final int UNKNOWN = EnumMobs.UNKNOWN.ordinal();
-    private final String[] armorNames = {"cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle"};
+    private final String[] armorNames = { "cloth", "clothOverlay", "clothOuter", "clothOverlayOuter", "chain", "iron", "gold", "diamond", "netherite", "turtle" };
     private boolean randomobsOptifine;
     private Map<String, Object> mapProperties;
     private Object randomEntity;
@@ -239,10 +239,10 @@ public class Radar implements IRadar {
             this.randomEntity = randomEntityField.get(null);
             Class<?> iRandomEntityClass = Class.forName("net.optifine.IRandomEntity");
             this.randomEntityClass = Class.forName("net.optifine.RandomEntity");
-            Class<?>[] argClasses1 = new Class[]{Entity.class};
+            Class<?>[] argClasses1 = new Class[] { Entity.class };
             this.setEntityMethod = this.randomEntityClass.getDeclaredMethod("setEntity", argClasses1);
             this.randomEntitiesPropertiesClass = Class.forName("net.optifine.RandomEntityProperties");
-            Class<?>[] argClasses2 = new Class[]{ResourceLocation.class, iRandomEntityClass};
+            Class<?>[] argClasses2 = new Class[] { ResourceLocation.class, iRandomEntityClass };
             this.getEntityTextureMethod = this.randomEntitiesPropertiesClass.getDeclaredMethod("getTextureLocation", argClasses2);
             this.randomobsOptifine = true;
         } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException var7) {
@@ -795,9 +795,9 @@ public class Radar implements IRadar {
                     ItemStack itemStack = horse.getBodyArmorItem();
                     Item var30 = itemStack.getItem();
                     // if (var30 instanceof AnimalArmorItem horseArmorItem) {
-                        // VoxelConstants.getMinecraft().getItemRenderer().getModel(itemStack, contact.entity.level(), horse, 0);
-                        // resourceLocationQuaternary = horseArmorItem.getTexture();
-                        // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1)); // FIXME
+                    // VoxelConstants.getMinecraft().getItemRenderer().getModel(itemStack, contact.entity.level(), horse, 0);
+                    // resourceLocationQuaternary = horseArmorItem.getTexture();
+                    // contact.setArmorColor(DyedItemColor.getOrDefault(itemStack, -1)); // FIXME
                     // }
                 }
             }
@@ -843,7 +843,6 @@ public class Radar implements IRadar {
         if (resourceLocationQuaternary != null) {
             resourceLocationQuaternary = this.getRandomizedResourceLocationForEntity(resourceLocationQuaternary, contact.entity);
         }
-
 
         String entityName = contact.vanillaType ? "minecraft." + contact.type.id : contact.entity.getClass().getName();
         String resourceLocationString = (resourceLocation != null ? resourceLocation.toString() : "") + (resourceLocationSecondary != null ? resourceLocationSecondary.toString() : "");
@@ -1034,9 +1033,9 @@ public class Radar implements IRadar {
                         }
 
                         if (showHat) {
-                            headBits = new ModelPart[]{((PlayerModel) model).head, ((PlayerModel) model).hat};
+                            headBits = new ModelPart[] { ((PlayerModel) model).head, ((PlayerModel) model).hat };
                         } else {
-                            headBits = new ModelPart[]{((PlayerModel) model).head};
+                            headBits = new ModelPart[] { ((PlayerModel) model).head };
                         }
                     } else if (type == EnumMobs.STRAY) {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(((SkeletonModel<?>) model).head, resourceLocations[0]));
@@ -1049,77 +1048,77 @@ public class Radar implements IRadar {
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.head, resourceLocations[1]));
                         headPartsWithResourceLocationList.add(new ModelPartWithResourceLocation(this.drownedOverlayModel.hat, resourceLocations[1]));
                     } else if (model instanceof AxolotlModel axolotlModel) {
-                        headBits = new ModelPart[]{axolotlModel.head};
+                        headBits = new ModelPart[] { axolotlModel.head };
                     } else if (model instanceof BatModel batEntityModel) {
-                        headBits = new ModelPart[]{batEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { batEntityModel.root().getChild("head") };
                     } else if (model instanceof BeeModel beeModel) {
-                        headBits = new ModelPart[]{beeModel.bone.getChild("body")};
+                        headBits = new ModelPart[] { beeModel.bone.getChild("body") };
                     } else if (model instanceof HumanoidModel<?> bipedEntityModel) {
-                        headBits = new ModelPart[]{bipedEntityModel.head, bipedEntityModel.hat};
+                        headBits = new ModelPart[] { bipedEntityModel.head, bipedEntityModel.hat };
                     } else if (model instanceof BlazeModel blazeEntityModel) {
-                        headBits = new ModelPart[]{blazeEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { blazeEntityModel.root().getChild("head") };
                     } else if (model instanceof ChickenModel chickenModel) {
-                        headBits = new ModelPart[]{chickenModel.head};
+                        headBits = new ModelPart[] { chickenModel.head };
                     } else if (model instanceof CreeperModel creeperEntityModel) {
-                        headBits = new ModelPart[]{creeperEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { creeperEntityModel.root().getChild("head") };
                     } else if (model instanceof DolphinModel dolphinEntityModel) {
-                        headBits = new ModelPart[]{dolphinEntityModel.root().getChild("body").getChild("head")};
+                        headBits = new ModelPart[] { dolphinEntityModel.root().getChild("body").getChild("head") };
                     } else if (model instanceof EndermiteModel endermiteEntityModel) {
-                        headBits = new ModelPart[]{endermiteEntityModel.root().getChild("segment0"), endermiteEntityModel.root().getChild("segment1")};
+                        headBits = new ModelPart[] { endermiteEntityModel.root().getChild("segment0"), endermiteEntityModel.root().getChild("segment1") };
                     } else if (model instanceof GhastModel ghastEntityModel) {
-                        headBits = new ModelPart[]{ghastEntityModel.root()};
+                        headBits = new ModelPart[] { ghastEntityModel.root() };
                     } else if (model instanceof GuardianModel guardianEntityModel) {
-                        headBits = new ModelPart[]{guardianEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { guardianEntityModel.root().getChild("head") };
                     } else if (model instanceof HoglinModel hoglinModel) {
-                        headBits = new ModelPart[]{hoglinModel.head};
+                        headBits = new ModelPart[] { hoglinModel.head };
                     } else if (model instanceof HorseModel horseEntityModel) {
                         headBits = StreamSupport.stream(horseEntityModel.headParts.children.values().spliterator(), false).toArray(ModelPart[]::new);
                     } else if (model instanceof IllagerModel<?> illagerEntityModel) {
-                        headBits = new ModelPart[]{illagerEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { illagerEntityModel.root().getChild("head") };
                     } else if (model instanceof IronGolemModel ironGolemEntityModel) {
-                        headBits = new ModelPart[]{ironGolemEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { ironGolemEntityModel.root().getChild("head") };
                     } else if (model instanceof LavaSlimeModel lavaSlimeModel) {
                         headBits = lavaSlimeModel.bodyCubes;
                     } else if (model instanceof OcelotModel ocelotModel) {
-                        headBits = new ModelPart[]{ocelotModel.head};
+                        headBits = new ModelPart[] { ocelotModel.head };
                     } else if (model instanceof PhantomModel phantomEntityModel) {
-                        headBits = new ModelPart[]{phantomEntityModel.root().getChild("body")};
+                        headBits = new ModelPart[] { phantomEntityModel.root().getChild("body") };
                     } else if (model instanceof RabbitModel rabbitModel) {
                         headBits = new ModelPart[] { rabbitModel.root().getChild("head") };
                     } else if (model instanceof RavagerModel ravagerEntityModel) {
-                        headBits = new ModelPart[]{ravagerEntityModel.root().getChild("neck").getChild("head")};
+                        headBits = new ModelPart[] { ravagerEntityModel.root().getChild("neck").getChild("head") };
                     } else if (model instanceof ShulkerModel shulkerEntityModel) {
-                        headBits = new ModelPart[]{shulkerEntityModel.head};
+                        headBits = new ModelPart[] { shulkerEntityModel.head };
                     } else if (model instanceof SilverfishModel silverFishEntityModel) {
-                        headBits = new ModelPart[]{silverFishEntityModel.root().getChild("segment0"), silverFishEntityModel.root().getChild("segment1")};
+                        headBits = new ModelPart[] { silverFishEntityModel.root().getChild("segment0"), silverFishEntityModel.root().getChild("segment1") };
                     } else if (model instanceof SlimeModel slimeEntityModel) {
-                        headBits = new ModelPart[]{slimeEntityModel.root()};
+                        headBits = new ModelPart[] { slimeEntityModel.root() };
                     } else if (model instanceof SnifferModel snifferModel) {
-                        headBits = new ModelPart[]{snifferModel.root().getChild("bone").getChild("body").getChild("head")};
+                        headBits = new ModelPart[] { snifferModel.root().getChild("bone").getChild("body").getChild("head") };
                     } else if (model instanceof SnowGolemModel snowGolemEntityModel) {
-                        headBits = new ModelPart[]{snowGolemEntityModel.root().getChild("head")};
+                        headBits = new ModelPart[] { snowGolemEntityModel.root().getChild("head") };
                     } else if (model instanceof SpiderModel spiderEntityModel) {
-                        headBits = new ModelPart[]{spiderEntityModel.root().getChild("head"), spiderEntityModel.root().getChild("body0")};
+                        headBits = new ModelPart[] { spiderEntityModel.root().getChild("head"), spiderEntityModel.root().getChild("body0") };
                     } else if (model instanceof SquidModel squidEntityModel) {
-                        headBits = new ModelPart[]{squidEntityModel.root().getChild("body")};
+                        headBits = new ModelPart[] { squidEntityModel.root().getChild("body") };
                     } else if (model instanceof WardenModel wardenEntityModel) {
-                        headBits = new ModelPart[]{wardenEntityModel.root().getChild("bone").getChild("body").getChild("head")};
+                        headBits = new ModelPart[] { wardenEntityModel.root().getChild("bone").getChild("body").getChild("head") };
                     } else if (model instanceof StriderModel striderEntityModel) {
-                        headBits = new ModelPart[]{striderEntityModel.root().getChild("body")};
+                        headBits = new ModelPart[] { striderEntityModel.root().getChild("body") };
                     } else if (model instanceof VillagerModel villagerResemblingModel) {
-                        headBits = new ModelPart[]{villagerResemblingModel.getHead()};
+                        headBits = new ModelPart[] { villagerResemblingModel.getHead() };
                     } else if (model instanceof WolfModel wolfModel) {
-                        headBits = new ModelPart[]{wolfModel.head};
+                        headBits = new ModelPart[] { wolfModel.head };
                     } else if (model instanceof CamelModel camelModel) {
                         headBits = new ModelPart[] { camelModel.root().getChild("body").getChild("head") };
                     } else if (model instanceof EndermanModel endermanModel) {
                         headBits = new ModelPart[] { endermanModel.root().getChild("head") };
                         endermanModel.root().getChild("head").getChild("hat").visible = false;
                     } else if (model instanceof QuadrupedModel<?> quadrupedModel) {
-                        headBits = new ModelPart[]{quadrupedModel.head};
+                        headBits = new ModelPart[] { quadrupedModel.head };
                     } else if (model instanceof EntityModel<?> singlePartEntityModel) {
                         try {
-                            headBits = new ModelPart[]{singlePartEntityModel.root().getChild("head")};
+                            headBits = new ModelPart[] { singlePartEntityModel.root().getChild("head") };
                         } catch (Exception ignored) {
                             try {
                                 headBits = new ModelPart[] { singlePartEntityModel.root().getChild("body").getChild("head") };
@@ -1154,7 +1153,7 @@ public class Radar implements IRadar {
                         if (name.contains("head") | name.contains("eye") | name.contains("mouth") | name.contains("teeth") | name.contains("tooth") | name.contains("tusk") | name.contains("jaw") | name.contains("mand") | name.contains("nose") | name.contains("beak") | name.contains("snout")
                                 | name.contains("muzzle") | (!name.contains("rear") && name.contains("ear")) | name.contains("trunk") | name.contains("mane") | name.contains("horn") | name.contains("antler") | nameS.equals("REar") | nameS.equals("Trout")
                                 && !nameS.equals("LeftSmallEar") & !nameS.equals("RightSmallEar") & !nameS.equals("BHead") & !nameS.equals("BSnout") & !nameS.equals("BMouth") & !nameS.equals("BMouthOpen") & !nameS.equals("BLEar") & !nameS.equals("BREar") & !nameS.equals("CHead")
-                                & !nameS.equals("CSnout") & !nameS.equals("CMouth") & !nameS.equals("CMouthOpen") & !nameS.equals("CLEar") & !nameS.equals("CREar")
+                                        & !nameS.equals("CSnout") & !nameS.equals("CMouth") & !nameS.equals("CMouthOpen") & !nameS.equals("CLEar") & !nameS.equals("CREar")
                                 && submodel.get(model) != null) {
                             headPartsArrayList.add((ModelPart) submodel.get(model));
                         }
@@ -1214,7 +1213,7 @@ public class Radar implements IRadar {
                             // FIXME 1.21.5 headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
                         });
                     }
-                        // System.out.println("cache miss!");
+                    // System.out.println("cache miss!");
                     // } else {
                     // cachedImage = true;
                     // // System.out.println("cache hit!");
@@ -1350,28 +1349,28 @@ public class Radar implements IRadar {
             // offsetByY = 25.0F - maxY;
             // }
             //
-            // for (ModelPartWithResourceLocation headBit : headBits) {
-            // VertexConsumer vertexConsumer = immediate.getBuffer(model.renderType(headBit.resourceLocation));
-            // if (model instanceof EntityModel entityModel) {
-            // entityModel.setupAnim(VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(livingEntity).createRenderState(livingEntity, 0));
-            // }
-            //
-            // float y = headBit.modelPart.y;
-            // float xRot = headBit.modelPart.xRot;
-            // float yRot = headBit.modelPart.yRot;
-            // float zRot = headBit.modelPart.zRot;
-            // headBit.modelPart.y += offsetByY;
-            // headBit.modelPart.xRot = 0;
-            // headBit.modelPart.yRot = 0;
-            // headBit.modelPart.zRot = 0;
-            // headBit.modelPart.render(newMatrixStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY);
-            // headBit.modelPart.y = y;
-            // headBit.modelPart.xRot = xRot;
-            // headBit.modelPart.yRot = yRot;
-            // headBit.modelPart.zRot = zRot;
-            //
-            // immediate.endBatch();
-            // }
+            for (ModelPartWithResourceLocation headBit : headBits) {
+                // VertexConsumer vertexConsumer = immediate.getBuffer(model.renderType(headBit.resourceLocation));
+                // if (model instanceof EntityModel entityModel) {
+                // entityModel.setupAnim(VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(livingEntity).createRenderState(livingEntity, 0));
+                // }
+                //
+                // float y = headBit.modelPart.y;
+                // float xRot = headBit.modelPart.xRot;
+                // float yRot = headBit.modelPart.yRot;
+                // float zRot = headBit.modelPart.zRot;
+                // headBit.modelPart.y += offsetByY;
+                // headBit.modelPart.xRot = 0;
+                // headBit.modelPart.yRot = 0;
+                // headBit.modelPart.zRot = 0;
+                // headBit.modelPart.render(newMatrixStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY);
+                // headBit.modelPart.y = y;
+                // headBit.modelPart.xRot = xRot;
+                // headBit.modelPart.yRot = yRot;
+                // headBit.modelPart.zRot = zRot;
+                //
+                // immediate.endBatch();
+            }
             // } catch (Exception var25) {
             // VoxelConstants.getLogger().warn("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName(), var25);
             // failed = true;
@@ -1380,10 +1379,7 @@ public class Radar implements IRadar {
             // matrixStack.popMatrix();
             // matrixStack.popMatrix();
 
-            // FIXME 1.21.5
-            if (true) {
-                return false; // no success at the moment..
-            }
+            failed = true; // FIXME 1.21.5
         }
 
         RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
@@ -1460,7 +1456,7 @@ public class Radar implements IRadar {
             }
 
             if (checkCount < 5) {
-                AbstractTexture imageData; //TODO 1.21.4
+                AbstractTexture imageData; // TODO 1.21.4
 
                 try {
                     ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
@@ -1532,7 +1528,7 @@ public class Radar implements IRadar {
                 icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + resourceLocation.toString() + "head");
                 if (icon == this.textureAtlas.getMissingImage()) {
                     ModelPart outer = this.playerSkullModel.head;
-                    ModelPartWithResourceLocation[] headBits = {new ModelPartWithResourceLocation(outer, resourceLocation)};
+                    ModelPartWithResourceLocation[] headBits = { new ModelPartWithResourceLocation(outer, resourceLocation) };
                     boolean success = this.drawModel(1.1875F, 1000, contact.entity, Direction.NORTH, this.playerSkullModel, headBits);
                     if (success) {
                         // FIXME 1.21.5
@@ -1542,43 +1538,45 @@ public class Radar implements IRadar {
                         // this.newMobs = true;
                     }
                 }
-            } /*else if (helmet instanceof Armor helmetArmor) {
-                int armorType = this.getArmorType(helmetArmor);
-                if (armorType != UNKNOWN) {
-                    icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[armorType]);
-                } else {
-                    boolean isPiglin = contact.type == EnumMobs.PIGLIN || contact.type == EnumMobs.PIGLINZOMBIE;
-                    icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + helmet.getDescriptionId() + (isPiglin ? "_piglin" : ""));
-                    if (icon == this.textureAtlas.getMissingImage()) {
-                        icon = this.createUnknownArmorIcons(contact, stack, helmet);
-                    } else if (icon == this.textureAtlas.getFailedImage()) {
-                        icon = null;
-                    }
-                }
-
-                contact.setArmorColor(DyedItemColor.getOrDefault(stack, -1));
-                // FIXME 1.21.4
-                // } else if (helmet instanceof BlockItem blockItem) {
-                // Block block = blockItem.getBlock();
-                // BlockState blockState = block.defaultBlockState();
-                // int stateID = Block.getId(blockState);
-                // icon = this.textureAtlas.getAtlasSprite("blockArmor " + stateID);
-                // if (icon == this.textureAtlas.getMissingImage()) {
-                // BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, -8.0F);
-                // if (blockImage != null) {
-                // int width = blockImage.getWidth();
-                // int height = blockImage.getHeight();
-                // ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
-                // BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, 7.25F);
-                // blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
-                // ImageUtils.addImages(blockImage, blockImageFront, (width / 2f - 15), (height / 2f - 15), width, height);
-                // blockImageFront.flush();
-                // blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
-                // icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
-                // this.newMobs = true;
-                // }
-                // }
-            }*/
+            } /*
+               * else if (helmet instanceof Armor helmetArmor) {
+               * int armorType = this.getArmorType(helmetArmor);
+               * if (armorType != UNKNOWN) {
+               * icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[armorType]);
+               * } else {
+               * boolean isPiglin = contact.type == EnumMobs.PIGLIN || contact.type == EnumMobs.PIGLINZOMBIE;
+               * icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + helmet.getDescriptionId() + (isPiglin ? "_piglin" : ""));
+               * if (icon == this.textureAtlas.getMissingImage()) {
+               * icon = this.createUnknownArmorIcons(contact, stack, helmet);
+               * } else if (icon == this.textureAtlas.getFailedImage()) {
+               * icon = null;
+               * }
+               * }
+               * 
+               * contact.setArmorColor(DyedItemColor.getOrDefault(stack, -1));
+               * // FIXME 1.21.4
+               * // } else if (helmet instanceof BlockItem blockItem) {
+               * // Block block = blockItem.getBlock();
+               * // BlockState blockState = block.defaultBlockState();
+               * // int stateID = Block.getId(blockState);
+               * // icon = this.textureAtlas.getAtlasSprite("blockArmor " + stateID);
+               * // if (icon == this.textureAtlas.getMissingImage()) {
+               * // BufferedImage blockImage = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, -8.0F);
+               * // if (blockImage != null) {
+               * // int width = blockImage.getWidth();
+               * // int height = blockImage.getHeight();
+               * // ImageUtils.eraseArea(blockImage, width / 2 - 15, height / 2 - 15, 30, 30, width, height);
+               * // BufferedImage blockImageFront = VoxelConstants.getVoxelMapInstance().getColorManager().getBlockImage(blockState, stack, entity.level(), 4.9473686F, 7.25F);
+               * // blockImageFront = blockImageFront.getSubimage(width / 2 - 15, height / 2 - 15, 30, 30);
+               * // ImageUtils.addImages(blockImage, blockImageFront, (width / 2f - 15), (height / 2f - 15), width, height);
+               * // blockImageFront.flush();
+               * // blockImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(blockImage)), this.options.outlines, true, 37.6F, 37.6F, 2);
+               * // icon = this.textureAtlas.registerIconForBufferedImage("blockArmor " + stateID, blockImage);
+               * // this.newMobs = true;
+               * // }
+               * // }
+               * }
+               */
         }
 
         contact.armorIcon = icon;
@@ -1690,9 +1688,11 @@ public class Radar implements IRadar {
         }
     }
 
-    /*private int getArmorType(AnimalArmorItem helmet) {
-        return helmet.getDescriptionId().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
-    }*/
+    /*
+     * private int getArmorType(AnimalArmorItem helmet) {
+     * return helmet.getDescriptionId().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
+     * }
+     */
 
     public void renderMapMobs(GuiGraphics drawContext, int x, int y, float scaleProj) {
         drawContext.pose().pushPose();
@@ -1703,13 +1703,6 @@ public class Radar implements IRadar {
         int lastY = GameVariableAccessShim.yCoord();
 
         for (Contact contact : this.contacts) {
-            // FIXME 1.21.5
-            // RenderSystem.setShader(CoreShaders.POSITION_TEX);
-            // OpenGL.Utils.disp2(this.textureAtlas.getTexture());
-            // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-            //
-            // RenderSystem.setShader(CoreShaders.POSITION_TEX);
             contact.updateLocation();
             double contactX = contact.x;
             double contactZ = contact.z;
@@ -1808,8 +1801,6 @@ public class Radar implements IRadar {
                                 VoxelConstants.getLogger().warn("Stitcher exception in render method!  Resetting mobs texture atlas.");
                                 this.loadTexturePackIcons();
                             }
-
-                            // FIXME 1.21.5 OpenGL.Utils.disp2(this.textureAtlas.getTexture());
                         }
 
                         this.newMobs = false;
@@ -1817,11 +1808,7 @@ public class Radar implements IRadar {
 
                     int imageSize = (int) (contact.icon.getIconWidth() / 8.0F);
                     contact.icon.blit(drawContext, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
-                    // FIXME 1.21.5
-                    // this.applyFilteringParameters();
-                    // OpenGL.Utils.drawPre();
-                    // OpenGL.Utils.setMap(contact.icon, x, y + yOffset, ((int) (contact.icon.getIconWidth() / 4.0F)));
-                    // OpenGL.Utils.drawPost();
+
                     if ((this.options.showHelmetsPlayers && contact.type == EnumMobs.PLAYER || this.options.showHelmetsMobs && contact.type != EnumMobs.PLAYER || contact.type == EnumMobs.SHEEP) && contact.armorIcon != null) {
                         Sprite icon = contact.armorIcon;
                         float armorOffset = 0.0F;
@@ -1856,40 +1843,42 @@ public class Radar implements IRadar {
                             }
 
                             if (wayY < 0) {
-                                // FIXME 1.21.5 OpenGL.glColor4f(red, green, blue, contact.brightness);
+                                color = ARGB.colorFromFloat(contact.brightness, red, green, blue);
                             } else {
-                                // FIXME 1.21.5 OpenGL.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
+                                color = ARGB.colorFromFloat(1, red * contact.brightness, green * contact.brightness, blue * contact.brightness);
                             }
                         }
 
-                        // FIXME 1.21.5
+                        // FIXME 1.21.5 Radar: Draw sprite
                         // OpenGL.Utils.drawPre();
                         // OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, ((int) (icon.getIconWidth() / 4.0F * armorScale)));
                         // OpenGL.Utils.drawPost();
                         if (icon == this.clothIcon) {
                             if (wayY < 0) {
-                                // FIXME 1.21.5 OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
+                                color = ARGB.colorFromFloat(contact.brightness, 1, 1, 1);
                             } else {
-                                // FIXME 1.21.5 OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
+                                color = ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
                             }
 
                             icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[2]);
-                            // FIXME 1.21.5
+                            // FIXME 1.21.5 Radar: Draw sprite
                             // OpenGL.Utils.drawPre();
                             // OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale);
                             // OpenGL.Utils.drawPost();
-                            // if (wayY < 0) {
-                            // OpenGL.glColor4f(red, green, blue, contact.brightness);
-                            // } else {
-                            // OpenGL.glColor3f(red * contact.brightness, green * contact.brightness, blue * contact.brightness);
-                            // }
+                            if (wayY < 0) {
+                                color = ARGB.colorFromFloat(contact.brightness, red, green, blue);
+                            } else {
+                                color = ARGB.colorFromFloat(1, red * contact.brightness, green * contact.brightness, blue * contact.brightness);
+                            }
 
                             icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[1]);
-                            // FIXME 1.21.5
+                            // FIXME 1.21.5 Radar: Draw sprite
                             // OpenGL.Utils.drawPre();
                             // OpenGL.Utils.setMap(icon, x, y + yOffset + armorOffset, icon.getIconWidth() / 4.0F * armorScale * 40.0F / 37.0F);
                             // OpenGL.Utils.drawPost();
-                            // OpenGL.glColor3f(1.0F, 1.0F, 1.0F);
+                            color = 0xffffffff;
+
+                            // FIXME 1.21.5
                             // icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("armor " + this.armorNames[3]);
                             //
                             // OpenGL.Utils.drawPre();
@@ -1906,27 +1895,10 @@ public class Radar implements IRadar {
                         String name = contact.entity.getDisplayName().getString();
                         int m = VoxelConstants.getMinecraft().font.width(name) / 2;
 
-                        PoseStack textMatrixStack = drawContext.pose();
-                        textMatrixStack.pushPose();
-                        // textMatrixStack.setIdentity();
-                        // textMatrixStack.scale(scaleProj, scaleProj, 1.0F);
-                        //
-                        // if (this.options.filtering) {
-                        // textMatrixStack.translate(x, y, 0.0f);
-                        // textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(-contact.angle));
-                        // textMatrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
-                        // textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-                        // textMatrixStack.translate((-x), (-y), 0.0f);
-                        // } else {
-                        // wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
-                        // wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                        // textMatrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
-                        // }
-                        //
-                        textMatrixStack.translate(0, 0, 900);
-                        // textMatrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        drawContext.pose().pushPose();
+                        drawContext.pose().translate(0, 0, 900);
                         drawContext.drawString(VoxelConstants.getMinecraft().font, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
-                        textMatrixStack.popPose();
+                        drawContext.pose().popPose();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
@@ -1976,6 +1948,5 @@ public class Radar implements IRadar {
         }
     }
 
-    private record ModelPartWithResourceLocation(ModelPart modelPart, ResourceLocation resourceLocation) {
-    }
+    private record ModelPartWithResourceLocation(ModelPart modelPart, ResourceLocation resourceLocation) {}
 }
