@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.CustomMob;
 import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
 import com.mamiyaotaru.voxelmap.util.EnumMobs;
+import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
@@ -18,7 +19,10 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -93,6 +97,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -145,6 +150,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -186,6 +193,11 @@ public class Radar implements IRadar {
     private DynamicTexture nativeBackedTexture = new DynamicTexture("voxelmap_nativeBackedTexture", 2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
+
+    private ResourceLocation resourceFboTexture = ResourceLocation.fromNamespaceAndPath("voxelmap", "radar/fbo");
+    private GpuTexture fboTexture;
+    private GpuTexture fboDepthTexture;
+
     // private HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
     // private HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
     private static final HashMap<UUID, BufferedImage> entityIconMap = new HashMap<>();
@@ -210,6 +222,12 @@ public class Radar implements IRadar {
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("mobs", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(false, false);
+
+        final int fboTextureSize = 512;
+        DynamicTexture fboTexture = new DynamicTexture("voxelmap-radarfbotexture", fboTextureSize, fboTextureSize, true);
+        this.fboDepthTexture = RenderSystem.getDevice().createTexture("voxelmap-radarfbodepth", TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1);
+        Minecraft.getInstance().getTextureManager().register(resourceFboTexture, fboTexture);
+        this.fboTexture = fboTexture.getTexture();
 
         try {
             Class<?> randomEntitiesClass = Class.forName("net.optifine.RandomEntities");
@@ -347,13 +365,14 @@ public class Radar implements IRadar {
             scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
             dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
             this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
-            BufferedImage sheepFur = ImageUtils.loadImage(ResourceLocation.parse("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
-            scale = sheepFur.getWidth() / 6.0F;
-            sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
-            int chop = (int) Math.max(1.0F, 2.0F);
-            ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
-            sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
-            this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
+            // FIXME 1.21.5 Radar: sheep fur
+            // BufferedImage sheepFur = ImageUtils.loadImage(ResourceLocation.parse("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
+            // scale = sheepFur.getWidth() / 6.0F;
+            // sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
+            // int chop = (int) Math.max(1.0F, 2.0F);
+            // ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
+            // sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
+            // this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
             ResourceLocation fontResourceLocation = ResourceLocation.parse("textures/font/ascii.png");
             BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
             if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
@@ -363,7 +382,6 @@ public class Radar implements IRadar {
             }
 
             this.textureAtlas.stitch();
-            applyFilteringParameters();
             this.completedLoading = true;
         } catch (Exception var30) {
             VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
@@ -535,7 +553,7 @@ public class Radar implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(drawContext, null, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
+                this.renderMapMobs(drawContext, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
             }
         }
     }
@@ -633,7 +651,6 @@ public class Radar implements IRadar {
         if (this.newMobs) {
             try {
                 this.textureAtlas.stitchNew();
-                applyFilteringParameters();
             } catch (StitcherException var14) {
                 VoxelConstants.getLogger().warn("Stitcher exception!  Resetting mobs texture atlas.");
                 this.loadTexturePackIcons();
@@ -786,7 +803,7 @@ public class Radar implements IRadar {
             }
         } else if (contact.type == EnumMobs.TROPICALFISHA || contact.type == EnumMobs.TROPICALFISHB) {
             TropicalFish fish = (TropicalFish) contact.entity;
-            // FIXME
+            // FIXME Radar: tropical fish
             // resourceLocationSecondary = fish.getVarietyId();
             // color = Arrays.toString(fish.getBaseColorComponents()) + " " + Arrays.toString(fish.getPatternColorComponents());
         } else if (contact.type == EnumMobs.VILLAGER || contact.type == EnumMobs.ZOMBIEVILLAGER) {
@@ -1193,7 +1210,9 @@ public class Radar implements IRadar {
                         ImageUtils.saveImage(type.id, OpenGL.Utils.fboTexture, 0, 512, 512);
                     }
                     if (success) {
-                        // FIXME 1.21.5 headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
+                        GLUtils.readTextureContentsToBufferedImage(fboTexture, image -> {
+                            // FIXME 1.21.5 headImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
+                        });
                     }
                         // System.out.println("cache miss!");
                     // } else {
@@ -1272,8 +1291,104 @@ public class Radar implements IRadar {
 
     private boolean drawModel(float scale, int captureDepth, LivingEntity livingEntity, Direction facing, Model model, ModelPartWithResourceLocation[] headBits) {
         boolean failed = false;
+
+        float size = 64.0F * scale;
+        int width = fboTexture.getWidth(0);
+        int height = fboTexture.getHeight(0);
+        ProjectionType originalProjectionType = RenderSystem.getProjectionType();
+        Matrix4f originalProjectionMatrix = RenderSystem.getProjectionMatrix();
+        RenderSystem.setProjectionMatrix(new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 21000.0F), ProjectionType.ORTHOGRAPHIC);
+
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(fboTexture, OptionalInt.of(0xff000000), fboDepthTexture, OptionalDouble.of(1.0))) {
+            // Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
+            // matrixStack.pushMatrix();
+            // matrixStack.identity();
+            // matrixStack.translate(0.0f, 0.0f, -3000.0f + captureDepth);
+            // // FIXME 1.21.5
+            // // OpenGL.glDepthMask(true);
+            // // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+            // // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
+            // // OpenGL.glDisable(OpenGL.GL11_GL_CULL_FACE);
+            // // OpenGL.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
+            // // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
+            // matrixStack.pushMatrix();
+            // matrixStack.translate(width / 2f, height / 2f, 0.0f);
+            // matrixStack.scale(size, size, size);
+            // matrixStack.rotate(Axis.ZP.rotationDegrees(180.0F));
+            // matrixStack.rotate(Axis.YP.rotationDegrees(180.0F));
+            // if (facing == Direction.EAST) {
+            // matrixStack.rotate(Axis.YP.rotationDegrees(-90.0F));
+            // } else if (facing == Direction.UP) {
+            // matrixStack.rotate(Axis.XP.rotationDegrees(90.0F));
+            // }
+            //
+            // Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
+            // fullbright2.mul(matrixStack);
+            // Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
+            // RenderSystem.setShaderLights(fullbright3, fullbright3);
+            //
+            // try {
+            // PoseStack newMatrixStack = new PoseStack();
+            // MultiBufferSource.BufferSource immediate = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
+            // float offsetByY = model instanceof EndermanModel ? 8.0F : (!(model instanceof HumanoidModel) && !(model instanceof SkullModel) ? 0.0F : 4.0F);
+            // float maxY = 0.0F;
+            // float minY = 0.0F;
+            //
+            // for (ModelPartWithResourceLocation headBit : headBits) {
+            // if (headBit.modelPart.y < minY) {
+            // minY = headBit.modelPart.y;
+            // }
+            //
+            // if (headBit.modelPart.y > maxY) {
+            // maxY = headBit.modelPart.y;
+            // }
+            // }
+            //
+            // if (minY < -25.0F) {
+            // offsetByY = -25.0F - minY;
+            // } else if (maxY > 25.0F) {
+            // offsetByY = 25.0F - maxY;
+            // }
+            //
+            // for (ModelPartWithResourceLocation headBit : headBits) {
+            // VertexConsumer vertexConsumer = immediate.getBuffer(model.renderType(headBit.resourceLocation));
+            // if (model instanceof EntityModel entityModel) {
+            // entityModel.setupAnim(VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(livingEntity).createRenderState(livingEntity, 0));
+            // }
+            //
+            // float y = headBit.modelPart.y;
+            // float xRot = headBit.modelPart.xRot;
+            // float yRot = headBit.modelPart.yRot;
+            // float zRot = headBit.modelPart.zRot;
+            // headBit.modelPart.y += offsetByY;
+            // headBit.modelPart.xRot = 0;
+            // headBit.modelPart.yRot = 0;
+            // headBit.modelPart.zRot = 0;
+            // headBit.modelPart.render(newMatrixStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY);
+            // headBit.modelPart.y = y;
+            // headBit.modelPart.xRot = xRot;
+            // headBit.modelPart.yRot = yRot;
+            // headBit.modelPart.zRot = zRot;
+            //
+            // immediate.endBatch();
+            // }
+            // } catch (Exception var25) {
+            // VoxelConstants.getLogger().warn("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName(), var25);
+            // failed = true;
+            // }
+            //
+            // matrixStack.popMatrix();
+            // matrixStack.popMatrix();
+
+            // FIXME 1.21.5
+            if (true) {
+                return false; // no success at the moment..
+            }
+        }
+
+        RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
+
         // FIXME 1.21.5
-        // float size = 64.0F * scale;
         // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.Utils.fboTextureId);
         // int width = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
         // int height = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
@@ -1282,87 +1397,7 @@ public class Radar implements IRadar {
         // Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
         // Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
         // RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
-        // Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
-        // matrixStack.pushMatrix();
-        // matrixStack.identity();
-        // matrixStack.translate(0.0f, 0.0f, -3000.0f + captureDepth);
-        // OpenGL.Utils.bindFramebuffer();
-        // OpenGL.glDepthMask(true);
-        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-        // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-        // OpenGL.glDisable(OpenGL.GL11_GL_CULL_FACE);
-        // OpenGL.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
-        // OpenGL.glClearDepth(1.0);
-        // OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
-        // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-        // matrixStack.pushMatrix();
-        // matrixStack.translate(width / 2f, height / 2f, 0.0f);
-        // matrixStack.scale(size, size, size);
-        // matrixStack.rotate(Axis.ZP.rotationDegrees(180.0F));
-        // matrixStack.rotate(Axis.YP.rotationDegrees(180.0F));
-        // if (facing == Direction.EAST) {
-        // matrixStack.rotate(Axis.YP.rotationDegrees(-90.0F));
-        // } else if (facing == Direction.UP) {
-        // matrixStack.rotate(Axis.XP.rotationDegrees(90.0F));
-        // }
-        //
-        // Vector4f fullbright2 = new Vector4f(fullbright.x, fullbright.y, fullbright.z, 0);
-        // fullbright2.mul(matrixStack);
-        // Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
-        // RenderSystem.setShaderLights(fullbright3, fullbright3);
-        //
-        // try {
-        // PoseStack newMatrixStack = new PoseStack();
-        // MultiBufferSource.BufferSource immediate = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-        // float offsetByY = model instanceof EndermanModel ? 8.0F : (!(model instanceof HumanoidModel) && !(model instanceof SkullModel) ? 0.0F : 4.0F);
-        // float maxY = 0.0F;
-        // float minY = 0.0F;
-        //
-        // for (ModelPartWithResourceLocation headBit : headBits) {
-        // if (headBit.modelPart.y < minY) {
-        // minY = headBit.modelPart.y;
-        // }
-        //
-        // if (headBit.modelPart.y > maxY) {
-        // maxY = headBit.modelPart.y;
-        // }
-        // }
-        //
-        // if (minY < -25.0F) {
-        // offsetByY = -25.0F - minY;
-        // } else if (maxY > 25.0F) {
-        // offsetByY = 25.0F - maxY;
-        // }
-        //
-        // for (ModelPartWithResourceLocation headBit : headBits) {
-        // VertexConsumer vertexConsumer = immediate.getBuffer(model.renderType(headBit.resourceLocation));
-        // if (model instanceof EntityModel entityModel) {
-        // entityModel.setupAnim(VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(livingEntity).createRenderState(livingEntity, 0));
-        // }
-        //
-        // float y = headBit.modelPart.y;
-        // float xRot = headBit.modelPart.xRot;
-        // float yRot = headBit.modelPart.yRot;
-        // float zRot = headBit.modelPart.zRot;
-        // headBit.modelPart.y += offsetByY;
-        // headBit.modelPart.xRot = 0;
-        // headBit.modelPart.yRot = 0;
-        // headBit.modelPart.zRot = 0;
-        // headBit.modelPart.render(newMatrixStack, vertexConsumer, 0xF000F0, OverlayTexture.NO_OVERLAY);
-        // headBit.modelPart.y = y;
-        // headBit.modelPart.xRot = xRot;
-        // headBit.modelPart.yRot = yRot;
-        // headBit.modelPart.zRot = zRot;
-        //
-        // immediate.endBatch();
-        // }
-        // } catch (Exception var25) {
-        // VoxelConstants.getLogger().warn("Error attempting to render head bits for " + livingEntity.getClass().getSimpleName(), var25);
-        // failed = true;
-        // }
-        //
-        // matrixStack.popMatrix();
-        // matrixStack.popMatrix();
+
         // OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         // OpenGL.glDepthMask(false);
@@ -1599,9 +1634,10 @@ public class Radar implements IRadar {
         }
 
         if (modelBiped != null && resourceLocation != null) {
+
+            ModelPartWithResourceLocation[] headBitsWithResourceLocation = { new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation) };
+            this.drawModel(1.0F, 2, contact.entity, Direction.NORTH, modelBiped, headBitsWithResourceLocation);
             // FIXME 1.21.5
-            // ModelPartWithResourceLocation[] headBitsWithResourceLocation = {new ModelPartWithResourceLocation(modelBiped.head, resourceLocation), new ModelPartWithResourceLocation(modelBiped.hat, resourceLocation)};
-            // this.drawModel(1.0F, 2, contact.entity, Direction.NORTH, modelBiped, headBitsWithResourceLocation);
             // BufferedImage armorImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
             // armorImage = armorImage.getSubimage(200, 200, 112, 112);
             // armorImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.trimCentered(armorImage)), this.options.outlines, true, intendedWidth * 4.0F, intendedHeight * 4.0F, 2);
@@ -1658,7 +1694,9 @@ public class Radar implements IRadar {
         return helmet.getDescriptionId().equals("item.minecraft.leather_helmet") ? 0 : UNKNOWN;
     }*/
 
-    public void renderMapMobs(GuiGraphics drawContext, Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+    public void renderMapMobs(GuiGraphics drawContext, int x, int y, float scaleProj) {
+        drawContext.pose().pushPose();
+        drawContext.pose().translate(0, 0, 125);
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
@@ -1688,13 +1726,15 @@ public class Radar implements IRadar {
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
+
+            int color;
             if (wayY < 0) {
-                OpenGL.glColor4f(1.0F, 1.0F, 1.0F, contact.brightness);
+                color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
             } else {
                 if (contact.brightness < 0.3f) {
                     contact.brightness = 0.3f;
                 }
-                OpenGL.glColor3f(contact.brightness, contact.brightness, contact.brightness);
+                color = ARGB.colorFromFloat(1.0f, contact.brightness, contact.brightness, contact.brightness);
             }
 
             if (this.minimapOptions.rotates) {
@@ -1715,17 +1755,17 @@ public class Radar implements IRadar {
 
             if (inRange) {
                 try {
-                    matrixStack.pushMatrix();
+                    drawContext.pose().pushPose();
                     if (this.options.filtering) {
-                        matrixStack.translate(x, y, 0.0f);
-                        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-                        matrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
-                        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-                        matrixStack.translate((-x), (-y), 0.0f);
+                        drawContext.pose().translate(x, y, 0.0f);
+                        drawContext.pose().mulPose(Axis.ZP.rotationDegrees(-contact.angle));
+                        drawContext.pose().translate(0.0f, (float) -contact.distance, 0.0f);
+                        drawContext.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                        drawContext.pose().translate((-x), (-y), 0.0f);
                     } else {
                         wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
                         wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                        matrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
+                        drawContext.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
                     }
 
                     float yOffset = 0.0F;
@@ -1775,6 +1815,8 @@ public class Radar implements IRadar {
                         this.newMobs = false;
                     }
 
+                    int imageSize = (int) (contact.icon.getIconWidth() / 8.0F);
+                    contact.icon.blit(drawContext, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
                     // FIXME 1.21.5
                     // this.applyFilteringParameters();
                     // OpenGL.Utils.drawPre();
@@ -1859,54 +1901,41 @@ public class Radar implements IRadar {
                     if (contact.name != null && ((this.options.showPlayerNames && contact.type == EnumMobs.PLAYER) || (this.options.showMobNames && contact.type != EnumMobs.PLAYER && contact.entity.hasCustomName()))) {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
-                        matrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        drawContext.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
 
                         String name = contact.entity.getDisplayName().getString();
                         int m = VoxelConstants.getMinecraft().font.width(name) / 2;
 
                         PoseStack textMatrixStack = drawContext.pose();
                         textMatrixStack.pushPose();
-                        textMatrixStack.setIdentity();
-                        textMatrixStack.scale(scaleProj, scaleProj, 1.0F);
-
-                        if (this.options.filtering) {
-                            textMatrixStack.translate(x, y, 0.0f);
-                            textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(-contact.angle));
-                            textMatrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
-                            textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-                            textMatrixStack.translate((-x), (-y), 0.0f);
-                        } else {
-                            wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
-                            wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                            textMatrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
-                        }
-
+                        // textMatrixStack.setIdentity();
+                        // textMatrixStack.scale(scaleProj, scaleProj, 1.0F);
+                        //
+                        // if (this.options.filtering) {
+                        // textMatrixStack.translate(x, y, 0.0f);
+                        // textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(-contact.angle));
+                        // textMatrixStack.translate(0.0f, (float) -contact.distance, 0.0f);
+                        // textMatrixStack.last().pose().rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                        // textMatrixStack.translate((-x), (-y), 0.0f);
+                        // } else {
+                        // wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
+                        // wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
+                        // textMatrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
+                        // }
+                        //
                         textMatrixStack.translate(0, 0, 900);
-                        textMatrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        // textMatrixStack.scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
                         drawContext.drawString(VoxelConstants.getMinecraft().font, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
                         textMatrixStack.popPose();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
-                    matrixStack.popMatrix();
+                    drawContext.pose().popPose();
                 }
             }
         }
-    }
-
-    private void applyFilteringParameters() {
-        // FIXME 1.21.5
-        // if (this.options.filtering) {
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_LINEAR);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_LINEAR);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_S, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_WRAP_T, OpenGL.GL12_GL_CLAMP_TO_EDGE);
-        // } else {
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MIN_FILTER, OpenGL.GL11_GL_NEAREST);
-        // OpenGL.glTexParameteri(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.GL11_GL_TEXTURE_MAG_FILTER, OpenGL.GL11_GL_NEAREST);
-        // }
-
+        drawContext.pose().popPose();
     }
 
     private boolean isHostile(Entity entity) {

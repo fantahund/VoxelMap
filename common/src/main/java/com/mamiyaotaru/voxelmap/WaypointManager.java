@@ -55,7 +55,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.storage.LevelResource;
-import org.joml.Matrix4fStack;
 
 public class WaypointManager {
     public final MapSettingsManager options;
