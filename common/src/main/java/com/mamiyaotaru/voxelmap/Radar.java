@@ -390,10 +390,10 @@ public class Radar implements IRadar {
     }
 
     private BufferedImage createImageFromTypeAndResourceLocations(EnumMobs type, ResourceLocation resourceLocation, ResourceLocation resourceLocationSecondary, Entity entity) {
-        BufferedImage mobImage = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocation);
+        BufferedImage mobImage = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
         BufferedImage mobImageSecondary = null;
         if (resourceLocationSecondary != null) {
-            mobImageSecondary = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocationSecondary);
+            mobImageSecondary = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
         }
 
         try {
@@ -861,16 +861,16 @@ public class Radar implements IRadar {
 
             BufferedImage mobImage = null;
             if (contact.type == EnumMobs.HORSE) {
-                BufferedImage base = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocation);
+                BufferedImage base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
                 if (resourceLocationSecondary != null && base != null) {
-                    BufferedImage variant = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocationSecondary);
+                    BufferedImage variant = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationSecondary);
                     variant = ImageUtils.scaleImage(variant, (float) base.getWidth() / variant.getWidth(), (float) base.getHeight() / variant.getHeight());
                     base = ImageUtils.addImages(base, variant, 0.0F, 0.0F, base.getWidth(), base.getHeight());
                     variant.flush();
                 }
 
                 if (resourceLocationTertiary != null && base != null) {
-                    BufferedImage pattern = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocationTertiary);
+                    BufferedImage pattern = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationTertiary);
                     pattern = ImageUtils.scaleImage(pattern, (float) base.getWidth() / pattern.getWidth(), (float) base.getHeight() / pattern.getHeight());
                     pattern = ImageUtils.colorify(pattern, contact.armorColor);
                     base = ImageUtils.addImages(base, pattern, 0.0F, 0.0F, base.getWidth(), base.getHeight());
@@ -878,7 +878,7 @@ public class Radar implements IRadar {
                 }
 
                 if (resourceLocationQuaternary != null && base != null) {
-                    BufferedImage armor = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocationQuaternary);
+                    BufferedImage armor = ImageUtils.createBufferedImageFromResourceLocation(resourceLocationQuaternary);
                     armor = ImageUtils.scaleImage(armor, (float) base.getWidth() / armor.getWidth(), (float) base.getHeight() / armor.getHeight());
                     armor = ImageUtils.colorify(armor, contact.armorColor);
                     base = ImageUtils.addImages(base, armor, 0.0F, 0.0F, base.getWidth(), base.getHeight());
@@ -1256,11 +1256,11 @@ public class Radar implements IRadar {
                 for (int t = 1; t < resourceLocations.length; ++t) {
                     if (resourceLocations[t] != null) {
                         if (!hasAdditional) {
-                            base = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocation);
+                            base = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
                         }
 
                         hasAdditional = true;
-                        BufferedImage overlay = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocations[t]);
+                        BufferedImage overlay = ImageUtils.createBufferedImageFromResourceLocation(resourceLocations[t]);
                         float xScale = ((float) base.getWidth() / overlay.getWidth());
                         float yScale = ((float) base.getHeight() / overlay.getHeight());
                         if (xScale != 1.0F || yScale != 1.0F) {
@@ -1644,7 +1644,7 @@ public class Radar implements IRadar {
         }
 
         if (icon == null && resourceLocation != null) {
-            BufferedImage armorTexture = ImageUtils.createLegacyBufferedImageFromResourceLocation(resourceLocation);
+            BufferedImage armorTexture = ImageUtils.createBufferedImageFromResourceLocation(resourceLocation);
             if (armorTexture != null) {
                 if (!isPiglin) {
                     armorTexture = ImageUtils.addImages(ImageUtils.loadImage(armorTexture, 8, 8, 8, 8), ImageUtils.loadImage(armorTexture, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
@@ -1694,9 +1694,10 @@ public class Radar implements IRadar {
      * }
      */
 
-    public void renderMapMobs(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        drawContext.pose().pushPose();
-        drawContext.pose().translate(0, 0, 125);
+    public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
+        guiGraphics.pose().translate(0, 0, 125);
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
@@ -1748,17 +1749,17 @@ public class Radar implements IRadar {
 
             if (inRange) {
                 try {
-                    drawContext.pose().pushPose();
+                    guiGraphics.pose().pushPose();
                     if (this.options.filtering) {
-                        drawContext.pose().translate(x, y, 0.0f);
-                        drawContext.pose().mulPose(Axis.ZP.rotationDegrees(-contact.angle));
-                        drawContext.pose().translate(0.0f, (float) -contact.distance, 0.0f);
-                        drawContext.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-                        drawContext.pose().translate((-x), (-y), 0.0f);
+                        guiGraphics.pose().translate(x, y, 0.0f);
+                        guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-contact.angle));
+                        guiGraphics.pose().translate(0.0f, (float) -contact.distance, 0.0f);
+                        guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                        guiGraphics.pose().translate((-x), (-y), 0.0f);
                     } else {
                         wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
                         wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                        drawContext.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
+                        guiGraphics.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
                     }
 
                     float yOffset = 0.0F;
@@ -1807,7 +1808,7 @@ public class Radar implements IRadar {
                     }
 
                     int imageSize = (int) (contact.icon.getIconWidth() / 8.0F);
-                    contact.icon.blit(drawContext, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
+                    contact.icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
 
                     if ((this.options.showHelmetsPlayers && contact.type == EnumMobs.PLAYER || this.options.showHelmetsMobs && contact.type != EnumMobs.PLAYER || contact.type == EnumMobs.SHEEP) && contact.armorIcon != null) {
                         Sprite icon = contact.armorIcon;
@@ -1890,24 +1891,24 @@ public class Radar implements IRadar {
                     if (contact.name != null && ((this.options.showPlayerNames && contact.type == EnumMobs.PLAYER) || (this.options.showMobNames && contact.type != EnumMobs.PLAYER && contact.entity.hasCustomName()))) {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
-                        drawContext.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        guiGraphics.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
 
                         String name = contact.entity.getDisplayName().getString();
                         int m = VoxelConstants.getMinecraft().font.width(name) / 2;
 
-                        drawContext.pose().pushPose();
-                        drawContext.pose().translate(0, 0, 900);
-                        drawContext.drawString(VoxelConstants.getMinecraft().font, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
-                        drawContext.pose().popPose();
+                        guiGraphics.pose().pushPose();
+                        guiGraphics.pose().translate(0, 0, 900);
+                        guiGraphics.drawString(VoxelConstants.getMinecraft().font, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
+                        guiGraphics.pose().popPose();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
                 } finally {
-                    drawContext.pose().popPose();
+                    guiGraphics.pose().popPose();
                 }
             }
         }
-        drawContext.pose().popPose();
+        guiGraphics.pose().popPose();
     }
 
     private boolean isHostile(Entity entity) {

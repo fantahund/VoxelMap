@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.textures.GpuTexture;
 import java.awt.Color;
@@ -14,15 +15,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.ResourceLocation;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryUtil;
 
 public class ImageUtils {
     public static void saveImage(String name, GpuTexture texture) {
@@ -44,7 +43,7 @@ public class ImageUtils {
         return image;
     }
 
-    public static NativeImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
+    public static NativeImage createNativeImageFromResourceLocation(ResourceLocation resourceLocation) {
         try {
             return TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceLocation).image();
         } catch (Exception var5) {
@@ -52,7 +51,7 @@ public class ImageUtils {
         }
     }
 
-    public static BufferedImage createLegacyBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
+    public static BufferedImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
         try {
             InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
             BufferedImage image = ImageIO.read(is);
@@ -71,11 +70,17 @@ public class ImageUtils {
         }
     }
 
-    // TODO optimize?
     public static NativeImage nativeImageFromBufferedImage(BufferedImage image) {
-        NativeImage nativeImage = new NativeImage(image.getWidth(), image.getHeight(), false);
         int width = image.getWidth();
         int height = image.getHeight();
+        NativeImage nativeImage = new NativeImage(width, height, false);
+        if (image.getType() == BufferedImage.TYPE_4BYTE_ABGR) {
+            byte[] is = new byte[width * height * 4];
+            image.getRaster().getDataElements(0, 0, width, height, is);
+            MemoryUtil.memByteBuffer(nativeImage.getPointer(), is.length).put(is);
+            return nativeImage;
+        }
+        VoxelConstants.getLogger().warn("Unoptimized image format: " + image.getType());
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int argb = image.getRGB(x, y);
@@ -86,44 +91,31 @@ public class ImageUtils {
     }
 
     public static BufferedImage bufferedImageFromNativeImage(NativeImage image) {
-        BufferedImage bufferedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+        if (image.getPointer() == 0) {
+            throw new IllegalStateException("image is not allocated!");
+        }
+        if (image.format() != Format.RGBA) {
+            throw new IllegalStateException("invalid format. expected RGBA, got " + image.format() + "!");
+        }
         int width = image.getWidth();
         int height = image.getHeight();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int argb = image.getPixel(x, y);
-                bufferedImage.setRGB(x, y, argb);
-            }
-        }
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+
+        // if (image.format() == Format.RGB) {
+        // // unoptimized
+        // for (int x = 0; x < width; x++) {
+        // for (int y = 0; y < height; y++) {
+        // int argb = image.getPixel(x, y);
+        // bufferedImage.setRGB(x, y, argb);
+        // }
+        // }
+        // return bufferedImage;
+        // }
+
+        byte[] is = new byte[width * height * image.format().components()];
+        MemoryUtil.memByteBuffer(image.getPointer(), is.length).get(is);
+        bufferedImage.getRaster().setDataElements(0, 0, width, height, is);
         return bufferedImage;
-    }
-
-    // public static BufferedImage createBufferedImageFromGLID(int id) {
-    // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, id);
-    // return createBufferedImageFromCurrentGLImage();
-    // }
-
-    public static BufferedImage createBufferedImageFromCurrentGLImage() {
-        int imageWidth = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH);
-        int imageHeight = GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_HEIGHT);
-        BufferedImage image = new BufferedImage(imageWidth, imageHeight, 6);
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(imageWidth * imageHeight * 4).order(ByteOrder.nativeOrder());
-        GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, byteBuffer);
-        byteBuffer.position(0);
-        byte[] bytes = new byte[byteBuffer.remaining()];
-        byteBuffer.get(bytes);
-        for (int x = 0; x < imageWidth; ++x) {
-            for (int y = 0; y < imageHeight; ++y) {
-                int index = y * imageWidth * 4 + x * 4;
-                byte var8 = 0;
-                int color24 = var8 | (bytes[index + 2] & 255);
-                color24 |= (bytes[index + 1] & 255) << 8;
-                color24 |= (bytes[index] & 255) << 16;
-                color24 |= (bytes[index + 3] & 255) << 24;
-                image.setRGB(x, y, color24);
-            }
-        }
-        return image;
     }
 
     public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h) {
@@ -207,7 +199,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        BufferedImage mobSkin = createLegacyBufferedImageFromResourceLocation(resourceLocation);
+        BufferedImage mobSkin = createBufferedImageFromResourceLocation(resourceLocation);
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
         } else {

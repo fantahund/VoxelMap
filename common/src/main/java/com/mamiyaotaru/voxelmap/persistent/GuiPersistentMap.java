@@ -165,7 +165,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (skinTexture instanceof DynamicTexture dynamicTexture) {
             skinImage = ImageUtils.bufferedImageFromNativeImage(dynamicTexture.getPixels());
         } else { // should be ReloadableImage
-            skinImage = ImageUtils.createLegacyBufferedImageFromResourceLocation(skinLocation);
+            skinImage = ImageUtils.createBufferedImageFromResourceLocation(skinLocation);
         }
 
         if (skinImage == null) {
