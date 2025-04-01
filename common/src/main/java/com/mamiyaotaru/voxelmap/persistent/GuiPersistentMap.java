@@ -41,7 +41,6 @@ import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -159,18 +158,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void getSkin() {
-        ResourceLocation skinLocation = VoxelConstants.getPlayer().getSkin().texture();
-        AbstractTexture skinTexture = minecraft.getTextureManager().getTexture(skinLocation);
-        BufferedImage skinImage = null;
-        if (skinTexture instanceof DynamicTexture dynamicTexture) {
-            skinImage = ImageUtils.bufferedImageFromNativeImage(dynamicTexture.getPixels());
-        } else { // should be ReloadableImage
-            skinImage = ImageUtils.createBufferedImageFromResourceLocation(skinLocation);
-        }
+        BufferedImage skinImage = ImageUtils.createBufferedImageFromResourceLocation(VoxelConstants.getPlayer().getSkin().texture());
 
         if (skinImage == null) {
             if (VoxelConstants.DEBUG) {
-                VoxelConstants.getLogger().info("Got no player skin! -> " + skinLocation + " -- " + skinTexture.getClass());
+                VoxelConstants.getLogger().warn("Got no player skin!");
             }
             return;
         }

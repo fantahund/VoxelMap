@@ -28,8 +28,8 @@ public class VoxelMap implements PreparableReloadListener {
     public static RadarSettingsManager radarOptions;
     private PersistentMapSettingsManager persistentMapOptions;
     private Map map;
-    private IRadar radar;
-    private IRadar radarSimple;
+    private Radar radar;
+    private RadarSimple radarSimple;
     private PersistentMap persistentMap;
     private SettingsAndLightingChangeNotifier settingsAndLightingChangeNotifier;
     private WorldUpdateListener worldUpdateListener;
@@ -275,6 +275,10 @@ public class VoxelMap implements PreparableReloadListener {
 
     public void onPlayInit() {
         // registries are ready, but no world
+    }
+
+    public void onJoinServer() {
+        this.radar.onJoinServer();
     }
 
     public void onDisconnect() {

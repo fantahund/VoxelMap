@@ -3,7 +3,9 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import java.util.UUID;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 public class Contact {
     public double x;
@@ -17,7 +19,7 @@ public class Contact {
     public final boolean vanillaType;
     public boolean custom;
     public UUID uuid;
-    public String name = "_";
+    public Component name;
     public int rotationFactor;
     public final LivingEntity entity;
     public Sprite icon;
@@ -29,13 +31,15 @@ public class Contact {
         this.type = type;
         this.uuid = entity.getUUID();
         this.vanillaType = type != EnumMobs.GENERICNEUTRAL && type != EnumMobs.GENERICHOSTILE && type != EnumMobs.GENERICTAME && type != EnumMobs.UNKNOWN;
+        this.name = entity.hasCustomName() || entity instanceof Player ? entity.getName() : null;
+        updateLocation();
     }
 
     public void setUUID(UUID uuid) {
         this.uuid = uuid;
     }
 
-    public void setName(String name) {
+    public void setName(Component name) {
         this.name = name;
     }
 

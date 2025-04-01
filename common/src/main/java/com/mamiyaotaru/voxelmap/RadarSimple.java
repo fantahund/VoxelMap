@@ -115,9 +115,6 @@ public class RadarSimple implements IRadar {
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
                     if (hypot < 961.0) {
                         Contact contact = new Contact((LivingEntity) entity, this.getUnknownMobNeutrality(entity));
-                        String unscrubbedName = contact.entity.getDisplayName().getString();
-                        contact.setName(unscrubbedName);
-                        contact.updateLocation();
                         this.contacts.add(contact);
                     }
                 }

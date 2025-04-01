@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 public class Sprite {
-    private final String iconName;
+    private final Object iconName;
     protected NativeImage imageData;
     protected int originX;
     protected int originY;
@@ -21,7 +21,7 @@ public class Sprite {
     private float maxV;
     private TextureAtlas textureAtlas;
 
-    public Sprite(String iconName, TextureAtlas textureAtlas) {
+    public Sprite(Object iconName, TextureAtlas textureAtlas) {
         this.iconName = iconName;
         this.textureAtlas = textureAtlas;
     }
@@ -31,7 +31,7 @@ public class Sprite {
         return spriteFromString(name, textureAtlas);
     }
 
-    public static Sprite spriteFromString(String name, TextureAtlas textureAtlas) {
+    public static Sprite spriteFromString(Object name, TextureAtlas textureAtlas) {
         return new Sprite(name, textureAtlas);
     }
 
@@ -89,7 +89,7 @@ public class Sprite {
         return this.maxV;
     }
 
-    public String getIconName() {
+    public Object getIconName() {
         return this.iconName;
     }
 

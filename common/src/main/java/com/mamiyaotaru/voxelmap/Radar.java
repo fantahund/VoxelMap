@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.Maps;
+import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.StitcherException;
@@ -94,6 +95,7 @@ import net.minecraft.client.resources.metadata.animation.VillagerMetadataSection
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -135,7 +137,9 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -193,10 +197,12 @@ public class Radar implements IRadar {
     private DynamicTexture nativeBackedTexture = new DynamicTexture("voxelmap_nativeBackedTexture", 2, 2, false);
     private final ResourceLocation nativeBackedTextureLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "tempimage");
     private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
+    private final Minecraft minecraft = Minecraft.getInstance();
 
     private ResourceLocation resourceFboTexture = ResourceLocation.fromNamespaceAndPath("voxelmap", "radar/fbo");
     private GpuTexture fboTexture;
     private GpuTexture fboDepthTexture;
+    private EntityMapImageManager entityMapImageManager;
 
     // private HashMap<List<ModelPartWithResourceLocation>, BufferedImage> cachedImages = new HashMap<>();
     // private HashMap<BufferedImage, Sprite> cachedSprites = new HashMap<>();
@@ -218,6 +224,7 @@ public class Radar implements IRadar {
     });
 
     public Radar() {
+        entityMapImageManager = new EntityMapImageManager();
         this.minimapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("mobs", resourceTextureAtlasMarker);
@@ -268,124 +275,122 @@ public class Radar implements IRadar {
         // cachedSprites.clear();
         entityIconMap.clear();
         this.loadTexturePackIcons();
+
+        entityMapImageManager.reset();
     }
 
     private void loadTexturePackIcons() {
         this.completedLoading = false;
 
-        try {
-            this.mpContactsSkinGetTries.clear();
-            this.contactsSkinGetTries.clear();
-            this.textureAtlas.reset();
-            LayerDefinition texturedModelData12 = SkullModel.createHumanoidHeadLayer();
-            ModelPart skullModelPart = texturedModelData12.bakeRoot();
-            this.playerSkullModel = new SkullModel(skullModelPart);
-            CubeDeformation ARMOR_DILATION = new CubeDeformation(1.0F);
-            LayerDefinition texturedModelData2 = LayerDefinition.create(HumanoidModel.createMesh(ARMOR_DILATION, 0.0F), 64, 32);
-            ModelPart bipedArmorModelPart = texturedModelData2.bakeRoot();
-            this.bipedArmorModel = new HumanoidModel<>(bipedArmorModelPart);
-            LayerDefinition strayModelData = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32);
-            ModelPart strayOverlayModelPart = strayModelData.bakeRoot();
-            this.strayOverlayModel = new SkeletonModel<>(strayOverlayModelPart);
-            LayerDefinition drownedModelData = DrownedModel.createBodyLayer(new CubeDeformation(0.25F));
-            ModelPart drownedOverlayModelPart = drownedModelData.bakeRoot();
-            this.drownedOverlayModel = new ZombieModel<>(drownedOverlayModelPart);
-            LayerDefinition texturedModelData3 = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(1.02F), 0.0F), 64, 32);
-            ModelPart piglinArmorModelPart = texturedModelData3.bakeRoot();
-            this.piglinArmorModel = new HumanoidModel<>(piglinArmorModelPart);
-            if (ReflectionUtils.classExists("com.prupe.mcpatcher.mob.MobOverlay") && ImageUtils.loadImage(ResourceLocation.parse("mcpatcher/mob/cow/mooshroom_overlay.png"), 0, 0, 1, 1) != null) {
-                EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("mcpatcher/mob/cow/mooshroom_overlay.png");
-            } else {
-                EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("textures/block/red_mushroom.png");
-            }
-
-            for (int t = 0; t < EnumMobs.values().length - 1; ++t) {
-                String identifier = "minecraft." + EnumMobs.values()[t].id;
-                String identifierSimple = EnumMobs.values()[t].id;
-                String spriteName = identifier + EnumMobs.values()[t].resourceLocation.toString();
-                spriteName = spriteName + (EnumMobs.values()[t].secondaryResourceLocation != null ? EnumMobs.values()[t].secondaryResourceLocation.toString() : "");
-                BufferedImage mobImage = this.getCustomMobImage(identifier, identifierSimple);
-                if (mobImage != null) {
-                    Sprite sprite = this.textureAtlas.registerIconForBufferedImage(identifier + "custom", mobImage);
-                    this.textureAtlas.registerMaskedIcon(spriteName, sprite);
-                } else {
-                    this.textureAtlas.registerFailedIcon(identifier + "custom");
-                    if (EnumMobs.values()[t].expectedWidth > 0.5) {
-                        mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
-                        if (mobImage != null) {
-                            float scale = mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
-                            mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
-                            this.textureAtlas.registerIconForBufferedImage(spriteName, mobImage);
-                        }
-                    }
-                }
-            }
-
-            /*
-             * BufferedImage[] armorImages = { ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8),
-             * ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
-             * 
-             * for (int t = 0; t < armorImages.length; ++t) {
-             * float scale = armorImages[t].getWidth() / 8.0F;
-             * armorImages[t] = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorImages[t], 4.0F / scale * 47.0F / 38.0F)), this.options.outlines && t != 2 && t != 3, true, 37.6F, 37.6F, 2);
-             * Sprite icon = this.textureAtlas.registerIconForBufferedImage("armor " + this.armorNames[t], armorImages[t]);
-             * if (t == 0) {
-             * this.clothIcon = icon;
-             * }
-             * }
-             */ // FIXME 1.21.2
-
-            BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
-            float scale = zombie.getWidth() / 8.0F;
-            zombie = ImageUtils.scaleImage(zombie, 4.0F / scale * 47.0F / 38.0F);
-            BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64);
-            zombieHat = ImageUtils.scaleImage(zombieHat, 4.0F / scale * 47.0F / 35.0F);
-            zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8),
-                    zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
-            zombieHat.flush();
-            zombie = ImageUtils.fillOutline(ImageUtils.pad(zombie), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head", zombie);
-            BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32);
-            scale = skeleton.getWidth() / 8.0F;
-            skeleton = ImageUtils.scaleImage(skeleton, 4.0F / scale * 47.0F / 38.0F);
-            skeleton = ImageUtils.addImages(new BufferedImage(skeleton.getWidth(), skeleton.getHeight() + 8, 6), skeleton, 0.0F, 0.0F, skeleton.getWidth(), skeleton.getHeight() + 8);
-            skeleton = ImageUtils.fillOutline(ImageUtils.pad(skeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head", skeleton);
-            BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32);
-            scale = witherSkeleton.getWidth() / 8.0F;
-            witherSkeleton = ImageUtils.scaleImage(witherSkeleton, 4.0F / scale * 47.0F / 38.0F);
-            witherSkeleton = ImageUtils.addImages(new BufferedImage(witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8, 6), witherSkeleton, 0.0F, 0.0F, witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8);
-            witherSkeleton = ImageUtils.fillOutline(ImageUtils.pad(witherSkeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head", witherSkeleton);
-            BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8), 0.0F, 0.0F, 8, 10);
-            scale = creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
-            creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
-            BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
-            scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
-            dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
-            this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
-            // FIXME 1.21.5 Radar: sheep fur
-            // BufferedImage sheepFur = ImageUtils.loadImage(ResourceLocation.parse("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
-            // scale = sheepFur.getWidth() / 6.0F;
-            // sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
-            // int chop = (int) Math.max(1.0F, 2.0F);
-            // ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
-            // sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
-            // this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
-            ResourceLocation fontResourceLocation = ResourceLocation.parse("textures/font/ascii.png");
-            BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
-            if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
-                int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
-                float scaleBy = 512.0F / maxDim;
-                fontImage = ImageUtils.scaleImage(fontImage, scaleBy);
-            }
-
-            this.textureAtlas.stitch();
-            this.completedLoading = true;
-        } catch (Exception var30) {
-            VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
-        }
+        // try {
+        this.mpContactsSkinGetTries.clear();
+        this.contactsSkinGetTries.clear();
+        this.textureAtlas.reset();
+        // LayerDefinition texturedModelData12 = SkullModel.createHumanoidHeadLayer();
+        // ModelPart skullModelPart = texturedModelData12.bakeRoot();
+        // this.playerSkullModel = new SkullModel(skullModelPart);
+        // CubeDeformation ARMOR_DILATION = new CubeDeformation(1.0F);
+        // LayerDefinition texturedModelData2 = LayerDefinition.create(HumanoidModel.createMesh(ARMOR_DILATION, 0.0F), 64, 32);
+        // ModelPart bipedArmorModelPart = texturedModelData2.bakeRoot();
+        // this.bipedArmorModel = new HumanoidModel<>(bipedArmorModelPart);
+        // LayerDefinition strayModelData = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(0.25F), 0.0F), 64, 32);
+        // ModelPart strayOverlayModelPart = strayModelData.bakeRoot();
+        // this.strayOverlayModel = new SkeletonModel<>(strayOverlayModelPart);
+        // LayerDefinition drownedModelData = DrownedModel.createBodyLayer(new CubeDeformation(0.25F));
+        // ModelPart drownedOverlayModelPart = drownedModelData.bakeRoot();
+        // this.drownedOverlayModel = new ZombieModel<>(drownedOverlayModelPart);
+        // LayerDefinition texturedModelData3 = LayerDefinition.create(HumanoidModel.createMesh(new CubeDeformation(1.02F), 0.0F), 64, 32);
+        // ModelPart piglinArmorModelPart = texturedModelData3.bakeRoot();
+        // this.piglinArmorModel = new HumanoidModel<>(piglinArmorModelPart);
+        // EnumMobs.MOOSHROOM.secondaryResourceLocation = ResourceLocation.parse("textures/block/red_mushroom.png");
+        //
+        // for (int t = 0; t < EnumMobs.values().length - 1; ++t) {
+        // String identifier = "minecraft." + EnumMobs.values()[t].id;
+        // String identifierSimple = EnumMobs.values()[t].id;
+        // String spriteName = identifier + EnumMobs.values()[t].resourceLocation.toString();
+        // spriteName = spriteName + (EnumMobs.values()[t].secondaryResourceLocation != null ? EnumMobs.values()[t].secondaryResourceLocation.toString() : "");
+        // BufferedImage mobImage = this.getCustomMobImage(identifier, identifierSimple);
+        // if (mobImage != null) {
+        // Sprite sprite = this.textureAtlas.registerIconForBufferedImage(identifier + "custom", mobImage);
+        // this.textureAtlas.registerMaskedIcon(spriteName, sprite);
+        // } else {
+        // this.textureAtlas.registerFailedIcon(identifier + "custom");
+        // if (EnumMobs.values()[t].expectedWidth > 0.5) {
+        // mobImage = this.createImageFromTypeAndResourceLocations(EnumMobs.values()[t], EnumMobs.values()[t].resourceLocation, EnumMobs.values()[t].secondaryResourceLocation, null);
+        // if (mobImage != null) {
+        // float scale = mobImage.getWidth() / EnumMobs.values()[t].expectedWidth;
+        // mobImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(mobImage, 4.0F / scale)), this.options.outlines, 2);
+        // this.textureAtlas.registerIconForBufferedImage(spriteName, mobImage);
+        // }
+        // }
+        // }
+        // }
+        //
+        // /*
+        // * BufferedImage[] armorImages = { ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1.png"), 40, 8, 8, 8),
+        // * ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 8, 8, 8, 8), ImageUtils.loadImage(ResourceLocation.parse("textures/models/armor/leather_layer_1_overlay.png"), 40, 8, 8, 8) };
+        // *
+        // * for (int t = 0; t < armorImages.length; ++t) {
+        // * float scale = armorImages[t].getWidth() / 8.0F;
+        // * armorImages[t] = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(armorImages[t], 4.0F / scale * 47.0F / 38.0F)), this.options.outlines && t != 2 && t != 3, true, 37.6F, 37.6F, 2);
+        // * Sprite icon = this.textureAtlas.registerIconForBufferedImage("armor " + this.armorNames[t], armorImages[t]);
+        // * if (t == 0) {
+        // * this.clothIcon = icon;
+        // * }
+        // * }
+        // */ // FIXME 1.21.2
+        //
+        // BufferedImage zombie = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 8, 8, 8, 8, 64, 64);
+        // float scale = zombie.getWidth() / 8.0F;
+        // zombie = ImageUtils.scaleImage(zombie, 4.0F / scale * 47.0F / 38.0F);
+        // BufferedImage zombieHat = ImageUtils.loadImage(EnumMobs.ZOMBIE.resourceLocation, 40, 8, 8, 8, 64, 64);
+        // zombieHat = ImageUtils.scaleImage(zombieHat, 4.0F / scale * 47.0F / 35.0F);
+        // zombie = ImageUtils.addImages(ImageUtils.addImages(new BufferedImage(zombieHat.getWidth(), zombieHat.getHeight() + 8, 6), zombie, (zombieHat.getWidth() - zombie.getWidth()) / 2.0F, (zombieHat.getHeight() - zombie.getHeight()) / 2.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8),
+        // zombieHat, 0.0F, 0.0F, zombieHat.getWidth(), zombieHat.getHeight() + 8);
+        // zombieHat.flush();
+        // zombie = ImageUtils.fillOutline(ImageUtils.pad(zombie), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ZOMBIE.id + EnumMobs.ZOMBIE.resourceLocation.toString() + "head", zombie);
+        // BufferedImage skeleton = ImageUtils.loadImage(EnumMobs.SKELETON.resourceLocation, 8, 8, 8, 8, 64, 32);
+        // scale = skeleton.getWidth() / 8.0F;
+        // skeleton = ImageUtils.scaleImage(skeleton, 4.0F / scale * 47.0F / 38.0F);
+        // skeleton = ImageUtils.addImages(new BufferedImage(skeleton.getWidth(), skeleton.getHeight() + 8, 6), skeleton, 0.0F, 0.0F, skeleton.getWidth(), skeleton.getHeight() + 8);
+        // skeleton = ImageUtils.fillOutline(ImageUtils.pad(skeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETON.id + EnumMobs.SKELETON.resourceLocation.toString() + "head", skeleton);
+        // BufferedImage witherSkeleton = ImageUtils.loadImage(EnumMobs.SKELETONWITHER.resourceLocation, 8, 8, 8, 8, 64, 32);
+        // scale = witherSkeleton.getWidth() / 8.0F;
+        // witherSkeleton = ImageUtils.scaleImage(witherSkeleton, 4.0F / scale * 47.0F / 38.0F);
+        // witherSkeleton = ImageUtils.addImages(new BufferedImage(witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8, 6), witherSkeleton, 0.0F, 0.0F, witherSkeleton.getWidth(), witherSkeleton.getHeight() + 8);
+        // witherSkeleton = ImageUtils.fillOutline(ImageUtils.pad(witherSkeleton), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.SKELETONWITHER.id + EnumMobs.SKELETONWITHER.resourceLocation.toString() + "head", witherSkeleton);
+        // BufferedImage creeper = ImageUtils.addImages(ImageUtils.blankImage(EnumMobs.CREEPER.resourceLocation, 8, 10), ImageUtils.loadImage(EnumMobs.CREEPER.resourceLocation, 8, 8, 8, 8), 0.0F, 0.0F, 8, 10);
+        // scale = creeper.getWidth() / EnumMobs.CREEPER.expectedWidth;
+        // creeper = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(creeper, 4.0F / scale * 47.0F / 38.0F)), this.options.outlines, true, 37.6F, 37.6F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.CREEPER.id + EnumMobs.CREEPER.resourceLocation.toString() + "head", creeper);
+        // BufferedImage dragon = this.createImageFromTypeAndResourceLocations(EnumMobs.ENDERDRAGON, EnumMobs.ENDERDRAGON.resourceLocation, null, null);
+        // scale = dragon.getWidth() / EnumMobs.ENDERDRAGON.expectedWidth;
+        // dragon = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(dragon, 4.0F / scale)), this.options.outlines, true, 32.0F, 32.0F, 2);
+        // this.textureAtlas.registerIconForBufferedImage("minecraft." + EnumMobs.ENDERDRAGON.id + EnumMobs.ENDERDRAGON.resourceLocation.toString() + "head", dragon);
+        // // FIXME 1.21.5 Radar: sheep fur
+        // // BufferedImage sheepFur = ImageUtils.loadImage(ResourceLocation.parse("textures/entity/sheep/sheep_fur.png"), 6, 6, 6, 6);
+        // // scale = sheepFur.getWidth() / 6.0F;
+        // // sheepFur = ImageUtils.scaleImage(sheepFur, 4.0F / scale * 1.0625F);
+        // // int chop = (int) Math.max(1.0F, 2.0F);
+        // // ImageUtils.eraseArea(sheepFur, chop, chop, sheepFur.getWidth() - chop * 2, sheepFur.getHeight() - chop * 2, sheepFur.getWidth(), sheepFur.getHeight());
+        // // sheepFur = ImageUtils.fillOutline(ImageUtils.pad(sheepFur), this.options.outlines, true, 27.5F, 27.5F, (int) Math.max(1.0F, 2.0F));
+        // // this.textureAtlas.registerIconForBufferedImage("sheepfur", sheepFur);
+        // ResourceLocation fontResourceLocation = ResourceLocation.parse("textures/font/ascii.png");
+        // BufferedImage fontImage = ImageUtils.loadImage(fontResourceLocation, 0, 0, 128, 128, 128, 128);
+        // if (fontImage.getWidth() > 512 || fontImage.getHeight() > 512) {
+        // int maxDim = Math.max(fontImage.getWidth(), fontImage.getHeight());
+        // float scaleBy = 512.0F / maxDim;
+        // fontImage = ImageUtils.scaleImage(fontImage, scaleBy);
+        // }
+        //
+        // this.textureAtlas.stitch();
+        this.completedLoading = true;
+        // } catch (Exception var30) {
+        // VoxelConstants.getLogger().error("Failed getting mobs" + var30.getLocalizedMessage(), var30);
+        // }
 
     }
 
@@ -576,7 +581,7 @@ public class Radar implements IRadar {
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
                     double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
-                    if (hypot < 961.0) {
+                    if (hypot < 31 * 31) {
                         if (this.hasCustomNPCs) {
                             try {
                                 if (this.entityCustomNpcClass.isInstance(entity)) {
@@ -591,13 +596,9 @@ public class Radar implements IRadar {
                         }
 
                         Contact contact = new Contact((LivingEntity) entity, EnumMobs.getMobTypeByEntity(entity));
-                        String unscrubbedName = TextUtils.asFormattedString(contact.entity.getDisplayName());
-                        contact.setName(unscrubbedName);
                         if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
                             contact.yFudge = 1;
                         }
-
-                        contact.updateLocation();
                         boolean enabled = false;
                         if (!contact.vanillaType) {
                             String type = entity.getType().getDescriptionId();
@@ -616,6 +617,10 @@ public class Radar implements IRadar {
 
                             if (contact.icon == null) {
                                 this.tryCustomIcon(contact);
+                            }
+
+                            if (contact.icon == null) {
+                                contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, true);
                             }
 
                             if (contact.icon == null) {
@@ -1446,45 +1451,39 @@ public class Radar implements IRadar {
         GameProfile gameProfile = player.getGameProfile();
         UUID uuid = gameProfile.getId();
         contact.setUUID(uuid);
-        String playerName = this.scrubCodes(gameProfile.getName());
+        String playerName = "player." + this.scrubCodes(gameProfile.getName());
         Sprite icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched(playerName);
-        Integer checkCount;
         if (icon == this.textureAtlas.getMissingImage()) {
-            checkCount = this.mpContactsSkinGetTries.get(playerName);
-            if (checkCount == null) {
-                checkCount = 0;
+            ResourceLocation skinLocation = player.getSkin().texture();
+            AbstractTexture skinTexture = minecraft.getTextureManager().getTexture(skinLocation);
+            BufferedImage skinImage = null;
+            if (skinTexture instanceof DynamicTexture dynamicTexture) {
+                skinImage = ImageUtils.bufferedImageFromNativeImage(dynamicTexture.getPixels());
+            } else { // should be ReloadableImage
+                skinImage = ImageUtils.createBufferedImageFromResourceLocation(skinLocation);
             }
 
-            if (checkCount < 5) {
-                AbstractTexture imageData; // TODO 1.21.4
-
-                try {
-                    ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(player.getGameProfile()).texture();
-                    if (skinIdentifier == DefaultPlayerSkin.get(player.getUUID()).texture()) {
-                        throw new Exception("failed to get skin: skin is default");
-                    }
-
-                    imageData = VoxelConstants.getMinecraft().getTextureManager().getTexture(skinIdentifier);
-                    if (imageData == null) {
-                        throw new Exception("failed to get skin: image data was null");
-                    }
-                    EntityRenderer<LivingEntity, LivingEntityRenderState> render = (EntityRenderer<LivingEntity, LivingEntityRenderState>) VoxelConstants.getMinecraft().getEntityRenderDispatcher().getRenderer(contact.entity);
-                    BufferedImage skinImage = this.createAutoIconImageFromResourceLocations(contact, render, skinIdentifier, null);
-                    icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
-                    this.newMobs = true;
-                    this.mpContactsSkinGetTries.remove(playerName);
-                } catch (Exception var11) {
-                    icon = this.textureAtlas.getAtlasSpriteIncludingYetToBeStitched("minecraft." + EnumMobs.PLAYER.id + EnumMobs.PLAYER.resourceLocation.toString());
-                    checkCount = checkCount + 1;
-                    this.mpContactsSkinGetTries.put(playerName, checkCount);
+            if (skinImage == null) {
+                if (VoxelConstants.DEBUG) {
+                    VoxelConstants.getLogger().info("Got no player skin! -> " + skinLocation + " -- " + skinTexture.getClass());
                 }
-
-                contact.icon = icon;
+                return;
             }
-        } else {
-            contact.icon = icon;
-        }
 
+            boolean showHat = VoxelConstants.getPlayer().isModelPartShown(PlayerModelPart.HAT);
+            if (showHat) {
+                skinImage = ImageUtils.addImages(ImageUtils.loadImage(skinImage, 8, 8, 8, 8), ImageUtils.loadImage(skinImage, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
+            } else {
+                skinImage = ImageUtils.loadImage(skinImage, 8, 8, 8, 8);
+            }
+
+            float scale = skinImage.getWidth() / 8.0F;
+            skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
+
+            icon = this.textureAtlas.registerIconForBufferedImage(playerName, skinImage);
+            this.newMobs = true;
+        }
+        contact.icon = icon;
     }
 
     private void getArmor(Contact contact, Entity entity) {
@@ -1893,12 +1892,11 @@ public class Radar implements IRadar {
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
                         guiGraphics.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
 
-                        String name = contact.entity.getDisplayName().getString();
-                        int m = VoxelConstants.getMinecraft().font.width(name) / 2;
+                        int m = VoxelConstants.getMinecraft().font.width(contact.name) / 2;
 
                         guiGraphics.pose().pushPose();
                         guiGraphics.pose().translate(0, 0, 900);
-                        guiGraphics.drawString(VoxelConstants.getMinecraft().font, name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
+                        guiGraphics.drawString(VoxelConstants.getMinecraft().font, contact.name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
                         guiGraphics.pose().popPose();
                     }
                 } catch (Exception e) {
@@ -1912,28 +1910,25 @@ public class Radar implements IRadar {
     }
 
     private boolean isHostile(Entity entity) {
-        if (entity instanceof ZombifiedPiglin zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.getPersistentAngerTarget() != null && zombifiedPiglinEntity.getPersistentAngerTarget().equals(VoxelConstants.getPlayer().getUUID());
-        } else if (entity instanceof Enemy) {
+        if (entity instanceof Enemy) {
             return true;
+        } else if (entity instanceof ZombifiedPiglin zombifiedPiglinEntity) {
+            return zombifiedPiglinEntity.getPersistentAngerTarget() != null && zombifiedPiglinEntity.getPersistentAngerTarget().equals(VoxelConstants.getPlayer().getUUID());
         } else if (entity instanceof Bee beeEntity) {
             return beeEntity.isAngry();
-        } else {
-            if (entity instanceof PolarBear polarBearEntity) {
-                for (PolarBear object : polarBearEntity.level().getEntitiesOfClass(PolarBear.class, polarBearEntity.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
-                    if (object.isBaby()) {
-                        return true;
-                    }
+        } else if (entity instanceof PolarBear polarBearEntity) {
+            for (PolarBear object : polarBearEntity.level().getEntitiesOfClass(PolarBear.class, polarBearEntity.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
+                if (object.isBaby()) {
+                    return true;
                 }
             }
-
-            if (entity instanceof Rabbit rabbitEntity) {
-                return rabbitEntity.getVariant() == Rabbit.Variant.EVIL;
-            } else if (entity instanceof Wolf wolfEntity) {
-                return wolfEntity.isAngry();
-            } else {
-                return false;
-            }
+            return false;
+        } else if (entity instanceof Rabbit rabbitEntity) {
+            return rabbitEntity.getVariant() == Rabbit.Variant.EVIL;
+        } else if (entity instanceof Wolf wolfEntity) {
+            return wolfEntity.isAngry();
+        } else {
+            return false;
         }
     }
 
@@ -1950,4 +1945,8 @@ public class Radar implements IRadar {
     }
 
     private record ModelPartWithResourceLocation(ModelPart modelPart, ResourceLocation resourceLocation) {}
+
+    public void onJoinServer() {
+        entityMapImageManager.reset();
+    }
 }

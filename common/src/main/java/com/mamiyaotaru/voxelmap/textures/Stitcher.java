@@ -213,11 +213,7 @@ public class Stitcher {
             int var2;
             if (this.getHeight() == o.getHeight()) {
                 if (this.getWidth() == o.getWidth()) {
-                    if (this.icon.getIconName() == null) {
-                        return o.icon.getIconName() == null ? 0 : -1;
-                    }
-
-                    return String.CASE_INSENSITIVE_ORDER.compare(icon.getIconName(), o.icon.getIconName());
+                    return 0;
                 }
 
                 var2 = this.getWidth() < o.getWidth() ? 1 : -1;

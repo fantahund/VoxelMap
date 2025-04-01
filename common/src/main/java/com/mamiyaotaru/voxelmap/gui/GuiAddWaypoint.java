@@ -212,7 +212,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             Sprite icon = chooser.getIconAt((float) mouseX - chooserCenterX, (float) mouseY - chooserCenterY);
 
             if (icon != chooser.getMissingImage()){
-                this.waypoint.imageSuffix = icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
+                this.waypoint.imageSuffix = ((String) icon.getIconName()).replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
                 this.choosingIcon = false;
             }
         }
@@ -312,7 +312,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 drawContext.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypointChooser, chooserCenterX, chooserCenterY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight());
 
                 if (icon != chooser.getMissingImage()){
-                    iconLocation = icon.getIconName();
+                    iconLocation = ((String) icon.getIconName());
                     if (this.waypointIconMap.containsKey(iconLocation)) {
                         waypointIcon = this.waypointIconMap.get(iconLocation);
                     } else {
@@ -323,7 +323,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     int iconSnappedY = icon.getOriginY() + chooserCenterY;
                     drawContext.blit(RenderType::guiTextured, waypointIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40, color);
 
-                    String iconName = icon.getIconName().replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
+                    String iconName = ((String) icon.getIconName()).replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
                     if (iconName.length() > 1){
                         iconName = iconName.substring(0, 1).toUpperCase() + iconName.substring(1).toLowerCase();
                     }

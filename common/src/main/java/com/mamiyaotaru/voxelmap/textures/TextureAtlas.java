@@ -20,8 +20,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class TextureAtlas extends AbstractTexture {
-    private final HashMap<String, Sprite> mapRegisteredSprites;
-    private final HashMap<String, Sprite> mapUploadedSprites;
+    private final HashMap<Object, Sprite> mapRegisteredSprites;
+    private final HashMap<Object, Sprite> mapUploadedSprites;
     private final String basePath;
     private final IIconCreator iconCreator;
     private final Sprite missingImage;
@@ -72,6 +72,9 @@ public class TextureAtlas extends AbstractTexture {
         for (Sprite e : this.mapRegisteredSprites.values()) {
             e.setTextureData(null);
         }
+        for (Sprite e : this.mapUploadedSprites.values()) {
+            e.setTextureData(null);
+        }
         this.mapRegisteredSprites.clear();
         this.mapUploadedSprites.clear();
         this.initMissingImage();
@@ -86,25 +89,30 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void stitch() {
-        for (Map.Entry<String, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
+        for (Map.Entry<Object, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
             Sprite icon = entry.getValue();
-            this.stitcher.addSprite(icon);
+            if (icon.getTextureData() != null) {
+                this.stitcher.addSprite(icon);
+            }
         }
 
         this.stitcher.doStitch();
 
-        VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
+        VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[] { this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath });
 
         texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
         super.setFilter(linearFilter, mipmap);
-        HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
+        HashMap<Object, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
         for (Sprite icon : this.stitcher.getStitchSlots()) {
-            String iconName = icon.getIconName();
+            Object iconName = icon.getIconName();
             tempMapRegisteredSprites.remove(iconName);
             this.mapUploadedSprites.put(iconName, icon);
+            this.mapRegisteredSprites.remove(iconName);
 
             try {
-                RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                if (icon.getTextureData() != null) {
+                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                }
             } catch (Throwable var10) {
                 CrashReport crashReport = CrashReport.forThrowable(var10, "Stitching texture atlas");
                 CrashReportCategory crashReportCategory = crashReport.addCategory("Texture being stitched together");
@@ -115,21 +123,25 @@ public class TextureAtlas extends AbstractTexture {
         }
 
         for (Sprite icon : tempMapRegisteredSprites.values()) {
-            icon.copyFrom(this.missingImage);
+            if (icon.getTextureData() != null) {
+                icon.copyFrom(this.missingImage);
+                this.mapRegisteredSprites.remove(icon.getIconName());
+            }
         }
 
-        this.mapRegisteredSprites.clear();
         this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         if (VoxelConstants.DEBUG) {
-            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+            saveDebugImage();
         }
     }
 
     public void stitchNew() {
-        for (Map.Entry<String, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
+        for (Map.Entry<Object, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
             Sprite icon = entry.getValue();
-            this.stitcher.addSprite(icon);
+            if (icon.getTextureData() != null) {
+                this.stitcher.addSprite(icon);
+            }
         }
 
         int oldWidth = this.stitcher.getCurrentImageWidth();
@@ -142,19 +154,22 @@ public class TextureAtlas extends AbstractTexture {
                 texture.close();
                 texture = null;
             }
-            VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[]{this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath});
+            VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[] { this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath });
             texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1);
             super.setFilter(linearFilter, mipmap);
         }
 
-        HashMap<String, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
+        HashMap<Object, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
         for (Sprite icon : this.stitcher.getStitchSlots()) {
-            String iconName = icon.getIconName();
+            Object iconName = icon.getIconName();
             tempMapRegisteredSprites.remove(iconName);
             this.mapUploadedSprites.put(iconName, icon);
+            this.mapRegisteredSprites.remove(iconName);
 
             try {
-                RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                if (icon.getTextureData() != null) {
+                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                }
             } catch (Throwable var11) {
                 CrashReport crashReport = CrashReport.forThrowable(var11, "Stitching texture atlas");
                 CrashReportCategory crashReportCategory = crashReport.addCategory("Texture being stitched together");
@@ -165,24 +180,31 @@ public class TextureAtlas extends AbstractTexture {
         }
 
         for (Sprite icon : tempMapRegisteredSprites.values()) {
-            icon.copyFrom(this.missingImage);
+            if (icon.getTextureData() != null) {
+                icon.copyFrom(this.missingImage);
+                this.mapRegisteredSprites.remove(icon.getIconName());
+            }
         }
 
-        this.mapRegisteredSprites.clear();
         this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
         if (VoxelConstants.DEBUG) {
             if (oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
-                ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+                saveDebugImage();
             }
         }
     }
 
-    public Sprite getIconAt(float x, float y) {
-        return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Map.Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= icon.originX && x < (icon.originX + icon.width) && y >= icon.originY && y < (icon.originY + icon.height)).findFirst().orElse(this.missingImage);
+    public void saveDebugImage() {
+        ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
     }
 
-    public Sprite getAtlasSprite(String name) {
+    public Sprite getIconAt(float x, float y) {
+        return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Map.Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= icon.originX && x < (icon.originX + icon.width) && y >= icon.originY && y < (icon.originY + icon.height)).findFirst()
+                .orElse(this.missingImage);
+    }
+
+    public Sprite getAtlasSprite(Object name) {
         Sprite icon = this.mapUploadedSprites.get(name);
         if (icon == null) {
             icon = this.missingImage;
@@ -191,7 +213,7 @@ public class TextureAtlas extends AbstractTexture {
         return icon;
     }
 
-    public Sprite getAtlasSpriteIncludingYetToBeStitched(String name) {
+    public Sprite getAtlasSpriteIncludingYetToBeStitched(Object name) {
         Sprite icon = this.mapUploadedSprites.get(name);
         if (icon == null) {
             icon = this.mapRegisteredSprites.get(name);
@@ -228,13 +250,13 @@ public class TextureAtlas extends AbstractTexture {
         }
     }
 
-    public Sprite registerIconForBufferedImage(String name, BufferedImage bufferedImage) {
+    public Sprite registerIconForBufferedImage(Object name, BufferedImage bufferedImage) {
         NativeImage img = ImageUtils.nativeImageFromBufferedImage(bufferedImage);
         return registerIconForBufferedImage(name, img);
     }
 
-    public Sprite registerIconForBufferedImage(String name, NativeImage bufferedImage) {
-        if (name != null && !name.isEmpty()) {
+    public Sprite registerIconForBufferedImage(Object name, NativeImage bufferedImage) {
+        if (name != null) {
             Sprite icon = this.mapRegisteredSprites.get(name);
             if (icon == null) {
                 icon = Sprite.spriteFromString(name, this);
@@ -263,6 +285,15 @@ public class TextureAtlas extends AbstractTexture {
         }
     }
 
+    public Sprite registerEmptyIcon(Object name) {
+        Sprite icon = this.mapRegisteredSprites.get(name);
+        if (icon == null) {
+            icon = Sprite.spriteFromString(name, this);
+            this.mapRegisteredSprites.put(name, icon);
+        }
+        return icon;
+    }
+
     public Sprite getMissingImage() {
         return this.missingImage;
     }
@@ -275,7 +306,7 @@ public class TextureAtlas extends AbstractTexture {
         this.mapUploadedSprites.put(name, this.failedImage);
     }
 
-    public void registerMaskedIcon(String name, Sprite originalIcon) {
+    public void registerMaskedIcon(Object name, Sprite originalIcon) {
         Sprite existingIcon = this.mapUploadedSprites.get(name);
         if (existingIcon == null) {
             existingIcon = this.mapRegisteredSprites.get(name);

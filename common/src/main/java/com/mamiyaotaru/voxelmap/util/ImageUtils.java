@@ -19,6 +19,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
@@ -53,17 +56,22 @@ public class ImageUtils {
 
     public static BufferedImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
-            BufferedImage image = ImageIO.read(is);
-            is.close();
-            if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
-                BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
-                Graphics2D g2 = temp.createGraphics();
-                g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
-                g2.dispose();
-                image = temp;
+            AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(resourceLocation);
+            BufferedImage image = null;
+            if (texture instanceof DynamicTexture dynamicTexture) {
+                image = bufferedImageFromNativeImage(dynamicTexture.getPixels());
+            } else if (texture instanceof ReloadableTexture) {
+                InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
+                image = ImageIO.read(is);
+                is.close();
+                if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
+                    BufferedImage temp = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+                    Graphics2D g2 = temp.createGraphics();
+                    g2.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+                    g2.dispose();
+                    image = temp;
+                }
             }
-
             return image;
         } catch (Exception var5) {
             return null;
@@ -80,7 +88,7 @@ public class ImageUtils {
             MemoryUtil.memByteBuffer(nativeImage.getPointer(), is.length).put(is);
             return nativeImage;
         }
-        VoxelConstants.getLogger().warn("Unoptimized image format: " + image.getType());
+        VoxelConstants.getLogger().warn("ImageUtils.nativeImageFromBufferedImage: Unoptimized image format: " + image.getType(), new Exception());
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int argb = image.getRGB(x, y);
@@ -238,8 +246,8 @@ public class ImageUtils {
             return image;
         } else {
             int type = image.getType();
-            if (type == 13) {
-                type = 6;
+            if (type == BufferedImage.TYPE_BYTE_INDEXED) {
+                type = BufferedImage.TYPE_4BYTE_ABGR;
             }
 
             int newWidth = Math.max(1, (int) (image.getWidth() * scaleBy));
@@ -257,8 +265,8 @@ public class ImageUtils {
             return image;
         } else {
             int type = image.getType();
-            if (type == 13) {
-                type = 6;
+            if (type == BufferedImage.TYPE_BYTE_INDEXED) {
+                type = BufferedImage.TYPE_4BYTE_ABGR;
             }
 
             int newWidth = Math.max(1, (int) (image.getWidth() * xScaleBy));

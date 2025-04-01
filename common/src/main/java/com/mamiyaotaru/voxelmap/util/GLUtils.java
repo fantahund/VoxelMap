@@ -204,4 +204,13 @@ public class GLUtils {
             WAYPOINT_TEXT_BACKGROUND_PIPELINE,
             RenderType.CompositeState.builder()
                     .createCompositeState(false));
+
+    public static final RenderPipeline ENTITY_ICON = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+            .withLocation("pipeline/entity_solid")
+            .withSampler("Sampler1")
+            .withShaderDefine("EMISSIVE")
+            .withShaderDefine("NO_OVERLAY")
+            .withShaderDefine("NO_CARDINAL_LIGHTING")
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .build();
 }
