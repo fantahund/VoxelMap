@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 public class Contact {
     public double x;
     public double z;
-    public int y;
+    public double y;
     public int yFudge;
     public float angle;
     public double distance;
@@ -53,7 +53,7 @@ public class Contact {
 
     public void updateLocation() {
         this.x = this.entity.xo + (this.entity.getX() - this.entity.xo) * VoxelConstants.getMinecraft().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        this.y = (int) this.entity.getY() + this.yFudge;
+        this.y = this.entity.getY() + this.yFudge;
         this.z = this.entity.zo + (this.entity.getZ() - this.entity.zo) * VoxelConstants.getMinecraft().getDeltaTracker().getGameTimeDeltaPartialTick(false);
     }
 }

@@ -123,7 +123,7 @@ public class RadarSimple implements IRadar {
             }
         }
 
-        this.contacts.sort(Comparator.comparingInt(contact -> contact.y));
+        this.contacts.sort(Comparator.comparingDouble(contact -> contact.y));
     }
 
     private EnumMobs getUnknownMobNeutrality(Entity entity) {
@@ -180,10 +180,10 @@ public class RadarSimple implements IRadar {
             contact.updateLocation();
             double contactX = contact.x;
             double contactZ = contact.z;
-            int contactY = contact.y;
+            double contactY = contact.y;
             double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
             double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
-            int wayY = GameVariableAccessShim.yCoord() - contactY;
+            double wayY = GameVariableAccessShim.yCoord() - contactY;
             double adjustedDiff = max - Math.abs(wayY);
             contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
             contact.brightness *= contact.brightness;
