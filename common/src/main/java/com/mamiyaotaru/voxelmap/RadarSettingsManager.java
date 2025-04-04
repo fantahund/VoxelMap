@@ -2,16 +2,19 @@ package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
-import com.mamiyaotaru.voxelmap.util.CustomMob;
-import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
-import com.mamiyaotaru.voxelmap.util.EnumMobs;
+import com.mojang.serialization.DataResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Objects;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 
 public class RadarSettingsManager implements ISubSettingsManager {
     private boolean somethingChanged;
@@ -30,6 +33,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean radarAllowed = true;
     public boolean radarPlayersAllowed = true;
     public boolean radarMobsAllowed = true;
+    public final HashSet<ResourceLocation> hiddenMobs = new HashSet<>();
+
     float fontScale = 1.0F;
 
     @Override
@@ -39,7 +44,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
 
             String sCurrentLine;
             while ((sCurrentLine = in.readLine()) != null) {
-                String[] curLine = sCurrentLine.split(":");
+                String[] curLine = sCurrentLine.split(":", 2);
                 switch (curLine[0]) {
                     case "Radar Mode" -> this.radarMode = Math.max(1, Math.min(2, Integer.parseInt(curLine[1])));
                     case "Show Radar" -> this.showRadar = Boolean.parseBoolean(curLine[1]);
@@ -59,28 +64,21 @@ public class RadarSettingsManager implements ISubSettingsManager {
             }
 
             in.close();
-        } catch (IOException | ArrayIndexOutOfBoundsException ignored) {}
+        } catch (IOException | ArrayIndexOutOfBoundsException ignored) {
+        }
 
     }
 
     private void applyHiddenMobSettings(String hiddenMobs) {
         String[] mobsToHide = hiddenMobs.split(",");
 
+        this.hiddenMobs.clear();
         for (String s : mobsToHide) {
-            boolean builtIn = false;
-
-            for (EnumMobs mob : EnumMobs.values()) {
-                if (mob.id.equals(s)) {
-                    mob.enabled = false;
-                    builtIn = true;
-                }
-            }
-
-            if (!builtIn) {
-                CustomMobsManager.add(s, false);
+            DataResult<ResourceLocation> location = ResourceLocation.read(s);
+            if (location.isSuccess()) {
+                this.hiddenMobs.add(location.getOrThrow());
             }
         }
-
     }
 
     @Override
@@ -99,19 +97,9 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Font Scale:" + this.fontScale);
         out.println("Show Facing:" + this.showFacing);
         out.print("Hidden Mobs:");
-
-        for (EnumMobs mob : EnumMobs.values()) {
-            if (mob.isTopLevelUnit && !mob.enabled) {
-                out.print(mob.id + ",");
-            }
+        for (ResourceLocation mob : hiddenMobs) {
+            out.print(mob.toString() + ",");
         }
-
-        for (CustomMob mob : CustomMobsManager.mobs) {
-            if (!mob.enabled) {
-                out.print(mob.id + ",");
-            }
-        }
-
         out.println();
     }
 
@@ -180,8 +168,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     this.radarMode = 2;
                 }
             }
-            default ->
-                    throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
+            default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
         }
 
         this.somethingChanged = true;
@@ -199,5 +186,13 @@ public class RadarSettingsManager implements ISubSettingsManager {
     @Override
     public float getOptionFloatValue(EnumOptionsMinimap options) {
         return 0.0F;
+    }
+
+    public boolean isMobEnabled(LivingEntity entity) {
+        return isMobEnabled(entity.getType());
+    }
+
+    public boolean isMobEnabled(EntityType<?> type) {
+        return !hiddenMobs.contains(BuiltInRegistries.ENTITY_TYPE.getKey(type));
     }
 }

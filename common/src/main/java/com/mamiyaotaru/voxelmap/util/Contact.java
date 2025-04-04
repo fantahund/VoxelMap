@@ -15,9 +15,7 @@ public class Contact {
     public float angle;
     public double distance;
     public float brightness;
-    public EnumMobs type;
-    public final boolean vanillaType;
-    public boolean custom;
+    public MobCategory category;
     public UUID uuid;
     public Component name;
     public int rotationFactor;
@@ -26,11 +24,10 @@ public class Contact {
     public Sprite armorIcon;
     public int armorColor = -1;
 
-    public Contact(LivingEntity entity, EnumMobs type) {
+    public Contact(LivingEntity entity, MobCategory category) {
         this.entity = entity;
-        this.type = type;
+        this.category = category;
         this.uuid = entity.getUUID();
-        this.vanillaType = type != EnumMobs.GENERICNEUTRAL && type != EnumMobs.GENERICHOSTILE && type != EnumMobs.GENERICTAME && type != EnumMobs.UNKNOWN;
         this.name = entity.hasCustomName() || entity instanceof Player ? entity.getName() : null;
         updateLocation();
     }

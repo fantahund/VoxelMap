@@ -100,16 +100,19 @@ public class EntityMapImageManager {
     }
 
     public void reset() {
-        VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
+        if (VoxelConstants.DEBUG) {
+            VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
+        }
         variantDataFactories.clear();
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png")));
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, ResourceLocation.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, ResourceLocation.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
-
-        BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
-            requestImageForMobType(t, 32, true);
-        });
+        if (VoxelConstants.DEBUG) {
+            BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
+                requestImageForMobType(t, 32, true);
+            });
+        }
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {
@@ -124,7 +127,6 @@ public class EntityMapImageManager {
         if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity le) {
             return requestImageForMob(le, size, addBorder);
         }
-        VoxelConstants.getLogger().info("EntityMapImageManager: No living entity: " + type.getDescriptionId());
         return null;
     }
 
@@ -170,18 +172,18 @@ public class EntityMapImageManager {
             // VoxelConstants.getLogger().info("EntityMapImageManager: Existing type " + entity.getType().getDescriptionId());
             return existing;
         }
-        VoxelConstants.getLogger().info("EntityMapImageManager: Rendering Mob of type " + entity.getType().getDescriptionId());
+        if (VoxelConstants.DEBUG) {
+            VoxelConstants.getLogger().info("EntityMapImageManager: Rendering Mob of type " + entity.getType().getDescriptionId());
+        }
 
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
         if (entity instanceof AbstractClientPlayer player) {
-            VoxelConstants.getLogger().info("  -> " + variant.getPrimaryTexture());
             BufferedImage playerImage = getPlayerIcon(player, size, addBorder);
             postProcessRenderedMobImage(entity, sprite, null, playerImage);
             return sprite;
         }
 
         ResourceLocation resourceLocation = variant.getPrimaryTexture();
-        VoxelConstants.getLogger().info("  -> " + resourceLocation);
         ResourceLocation resourceLocation2 = variant.getSecondaryTexture();
 
         // VoxelConstants.getLogger().info(" -> " + resourceLocation);
@@ -276,10 +278,8 @@ public class EntityMapImageManager {
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
 
         }
-        VoxelConstants.getLogger().info("EntityMapImageManager: Rendered mob for " + entity.getType().getDescriptionId());
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
-            VoxelConstants.getLogger().info("EntityMapImageManager: Buffered Image created for " + entity.getType().getDescriptionId());
             postProcessRenderedMobImage(entity, sprite, model, image2);
         });
 
@@ -313,18 +313,18 @@ public class EntityMapImageManager {
             }
             image = ImageUtils.fillOutline(ImageUtils.pad(image), true, 2);
 
-            VoxelConstants.getLogger().info("EntityMapImageManager: Buffered Image processed for " + entity.getType().getDescriptionId());
-
             BufferedImage image3 = image;
             taskQueue.add(() -> {
                 fulfilledImageCreationRequests++;
 
                 sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image3));
-                VoxelConstants.getLogger().info("EntityMapImageManager: Buffered Image (" + fulfilledImageCreationRequests + "/" + imageCreationRequests + ") added to texture atlas " + entity.getType().getDescriptionId() + " (" + image3.getWidth() + " * " + image3.getHeight() + ")");
+                if (VoxelConstants.DEBUG) {
+                    VoxelConstants.getLogger().info("EntityMapImageManager: Buffered Image (" + fulfilledImageCreationRequests + "/" + imageCreationRequests + ") added to texture atlas " + entity.getType().getDescriptionId() + " (" + image3.getWidth() + " * " + image3.getHeight() + ")");
+                }
                 if (fulfilledImageCreationRequests == imageCreationRequests) {
                     textureAtlas.stitchNew();
-                    VoxelConstants.getLogger().info("EntityMapImageManager: Stiching!");
                     if (VoxelConstants.DEBUG) {
+                        VoxelConstants.getLogger().info("EntityMapImageManager: Stiching!");
                         textureAtlas.saveDebugImage();
                     }
                 }

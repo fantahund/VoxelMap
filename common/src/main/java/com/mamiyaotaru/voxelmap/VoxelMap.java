@@ -293,4 +293,8 @@ public class VoxelMap implements PreparableReloadListener {
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
     }
+
+    public Radar getNotSimpleRadar() {
+        return radar;
+    }
 }

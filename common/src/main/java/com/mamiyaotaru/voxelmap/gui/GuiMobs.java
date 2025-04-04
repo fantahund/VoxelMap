@@ -2,16 +2,15 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.util.CustomMob;
-import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
-import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class GuiMobs extends GuiScreenMinimap {
     private final Screen parentScreen;
@@ -22,7 +21,7 @@ public class GuiMobs extends GuiScreenMinimap {
     private Button buttonDisable;
     protected EditBox filter;
     private Component tooltip;
-    protected String selectedMobId;
+    protected ResourceLocation selectedMobId;
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
         this.parentScreen = parentScreen;
@@ -68,63 +67,51 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.mobsList.mouseClicked(mouseX, mouseY, button);
+        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
+            this.mobsList.mouseClicked(mouseX, mouseY, button);
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        this.mobsList.mouseReleased(mouseX, mouseY, button);
+        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
+            this.mobsList.mouseReleased(mouseX, mouseY, button);
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return this.mobsList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
+            return this.mobsList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        return this.mobsList.mouseScrolled(mouseX, mouseY, 0, amount);
+        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
+            return this.mobsList.mouseScrolled(mouseX, mouseY, 0, amount);
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
     }
 
-    protected void setSelectedMob(String id) {
+    protected void setSelectedMob(ResourceLocation id) {
         this.selectedMobId = id;
     }
 
-    private boolean isMobEnabled(String mobId) {
-        EnumMobs mob = EnumMobs.getMobByName(mobId);
-        if (mob != null) {
-            return mob.enabled;
-        } else {
-            CustomMob customMob = CustomMobsManager.getCustomMobByType(mobId);
-            return customMob != null && customMob.enabled;
-        }
+    private boolean isMobEnabled(ResourceLocation mobId) {
+        return !VoxelMap.radarOptions.hiddenMobs.contains(mobId);
     }
 
-    private void setMobEnabled(String mobId, boolean enabled) {
-        for (EnumMobs mob : EnumMobs.values()) {
-            if (mob.id.equals(mobId)) {
-                mob.enabled = enabled;
-            }
+    private void setMobEnabled(ResourceLocation mobId, boolean enabled) {
+        if (enabled) {
+            VoxelMap.radarOptions.hiddenMobs.remove(mobId);
+        } else {
+            VoxelMap.radarOptions.hiddenMobs.add(mobId);
         }
-
-        for (CustomMob mob : CustomMobsManager.mobs) {
-            if (mob.id.equals(mobId)) {
-                mob.enabled = enabled;
-            }
-        }
-
     }
 
     protected void toggleMobVisibility() {
-        EnumMobs mob = EnumMobs.getMobByName(this.selectedMobId);
-        if (mob != null) {
-            this.setMobEnabled(this.selectedMobId, !mob.enabled);
-        } else {
-            CustomMob customMob = CustomMobsManager.getCustomMobByType(this.selectedMobId);
-            if (customMob != null) {
-                this.setMobEnabled(this.selectedMobId, !customMob.enabled);
-            }
-        }
-
+        setMobEnabled(selectedMobId, !isMobEnabled(selectedMobId));
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {

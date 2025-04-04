@@ -2,21 +2,23 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.EnumMobs;
-import com.mamiyaotaru.voxelmap.util.CustomMob;
-import com.mamiyaotaru.voxelmap.util.CustomMobsManager;
-import com.mamiyaotaru.voxelmap.util.TextUtils;
-
+import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mamiyaotaru.voxelmap.util.MobCategory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 
 class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
@@ -36,42 +38,21 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         RadarSettingsManager options = this.parentGui.options;
         this.mobs = new ArrayList<>();
 
-        for (EnumMobs mob : EnumMobs.values()) {
-            if (mob.isTopLevelUnit && (mob.isHostile && options.showHostiles || mob.isNeutral && options.showNeutrals)) {
-                this.mobs.add(new MobItem(this.parentGui, mob.id));
+        BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
+            if (entry.getValue().create(Minecraft.getInstance().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
+                this.mobs.add(new MobItem(this.parentGui, entry.getValue(), entry.getKey().location()));
             }
-        }
-
-        for (CustomMob mob : CustomMobsManager.mobs) {
-            if (mob.isHostile && options.showHostiles || mob.isNeutral && options.showNeutrals) {
-                this.mobs.add(new MobItem(this.parentGui, mob.id));
-            }
-        }
+        });
 
         this.mobs.sort((mob1, mob2) -> {
-            EnumMobs em1 = EnumMobs.getMobByName(mob1.id);
-            EnumMobs em2 = EnumMobs.getMobByName(mob2.id);
-            if (em1.isHostile != em2.isHostile) {
-                return Boolean.compare(em1.isHostile, em2.isHostile);
-            } else if (em1.isNeutral != em2.isNeutral) {
-                return Boolean.compare(em1.isNeutral, em2.isNeutral);
+            int dcat = mob1.category.compareTo(mob2.category);
+            if (dcat != 0) {
+                return dcat;
             }
-            return String.CASE_INSENSITIVE_ORDER.compare(mob1.name, mob2.name);
+            return String.CASE_INSENSITIVE_ORDER.compare(mob1.nameString, mob2.nameString);
         });
         this.mobsFiltered = new ArrayList<>(this.mobs);
         this.mobsFiltered.forEach(x -> addEntry((MobItem) x));
-    }
-
-    private static String getTranslatedName(String name) {
-        if (!name.contains(".")) {
-            name = "entity.minecraft." + name.toLowerCase();
-        }
-
-        name = I18n.get(name);
-        name = name.replaceAll("^entity.minecraft.", "");
-        name = name.replace("_", " ");
-        name = name.substring(0, 1).toUpperCase() + name.substring(1);
-        return TextUtils.scrubCodes(name);
     }
 
     public void setSelected(MobItem entry) {
@@ -95,7 +76,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         Iterator<?> iterator = this.mobsFiltered.iterator();
 
         while (iterator.hasNext()) {
-            String mobName = ((MobItem) iterator.next()).name;
+            String mobName = ((MobItem) iterator.next()).nameString;
             if (!mobName.toLowerCase().contains(filterString)) {
                 if (mobName.equals(this.parentGui.selectedMobId)) {
                     this.parentGui.setSelectedMob(null);
@@ -115,33 +96,26 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
     public class MobItem extends AbstractSelectionList.Entry<MobItem> {
         private final GuiMobs parentGui;
-        private final String id;
-        private final String name;
+        private final EntityType<?> type;
+        private final ResourceLocation id;
+        private final Component name;
+        private final String nameString;
+        private final MobCategory category;
 
-        protected MobItem(GuiMobs mobsScreen, String id) {
+        protected MobItem(GuiMobs mobsScreen, EntityType<?> type, ResourceLocation id) {
+            this.type = type;
             this.parentGui = mobsScreen;
             this.id = id;
-            this.name = GuiSlotMobs.getTranslatedName(id);
+            this.name = type.getDescription();
+            this.nameString = name.getString();
+            this.category = MobCategory.forEntityType(type);
         }
 
         @Override
         public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            boolean isHostile = false;
-            boolean isNeutral = false;
-            boolean isEnabled = true;
-            EnumMobs mob = EnumMobs.getMobByName(this.id);
-            if (mob != null) {
-                isHostile = mob.isHostile;
-                isNeutral = mob.isNeutral;
-                isEnabled = mob.enabled;
-            } else {
-                CustomMob customMob = CustomMobsManager.getCustomMobByType(this.id);
-                if (customMob != null) {
-                    isHostile = customMob.isHostile;
-                    isNeutral = customMob.isNeutral;
-                    isEnabled = customMob.enabled;
-                }
-            }
+            boolean isHostile = category == MobCategory.HOSTILE;
+            boolean isNeutral = !isHostile;
+            boolean isEnabled = VoxelMap.radarOptions.isMobEnabled(type);
 
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
@@ -158,7 +132,10 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
                 GuiMobs.setTooltip(this.parentGui, tooltip);
             }
-
+            Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type);
+            if (sprite != null) {
+                sprite.blit(drawContext, RenderType::guiTextured, x + 20, y - 2, 18, 18);
+            }
             drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
             drawContext.flush();
         }

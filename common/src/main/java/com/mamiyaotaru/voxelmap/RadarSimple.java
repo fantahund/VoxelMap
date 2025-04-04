@@ -3,11 +3,11 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.util.EnumMobs;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
+import com.mamiyaotaru.voxelmap.util.MobCategory;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
@@ -106,15 +107,15 @@ public class RadarSimple implements IRadar {
 
         for (Entity entity : VoxelConstants.getClientWorld().entitiesForRendering()) {
             try {
-                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity)
-                        || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity))) {
+                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && MobCategory.isHostile(entity)
+                        || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && MobCategory.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && MobCategory.isNeutral(entity))) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.position().x();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.position().z();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
                     double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
                     hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
                     if (hypot < 961.0) {
-                        Contact contact = new Contact((LivingEntity) entity, this.getUnknownMobNeutrality(entity));
+                        Contact contact = new Contact((LivingEntity) entity, MobCategory.forEntity(entity));
                         this.contacts.add(contact);
                     }
                 }
@@ -124,53 +125,6 @@ public class RadarSimple implements IRadar {
         }
 
         this.contacts.sort(Comparator.comparingDouble(contact -> contact.y));
-    }
-
-    private EnumMobs getUnknownMobNeutrality(Entity entity) {
-        if (this.isHostile(entity)) {
-            return EnumMobs.GENERICHOSTILE;
-        } else {
-            return !(entity instanceof TamableAnimal) || !((TamableAnimal) entity).isTame() || !VoxelConstants.getMinecraft().hasSingleplayerServer() && !((TamableAnimal) entity).getOwner().equals(VoxelConstants.getPlayer()) ? EnumMobs.GENERICNEUTRAL : EnumMobs.GENERICTAME;
-        }
-    }
-
-    private boolean isHostile(Entity entity) {
-        if (entity instanceof ZombifiedPiglin zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.getPersistentAngerTarget() != null && zombifiedPiglinEntity.getPersistentAngerTarget().equals(VoxelConstants.getPlayer().getUUID());
-        } else if (entity instanceof Enemy) {
-            return true;
-        } else if (entity instanceof Bee beeEntity) {
-            return beeEntity.isAngry();
-        } else {
-            if (entity instanceof PolarBear polarBearEntity) {
-
-                for (PolarBear object : polarBearEntity.level().getEntitiesOfClass(PolarBear.class, polarBearEntity.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
-                    if (object.isBaby()) {
-                        return true;
-                    }
-                }
-            }
-
-            if (entity instanceof Rabbit rabbitEntity) {
-                return rabbitEntity.getVariant() == Rabbit.Variant.EVIL;
-            } else if (entity instanceof Wolf wolfEntity) {
-                return wolfEntity.isAngry();
-            } else {
-                return false;
-            }
-        }
-    }
-
-    private boolean isPlayer(Entity entity) {
-        return entity instanceof RemotePlayer;
-    }
-
-    private boolean isNeutral(Entity entity) {
-        if (!(entity instanceof LivingEntity)) {
-            return false;
-        } else {
-            return !(entity instanceof Player) && !this.isHostile(entity);
-        }
     }
 
     public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
@@ -231,7 +185,7 @@ public class RadarSimple implements IRadar {
                         this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
                     }
                 } catch (Exception e) {
-                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + contact.type, e);
+                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()));
                 } finally {
                     guiGraphics.pose().popPose();
                 }
