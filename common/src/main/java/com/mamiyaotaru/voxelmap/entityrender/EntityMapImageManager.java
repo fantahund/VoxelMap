@@ -43,6 +43,8 @@ import net.minecraft.client.model.SalmonModel;
 import net.minecraft.client.model.SlimeModel;
 import net.minecraft.client.model.TropicalFishModelA;
 import net.minecraft.client.model.TropicalFishModelB;
+import net.minecraft.client.model.WardenModel;
+import net.minecraft.client.model.WitchModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.AbstractHorseRenderer;
@@ -53,8 +55,10 @@ import net.minecraft.client.renderer.entity.HoglinRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.ParrotRenderer;
 import net.minecraft.client.renderer.entity.SalmonRenderer;
+import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.TropicalFishRenderer;
 import net.minecraft.client.renderer.entity.ZoglinRenderer;
+import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -223,6 +227,11 @@ public class EntityMapImageManager {
             part.zRot = 0;
             part.render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color //TODO set model tint
         }
+        if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
+            SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.get(0);
+            slimeOuter.model.setupAnim(renderState);
+            slimeOuter.model.root().render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color
+        }
 
         AbstractTexture texture = minecraft.getTextureManager().getTexture(resourceLocation);
         AbstractTexture texture2 = resourceLocation2 == null ? null : minecraft.getTextureManager().getTexture(resourceLocation2);
@@ -298,7 +307,7 @@ public class EntityMapImageManager {
             }
             image = ImageUtils.trim(image);
             int maxSize = Math.max(image.getHeight(), image.getWidth());
-            int targetSize = model instanceof AbstractEquineModel<?> ? 50 : 32;
+            int targetSize = model instanceof AbstractEquineModel<?> || model instanceof WitchModel || model instanceof WardenModel ? 50 : 32;
             if (maxSize > 0 && maxSize != targetSize) {
                 image = ImageUtils.scaleImage(image, (float) targetSize / maxSize);
             }

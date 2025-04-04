@@ -212,5 +212,6 @@ public class GLUtils {
             .withShaderDefine("NO_OVERLAY")
             .withShaderDefine("NO_CARDINAL_LIGHTING")
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withBlend(BlendFunction.TRANSLUCENT)
             .build();
 }
