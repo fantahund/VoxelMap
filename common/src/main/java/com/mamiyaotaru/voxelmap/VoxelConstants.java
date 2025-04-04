@@ -30,7 +30,7 @@ public final class VoxelConstants {
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
     private static final ResourceLocation OPTIONS_BACKGROUND_TEXTURE = ResourceLocation.parse("textures/block/dirt.png");
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     private static boolean initialized;
     private static Events events;
     private static PacketBridge packetBridge;
