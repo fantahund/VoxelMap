@@ -134,7 +134,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type);
             if (sprite != null) {
-                sprite.blit(drawContext, RenderType::guiTextured, x + 20, y - 2, 18, 18);
+                sprite.blit(drawContext, RenderType::guiTextured, x + 2, y - 2, 18, 18);
             }
             drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
             drawContext.flush();
@@ -142,6 +142,10 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (mouseY < GuiSlotMobs.this.getY() || mouseY > GuiSlotMobs.this.getBottom()) {
+                return false;
+            }
+
             GuiSlotMobs.this.setSelected(this);
             int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;
             byte padding = 3;

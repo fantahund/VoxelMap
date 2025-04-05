@@ -88,7 +88,7 @@ public class Map implements Runnable, IChangeObserver {
     private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
     private final ResourceLocation resourceArrow = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/mmarrow.png");
-    private final ResourceLocation resoureSquareMap = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/squaremap.png");
+    private final ResourceLocation resourceSquareMap = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/squaremap.png");
     private final ResourceLocation resourceRoundMap = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/roundmap.png");
     private final ResourceLocation squareStencil = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/square.png");
     private final ResourceLocation circleStencil = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/circle.png");
@@ -662,6 +662,8 @@ public class Map implements Runnable, IChangeObserver {
         double scaledHeightD = (double) minecraft.getWindow().getHeight() / scScale;
         this.scWidth = Mth.ceil(scaledWidthD);
         this.scHeight = Mth.ceil(scaledHeightD);
+        float scaleProj = (float) (scScale / minecraft.getWindow().getGuiScale());
+
         int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
             mapX = this.scWidth - 37;
@@ -698,27 +700,21 @@ public class Map implements Runnable, IChangeObserver {
 
         if (!this.options.hide) {
             if (this.fullscreenMap) {
-                this.renderMapFull(drawContext, this.scWidth, this.scHeight);
+                this.renderMapFull(drawContext, this.scWidth, this.scHeight, scaleProj);
+                this.drawArrow(drawContext, this.scWidth / 2, this.scHeight / 2, scaleProj);
             } else {
-                this.renderMap(drawContext, mapX, mapY, scScale, (float) (scScale / minecraft.getWindow().getGuiScale()));
-            }
-            if (VoxelConstants.getVoxelMapInstance().getRadar() != null && !this.fullscreenMap) {
-                this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
-                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, this.layoutVariables, (float) (scScale / minecraft.getWindow().getGuiScale()));
-            }
-
-            if (!this.fullscreenMap) {
-                this.drawDirections(drawContext, mapX, mapY, (float) (scScale / minecraft.getWindow().getGuiScale()));
-            }
-
-            if (this.fullscreenMap) {
-                this.drawArrow(drawContext, this.scWidth / 2, this.scHeight / 2, (float) (scScale / minecraft.getWindow().getGuiScale()));
-            } else {
-                this.drawArrow(drawContext, mapX, mapY, (float) (scScale / minecraft.getWindow().getGuiScale()));
+                this.renderMap(drawContext, mapX, mapY, scScale, scaleProj);
+                if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
+                    this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
+                    VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, this.layoutVariables, scaleProj);
+                }
+                this.drawDirections(drawContext, mapX, mapY, scaleProj);
+                this.drawArrow(drawContext, mapX, mapY, scaleProj);
             }
         }
+
         if (this.options.coords) {
-            this.showCoords(drawContext, mapX, mapY, (float) (scScale / minecraft.getWindow().getGuiScale()));
+            this.showCoords(drawContext, mapX, mapY, scaleProj);
         }
 
         if (this.showWelcomeScreen) {
@@ -1584,9 +1580,9 @@ public class Map implements Runnable, IChangeObserver {
         } else {
             guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.direction));
         }
+        guiGraphics.pose().scale(scale, scale, 1);
         guiGraphics.pose().translate(-256, -256, 0);
         guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
-        guiGraphics.pose().scale(scale, scale, 1);
 
         guiGraphics.flush();
 
@@ -1637,11 +1633,7 @@ public class Map implements Runnable, IChangeObserver {
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
-        if (this.options.squareMap) {
-            this.drawSquareMapFrame(guiGraphics, x, y);
-        } else {
-            this.drawRoundMapFrame(guiGraphics, x, y);
-        }
+        this.drawMapFrame(guiGraphics, x, y, this.options.squareMap);
 
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
@@ -1797,7 +1789,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().popPose();
     }
 
-    private void renderMapFull(GuiGraphics guiGraphics, int scWidth, int scHeight) {
+    private void renderMapFull(GuiGraphics guiGraphics, int scWidth, int scHeight, float scaleProj) {
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1808,6 +1800,7 @@ public class Map implements Runnable, IChangeObserver {
         }
         PoseStack matrixStack = guiGraphics.pose();
         matrixStack.pushPose();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
         matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
         matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
@@ -1842,12 +1835,9 @@ public class Map implements Runnable, IChangeObserver {
         }
     }
 
-    private void drawSquareMapFrame(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.blit(RenderType::guiTextured, resoureSquareMap, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-    }
-
-    private void drawRoundMapFrame(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.blit(RenderType::guiTextured, resourceRoundMap, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+    private void drawMapFrame(GuiGraphics guiGraphics, int x, int y, boolean squaremap) {
+        ResourceLocation frameResource = squaremap ? resourceSquareMap : resourceRoundMap;
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, frameResource, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
     }
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
