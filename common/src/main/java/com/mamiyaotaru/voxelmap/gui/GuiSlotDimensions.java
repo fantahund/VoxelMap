@@ -113,6 +113,10 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (mouseY < GuiSlotDimensions.this.getY() || mouseY > GuiSlotDimensions.this.getBottom()) {
+                return false;
+            }
+
             GuiSlotDimensions.this.setSelected(this);
             byte iconWidth = 18;
             int rightEdge = GuiSlotDimensions.this.getX() + GuiSlotDimensions.this.getWidth();

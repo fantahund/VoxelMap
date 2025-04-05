@@ -162,6 +162,10 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (mouseY < GuiSlotWaypoints.this.getY() || mouseY > GuiSlotWaypoints.this.getBottom()) {
+                return false;
+            }
+
             GuiSlotWaypoints.this.setSelected(this);
             int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;
             byte padding = 3;
