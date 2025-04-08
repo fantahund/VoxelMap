@@ -13,7 +13,6 @@
     "APIMixinChatListenerHud",
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
-    "BiomeAccessor",
     "MixinChatHud",
     "MixinInGameHud",
     "MixinKeyboard",
