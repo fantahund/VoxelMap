@@ -34,6 +34,7 @@ public final class VoxelConstants {
     private static boolean initialized;
     private static Events events;
     private static PacketBridge packetBridge;
+    private static ModApiBridge modApiBridge;
 
     private VoxelConstants() {}
 
@@ -200,5 +201,13 @@ public final class VoxelConstants {
 
     public static void setPacketBridge(PacketBridge packetBridge) {
         VoxelConstants.packetBridge = packetBridge;
+    }
+
+    public static void setModApiBride(ModApiBridge modApiBridge) {
+        VoxelConstants.modApiBridge = modApiBridge;
+    }
+
+    public static ModApiBridge getModApiBridge() {
+        return modApiBridge;
     }
 }

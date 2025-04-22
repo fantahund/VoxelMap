@@ -17,6 +17,7 @@
     "MixinInGameHud",
     "MixinKeyboard",
     "MixinMouse",
+    "MixinRenderPipelines",
     "MixinWorldRenderer"
   ]
 }

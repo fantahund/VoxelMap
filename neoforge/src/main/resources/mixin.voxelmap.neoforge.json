@@ -2,10 +2,11 @@
   "required": true,
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_21",
-  "refmap" : "voxelmap.refmap.json",
+  "refmap": "voxelmap.refmap.json",
   "package": "com.mamiyaotaru.voxelmap.neoforge.mixins",
   "target": "@env(DEFAULT)",
   "client": [
+    "MixinRenderPipelines"
   ],
   "injectors": {
     "defaultRequire": 1

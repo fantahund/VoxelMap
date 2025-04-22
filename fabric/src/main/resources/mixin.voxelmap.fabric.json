@@ -10,5 +10,6 @@
     "conformVisibility": true
   },
   "client": [
+    "MixinRenderPipelines"
   ]
 }
