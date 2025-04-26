@@ -4,7 +4,7 @@
 
 ## Overview
 
-VoxelMap Updated is a Minecraft Fabric mod that adds a minimap and world map to the game. It enhances the in-game experience by providing detailed maps, helping players navigate their world more efficiently.
+VoxelMap Updated is a Minecraft mod that adds a minimap and world map to the game. It enhances the in-game experience by providing detailed maps, helping players navigate their world more efficiently.
 
 ## Features
 
