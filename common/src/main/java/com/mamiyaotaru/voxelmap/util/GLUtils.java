@@ -74,7 +74,7 @@ public class GLUtils {
 
     public static final RenderPipeline GUI_TEXTURED_EQUAL_DEPTH_PIPELINE = RenderPipeline
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation("pipeline/gui_textured_equal_depth")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_equal_depth"))
             .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
             .build();
 
@@ -89,7 +89,7 @@ public class GLUtils {
 
     public static final RenderPipeline GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE = RenderPipeline
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation("pipeline/gui_textured_equal_depth")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_equal_depth"))
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH = Util.memoize(
@@ -142,7 +142,7 @@ public class GLUtils {
     }
 
     public static final RenderPipeline WAYPOINT_BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
-            .withLocation("pipeline/voxelmap_waypoint_beam")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/waypoint_beam"))
             .withVertexShader("core/position_color")
             .withFragmentShader("core/position_color")
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.TRIANGLE_STRIP)
@@ -159,14 +159,14 @@ public class GLUtils {
                     .createCompositeState(false));
 
     public static final RenderPipeline WAYPOINT_ICON_DEPTHTEST_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation("pipeline/voxelmap_waypoint_icon")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/waypoint_icon"))
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
             .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
             .withDepthWrite(true)
             .build();
 
     public static final RenderPipeline WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation("pipeline/voxelmap_waypoint_icon")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/waypoint_icon"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
             .withDepthWrite(true)
@@ -191,7 +191,7 @@ public class GLUtils {
                             .createCompositeState(false))));
 
     public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-            .withLocation("pipeline/voxelmap_waypoint_background")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/waypoint_background"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withDepthBias(1.0F, 7.0F)
             .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
@@ -206,7 +206,7 @@ public class GLUtils {
                     .createCompositeState(false));
 
     public static final RenderPipeline ENTITY_ICON = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
-            .withLocation("pipeline/entity_solid")
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/entity_solid"))
             .withSampler("Sampler1")
             .withShaderDefine("EMISSIVE")
             .withShaderDefine("NO_OVERLAY")
