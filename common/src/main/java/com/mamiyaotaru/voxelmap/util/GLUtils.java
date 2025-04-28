@@ -14,6 +14,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
@@ -205,9 +207,20 @@ public class GLUtils {
             RenderType.CompositeState.builder()
                     .createCompositeState(false));
 
+    public static final VertexFormat VF = VertexFormat.builder()
+            .add("Position", VertexFormatElement.POSITION)
+            .add("Color", VertexFormatElement.COLOR)
+            .add("UV0", VertexFormatElement.UV0)
+            .add("UV1", VertexFormatElement.UV1)
+            .add("UV2", VertexFormatElement.UV2)
+            .add("Normal", VertexFormatElement.NORMAL)
+            .padding(1)
+            .build();
+
     public static final RenderPipeline ENTITY_ICON = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/entity_solid"))
             .withSampler("Sampler1")
+            .withVertexFormat(VF, VertexFormat.Mode.QUADS)
             .withShaderDefine("EMISSIVE")
             .withShaderDefine("NO_OVERLAY")
             .withShaderDefine("NO_CARDINAL_LIGHTING")
