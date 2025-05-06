@@ -210,7 +210,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("menu.options"), button -> minecraft.setScreen(new GuiMinimapOptions(this)), this));
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("gui.done"), button -> minecraft.setScreen(parent), this));
-        this.coordinates = new EditBox(this.getFontRenderer(), this.sideMargin, 10, 140, 20, null);
+        this.coordinates = new EditBox(this.getFontRenderer(), this.sideMargin, 10, 140, 20, Component.literal(""));
         this.top = 32;
         this.bottom = this.getHeight() - 32;
         this.centerX = this.getWidth() / 2;
@@ -460,8 +460,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private boolean isAcceptable(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return false;
+        }
         try {
             String[] xz = this.coordinates.getValue().split(",");
+            if (xz.length != 2) return false;
             Integer.valueOf(xz[0].trim());
             Integer.valueOf(xz[1].trim());
             return true;

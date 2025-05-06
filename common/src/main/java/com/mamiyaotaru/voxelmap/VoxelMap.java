@@ -83,9 +83,7 @@ public class VoxelMap implements PreparableReloadListener {
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
-        ReloadableResourceManager resourceManager = (ReloadableResourceManager) VoxelConstants.getMinecraft().getResourceManager();
-        resourceManager.registerReloadListener(this);
-        this.apply(resourceManager);
+        this.apply(VoxelConstants.getMinecraft().getResourceManager());
     }
 
     @Override

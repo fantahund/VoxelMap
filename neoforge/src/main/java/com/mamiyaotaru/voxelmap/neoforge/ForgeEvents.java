@@ -29,6 +29,9 @@ public class ForgeEvents implements Events {
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            map.lateInit(true, false);
+        });
         map.onConfigurationInit();
     }
 
