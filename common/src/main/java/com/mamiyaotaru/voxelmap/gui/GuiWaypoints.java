@@ -290,9 +290,9 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         if (integratedServer.isEmpty()) return true;
 
         try {
-            return integratedServer.get().getPlayerList().isOp(VoxelConstants.getPlayer().getGameProfile());
+            return integratedServer.get().theGame().playerList().isOp(VoxelConstants.getPlayer().getGameProfile());
         } catch (RuntimeException exception) {
-            return integratedServer.get().getWorldData().isAllowCommands();
+            return integratedServer.get().theGame().getWorldData().isAllowCommands();
         }
     }
 

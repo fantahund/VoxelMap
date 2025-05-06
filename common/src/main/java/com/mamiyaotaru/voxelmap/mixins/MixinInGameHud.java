@@ -15,8 +15,8 @@ public class MixinInGameHud {
     //
     // entriesHeight is: int n = m * 9;
 
-    @ModifyVariable(method = "displayScoreboardSidebar(Lnet/minecraft/client/gui/GuiGraphics;Lnet/minecraft/world/scores/Objective;)V", at = @At("STORE"), ordinal = 6)
-    private int injected(int bottomX, @Local(ordinal = 5) int entriesHeight) {
-        return VoxelConstants.moveScoreboard(bottomX, entriesHeight);
+    @ModifyVariable(method = "displayScoreboardSidebar", at = @At("STORE"))
+    private int injected(int bottomX, @Local int n) {
+        return VoxelConstants.moveScoreboard(bottomX, n);
     }
 }

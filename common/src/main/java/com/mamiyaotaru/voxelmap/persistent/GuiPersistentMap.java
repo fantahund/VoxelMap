@@ -248,7 +248,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         final AtomicReference<String> worldName = new AtomicReference<>();
 
         VoxelConstants.getIntegratedServer().ifPresentOrElse(integratedServer -> {
-            worldName.set(integratedServer.getWorldData().getLevelName());
+            worldName.set(integratedServer.theGame().getWorldData().getLevelName());
 
             if (worldName.get() == null || worldName.get().isBlank()) {
                 worldName.set("Singleplayer World");
