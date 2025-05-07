@@ -63,7 +63,7 @@ public final class VoxelConstants {
     public static Optional<IntegratedServer> getIntegratedServer() { return Optional.ofNullable(getMinecraft().getSingleplayerServer()); }
 
     @NotNull
-    public static Optional<Level> getWorldByKey(ResourceKey<Level> key) { return getIntegratedServer().map(integratedServer -> integratedServer.getLevel(key)); }
+    public static Optional<Level> getWorldByKey(ResourceKey<Level> key) { return getIntegratedServer().map(integratedServer -> integratedServer.theGame().getLevel(key)); }
 
     @NotNull
     public static ClientLevel getClientWorld() { return getPlayer().clientLevel; }
