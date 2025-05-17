@@ -123,7 +123,7 @@ public class GLUtils {
                 TextureManager textureManager = Minecraft.getInstance().getTextureManager();
                 AbstractTexture abstractTexture = textureManager.getTexture(resourceLocation);
                 abstractTexture.getTexture().setTextureFilter(minFilter, magFilter, mipmap);
-                RenderSystem.setShaderTexture(0, abstractTexture.getTexture());
+                RenderSystem.setShaderTexture(0, abstractTexture.getTextureView());
             }, () -> {
             });
             this.texture = Optional.of(resourceLocation);

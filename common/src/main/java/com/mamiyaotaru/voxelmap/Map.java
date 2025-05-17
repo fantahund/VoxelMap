@@ -50,10 +50,10 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
@@ -530,7 +530,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.world != null) {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !minecraft.isPaused() || this.options.realTimeTorches) {
                     this.needLightmapRefresh = false;
-                    GLUtils.readTextureContentsToPixelArray(this.lightmapTexture.getTarget(), image -> {
+                    GLUtils.readTextureContentsToPixelArray(this.lightmapTexture.getTextureView().texture(), image -> {
                         this.lightmapColors = image;
                     });
                     if (getLightmapColor(15, 15) == 0) {
