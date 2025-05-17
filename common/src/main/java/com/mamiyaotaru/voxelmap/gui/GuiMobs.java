@@ -115,7 +115,7 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.renderBlurredBackground();
+        this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
         this.tooltip = null;
         this.mobsList.render(drawContext, mouseX, mouseY, delta);

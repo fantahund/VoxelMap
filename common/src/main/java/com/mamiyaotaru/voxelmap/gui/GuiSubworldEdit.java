@@ -112,7 +112,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.renderBlurredBackground();
+        this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
         drawContext.flush();
         drawContext.drawCenteredString(this.getFontRenderer(), Component.translatable("worldmap.subworld.edit"), this.getWidth() / 2, 20, 16777215);

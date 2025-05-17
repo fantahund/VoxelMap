@@ -102,7 +102,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             }
         }
 
-        this.renderBlurredBackground();
+        this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
         drawContext.flush();
         drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);

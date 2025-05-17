@@ -56,7 +56,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         super.setSelected(entry);
         if (this.getSelected() instanceof DimensionItem) {
             GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
-            narratorManager.sayNow((Component.translatable("narrator.select", (this.getSelected()).dim.name)).getString());
+            narratorManager.sayChatQueued(Component.translatable("narrator.select", (this.getSelected()).dim.name));
         }
 
         this.parentGui.setSelectedDimension(entry.dim);

@@ -50,7 +50,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         super.setSelected(entry);
         if (this.getSelected() instanceof WaypointItem) {
             GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
-            narratorManager.sayNow((Component.translatable("narrator.select", ((WaypointItem) this.getSelected()).waypoint.name)).getString());
+            narratorManager.sayChatQueued(Component.translatable("narrator.select", this.getSelected().waypoint.name)); //FIXME 1.21.6
         }
 
         this.parentGui.setSelectedWaypoint(entry.waypoint);

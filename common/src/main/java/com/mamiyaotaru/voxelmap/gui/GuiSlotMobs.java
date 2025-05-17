@@ -59,7 +59,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         super.setSelected(entry);
         if (this.getSelected() != null) {
             GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
-            narratorManager.sayNow((Component.translatable("narrator.select", this.getSelected().name)).getString());
+            narratorManager.sayChatQueued(Component.translatable("narrator.select", this.getSelected().name));
         }
 
         this.parentGui.setSelectedMob(entry.id);
