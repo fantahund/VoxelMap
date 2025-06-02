@@ -28,18 +28,18 @@ jobs:
       - name: Extract Clean Version
         id: version
         run: |
-          CLEAN_VERSION=$(ls build/libs | grep -m1 'voxelmap' | sed -E 's/voxelmap-(fabric|neoforge)-([0-9\.]+)\.jar/\2/')
+          CLEAN_VERSION=$(ls build/libs | grep -m1 'voxelmap' | sed -E 's/voxelmap-(fabric|neoforge)-//' | sed 's/\.jar$//')
           echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
-          echo "run_id=$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+          echo "Build ID: $CLEAN_VERSION extracted"
 
       - name: Create Master Release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "v${{ steps.version.outputs.clean_version }}+${{ steps.version.outputs.run_id }}"
+          automatic_release_tag: "v${{ steps.version.outputs.clean_version }}+${{ github.run_id }}"
           prerelease: false
-          title: "VoxelMap ${{ steps.version.outputs.clean_version }} (Build ${{ steps.version.outputs.run_id }})"
+          title: "VoxelMap ${{ steps.version.outputs.clean_version }} (Build ${{ github.run_id }})"
           files: |
             build/libs/voxelmap-*.jar
 
@@ -48,8 +48,8 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "snapshot-${{ steps.version.outputs.clean_version }}+${{ steps.version.outputs.run_id }}"
+          automatic_release_tag: "snapshot-${{ steps.version.outputs.clean_version }}+${{ github.run_id }}"
           prerelease: true
-          title: "VoxelMap Snapshot ${{ steps.version.outputs.clean_version }} (Build ${{ steps.version.outputs.run_id }})"
+          title: "VoxelMap Snapshot ${{ steps.version.outputs.clean_version }} (Build ${{ github.run_id }})"
           files: |
             build/libs/voxelmap-*.jar
