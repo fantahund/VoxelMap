@@ -1,6 +1,8 @@
-name: VoxelMap
+name: VoxelMap Build and Release
 
-on: [push]
+on:
+  push:
+    branches: [ master, snapshot ]
 
 jobs:
   build:
@@ -8,22 +10,46 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up JDK 1.21
         uses: actions/setup-java@v1
         with:
           java-version: 1.21
+
       - name: Build with Gradle
         run: ./gradlew build
-      - name: Upload a Build Artifact
+
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4.4.0
         with:
           name: voxelMap
-          path: build/libs/* 
-      - uses: "marvinpinto/action-automatic-releases@latest"
+          path: build/libs/*
+
+      - name: Extract Clean Version
+        id: version
+        run: |
+          CLEAN_VERSION=$(ls build/libs | grep -m1 'voxelmap' | sed -E 's/voxelmap-(fabric|neoforge)-//' | sed 's/\.jar$//')
+          echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
+          echo "Build ID: $CLEAN_VERSION extracted"
+
+      - name: Create Master Release
+        if: github.ref == 'refs/heads/master'
+        uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "v${{ steps.version.outputs.clean_version }}+${{ github.run_id }}"
           prerelease: false
-          title: "VoxelMap"
+          title: "VoxelMap ${{ steps.version.outputs.clean_version }} (Build ${{ github.run_id }})"
+          files: |
+            build/libs/voxelmap-*.jar
+
+      - name: Create Snapshot Pre-Release
+        if: github.ref == 'refs/heads/snapshot'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "snapshot-${{ steps.version.outputs.clean_version }}+${{ github.run_id }}"
+          prerelease: true
+          title: "VoxelMap Snapshot ${{ steps.version.outputs.clean_version }} (Build ${{ github.run_id }})"
           files: |
             build/libs/voxelmap-*.jar
