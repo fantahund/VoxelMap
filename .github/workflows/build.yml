@@ -16,6 +16,22 @@ jobs:
         with:
           java-version: 1.21
 
+      - name: Extract Versions from build.gradle.kts
+        id: versions
+        run: |
+          MINECRAFT_VERSION=$(grep -oP 'val MINECRAFT_VERSION by extra { "\K[^"]+' build.gradle.kts)
+          MOD_VERSION=$(grep -oP 'val MOD_VERSION by extra { "\K[^"]+' build.gradle.kts)
+          
+          MOD_SUFFIX="${MOD_VERSION#$MINECRAFT_VERSION-}"
+
+          echo "minecraft_version=$MINECRAFT_VERSION" >> $GITHUB_OUTPUT
+          echo "mod_suffix=$MOD_SUFFIX" >> $GITHUB_OUTPUT
+          echo "full_version=$MINECRAFT_VERSION-$MOD_SUFFIX" >> $GITHUB_OUTPUT
+          echo "Extracted:"
+          echo "MINECRAFT_VERSION: $MINECRAFT_VERSION"
+          echo "MOD_SUFFIX: $MOD_SUFFIX"
+          echo "FULL_VERSION: $MINECRAFT_VERSION-$MOD_SUFFIX"
+
       - name: Build with Gradle
         run: ./gradlew build
 
@@ -25,21 +41,14 @@ jobs:
           name: voxelMap
           path: build/libs/*
 
-      - name: Extract Clean Version
-        id: version
-        run: |
-          CLEAN_VERSION=$(ls build/libs | grep -m1 'voxelmap' | sed -E 's/voxelmap-(fabric|neoforge)-//' | sed 's/\.jar$//')
-          echo "clean_version=$CLEAN_VERSION" >> $GITHUB_OUTPUT
-          echo "Build ID: $CLEAN_VERSION extracted"
-
       - name: Create Master Release
         if: github.ref == 'refs/heads/master'
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "v${{ steps.version.outputs.clean_version }}+${{ github.run_id }}"
+          automatic_release_tag: "v${{ steps.versions.outputs.full_version }}+${{ github.run_id }}"
           prerelease: false
-          title: "VoxelMap ${{ steps.version.outputs.clean_version }} (Build ${{ github.run_id }})"
+          title: "VoxelMap for Minecraft ${{ steps.versions.outputs.minecraft_version }} (v${{ steps.versions.outputs.full_version }}, Build ${{ github.run_id }})"
           files: |
             build/libs/voxelmap-*.jar
 
@@ -48,8 +57,8 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "snapshot-${{ steps.version.outputs.clean_version }}+${{ github.run_id }}"
+          automatic_release_tag: "snapshot-${{ steps.versions.outputs.full_version }}+${{ github.run_id }}"
           prerelease: true
-          title: "VoxelMap Snapshot ${{ steps.version.outputs.clean_version }} (Build ${{ github.run_id }})"
+          title: "VoxelMap Snapshot for Minecraft ${{ steps.versions.outputs.minecraft_version }} (v${{ steps.versions.outputs.full_version }}, Build ${{ github.run_id }})"
           files: |
             build/libs/voxelmap-*.jar
