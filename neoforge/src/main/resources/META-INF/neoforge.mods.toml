@@ -15,14 +15,14 @@ displayURL = "https://github.com/fantahund/Voxelmap"
 [[dependencies.voxelmap]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.0.160,)"
+versionRange = "[0.25w14craftmine.3-beta,)"
 ordering = "NONE"
 side = "CLIENT"
 
 [[dependencies.voxelmap]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.5]"
+versionRange = "[25w14craftmine,]"
 ordering = "NONE"
 side = "CLIENT"
 

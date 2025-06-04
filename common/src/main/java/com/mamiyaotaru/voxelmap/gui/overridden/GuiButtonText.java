@@ -12,7 +12,7 @@ public class GuiButtonText extends Button {
 
     public GuiButtonText(Font fontRenderer, int x, int y, int width, int height, Component message, OnPress onPress) {
         super (x, y, width, height, message, onPress, DEFAULT_NARRATION);
-        this.textField = new EditBox(fontRenderer, x + 1, y + 1, width - 2, height - 2, null);
+        this.textField = new EditBox(fontRenderer, x + 1, y + 1, width - 2, height - 2, Component.literal(""));
     }
 
 

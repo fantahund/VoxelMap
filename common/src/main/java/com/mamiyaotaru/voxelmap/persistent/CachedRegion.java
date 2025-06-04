@@ -303,7 +303,7 @@ public class CachedRegion {
             }
 
             if (!this.closed && !full) {
-                File directory = new File(DimensionType.getStorageFolder(this.worldServer.dimension(), this.worldServer.getServer().getWorldPath(LevelResource.ROOT).normalize()).toString(), "region");
+                File directory = new File(DimensionType.getStorageFolder(this.worldServer.dimension(), this.worldServer.theGame().server().getWorldPath(LevelResource.ROOT).normalize()).toString(), "region");
                 File regionFile = new File(directory, "r." + (int) Math.floor(this.x / 2f) + "." + (int) Math.floor(this.z / 2f) + ".mca");
                 if (regionFile.exists()) {
                     boolean dataChanged = false;
