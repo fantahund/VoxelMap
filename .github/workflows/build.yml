@@ -22,8 +22,8 @@ jobs:
           MINECRAFT_VERSION=$(grep -oP 'val MINECRAFT_VERSION by extra { "\K[^"]+' build.gradle.kts)
           MOD_VERSION=$(grep -oP 'val MOD_VERSION by extra { "\K[^"]+' build.gradle.kts)
           
-          MOD_SUFFIX="${MOD_VERSION#$MINECRAFT_VERSION-}"
-
+          MOD_SUFFIX="${MOD_VERSION#${MINECRAFT_VERSION}-}"
+          
           echo "minecraft_version=$MINECRAFT_VERSION" >> $GITHUB_OUTPUT
           echo "mod_suffix=$MOD_SUFFIX" >> $GITHUB_OUTPUT
           echo "full_version=$MINECRAFT_VERSION-$MOD_SUFFIX" >> $GITHUB_OUTPUT
