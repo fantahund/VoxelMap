@@ -20,17 +20,17 @@ jobs:
         id: versions
         run: |
           MINECRAFT_VERSION=$(grep -oP 'val MINECRAFT_VERSION by extra { "\K[^"]+' build.gradle.kts)
-          MOD_VERSION=$(grep -oP 'val MOD_VERSION by extra { "\K[^"]+' build.gradle.kts)
+          VOXELMAP_VERSION=$(grep -oP 'val VOXELMAP_VERSION by extra { "\K[^"]+' build.gradle.kts)
           
-          MOD_SUFFIX="${MOD_VERSION#${MINECRAFT_VERSION}-}"
+          FULL_VERSION="${MINECRAFT_VERSION}-${VOXELMAP_VERSION}"
           
           echo "minecraft_version=$MINECRAFT_VERSION" >> $GITHUB_OUTPUT
-          echo "mod_suffix=$MOD_SUFFIX" >> $GITHUB_OUTPUT
-          echo "full_version=$MINECRAFT_VERSION-$MOD_SUFFIX" >> $GITHUB_OUTPUT
+          echo "voxelmap_version=$VOXELMAP_VERSION" >> $GITHUB_OUTPUT
+          echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
           echo "Extracted:"
           echo "MINECRAFT_VERSION: $MINECRAFT_VERSION"
-          echo "MOD_SUFFIX: $MOD_SUFFIX"
-          echo "FULL_VERSION: $MINECRAFT_VERSION-$MOD_SUFFIX"
+          echo "VOXELMAP_VERSION: $VOXELMAP_VERSION"
+          echo "FULL_VERSION: $FULL_VERSION"
 
       - name: Build with Gradle
         run: ./gradlew build
