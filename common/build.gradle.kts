@@ -18,10 +18,10 @@ dependencies {
     mappings(loom.layered() {
         officialMojangMappings()
     })
-    compileOnly("net.fabricmc:sponge-mixin:0.15.3+mixin.0.8.7")
+    compileOnly("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
 
-    compileOnly("io.github.llamalad7:mixinextras-common:0.4.1")
-    annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.1")
+    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
     //MC Verison modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+${MINECRAFT_VERSION}-fabric")
