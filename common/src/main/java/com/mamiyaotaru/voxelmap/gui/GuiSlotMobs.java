@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -134,10 +135,10 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type);
             if (sprite != null) {
-                sprite.blit(drawContext, RenderType::guiTextured, x + 2, y - 2, 18, 18);
+                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, x + 2, y - 2, 18, 18);
             }
-            drawContext.blit(RenderType::guiTextured, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-            drawContext.flush();
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
+            // drawContext.flush(); // FIXME 1.21.6
         }
 
         @Override

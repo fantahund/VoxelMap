@@ -11,7 +11,7 @@ import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -151,13 +151,13 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                     GuiWaypoints.setTooltip(GuiSlotWaypoints.this.parentGui, tooltip);
                 }
             }
-            drawContext.blit(RenderType::guiTextured, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
 
-            drawContext.blit(RenderType::guiTextured, this.iconSprite, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18, waypoint.getUnifiedColor());
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.iconSprite, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18, waypoint.getUnifiedColor());
 
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
                 int redColor = ARGB.colorFromFloat(1.0f, 1.0f, 0.0f, 0.0f);
-                drawContext.blit(RenderType::guiTextured, GuiSlotWaypoints.this.highlightedIconIdentifier, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18, redColor);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, GuiSlotWaypoints.this.highlightedIconIdentifier, x, y - 2, 0.0F, 0.0F, 18, 18, 18, 18, redColor);
             }
         }
 

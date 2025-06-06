@@ -9,8 +9,10 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -72,7 +74,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
-import org.joml.Matrix4f;
 
 public class EntityMapImageManager {
     public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/mobs");
@@ -89,6 +90,7 @@ public class EntityMapImageManager {
     private final Camera fakeCamera = new Camera();
     private GpuTextureView fboTextureView;
     private GpuTextureView fboDepthTextureView;
+	private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
@@ -103,6 +105,8 @@ public class EntityMapImageManager {
         // this.fboTexture = fboTexture.getTexture();
         fboTextureView = RenderSystem.getDevice().createTextureView(this.fboTexture);
         fboDepthTextureView = RenderSystem.getDevice().createTextureView(this.fboDepthTexture);
+
+        projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 256.0F, -256.0F, -256.0F, 256.0F, 1000.0F, 21000.0F);
 
     }
 
@@ -262,8 +266,8 @@ public class EntityMapImageManager {
             int width = fboTexture.getWidth(0);
             int height = fboTexture.getHeight(0);
             ProjectionType originalProjectionType = RenderSystem.getProjectionType();
-            Matrix4f originalProjectionMatrix = RenderSystem.getProjectionMatrix();
-            RenderSystem.setProjectionMatrix(new Matrix4f().ortho(256.0F, -256.0F, -256.0F, 256.0F, 1000.0F, 21000.0F), ProjectionType.ORTHOGRAPHIC);
+			GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+			RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);

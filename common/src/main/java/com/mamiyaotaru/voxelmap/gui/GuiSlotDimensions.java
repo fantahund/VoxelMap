@@ -8,6 +8,7 @@ import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -108,8 +109,8 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             // 2 float: u,v start texture (in pixels - see last 2 int)
             // 2 int: height, width on screen
             // 2 int: height, width full texture in pixels
-            drawContext.blit(RenderType::guiTextured, this.parentGui.waypoint.dimensions.contains(this.dim) ? CONFIRM : CANCEL, x + width - iconWidth, y - 3, 0, 0, 18, 18, 18, 18);
-            drawContext.flush();
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.parentGui.waypoint.dimensions.contains(this.dim) ? CONFIRM : CANCEL, x + width - iconWidth, y - 3, 0, 0, 18, 18, 18, 18);
+            // drawContext.flush(); // FIXME 1.21.6
         }
 
         public boolean mouseClicked(double mouseX, double mouseY, int button) {

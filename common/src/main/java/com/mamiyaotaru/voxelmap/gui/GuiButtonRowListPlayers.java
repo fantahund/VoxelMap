@@ -11,6 +11,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -159,11 +160,11 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.getId());
             ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(gameProfile).texture();
-            drawContext.blit(RenderType::guiTextured, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
-            drawContext.flush();
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
+            // drawContext.flush(); // FIXME 1.21.6
             if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
-                drawContext.blit(RenderType::guiTextured, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
-                drawContext.flush();
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
+                // drawContext.flush(); // FIXME 1.21.6
             }
 
         }

@@ -14,6 +14,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import java.util.HashMap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -280,9 +281,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             this.waypointIconMap.put(iconLocation, waypointIcon);
         }
         int color = this.waypoint.getUnifiedColor();
-        drawContext.blit(RenderType::guiTextured, BLANK, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 16, 10, color);
-        drawContext.blit(RenderType::guiTextured, waypointIcon, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 0.0F, 0.0F, 16, 16, 16, 16, color);
-        drawContext.pose().translate(0, 0, 20);
+        drawContext.blit(RenderPipelines.GUI_TEXTURED, BLANK, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 16, 10, color);
+        drawContext.blit(RenderPipelines.GUI_TEXTURED, waypointIcon, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 0.0F, 0.0F, 16, 16, 16, 16, color);
+        // drawContext.pose().translate(0, 0, 20); // FIXME 1.21.6
         if (this.choosingColor || this.choosingIcon) {
             renderBackgroundTexture(drawContext);
 
@@ -290,7 +291,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int pickerSize = 200;
                 int pickerCenterX = this.getWidth() / 2 - pickerSize / 2;
                 int pickerCenterY = this.getHeight() / 2 - pickerSize / 2;
-                drawContext.blit(RenderType::guiTextured, PICKER, pickerCenterX, pickerCenterY, 0f, 0f, pickerSize, pickerSize, pickerSize, pickerSize);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, PICKER, pickerCenterX, pickerCenterY, 0f, 0f, pickerSize, pickerSize, pickerSize, pickerSize);
                 if (mouseX >= pickerCenterX && mouseX <= pickerCenterX + pickerSize && mouseY >= pickerCenterY && mouseY <= pickerCenterY + pickerSize){
                     int pickPointX = (int) ((mouseX - pickerCenterX) / (float) pickerSize * 255f);
                     int pickPointY = (int) ((mouseY - pickerCenterY) / (float) pickerSize * 255f);
@@ -298,7 +299,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     int curR = (color >> 16 & 0xFF);
                     int curG = (color >> 8 & 0xFF);
                     int curB = (color & 0xFF);
-                    drawContext.blit(RenderType::guiTextured, TARGET, mouseX - 8, mouseY - 8, 0f, 0f, 16, 16, 16, 16);
+                    drawContext.blit(RenderPipelines.GUI_TEXTURED, TARGET, mouseX - 8, mouseY - 8, 0f, 0f, 16, 16, 16, 16);
                     drawContext.drawCenteredString(this.getFontRenderer(), "R: " + curR + ", G: " + curG + ", B: " + curB, this.getWidth() / 2, this.getHeight() / 2 + pickerSize / 2 + 8, color);
                 }
             }
@@ -309,7 +310,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int chooserCenterY = (int) (this.getHeight() / 2f - chooser.getHeight() / 2f);
                 Sprite icon = chooser.getIconAt(mouseX - chooserCenterX, mouseY - chooserCenterY);
 
-                drawContext.blit(RenderType::guiTextured, WaypointManager.resourceTextureAtlasWaypointChooser, chooserCenterX, chooserCenterY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight());
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, WaypointManager.resourceTextureAtlasWaypointChooser, chooserCenterX, chooserCenterY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight());
 
                 if (icon != chooser.getMissingImage()){
                     iconLocation = ((String) icon.getIconName());
@@ -321,7 +322,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     }
                     int iconSnappedX = icon.getOriginX() + chooserCenterX;
                     int iconSnappedY = icon.getOriginY() + chooserCenterY;
-                    drawContext.blit(RenderType::guiTextured, waypointIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40, color);
+                    drawContext.blit(RenderPipelines.GUI_TEXTURED, waypointIcon, iconSnappedX - 4, iconSnappedY - 4, 0f, 0f, 40, 40, 40, 40, color);
 
                     String iconName = ((String) icon.getIconName()).replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
                     if (iconName.length() > 1){
