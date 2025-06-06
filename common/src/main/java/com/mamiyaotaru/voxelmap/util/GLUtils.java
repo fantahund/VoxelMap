@@ -1,8 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -30,18 +28,17 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.TriState;
 
 public class GLUtils {
     public static void readTextureContentsToPixelArray(GpuTexture gpuTexture, Consumer<int[]> resultConsumer) {
         Preconditions.checkNotNull(resultConsumer);
         int size = gpuTexture.getWidth(0) * gpuTexture.getHeight(0);
         int bufferSize = gpuTexture.getFormat().pixelSize() * size;
-        GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, bufferSize);
+        GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, bufferSize);
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
         commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
-            try (GpuBuffer.ReadView readView = commandEncoder.readBuffer(gpuBuffer)) {
+            try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
                 int[] pixels = new int[size];
                 readView.data().asIntBuffer().get(0, pixels);
                 resultConsumer.accept(pixels);
@@ -57,11 +54,11 @@ public class GLUtils {
         int width = gpuTexture.getWidth(0);
         int height = gpuTexture.getHeight(0);
         int bufferSize = bytePerPixel * width * height;
-        GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", BufferType.PIXEL_PACK, BufferUsage.STATIC_READ, bufferSize);
+        GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, bufferSize);
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-            try (GpuBuffer.ReadView readView = commandEncoder.readBuffer(gpuBuffer)) {
+            try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         int pixel = readView.data().getInt((x + y * width) * bytePerPixel);
@@ -86,7 +83,7 @@ public class GLUtils {
                     0x00C000,
                     GUI_TEXTURED_EQUAL_DEPTH_PIPELINE,
                     RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
                             .createCompositeState(false))));
 
     public static final RenderPipeline GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE = RenderPipeline
@@ -100,7 +97,7 @@ public class GLUtils {
                     0x00C000,
                     GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE,
                     RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
                             .createCompositeState(false))));
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_FILTER_MIN = Util.memoize(
@@ -143,7 +140,7 @@ public class GLUtils {
         }
     }
 
-    public static final RenderPipeline WAYPOINT_BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
+    public static final RenderPipeline WAYPOINT_BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/waypoint_beam"))
             .withVertexShader("core/position_color")
             .withFragmentShader("core/position_color")
@@ -180,7 +177,7 @@ public class GLUtils {
                     0x00C000, // buffer size
                     WAYPOINT_ICON_DEPTHTEST_PIPELINE,
                     RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
                             .createCompositeState(false))));
 
     public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_NO_DEPTHTEST = Util.memoize(
@@ -189,7 +186,7 @@ public class GLUtils {
                     0x00C000, // buffer size
                     WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE,
                     RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, TriState.TRUE, false))
+                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
                             .createCompositeState(false))));
 
     public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)

@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFa
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
+import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.ProjectionType;
@@ -14,6 +15,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -85,6 +87,8 @@ public class EntityMapImageManager {
     private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
     private ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
     private final Camera fakeCamera = new Camera();
+    private GpuTextureView fboTextureView;
+    private GpuTextureView fboDepthTextureView;
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
@@ -92,10 +96,13 @@ public class EntityMapImageManager {
         this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
         final int fboTextureSize = 512;
-        DynamicTexture fboTexture = new DynamicTexture("voxelmap-radarfbotexture", fboTextureSize, fboTextureSize, true);
-        this.fboDepthTexture = RenderSystem.getDevice().createTexture("voxelmap-radarfbodepth", TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1);
-        Minecraft.getInstance().getTextureManager().register(resourceFboTexture, fboTexture);
-        this.fboTexture = fboTexture.getTexture();
+        this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-radarfbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
+        this.fboDepthTexture = RenderSystem.getDevice().createTexture("voxelmap-radarfbodepth", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1);
+        Minecraft.getInstance().getTextureManager().register(resourceFboTexture, new AllocatedTexture(fboTexture));
+
+        // this.fboTexture = fboTexture.getTexture();
+        fboTextureView = RenderSystem.getDevice().createTextureView(this.fboTexture);
+        fboDepthTextureView = RenderSystem.getDevice().createTextureView(this.fboDepthTexture);
 
     }
 
@@ -258,20 +265,20 @@ public class EntityMapImageManager {
             Matrix4f originalProjectionMatrix = RenderSystem.getProjectionMatrix();
             RenderSystem.setProjectionMatrix(new Matrix4f().ortho(256.0F, -256.0F, -256.0F, 256.0F, 1000.0F, 21000.0F), ProjectionType.ORTHOGRAPHIC);
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(fboTexture, OptionalInt.of(0x00000000), fboDepthTexture, OptionalDouble.of(1.0))) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);
-                renderPass.bindSampler("Sampler0", texture.getTexture());
+                renderPass.bindSampler("Sampler0", texture.getTextureView());
                 // renderPass.bindSampler("Sampler1", texture.getTexture()); // overlay
                 // minecraft.gameRenderer.overlayTexture().setupOverlayColor();
                 // renderPass.bindSampler("Sampler2", texture.getTexture()); // lightmap
                 // minecraft.gameRenderer.lightTexture().turnOnLightLayer();
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
-                renderPass.drawIndexed(0, meshData.drawState().indexCount());
+                renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
 
                 if (texture2 != null) {
-                    renderPass.bindSampler("Sampler0", texture2.getTexture());
-                    renderPass.drawIndexed(0, meshData.drawState().indexCount());
+                    renderPass.bindSampler("Sampler0", texture2.getTextureView());
+                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
 

@@ -23,6 +23,7 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -622,7 +623,7 @@ public class Map implements Runnable, IChangeObserver {
     private int getSkyColor() {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
-        Vector4f color = FogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getDarkenWorldAmount(0.0F));
+        Vector4f color = Minecraft.getInstance().gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getDarkenWorldAmount(0.0F), false);
         float r = color.x;
         float g = color.y;
         float b = color.z;
@@ -1546,9 +1547,9 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale, float scaleProj) {
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
-        guiGraphics.pose().translate(0, 0, 122);
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().scale(scaleProj, scaleProj);
+        // guiGraphics.pose().translate(0, 0, 122); // FIXME 1.21.6 z order
 
         float scale = 1.0F;
         if (this.options.squareMap && this.options.rotates) {
@@ -1571,20 +1572,20 @@ public class Map implements Runnable, IChangeObserver {
         this.percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ);
         this.percentX *= multi;
         this.percentY *= multi;
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().setIdentity();
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().identity();
 
-        guiGraphics.pose().translate(256, 256, 0);
+        guiGraphics.pose().translate(256, 256);
         if (!this.options.rotates) {
-            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-this.northRotate));
+            guiGraphics.pose().rotate(-this.northRotate * Mth.DEG_TO_RAD);
         } else {
-            guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.direction));
+            guiGraphics.pose().rotate(this.direction * Mth.DEG_TO_RAD);
         }
-        guiGraphics.pose().scale(scale, scale, 1);
-        guiGraphics.pose().translate(-256, -256, 0);
-        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F, 0.0f);
+        guiGraphics.pose().scale(scale, scale);
+        guiGraphics.pose().translate(-256, -256);
+        guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F);
 
-        guiGraphics.flush();
+        // guiGraphics.flush(); // FIXME 1.21.6
 
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
         Vector3f vector3f = new Vector3f();
@@ -1626,7 +1627,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
         fboTessellator.clear();
 
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
 
         // guiGraphics.blit(RenderType::guiTextured, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
         guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
@@ -1655,7 +1656,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
             }
         }
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
     }
 
     private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, TextureAtlas textureAtlas, int x, int y, int scScale, double lastXDouble, double lastZDouble, Sprite icon, Float r, Float g, Float b) {

@@ -23,5 +23,6 @@ accessible method net/minecraft/client/renderer/RenderType$CompositeState$Compos
 
 accessible field net/minecraft/client/renderer/entity/layers/SlimeOuterLayer model Lnet/minecraft/client/model/SlimeModel;
 accessible field net/minecraft/client/renderer/entity/LivingEntityRenderer layers Ljava/util/List;
+accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
 
 accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFZ)Lorg/joml/Vector4f;
