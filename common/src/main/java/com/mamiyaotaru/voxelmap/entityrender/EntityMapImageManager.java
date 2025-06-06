@@ -90,7 +90,7 @@ public class EntityMapImageManager {
     private final Camera fakeCamera = new Camera();
     private GpuTextureView fboTextureView;
     private GpuTextureView fboDepthTextureView;
-	private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
+    private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
@@ -266,8 +266,8 @@ public class EntityMapImageManager {
             int width = fboTexture.getWidth(0);
             int height = fboTexture.getHeight(0);
             ProjectionType originalProjectionType = RenderSystem.getProjectionType();
-			GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-			RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+            GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+            RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);

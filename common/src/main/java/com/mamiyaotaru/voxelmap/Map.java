@@ -26,6 +26,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -1556,7 +1557,7 @@ public class Map implements Runnable, IChangeObserver {
             scale = 1.4142F;
         }
 
-        guiGraphics.blit(RenderType::guiTextured, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
@@ -1599,7 +1600,7 @@ public class Map implements Runnable, IChangeObserver {
         bufferBuilder.addVertex(vector3f).setUv(0, 1).setColor(255, 255, 255, 255);
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
-        Matrix4f originalProjectionMatrix = RenderSystem.getProjectionMatrix();
+        GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         RenderSystem.setProjectionMatrix(new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 21000.0F), ProjectionType.ORTHOGRAPHIC);
 
         RenderPipeline renderPipeline = RenderPipelines.GUI_TEXTURED;
@@ -1618,7 +1619,7 @@ public class Map implements Runnable, IChangeObserver {
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(fboTexture, OptionalInt.of(0xff000000))) {
                 renderPass.setPipeline(renderPipeline);
-                renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTexture());
+                renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, meshData.drawState().indexCount());
@@ -1785,7 +1786,7 @@ public class Map implements Runnable, IChangeObserver {
 
         guiGraphics.pose().translate(0, 0, 200.0f);
 
-        guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
         guiGraphics.pose().popPose();
     }
@@ -1807,7 +1808,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        guiGraphics.blit(RenderType::guiTextured, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
         matrixStack.popPose();
 
         if (this.options.biomeOverlay != 0) {
@@ -1838,7 +1839,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private void drawMapFrame(GuiGraphics guiGraphics, int x, int y, boolean squaremap) {
         ResourceLocation frameResource = squaremap ? resourceSquareMap : resourceRoundMap;
-        guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, frameResource, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, frameResource, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
     }
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
