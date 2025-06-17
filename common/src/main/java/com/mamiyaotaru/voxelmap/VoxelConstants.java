@@ -171,7 +171,7 @@ public final class VoxelConstants {
         MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
         cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
-        VoxelConstants.getPlayer().connection.sendUnattendedCommand(cmd, null); //FIXME 1.21.6 (True ? False ?)
+        VoxelConstants.getPlayer().connection.sendUnattendedCommand(cmd, null); // FIXME 1.21.6 (True ? False ?)
     }
 
     public static int moveScoreboard(int bottomX, int entriesHeight) {
