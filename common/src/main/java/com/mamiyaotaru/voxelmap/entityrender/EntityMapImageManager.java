@@ -271,6 +271,7 @@ public class EntityMapImageManager {
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);
+                RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindSampler("Sampler0", texture.getTextureView());
                 // renderPass.bindSampler("Sampler1", texture.getTexture()); // overlay
                 // minecraft.gameRenderer.overlayTexture().setupOverlayColor();
@@ -289,6 +290,9 @@ public class EntityMapImageManager {
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
 
         }
+        // if (VoxelConstants.DEBUG) {
+        // ImageUtils.saveImage("mob_" + entity.getType().getDescriptionId(), fboTexture, 0, fboTexture.getWidth(0), fboTexture.getHeight(0));
+        // }
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
             postProcessRenderedMobImage(entity, sprite, model, image2);

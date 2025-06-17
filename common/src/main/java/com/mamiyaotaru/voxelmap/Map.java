@@ -1630,6 +1630,7 @@ public class Map implements Runnable, IChangeObserver {
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0xff000000))) {
                 renderPass.setPipeline(renderPipeline);
+                RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);

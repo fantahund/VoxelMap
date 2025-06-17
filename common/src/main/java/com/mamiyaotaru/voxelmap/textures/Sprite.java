@@ -122,11 +122,12 @@ public class Sprite {
     }
 
     public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h) {
-        blit(guiGraphics, renderTypeMap, x, y, h, w, 0xffffffff);
+        blit(guiGraphics, renderTypeMap, x, y, w, h, 0xffffffff);
     }
 
     public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
         // FIXME 1.21.6 Draw Sprite
+        guiGraphics.blit(getResourceLocation(), (int) x, (int) y, (int) (x + w), (int) (y + h), getMinU(), getMinV(), getMaxU(), getMaxV());
         // guiGraphics.drawSpecial(bufferSource -> {
         // RenderType renderType = renderTypeMap.apply(textureAtlas.getResourceLocation());
         // Matrix4f matrix4f = guiGraphics.pose().last().pose();
