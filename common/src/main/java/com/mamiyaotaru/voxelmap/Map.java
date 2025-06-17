@@ -542,7 +542,7 @@ public class Map implements Runnable, IChangeObserver {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !minecraft.isPaused() || this.options.realTimeTorches) {
                     this.needLightmapRefresh = false;
                     // FIXME 1.21.6 Light map
-                    Arrays.fill(lightmapColors, 255);
+                    Arrays.fill(lightmapColors, 0xffffffff);
                     // GLUtils.readTextureContentsToPixelArray(this.lightmapTexture.getTextureView().texture(), image -> {
                     // this.lightmapColors = image;
                     // });

@@ -9,7 +9,7 @@ import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
 
-public record VoxelMapBlitRenderState(
+public record FloatBlitRenderState(
         RenderPipeline pipeline,
         TextureSetup textureSetup,
         Matrix3x2f pose,
@@ -24,7 +24,7 @@ public record VoxelMapBlitRenderState(
         int color,
         @Nullable ScreenRectangle scissorArea,
         @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
-    public VoxelMapBlitRenderState(
+    public FloatBlitRenderState(
             RenderPipeline renderPipeline,
             TextureSetup textureSetup,
             Matrix3x2f matrix3x2f,

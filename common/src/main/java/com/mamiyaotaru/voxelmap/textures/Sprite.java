@@ -1,18 +1,10 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import com.mamiyaotaru.voxelmap.util.VoxelMapBlitRenderState;
+import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.function.Function;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import org.joml.Matrix3x2f;
-import org.joml.Matrix4f;
 
 public class Sprite {
     private final Object iconName;
@@ -131,20 +123,7 @@ public class Sprite {
     }
 
     public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
-        // FIXME 1.21.6 Draw Sprite
-        guiGraphics.guiRenderState.submitGuiElement(new VoxelMapBlitRenderState(renderTypeMap, TextureSetup.singleTexture(Minecraft.getInstance().getTextureManager().getTexture(getResourceLocation()).getTextureView()), new Matrix3x2f(guiGraphics.pose()), x, y, x + w, y + h, getMinU(),
-                getMaxU(), getMinV(), getMaxV(), color, guiGraphics.scissorStack.peek()));
-        // guiGraphics.blit(getResourceLocation(), (int) x, (int) y, (int) (x + w), (int) (y + h), getMinU(), getMinV(), getMaxU(), getMaxV());
-
-        // guiGraphics.drawSpecial(bufferSource -> {
-        // RenderType renderType = renderTypeMap.apply(textureAtlas.getResourceLocation());
-        // Matrix4f matrix4f = guiGraphics.pose().last().pose();
-        // VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
-        // vertexConsumer.addVertex(matrix4f, x, y, 0.0F).setUv(getMinU(), getMinV()).setColor(color);
-        // vertexConsumer.addVertex(matrix4f, x, y + h, 0.0F).setUv(getMinU(), getMaxV()).setColor(color);
-        // vertexConsumer.addVertex(matrix4f, x + w, y + h, 0.0F).setUv(getMaxU(), getMaxV()).setColor(color);
-        // vertexConsumer.addVertex(matrix4f, x + w, y, 0.0F).setUv(getMaxU(), getMinV()).setColor(color);
-        // });
+        VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, minU, maxU, minV, maxV, color);
     }
 
     public ResourceLocation getResourceLocation() {
