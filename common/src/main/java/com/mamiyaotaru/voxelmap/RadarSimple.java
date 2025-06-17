@@ -20,6 +20,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -164,8 +165,8 @@ public class RadarSimple implements IRadar {
 
             if (inRange) {
                 try {
-                    guiGraphics.pose().pushPose();
-                    guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
+                    guiGraphics.pose().pushMatrix();
+                    guiGraphics.pose().scale(scaleProj, scaleProj);
                     float contactFacing = contact.entity.getYHeadRot();
                     if (this.minimapOptions.rotates) {
                         contactFacing -= this.direction;
@@ -173,21 +174,21 @@ public class RadarSimple implements IRadar {
                         contactFacing += 90.0F;
                     }
 
-                    guiGraphics.pose().translate(x, y, 0.0f);
-                    guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-contact.angle));
-                    guiGraphics.pose().translate(0.0f, (float) -contact.distance, 0.0f);
-                    guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contactFacing));
-                    guiGraphics.pose().translate(-x, -y, 0.0f);
-                    guiGraphics.pose().translate(0, 0, 125);
+                    guiGraphics.pose().translate(x, y);
+                    guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
+                    guiGraphics.pose().translate(0.0f, (float) -contact.distance);
+                    guiGraphics.pose().rotate((contact.angle + contactFacing) * Mth.DEG_TO_RAD);
+                    guiGraphics.pose().translate(-x, -y);
+                    // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 125);
 
-                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
+                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
                     if (this.options.showFacing) {
-                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
+                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()));
                 } finally {
-                    guiGraphics.pose().popPose();
+                    guiGraphics.pose().popMatrix();
                 }
             }
         }

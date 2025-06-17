@@ -66,7 +66,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
-        // drawContext.flush(); // FIXME 1.21.6
+        // FIXME 1.21.6 drawContext.flush();
         drawContext.drawCenteredString(getFontRenderer(), screenTitle, getWidth() / 2, 20, 16777215);
 
         super.render(drawContext, mouseX, mouseY, delta);

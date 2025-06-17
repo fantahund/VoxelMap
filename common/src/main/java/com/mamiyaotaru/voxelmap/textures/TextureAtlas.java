@@ -262,21 +262,6 @@ public class TextureAtlas extends AbstractTexture {
             if (icon == null) {
                 icon = Sprite.spriteFromString(name, this);
                 icon.setTextureData(bufferedImage);
-                // FIXME 1.21.5 Prevent duplicate images (Radar?)
-                // for (Sprite existing : this.mapUploadedSprites.values()) {
-                // if (Arrays.equals(existing.imageData, icon.imageData)) {
-                // this.registerMaskedIcon(name, existing);
-                // return existing;
-                // }
-                // }
-                //
-                // for (Sprite existing : this.mapRegisteredSprites.values()) {
-                // if (Arrays.equals(existing.imageData, icon.imageData)) {
-                // this.registerMaskedIcon(name, existing);
-                // return existing;
-                // }
-                // }
-
                 this.mapRegisteredSprites.put(name, icon);
             }
 

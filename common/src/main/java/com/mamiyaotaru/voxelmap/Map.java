@@ -22,6 +22,7 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
+import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.ProjectionType;
@@ -31,6 +32,8 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -81,6 +84,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -162,8 +166,10 @@ public class Map implements Runnable, IChangeObserver {
     private final ResourceLocation[] resourceMapImageFiltered = new ResourceLocation[5];
     private final ResourceLocation[] resourceMapImageUnfiltered = new ResourceLocation[5];
     private GpuTexture fboTexture;
+    private GpuTextureView fboTextureView;
     private Tesselator fboTessellator = new Tesselator(4096);
     private final ResourceLocation resourceFboTexture = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/fbo");
+    private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
     public Map() {
         resourceMapImageFiltered[0] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/filtered/0");
@@ -250,9 +256,12 @@ public class Map implements Runnable, IChangeObserver {
         this.setZoomScale();
 
         final int fboTextureSize = 512;
-        DynamicTexture fboTexture = new DynamicTexture("voxelmap-fbotexture", fboTextureSize, fboTextureSize, true);
-        minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
-        this.fboTexture = fboTexture.getTexture();
+        this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
+        this.fboTextureView = RenderSystem.getDevice().createTextureView(this.fboTexture);
+        // DynamicTexture fboTexture = new DynamicTexture("voxelmap-fbotexture", fboTextureSize, fboTextureSize, true);
+        // minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
+        // this.fboTexture = fboTexture.getTexture();
+        this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", 0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 21000.0F);
     }
 
     public void forceFullRender(boolean forceFullRender) {
@@ -1550,7 +1559,7 @@ public class Map implements Runnable, IChangeObserver {
     private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale, float scaleProj) {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().scale(scaleProj, scaleProj);
-        // guiGraphics.pose().translate(0, 0, 122); // FIXME 1.21.6 z order
+        // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 122);
 
         float scale = 1.0F;
         if (this.options.squareMap && this.options.rotates) {
@@ -1586,22 +1595,22 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().translate(-256, -256);
         guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F);
 
-        // guiGraphics.flush(); // FIXME 1.21.6
+        // FIXME 1.21.6 guiGraphics.flush();
 
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
         Vector3f vector3f = new Vector3f();
-        guiGraphics.pose().last().pose().transformPosition(0, 512, 0, vector3f);
+        guiGraphics.pose().transform(0, 512, 0, vector3f);
         bufferBuilder.addVertex(vector3f).setUv(0, 0).setColor(255, 255, 255, 255);
-        guiGraphics.pose().last().pose().transformPosition(512, 512, 0, vector3f);
+        guiGraphics.pose().transform(512, 512, 0, vector3f);
         bufferBuilder.addVertex(vector3f).setUv(1, 0).setColor(255, 255, 255, 255);
-        guiGraphics.pose().last().pose().transformPosition(512, 0, 0, vector3f);
+        guiGraphics.pose().transform(512, 0, 0, vector3f);
         bufferBuilder.addVertex(vector3f).setUv(1, 1).setColor(255, 255, 255, 255);
-        guiGraphics.pose().last().pose().transformPosition(0, 0, 0, vector3f);
+        guiGraphics.pose().transform(0, 0, 0, vector3f);
         bufferBuilder.addVertex(vector3f).setUv(0, 1).setColor(255, 255, 255, 255);
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        RenderSystem.setProjectionMatrix(new Matrix4f().ortho(0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 21000.0F), ProjectionType.ORTHOGRAPHIC);
+        RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
 
         RenderPipeline renderPipeline = RenderPipelines.GUI_TEXTURED;
         try (MeshData meshData = bufferBuilder.build()) {
@@ -1617,12 +1626,12 @@ public class Map implements Runnable, IChangeObserver {
                 indexType = meshData.drawState().indexType();
             }
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(fboTexture, OptionalInt.of(0xff000000))) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0xff000000))) {
                 renderPass.setPipeline(renderPipeline);
                 renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
-                renderPass.drawIndexed(0, meshData.drawState().indexCount());
+                renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
             }
         }
         RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
@@ -1631,7 +1640,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().popMatrix();
 
         // guiGraphics.blit(RenderType::guiTextured, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
@@ -1723,23 +1732,23 @@ public class Map implements Runnable, IChangeObserver {
             int color = pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().translate(x, y, 0.0f);
-                guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-locate));
+                guiGraphics.pose().pushMatrix();
+                guiGraphics.pose().translate(x, y);
+                guiGraphics.pose().rotate(-locate * Mth.DEG_TO_RAD);
                 if (uprightIcon) {
-                    guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
-                    guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(locate));
-                    guiGraphics.pose().translate(-x, -y, 0.0f);
+                    guiGraphics.pose().translate(0.0f, -hypot);
+                    guiGraphics.pose().rotate(locate * Mth.DEG_TO_RAD);
+                    guiGraphics.pose().translate(-x, -y);
                 } else {
-                    guiGraphics.pose().translate(-x, -y, 0.0f);
-                    guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
+                    guiGraphics.pose().translate(-x, -y);
+                    guiGraphics.pose().translate(0.0f, -hypot);
                 }
 
-                icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
+                icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
             } catch (Exception var40) {
                 this.error = "Error: marker overlay not found!";
             } finally {
-                guiGraphics.pose().popPose();
+                guiGraphics.pose().popMatrix();
             }
         } else {
             if (icon == null) {
@@ -1762,33 +1771,33 @@ public class Map implements Runnable, IChangeObserver {
             int color = pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
-                guiGraphics.pose().pushPose();
-                guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-locate));
-                guiGraphics.pose().translate(0.0f, -hypot, 0.0f);
-                guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-(-locate)));
+                guiGraphics.pose().pushMatrix();
+                guiGraphics.pose().rotate(-locate * Mth.DEG_TO_RAD);
+                guiGraphics.pose().translate(0.0f, -hypot);
+                guiGraphics.pose().rotate(locate * Mth.DEG_TO_RAD);
 
-                icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - 4, y - 4, 8, 8, color);
+                icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
             } catch (Exception var42) {
                 this.error = "Error: waypoint overlay not found!";
             } finally {
-                guiGraphics.pose().popPose();
+                guiGraphics.pose().popMatrix();
             }
         }
     }
 
     private void drawArrow(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(scaleProj, scaleProj, 1.0f);
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().scale(scaleProj, scaleProj);
 
-        guiGraphics.pose().translate(x, y, 0.0f);
-        guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate));
-        guiGraphics.pose().translate(-x, -y, 0.0f);
+        guiGraphics.pose().translate(x, y);
+        guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
+        guiGraphics.pose().translate(-x, -y);
 
-        guiGraphics.pose().translate(0, 0, 200.0f);
+        // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 200.0f);
 
         guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
     }
 
     private void renderMapFull(GuiGraphics guiGraphics, int scWidth, int scHeight, float scaleProj) {
@@ -1800,24 +1809,24 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-        PoseStack matrixStack = guiGraphics.pose();
-        matrixStack.pushPose();
-        matrixStack.scale(scaleProj, scaleProj, 1.0F);
-        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, -0.0);
-        matrixStack.mulPose(Axis.ZP.rotationDegrees(this.northRotate));
-        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), -0.0);
+        Matrix3x2fStack matrixStack = guiGraphics.pose();
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj);
+        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F);
+        matrixStack.rotate(this.northRotate * Mth.DEG_TO_RAD);
+        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F));
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
-        matrixStack.popPose();
+        matrixStack.popMatrix();
 
         if (this.options.biomeOverlay != 0) {
             double factor = Math.pow(2.0, 3 - this.zoom);
             int minimumSize = (int) Math.pow(2.0, this.zoom);
             minimumSize *= minimumSize;
             ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
-            matrixStack.pushPose();
-            matrixStack.translate(0.0, 0.0, 1160.0);
+            matrixStack.pushMatrix();
+            // FIXME 1.21.6 matrixStack.translate(0.0, 0.0, 1160.0);
 
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
@@ -1833,7 +1842,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
             }
 
-            matrixStack.popPose();
+            matrixStack.popMatrix();
         }
     }
 
@@ -1843,7 +1852,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        PoseStack poseStack = drawContext.pose();
+        Matrix3x2fStack poseStack = drawContext.pose();
         boolean unicode = minecraft.options.forceUnicodeFont().get();
         float scale = unicode ? 0.65F : 0.5F;
         float rotate;
@@ -1866,33 +1875,33 @@ public class Map implements Runnable, IChangeObserver {
             distance = 32.0F / scale;
         }
 
-        poseStack.pushPose();
-        poseStack.scale(scaleProj, scaleProj, 1.0F);
-        poseStack.scale(scale, scale, 1.0F);
-        poseStack.translate(0, 0, 150);
+        poseStack.pushMatrix();
+        poseStack.scale(scaleProj, scaleProj);
+        poseStack.scale(scale, scale);
+        // FIXME 1.21.6 poseStack.translate(0, 0, 150);
 
-        poseStack.pushPose();
-        poseStack.translate(distance * Math.sin(Math.toRadians(-(rotate - 90.0))), distance * Math.cos(Math.toRadians(-(rotate - 90.0))), 100.0);
+        poseStack.pushMatrix();
+        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate - 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate - 90.0)))));
         this.write(drawContext, "N", x / scale - 2.0F, y / scale - 4.0F, 16777215);
-        poseStack.popPose();
-        poseStack.pushPose();
-        poseStack.translate(distance * Math.sin(Math.toRadians(-rotate)), distance * Math.cos(Math.toRadians(-rotate)), 10.0);
+        poseStack.popMatrix();
+        poseStack.pushMatrix();
+        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-rotate))), (float) (distance * Math.cos(Math.toRadians(-rotate))));
         this.write(drawContext, "E", x / scale - 2.0F, y / scale - 4.0F, 16777215);
-        poseStack.popPose();
-        poseStack.pushPose();
-        poseStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 90.0))), distance * Math.cos(Math.toRadians(-(rotate + 90.0))), 10.0);
+        poseStack.popMatrix();
+        poseStack.pushMatrix();
+        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate + 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate + 90.0)))));
         this.write(drawContext, "S", x / scale - 2.0F, y / scale - 4.0F, 16777215);
-        poseStack.popPose();
-        poseStack.pushPose();
-        poseStack.translate(distance * Math.sin(Math.toRadians(-(rotate + 180.0))), distance * Math.cos(Math.toRadians(-(rotate + 180.0))), 10.0);
+        poseStack.popMatrix();
+        poseStack.pushMatrix();
+        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate + 180.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate + 180.0)))));
         this.write(drawContext, "W", x / scale - 2.0F, y / scale - 4.0F, 16777215);
-        poseStack.popPose();
+        poseStack.popMatrix();
 
-        poseStack.popPose();
+        poseStack.popMatrix();
     }
 
     private void showCoords(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        PoseStack matrixStack = drawContext.pose();
+        Matrix3x2fStack matrixStack = drawContext.pose();
         int textStart;
         if (y > this.scHeight - 37 - 32 - 4 - 15) {
             textStart = y - 32 - 4 - 9;
@@ -1900,14 +1909,14 @@ public class Map implements Runnable, IChangeObserver {
             textStart = y + 32 + 4;
         }
 
-        matrixStack.pushPose();
-        matrixStack.scale(scaleProj, scaleProj, 1.0F);
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj);
 
         if (!this.options.hide && !this.fullscreenMap) {
             boolean unicode = minecraft.options.forceUnicodeFont().get();
             float scale = unicode ? 0.65F : 0.5F;
-            matrixStack.pushPose();
-            matrixStack.scale(scale, scale, 1.0F);
+            matrixStack.pushMatrix();
+            matrixStack.scale(scale, scale);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.textWidth(xy) / 2;
             this.write(drawContext, xy, x / scale - m, textStart / scale, 16777215); // X, Z
@@ -1919,7 +1928,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); // WORLD NAME
             }
 
-            matrixStack.popPose();
+            matrixStack.popMatrix();
         } else {
             int heading = (int) (this.direction + this.northRotate);
             if (heading > 360) {
@@ -1947,7 +1956,7 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        matrixStack.popPose();
+        matrixStack.popMatrix();
     }
 
     private String dCoord(int paramInt1) {

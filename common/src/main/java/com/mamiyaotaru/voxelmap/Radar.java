@@ -16,6 +16,7 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -158,9 +159,9 @@ public class Radar implements IRadar {
     }
 
     public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(scaleProj, scaleProj, 1.0F);
-        guiGraphics.pose().translate(0, 0, 125);
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().scale(scaleProj, scaleProj);
+        // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 125);
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
@@ -212,17 +213,17 @@ public class Radar implements IRadar {
 
             if (inRange) {
                 try {
-                    guiGraphics.pose().pushPose();
+                    guiGraphics.pose().pushMatrix();
                     if (this.options.filtering) {
-                        guiGraphics.pose().translate(x, y, 0.0f);
-                        guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(-contact.angle));
-                        guiGraphics.pose().translate(0.0f, (float) -contact.distance, 0.0f);
-                        guiGraphics.pose().mulPose(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-                        guiGraphics.pose().translate((-x), (-y), 0.0f);
+                        guiGraphics.pose().translate(x, y);
+                        guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
+                        guiGraphics.pose().translate(0.0f, (float) -contact.distance);
+                        guiGraphics.pose().rotate((contact.angle + contact.rotationFactor) * Mth.DEG_TO_RAD);
+                        guiGraphics.pose().translate(-x, -y);
                     } else {
                         wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
                         wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
-                        guiGraphics.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0f);
+                        guiGraphics.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale);
                     }
 
                     float yOffset = 0.0F;
@@ -258,28 +259,28 @@ public class Radar implements IRadar {
                     // }
 
                     int imageSize = (int) (contact.icon.getIconWidth() / 8.0F);
-                    contact.icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
+                    contact.icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
 
                     if (contact.name != null && ((this.options.showPlayerNames && contact.category == MobCategory.PLAYER) || (this.options.showMobNames && contact.category != MobCategory.PLAYER && contact.entity.hasCustomName()))) {
 
                         float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
-                        guiGraphics.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor, 1.0F);
+                        guiGraphics.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor);
 
                         int m = minecraft.font.width(contact.name) / 2;
 
-                        guiGraphics.pose().pushPose();
-                        guiGraphics.pose().translate(0, 0, 900);
+                        guiGraphics.pose().pushMatrix();
+                        // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 900);
                         guiGraphics.drawString(minecraft.font, contact.name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
-                        guiGraphics.pose().popPose();
+                        guiGraphics.pose().popMatrix();
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
                 } finally {
-                    guiGraphics.pose().popPose();
+                    guiGraphics.pose().popMatrix();
                 }
             }
         }
-        guiGraphics.pose().popPose();
+        guiGraphics.pose().popMatrix();
     }
 
     private boolean isHostile(Entity entity) {

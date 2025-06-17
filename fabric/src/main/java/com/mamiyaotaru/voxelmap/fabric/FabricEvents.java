@@ -6,8 +6,9 @@ import com.mamiyaotaru.voxelmap.VoxelMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
@@ -15,18 +16,11 @@ import net.minecraft.resources.ResourceLocation;
 public class FabricEvents implements Events {
     FabricEvents() {
         ResourceLocation voxelMapMinimapLayer = ResourceLocation.parse("voxelmap:minimap");
-        HudLayerRegistrationCallback.EVENT.register(layeredDrawer -> {
-            layeredDrawer.attachLayerAfter(IdentifiedLayer.EXPERIENCE_LEVEL, new IdentifiedLayer() {
-                @Override
-                public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-                    VoxelConstants.renderOverlay(guiGraphics);
-                }
-
-                @Override
-                public ResourceLocation id() {
-                    return voxelMapMinimapLayer;
-                }
-            });
+        HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, voxelMapMinimapLayer, new HudElement() {
+            @Override
+            public void render(GuiGraphics context, DeltaTracker tickCounter) {
+                VoxelConstants.renderOverlay(context);
+            }
         });
     }
 

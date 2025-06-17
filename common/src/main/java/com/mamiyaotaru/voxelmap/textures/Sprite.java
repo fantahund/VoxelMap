@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.textures;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Function;
@@ -120,20 +121,21 @@ public class Sprite {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
     }
 
-    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, float x, float y, float w, float h) {
+    public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h) {
         blit(guiGraphics, renderTypeMap, x, y, h, w, 0xffffffff);
     }
 
-    public void blit(GuiGraphics guiGraphics, Function<ResourceLocation, RenderType> renderTypeMap, float x, float y, float w, float h, int color) {
-        guiGraphics.drawSpecial(bufferSource -> {
-            RenderType renderType = renderTypeMap.apply(textureAtlas.getResourceLocation());
-            Matrix4f matrix4f = guiGraphics.pose().last().pose();
-            VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
-            vertexConsumer.addVertex(matrix4f, x, y, 0.0F).setUv(getMinU(), getMinV()).setColor(color);
-            vertexConsumer.addVertex(matrix4f, x, y + h, 0.0F).setUv(getMinU(), getMaxV()).setColor(color);
-            vertexConsumer.addVertex(matrix4f, x + w, y + h, 0.0F).setUv(getMaxU(), getMaxV()).setColor(color);
-            vertexConsumer.addVertex(matrix4f, x + w, y, 0.0F).setUv(getMaxU(), getMinV()).setColor(color);
-        });
+    public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
+        // FIXME 1.21.6 Draw Sprite
+        // guiGraphics.drawSpecial(bufferSource -> {
+        // RenderType renderType = renderTypeMap.apply(textureAtlas.getResourceLocation());
+        // Matrix4f matrix4f = guiGraphics.pose().last().pose();
+        // VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
+        // vertexConsumer.addVertex(matrix4f, x, y, 0.0F).setUv(getMinU(), getMinV()).setColor(color);
+        // vertexConsumer.addVertex(matrix4f, x, y + h, 0.0F).setUv(getMinU(), getMaxV()).setColor(color);
+        // vertexConsumer.addVertex(matrix4f, x + w, y + h, 0.0F).setUv(getMaxU(), getMaxV()).setColor(color);
+        // vertexConsumer.addVertex(matrix4f, x + w, y, 0.0F).setUv(getMaxU(), getMinV()).setColor(color);
+        // });
     }
 
     public ResourceLocation getResourceLocation() {

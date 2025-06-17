@@ -283,7 +283,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         int color = this.waypoint.getUnifiedColor();
         drawContext.blit(RenderPipelines.GUI_TEXTURED, BLANK, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 16, 10, color);
         drawContext.blit(RenderPipelines.GUI_TEXTURED, waypointIcon, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 0.0F, 0.0F, 16, 16, 16, 16, color);
-        // drawContext.pose().translate(0, 0, 20); // FIXME 1.21.6
+        // FIXME 1.21.6 drawContext.pose().translate(0, 0, 20);
         if (this.choosingColor || this.choosingIcon) {
             renderBackgroundTexture(drawContext);
 

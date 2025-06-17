@@ -39,7 +39,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
         this.parent = parent;
         this.thePlayer = VoxelConstants.getPlayer();
-        this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), Input.EMPTY, false); //FIXME 1.21.6
+        this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), Input.EMPTY, false); // FIXME 1.21.6 Camera
         this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
         this.camera.moveOrInterpolateTo(new Vec3(this.thePlayer.getX(), this.thePlayer.getY() + 0.35, this.thePlayer.getZ()), this.thePlayer.getYRot(), 0.0F);
         this.yaw = this.thePlayer.getYRot();
