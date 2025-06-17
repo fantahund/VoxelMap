@@ -28,8 +28,9 @@
     "mixin.voxelmap.fabric.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.7",
-    "fabric": "*"
+    "fabricloader": ">=0.16.14",
+    "fabric": ">=0.127.0",
+    "minecraft": "1.21.6"
   },
   "breaks": {
     "iris": "<1.8.11-"
