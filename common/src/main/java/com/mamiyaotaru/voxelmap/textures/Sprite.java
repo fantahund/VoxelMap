@@ -123,8 +123,8 @@ public class Sprite {
     }
 
     public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
-        // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, minU, maxU, minV, maxV, color);
-        VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, 0, 1, 0, 1, color);
+        VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, minU, maxU, minV, maxV, color);
+        // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, 0, 1, 0, 1, color);
     }
 
     public ResourceLocation getResourceLocation() {
