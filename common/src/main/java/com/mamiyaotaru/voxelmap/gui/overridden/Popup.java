@@ -1,10 +1,12 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4f;
 
@@ -86,42 +88,21 @@ public class Popup {
 
     public void drawPopup(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         guiGraphics.pose().pushMatrix();
-        // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 10);
-        // FIXME 1.21.6 Popup background
-        // guiGraphics.drawSpecial(bufferSource -> {
-        // Matrix4f matrix4f = guiGraphics.pose().last().pose();
+        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 10);
+
         // // background
-        // RenderType renderType = RenderType.guiTextured(VoxelConstants.getOptionsBackgroundTexture());
-        // VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
-        // float renderedTextureSize = 32.0F;
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y + this.h, 0.0F).setUv(this.x / renderedTextureSize, this.y / renderedTextureSize).setColor(64, 64, 64, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y + this.h, 0.0F).setUv((this.x + this.w) / renderedTextureSize, this.y / renderedTextureSize).setColor(64, 64, 64, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y, 0.0F).setUv((this.x + this.w) / renderedTextureSize, (this.y + this.h) / renderedTextureSize).setColor(64, 64, 64, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y, 0.0F).setUv(this.x / renderedTextureSize, (this.y + this.h) / renderedTextureSize).setColor(64, 64, 64, 255);
-        //
-        // // border
-        // renderType = RenderType.gui();
-        // vertexConsumer = bufferSource.getBuffer(renderType);
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y + 4, 0.0F).setColor(0, 0, 0, 0);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y, 0.0F).setColor(0, 0, 0, 255);
-        //
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y + this.h - 4, 0.0F).setColor(0, 0, 0, 0);
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y + this.h - 4, 0.0F).setColor(0, 0, 0, 0);
-        //
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y, 0.0F).setColor(0, 0, 0, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x + 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
-        // vertexConsumer.addVertex(matrix4f, this.x + 4, this.y, 0.0F).setColor(0, 0, 0, 0);
-        //
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w - 4, this.y, 0.0F).setColor(0, 0, 0, 0);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w - 4, this.y + this.h, 0.0F).setColor(0, 0, 0, 0);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y + this.h, 0.0F).setColor(0, 0, 0, 255);
-        // vertexConsumer.addVertex(matrix4f, this.x + this.w, this.y, 0.0F).setColor(0, 0, 0, 255);
-        // });
+        float renderedTextureSize = 32.0F;
+        float umin = this.x / renderedTextureSize;
+        float umax = (this.x + this.w) / renderedTextureSize;
+        float vmin = this.y / renderedTextureSize;
+        float vmax = (this.y + this.h) / renderedTextureSize;
+        VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xffffffff);
+        VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y, x + w, y + 4, 0xff000000, 0xff000000, 0x00000000, 0x00000000);
+        VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y + h - 4, x + w, y + h, 0x00000000, 0x00000000, 0xff000000, 0xff000000);
+
+        VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y, x + 4, y + h, 0xff000000, 0x00000000, 0xff000000, 0x00000000);
+        VoxelmapGuiGraphics.fillGradient(guiGraphics, x + w - 4, y, x + w, y + h, 0x00000000, 0xff000000, 0x00000000, 0xff000000);
+
 
         for (int t = 0; t < this.entries.length; ++t) {
             int color = !this.entries[t].enabled ? 10526880 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 16777120 : 14737632);

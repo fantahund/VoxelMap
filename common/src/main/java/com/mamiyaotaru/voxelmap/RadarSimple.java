@@ -179,7 +179,7 @@ public class RadarSimple implements IRadar {
                     guiGraphics.pose().translate(0.0f, (float) -contact.distance);
                     guiGraphics.pose().rotate((contact.angle + contactFacing) * Mth.DEG_TO_RAD);
                     guiGraphics.pose().translate(-x, -y);
-                    // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, 125);
+                    // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 125);
 
                     this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
                     if (this.options.showFacing) {

@@ -17,11 +17,13 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.BiomeMapData;
+import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -491,7 +493,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         guiGraphics.pose().pushMatrix();
-        // FIXME 1.21.6 guiGraphics.pose().translate(0, 0, -200);
+        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, -200);
         this.buttonWaypoints.active = VoxelMap.mapOptions.waypointsAllowed;
         this.zoomGoal = this.bindZoom(this.zoomGoal);
         if (this.mouseX != mouseX || this.mouseY != mouseY) {
@@ -662,31 +664,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float z1 = (float) (worldBorder.getMinZ());
                 float x2 = (float) (worldBorder.getMaxX());
                 float z2 = (float) (worldBorder.getMaxZ());
-                // FIXME 1.21.6 Draw WorldBorder
-                // guiGraphics.drawSpecial(bufferSource -> {
-                // Matrix4f matrix4f = guiGraphics.pose().last().pose();
-                //
-                // RenderType renderType = RenderType.debugLineStrip(1.0);
-                // VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
-                //
-                // vertexConsumer.addVertex(matrix4f, x1, z1, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x1, z2, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x2, z2, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x2, z1, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x1, z1, 0).setColor(255, 0, 0, 255);
-                //
-                // vertexConsumer.addVertex(matrix4f, x1 - scale, z1 - scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x1 - scale, z2 + scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x2 + scale, z2 + scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x2 + scale, z1 - scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x1 - scale, z1 - scale, 0).setColor(255, 0, 0, 255);
-                //
-                // vertexConsumer.addVertex(matrix4f, x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x1 + scale, z2 - scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x2 - scale, z2 - scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x2 - scale, z1 + scale, 0).setColor(255, 0, 0, 255);
-                // vertexConsumer.addVertex(matrix4f, x1 + scale, z1 + scale, 0).setColor(255, 0, 0, 255);
-                // });
+
+                VoxelmapGuiGraphics.fillGradient(guiGraphics, x1 - scale, z1 - scale, x2 + scale, z1 + scale, 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000);
+                VoxelmapGuiGraphics.fillGradient(guiGraphics, x1 - scale, z2 - scale, x2 + scale, z2 + scale, 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000);
+
+                VoxelmapGuiGraphics.fillGradient(guiGraphics, x1 - scale, z1 - scale, x1 + scale, z2 + scale, 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000);
+                VoxelmapGuiGraphics.fillGradient(guiGraphics, x2 - scale, z1 - scale, x2 + scale, z2 + scale, 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000);
             }
 
             float cursorX;
@@ -731,18 +714,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float y = -10.0F / this.scScale + playerZ * this.mapToGui;
                 float width = 20.0F / this.scScale;
                 float height = 20.0F / this.scScale;
-                // FIXME 1.21.6 Draw player?
-                // guiGraphics.drawSpecial(bufferSource -> {
-                // Matrix4f matrix4f = guiGraphics.pose().last().pose();
-                //
-                // RenderType renderType = GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_FILTER_MIN.apply(voxelmapSkinLocation);
-                // VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
-                //
-                // vertexConsumer.addVertex(matrix4f, x + 0.0F, y + height, 0).setUv(0.0F, 1.0F).setColor(0xffffffff);
-                // vertexConsumer.addVertex(matrix4f, x + width, y + height, 0).setUv(1.0F, 1.0F).setColor(0xffffffff);
-                // vertexConsumer.addVertex(matrix4f, x + width, y + 0.0F, 0).setUv(1.0F, 0.0F).setColor(0xffffffff);
-                // vertexConsumer.addVertex(matrix4f, x + 0.0F, y + 0.0F, 0).setUv(0.0F, 0.0F).setColor(0xffffffff);
-                // });
+                // FIXME 1.21.6 Filtering: Draw Player
+                VoxelmapGuiGraphics.blitFloat(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, voxelmapSkinLocation, x, y, width, height, 0, 1, 0, 1, 0xffffffff);
 
                 guiGraphics.pose().popMatrix();
             }
@@ -977,17 +950,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     protected void overlayBackground(GuiGraphics guiGraphics, int startY, int endY, int startAlpha, int endAlpha) {
-        // FIXME 1.21.6 Draw background
-        // guiGraphics.drawSpecial(bufferSource -> {
-        // Matrix4f matrix4f = guiGraphics.pose().last().pose();
-        // RenderType renderType = RenderType.guiTextured(VoxelConstants.getOptionsBackgroundTexture());
-        // VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
-        // float renderedTextureSize = 32.0F;
-        // vertexConsumer.addVertex(matrix4f, 0.0F, endY, 0.0F).setUv(0.0F, endY / renderedTextureSize).setColor(64, 64, 64, endAlpha);
-        // vertexConsumer.addVertex(matrix4f, this.getWidth(), endY, 0.0F).setUv(this.width / renderedTextureSize, endY / renderedTextureSize).setColor(64, 64, 64, endAlpha);
-        // vertexConsumer.addVertex(matrix4f, this.getWidth(), startY, 0.0F).setUv(this.width / renderedTextureSize, startY / renderedTextureSize).setColor(64, 64, 64, startAlpha);
-        // vertexConsumer.addVertex(matrix4f, 0.0F, startY, 0.0F).setUv(0.0F, startY / renderedTextureSize).setColor(64, 64, 64, startAlpha);
-        // });
+        int colorBase = 0x404040;
+        int colorStart = (startAlpha << 24) | colorBase;
+        int colorEnd = (endAlpha << 24) | colorBase;
+        float renderedTextureSize = 32.0F;
+        VoxelmapGuiGraphics.blitFloatGradient(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), 0, startY, this.getWidth(), endY, 0, this.width / renderedTextureSize, 0, endY / renderedTextureSize, colorStart, colorEnd);
     }
 
     @Override

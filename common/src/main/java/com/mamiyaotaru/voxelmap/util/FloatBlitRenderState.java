@@ -22,6 +22,7 @@ public record FloatBlitRenderState(
         float v0,
         float v1,
         int color,
+        int color2,
         @Nullable ScreenRectangle scissorArea,
         @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
     public FloatBlitRenderState(
@@ -37,16 +38,17 @@ public record FloatBlitRenderState(
             float v0,
             float v1,
             int color,
+            int color2,
             @Nullable ScreenRectangle screenRectangle
         ) {
-            this(renderPipeline, textureSetup, matrix3x2f, x0, y0, x1, y1, u0, u1, v0, v1, color, screenRectangle, getBounds(x0, y0, x1, y1, matrix3x2f, screenRectangle));
+            this(renderPipeline, textureSetup, matrix3x2f, x0, y0, x1, y1, u0, u1, v0, v1, color, color2, screenRectangle, getBounds(x0, y0, x1, y1, matrix3x2f, screenRectangle));
         }
 
     @Override
     public void buildVertices(VertexConsumer vertexConsumer, float f) {
         vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0(), f).setUv(this.u0(), this.v0()).setColor(this.color());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1(), f).setUv(this.u0(), this.v1()).setColor(this.color());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1(), f).setUv(this.u1(), this.v1()).setColor(this.color());
+        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1(), f).setUv(this.u0(), this.v1()).setColor(this.color2());
+        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1(), f).setUv(this.u1(), this.v1()).setColor(this.color2());
         vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0(), f).setUv(this.u1(), this.v0()).setColor(this.color());
     }
 
