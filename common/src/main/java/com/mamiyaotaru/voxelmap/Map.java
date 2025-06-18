@@ -1554,7 +1554,6 @@ public class Map implements Runnable, IChangeObserver {
     private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale, float scaleProj) {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().scale(scaleProj, scaleProj);
-        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 122);
 
         float scale = 1.0F;
         if (this.options.squareMap && this.options.rotates) {
@@ -1589,8 +1588,6 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().scale(scale, scale);
         guiGraphics.pose().translate(-256, -256);
         guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F);
-
-        // FIXME 1.21.6 guiGraphics.flush();
 
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
         Vector3f vector3f = new Vector3f();
@@ -1789,8 +1786,6 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
         guiGraphics.pose().translate(-x, -y);
 
-        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 200.0f);
-
         guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
         guiGraphics.pose().popMatrix();
@@ -1822,7 +1817,6 @@ public class Map implements Runnable, IChangeObserver {
             minimumSize *= minimumSize;
             ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
             matrixStack.pushMatrix();
-            // FIXME 1.21.6 z-order matrixStack.translate(0.0, 0.0, 1160.0);
 
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
@@ -1874,7 +1868,6 @@ public class Map implements Runnable, IChangeObserver {
         poseStack.pushMatrix();
         poseStack.scale(scaleProj, scaleProj);
         poseStack.scale(scale, scale);
-        // FIXME 1.21.6 z-order poseStack.translate(0, 0, 150);
 
         poseStack.pushMatrix();
         poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate - 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate - 90.0)))));

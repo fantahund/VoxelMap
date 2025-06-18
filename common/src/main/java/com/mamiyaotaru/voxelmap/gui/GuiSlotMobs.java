@@ -137,7 +137,6 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
                 sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, x + 2, y - 2, 18, 18);
             }
             drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-            // FIXME 1.21.6 drawContext.flush();
         }
 
         @Override

@@ -487,7 +487,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         guiGraphics.pose().pushMatrix();
-        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, -200);
         this.buttonWaypoints.active = VoxelMap.mapOptions.waypointsAllowed;
         this.zoomGoal = this.bindZoom(this.zoomGoal);
         if (this.mouseX != mouseX || this.mouseY != mouseY) {

@@ -85,8 +85,6 @@ public class Popup {
 
     public void drawPopup(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         guiGraphics.pose().pushMatrix();
-        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 10);
-
         // background
         float renderedTextureSize = 32.0F;
         float umin = this.x / renderedTextureSize;

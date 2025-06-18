@@ -114,7 +114,6 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
-        // FIXME 1.21.6 drawContext.flush();
         drawContext.drawCenteredString(this.getFontRenderer(), Component.translatable("worldmap.subworld.edit"), this.getWidth() / 2, 20, 0xFFFFFFFF);
         drawContext.drawString(this.getFontRenderer(), Component.translatable("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 0xFFA0A0A0);
         this.subworldNameField.render(drawContext, mouseX, mouseY, delta);

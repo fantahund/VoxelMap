@@ -160,7 +160,6 @@ public class Radar implements IRadar {
     public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().scale(scaleProj, scaleProj);
-        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 125);
         double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
@@ -268,7 +267,6 @@ public class Radar implements IRadar {
                         int m = minecraft.font.width(contact.name) / 2;
 
                         guiGraphics.pose().pushMatrix();
-                        // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 900);
                         guiGraphics.drawString(minecraft.font, contact.name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xFFFFFFFF, false);
                         guiGraphics.pose().popMatrix();
                     }
