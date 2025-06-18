@@ -668,7 +668,7 @@ public class Map implements Runnable, IChangeObserver {
         double scaledHeightD = (double) minecraft.getWindow().getHeight() / scScale;
         this.scWidth = Mth.ceil(scaledWidthD);
         this.scHeight = Mth.ceil(scaledHeightD);
-        float scaleProj = (float) (scScale / minecraft.getWindow().getGuiScale());
+        float scaleProj = (float) (scScale) / minecraft.getWindow().getGuiScale();
 
         int mapX;
         if (this.options.mapCorner != 0 && this.options.mapCorner != 3) {
