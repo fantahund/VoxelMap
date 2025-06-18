@@ -2,13 +2,12 @@ package com.mamiyaotaru.voxelmap.packets;
 
 import com.google.gson.Gson;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.Map;
 
 public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<VoxelmapSettingsS2C> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("voxelmap", "settings"));

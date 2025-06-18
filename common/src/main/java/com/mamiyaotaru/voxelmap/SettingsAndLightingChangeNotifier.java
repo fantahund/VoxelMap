@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
-
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class SettingsAndLightingChangeNotifier {

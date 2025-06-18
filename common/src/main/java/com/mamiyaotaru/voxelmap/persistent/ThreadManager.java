@@ -1,14 +1,13 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
-import org.jetbrains.annotations.NotNull;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.jetbrains.annotations.NotNull;
 
 public final class ThreadManager {
     static final int concurrentThreads = Math.min(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), 4);

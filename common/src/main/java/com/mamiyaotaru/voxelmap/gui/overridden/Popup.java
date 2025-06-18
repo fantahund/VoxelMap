@@ -2,13 +2,10 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
-import org.joml.Matrix4f;
 
 public class Popup {
     private final Font fontRendererObj;

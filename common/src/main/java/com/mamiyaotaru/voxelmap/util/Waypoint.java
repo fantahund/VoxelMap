@@ -1,11 +1,10 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.TreeSet;
-
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;

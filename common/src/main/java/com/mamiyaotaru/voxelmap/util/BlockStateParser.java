@@ -1,8 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.google.common.collect.BiMap;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.Optional;
 import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,6 +9,7 @@ import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jetbrains.annotations.Nullable;
 
 public final class BlockStateParser {
     private BlockStateParser() {}
