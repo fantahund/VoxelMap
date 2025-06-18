@@ -123,12 +123,12 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         renderBackgroundTexture(drawContext);
         this.tooltip = null;
         this.playerList.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawString(this.getFontRenderer(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 10526880);
+        drawContext.drawString(this.getFontRenderer(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 0xFFA0A0A0);
         this.message.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawCenteredString(this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 16777215);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 10526880);
+        drawContext.drawCenteredString(this.getFontRenderer(), SHARE_WITH, this.getWidth() / 2, 75, 0xFFFFFFFF);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 0xFFA0A0A0);
         this.filter.render(drawContext, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);

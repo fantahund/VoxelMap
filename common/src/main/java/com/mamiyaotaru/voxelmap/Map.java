@@ -1838,9 +1838,9 @@ public class Map implements Runnable, IChangeObserver {
                     float x = (float) (o.x * factor);
                     float z = (float) (o.z * factor);
                     if (this.options.oldNorth) {
-                        this.write(guiGraphics, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 16777215);
+                        this.write(guiGraphics, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 0xFFFFFFFF);
                     } else {
-                        this.write(guiGraphics, name, left + x - (nameWidth / 2f), top + z - 3.0F, 16777215);
+                        this.write(guiGraphics, name, left + x - (nameWidth / 2f), top + z - 3.0F, 0xFFFFFFFF);
                     }
                 }
             }
@@ -1885,19 +1885,19 @@ public class Map implements Runnable, IChangeObserver {
 
         poseStack.pushMatrix();
         poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate - 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate - 90.0)))));
-        this.write(drawContext, "N", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "N", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
         poseStack.popMatrix();
         poseStack.pushMatrix();
         poseStack.translate((float) (distance * Math.sin(Math.toRadians(-rotate))), (float) (distance * Math.cos(Math.toRadians(-rotate))));
-        this.write(drawContext, "E", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "E", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
         poseStack.popMatrix();
         poseStack.pushMatrix();
         poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate + 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate + 90.0)))));
-        this.write(drawContext, "S", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "S", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
         poseStack.popMatrix();
         poseStack.pushMatrix();
         poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate + 180.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate + 180.0)))));
-        this.write(drawContext, "W", x / scale - 2.0F, y / scale - 4.0F, 16777215);
+        this.write(drawContext, "W", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
         poseStack.popMatrix();
 
         poseStack.popMatrix();
@@ -1922,13 +1922,13 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.scale(scale, scale);
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.textWidth(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale, 16777215); // X, Z
+            this.write(drawContext, xy, x / scale - m, textStart / scale, 0xFFFFFFFF); // X, Z
             xy = Integer.toString(GameVariableAccessShim.yCoord());
             m = this.textWidth(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 16777215); // Y
+            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 0xFFFFFFFF); // Y
             if (this.ztimer > 0) {
                 m = this.textWidth(this.error) / 2;
-                this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 16777215); // WORLD NAME
+                this.write(drawContext, this.error, x / scale - m, textStart / scale + 19.0F, 0xFFFFFFFF); // WORLD NAME
             }
 
             matrixStack.popMatrix();
@@ -1952,10 +1952,10 @@ public class Map implements Runnable, IChangeObserver {
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
             int m = this.textWidth(stats) / 2;
-            this.write(drawContext, stats, (this.scWidth / 2f - m), 5.0F, 16777215);
+            this.write(drawContext, stats, (this.scWidth / 2f - m), 5.0F, 0xFFFFFFFF);
             if (this.ztimer > 0) {
                 m = this.textWidth(this.error) / 2;
-                this.write(drawContext, this.error, (this.scWidth / 2f - m), 15.0F, 16777215);
+                this.write(drawContext, this.error, (this.scWidth / 2f - m), 15.0F, 0xFFFFFFFF);
             }
         }
 

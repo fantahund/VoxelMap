@@ -105,9 +105,9 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
         // FIXME 1.21.6 drawContext.flush();
-        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 16777215);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }

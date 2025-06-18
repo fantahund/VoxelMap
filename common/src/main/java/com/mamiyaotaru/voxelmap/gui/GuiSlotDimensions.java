@@ -88,7 +88,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         }
 
         public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.width / 2, y + 3, 16777215);
+            drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.width / 2, y + 3, 0xFFFFFFFF);
             byte padding = 4;
             byte iconWidth = 18;
             x = this.parentGui.getWidth() / 2;

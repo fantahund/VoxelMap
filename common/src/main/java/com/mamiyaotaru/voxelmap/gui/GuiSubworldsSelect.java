@@ -160,8 +160,8 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         int titleStringWidth = this.getFontRenderer().width(this.title);
         titleStringWidth = Math.max(titleStringWidth, this.getFontRenderer().width(this.select));
         drawContext.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.title, this.width / 2, 5, 16777215);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.select, this.width / 2, 15, 16711680);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.title, this.width / 2, 5, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.select, this.width / 2, 15, 0xFFFF0000);
         this.camera.xRotO = 0.0F;
         this.camera.setXRot(0.0F);
         this.camera.yRotO = this.yaw;

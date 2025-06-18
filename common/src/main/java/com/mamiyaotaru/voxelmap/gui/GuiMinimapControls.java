@@ -78,7 +78,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
         // FIXME 1.21.6 drawContext.flush();
-        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
         int leftBorder = this.getLeftBorder();
 
         for (int keyCounter = 0; keyCounter < this.options.keyBindings.length; ++keyCounter) {
@@ -109,11 +109,11 @@ public class GuiMinimapControls extends GuiScreenMinimap {
                 ((Button) this.getButtonList().get(keyCounter)).setMessage(this.options.getKeybindDisplayString(keyCounter));
             }
 
-            drawContext.drawString(this.getFontRenderer(), this.options.getKeyBindingDescription(keyCounter), leftBorder + keyCounter % 2 * 160 + 70 + 6, this.getHeight() / 6 + 24 * (keyCounter >> 1) + 7, -1);
+            drawContext.drawString(this.getFontRenderer(), this.options.getKeyBindingDescription(keyCounter), leftBorder + keyCounter % 2 * 160 + 70 + 6, this.getHeight() / 6 + 24 * (keyCounter >> 1) + 7, 0xFFFFFFFF);
         }
 
-        drawContext.drawCenteredString(this.getFontRenderer(), I18n.get("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() / 6 + 115, 16777215);
-        drawContext.drawCenteredString(this.getFontRenderer(), I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() / 6 + 129, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), I18n.get("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() / 6 + 115, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFontRenderer(), I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() / 6 + 129, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }

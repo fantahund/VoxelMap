@@ -798,7 +798,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                             float x = biomeLabel.x * biomeScaleX / this.scScale;
                             float z = biomeLabel.z * biomeScaleY / this.scScale;
 
-                            this.write(guiGraphics, label, x - (nameWidth / 2f), this.top + z - 3.0F, 0xFFFFFF);
+                            this.write(guiGraphics, label, x - (nameWidth / 2f), this.top + z - 3.0F, 0xFFFFFFFF);
                         }
                     }
                 }
@@ -817,13 +817,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.overlayBackground(guiGraphics, 0, this.top, 255, 255);
         this.overlayBackground(guiGraphics, this.bottom, this.getHeight(), 255, 255);
         if (VoxelMap.mapOptions.worldmapAllowed) {
-            guiGraphics.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 0xFFFFFF);
+            guiGraphics.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 16, 0xFFFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
             int z = (int) Math.floor(cursorCoordZ);
             if (VoxelConstants.getVoxelMapInstance().getMapOptions().coords) {
                 if (!this.editingCoordinates) {
-                    guiGraphics.drawString(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 0xFFFFFF);
-                    guiGraphics.drawString(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 0xFFFFFF);
+                    guiGraphics.drawString(this.getFontRenderer(), "X: " + x, this.sideMargin, 16, 0xFFFFFFFF);
+                    guiGraphics.drawString(this.getFontRenderer(), "Z: " + z, this.sideMargin + 64, 16, 0xFFFFFFFF);
                 } else {
                     this.coordinates.render(guiGraphics, mouseX, mouseY, delta);
                 }
@@ -847,7 +847,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
         } else {
-            guiGraphics.drawString(this.getFontRenderer(), Component.translatable("worldmap.disabled"), this.sideMargin, 16, 0xFFFFFF);
+            guiGraphics.drawString(this.getFontRenderer(), Component.translatable("worldmap.disabled"), this.sideMargin, 16, 0xFFFFFFFF);
         }
         super.render(guiGraphics, mouseX, mouseY, delta);
     }
@@ -920,7 +920,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 poseStack.rotate(-90.0F * Mth.DEG_TO_RAD);
                 poseStack.translate(-(ptX / fontScale), -(ptZ / fontScale));
             }
-            this.write(guiGraphics, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 8, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFF);
+            this.write(guiGraphics, name, ptX * this.mapToGui / fontScale - m, ptZ * this.mapToGui / fontScale + 8, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF);
             poseStack.popMatrix();
         }
     }

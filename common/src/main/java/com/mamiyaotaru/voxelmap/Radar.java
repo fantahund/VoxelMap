@@ -270,7 +270,7 @@ public class Radar implements IRadar {
 
                         guiGraphics.pose().pushMatrix();
                         // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 900);
-                        guiGraphics.drawString(minecraft.font, contact.name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xffffffff, false);
+                        guiGraphics.drawString(minecraft.font, contact.name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xFFFFFFFF, false);
                         guiGraphics.pose().popMatrix();
                     }
                 } catch (Exception e) {

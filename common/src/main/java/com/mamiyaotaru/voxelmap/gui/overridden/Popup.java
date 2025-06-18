@@ -90,13 +90,13 @@ public class Popup {
         guiGraphics.pose().pushMatrix();
         // FIXME 1.21.6 z-order guiGraphics.pose().translate(0, 0, 10);
 
-        // // background
+        // background
         float renderedTextureSize = 32.0F;
         float umin = this.x / renderedTextureSize;
         float umax = (this.x + this.w) / renderedTextureSize;
         float vmin = this.y / renderedTextureSize;
         float vmax = (this.y + this.h) / renderedTextureSize;
-        VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xffffffff);
+        VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xff404040);
         VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y, x + w, y + 4, 0xff000000, 0xff000000, 0x00000000, 0x00000000);
         VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y + h - 4, x + w, y + h, 0x00000000, 0x00000000, 0xff000000, 0xff000000);
 
@@ -105,7 +105,7 @@ public class Popup {
 
 
         for (int t = 0; t < this.entries.length; ++t) {
-            int color = !this.entries[t].enabled ? 10526880 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 16777120 : 14737632);
+            int color = !this.entries[t].enabled ? 0xFFA0A0A0 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 0xFFFFFFA0 : 0xFFE0E0E0);
             guiGraphics.drawString(this.fontRendererObj, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);
         }
         guiGraphics.pose().popMatrix();

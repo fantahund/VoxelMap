@@ -266,11 +266,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         if (!(this.choosingColor || this.choosingIcon)) {
             renderBackgroundTexture(drawContext);
         }
-        drawContext.drawCenteredString(this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), this.getWidth() / 2, 20, 16777215);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 16777215);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 16777215);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("Y"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 16777215);
-        drawContext.drawString(this.getFontRenderer(), I18n.get("Z"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), (this.parentGui == null || !this.parentGui.isEditing()) && !this.editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), this.getWidth() / 2, 20, 0xFFFFFFFF);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("minimap.waypoints.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 0xFFFFFFFF);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 0xFFFFFFFF);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("Y"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 0xFFFFFFFF);
+        drawContext.drawString(this.getFontRenderer(), I18n.get("Z"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 0xFFFFFFFF);
         super.render(drawContext, this.choosingColor || this.choosingIcon ? 0 : mouseX, this.choosingColor || this.choosingIcon ? 0 : mouseY, delta);
 
         int buttonListY = this.getHeight() / 6 + 88;

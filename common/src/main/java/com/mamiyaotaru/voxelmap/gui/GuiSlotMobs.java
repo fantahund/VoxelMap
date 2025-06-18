@@ -120,7 +120,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
-            int color = -16777216 + (red << 16) + (green << 8);
+            int color = 0xFF000000 + (red << 16) + (green << 8);
             drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, y + 3, color);
             byte padding = 3;
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {

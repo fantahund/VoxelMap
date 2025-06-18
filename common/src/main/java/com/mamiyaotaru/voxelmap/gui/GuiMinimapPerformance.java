@@ -147,7 +147,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
         // FIXME 1.21.6 drawContext.flush();
-        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 16777215);
+        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }
