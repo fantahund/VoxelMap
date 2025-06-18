@@ -1560,7 +1560,6 @@ public class Map implements Runnable, IChangeObserver {
             scale = 1.4142F;
         }
 
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
@@ -1633,6 +1632,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().popMatrix();
 
         // guiGraphics.blit(RenderType::guiTextured, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
         guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
@@ -1786,7 +1786,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
         guiGraphics.pose().translate(-x, -y);
 
-        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
         guiGraphics.pose().popMatrix();
     }
