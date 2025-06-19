@@ -1577,6 +1577,13 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().identity();
 
+        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
+
+        bufferBuilder.addVertex(-256, 256, -2500).setUv(0, 0).setColor(255, 255, 255, 255);
+        bufferBuilder.addVertex(256, 256, -2500).setUv(1, 0).setColor(255, 255, 255, 255);
+        bufferBuilder.addVertex(256, -256, -2500).setUv(1, 1).setColor(255, 255, 255, 255);
+        bufferBuilder.addVertex(-256, -256, -2500).setUv(0, 1).setColor(255, 255, 255, 255);
+
         // guiGraphics.pose().translate(256, 256);
         if (!this.options.rotates) {
             guiGraphics.pose().rotate(-this.northRotate * Mth.DEG_TO_RAD);
@@ -1587,7 +1594,6 @@ public class Map implements Runnable, IChangeObserver {
         // guiGraphics.pose().translate(-256, -256);
         guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F);
 
-        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
         Vector3f vector3f = new Vector3f();
         guiGraphics.pose().transform(-256, 256, 1, vector3f);
         bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(0, 0).setColor(255, 255, 255, 255);
@@ -1642,11 +1648,11 @@ public class Map implements Runnable, IChangeObserver {
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 if (!this.options.squareMap) {
                     renderPass.bindSampler("Sampler0", circleStencilTexture);
-                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount() / 2, 1);
                     renderPass.setPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE_DST_ALPHA);
                 }
                 renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
-                renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+                renderPass.drawIndexed(0, meshData.drawState().indexCount() / 2, meshData.drawState().indexCount() / 2, 1);
             }
         }
         RenderSystem.getModelViewStack().popMatrix();
