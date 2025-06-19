@@ -180,6 +180,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
 
         DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
+        texture.setFilter(true, false);
         minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 
@@ -707,7 +708,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float y = -10.0F / this.scScale + playerZ * this.mapToGui;
                 float width = 20.0F / this.scScale;
                 float height = 20.0F / this.scScale;
-                // FIXME 1.21.6 Filtering: Draw Player
                 VoxelmapGuiGraphics.blitFloat(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, voxelmapSkinLocation, x, y, width, height, 0, 1, 0, 1, 0xffffffff);
 
                 guiGraphics.pose().popMatrix();

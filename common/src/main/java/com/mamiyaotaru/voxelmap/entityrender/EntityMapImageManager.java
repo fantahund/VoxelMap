@@ -74,6 +74,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import org.joml.Vector4f;
 
 public class EntityMapImageManager {
     public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/mobs");
@@ -94,6 +95,7 @@ public class EntityMapImageManager {
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
+        this.textureAtlas.setFilter(true, false);
         this.textureAtlas.reset();
         this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
@@ -249,6 +251,16 @@ public class EntityMapImageManager {
         AbstractTexture texture = minecraft.getTextureManager().getTexture(resourceLocation);
         AbstractTexture texture2 = resourceLocation2 == null ? null : minecraft.getTextureManager().getTexture(resourceLocation2);
 
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
+                .writeTransform(
+                        RenderSystem.getModelViewMatrix(),
+                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
+                        RenderSystem.getModelOffset(),
+                        RenderSystem.getTextureMatrix(),
+                        RenderSystem.getShaderLineWidth());
+
         try (MeshData meshData = bufferBuilder.build()) {
             GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer indexBuffer;
@@ -272,6 +284,7 @@ public class EntityMapImageManager {
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
+                renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.bindSampler("Sampler0", texture.getTextureView());
                 // renderPass.bindSampler("Sampler1", texture.getTexture()); // overlay
                 // minecraft.gameRenderer.overlayTexture().setupOverlayColor();
@@ -286,7 +299,7 @@ public class EntityMapImageManager {
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
-
+            RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
 
         }

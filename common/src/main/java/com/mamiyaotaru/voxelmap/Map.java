@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
+import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
@@ -23,6 +24,7 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -161,7 +163,6 @@ public class Map implements Runnable, IChangeObserver {
     private GpuTexture fboTexture;
     private GpuTextureView fboTextureView;
     private Tesselator fboTessellator = new Tesselator(4096);
-    private final ResourceLocation resourceFboTexture = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/fbo");
     private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
     public Map() {
@@ -175,7 +176,6 @@ public class Map implements Runnable, IChangeObserver {
         resourceMapImageUnfiltered[2] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/2");
         resourceMapImageUnfiltered[3] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/3");
         resourceMapImageUnfiltered[4] = ResourceLocation.fromNamespaceAndPath("voxelmap", "map/unfiltered/4");
-
 
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
@@ -254,7 +254,7 @@ public class Map implements Runnable, IChangeObserver {
         // DynamicTexture fboTexture = new DynamicTexture("voxelmap-fbotexture", fboTextureSize, fboTextureSize, true);
         // minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
         // this.fboTexture = fboTexture.getTexture();
-        this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", 0.0F, 512.0F, 512.0F, 0.0F, 1000.0F, 21000.0F);
+        this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
     }
 
     public void forceFullRender(boolean forceFullRender) {
@@ -1560,7 +1560,6 @@ public class Map implements Runnable, IChangeObserver {
             scale = 1.4142F;
         }
 
-
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1578,32 +1577,45 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().identity();
 
-        guiGraphics.pose().translate(256, 256);
+        // guiGraphics.pose().translate(256, 256);
         if (!this.options.rotates) {
             guiGraphics.pose().rotate(-this.northRotate * Mth.DEG_TO_RAD);
         } else {
             guiGraphics.pose().rotate(this.direction * Mth.DEG_TO_RAD);
         }
         guiGraphics.pose().scale(scale, scale);
-        guiGraphics.pose().translate(-256, -256);
+        // guiGraphics.pose().translate(-256, -256);
         guiGraphics.pose().translate(-this.percentX * 512.0F / 64.0F, this.percentY * 512.0F / 64.0F);
 
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
         Vector3f vector3f = new Vector3f();
-        guiGraphics.pose().transform(0, 512, 0, vector3f);
-        bufferBuilder.addVertex(vector3f).setUv(0, 0).setColor(255, 255, 255, 255);
-        guiGraphics.pose().transform(512, 512, 0, vector3f);
-        bufferBuilder.addVertex(vector3f).setUv(1, 0).setColor(255, 255, 255, 255);
-        guiGraphics.pose().transform(512, 0, 0, vector3f);
-        bufferBuilder.addVertex(vector3f).setUv(1, 1).setColor(255, 255, 255, 255);
-        guiGraphics.pose().transform(0, 0, 0, vector3f);
-        bufferBuilder.addVertex(vector3f).setUv(0, 1).setColor(255, 255, 255, 255);
+        guiGraphics.pose().transform(-256, 256, 1, vector3f);
+        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(0, 0).setColor(255, 255, 255, 255);
+
+        guiGraphics.pose().transform(256, 256, 1, vector3f);
+        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(1, 0).setColor(255, 255, 255, 255);
+
+        guiGraphics.pose().transform(256, -256, 1, vector3f);
+        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(1, 1).setColor(255, 255, 255, 255);
+
+        guiGraphics.pose().transform(-256, -256, 1, vector3f);
+        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(0, 1).setColor(255, 255, 255, 255);
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
 
-        RenderPipeline renderPipeline = RenderPipelines.GUI_TEXTURED;
+        GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
+                .writeTransform(
+                        RenderSystem.getModelViewMatrix(),
+                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
+                        RenderSystem.getModelOffset(),
+                        RenderSystem.getTextureMatrix(),
+                        RenderSystem.getShaderLineWidth());
+
+        RenderPipeline renderPipeline = GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE;
         try (MeshData meshData = bufferBuilder.build()) {
             GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer indexBuffer;
@@ -1620,25 +1632,34 @@ public class Map implements Runnable, IChangeObserver {
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0xff000000))) {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
+                renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
             }
         }
+        RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
         fboTessellator.clear();
+        // if (((saved++) % 1000) == 0)
+        // ImageUtils.saveImage("minimap_" + saved, fboTexture);
 
         guiGraphics.pose().popMatrix();
 
         // guiGraphics.blit(RenderType::guiTextured, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-        guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
+        // VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
+
+        // VoxelmapGuiGraphics.blitForcedDepth(guiGraphics, GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0.001f);
+        // VoxelmapGuiGraphics.blitForcedDepth(guiGraphics, GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0.001f);
+
+        // guiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        // guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
         this.drawMapFrame(guiGraphics, x, y, this.options.squareMap);
-
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();

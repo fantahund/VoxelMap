@@ -77,6 +77,13 @@ public class GLUtils {
             .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
             .build();
 
+    public static final RenderPipeline GUI_TEXTURED_ANY_DEPTH_PIPELINE = RenderPipeline
+            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_any_depth"))
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthWrite(true)
+            .build();
+
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_EQUAL_DEPTH = Util.memoize(
             (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
                     "voxelmap_gui_textured_equal_depth",
