@@ -19,6 +19,7 @@ public class CPULightmap {
     private float SkyLightColorR = 1.0f;
     private float SkyLightColorG = 1.0f;
     private float SkyLightColorB = 1.0f;
+    private float BrightnessFactor = 0.0f;
 
     public static CPULightmap getInstance() {
         return INSTANCE;
@@ -31,6 +32,11 @@ public class CPULightmap {
     float get_brightness(float level) {
         float curved_level = level / (4.0f - 3.0f * level);
         return mix(curved_level, 1.0f, AmbientLightFactor);
+    }
+
+    float notGamma(float x) {
+        float nx = 1.0f - x;
+        return 1.0f - nx * nx * nx * nx;
     }
 
     public void setup() {
@@ -48,6 +54,9 @@ public class CPULightmap {
         SkyLightColorR = g * 0.65f + 0.35f;
         SkyLightColorG = g * 0.65f + 0.35f;
         SkyLightColorB = 1f;
+
+        float p = MINECRAFT.options.gamma().get().floatValue();
+        BrightnessFactor = Math.max(0.0F, p);
     }
 
     public int getLight(int blockLight, int skyLight) {
@@ -63,9 +72,22 @@ public class CPULightmap {
         colorg += SkyLightColorG * sky_brightness;
         colorb += SkyLightColorB * sky_brightness;
 
+        colorr = Math.max(Math.min(colorr, 1.0f), 0.0f);
+        colorg = Math.max(Math.min(colorg, 1.0f), 0.0f);
+        colorb = Math.max(Math.min(colorb, 1.0f), 0.0f);
+
+        colorr = mix(colorr, notGamma(colorr), BrightnessFactor);
+        colorg = mix(colorg, notGamma(colorg), BrightnessFactor);
+        colorb = mix(colorb, notGamma(colorb), BrightnessFactor);
+
         colorr = mix(colorr, 0.75f, 0.04f);
         colorg = mix(colorg, 0.75f, 0.04f);
         colorb = mix(colorb, 0.75f, 0.04f);
+
+        // more light!
+        colorr = mix(colorr, 1f, 0.1f);
+        colorg = mix(colorg, 1f, 0.1f);
+        colorb = mix(colorb, 1f, 0.1f);
 
         colorr = Math.min(colorr, 1.0f);
         colorg = Math.min(colorg, 1.0f);
