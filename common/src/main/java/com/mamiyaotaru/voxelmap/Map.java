@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
+import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
@@ -534,13 +535,12 @@ public class Map implements Runnable, IChangeObserver {
             if (this.world != null) {
                 if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !minecraft.isPaused() || this.options.realTimeTorches) {
                     this.needLightmapRefresh = false;
-                    // FIXME 1.21.6 Light map
-                    Arrays.fill(lightmapColors, 0xffffffff);
-                    // GLUtils.readTextureContentsToPixelArray(this.lightmapTexture.getTextureView().texture(), image -> {
-                    // this.lightmapColors = image;
-                    // });
-                    if (getLightmapColor(15, 15) == 0) {
-                        this.needLightmapRefresh = true;
+                    CPULightmap lightmap = CPULightmap.getInstance();
+                    lightmap.setup();
+                    for (int blockLight = 0; blockLight < 16; blockLight++) {
+                        for (int skyLight = 0; skyLight < 16; skyLight++) {
+                            this.lightmapColors[blockLight + skyLight * 16] = lightmap.getLight(blockLight, skyLight);
+                        }
                     }
                 }
 

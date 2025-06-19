@@ -729,7 +729,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private int getLight(int light) {
-        return ARGB.toABGR(this.lightmapColors[light]);
+        return this.lightmapColors[light];
     }
 
     public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
