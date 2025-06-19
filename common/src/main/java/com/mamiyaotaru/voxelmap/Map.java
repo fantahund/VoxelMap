@@ -1629,13 +1629,23 @@ public class Map implements Runnable, IChangeObserver {
                 indexType = meshData.drawState().indexType();
             }
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0xff000000))) {
+            GpuTextureView circleStencilTexture = null;
+            if (!this.options.squareMap) {
+                circleStencilTexture = Minecraft.getInstance().getTextureManager().getTexture(circleStencil).getTextureView();
+            }
+
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0x00000000))) {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-                renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
+                if (!this.options.squareMap) {
+                    renderPass.bindSampler("Sampler0", circleStencilTexture);
+                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+                    renderPass.setPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE_DST_ALPHA);
+                }
+                renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
             }
         }
@@ -1647,15 +1657,7 @@ public class Map implements Runnable, IChangeObserver {
 
         guiGraphics.pose().popMatrix();
 
-        // guiGraphics.blit(RenderType::guiTextured, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
         VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
-        // VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
-
-        // VoxelmapGuiGraphics.blitForcedDepth(guiGraphics, GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0.001f);
-        // VoxelmapGuiGraphics.blitForcedDepth(guiGraphics, GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0.001f);
-
-        // guiGraphics.blit(RenderPipelines.GUI_TEXTURED, this.options.squareMap ? this.squareStencil : this.circleStencil, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-        // guiGraphics.blit(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, resourceFboTexture, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;

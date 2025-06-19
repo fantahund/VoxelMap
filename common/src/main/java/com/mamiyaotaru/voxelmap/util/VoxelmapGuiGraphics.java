@@ -10,22 +10,10 @@ import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix3x2f;
 
 public class VoxelmapGuiGraphics {
-    public static void blitForcedDepth(GuiGraphics graphics, RenderPipeline pipeline, ResourceLocation texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, float forcedDepth) {
-        blitForcedDepth(graphics, pipeline, Minecraft.getInstance().getTextureManager().getTexture(texture).getTextureView(), x, y, w, h, minu, maxu, minv, maxv, forcedDepth);
-    }
-
-    public static void blitForcedDepth(GuiGraphics graphics, RenderPipeline pipeline, GpuTextureView textureView, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, float forcedDepth) {
-        blitFloatGradient(graphics, pipeline, textureView, x, y, w, h, minu, maxu, minv, maxv, 0xFFFFFFFF, 0xFFFFFFFF, forcedDepth);
-    }
-
     public static void blitFloatGradient(GuiGraphics graphics, RenderPipeline pipeline, GpuTextureView textureView, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color, int color2) {
-        blitFloatGradient(graphics, pipeline, textureView, x, y, w, h, minu, maxu, minv, maxv, color, color2, null);
-    }
-
-    public static void blitFloatGradient(GuiGraphics graphics, RenderPipeline pipeline, GpuTextureView textureView, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color, int color2, Float forcedDepth) {
         graphics.guiRenderState.submitGuiElement(new FloatBlitRenderState(pipeline, TextureSetup.singleTexture(textureView),
                 new Matrix3x2f(graphics.pose()), x, y, x + w, y + h,
-                minu, maxu, minv, maxv, color, color2, forcedDepth, graphics.scissorStack.peek()));
+                minu, maxu, minv, maxv, color, color2, graphics.scissorStack.peek()));
     }
 
     public static void blitFloat(GuiGraphics graphics, RenderPipeline pipeline, GpuTextureView textureView, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color) {

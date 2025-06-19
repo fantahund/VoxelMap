@@ -81,7 +81,15 @@ public class GLUtils {
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_any_depth"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withDepthWrite(true)
+            .build();
+
+    public static final BlendFunction DST_ALPHA = new BlendFunction(SourceFactor.DST_ALPHA, DestFactor.ONE_MINUS_DST_ALPHA);
+
+    public static final RenderPipeline GUI_TEXTURED_ANY_DEPTH_PIPELINE_DST_ALPHA = RenderPipeline
+            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_any_depth_dst_alpha"))
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withBlend(DST_ALPHA)
             .build();
 
     public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_EQUAL_DEPTH = Util.memoize(
