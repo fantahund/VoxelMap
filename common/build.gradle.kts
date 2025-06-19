@@ -19,6 +19,7 @@ dependencies {
         officialMojangMappings()
     })
     compileOnly("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
+    modCompileOnly("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
 
     compileOnly("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
