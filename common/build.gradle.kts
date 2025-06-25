@@ -25,8 +25,8 @@ dependencies {
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
-    modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+${MINECRAFT_VERSION}-fabric")
-    // modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+1.21.5-fabric")
+    // modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+${MINECRAFT_VERSION}-fabric")
+    modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+1.21.6-fabric")
 }
 
 sourceSets {
