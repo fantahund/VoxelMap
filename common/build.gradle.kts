@@ -26,7 +26,7 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
     // modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+${MINECRAFT_VERSION}-fabric")
-    modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+1.21.6-fabric")
+    modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+1.21.7-fabric")
 }
 
 sourceSets {
