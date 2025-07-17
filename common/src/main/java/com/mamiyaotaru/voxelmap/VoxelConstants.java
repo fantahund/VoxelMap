@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Optional;
 import net.irisshaders.iris.api.v0.IrisApi;
@@ -219,10 +219,12 @@ public final class VoxelConstants {
             // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE, IrisProgram.BASIC);
             // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, IrisProgram.BASIC);
 
-            IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_BEAM_PIPELINE, IrisProgram.BASIC);
-            IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_ICON_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
-            IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
-            IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_TEXT_BACKGROUND_PIPELINE, IrisProgram.BASIC);
+            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_BEAM_PIPELINE, IrisProgram.BASIC);
+            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_ICON_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
+            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
+            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND_PIPELINE, IrisProgram.BASIC);
+
+            // IrisApi.getInstance().assignPipeline(VoxelMapPipelines.ENTITY_ICON_PIPELINE, IrisProgram.TEXTURED);
         }
     }
 }

@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix3x2f;
 
-public class VoxelmapGuiGraphics {
+public class VoxelMapGuiGraphics {
     public static void blitFloatGradient(GuiGraphics graphics, RenderPipeline pipeline, GpuTextureView textureView, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color, int color2) {
         graphics.guiRenderState.submitGuiElement(new FloatBlitRenderState(pipeline, TextureSetup.singleTexture(textureView),
                 new Matrix3x2f(graphics.pose()), x, y, x + w, y + h,

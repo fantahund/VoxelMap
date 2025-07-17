@@ -32,6 +32,7 @@ public class HorseVariantDataFactory extends DefaultEntityVariantDataFactory {
         super(type);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
         Horse horse = (Horse) entity;

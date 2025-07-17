@@ -95,63 +95,59 @@ public class ComparisonCachedRegion {
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
-                FileInputStream fis = new FileInputStream(cachedRegionFile);
-                ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-                Scanner sc = new Scanner(zis);
-                BiMap<BlockState, Integer> stateToInt = null;
-                BiMap<Biome, Integer> biomeMap = null;
-                int version = 1;
+                try (FileInputStream fis = new FileInputStream(cachedRegionFile); ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis)); Scanner sc = new Scanner(zis)) {
+                    BiMap<BlockState, Integer> stateToInt = null;
+                    BiMap<Biome, Integer> biomeMap = null;
+                    int version = 1;
 
-                ZipEntry ze;
-                byte[] decompressedByteData = null;
-                for (; (ze = zis.getNextEntry()) != null; zis.closeEntry()) {
-                    if (ze.getName().equals("data")) {
-                        decompressedByteData = zis.readAllBytes();
-                    }
+                    ZipEntry ze;
+                    byte[] decompressedByteData = null;
+                    for (; (ze = zis.getNextEntry()) != null; zis.closeEntry()) {
+                        if (ze.getName().equals("data")) {
+                            decompressedByteData = zis.readAllBytes();
+                        }
 
-                    if (ze.getName().equals("key")) {
-                        stateToInt = HashBiMap.create();
+                        if (ze.getName().equals("key")) {
+                            stateToInt = HashBiMap.create();
 
-                        while (sc.hasNextLine()) {
-                            BlockStateParser.parseLine(sc.nextLine(), stateToInt);
+                            while (sc.hasNextLine()) {
+                                BlockStateParser.parseLine(sc.nextLine(), stateToInt);
+                            }
+                        }
+
+                        if (ze.getName().equals("biomes")) {
+                            biomeMap = HashBiMap.create();
+                            while (sc.hasNextLine()) {
+                                BiomeParser.parseLine(world, sc.nextLine(), biomeMap);
+                            }
+                        }
+
+                        if (ze.getName().equals("control")) {
+                            Properties properties = new Properties();
+                            properties.load(zis);
+                            String versionString = properties.getProperty("version", "1");
+
+                            try {
+                                version = Integer.parseInt(versionString);
+                            } catch (NumberFormatException var14) {
+                                version = 1;
+                            }
                         }
                     }
 
-                    if (ze.getName().equals("biomes")) {
-                        biomeMap = HashBiMap.create();
-                        while (sc.hasNextLine()) {
-                            BiomeParser.parseLine(world, sc.nextLine(), biomeMap);
+                    if (decompressedByteData != null && decompressedByteData.length == this.data.getExpectedDataLength(version) && stateToInt != null) {
+                        if (biomeMap == null) {
+                            biomeMap = HashBiMap.create();
+                            BiomeParser.populateLegacyBiomeMap(world, biomeMap);
                         }
+                        this.data.setData(decompressedByteData, stateToInt, biomeMap, version);
+                        this.empty = false;
+                        this.loaded = true;
+                    } else {
+                        VoxelConstants.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
                     }
 
-                    if (ze.getName().equals("control")) {
-                        Properties properties = new Properties();
-                        properties.load(zis);
-                        String versionString = properties.getProperty("version", "1");
-
-                        try {
-                            version = Integer.parseInt(versionString);
-                        } catch (NumberFormatException var14) {
-                            version = 1;
-                        }
-                    }
                 }
-
-                if (decompressedByteData != null && decompressedByteData.length == this.data.getExpectedDataLength(version) && stateToInt != null) {
-                    if (biomeMap == null) {
-                        biomeMap = HashBiMap.create();
-                        BiomeParser.populateLegacyBiomeMap(world, biomeMap);
-                    }
-                    this.data.setData(decompressedByteData, stateToInt, biomeMap, version);
-                    this.empty = false;
-                    this.loaded = true;
-                } else {
-                    VoxelConstants.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
-                }
-
-                sc.close();
-                zis.close();
-                fis.close();
             }
         } catch (IOException var15) {
             VoxelConstants.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, var15);
@@ -213,7 +209,8 @@ public class ComparisonCachedRegion {
                     for (int j = 0; j < 16; ++j) {
                         int x = t * 16 + i;
                         int z = s * 16 + j;
-                        if (this.data.getHeight(x, z) == candidateData.getHeight(x, z) && this.data.getBlockstate(x, z) == candidateData.getBlockstate(x, z) && (this.data.getOceanFloorHeight(x, z) == 0 || this.data.getOceanFloorHeight(x, z) == candidateData.getOceanFloorHeight(x, z) && this.data.getOceanFloorBlockstate(x, z) == candidateData.getOceanFloorBlockstate(x, z))) {
+                        if (this.data.getHeight(x, z) == candidateData.getHeight(x, z) && this.data.getBlockstate(x, z) == candidateData.getBlockstate(x, z)
+                                && (this.data.getOceanFloorHeight(x, z) == 0 || this.data.getOceanFloorHeight(x, z) == candidateData.getOceanFloorHeight(x, z) && this.data.getOceanFloorBlockstate(x, z) == candidateData.getOceanFloorBlockstate(x, z))) {
                             ++matchesInChunk;
                         }
 

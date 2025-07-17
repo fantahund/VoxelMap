@@ -132,7 +132,7 @@ public class WaypointContainer {
         float b = par1EntityWaypoint.blue;
         float g = par1EntityWaypoint.green;
 
-        VertexConsumer vertexConsumerBeam = bufferSource.getBuffer(GLUtils.WAYPOINT_BEAM);
+        VertexConsumer vertexConsumerBeam = bufferSource.getBuffer(VoxelMapRenderTypes.WAYPOINT_BEAM);
 
         for (int width = 0; width < 4; ++width) {
             double d6 = 0.1 + width * 0.2;
@@ -215,7 +215,7 @@ public class WaypointContainer {
         }
 
         // if (withDepth) {
-        RenderType rt = GLUtils.WAYPOINT_ICON_DEPTHTEST.apply(icon.getResourceLocation());
+        RenderType rt = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getResourceLocation());
         VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(rt);
         // OpenGL.glDepthMask(distance < maxDistance);
         // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
@@ -228,7 +228,7 @@ public class WaypointContainer {
         // }
 
         // if (withoutDepth) {
-        rt = GLUtils.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getResourceLocation());
+        rt = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getResourceLocation());
         VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(rt);
         // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
         // OpenGL.glDepthMask(false);
@@ -245,7 +245,7 @@ public class WaypointContainer {
             byte elevateDistBy = this.options.waypointNameBelowIcon ? (byte) 30 : (byte) -39;
             float distTextScale = 0.65F;
 
-            rt = GLUtils.WAYPOINT_TEXT_BACKGROUND;
+            rt = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
             VertexConsumer vertexBackground = bufferSource.getBuffer(rt);
 
             // OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);

@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
+import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;
@@ -123,7 +123,7 @@ public class Sprite {
     }
 
     public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
-        VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, minU, maxU, minV, maxV, color);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, minU, maxU, minV, maxV, color);
         // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, 0, 1, 0, 1, color);
     }
 

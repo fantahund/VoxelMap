@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -35,7 +34,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         super(VoxelConstants.getMinecraft(), par1GuiMobs.getWidth(), par1GuiMobs.getHeight() - 110, 40, 18);
 
         this.parentGui = par1GuiMobs;
-        RadarSettingsManager options = this.parentGui.options;
+        // RadarSettingsManager options = this.parentGui.options;
         this.mobs = new ArrayList<>();
 
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {

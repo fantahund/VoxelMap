@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ARGB;
-import org.joml.Vector3f;
 
 /**
  * from lightmap.fsh + net.minecraft.client.renderer.LightTexture

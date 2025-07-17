@@ -286,7 +286,7 @@ public final class CommandUtils {
         BlockPos blockPos = new BlockPos(par1, par2, par3);
         BlockState blockState = worldObj.getBlockState(blockPos);
         Block block = blockState.getBlock();
-        return block != null && blockState.isSolid();
+        return block != null && !blockState.getCollisionShape(worldObj, blockPos).isEmpty();
     }
 
     private static boolean isBlockOpen(Level worldObj, int par1, int par2, int par3) {

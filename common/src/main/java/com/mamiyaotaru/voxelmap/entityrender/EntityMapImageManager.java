@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -147,7 +148,7 @@ public class EntityMapImageManager {
         return requestImageForMob(e, -1, true);
     }
 
-    private EntityVariantData getVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
+    private EntityVariantData getVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
         EntityVariantDataFactory factory = variantDataFactories.get(entity.getType());
         if (factory != null) {
             EntityVariantData data = factory.createVariantData(entity, renderer, state, size, addBorder);
@@ -158,6 +159,7 @@ public class EntityMapImageManager {
         return DefaultEntityVariantDataFactory.createSimpleVariantData(entity, renderer, state, size, addBorder);
     }
 
+    @SuppressWarnings("unchecked")
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
         EntityVariantData variant = null;
@@ -200,7 +202,7 @@ public class EntityMapImageManager {
         ResourceLocation resourceLocation2 = variant.getSecondaryTexture();
 
         // VoxelConstants.getLogger().info(" -> " + resourceLocation);
-        RenderPipeline renderPipeline = GLUtils.ENTITY_ICON;
+        RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 
         PoseStack pose = new PoseStack();
@@ -234,6 +236,7 @@ public class EntityMapImageManager {
             pose.mulPose(Axis.XP.rotationDegrees(-30.0F));
         }
 
+        @SuppressWarnings("rawtypes")
         EntityModel model = ((LivingEntityRenderer) baseRenderer).getModel();
         model.setupAnim((LivingEntityRenderState) renderState);
         for (ModelPart part : getPartToRender(model)) {
@@ -275,8 +278,8 @@ public class EntityMapImageManager {
             }
 
             // float size = 64.0F * scale;
-            int width = fboTexture.getWidth(0);
-            int height = fboTexture.getHeight(0);
+            // int width = fboTexture.getWidth(0);
+            // int height = fboTexture.getHeight(0);
             ProjectionType originalProjectionType = RenderSystem.getProjectionType();
             GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
             RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
@@ -314,7 +317,7 @@ public class EntityMapImageManager {
         return sprite;
     }
 
-    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, EntityModel model, BufferedImage image2) {
+    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
             image = ImageUtils.flipHorizontal(image);
