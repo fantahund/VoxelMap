@@ -1649,7 +1649,7 @@ public class Map implements Runnable, IChangeObserver {
                 if (!this.options.squareMap) {
                     renderPass.bindSampler("Sampler0", circleStencilTexture);
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount() / 2, 1);
-                    renderPass.setPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE_DST_ALPHA);
+                    renderPass.setPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE);
                 }
                 renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.drawIndexed(0, meshData.drawState().indexCount() / 2, meshData.drawState().indexCount() / 2, 1);

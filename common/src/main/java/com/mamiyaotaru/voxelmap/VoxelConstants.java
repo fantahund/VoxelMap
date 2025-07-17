@@ -215,13 +215,14 @@ public final class VoxelConstants {
     public static void registerIrisPipelines() {
         if (modApiBridge.isModEnabled("iris")) {
             getLogger().info("Register Voxelmap Pipelines to Iris");
-            //IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_EQUAL_DEPTH_PIPELINE, IrisProgram.BASIC);
-            //IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, IrisProgram.BASIC);
+            // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE, IrisProgram.BASIC);
+            // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE, IrisProgram.BASIC);
+            // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, IrisProgram.BASIC);
+
             IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_BEAM_PIPELINE, IrisProgram.BASIC);
             IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_ICON_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
             IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
             IrisApi.getInstance().assignPipeline(GLUtils.WAYPOINT_TEXT_BACKGROUND_PIPELINE, IrisProgram.BASIC);
-            //IrisApi.getInstance().assignPipeline(GLUtils.ENTITY_ICON, IrisProgram.TEXTURED);
         }
     }
 }

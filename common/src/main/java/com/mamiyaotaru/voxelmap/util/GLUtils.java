@@ -71,12 +71,6 @@ public class GLUtils {
         }, 0);
     }
 
-    public static final RenderPipeline GUI_TEXTURED_EQUAL_DEPTH_PIPELINE = RenderPipeline
-            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_equal_depth"))
-            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
-            .build();
-
     public static final RenderPipeline GUI_TEXTURED_ANY_DEPTH_PIPELINE = RenderPipeline
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_any_depth"))
@@ -85,75 +79,17 @@ public class GLUtils {
 
     public static final BlendFunction DST_ALPHA = new BlendFunction(SourceFactor.DST_ALPHA, DestFactor.ONE_MINUS_DST_ALPHA);
 
-    public static final RenderPipeline GUI_TEXTURED_ANY_DEPTH_PIPELINE_DST_ALPHA = RenderPipeline
+    public static final RenderPipeline GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE = RenderPipeline
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_any_depth_dst_alpha"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withBlend(DST_ALPHA)
             .build();
 
-    public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_EQUAL_DEPTH = Util.memoize(
-            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
-                    "voxelmap_gui_textured_equal_depth",
-                    0x00C000,
-                    GUI_TEXTURED_EQUAL_DEPTH_PIPELINE,
-                    RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
-                            .createCompositeState(false))));
-
     public static final RenderPipeline GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE = RenderPipeline
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/gui_textured_equal_depth"))
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
-
-    public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH = Util.memoize(
-            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
-                    "voxelmap_gui_textured_lequal_depth",
-                    0x00C000,
-                    GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE,
-                    RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
-                            .createCompositeState(false))));
-
-    public static final Function<ResourceLocation, RenderType> GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_FILTER_MIN = Util.memoize(
-            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
-                    "voxelmap_gui_textured_lequal_depth_filter_min",
-                    0x00C000,
-                    GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE,
-                    RenderType.CompositeState.builder()
-                            .setTextureState(new ExtendedTextureStateShard(resourceLocation, FilterMode.LINEAR, FilterMode.NEAREST, true))
-                            .createCompositeState(false))));
-
-    public static class ExtendedTextureStateShard extends RenderStateShard.EmptyTextureStateShard {
-        private final Optional<ResourceLocation> texture;
-        private final FilterMode minFilter;
-        private final FilterMode magFilter;
-        private final boolean mipmap;
-
-        public ExtendedTextureStateShard(ResourceLocation resourceLocation, FilterMode minFilter, FilterMode magFilter, boolean mipmap) {
-            super(() -> {
-                TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-                AbstractTexture abstractTexture = textureManager.getTexture(resourceLocation);
-                abstractTexture.getTexture().setTextureFilter(minFilter, magFilter, mipmap);
-                RenderSystem.setShaderTexture(0, abstractTexture.getTextureView());
-            }, () -> {
-            });
-            this.texture = Optional.of(resourceLocation);
-            this.minFilter = minFilter;
-            this.magFilter = magFilter;
-            this.mipmap = mipmap;
-        }
-
-        @Override
-        public String toString() {
-            return this.name + "[" + this.texture + "(minFilter=" + this.minFilter + ", magFilter=" + this.magFilter + ", mipmap=" + this.mipmap + ")]";
-        }
-
-        @Override
-        protected Optional<ResourceLocation> cutoutTexture() {
-            return this.texture;
-        }
-    }
 
     public static final RenderPipeline WAYPOINT_BEAM_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withLocation(ResourceLocation.parse("voxelmap:pipeline/waypoint_beam"))
