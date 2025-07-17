@@ -28,11 +28,13 @@ public class DefaultEntityVariantDataFactory implements EntityVariantDataFactory
         return type;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
         return new DefaultEntityVariantData(type, ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), secondaryTexture, size, addBorder);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static EntityVariantData createSimpleVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
         return new DefaultEntityVariantData(entity.getType(), ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), null, size, addBorder);
     }

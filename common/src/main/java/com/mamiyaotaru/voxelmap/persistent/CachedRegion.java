@@ -100,6 +100,7 @@ public class CachedRegion {
         this.world = null;
     }
 
+    @SuppressWarnings("unchecked")
     public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
         this.persistentMap = persistentMap;
         this.key = key;

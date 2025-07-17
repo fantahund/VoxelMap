@@ -68,7 +68,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
-import org.joml.Vector3f;
 
 public class ColorManager {
     private boolean resourcePacksChanged;
@@ -90,7 +89,6 @@ public class ColorManager {
     private boolean loaded;
     private boolean loadedTerrainImage;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
-    private final Vector3f fullbright = new Vector3f(1.0F, 1.0F, 1.0F);
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
     private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
     private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColor(blockPos.getX(), blockPos.getZ());
@@ -569,7 +567,6 @@ public class ColorManager {
     public int getBiomeTint(AbstractMapData mapData, Level world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         ChunkAccess chunk = world.getChunk(blockPos);
         boolean live = chunk != null && !((LevelChunk) chunk).isEmpty() && VoxelConstants.getPlayer().level().hasChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4);
-        live = live && VoxelConstants.getPlayer().level().hasChunkAt(blockPos);
         int tint = -2;
         if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
@@ -1049,7 +1046,7 @@ public class ColorManager {
                                         if (intValue >= min && intValue <= max) {
                                             valueIncluded = true;
                                         }
-                                    } else if (!blockState.getValue(property).equals(property.getValue(value))) {
+                                    } else if (!blockState.getValue(property).equals(property.getValue(value).orElse(null))) {
                                         valueIncluded = true;
                                     }
                                 }

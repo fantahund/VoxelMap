@@ -46,6 +46,8 @@ public class CompressibleMapData extends AbstractMapData {
     int biomeCount = 1;
     private final ClientLevel world;
 
+    private final Minecraft MINECRAFT = Minecraft.getInstance();
+
     public CompressibleMapData(ClientLevel world) {
         this.width = REGION_SIZE;
         this.height = REGION_SIZE;
@@ -153,7 +155,7 @@ public class CompressibleMapData extends AbstractMapData {
     public Biome getBiome(int x, int z) {
         int biomeId = getBiomeId(x, z);
         if (biomeId == 0 && getHeight(x, z) != Short.MIN_VALUE) {
-            return Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
+            return MINECRAFT.level.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
         }
         return this.getBiomeFromID(biomeId);
     }
