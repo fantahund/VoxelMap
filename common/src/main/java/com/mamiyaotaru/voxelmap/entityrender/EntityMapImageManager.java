@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -200,7 +201,7 @@ public class EntityMapImageManager {
         ResourceLocation resourceLocation2 = variant.getSecondaryTexture();
 
         // VoxelConstants.getLogger().info(" -> " + resourceLocation);
-        RenderPipeline renderPipeline = GLUtils.ENTITY_ICON;
+        RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 
         PoseStack pose = new PoseStack();

@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.VoxelmapGuiGraphics;
+import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import java.util.ArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -91,12 +91,12 @@ public class Popup {
         float umax = (this.x + this.w) / renderedTextureSize;
         float vmin = this.y / renderedTextureSize;
         float vmax = (this.y + this.h) / renderedTextureSize;
-        VoxelmapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xff404040);
-        VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y, x + w, y + 4, 0xff000000, 0xff000000, 0x00000000, 0x00000000);
-        VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y + h - 4, x + w, y + h, 0x00000000, 0x00000000, 0xff000000, 0xff000000);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xff404040);
+        VoxelMapGuiGraphics.fillGradient(guiGraphics, x, y, x + w, y + 4, 0xff000000, 0xff000000, 0x00000000, 0x00000000);
+        VoxelMapGuiGraphics.fillGradient(guiGraphics, x, y + h - 4, x + w, y + h, 0x00000000, 0x00000000, 0xff000000, 0xff000000);
 
-        VoxelmapGuiGraphics.fillGradient(guiGraphics, x, y, x + 4, y + h, 0xff000000, 0x00000000, 0xff000000, 0x00000000);
-        VoxelmapGuiGraphics.fillGradient(guiGraphics, x + w - 4, y, x + w, y + h, 0x00000000, 0xff000000, 0x00000000, 0xff000000);
+        VoxelMapGuiGraphics.fillGradient(guiGraphics, x, y, x + 4, y + h, 0xff000000, 0x00000000, 0xff000000, 0x00000000);
+        VoxelMapGuiGraphics.fillGradient(guiGraphics, x + w - 4, y, x + w, y + h, 0x00000000, 0xff000000, 0x00000000, 0xff000000);
 
 
         for (int t = 0; t < this.entries.length; ++t) {

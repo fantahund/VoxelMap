@@ -3,11 +3,11 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MobCategory;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -257,7 +257,7 @@ public class Radar implements IRadar {
                     // }
 
                     int imageSize = (int) (contact.icon.getIconWidth() / 8.0F);
-                    contact.icon.blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
+                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
 
                     if (contact.name != null && ((this.options.showPlayerNames && contact.category == MobCategory.PLAYER) || (this.options.showMobNames && contact.category != MobCategory.PLAYER && contact.entity.hasCustomName()))) {
 

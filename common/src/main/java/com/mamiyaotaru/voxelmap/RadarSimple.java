@@ -3,11 +3,11 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MobCategory;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.platform.NativeImage;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -171,9 +171,9 @@ public class RadarSimple implements IRadar {
                     guiGraphics.pose().rotate((contact.angle + contactFacing) * Mth.DEG_TO_RAD);
                     guiGraphics.pose().translate(-x, -y);
 
-                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
+                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
                     if (this.options.showFacing) {
-                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
+                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
                     }
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()));
