@@ -265,6 +265,10 @@ public class EntityMapImageManager {
                         RenderSystem.getShaderLineWidth());
 
         try (MeshData meshData = bufferBuilder.build()) {
+            // no mesh? might happen with some mods
+            if (meshData == null) {
+                return sprite;
+            }
             GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
