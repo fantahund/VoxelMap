@@ -3,11 +3,8 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Optional;
-import net.irisshaders.iris.api.v0.IrisApi;
-import net.irisshaders.iris.api.v0.IrisProgram;
 import net.minecraft.client.Camera;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -136,15 +133,6 @@ public final class VoxelConstants {
         }
     }
 
-    // public static void onRenderHand(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
-    // try {
-    // VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-    // } catch (RuntimeException e) {
-    // VoxelConstants.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Error while render waypoints", e);
-    // }
-    //
-    // }
-
     public static void onRenderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
         try {
             VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
@@ -210,21 +198,5 @@ public final class VoxelConstants {
 
     public static ModApiBridge getModApiBridge() {
         return modApiBridge;
-    }
-
-    public static void registerIrisPipelines() {
-        if (modApiBridge.isModEnabled("iris")) {
-            getLogger().info("Register Voxelmap Pipelines to Iris");
-            // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_PIPELINE, IrisProgram.BASIC);
-            // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE, IrisProgram.BASIC);
-            // IrisApi.getInstance().assignPipeline(GLUtils.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, IrisProgram.BASIC);
-
-            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_BEAM_PIPELINE, IrisProgram.BASIC);
-            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_ICON_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
-            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE, IrisProgram.TEXTURED);
-            IrisApi.getInstance().assignPipeline(VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND_PIPELINE, IrisProgram.BASIC);
-
-            // IrisApi.getInstance().assignPipeline(VoxelMapPipelines.ENTITY_ICON_PIPELINE, IrisProgram.TEXTURED);
-        }
     }
 }

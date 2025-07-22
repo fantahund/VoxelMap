@@ -7,7 +7,6 @@ plugins {
 val MINECRAFT_VERSION: String by rootProject.extra
 val FABRIC_LOADER_VERSION: String by rootProject.extra
 val FABRIC_API_VERSION: String by rootProject.extra
-val IRIS_VERSION: String by rootProject.extra
 
 repositories {
     maven { url = uri("https://api.modrinth.com/maven") }
@@ -25,8 +24,7 @@ dependencies {
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
-    // modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+${MINECRAFT_VERSION}-fabric")
-    modCompileOnly("maven.modrinth:iris:${IRIS_VERSION}+1.21.7-fabric")
+
 }
 
 sourceSets {

@@ -54,34 +54,18 @@ public class WaypointContainer {
         double renderPosX = cameraPos.x;
         double renderPosY = cameraPos.y;
         double renderPosZ = cameraPos.z;
-        // OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
         if (this.options.showBeacons) {
-            // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-            // OpenGL.glDepthMask(false);
-            // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, 1);
-            // RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-
             for (Waypoint pt : this.wayPts) {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
                     int z = pt.getZ();
-                    // LevelChunk chunk = VoxelConstants.getPlayer().level().getChunk(x >> 4, z >> 4);
-                    // if (chunk != null && !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(x >> 4, z >> 4)) {
                     double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
                     this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
-                    // }
                 }
             }
-
-            // OpenGL.glDisable(OpenGL.GL11_GL_BLEND);
-            // OpenGL.glDepthMask(true);
         }
 
         if (this.options.showWaypoints) {
-            // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-            // OpenGL.glBlendFuncSeparate(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA, 1, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-
             for (Waypoint pt : this.wayPts) {
                 if (pt.isActive() || pt == this.highlightedWaypoint) {
                     int x = pt.getX();
@@ -105,7 +89,6 @@ public class WaypointContainer {
                 this.renderLabel(poseStack, bufferSource, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
             }
         }
-        // bufferSource.endBatch(GLUtils.WAYPOINT_BEAM);
     }
 
     private boolean isPointedAt(Waypoint waypoint, double distance, Camera camera) {
@@ -201,7 +184,7 @@ public class WaypointContainer {
         poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
         poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
         poseStack.scale(-var14, -var14, -var14);
-        // Tesselator tessellator = Tesselator.getInstance();
+
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
         fade = Math.min(fade, !pt.enabled && !target ? 0.3F : 1.0F);
         float width = 10.0F;
@@ -214,141 +197,68 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
         }
 
-        // if (withDepth) {
-        RenderType rt = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getResourceLocation());
-        VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(rt);
-        // OpenGL.glDepthMask(distance < maxDistance);
-        // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
+        RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getResourceLocation());
+        VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(renderType);
         vertexIconDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fade);
         vertexIconDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fade);
         vertexIconDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, fade);
         vertexIconDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fade);
+        bufferSource.endBatch(renderType);
 
-        // bufferSource.endBatch(rt);
-        // }
-
-        // if (withoutDepth) {
-        rt = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getResourceLocation());
-        VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(rt);
-        // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-        // OpenGL.glDepthMask(false);
+        renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getResourceLocation());
+        VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(renderType);
         vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, 0.3F * fade);
         vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, 0.3F * fade);
         vertexIconNoDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, 0.3F * fade);
         vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, 0.3F * fade);
-        // bufferSource.endBatch(rt);
-        // }
+        bufferSource.endBatch(renderType);
 
         Font fontRenderer = minecraft.font;
-        if (isPointedAt && fontRenderer != null) {
+        if (isPointedAt) {
             byte elevateBy = this.options.waypointNameBelowIcon ? (byte) 10 : (byte) -19;
             byte elevateDistBy = this.options.waypointNameBelowIcon ? (byte) 30 : (byte) -39;
             float distTextScale = 0.65F;
 
-            rt = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-            VertexConsumer vertexBackground = bufferSource.getBuffer(rt);
+            renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
+            VertexConsumer vertexBackground = bufferSource.getBuffer(renderType);
 
-            // OpenGL.glEnable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
             int halfStringWidth = fontRenderer.width(name) / 2;
             int halfDistStringWidth = fontRenderer.width(distStr) / 2;
-            // RenderSystem.setShader(CoreShaders.POSITION_COLOR);
-            // if (withDepth) {
-            // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-            // OpenGL.glDepthMask(distance < maxDistance);
-            // OpenGL.glPolygonOffset(1.0F, 7.0F);
-            // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
             vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
             vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
             vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-            // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-            // OpenGL.glPolygonOffset(1.0F, 5.0F);
-            // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
             vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
             vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
             vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
             vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-            //
+
             if (this.options.waypointDistanceBelowName) {
                 poseStack.pushPose();
                 poseStack.scale(distTextScale, distTextScale, distTextScale);
-                // OpenGL.glPolygonOffset(1.0F, 7.0F);
-                // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                 vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-                // OpenGL.glPolygonOffset(1.0F, 5.0F);
-                // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
                 vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                 vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                 vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                 vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
                 poseStack.popPose();
             }
-            // }
-            //
-            // if (withoutDepth) {
-            // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-            // OpenGL.glDepthMask(false);
-            // OpenGL.glPolygonOffset(1.0F, 11.0F);
-            // BufferBuilder vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            // vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-            // vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-            // vertexBuffer.addVertex(matrixStack, (halfStringWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-            // vertexBuffer.addVertex(matrixStack, (halfStringWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-            // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-            // OpenGL.glPolygonOffset(1.0F, 9.0F);
-            // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            // vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            // vertexBuffer.addVertex(matrixStack, (-halfStringWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            // vertexBuffer.addVertex(matrixStack, (halfStringWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            // vertexBuffer.addVertex(matrixStack, (halfStringWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-            //
-            if (this.options.waypointDistanceBelowName) {
-                // matrixStack.pushMatrix();
-                // matrixStack.scale(distTextScale);
-                // OpenGL.glPolygonOffset(1.0F, 11.0F);
-                // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                // vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-                // vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-                // vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-                // vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.15F * fade);
-                // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-                // OpenGL.glPolygonOffset(1.0F, 9.0F);
-                // vertexBuffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                // vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                // vertexBuffer.addVertex(matrixStack, (-halfDistStringWidth - 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                // vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                // vertexBuffer.addVertex(matrixStack, (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                // BufferUploader.drawWithShader(vertexBuffer.buildOrThrow());
-                // matrixStack.popMatrix();
-            }
-            // }
-            //
-            // OpenGL.glDisable(OpenGL.GL11_GL_POLYGON_OFFSET_FILL);
-            // OpenGL.glDepthMask(false);
-            // MultiBufferSource.BufferSource vertexConsumerProvider = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-            // if (withoutDepth) {
-            int textColor = (int) (255.0F * fade) << 24 | 0x00cccccc;
-            // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-            fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00f000f0);
+            bufferSource.endBatch(renderType);
+
+            int textColor = (int) (255.0F * fade) << 24 | 0x00CCCCCC;
+            fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
+            bufferSource.endLastBatch();
             if (this.options.waypointDistanceBelowName) {
                 poseStack.pushPose();
                 poseStack.scale(distTextScale, distTextScale, distTextScale);
-                fontRenderer.drawInBatch(Component.literal(distStr), (-fontRenderer.width(distStr) / 2f), elevateDistBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00f000f0);
+                fontRenderer.drawInBatch(Component.literal(distStr), (-fontRenderer.width(distStr) / 2f), elevateDistBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
+                bufferSource.endLastBatch();
                 poseStack.popPose();
             }
-            // vertexConsumerProvider.endBatch();
-            // }
-            //
-            // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
         }
-        // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         poseStack.popPose();
     }
 }
