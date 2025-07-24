@@ -2,6 +2,8 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.ArrayList;
+import java.util.Optional;
+import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -30,9 +32,12 @@ public class DimensionManager {
 
         for (ResourceKey<Level> vanillaWorldKey : this.vanillaWorlds) {
             ResourceKey<DimensionType> typeKey = ResourceKey.create(Registries.DIMENSION_TYPE, vanillaWorldKey.location());
-            DimensionType dimensionType = dimensionTypeRegistry.get(typeKey).get().value();
-            DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.location().getPath(), vanillaWorldKey.location());
-            this.dimensions.add(dimensionContainer);
+            Optional<Reference<DimensionType>> optionalDimension = dimensionTypeRegistry.get(typeKey);
+            if (optionalDimension.isPresent()) {
+                DimensionType dimensionType = optionalDimension.get().value();
+                DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.location().getPath(), vanillaWorldKey.location());
+                this.dimensions.add(dimensionContainer);
+            }
         }
 
         this.sort();
