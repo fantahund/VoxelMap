@@ -18,8 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -574,11 +573,9 @@ public class CachedRegion {
             zos.write(byteArray);
             zos.closeEntry();
             if (stateToInt != null) {
-                Iterator<Map.Entry<BlockState, Integer>> iterator = stateToInt.entrySet().iterator();
                 StringBuilder stringBuffer = new StringBuilder();
 
-                while (iterator.hasNext()) {
-                    Map.Entry<BlockState, Integer> entry = iterator.next();
+                for (Entry<BlockState, Integer> entry : stateToInt.entrySet()) {
                     String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
                     stringBuffer.append(nextLine);
                 }
@@ -591,11 +588,9 @@ public class CachedRegion {
                 zos.closeEntry();
             }
             if (biomeToInt != null) {
-                Iterator<Map.Entry<Biome, Integer>> iterator = biomeToInt.entrySet().iterator();
                 StringBuilder stringBuffer = new StringBuilder();
 
-                while (iterator.hasNext()) {
-                    Map.Entry<Biome, Integer> entry = iterator.next();
+                for (Entry<Biome, Integer> entry : biomeToInt.entrySet()) {
                     try {
                         String nextLine = entry.getValue() + " " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
                         stringBuffer.append(nextLine);
@@ -787,6 +782,7 @@ public class CachedRegion {
             this.index = chunkZ * 16 + chunkX;
         }
 
+        @Override
         public void run() {
             CachedRegion.this.threadLock.lock();
 

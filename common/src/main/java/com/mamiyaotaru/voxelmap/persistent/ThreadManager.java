@@ -13,7 +13,7 @@ public final class ThreadManager {
     static final int concurrentThreads = Math.min(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), 4);
     static final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     public static final ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, queue);
-    public static ThreadPoolExecutor saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+    public static ThreadPoolExecutor saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
 
     private ThreadManager() {}
 
@@ -36,7 +36,7 @@ public final class ThreadManager {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
         VoxelConstants.getLogger().info("Save queue flushed!");
     }
 
@@ -51,6 +51,7 @@ public final class ThreadManager {
 
         private NamedThreadFactory(String name) { this.name = name; }
 
+        @Override
         public Thread newThread(@NotNull Runnable r) { return new Thread(r, this.name + " " + this.threadCount.getAndIncrement()); }
     }
 }

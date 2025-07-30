@@ -114,6 +114,7 @@ public class Sprite {
         }
     }
 
+    @Override
     public String toString() {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
     }

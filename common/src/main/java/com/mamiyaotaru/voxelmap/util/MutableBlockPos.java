@@ -27,14 +27,17 @@ public class MutableBlockPos extends BlockPos.MutableBlockPos {
         this.z = z;
     }
 
+    @Override
     public int getX() {
         return this.x;
     }
 
+    @Override
     public int getY() {
         return this.y;
     }
 
+    @Override
     public int getZ() {
         return this.z;
     }

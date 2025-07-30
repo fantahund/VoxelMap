@@ -24,8 +24,9 @@ public class BlockModel {
         this.faces = new ArrayList<>();
         for (BakedQuad quad2 : quads) {
             face = new BlockFace(quad2.vertices());
-            if (!face.isClockwise || face.isVertical)
+            if (!face.isClockwise || face.isVertical) {
                 continue;
+            }
             this.faces.add(face);
         }
         Collections.sort(this.faces);
@@ -35,8 +36,9 @@ public class BlockModel {
             float uDiff = face2.longestSide[0].u - face2.longestSide[1].u;
             float vDiff = face2.longestSide[0].v - face2.longestSide[1].v;
             float segmentLength = (float) Math.sqrt(uDiff * uDiff + vDiff * vDiff);
-            if (!(segmentLength > greatestLength))
+            if (!(segmentLength > greatestLength)) {
                 continue;
+            }
             greatestLength = segmentLength;
             this.longestSide = face2.longestSide;
         }
@@ -328,6 +330,7 @@ public class BlockModel {
             return maxV;
         }
 
+        @Override
         public int compareTo(BlockFace o) {
             if (this.yLevel > o.yLevel) {
                 return 1;

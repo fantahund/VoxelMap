@@ -54,6 +54,7 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
         return popups.isEmpty();
     }
 
+    @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         super.render(guiGraphics, mouseX, mouseY, delta);
 

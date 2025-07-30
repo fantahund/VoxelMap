@@ -20,7 +20,9 @@ public final class BlockStateParser {
         int id = Integer.parseInt(lineParts[0]);
         BlockState blockState = parseStateString(lineParts[1]);
 
-        if (blockState != null) map.forcePut(blockState, id);
+        if (blockState != null) {
+            map.forcePut(blockState, id);
+        }
     }
 
     @Nullable
@@ -33,19 +35,26 @@ public final class BlockStateParser {
         String[] resourceStringParts = resourceString.split(":");
         ResourceLocation resourceLocation = null;
 
-        if (resourceStringParts.length == 1) resourceLocation = ResourceLocation.parse(resourceStringParts[0]);
-        else if (resourceStringParts.length == 2) resourceLocation = ResourceLocation.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
+        if (resourceStringParts.length == 1) {
+            resourceLocation = ResourceLocation.parse(resourceStringParts[0]);
+        } else if (resourceStringParts.length == 2) {
+            resourceLocation = ResourceLocation.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
+        }
         Reference<Block> blockRef = BuiltInRegistries.BLOCK.get(resourceLocation).orElse(null);
         if (blockRef == null) {
             return null;
         }
         Block block = blockRef.value();
 
-        if (!(!(block instanceof AirBlock) || resourceString.equals("minecraft:air"))) return null;
+        if (!(!(block instanceof AirBlock) || resourceString.equals("minecraft:air"))) {
+            return null;
+        }
 
         BlockState blockState = block.defaultBlockState();
 
-        if (bracketIndex == -1) return blockState;
+        if (bracketIndex == -1) {
+            return blockState;
+        }
 
         String propertiesString = stateString.substring(stateString.indexOf('[') + 1, stateString.lastIndexOf(']'));
         String[] propertiesStringParts = propertiesString.split(",");
@@ -54,7 +63,9 @@ public final class BlockStateParser {
             String[] propertyStringParts = propertiesStringPart.split("=");
             Property<?> property = block.getStateDefinition().getProperty(propertyStringParts[0]);
 
-            if (property != null) blockState = withValue(blockState, property, propertyStringParts[1]);
+            if (property != null) {
+                blockState = withValue(blockState, property, propertyStringParts[1]);
+            }
         }
 
         return blockState;

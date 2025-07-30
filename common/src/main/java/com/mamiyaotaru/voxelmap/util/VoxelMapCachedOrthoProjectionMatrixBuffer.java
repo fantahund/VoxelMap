@@ -34,6 +34,7 @@ public class VoxelMapCachedOrthoProjectionMatrixBuffer implements AutoCloseable 
         return this.bufferSlice;
     }
 
+    @Override
     public void close() {
         this.buffer.close();
     }

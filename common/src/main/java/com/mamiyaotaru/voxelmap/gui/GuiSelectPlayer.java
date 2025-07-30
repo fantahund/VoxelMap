@@ -32,9 +32,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.sharingWaypoint = sharingWaypoint;
     }
 
+    @Override
     public void tick() {
     }
 
+    @Override
     public void init() {
         this.screenTitle = this.sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
         this.playerList = new GuiButtonRowListPlayers(this);
@@ -51,6 +53,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.filter.setFocused(true);
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         if (this.filter.isFocused()) {
@@ -60,6 +63,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
+    @Override
     public boolean charTyped(char chr, int modifiers) {
         boolean OK = super.charTyped(chr, modifiers);
         if (this.filter.isFocused()) {
@@ -69,24 +73,29 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         this.playerList.mouseClicked(mouseX, mouseY, button);
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         this.playerList.mouseReleased(mouseX, mouseY, button);
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         return this.playerList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         return this.playerList.mouseScrolled(mouseX, mouseY, 0, amount);
     }
 
+    @Override
     public void accept(boolean b) {
         if (this.allClicked) {
             this.allClicked = false;
@@ -119,6 +128,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(this.parentScreen);
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         renderBackgroundTexture(drawContext);
         this.tooltip = null;

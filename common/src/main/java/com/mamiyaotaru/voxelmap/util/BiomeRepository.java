@@ -130,7 +130,9 @@ public final class BiomeRepository {
     public static int getBiomeColor(Biome biome) {
         Integer color = IDtoColor.get(biome);
 
-        if (color != null) return color;
+        if (color != null) {
+            return color;
+        }
 
         if (biome == null) {
             VoxelConstants.getLogger().warn("non biome");
@@ -174,7 +176,9 @@ public final class BiomeRepository {
 
         String name = I18n.get(translationKey);
 
-        if (name.equals(translationKey)) return TextUtils.prettify(resourceLocation.getPath());
+        if (name.equals(translationKey)) {
+            return TextUtils.prettify(resourceLocation.getPath());
+        }
         return name;
     }
 
@@ -182,7 +186,9 @@ public final class BiomeRepository {
     public static String getName(int biomeID) {
         Biome biome = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).byId(biomeID);
 
-        if (biome != null) return getName(biome);
+        if (biome != null) {
+            return getName(biome);
+        }
         return "Unknown";
     }
 }

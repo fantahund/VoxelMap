@@ -23,6 +23,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
+    @Override
     public void init() {
         EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.COORDS, EnumOptionsMinimap.HIDE, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.BEACONS, EnumOptionsMinimap.CAVEMODE, EnumOptionsMinimap.MOVEMAPDOWNWHILESTATSUEFFECT, EnumOptionsMinimap.MOVESCOREBOARDDOWN };
         this.screenTitle = I18n.get("options.minimap.title");
@@ -32,9 +33,15 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(getWidth() / 2 - 155 + i % 2 * 160, getHeight() / 6 + 24 * (i >> 1), option, Component.literal(options.getKeyText(option)), this::optionClicked);
             this.addRenderableWidget(optionButton);
 
-            if (option == EnumOptionsMinimap.HIDE) optionButton.active = this.options.minimapAllowed;
-            if (option == EnumOptionsMinimap.BEACONS) optionButton.active = this.options.waypointsAllowed;
-            if (option == EnumOptionsMinimap.CAVEMODE) optionButton.active = this.options.cavesAllowed;
+            if (option == EnumOptionsMinimap.HIDE) {
+                optionButton.active = this.options.minimapAllowed;
+            }
+            if (option == EnumOptionsMinimap.BEACONS) {
+                optionButton.active = this.options.waypointsAllowed;
+            }
+            if (option == EnumOptionsMinimap.CAVEMODE) {
+                optionButton.active = this.options.cavesAllowed;
+            }
         }
 
         Button radarOptionsButton = new Button.Builder(Component.translatable("options.minimap.radar"), button -> VoxelConstants.getMinecraft().setScreen(new GuiRadarOptions(this))).bounds(this.getWidth() / 2 - 155, this.getHeight() / 6 + 135 - 6, 150, 20).build();
@@ -58,6 +65,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);

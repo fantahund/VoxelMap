@@ -14,14 +14,18 @@ public class GuiOptionSliderMinimap extends AbstractSliderButton {
         this.option = optionIn;
     }
 
+    @Override
     protected void updateMessage() { setMessage(Component.literal(this.options.getKeyText(this.option))); }
 
+    @Override
     protected void applyValue() { this.options.setOptionFloatValue(option, (float) this.value); }
 
     public EnumOptionsMinimap returnEnumOptions() { return option; }
 
     public void setValue(float value) {
-        if (isHovered()) return;
+        if (isHovered()) {
+            return;
+        }
 
         this.value = value;
         this.updateMessage();

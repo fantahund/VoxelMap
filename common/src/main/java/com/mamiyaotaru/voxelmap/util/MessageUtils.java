@@ -9,5 +9,7 @@ public final class MessageUtils {
 
     public static void chatInfo(String s) { VoxelConstants.getVoxelMapInstance().sendPlayerMessageOnMainThread(s); }
 
-    public static void printDebug(String line) { if (debug) VoxelConstants.getLogger().warn(line); }
+    public static void printDebug(String line) { if (debug) {
+        VoxelConstants.getLogger().warn(line);
+    } }
 }

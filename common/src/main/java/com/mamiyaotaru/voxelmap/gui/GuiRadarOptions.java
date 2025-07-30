@@ -24,6 +24,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
     }
 
+    @Override
     public void init() {
         clearWidgets();
         getButtonList().clear();
@@ -42,13 +43,17 @@ public class GuiRadarOptions extends GuiScreenMinimap {
 
         iterateButtonOptions();
 
-        if (options.radarMode == 2) addRenderableWidget(new Button.Builder(Component.translatable("options.minimap.radar.selectmobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, options))).bounds(getWidth() / 2 + 5, getHeight() / 6 + 120, 150, 20).build());
+        if (options.radarMode == 2) {
+            addRenderableWidget(new Button.Builder(Component.translatable("options.minimap.radar.selectmobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, options))).bounds(getWidth() / 2 + 5, getHeight() / 6 + 120, 150, 20).build());
+        }
 
         addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), x -> VoxelConstants.getMinecraft().setScreen(parent)).bounds(getWidth() / 2 - 100, getHeight() / 6 + 168, 200, 20).build());
     }
 
     protected void optionClicked(Button buttonClicked) {
-        if (!(buttonClicked instanceof GuiOptionButtonMinimap guiOptionButtonMinimap)) throw new IllegalStateException("Expected GuiOptionMinimap, but received " + buttonClicked.getClass().getSimpleName() + " instead!");
+        if (!(buttonClicked instanceof GuiOptionButtonMinimap guiOptionButtonMinimap)) {
+            throw new IllegalStateException("Expected GuiOptionMinimap, but received " + buttonClicked.getClass().getSimpleName() + " instead!");
+        }
 
         EnumOptionsMinimap option = guiOptionButtonMinimap.returnEnumOptions();
         options.setOptionValue(option);
@@ -63,6 +68,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
         iterateButtonOptions();
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);
@@ -73,8 +79,12 @@ public class GuiRadarOptions extends GuiScreenMinimap {
 
     private void iterateButtonOptions() {
         for (GuiEventListener element : getButtonList()) {
-            if (!(element instanceof GuiOptionButtonMinimap button)) continue;
-            if (button.returnEnumOptions() != EnumOptionsMinimap.SHOWRADAR) button.active = options.showRadar;
+            if (!(element instanceof GuiOptionButtonMinimap button)) {
+                continue;
+            }
+            if (button.returnEnumOptions() != EnumOptionsMinimap.SHOWRADAR) {
+                button.active = options.showRadar;
+            }
 
             if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWPLAYERS) {
                 button.active = button.active && (options.radarAllowed || options.radarPlayersAllowed);
@@ -91,7 +101,9 @@ public class GuiRadarOptions extends GuiScreenMinimap {
                 continue;
             }
 
-            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWMOBHELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOWMOBNAMES) button.active = button.active && (options.showNeutrals || options.showHostiles) && (options.radarAllowed || options.radarMobsAllowed);
+            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWMOBHELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOWMOBNAMES) {
+                button.active = button.active && (options.showNeutrals || options.showHostiles) && (options.radarAllowed || options.radarMobsAllowed);
+            }
         }
     }
 }

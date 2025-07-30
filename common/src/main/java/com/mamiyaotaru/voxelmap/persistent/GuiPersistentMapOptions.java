@@ -23,6 +23,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
     }
 
+    @Override
     public void init() {
         EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOWWAYPOINTS, EnumOptionsMinimap.SHOWWAYPOINTNAMES };
 
@@ -31,9 +32,13 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (EnumOptionsMinimap option : relevantOptions) {
             GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, Component.literal(this.options.getKeyText(option)), this::optionClicked);
             this.addRenderableWidget(optionButton);
-            
-            if (option == EnumOptionsMinimap.SHOWWAYPOINTS) optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
-            if (option == EnumOptionsMinimap.SHOWWAYPOINTNAMES) optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
+
+            if (option == EnumOptionsMinimap.SHOWWAYPOINTS) {
+                optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
+            }
+            if (option == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
+                optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
+            }
             counter++;
         }
 
@@ -84,6 +89,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         for (Object buttonObj : this.getButtonList()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {

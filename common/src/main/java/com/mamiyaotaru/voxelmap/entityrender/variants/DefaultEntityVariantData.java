@@ -20,14 +20,17 @@ public class DefaultEntityVariantData implements EntityVariantData {
         this.addBorder = addBorder;
     }
 
+    @Override
     public EntityType<?> getType() {
         return type;
     }
 
+    @Override
     public ResourceLocation getPrimaryTexture() {
         return primaryTexture;
     }
 
+    @Override
     public ResourceLocation getSecondaryTexture() {
         return secondaryTexture;
     }

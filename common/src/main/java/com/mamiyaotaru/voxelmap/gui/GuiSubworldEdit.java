@@ -30,9 +30,11 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.knownSubworldNames = new ArrayList<Object>(this.waypointManager.getKnownSubworldNames());
     }
 
+    @Override
     public void tick() {
     }
 
+    @Override
     public void init() {
         this.clearWidgets();
         this.subworldNameField = new EditBox(this.getFontRenderer(), this.getWidth() / 2 - 100, this.getHeight() / 6 + 13, 200, 20, null);
@@ -70,6 +72,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         VoxelConstants.getMinecraft().setScreen(confirmScreen);
     }
 
+    @Override
     public void accept(boolean b) {
         if (this.deleteClicked) {
             this.deleteClicked = false;
@@ -82,6 +85,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         boolean acceptable = this.isNameAcceptable();
@@ -94,6 +98,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
+    @Override
     public boolean charTyped(char chr, int modifiers) {
         boolean OK = super.charTyped(chr, modifiers);
         boolean acceptable = this.isNameAcceptable();
@@ -106,11 +111,13 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         this.subworldNameField.mouseClicked(mouseX, mouseY, button);
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);

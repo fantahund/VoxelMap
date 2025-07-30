@@ -28,9 +28,11 @@ public class GuiMobs extends GuiScreenMinimap {
         this.options = options;
     }
 
+    @Override
     public void tick() {
     }
 
+    @Override
     public void init() {
         this.screenTitle = Component.translatable("options.minimap.mobs.title");
         this.mobsList = new GuiSlotMobs(this);
@@ -48,6 +50,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.buttonDisable.active = isSomethingSelected;
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
         if (this.filter.isFocused()) {
@@ -57,6 +60,7 @@ public class GuiMobs extends GuiScreenMinimap {
         return OK;
     }
 
+    @Override
     public boolean charTyped(char chr, int modifiers) {
         boolean OK = super.charTyped(chr, modifiers);
         if (this.filter.isFocused()) {
@@ -66,6 +70,7 @@ public class GuiMobs extends GuiScreenMinimap {
         return OK;
     }
 
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
             this.mobsList.mouseClicked(mouseX, mouseY, button);
@@ -73,6 +78,7 @@ public class GuiMobs extends GuiScreenMinimap {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
             this.mobsList.mouseReleased(mouseX, mouseY, button);
@@ -80,6 +86,7 @@ public class GuiMobs extends GuiScreenMinimap {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
             return this.mobsList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
@@ -87,6 +94,7 @@ public class GuiMobs extends GuiScreenMinimap {
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
             return this.mobsList.mouseScrolled(mouseX, mouseY, 0, amount);
@@ -114,6 +122,7 @@ public class GuiMobs extends GuiScreenMinimap {
         setMobEnabled(selectedMobId, !isMobEnabled(selectedMobId));
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);

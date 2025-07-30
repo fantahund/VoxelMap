@@ -209,6 +209,7 @@ public class Stitcher {
 
         }
 
+        @Override
         public int compareTo(Holder o) {
             int var2;
             if (this.getHeight() == o.getHeight()) {
