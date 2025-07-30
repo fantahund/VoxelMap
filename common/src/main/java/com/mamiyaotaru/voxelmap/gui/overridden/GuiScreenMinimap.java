@@ -18,10 +18,13 @@ public class GuiScreenMinimap extends Screen {
         super (title);
     }
 
+    @Override
     public void removed() { MapSettingsManager.instance.saveAll(); }
 
     public void renderTooltip(GuiGraphics drawContext, Component text, int x, int y) {
-        if (!(text != null && text.getString() != null && !text.getString().isEmpty())) return;
+        if (!(text != null && text.getString() != null && !text.getString().isEmpty())) {
+            return;
+        }
         ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(text.getVisualOrderText());
         drawContext.renderTooltip(VoxelConstants.getMinecraft().font, List.of(clientTooltipComponent), x, y, DefaultTooltipPositioner.INSTANCE, null);
     }
@@ -34,6 +37,7 @@ public class GuiScreenMinimap extends Screen {
 
     public Font getFontRenderer() { return font; }
 
+    @Override
     public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
     }
 

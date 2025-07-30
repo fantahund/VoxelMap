@@ -77,6 +77,7 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
         this.y = y;
     }
 
+    @Override
     public int compareTo(Waypoint o) {
         double myDistance = this.getDistanceSqToEntity(VoxelConstants.getPlayer());
         double comparedDistance = o.getDistanceSqToEntity(VoxelConstants.getPlayer());
@@ -98,6 +99,7 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
         return var2 * var2 + var4 * var4 + var6 * var6;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

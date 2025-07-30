@@ -102,8 +102,9 @@ public class WaypointContainer {
         Optional<Vec3> raytraceresult = axisalignedbb.clip(cameraPos, cameraPosPlusDirectionTimesDistance);
         if (axisalignedbb.contains(cameraPos)) {
             return distance >= 1.0;
-        } else
+        } else {
             return raytraceresult.isPresent();
+        }
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, PoseStack poseStack, BufferSource bufferSource) {

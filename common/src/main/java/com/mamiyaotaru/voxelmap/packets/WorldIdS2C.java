@@ -51,7 +51,8 @@ public record WorldIdS2C(String worldName) implements CustomPacketPayload {
     public static void updateWorld(WorldIdS2C packet) {
         String worldName = packet.worldName;
         VoxelConstants.getLogger().info("Received world_id: " + worldName);
-        if (worldName != null)
+        if (worldName != null) {
             VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
+        }
     }
 }

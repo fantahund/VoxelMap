@@ -52,6 +52,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         return 100;
     }
 
+    @Override
     public void setSelected(DimensionItem entry) {
         super.setSelected(entry);
         if (this.getSelected() instanceof DimensionItem) {
@@ -62,6 +63,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         this.parentGui.setSelectedDimension(entry.dim);
     }
 
+    @Override
     protected boolean isSelectedItem(int index) {
         return this.dimensions.get(index).dim.equals(this.parentGui.selectedDimension);
     }
@@ -87,6 +89,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             this.dim = dim;
         }
 
+        @Override
         public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.width / 2, y + 3, 0xFFFFFFFF);
             byte padding = 4;
@@ -112,7 +115,8 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             drawContext.blit(RenderPipelines.GUI_TEXTURED, this.parentGui.waypoint.dimensions.contains(this.dim) ? CONFIRM : CANCEL, x + width - iconWidth, y - 3, 0, 0, 18, 18, 18, 18);
         }
 
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
             if (mouseY < GuiSlotDimensions.this.getY() || mouseY > GuiSlotDimensions.this.getBottom()) {
                 return false;
             }

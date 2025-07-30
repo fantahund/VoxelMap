@@ -22,6 +22,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         this.options = options;
     }
 
+    @Override
     public void init() {
         int var2 = 0;
         this.screenTitle = Component.translatable("options.minimap.waypoints.title");
@@ -52,6 +53,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);

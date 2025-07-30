@@ -47,6 +47,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
     }
 
+    @Override
     public void init() {
         ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
@@ -106,6 +107,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.newNameField = new EditBox(this.getFontRenderer(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
+    @Override
     public void accept(boolean b) {
         if (!b) {
             VoxelConstants.getMinecraft().setScreen(this.parent);
@@ -125,6 +127,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.newNameField.isFocused()) {
             this.newNameField.keyPressed(keyCode, scanCode, modifiers);
@@ -139,6 +142,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    @Override
     public boolean charTyped(char chr, int modifiers) {
         if (this.newNameField.isFocused()) {
             this.newNameField.charTyped(chr, modifiers);
@@ -153,10 +157,12 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         return super.charTyped(chr, modifiers);
     }
 
+    @Override
     public void tick() {
         super.tick();
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         int titleStringWidth = this.getFontRenderer().width(this.title);
         titleStringWidth = Math.max(titleStringWidth, this.getFontRenderer().width(this.select));

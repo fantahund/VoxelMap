@@ -27,6 +27,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         return this.getWidth() / 2 - 155;
     }
 
+    @Override
     public void init() {
         int left = this.getLeftBorder();
 
@@ -59,6 +60,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         }
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.buttonId != null) {
             if (keyCode == 256) {
@@ -75,6 +77,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         }
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);

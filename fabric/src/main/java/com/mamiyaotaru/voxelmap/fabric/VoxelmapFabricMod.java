@@ -5,6 +5,7 @@ import net.fabricmc.api.ClientModInitializer;
 
 public class VoxelmapFabricMod implements ClientModInitializer {
 
+    @Override
     public void onInitializeClient() {
         new VoxelmapSettingsChannelHandler();
         new VoxelmapWorldIdChannelHandler();

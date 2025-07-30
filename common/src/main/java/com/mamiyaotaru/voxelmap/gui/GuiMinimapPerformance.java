@@ -30,6 +30,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         return this.getWidth() / 2 - 155;
     }
 
+    @Override
     public void init() {
         this.screenTitle = I18n.get("options.minimap.detailsperformance");
         int leftBorder = this.getLeftBorder();
@@ -87,6 +88,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         par1GuiButton.setMessage(Component.literal(perfBomb + this.options.getKeyText(option)));
     }
 
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == 258) {
             this.worldSeedButton.keyPressed(keyCode, scanCode, modifiers);
@@ -105,6 +107,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    @Override
     public boolean charTyped(char chr, int modifiers) {
         boolean OK = super.charTyped(chr, modifiers);
         if (chr == '\r') {
@@ -143,6 +146,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
     }
 
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.renderBlurredBackground(drawContext);
         this.renderMenuBackground(drawContext);

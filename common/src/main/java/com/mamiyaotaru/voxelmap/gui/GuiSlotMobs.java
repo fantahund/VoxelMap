@@ -54,6 +54,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         this.mobsFiltered.forEach(x -> addEntry((MobItem) x));
     }
 
+    @Override
     public void setSelected(MobItem entry) {
         super.setSelected(entry);
         if (this.getSelected() != null) {

@@ -35,6 +35,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         this.players = new ArrayList<>(netHandlerPlayClient.getOnlinePlayers());
         this.sort();
         Button everyoneButton = new Button(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, ALL, null, null) {
+            @Override
             public void onPress() {
             }
         };
@@ -56,10 +57,12 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         }
     }
 
+    @Override
     public int getRowWidth() {
         return 400;
     }
 
+    @Override
     protected int scrollBarX() {
         return super.scrollBarX() + 32;
     }
@@ -109,6 +112,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
 
     }
 
+    @Override
     public void updateWidgetNarration(NarrationElementOutput builder) {
     }
 
@@ -132,6 +136,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             this.id2 = id2;
         }
 
+        @Override
         public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             this.drawButton(drawContext, this.button, this.id, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
             this.drawButton(drawContext, this.button1, this.id1, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
@@ -182,6 +187,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             }
         }
 
+        @Override
         public boolean mouseReleased(double mouseX, double mouseY, int button) {
             if (this.button != null) {
                 this.button.mouseReleased(mouseX, mouseY, button);

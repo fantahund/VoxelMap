@@ -31,6 +31,7 @@ public class WorldMatcher {
             final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
             final File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
 
+            @Override
             public void run() {
                 try {
                     Thread.sleep(500L);

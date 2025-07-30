@@ -16,12 +16,15 @@ public class DimensionContainer implements Comparable<DimensionContainer> {
     }
 
     public String getStorageName() {
-        if (resourceLocation == null) return "UNKNOWN";
+        if (resourceLocation == null) {
+            return "UNKNOWN";
+        }
         return resourceLocation.getNamespace().equals("minecraft") ? resourceLocation.getPath() : resourceLocation.toString();
     }
 
     public String getDisplayName() { return TextUtils.prettify(this.name); }
 
+    @Override
     public int compareTo(DimensionContainer o) { return String.CASE_INSENSITIVE_ORDER.compare(this.name, o.name); }
 
     @Override

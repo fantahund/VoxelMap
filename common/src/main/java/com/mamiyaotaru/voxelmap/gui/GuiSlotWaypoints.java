@@ -46,6 +46,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.waypointsFiltered.forEach(x -> this.addEntry((WaypointItem) x));
     }
 
+    @Override
     public void setSelected(WaypointItem entry) {
         super.setSelected(entry);
         if (this.getSelected() instanceof WaypointItem) {
@@ -56,6 +57,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.parentGui.setSelectedWaypoint(entry.waypoint);
     }
 
+    @Override
     protected boolean isSelectedItem(int index) {
         return ((WaypointItem) this.waypointsFiltered.get(index)).waypoint.equals(this.parentGui.selectedWaypoint);
     }
@@ -106,6 +108,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.waypointsFiltered.forEach(x -> this.addEntry((WaypointItem) x));
     }
 
+    @Override
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
 
     }
@@ -162,7 +165,8 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             }
         }
 
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
             if (mouseY < GuiSlotWaypoints.this.getY() || mouseY > GuiSlotWaypoints.this.getBottom()) {
                 return false;
             }
@@ -183,6 +187,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             return true;
         }
 
+        @Override
         public int compareTo(WaypointItem o) {
             return this.waypoint.compareTo(o.waypoint);
         }

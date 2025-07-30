@@ -19,7 +19,9 @@ public final class TextUtils {
 
     @NotNull
     public static String scrubName(String input) {
-        if (input == null) return "";
+        if (input == null) {
+            return "";
+        }
 
         return input
                 .replace(",", "~comma~")
@@ -28,7 +30,9 @@ public final class TextUtils {
 
     @NotNull
     public static String scrubNameRegex(String input) {
-        if (input == null) return "";
+        if (input == null) {
+            return "";
+        }
 
         return input
                 .replace(',', '﹐')
@@ -38,7 +42,9 @@ public final class TextUtils {
 
     @NotNull
     public static String scrubNameFile(String input) {
-        if (input == null) return "";
+        if (input == null) {
+            return "";
+        }
 
         return input
                 .replace("<", "~less~")
@@ -54,7 +60,9 @@ public final class TextUtils {
 
     @NotNull
     public static String descrubName(String input) {
-        if (input == null) return "";
+        if (input == null) {
+            return "";
+        }
 
         return input
                 .replace("~less~", "<")
@@ -75,7 +83,9 @@ public final class TextUtils {
 
     @NotNull
     public static String prettify(String input) {
-        if (input == null) return "";
+        if (input == null) {
+            return "";
+        }
 
         return Arrays
                 .stream(input.split("_"))
@@ -91,7 +101,9 @@ public final class TextUtils {
         for (Component text : stream(text2)) {
             String contentString = text.getString();
 
-            if (contentString.isEmpty()) continue;
+            if (contentString.isEmpty()) {
+                continue;
+            }
 
             String styleString = asString(text.getStyle());
 
@@ -100,7 +112,9 @@ public final class TextUtils {
                 continue;
             }
 
-            if (!(lastStyleString.isEmpty())) stringBuilder.append(ChatFormatting.RESET);
+            if (!(lastStyleString.isEmpty())) {
+                stringBuilder.append(ChatFormatting.RESET);
+            }
 
             stringBuilder.append(styleString);
             lastStyleString = styleString;
@@ -108,7 +122,9 @@ public final class TextUtils {
             stringBuilder.append(contentString);
         }
 
-        if (!(lastStyleString.isEmpty())) stringBuilder.append(ChatFormatting.RESET);
+        if (!(lastStyleString.isEmpty())) {
+            stringBuilder.append(ChatFormatting.RESET);
+        }
         return stringBuilder.toString();
     }
 
@@ -126,21 +142,35 @@ public final class TextUtils {
 
     @NotNull
     private static String asString(Style style) {
-        if (style == null || style.isEmpty()) return "";
+        if (style == null || style.isEmpty()) {
+            return "";
+        }
 
         StringBuilder stringBuilder = new StringBuilder();
 
         if (style.getColor() != null) {
             ChatFormatting colorFormat = ChatFormatting.getByName(style.getColor().serialize());
 
-            if (colorFormat != null) stringBuilder.append(colorFormat);
+            if (colorFormat != null) {
+                stringBuilder.append(colorFormat);
+            }
         }
 
-        if (style.isBold()) stringBuilder.append(ChatFormatting.BOLD);
-        if (style.isItalic()) stringBuilder.append(ChatFormatting.ITALIC);
-        if (style.isUnderlined()) stringBuilder.append(ChatFormatting.UNDERLINE);
-        if (style.isObfuscated()) stringBuilder.append(ChatFormatting.OBFUSCATED);
-        if (style.isStrikethrough()) stringBuilder.append(ChatFormatting.STRIKETHROUGH);
+        if (style.isBold()) {
+            stringBuilder.append(ChatFormatting.BOLD);
+        }
+        if (style.isItalic()) {
+            stringBuilder.append(ChatFormatting.ITALIC);
+        }
+        if (style.isUnderlined()) {
+            stringBuilder.append(ChatFormatting.UNDERLINE);
+        }
+        if (style.isObfuscated()) {
+            stringBuilder.append(ChatFormatting.OBFUSCATED);
+        }
+        if (style.isStrikethrough()) {
+            stringBuilder.append(ChatFormatting.STRIKETHROUGH);
+        }
         return stringBuilder.toString();
     }
 }
