@@ -161,9 +161,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.waypointList.mouseClicked(mouseX, mouseY, button);
-        return super.mouseClicked(mouseX, mouseY, button);
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+        this.waypointList.mouseClicked(mouseX, mouseY, button, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
@@ -290,7 +291,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         if (integratedServer.isEmpty()) return true;
 
         try {
-            return integratedServer.get().getPlayerList().isOp(VoxelConstants.getPlayer().getGameProfile());
+            return integratedServer.get().getPlayerList().isOp(VoxelConstants.getPlayer().nameAndId());
         } catch (RuntimeException exception) {
             return integratedServer.get().getWorldData().isAllowCommands();
         }

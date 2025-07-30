@@ -69,9 +69,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.playerList.mouseClicked(mouseX, mouseY, button);
-        return super.mouseClicked(mouseX, mouseY, button);
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+        this.playerList.mouseClicked(mouseX, mouseY, button, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int button) {

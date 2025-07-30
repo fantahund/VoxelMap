@@ -47,14 +47,15 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         this.buttonId = this.options.keyBindings[id];
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
         if (this.buttonId != null) {
             this.options.setKeyBinding(this.buttonId, InputConstants.Type.MOUSE.getOrCreate(button));
             this.buttonId = null;
             KeyMapping.resetMapping();
             return true;
         } else {
-            return super.mouseClicked(mouseX, mouseY, button);
+            return super.mouseClicked(mouseX, mouseY, button, doubleClick);
         }
     }
 

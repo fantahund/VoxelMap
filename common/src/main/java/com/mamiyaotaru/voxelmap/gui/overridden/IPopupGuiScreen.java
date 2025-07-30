@@ -7,5 +7,5 @@ public interface IPopupGuiScreen {
 
     void popupAction(Popup popup, int action);
 
-    boolean mouseClicked(double mouseX, double mouseY, int mouseButton);
+    boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick);
 }

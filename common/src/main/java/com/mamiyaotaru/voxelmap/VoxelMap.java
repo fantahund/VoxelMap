@@ -89,8 +89,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     @Override
-    public CompletableFuture<Void> reload(PreparationBarrier preparationBarrier, ResourceManager resourceManager, Executor executor, Executor executor2) {
-        return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(resourceManager), executor2);
+    public CompletableFuture<Void> reload(SharedState sharedState, Executor executor, PreparationBarrier preparationBarrier, Executor executor2) {
+        return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(sharedState.resourceManager()), executor2);
     }
 
     private void apply(ResourceManager resourceManager) {

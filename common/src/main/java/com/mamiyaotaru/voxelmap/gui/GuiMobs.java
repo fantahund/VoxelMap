@@ -66,11 +66,12 @@ public class GuiMobs extends GuiScreenMinimap {
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            this.mobsList.mouseClicked(mouseX, mouseY, button);
+            this.mobsList.mouseClicked(mouseX, mouseY, button, doubleClick);
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int button) {

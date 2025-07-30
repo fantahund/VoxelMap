@@ -110,10 +110,11 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
 
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
         this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 200L;
         this.lastClicked = System.currentTimeMillis();
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public class WaypointItem extends AbstractSelectionList.Entry<WaypointItem> implements Comparable<WaypointItem> {

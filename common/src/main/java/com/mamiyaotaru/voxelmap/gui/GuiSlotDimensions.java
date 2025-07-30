@@ -71,10 +71,11 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
 
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
         this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 200L;
         this.lastClicked = System.currentTimeMillis();
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public class DimensionItem extends AbstractSelectionList.Entry<DimensionItem> {

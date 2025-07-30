@@ -116,12 +116,13 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
         if (this.newWorld) {
-            this.newNameField.mouseClicked(mouseX, mouseY, button);
+            this.newNameField.mouseClicked(mouseX, mouseY, button, doubleClick);
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

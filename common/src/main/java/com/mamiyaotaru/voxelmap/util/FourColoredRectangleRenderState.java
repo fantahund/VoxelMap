@@ -40,11 +40,11 @@ public record FourColoredRectangleRenderState(
     }
 
     @Override
-    public void buildVertices(VertexConsumer vertexConsumer, float f) {
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0(), f).setColor(this.color00());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1(), f).setColor(this.color01());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1(), f).setColor(this.color11());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0(), f).setColor(this.color10());
+    public void buildVertices(VertexConsumer vertexConsumer) {
+        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0()).setColor(this.color00());
+        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1()).setColor(this.color01());
+        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1()).setColor(this.color11());
+        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0()).setColor(this.color10());
     }
 
     @Nullable

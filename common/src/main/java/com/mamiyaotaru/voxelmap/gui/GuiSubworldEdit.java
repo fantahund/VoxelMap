@@ -106,9 +106,10 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         return OK;
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.subworldNameField.mouseClicked(mouseX, mouseY, button);
-        return super.mouseClicked(mouseX, mouseY, button);
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+        this.subworldNameField.mouseClicked(mouseX, mouseY, button, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
     }
 
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {

@@ -183,13 +183,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
         if (this.popupOpen()) {
-            super.mouseClicked(mouseX, mouseY, button);
-            this.waypointName.mouseClicked(mouseX, mouseY, button);
-            this.waypointX.mouseClicked(mouseX, mouseY, button);
-            this.waypointY.mouseClicked(mouseX, mouseY, button);
-            this.waypointZ.mouseClicked(mouseX, mouseY, button);
+            super.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.waypointName.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.waypointX.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.waypointY.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.waypointZ.mouseClicked(mouseX, mouseY, button, doubleClick);
         }
         else if (choosingColor){
             int pickerSize = 200;
@@ -218,7 +218,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         }
 
         if (this.popupOpen() && this.dimensionList != null) {
-            this.dimensionList.mouseClicked(mouseX, mouseY, button);
+            this.dimensionList.mouseClicked(mouseX, mouseY, button, doubleClick);
         }
 
         return true;
