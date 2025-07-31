@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    private static final ResourceLocation BLANK = ResourceLocation.parse("textures/misc/white.png");
     private static final ResourceLocation PICKER = ResourceLocation.parse("voxelmap:images/colorpicker.png");
     private static final ResourceLocation TARGET = ResourceLocation.parse("voxelmap:images/waypoints/target.png");
     final WaypointManager waypointManager;
@@ -282,7 +281,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             this.waypointIconMap.put(iconLocation, waypointIcon);
         }
         int color = this.waypoint.getUnifiedColor();
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, BLANK, this.getWidth() / 2 - 25, buttonListY + 24 + 5, 0, 0, 16, 10, 16, 10, color);
+        drawContext.fill(this.getWidth() / 2 - 25, buttonListY + 24 + 5, this.getWidth() / 2 - 25 + 16, buttonListY + 24 + 5 + 10, color);
         drawContext.blit(RenderPipelines.GUI_TEXTURED, waypointIcon, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 0.0F, 0.0F, 16, 16, 16, 16, color);
         if (this.choosingColor || this.choosingIcon) {
             renderBackgroundTexture(drawContext);
