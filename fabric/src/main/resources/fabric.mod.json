@@ -29,10 +29,7 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.14",
-    "fabric": ">=0.127.0",
-    "minecraft": ">=1.21.7"
-  },
-  "breaks": {
-    "iris": "<1.8.11-"
+    "fabric": ">=0.130.0",
+    "minecraft": ">1.21.8"
   }
 }
