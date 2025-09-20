@@ -21,6 +21,7 @@ import java.util.List;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class MapSettingsManager implements ISettingsManager {
     private File settingsFile;
@@ -68,13 +69,13 @@ public class MapSettingsManager implements ISettingsManager {
     public boolean waypointDistanceBelowName = true;
     public int sort = 1;
     protected boolean realTimeTorches;
-    public final KeyMapping keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), "controls.minimap.title");
-    public final KeyMapping keyBindFullscreen = new KeyMapping("key.minimap.togglefullscreen", InputConstants.getKey("key.keyboard.x").getValue(), "controls.minimap.title");
-    public final KeyMapping keyBindMenu = new KeyMapping("key.minimap.voxelmapmenu", InputConstants.getKey("key.keyboard.m").getValue(), "controls.minimap.title");
-    public final KeyMapping keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", -1, "controls.minimap.title");
-    public final KeyMapping keyBindWaypoint = new KeyMapping("key.minimap.waypointhotkey", InputConstants.getKey("key.keyboard.n").getValue(), "controls.minimap.title");
-    public final KeyMapping keyBindMobToggle = new KeyMapping("key.minimap.togglemobs", -1, "controls.minimap.title");
-    public final KeyMapping keyBindWaypointToggle = new KeyMapping("key.minimap.toggleingamewaypoints", -1, "controls.minimap.title");
+    public final KeyMapping keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
+    public final KeyMapping keyBindFullscreen = new KeyMapping("key.minimap.togglefullscreen", InputConstants.getKey("key.keyboard.x").getValue(), KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
+    public final KeyMapping keyBindMenu = new KeyMapping("key.minimap.voxelmapmenu", InputConstants.getKey("key.keyboard.m").getValue(), KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
+    public final KeyMapping keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", -1, KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
+    public final KeyMapping keyBindWaypoint = new KeyMapping("key.minimap.waypointhotkey", InputConstants.getKey("key.keyboard.n").getValue(), KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
+    public final KeyMapping keyBindMobToggle = new KeyMapping("key.minimap.togglemobs", -1, KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
+    public final KeyMapping keyBindWaypointToggle = new KeyMapping("key.minimap.toggleingamewaypoints", -1, KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"))); //TODO 1.21.9
     public final KeyMapping[] keyBindings;
     private boolean somethingChanged;
     public static MapSettingsManager instance;

@@ -17,11 +17,11 @@ dependencies {
     mappings(loom.layered() {
         officialMojangMappings()
     })
-    compileOnly("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
+    compileOnly("net.fabricmc:sponge-mixin:0.16.4+mixin.0.8.7")
     modCompileOnly("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
 
-    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
-    annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0-rc.3")
+    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
 

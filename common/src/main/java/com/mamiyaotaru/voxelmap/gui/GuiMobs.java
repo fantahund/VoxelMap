@@ -8,6 +8,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -51,8 +54,8 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent keyEvent) {
+        boolean OK = super.keyPressed(keyEvent);
         if (this.filter.isFocused()) {
             this.mobsList.updateFilter(this.filter.getValue().toLowerCase());
         }
@@ -61,8 +64,8 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        boolean OK = super.charTyped(chr, modifiers);
+    public boolean charTyped(CharacterEvent characterEvent) {
+        boolean OK = super.charTyped(characterEvent);
         if (this.filter.isFocused()) {
             this.mobsList.updateFilter(this.filter.getValue().toLowerCase());
         }
@@ -71,27 +74,30 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
+        double mouseY = mouseButtonEvent.y();
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            this.mobsList.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.mobsList.mouseClicked(mouseButtonEvent, bl);
         }
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+        return super.mouseClicked(mouseButtonEvent, bl);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+        double mouseY = mouseButtonEvent.y();
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            this.mobsList.mouseReleased(mouseX, mouseY, button);
+            this.mobsList.mouseReleased(mouseButtonEvent);
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double d, double e) {
+        double mouseY = mouseButtonEvent.y();
         if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            return this.mobsList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+            return this.mobsList.mouseDragged(mouseButtonEvent, d, e);
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(mouseButtonEvent, d, e);
     }
 
     @Override
