@@ -12,6 +12,9 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
@@ -119,18 +122,19 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
         if (this.newWorld) {
-            this.newNameField.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.newNameField.mouseClicked(mouseButtonEvent, bl);
         }
 
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+        return super.mouseClicked(mouseButtonEvent, bl);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
         if (this.newNameField.isFocused()) {
-            this.newNameField.keyPressed(keyCode, scanCode, modifiers);
+            this.newNameField.keyPressed(keyEvent);
+            int keyCode = keyEvent.key(); //TODO 1.21.9
             if ((keyCode == 257 || keyCode == 335) && this.newNameField.isFocused()) {
                 String newName = this.newNameField.getValue();
                 if (newName != null && !newName.isEmpty()) {
@@ -139,13 +143,14 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             }
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyEvent);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
         if (this.newNameField.isFocused()) {
-            this.newNameField.charTyped(chr, modifiers);
+            this.newNameField.charTyped(characterEvent);
+            int modifiers = characterEvent.modifiers();
             if (modifiers == 28) {
                 String newName = this.newNameField.getValue();
                 if (newName != null && !newName.isEmpty()) {
@@ -154,7 +159,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             }
         }
 
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(characterEvent);
     }
 
     @Override

@@ -16,6 +16,9 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
@@ -146,8 +149,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent keyEvent) {
+        boolean OK = super.keyPressed(keyEvent);
         if (this.filter.isFocused()) {
             this.waypointList.updateFilter(this.filter.getValue().toLowerCase());
         }
@@ -156,8 +159,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        boolean OK = super.charTyped(chr, modifiers);
+    public boolean charTyped(CharacterEvent characterEvent) {
+        boolean OK = super.charTyped(characterEvent);
         if (this.filter.isFocused()) {
             this.waypointList.updateFilter(this.filter.getValue().toLowerCase());
         }
@@ -166,20 +169,20 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-        this.waypointList.mouseClicked(mouseX, mouseY, button, doubleClick);
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
+        this.waypointList.mouseClicked(mouseButtonEvent, bl);
+        return super.mouseClicked(mouseButtonEvent, bl);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        this.waypointList.mouseReleased(mouseX, mouseY, button);
-        return super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+        this.waypointList.mouseReleased(mouseButtonEvent);
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return this.waypointList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double d, double e) {
+        return this.waypointList.mouseDragged(mouseButtonEvent, d, e);
     }
 
     @Override
