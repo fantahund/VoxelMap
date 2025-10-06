@@ -75,6 +75,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class EntityMapImageManager {
@@ -260,7 +261,7 @@ public class EntityMapImageManager {
                 .writeTransform(
                         RenderSystem.getModelViewMatrix(),
                         new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                        RenderSystem.getModelOffset(),
+                        new Vector3f(),
                         RenderSystem.getTextureMatrix(),
                         RenderSystem.getShaderLineWidth());
 

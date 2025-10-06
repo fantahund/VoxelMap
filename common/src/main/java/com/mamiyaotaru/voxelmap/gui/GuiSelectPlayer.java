@@ -7,6 +7,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -54,8 +57,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent keyEvent) {
+        boolean OK = super.keyPressed(keyEvent);
         if (this.filter.isFocused()) {
             this.playerList.updateFilter(this.filter.getValue().toLowerCase());
         }
@@ -64,8 +67,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        boolean OK = super.charTyped(chr, modifiers);
+    public boolean charTyped(CharacterEvent characterEvent) {
+        boolean OK = super.charTyped(characterEvent);
         if (this.filter.isFocused()) {
             this.playerList.updateFilter(this.filter.getValue().toLowerCase());
         }
@@ -74,20 +77,20 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-        this.playerList.mouseClicked(mouseX, mouseY, button, doubleClick);
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        this.playerList.mouseClicked(mouseButtonEvent, doubleClick);
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        this.playerList.mouseReleased(mouseX, mouseY, button);
-        return super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
+        this.playerList.mouseReleased(mouseButtonEvent);
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return this.playerList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
+        return this.playerList.mouseDragged(mouseButtonEvent, deltaX, deltaY);
     }
 
     @Override

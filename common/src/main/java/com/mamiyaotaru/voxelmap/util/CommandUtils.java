@@ -182,7 +182,8 @@ public final class CommandUtils {
     }
 
     public static void waypointClicked(String command) {
-        boolean control = InputConstants.isKeyDown(VoxelConstants.getMinecraft().getWindow().getWindow(), InputConstants.getKey("key.keyboard.left.control").getValue()) || InputConstants.isKeyDown(VoxelConstants.getMinecraft().getWindow().getWindow(), InputConstants.getKey("key.keyboard.right.control").getValue());
+        boolean control = InputConstants.isKeyDown(VoxelConstants.getMinecraft().getWindow(), InputConstants.getKey("key.keyboard.left.control").getValue())
+                || InputConstants.isKeyDown(VoxelConstants.getMinecraft().getWindow(), InputConstants.getKey("key.keyboard.right.control").getValue());
         String details = command.substring(NEW_WAYPOINT_COMMAND_LENGTH);
         Waypoint newWaypoint = createWaypointFromChat(details);
         if (newWaypoint != null) {

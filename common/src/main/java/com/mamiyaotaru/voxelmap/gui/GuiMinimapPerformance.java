@@ -9,6 +9,8 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
@@ -89,10 +91,11 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
+        int keyCode = keyEvent.key();
         if (keyCode == 258) {
-            this.worldSeedButton.keyPressed(keyCode, scanCode, modifiers);
-            this.teleportCommandButton.keyPressed(keyCode, scanCode, modifiers);
+            this.worldSeedButton.keyPressed(keyEvent);
+            this.teleportCommandButton.keyPressed(keyEvent);
         }
 
         if ((keyCode == 257 || keyCode == 335)) {
@@ -104,13 +107,13 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
 
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyEvent);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        boolean OK = super.charTyped(chr, modifiers);
-        if (chr == '\r') {
+    public boolean charTyped(CharacterEvent characterEvent) {
+        boolean OK = super.charTyped(characterEvent);
+        if (characterEvent.codepoint() == '\r') {
             if (this.worldSeedButton.isEditing()) {
                 this.newSeed();
             } else if (this.teleportCommandButton.isEditing()) {

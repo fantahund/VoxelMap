@@ -1,5 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
+import net.minecraft.client.input.MouseButtonEvent;
+
 public interface IPopupGuiScreen {
     boolean overPopup(int mouseX, int mouseY);
 
@@ -7,5 +9,5 @@ public interface IPopupGuiScreen {
 
     void popupAction(Popup popup, int action);
 
-    boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick);
+    boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick);
 }

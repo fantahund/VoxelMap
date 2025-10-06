@@ -9,6 +9,8 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
@@ -49,31 +51,32 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         if (this.buttonId != null) {
-            this.options.setKeyBinding(this.buttonId, InputConstants.Type.MOUSE.getOrCreate(button));
+            this.options.setKeyBinding(this.buttonId, InputConstants.Type.MOUSE.getOrCreate(mouseButtonEvent.button()));
             this.buttonId = null;
             KeyMapping.resetMapping();
             return true;
         } else {
-            return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+            return super.mouseClicked(mouseButtonEvent, doubleClick);
         }
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
+        int keyCode = keyEvent.key();
         if (this.buttonId != null) {
             if (keyCode == 256) {
                 this.options.setKeyBinding(this.buttonId, InputConstants.UNKNOWN);
             } else {
-                this.options.setKeyBinding(this.buttonId, InputConstants.getKey(keyCode, scanCode));
+                this.options.setKeyBinding(this.buttonId, InputConstants.getKey(keyEvent));
             }
 
             this.buttonId = null;
             KeyMapping.resetMapping();
             return true;
         } else {
-            return super.keyPressed(keyCode, scanCode, modifiers);
+            return super.keyPressed(keyEvent);
         }
     }
 

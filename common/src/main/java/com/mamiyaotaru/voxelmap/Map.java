@@ -815,7 +815,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
-        } else if (VoxelConstants.getClientWorld().effects().forceBrightLightmap() && !VoxelConstants.getClientWorld().dimensionType().hasSkyLight()) {
+        } else if (VoxelConstants.getClientWorld().effects().constantAmbientLight() && !VoxelConstants.getClientWorld().dimensionType().hasSkyLight()) {
             boolean endPlayerInOpen = world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;
@@ -915,7 +915,7 @@ public class Map implements Runnable, IChangeObserver {
             if (this.options.cavesAllowed && this.options.showCaves && currentY >= 126 && !netherPlayerInOpen) {
                 caves = true;
             }
-        } else if (VoxelConstants.getClientWorld().effects().forceBrightLightmap() && !VoxelConstants.getClientWorld().dimensionType().hasSkyLight()) {
+        } else if (VoxelConstants.getClientWorld().effects().constantAmbientLight() && !VoxelConstants.getClientWorld().dimensionType().hasSkyLight()) {
             boolean endPlayerInOpen = this.world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) <= currentY;
             if (this.options.cavesAllowed && this.options.showCaves && !endPlayerInOpen) {
                 caves = true;
@@ -1616,7 +1616,7 @@ public class Map implements Runnable, IChangeObserver {
                 .writeTransform(
                         RenderSystem.getModelViewMatrix(),
                         new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                        RenderSystem.getModelOffset(),
+                        new Vector3f(),
                         RenderSystem.getTextureMatrix(),
                         RenderSystem.getShaderLineWidth());
 

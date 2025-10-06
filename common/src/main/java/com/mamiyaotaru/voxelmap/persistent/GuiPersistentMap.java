@@ -37,6 +37,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -346,24 +349,24 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
         currentDragging = false;
-        if (mouseY > this.top && mouseY < this.bottom && button == 1) {
+        if (mouseY > this.top && mouseY < this.bottom && mouseButtonEvent.button() == 1) {
             this.timeOfLastKBInput = 0L;
             int mouseDirectX = (int) minecraft.mouseHandler.xpos();
             int mouseDirectY = (int) minecraft.mouseHandler.ypos();
             if (VoxelMap.mapOptions.worldmapAllowed) {
-                this.createPopup((int) mouseX, (int) mouseY, mouseDirectX, mouseDirectY);
+                this.createPopup((int) mouseButtonEvent.x(), (int) mouseButtonEvent.y(), mouseDirectX, mouseDirectY);
             }
         }
 
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         if (this.popupOpen()) {
-            this.coordinates.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.coordinates.mouseClicked(mouseButtonEvent, doubleClick);
             this.editingCoordinates = this.coordinates.isFocused();
             if (this.editingCoordinates && !this.lastEditingCoordinates) {
                 int x;
@@ -382,20 +385,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
             this.lastEditingCoordinates = this.editingCoordinates;
         }
-        if (button == 0) {
+        if (mouseButtonEvent.button() == 0) {
             currentDragging = true;
         }
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick) || button == 1;
+        return super.mouseClicked(mouseButtonEvent, doubleClick) || mouseButtonEvent.button() == 1;
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!this.editingCoordinates && (minecraft.options.keyJump.matches(keyCode, scanCode) || minecraft.options.keyShift.matches(keyCode, scanCode))) {
-            if (minecraft.options.keyJump.matches(keyCode, scanCode)) {
+    public boolean keyPressed(KeyEvent keyEvent) {
+        if (!this.editingCoordinates && (minecraft.options.keyJump.matches(keyEvent) || minecraft.options.keyShift.matches(keyEvent))) {
+            if (minecraft.options.keyJump.matches(keyEvent)) {
                 this.zoomGoal /= 1.26F;
             }
 
-            if (minecraft.options.keyShift.matches(keyCode, scanCode)) {
+            if (minecraft.options.keyShift.matches(keyEvent)) {
                 this.zoomGoal *= 1.26F;
             }
 
@@ -409,10 +412,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.clearPopups();
         if (this.editingCoordinates) {
-            this.coordinates.keyPressed(keyCode, scanCode, modifiers);
+            this.coordinates.keyPressed(keyEvent);
             boolean isGood = this.isAcceptable(this.coordinates.getValue());
             this.coordinates.setTextColor(isGood ? 0xFFFFFF : 0xFF0000);
-            if ((keyCode == 257 || keyCode == 335) && this.coordinates.isFocused() && isGood) {
+            if ((keyEvent.key() == 257 || keyEvent.key() == 335) && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getValue().split(",");
                 this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
                 this.editingCoordinates = false;
@@ -420,30 +423,28 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 this.switchToKeyboardInput();
             }
 
-            if (keyCode == 258 && this.coordinates.isFocused()) {
+            if (keyEvent.key() == 258 && this.coordinates.isFocused()) {
                 this.editingCoordinates = false;
                 this.lastEditingCoordinates = false;
                 this.switchToKeyboardInput();
             }
         }
 
-        if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(keyCode, scanCode)) {
-            keyCode = 256;
-            scanCode = -1;
-            modifiers = -1;
+        if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(keyEvent)) {
+            keyEvent = new KeyEvent(256, -1, -1);
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyEvent);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
         this.clearPopups();
         if (this.editingCoordinates) {
-            this.coordinates.charTyped(chr, modifiers);
+            this.coordinates.charTyped(characterEvent);
             boolean isGood = this.isAcceptable(this.coordinates.getValue());
             this.coordinates.setTextColor(isGood ? 0xFFFFFF : 0xFF0000);
-            if (chr == '\r' && this.coordinates.isFocused() && isGood) {
+            if (characterEvent.codepoint() == '\r' && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getValue().split(",");
                 this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
                 this.editingCoordinates = false;
@@ -453,10 +454,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(modifiers, -1)) {
-            super.keyPressed(256, -1, -1);
+            super.keyPressed(new KeyEvent(256, -1, -1));
         }
 
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(characterEvent);
     }
 
     private boolean isAcceptable(String input) {
@@ -473,7 +474,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void switchToMouseInput() {
         this.timeOfLastKBInput = 0L;
         if (!this.mouseCursorShown) {
-            GLFW.glfwSetInputMode(minecraft.getWindow().getWindow(), 208897, 212993);
+            GLFW.glfwSetInputMode(minecraft.getWindow().handle(), 208897, 212993);
         }
 
         this.mouseCursorShown = true;
@@ -482,7 +483,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void switchToKeyboardInput() {
         this.timeOfLastKBInput = System.currentTimeMillis();
         this.mouseCursorShown = false;
-        GLFW.glfwSetInputMode(minecraft.getWindow().getWindow(), 208897, 212995);
+        GLFW.glfwSetInputMode(minecraft.getWindow().handle(), 208897, 212995);
     }
 
     @Override

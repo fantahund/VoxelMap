@@ -9,6 +9,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
@@ -39,7 +40,7 @@ public final class VoxelConstants {
     @NotNull
     public static Minecraft getMinecraft() { return Minecraft.getInstance(); }
 
-    public static boolean isSystemMacOS() { return Minecraft.ON_OSX; }
+    public static boolean isSystemMacOS() { return InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY; }
 
     public static boolean isFabulousGraphicsOrBetter() { return Minecraft.useShaderTransparency(); }
 
@@ -60,7 +61,7 @@ public final class VoxelConstants {
     public static Optional<Level> getWorldByKey(ResourceKey<Level> key) { return getIntegratedServer().map(integratedServer -> integratedServer.getLevel(key)); }
 
     @NotNull
-    public static ClientLevel getClientWorld() { return getPlayer().clientLevel; }
+    public static ClientLevel getClientWorld() { return (ClientLevel) getPlayer().level(); }
 
     @NotNull
     public static LocalPlayer getPlayer() {

@@ -11,6 +11,7 @@ import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +29,6 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     final ResourceLocation highlightedIconIdentifier = ResourceLocation.parse("voxelmap:images/waypoints/target.png");
-    protected long lastClicked;
     public boolean doubleClicked;
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
@@ -114,10 +114,9 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-        this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 200L;
-        this.lastClicked = System.currentTimeMillis();
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        this.doubleClicked = doubleClick;
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
     public class WaypointItem extends AbstractSelectionList.Entry<WaypointItem> implements Comparable<WaypointItem> {
@@ -132,7 +131,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         }
 
         @Override
-        public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 3, this.waypoint.getUnifiedColor());
             byte padding = 3;
             byte iconWidth = 16;
@@ -166,7 +165,10 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+            double mouseX = mouseButtonEvent.x();
+            double mouseY = mouseButtonEvent.y();
+
             if (mouseY < GuiSlotWaypoints.this.getY() || mouseY > GuiSlotWaypoints.this.getBottom()) {
                 return false;
             }

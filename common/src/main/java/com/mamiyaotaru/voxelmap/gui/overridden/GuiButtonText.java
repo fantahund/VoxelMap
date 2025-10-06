@@ -4,6 +4,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public class GuiButtonText extends Button {
@@ -27,8 +30,8 @@ public class GuiButtonText extends Button {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-        boolean pressed = super.mouseClicked(mouseX, mouseY, button, doubleClick);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        boolean pressed = super.mouseClicked(mouseButtonEvent, doubleClick);
         this.setEditing(pressed);
         return pressed;
     }
@@ -43,25 +46,27 @@ public class GuiButtonText extends Button {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
+        int keyCode = keyEvent.key();
         if (!(editing)) {
-            return super.keyPressed(keyCode, scanCode, modifiers);
+            return super.keyPressed(keyEvent);
         }
         if (keyCode != 257 && keyCode != 335 && keyCode != 258) {
-            return textField.keyPressed(keyCode, scanCode, modifiers);
+            return textField.keyPressed(keyEvent);
         }
 
         setEditing(false);
         return false;
     }
 
+
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
         if (!(editing)) {
-            return super.charTyped(chr, modifiers);
+            return super.charTyped(characterEvent);
         }
-        if (chr != '\r') {
-            return textField.charTyped(chr, modifiers);
+        if (characterEvent.codepoint() != '\r') {
+            return textField.charTyped(characterEvent);
         }
 
         setEditing(false);

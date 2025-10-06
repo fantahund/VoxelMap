@@ -156,11 +156,11 @@ public class ColorManager {
 
     private void loadColors() {
         this.loadedTerrainImage = false;
-        VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(VoxelConstants.getPlayer().getGameProfile());
+        VoxelConstants.getMinecraft().getSkinManager().get(VoxelConstants.getPlayer().getGameProfile());
         BlockRepository.getBlocks();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
-        TextureAtlasSprite missing = VoxelConstants.getMinecraft().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("missingno"));
+        TextureAtlasSprite missing = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("missingno"));
         this.failedToLoadX = missing.getU0();
         this.failedToLoadY = missing.getV0();
         this.loaded = false;
@@ -460,14 +460,14 @@ public class ColorManager {
             Block material = blockState.getBlock();
             if (block instanceof LiquidBlock) {
                 if (material == Blocks.WATER) {
-                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/water_flow"));
+                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/water_flow"));
                 } else if (material == Blocks.LAVA) {
-                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/lava_flow"));
+                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/lava_flow"));
                 }
             } else if (material == Blocks.WATER) {
-                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/water_still"));
+                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/water_still"));
             } else if (material == Blocks.LAVA) {
-                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/lava_still"));
+                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/lava_still"));
             }
         }
 
@@ -833,7 +833,7 @@ public class ColorManager {
                     }
 
                     ResourceLocation matchID = ResourceLocation.parse(matchTiles);
-                    TextureAtlasSprite compareIcon = VoxelConstants.getMinecraft().getAtlasManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(matchID);
+                    TextureAtlasSprite compareIcon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(matchID);
                     if (compareIcon.atlasLocation() != MissingTextureAtlasSprite.getLocation()) {
                         ArrayList<BlockState> tmpList = new ArrayList<>();
 

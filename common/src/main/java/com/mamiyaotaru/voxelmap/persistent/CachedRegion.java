@@ -114,7 +114,7 @@ public class CachedRegion {
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
         boolean knownUnderground;
         knownUnderground = dimensionName.toLowerCase().contains("erebus");
-        this.underground = !world.effects().forceBrightLightmap() && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
+        this.underground = !world.effects().constantAmbientLight() && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
         this.remoteWorld = !VoxelConstants.getMinecraft().hasSingleplayerServer();
         persistentMap.getSettingsAndLightingChangeNotifier().addObserver(this);
         this.x = x;

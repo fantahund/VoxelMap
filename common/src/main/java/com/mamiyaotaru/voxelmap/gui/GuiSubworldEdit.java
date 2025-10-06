@@ -10,6 +10,9 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer {
@@ -86,8 +89,9 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        boolean OK = super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent keyEvent) {
+        int keyCode = keyEvent.key();
+        boolean OK = super.keyPressed(keyEvent);
         boolean acceptable = this.isNameAcceptable();
         this.doneButton.active = this.isNameAcceptable();
         this.deleteButton.active = this.originalSubworldName.equals(this.subworldNameField.getValue());
@@ -99,22 +103,23 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        boolean OK = super.charTyped(chr, modifiers);
+    public boolean charTyped(CharacterEvent characterEvent) {
+        boolean OK = super.charTyped(characterEvent);
         boolean acceptable = this.isNameAcceptable();
         this.doneButton.active = this.isNameAcceptable();
         this.deleteButton.active = this.originalSubworldName.equals(this.subworldNameField.getValue());
-        if (chr == '\r' && acceptable) {
+        if (characterEvent.codepoint() == '\r' && acceptable) {
             this.changeNameClicked();
         }
 
         return OK;
     }
 
+
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-        this.subworldNameField.mouseClicked(mouseX, mouseY, button, doubleClick);
-        return super.mouseClicked(mouseX, mouseY, button, doubleClick);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        this.subworldNameField.mouseClicked(mouseButtonEvent, doubleClick);
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
     @Override

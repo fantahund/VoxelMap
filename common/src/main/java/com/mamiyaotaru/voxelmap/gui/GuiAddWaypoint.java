@@ -14,6 +14,9 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import java.util.HashMap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -137,10 +140,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
+        int keyCode = keyEvent.key();
         boolean OK = false;
         if (this.popupOpen()) {
-            OK = super.keyPressed(keyCode, scanCode, modifiers);
+            OK = super.keyPressed(keyEvent);
             boolean acceptable = !this.waypointName.getValue().isEmpty();
 
             try {
@@ -161,10 +165,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
         boolean OK = false;
         if (this.popupOpen()) {
-            OK = super.charTyped(chr, modifiers);
+            OK = super.charTyped(characterEvent);
             boolean acceptable = !this.waypointName.getValue().isEmpty();
 
             try {
@@ -181,14 +185,18 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         return OK;
     }
 
+
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        double mouseX = mouseButtonEvent.x();
+        double mouseY = mouseButtonEvent.y();
+        int button = mouseButtonEvent.button();
         if (this.popupOpen()) {
-            super.mouseClicked(mouseX, mouseY, button, doubleClick);
-            this.waypointName.mouseClicked(mouseX, mouseY, button, doubleClick);
-            this.waypointX.mouseClicked(mouseX, mouseY, button, doubleClick);
-            this.waypointY.mouseClicked(mouseX, mouseY, button, doubleClick);
-            this.waypointZ.mouseClicked(mouseX, mouseY, button, doubleClick);
+            super.mouseClicked(mouseButtonEvent, doubleClick);
+            this.waypointName.mouseClicked(mouseButtonEvent, doubleClick);
+            this.waypointX.mouseClicked(mouseButtonEvent, doubleClick);
+            this.waypointY.mouseClicked(mouseButtonEvent, doubleClick);
+            this.waypointZ.mouseClicked(mouseButtonEvent, doubleClick);
         }
         else if (choosingColor){
             int pickerSize = 200;
@@ -217,24 +225,24 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         }
 
         if (this.popupOpen() && this.dimensionList != null) {
-            this.dimensionList.mouseClicked(mouseX, mouseY, button, doubleClick);
+            this.dimensionList.mouseClicked(mouseButtonEvent, doubleClick);
         }
 
         return true;
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
         if (this.popupOpen() && this.dimensionList != null) {
-            this.dimensionList.mouseReleased(mouseX, mouseY, button);
+            this.dimensionList.mouseReleased(mouseButtonEvent);
         }
 
         return true;
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return !this.popupOpen() || this.dimensionList == null || this.dimensionList.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
+        return !this.popupOpen() || this.dimensionList == null || this.dimensionList.mouseDragged(mouseButtonEvent, deltaX, deltaY);
     }
 
     @Override

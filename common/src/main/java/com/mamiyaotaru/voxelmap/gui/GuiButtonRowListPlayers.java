@@ -9,6 +9,8 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -36,7 +38,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         this.sort();
         Button everyoneButton = new Button(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, ALL, null, null) {
             @Override
-            public void onPress() {
+            public void onPress(InputWithModifiers inputWithModifiers) {
             }
         };
         this.everyoneRow = new Row(everyoneButton, -1);
@@ -44,7 +46,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
     }
 
     private Component getPlayerName(PlayerInfo ScoreboardEntryIn) {
-        return Component.literal(ScoreboardEntryIn.getProfile().getName());
+        return Component.literal(ScoreboardEntryIn.getProfile().name());
     }
 
     private Button createButtonFor(int x, int y, PlayerInfo ScoreboardEntry) {
@@ -137,10 +139,10 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         }
 
         @Override
-        public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.drawButton(drawContext, this.button, this.id, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(drawContext, this.button1, this.id1, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(drawContext, this.button2, this.id2, index, x, y, entryWidth, entryHeight, mouseX, mouseY, hovered, tickDelta);
+        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            this.drawButton(drawContext, this.button, this.id, index, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button1, this.id1, index, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button2, this.id2, index, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
         }
 
         private void drawButton(GuiGraphics drawContext, Button button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
@@ -162,8 +164,8 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         private void drawIconForButton(GuiGraphics drawContext, Button button, int id) {
             PlayerInfo networkPlayerInfo = GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
-            Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.getId());
-            ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(gameProfile).texture();
+            Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
+            ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).get().get().body().id();
             drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
             if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
                 drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
@@ -172,14 +174,14 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-            if (this.button != null && this.button.mouseClicked(mouseX, mouseY, button, doubleClick)) {
+        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+            if (this.button != null && this.button.mouseClicked(mouseButtonEvent, doubleClick)) {
                 GuiButtonRowListPlayers.this.buttonClicked(this.id);
                 return true;
-            } else if (this.button1 != null && this.button1.mouseClicked(mouseX, mouseY, button, doubleClick)) {
+            } else if (this.button1 != null && this.button1.mouseClicked(mouseButtonEvent, doubleClick)) {
                 GuiButtonRowListPlayers.this.buttonClicked(this.id1);
                 return true;
-            } else if (this.button2 != null && this.button2.mouseClicked(mouseX, mouseY, button, doubleClick)) {
+            } else if (this.button2 != null && this.button2.mouseClicked(mouseButtonEvent, doubleClick)) {
                 GuiButtonRowListPlayers.this.buttonClicked(this.id2);
                 return true;
             } else {
@@ -188,15 +190,15 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         }
 
         @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
             if (this.button != null) {
-                this.button.mouseReleased(mouseX, mouseY, button);
+                this.button.mouseReleased(mouseButtonEvent);
                 return true;
             } else if (this.button1 != null) {
-                this.button1.mouseReleased(mouseX, mouseY, button);
+                this.button1.mouseReleased(mouseButtonEvent);
                 return true;
             } else if (this.button2 != null) {
-                this.button2.mouseReleased(mouseX, mouseY, button);
+                this.button2.mouseReleased(mouseButtonEvent);
                 return true;
             } else {
                 return false;

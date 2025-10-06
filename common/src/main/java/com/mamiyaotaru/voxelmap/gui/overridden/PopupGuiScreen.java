@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import java.util.ArrayList;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 
 public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupGuiScreen {
     private final ArrayList<Popup> popups = new ArrayList<>();
@@ -64,7 +65,7 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
-        return !this.clickedPopup(mouseX, mouseY) && super.mouseClicked(mouseX, mouseY, button, doubleClick);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        return !this.clickedPopup(mouseButtonEvent.x(), mouseButtonEvent.y()) && super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 }

@@ -147,7 +147,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public void onTick() {
-        if (VoxelConstants.getMinecraft().cameraEntity == null) {
+        if (VoxelConstants.getMinecraft().getCameraEntity() == null) {
             return;
         }
         if (VoxelConstants.getMinecraft().screen == null) {

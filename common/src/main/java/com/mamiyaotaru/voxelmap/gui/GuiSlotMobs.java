@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -65,10 +66,11 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         this.parentGui.setSelectedMob(entry.id);
     }
 
-    @Override
-    protected boolean isSelectedItem(int index) {
-        return ((MobItem) this.mobsFiltered.get(index)).id.equals(this.parentGui.selectedMobId);
-    }
+    // FIXME 1.21.9
+    // @Override
+    // protected boolean isSelectedItem(int index) {
+    // return ((MobItem) this.mobsFiltered.get(index)).id.equals(this.parentGui.selectedMobId);
+    // }
 
     protected void updateFilter(String filterString) {
         this.clearEntries();
@@ -112,7 +114,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         }
 
         @Override
-        public void render(GuiGraphics drawContext, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             boolean isHostile = category == MobCategory.HOSTILE;
             boolean isNeutral = !isHostile;
             boolean isEnabled = VoxelMap.radarOptions.isMobEnabled(type);
@@ -120,11 +122,11 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
             int color = 0xFF000000 + (red << 16) + (green << 8);
-            drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, y + 3, color);
+            drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.name, this.parentGui.getWidth() / 2, getY() + 3, color);
             byte padding = 3;
-            if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + GuiSlotMobs.this.itemHeight) {
+            if (mouseX >= getX() - padding && mouseY >= getY() && mouseX <= getX() + 215 + padding && mouseY <= getY() + GuiSlotMobs.this.defaultEntryHeight) {
                 Component tooltip;
-                if (mouseX >= x + 215 - 16 - padding && mouseX <= x + 215 + padding) {
+                if (mouseX >= getX() + 215 - 16 - padding && mouseX <= getX() + 215 + padding) {
                     tooltip = isEnabled ? GuiSlotMobs.TOOLTIP_DISABLE : GuiSlotMobs.TOOLTIP_ENABLE;
                 } else {
                     tooltip = isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED;
@@ -134,13 +136,15 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type);
             if (sprite != null) {
-                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, x + 2, y - 2, 18, 18);
+                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY() - 2, 18, 18);
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY() - 2, 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button, boolean doubleClick) {
+        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+            double mouseX = mouseButtonEvent.x();
+            double mouseY = mouseButtonEvent.y();
             if (mouseY < GuiSlotMobs.this.getY() || mouseY > GuiSlotMobs.this.getBottom()) {
                 return false;
             }
