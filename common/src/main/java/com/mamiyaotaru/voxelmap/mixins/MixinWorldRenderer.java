@@ -22,7 +22,7 @@ public abstract class MixinWorldRenderer {
     @Unique private final PoseStack voxelmap_poseStack = new PoseStack();
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
-    private void renderLevel(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f matrix4f2, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci) {
+    private void renderLevel(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f matrix4f2, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci) {
         voxelmap_poseStack.pushPose();
         voxelmap_poseStack.last().pose().set(matrix4f);
         BufferSource bufferSource = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
