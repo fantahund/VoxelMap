@@ -86,15 +86,15 @@ public class MapSettingsManager implements ISettingsManager {
 
     public MapSettingsManager() {
         instance = this;
-        KeyMapping.Category category = KeyMapping.Category.register(ResourceLocation.parse("controls.minimap.title"));
+        KeyMapping.Category category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("voxelmap", "controls.title"));
 
-        keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), category); //TODO 1.21.9
-        keyBindFullscreen = new KeyMapping("key.minimap.togglefullscreen", InputConstants.getKey("key.keyboard.x").getValue(), category); //TODO 1.21.9
-        keyBindMenu = new KeyMapping("key.minimap.voxelmapmenu", InputConstants.getKey("key.keyboard.m").getValue(), category); //TODO 1.21.9
-        keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", -1, category); //TODO 1.21.9
-        keyBindWaypoint = new KeyMapping("key.minimap.waypointhotkey", InputConstants.getKey("key.keyboard.n").getValue(), category); //TODO 1.21.9
-        keyBindMobToggle = new KeyMapping("key.minimap.togglemobs", -1, category); //TODO 1.21.9
-        keyBindWaypointToggle = new KeyMapping("key.minimap.toggleingamewaypoints", -1, category); //TODO 1.21.9
+        keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), category);
+        keyBindFullscreen = new KeyMapping("key.minimap.togglefullscreen", InputConstants.getKey("key.keyboard.x").getValue(), category);
+        keyBindMenu = new KeyMapping("key.minimap.voxelmapmenu", InputConstants.getKey("key.keyboard.m").getValue(), category);
+        keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", -1, category);
+        keyBindWaypoint = new KeyMapping("key.minimap.waypointhotkey", InputConstants.getKey("key.keyboard.n").getValue(), category);
+        keyBindMobToggle = new KeyMapping("key.minimap.togglemobs", -1, category);
+        keyBindWaypointToggle = new KeyMapping("key.minimap.toggleingamewaypoints", -1, category);
 
         this.keyBindings = new KeyMapping[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle};
     }

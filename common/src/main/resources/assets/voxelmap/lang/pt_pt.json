@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Destivar Mob",
   "options.minimap.mobs.enabled": "Visualização de mobs ativada",
   "options.minimap.mobs.disabled": "Visualização de mobs desativada",
-  "controls.minimap.title": "Controlos do Minimapa",
+  "key.category.voxelmap.controls.title": "Controlos do Minimapa",
   "controls.minimap.unbind1": "Para desassociar uma tecla, seleciona-a e prime 'Esc'.",
   "controls.minimap.unbind2": "(Exceto a tecla de menu - Essa não pode ser desassociada)",
   "key.minimap.zoom": "Zoom",

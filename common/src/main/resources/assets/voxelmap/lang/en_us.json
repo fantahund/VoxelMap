@@ -91,7 +91,7 @@
   "options.minimap.mobs.disabletooltip": "Click to Hide Icon",
   "options.minimap.movescoreboarddown": "Move Scoreboard below map",
   "options.minimap.movemapdownwhilestatuseffect": "Move map below status effect icons",
-  "controls.minimap.title": "Minimap Controls",
+  "key.category.voxelmap.controls.title": "Minimap Controls",
   "controls.minimap.unbind1": "To unbind a key, select it and press 'Escape'.",
   "controls.minimap.unbind2": "(Except for the Menu Key - it can't be unbound)",
   "key.minimap.zoom": "Zoom",

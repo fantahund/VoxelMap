@@ -60,7 +60,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Legutóbbi",
   "options.minimap.waypoints.deathpoints.all": "Mind",
   "options.minimap.waypoints.deathpoints.tooltip": "A kövelkető haláltól érvényes",
-  "controls.minimap.title": "Minitérkép kezelés",
+  "key.category.voxelmap.controls.title": "Minitérkép kezelés",
   "controls.minimap.unbind1": "Törléshez válasszd ki a gombot, es nyomj 'ESC'-et.",
   "controls.minimap.unbind2": "(Kivéve a Menü-gomb, az nem változtatható)",
   "key.minimap.zoom": "Nagyítás",

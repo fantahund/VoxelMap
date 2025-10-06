@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Odstrani sovražnike",
   "options.minimap.mobs.enabled": "Kazanje sovražnikov priključeno",
   "options.minimap.mobs.disabled": "Kazanje sovražnikov izključeno",
-  "controls.minimap.title": "Kontrole mini-zemljevida",
+  "key.category.voxelmap.controls.title": "Kontrole mini-zemljevida",
   "controls.minimap.unbind1": "Da izbrišeš bližnjico, jo izberi in pritisni 'Escape'.",
   "controls.minimap.unbind2": "(Razen za tipko za meni - te ne moreš spremeniti)",
   "key.minimap.zoom": "Približaj",

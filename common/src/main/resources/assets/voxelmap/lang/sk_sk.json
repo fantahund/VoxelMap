@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Zakázať Ikonku Mobov",
   "options.minimap.mobs.enabled": "Táto Ikona je Zobrazená",
   "options.minimap.mobs.disabled": "Táto Ikona nieje Zobrazená",
-  "controls.minimap.title": "Ovládanie Minimapy",
+  "key.category.voxelmap.controls.title": "Ovládanie Minimapy",
   "controls.minimap.unbind1": "Pre zrušenie nastavenej klávesy stlačte 'Escape'.",
   "controls.minimap.unbind2": "(S výnimkou klávesy Menu, ktorá nejde zrušiť)",
   "key.minimap.zoom": "Priblíženie",

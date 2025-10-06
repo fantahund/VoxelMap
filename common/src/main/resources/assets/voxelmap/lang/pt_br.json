@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Más recente",
   "options.minimap.waypoints.deathpoints.all": "Todos",
   "options.minimap.waypoints.deathpoints.tooltip": "Tem efeito na próxima morte",
-  "controls.minimap.title": "Controles de Minimapa",
+  "key.category.voxelmap.controls.title": "Controles de Minimapa",
   "controls.minimap.unbind1": "Para desassociar uma tecla, pressione 'Esc'.",
   "controls.minimap.unbind2": "(Exceto a tecla de Menu - Não é permitido desassociá-la)",
   "key.minimap.zoom": "Zoom",

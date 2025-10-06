@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Sembunyikan Mob",
   "options.minimap.mobs.enabled": "Tampilan Mob Dihidupkan",
   "options.minimap.mobs.disabled": "Tampilan Mob Dimatikan",
-  "controls.minimap.title": "Kontrol Minimap",
+  "key.category.voxelmap.controls.title": "Kontrol Minimap",
   "controls.minimap.unbind1": "Untuk mengubah penanda tombol, pilih dan tekan 'Escape/Esc'.",
   "controls.minimap.unbind2": "(Terkecuali untuk tombol Menu, tidak bisa diubah)",
   "key.minimap.zoom": "Perbesar",

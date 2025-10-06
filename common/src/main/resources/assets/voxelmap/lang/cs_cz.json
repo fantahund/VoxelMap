@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Zakázat moba",
   "options.minimap.mobs.enabled": "Zobrazení moba povoleno",
   "options.minimap.mobs.disabled": "Zobrazení moba zakázáno",
-  "controls.minimap.title": "Ovládání Minimapy",
+  "key.category.voxelmap.controls.title": "Ovládání Minimapy",
   "controls.minimap.unbind1": "Pro odpojení klávesy ji vyber a stiskni 'Escape'.",
   "controls.minimap.unbind2": "(Vyjma klávesy pro Nabídku - ta nemůže být odpojena)",
   "key.minimap.zoom": "Změna měřítka",

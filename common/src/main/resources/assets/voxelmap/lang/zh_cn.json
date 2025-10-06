@@ -86,7 +86,7 @@
   "options.minimap.mobs.disabled": "生物显示已禁用",
   "options.minimap.movescoreboarddown": "移动计分板至小地图下",
   "options.minimap.movemapdownwhilestatuseffect": "移动小地图至状态效果图标下",
-  "controls.minimap.title": "小地图按键选项",
+  "key.category.voxelmap.controls.title": "小地图按键选项",
   "controls.minimap.unbind1": "要解除一个按键的绑定，先选择它，然后按下Escape键",
   "controls.minimap.unbind2": "(除了菜单键 - 它不能被解除绑定)",
   "key.minimap.zoom": "缩放",

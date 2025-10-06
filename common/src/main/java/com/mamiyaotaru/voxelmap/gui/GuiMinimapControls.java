@@ -39,7 +39,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         }
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
-        this.screenTitle = I18n.get("controls.minimap.title");
+        this.screenTitle = I18n.get("key.category.voxelmap.controls.title");
     }
 
     protected void controlButtonClicked(int id) {

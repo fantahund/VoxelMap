@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "تعطيل الموب",
   "options.minimap.mobs.enabled": "عرض الموب ممكن",
   "options.minimap.mobs.disabled": "عرض الموب معطل",
-  "controls.minimap.title": "تحكم الخريطة",
+  "key.category.voxelmap.controls.title": "تحكم الخريطة",
   "controls.minimap.unbind1": "لتوثيق مفتاح، حدده ثم اضغط على 'Esc'.",
   "controls.minimap.unbind2": "(باستثناء مفتاح القائمة - لا يمكن أن يكون موجود)",
   "key.minimap.zoom": "تكبير",

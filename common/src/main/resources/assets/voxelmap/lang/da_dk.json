@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Få de Mobs væk fra mit kort",
   "options.minimap.mobs.enabled": "Mob Display Sat til",
   "options.minimap.mobs.disabled": "Mob Display Taget fra",
-  "controls.minimap.title": "Minimap Styring",
+  "key.category.voxelmap.controls.title": "Minimap Styring",
   "controls.minimap.unbind1": "For at ubinde en Tast, vælg den og tryk på 'Escape'.",
   "controls.minimap.unbind2": "(Undtagen for Menu Tasten - den kan ikke blive ubundet)",
   "key.minimap.zoom": "Zoom",

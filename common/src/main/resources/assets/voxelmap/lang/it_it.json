@@ -52,7 +52,7 @@
   "options.minimap.terrain.slope": "Inclinazione",
   "options.minimap.terrain.both": "Entrambe",
   "options.minimap.waypoints": "Punti di interesse...",
-  "controls.minimap.title": "Controlli della minimappa",
+  "key.category.voxelmap.controls.title": "Controlli della minimappa",
   "controls.minimap.unbind1": "Per deselezionare un tasto, selezionarlo e premere 'Escape'.",
   "controls.minimap.unbind2": "(Eccetto per il Tasto Menu - non può essere deselezionato)",
   "key.minimap.zoom": "Zoom",

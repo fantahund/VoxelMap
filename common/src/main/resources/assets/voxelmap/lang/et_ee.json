@@ -82,7 +82,7 @@
   "options.minimap.mobs.disable": "Keela elukaikoon",
   "options.minimap.mobs.enabled": "Tema ikooni kuvatakse.",
   "options.minimap.mobs.disabled": "Tema ikoon peidetakse.",
-  "controls.minimap.title": "Minikaardi juhtnupud",
+  "key.category.voxelmap.controls.title": "Minikaardi juhtnupud",
   "controls.minimap.unbind1": "Juhtnupu vabastamiseks vali see ning vajuta Esc-klahvi.",
   "controls.minimap.unbind2": "(Välja arvatud menüünupp - seda ei saa vabastada)",
   "key.minimap.zoom": "Suurendus",

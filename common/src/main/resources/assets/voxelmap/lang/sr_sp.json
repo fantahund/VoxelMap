@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Онемогући Руље",
   "options.minimap.mobs.enabled": "Омогућено Приказивање Руља",
   "options.minimap.mobs.disabled": "Омогућено Приказивање Руља",
-  "controls.minimap.title": "Контроле Минимапе",
+  "key.category.voxelmap.controls.title": "Контроле Минимапе",
   "controls.minimap.unbind1": "Дa раскорачите дугме, изаберите га и притисните 'Escape'.",
   "controls.minimap.unbind2": "(Осим за Мени дугме - не може се раскорачити)",
   "key.minimap.zoom": "Зумирај",

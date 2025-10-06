@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Desactivar ícono de Mob",
   "options.minimap.mobs.enabled": "Este ícono se está mostrando.",
   "options.minimap.mobs.disabled": "Este ícono no se está mostrando.",
-  "controls.minimap.title": "Controles de Minimapa",
+  "key.category.voxelmap.controls.title": "Controles de Minimapa",
   "controls.minimap.unbind1": "Para desasociar una clave, pulse 'Escape'.",
   "controls.minimap.unbind2": "(Excepto por la clave de Menú - No la puede desasociar)",
   "key.minimap.zoom": "Zoom de Minimapa",

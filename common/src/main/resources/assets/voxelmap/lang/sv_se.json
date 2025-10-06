@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Inaktivera Monster",
   "options.minimap.mobs.enabled": "Visa Monster Aktiverat",
   "options.minimap.mobs.disabled": "Visa Monster Inaktiverat",
-  "controls.minimap.title": "Minimap Kontroller",
+  "key.category.voxelmap.controls.title": "Minimap Kontroller",
   "controls.minimap.unbind1": "För att ta bort en kontroll, markera den och tryck på \"esc\" knappen.",
   "controls.minimap.unbind2": "(Med undantag för menyknappen - Den kan inte tas bort.)",
   "key.minimap.zoom": "Zooma",

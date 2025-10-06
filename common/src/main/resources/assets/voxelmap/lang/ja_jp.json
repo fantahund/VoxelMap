@@ -82,7 +82,7 @@
   "options.minimap.mobs.disable": "Mobを非表示にする",
   "options.minimap.mobs.enabled": "このMobは表示されます",
   "options.minimap.mobs.disabled": "このMobは表示されません",
-  "controls.minimap.title": "ミニマップコントロール",
+  "key.category.voxelmap.controls.title": "ミニマップコントロール",
   "controls.minimap.unbind1": "キーバインドを解除するには、それを選択して\"Escキー\"を押してください。",
   "controls.minimap.unbind2": "(メニューキーを除く - それはアンバインドできません)",
   "key.minimap.zoom": "ズーム",

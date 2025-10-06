@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Cel mai Recent",
   "options.minimap.waypoints.deathpoints.all": "Toate",
   "options.minimap.waypoints.deathpoints.tooltip": "Ia efect la urmatoare moarte",
-  "controls.minimap.title": "Controalele Minihartii",
+  "key.category.voxelmap.controls.title": "Controalele Minihartii",
   "controls.minimap.unbind1": "Pentru a dezlega un buton,selecteazal si apasa 'Escape'.",
   "controls.minimap.unbind2": "(Înafara de Butonul Meniului - nu poate fi dezlegat!)",
   "key.minimap.zoom": "Mareste",

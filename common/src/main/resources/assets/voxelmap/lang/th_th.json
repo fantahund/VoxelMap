@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "ปิดม็อบ ",
   "options.minimap.mobs.enabled": "เปิดระบบแสดงม็อบ",
   "options.minimap.mobs.disabled": "ปิดระบบแสดงม็อบ ",
-  "controls.minimap.title": "ควบคุมแผนที่ขนาดเล็ก ",
+  "key.category.voxelmap.controls.title": "ควบคุมแผนที่ขนาดเล็ก ",
   "controls.minimap.unbind1": "หากต้องการนำปุ่มออก เลือกมันและกดปุ่ม 'Escape'",
   "controls.minimap.unbind2": "(ยกเว้นปุ่มเมนูเพราะมันไม่สามารถนำออกได้) ",
   "key.minimap.zoom": "ซูม ",

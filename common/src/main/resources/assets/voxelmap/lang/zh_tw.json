@@ -86,7 +86,7 @@
   "options.minimap.mobs.disabled": "此圖示已經設定不顯示.",
   "options.minimap.movescoreboarddown": "將計分板移動到地圖下方",
   "options.minimap.movemapdownwhilestatuseffect": "當狀態效果圖示出現時，將地圖移至下方",
-  "controls.minimap.title": "小地圖按鍵選項",
+  "key.category.voxelmap.controls.title": "小地圖按鍵選項",
   "controls.minimap.unbind1": "如果要解除按鍵設置，請在選擇該項目後按「Esc」。",
   "controls.minimap.unbind2": "(除了選單鍵 - 它是不能解除的)",
   "key.minimap.zoom": "縮放",

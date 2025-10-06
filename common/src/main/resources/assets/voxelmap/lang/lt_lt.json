@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "neleisti monstrą",
   "options.minimap.mobs.enabled": "Monstrų rodymas - leidžiama",
   "options.minimap.mobs.disabled": "Monstrų rodymas - neleidžiama",
-  "controls.minimap.title": "Žemėlapio Kontrolė",
+  "key.category.voxelmap.controls.title": "Žemėlapio Kontrolė",
   "controls.minimap.unbind1": "Kad atrinktum mygtuką, Pasarink jį ir spausk'Escape'.",
   "controls.minimap.unbind2": "(To negalima padaryti su Menu Mygtuku - nes jis neatrinkamas)",
   "key.minimap.zoom": "Pritraukimas",

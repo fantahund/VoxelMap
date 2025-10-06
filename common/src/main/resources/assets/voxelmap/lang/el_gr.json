@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Πιο Πρόσφατα",
   "options.minimap.waypoints.deathpoints.all": "Όλα",
   "options.minimap.waypoints.deathpoints.tooltip": "έναρξη ισχύος την επόμενη θανάτου",
-  "controls.minimap.title": "Μικρός ελέγχου",
+  "key.category.voxelmap.controls.title": "Μικρός ελέγχου",
   "controls.minimap.unbind1": "Για να αποσυνδέσετε ένα κλειδί, επιλέξτε το και πατήστε «Escape».",
   "controls.minimap.unbind2": "(Εκτός από το πλήκτρο μενού - δεν μπορεί να είναι λυμένο)",
   "key.minimap.zoom": "Zoom",

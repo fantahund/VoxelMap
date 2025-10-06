@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Disable Mob ",
   "options.minimap.mobs.enabled": "Mob Display Enabled ",
   "options.minimap.mobs.disabled": "Mob Display Disabled ",
-  "controls.minimap.title": "Minimap Controls ",
+  "key.category.voxelmap.controls.title": "Minimap Controls ",
   "controls.minimap.unbind1": "Para i-unbind ang key, piliin mo at i-press ang 'Escape'. ",
   "controls.minimap.unbind2": "(Maliban sa Menu key - hindi ito kayang i-unbound) ",
   "key.minimap.zoom": "Zoom ",

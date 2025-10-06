@@ -60,7 +60,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Последна смърт",
   "options.minimap.waypoints.deathpoints.all": "Всички",
   "options.minimap.waypoints.deathpoints.tooltip": "В сила при следващо умиране",
-  "controls.minimap.title": "Минимап контроли",
+  "key.category.voxelmap.controls.title": "Минимап контроли",
   "controls.minimap.unbind1": "За да премахнете копче, изберете го и натиснете \"Escape\".",
   "controls.minimap.unbind2": "(С изключение на клавиша за менюто - той не може да няма бутон)",
   "key.minimap.zoom": "Zoom",

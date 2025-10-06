@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Atspējot dzīvnieku ",
   "options.minimap.mobs.enabled": "Dzīvnieka rādīšana iespējota",
   "options.minimap.mobs.disabled": "Dzīvnieka rādīšana atspējota ",
-  "controls.minimap.title": "Minimapes kontroles ",
+  "key.category.voxelmap.controls.title": "Minimapes kontroles ",
   "controls.minimap.unbind1": "Lai atbindotu taustiņu, izvēlaties to un spiežat 'Escape'. ",
   "controls.minimap.unbind2": "(Izņemot izvēlnes taustiņu - to nevar atbindot) ",
   "key.minimap.zoom": "Pietuvināt ",

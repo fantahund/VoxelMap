@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "En Yeni",
   "options.minimap.waypoints.deathpoints.all": "Hepsi",
   "options.minimap.waypoints.deathpoints.tooltip": "Oldugunuz yeri gosterir",
-  "controls.minimap.title": "Miniharita Kontrolleri",
+  "key.category.voxelmap.controls.title": "Miniharita Kontrolleri",
   "controls.minimap.unbind1": "Bir tuşun bağlantısını kaldırmak için,tuşu seçin ve \"ESC\" tuşuna basın.",
   "controls.minimap.unbind2": "(Menü butonu dışında-onun bağlantısı kaldırılamaz)",
   "key.minimap.zoom": "Zoom",

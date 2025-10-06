@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "בטל אייקון מפלצת",
   "options.minimap.mobs.enabled": "האייקון הזה מוצג.",
   "options.minimap.mobs.disabled": "האייקון הזה לא מוצג.",
-  "controls.minimap.title": "לחצני מפה",
+  "key.category.voxelmap.controls.title": "לחצני מפה",
   "controls.minimap.unbind1": ".'Escape' בשביל התרת מקש, יש לבחור בו וללחוץ",
   "controls.minimap.unbind2": "(חוץ ממקש התפריט - הוא בלתי-אפשרי לביטול)",
   "key.minimap.zoom": "זום",

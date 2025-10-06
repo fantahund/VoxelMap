@@ -91,7 +91,7 @@
   "options.minimap.mobs.disabletooltip": "Нажмите, чтобы скрыть значок",
   "options.minimap.movescoreboarddown": "Переместить скорборд под карту",
   "options.minimap.movemapdownwhilestatuseffect": "Переместить карту под иконки эффектов",
-  "controls.minimap.title": "Клавиши мини-карты",
+  "key.category.voxelmap.controls.title": "Клавиши мини-карты",
   "controls.minimap.unbind1": "Для отмены привязки клавиши, выделите его и нажмите 'Esc'",
   "controls.minimap.unbind2": "(За исключением клавиши Меню - она не может быть отменена)",
   "key.minimap.zoom": "Увеличение",

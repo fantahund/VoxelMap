@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Plus récent",
   "options.minimap.waypoints.deathpoints.all": "Tous",
   "options.minimap.waypoints.deathpoints.tooltip": "A de l'éffect sur la prochaine mort",
-  "controls.minimap.title": "Controles...",
+  "key.category.voxelmap.controls.title": "Controles...",
   "controls.minimap.unbind1": "Pour changer un controle cliquer dessus,",
   "controls.minimap.unbind2": "et appuyer sur la touche désirée",
   "key.minimap.zoom": "Zoom",

@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Nyligst",
   "options.minimap.waypoints.deathpoints.all": "Alle",
   "options.minimap.waypoints.deathpoints.tooltip": "Aktiverast neste død",
-  "controls.minimap.title": "Minimap-Kontroller",
+  "key.category.voxelmap.controls.title": "Minimap-Kontroller",
   "controls.minimap.unbind1": "For å lauskople ein tast, vel den og trykk 'Escape'.",
   "controls.minimap.unbind2": "(Unntak for Menyknappen - den kan ikkje bli lauskopla)",
   "key.minimap.zoom": "Zoom",

@@ -71,7 +71,7 @@
   "options.minimap.mobs.disable": "Deaktivoi olento",
   "options.minimap.mobs.enabled": "Olento-näkymä aktivoitu",
   "options.minimap.mobs.disabled": "Olento-näkymä deaktivoitu",
-  "controls.minimap.title": "Kartan näppäimet",
+  "key.category.voxelmap.controls.title": "Kartan näppäimet",
   "controls.minimap.unbind1": "Avataksesi näppäimen, valitse ja paina 'Escape'.",
   "controls.minimap.unbind2": "(Paitsi Valikko-näppäintä - sitä ei voi purkaa)",
   "key.minimap.zoom": "Zoomaus",

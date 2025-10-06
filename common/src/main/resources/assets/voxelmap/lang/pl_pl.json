@@ -62,7 +62,7 @@
   "options.minimap.waypoints.deathpoints.mostrecent": "Aktualne",
   "options.minimap.waypoints.deathpoints.all": "Wszystkie",
   "options.minimap.waypoints.deathpoints.tooltip": "Efekt widoczny od następnej śmierci",
-  "controls.minimap.title": "Sterowanie",
+  "key.category.voxelmap.controls.title": "Sterowanie",
   "controls.minimap.unbind1": "Jeśli nie chcesz używać klawisza, wybierz go i naciśnij 'Esc'.",
   "controls.minimap.unbind2": "(za wyjątkiem klawisza Menu)",
   "key.minimap.zoom": "Przybliżanie",
