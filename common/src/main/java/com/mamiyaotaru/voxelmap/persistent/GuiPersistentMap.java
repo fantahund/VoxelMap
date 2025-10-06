@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.Keymap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -111,11 +112,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private float mapPixelsX;
     private float mapPixelsY;
     private final Object closedLock = new Object();
-    private final KeyMapping keyBindForward = new KeyMapping("key.forward.fake", 17, "key.categories.movement");
-    private final KeyMapping keyBindLeft = new KeyMapping("key.left.fake", 30, "key.categories.movement");
-    private final KeyMapping keyBindBack = new KeyMapping("key.back.fake", 31, "key.categories.movement");
-    private final KeyMapping keyBindRight = new KeyMapping("key.right.fake", 32, "key.categories.movement");
-    private final KeyMapping keyBindSprint = new KeyMapping("key.sprint.fake", 29, "key.categories.movement");
+    private static final KeyMapping.Category KEY_CATEGORY_VOXELMAP = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("voxelmap", "movement")); // "key.categories.movement"
+    private final KeyMapping keyBindForward = new KeyMapping("key.forward.fake", 17, KEY_CATEGORY_VOXELMAP);
+    private final KeyMapping keyBindLeft = new KeyMapping("key.left.fake", 30, KEY_CATEGORY_VOXELMAP);
+    private final KeyMapping keyBindBack = new KeyMapping("key.back.fake", 31, KEY_CATEGORY_VOXELMAP);
+    private final KeyMapping keyBindRight = new KeyMapping("key.right.fake", 32, KEY_CATEGORY_VOXELMAP);
+    private final KeyMapping keyBindSprint = new KeyMapping("key.sprint.fake", 29, KEY_CATEGORY_VOXELMAP);
     private final InputConstants.Key forwardCode;
     private final InputConstants.Key leftCode;
     private final InputConstants.Key backCode;
@@ -161,7 +163,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void getSkin() {
-        BufferedImage skinImage = ImageUtils.createBufferedImageFromResourceLocation(VoxelConstants.getPlayer().getSkin().texture());
+        BufferedImage skinImage = ImageUtils.createBufferedImageFromResourceLocation(VoxelConstants.getPlayer().getSkin().body().id());
 
         if (skinImage == null) {
             if (VoxelConstants.DEBUG) {
@@ -453,9 +455,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(modifiers, -1)) {
-            super.keyPressed(new KeyEvent(256, -1, -1));
-        }
+        // FIXME 1.21.9
+        // if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(modifiers, -1)) {
+        // super.keyPressed(new KeyEvent(256, -1, -1));
+        // }
 
         return super.charTyped(characterEvent);
     }

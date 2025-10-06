@@ -57,10 +57,11 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.parentGui.setSelectedWaypoint(entry.waypoint);
     }
 
-    @Override
-    protected boolean isSelectedItem(int index) {
-        return ((WaypointItem) this.waypointsFiltered.get(index)).waypoint.equals(this.parentGui.selectedWaypoint);
-    }
+    // FIXME 1.21.9
+    // @Override
+    // protected boolean isSelectedItem(int index) {
+    // return ((WaypointItem) this.waypointsFiltered.get(index)).waypoint.equals(this.parentGui.selectedWaypoint);
+    // }
 
     protected void sortBy(int sortKey, boolean ascending) {
         final int order = ascending ? 1 : -1;
@@ -132,6 +133,9 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            int x = getX();
+            int y = getY();
+            int entryHeight = getHeight();
             drawContext.drawCenteredString(this.parentGui.getFontRenderer(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 3, this.waypoint.getUnifiedColor());
             byte padding = 3;
             byte iconWidth = 16;

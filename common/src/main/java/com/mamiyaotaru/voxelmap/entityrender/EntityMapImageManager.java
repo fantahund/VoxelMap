@@ -166,7 +166,7 @@ public class EntityMapImageManager {
         EntityVariantData variant = null;
         EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
-            variant = new DefaultEntityVariantData(entity.getType(), player.getSkin().texture(), null, size, addBorder);
+            variant = new DefaultEntityVariantData(entity.getType(), player.getSkin().body().id(), null, size, addBorder);
         } else if (entity instanceof LivingEntity && baseRenderer instanceof LivingEntityRenderer renderer) {
             if (minecraft.getEntityRenderDispatcher().camera == null) {
                 minecraft.getEntityRenderDispatcher().camera = fakeCamera;
@@ -414,7 +414,7 @@ public class EntityMapImageManager {
     }
 
     private BufferedImage getPlayerIcon(AbstractClientPlayer player, int size, boolean addBorder) {
-        ResourceLocation skinLocation = player.getSkin().texture();
+        ResourceLocation skinLocation = player.getSkin().body().id();
         AbstractTexture skinTexture = minecraft.getTextureManager().getTexture(skinLocation);
         BufferedImage skinImage = null;
         if (skinTexture instanceof DynamicTexture dynamicTexture) {

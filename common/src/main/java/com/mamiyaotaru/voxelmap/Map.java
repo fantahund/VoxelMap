@@ -186,13 +186,14 @@ public class Map implements Runnable, IChangeObserver {
         tempBindings.addAll(Arrays.asList(this.options.keyBindings));
         minecraft.options.keyMappings = tempBindings.toArray(new KeyMapping[0]);
 
-        java.util.Map<String, Integer> categoryOrder = KeyMapping.CATEGORY_SORT_ORDER;
-        VoxelConstants.getLogger().warn("CATEGORY ORDER IS " + categoryOrder.size());
-        Integer categoryPlace = categoryOrder.get("controls.minimap.title");
-        if (categoryPlace == null) {
-            int currentSize = categoryOrder.size();
-            categoryOrder.put("controls.minimap.title", currentSize + 1);
-        }
+        // FIXME 1.21.9
+        // java.util.Map<String, Integer> categoryOrder = KeyMapping.CATEGORY_SORT_ORDER;
+        // VoxelConstants.getLogger().warn("CATEGORY ORDER IS " + categoryOrder.size());
+        // Integer categoryPlace = categoryOrder.get("controls.minimap.title");
+        // if (categoryPlace == null) {
+        // int currentSize = categoryOrder.size();
+        // categoryOrder.put("controls.minimap.title", currentSize + 1);
+        // }
 
         this.showWelcomeScreen = this.options.welcome;
         this.zCalc.start();

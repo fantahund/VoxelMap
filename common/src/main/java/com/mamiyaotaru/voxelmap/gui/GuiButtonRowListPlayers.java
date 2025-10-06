@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.authlib.GameProfile;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
@@ -18,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.entity.player.PlayerSkin;
 
 public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowListPlayers.Row> {
     private final ArrayList<PlayerInfo> players;
@@ -140,9 +142,9 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.drawButton(drawContext, this.button, this.id, index, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(drawContext, this.button1, this.id1, index, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(drawContext, this.button2, this.id2, index, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button, this.id, 0, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button1, this.id1, 0, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
+            this.drawButton(drawContext, this.button2, this.id2, 0, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
         }
 
         private void drawButton(GuiGraphics drawContext, Button button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
@@ -165,12 +167,14 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             PlayerInfo networkPlayerInfo = GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
-            ResourceLocation skinIdentifier = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).get().get().body().id();
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
-            if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
+            Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).getNow(Optional.empty());
+            if (optionalSkin.isPresent()) {
+                ResourceLocation skinIdentifier = optionalSkin.get().body().id();
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
+                if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
+                    drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
+                }
             }
-
         }
 
         @Override
