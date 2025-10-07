@@ -451,7 +451,7 @@ public class Map implements Runnable, IChangeObserver {
             this.doFullRender = false;
         }
 
-        boolean enabled = !minecraft.options.hideGui && (this.options.showUnderMenus || minecraft.screen == null) && !minecraft.getDebugOverlay().showDebugScreen();
+        boolean enabled = !minecraft.options.hideGui && (this.options.showUnderMenus || minecraft.screen == null) && !minecraft.debugEntries.isF3Visible();
 
         this.direction = GameVariableAccessShim.rotationYaw() + 180.0F;
 
