@@ -47,6 +47,7 @@ import net.minecraft.client.User;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
@@ -521,7 +522,7 @@ public class WaypointManager {
 
             out.close();
         } catch (FileNotFoundException var12) {
-            MessageUtils.chatInfo("§EError Saving Waypoints");
+            MessageUtils.chatInfo("§C" + I18n.get("minimap.waypoints.errorSavingWaypoints"));
             VoxelConstants.getLogger().error(var12);
         }
 
@@ -550,7 +551,7 @@ public class WaypointManager {
             worldNameStandard = TextUtils.scrubNameFile(worldNameStandard);
             loaded = this.loadWaypointsExtensible(worldNameStandard);
             if (!loaded) {
-                MessageUtils.chatInfo("§ENo waypoints exist for this world/server.");
+                MessageUtils.chatInfo("§E" + I18n.get("minimap.waypoints.noWaypointsExist"));
             }
         }
 
@@ -680,7 +681,7 @@ public class WaypointManager {
                     in.close();
                     return true;
                 } catch (IOException var25) {
-                    MessageUtils.chatInfo("§EError Loading Waypoints");
+                    MessageUtils.chatInfo("§C" + I18n.get("minimap.waypoints.errorLoadingWaypoints"));
                     VoxelConstants.getLogger().error("waypoint load error: " + var25.getLocalizedMessage(), var25);
                     return false;
                 }

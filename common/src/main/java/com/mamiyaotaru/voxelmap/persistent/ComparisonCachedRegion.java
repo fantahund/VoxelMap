@@ -224,7 +224,7 @@ public class ComparisonCachedRegion {
                     }
                 }
 
-                if (nonZeroHeights != Short.MIN_VALUE && nonZeroHeightsInCandidate != Short.MIN_VALUE) {
+                if (nonZeroHeights != 0 && nonZeroHeightsInCandidate != 0) {
                     compared += 256;
                     matched += matchesInChunk;
                 }

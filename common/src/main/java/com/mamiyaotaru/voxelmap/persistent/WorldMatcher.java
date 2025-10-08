@@ -82,14 +82,18 @@ public class WorldMatcher {
 
                 Iterator<ComparisonCachedRegion> iterator = this.candidateRegions.iterator();
 
+                int lastSimilarity = 94;
+
                 while (!WorldMatcher.this.cancelled && iterator.hasNext()) {
                     ComparisonCachedRegion candidateRegion = iterator.next();
                     MessageUtils.printDebug("testing region " + candidateRegion.getSubworldName() + ": " + candidateRegion.getKey());
-                    if (this.region.getSimilarityTo(candidateRegion) < 95) {
+                    int similarity = this.region.getSimilarityTo(candidateRegion);
+                    if (similarity <= lastSimilarity) {
                         MessageUtils.printDebug("region failed");
                         iterator.remove();
                     } else {
                         MessageUtils.printDebug("region succeeded");
+                        lastSimilarity = similarity;
                     }
                 }
 
