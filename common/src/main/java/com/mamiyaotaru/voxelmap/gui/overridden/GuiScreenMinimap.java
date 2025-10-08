@@ -33,15 +33,8 @@ public class GuiScreenMinimap extends Screen {
 
     public int getHeight() { return height; }
 
-    public List<? extends GuiEventListener> getButtonList() { return children(); }
-
-    public Font getFontRenderer() { return font; }
-
     @Override
     public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    }
-
-    public void renderBackgroundTexture(GuiGraphics context) {
         this.renderBlurredBackground(context);
         this.renderMenuBackground(context);
     }

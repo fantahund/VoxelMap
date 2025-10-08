@@ -64,7 +64,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
 
-        for (Object buttonObj : this.getButtonList()) {
+        for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
                     button.active = this.options.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
@@ -79,7 +79,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         this.options.setOptionValue(option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
 
-        for (Object buttonObj : this.getButtonList()) {
+        for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWWAYPOINTNAMES) {
                     button.active = this.options.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
@@ -91,7 +91,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        for (Object buttonObj : this.getButtonList()) {
+        for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
                 float sValue = this.options.getOptionFloatValue(option);
@@ -108,11 +108,9 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             }
         }
 
-        this.renderBlurredBackground(drawContext);
-        this.renderMenuBackground(drawContext);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFont(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFont(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }

@@ -27,7 +27,6 @@ public class GuiRadarOptions extends GuiScreenMinimap {
     @Override
     public void init() {
         clearWidgets();
-        getButtonList().clear();
         children().clear();
 
         this.screenTitle = Component.translatable("options.minimap.radar.title");
@@ -70,15 +69,13 @@ public class GuiRadarOptions extends GuiScreenMinimap {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.renderBlurredBackground(drawContext);
-        this.renderMenuBackground(drawContext);
-        drawContext.drawCenteredString(getFontRenderer(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
+        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
 
         super.render(drawContext, mouseX, mouseY, delta);
     }
 
     private void iterateButtonOptions() {
-        for (GuiEventListener element : getButtonList()) {
+        for (GuiEventListener element : children()) {
             if (!(element instanceof GuiOptionButtonMinimap button)) {
                 continue;
             }

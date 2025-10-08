@@ -107,7 +107,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             this.addRenderableWidget(selectButtons[numButtons]);
         }
 
-        this.newNameField = new EditBox(this.getFontRenderer(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
+        this.newNameField = new EditBox(this.getFont(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
     }
 
     @Override
@@ -169,11 +169,11 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        int titleStringWidth = this.getFontRenderer().width(this.title);
-        titleStringWidth = Math.max(titleStringWidth, this.getFontRenderer().width(this.select));
+        int titleStringWidth = this.getFont().width(this.title);
+        titleStringWidth = Math.max(titleStringWidth, this.getFont().width(this.select));
         drawContext.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.title, this.width / 2, 5, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFontRenderer(), this.select, this.width / 2, 15, 0xFFFF0000);
+        drawContext.drawCenteredString(this.getFont(), this.title, this.width / 2, 5, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFont(), this.select, this.width / 2, 15, 0xFFFF0000);
         this.camera.xRotO = 0.0F;
         this.camera.setXRot(0.0F);
         this.camera.yRotO = this.yaw;
