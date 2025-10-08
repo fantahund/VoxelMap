@@ -648,11 +648,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     public void drawMinimap(GuiGraphics drawContext) {
-        int scScaleOrig = 1;
-
-        while (minecraft.getWindow().getWidth() / (scScaleOrig + 1) >= 320 && minecraft.getWindow().getHeight() / (scScaleOrig + 1) >= 240) {
-            ++scScaleOrig;
-        }
+        int scScaleOrig = Math.min(minecraft.getWindow().getWidth() / 320, minecraft.getWindow().getHeight() / 240);
 
         int scScale = scScaleOrig + (this.fullscreenMap ? 0 : this.options.sizeModifier);
         double scaledWidthD = (double) minecraft.getWindow().getWidth() / scScale;
@@ -1626,9 +1622,11 @@ public class Map implements Runnable, IChangeObserver {
                 indexType = meshData.drawState().indexType();
             }
 
-            GpuTextureView circleStencilTexture = null;
-            if (!this.options.squareMap) {
-                circleStencilTexture = Minecraft.getInstance().getTextureManager().getTexture(circleStencil).getTextureView();
+            GpuTextureView stencilTexture = null;
+            if (this.options.squareMap) {
+                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(squareStencil).getTextureView();
+            } else {
+                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(circleStencil).getTextureView();
             }
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0x00000000))) {
@@ -1637,11 +1635,11 @@ public class Map implements Runnable, IChangeObserver {
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
-                if (!this.options.squareMap) {
-                    renderPass.bindSampler("Sampler0", circleStencilTexture);
-                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount() / 2, 1);
-                    renderPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE);
-                }
+
+                renderPass.bindSampler("Sampler0", stencilTexture);
+                renderPass.drawIndexed(0, 0, meshData.drawState().indexCount() / 2, 1);
+                renderPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE);
+
                 renderPass.bindSampler("Sampler0", mapImages[this.zoom].getTextureView());
                 renderPass.drawIndexed(0, meshData.drawState().indexCount() / 2, meshData.drawState().indexCount() / 2, 1);
             }
