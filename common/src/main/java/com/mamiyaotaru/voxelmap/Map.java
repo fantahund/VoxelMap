@@ -648,7 +648,11 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     public void drawMinimap(GuiGraphics drawContext) {
-        int scScaleOrig = Math.min(minecraft.getWindow().getWidth() / 320, minecraft.getWindow().getHeight() / 240);
+        int scScaleOrig = 1;
+
+        while (minecraft.getWindow().getWidth() / (scScaleOrig + 1) >= 320 && minecraft.getWindow().getHeight() / (scScaleOrig + 1) >= 240) {
+            ++scScaleOrig;
+        }
 
         int scScale = scScaleOrig + (this.fullscreenMap ? 0 : this.options.sizeModifier);
         double scaledWidthD = (double) minecraft.getWindow().getWidth() / scScale;
