@@ -99,7 +99,7 @@
   "key.minimap.voxelmapmenu": "VoxelMap 메뉴",
   "key.minimap.menu": "메뉴",
   "key.minimap.waypointmenu": "경유지 메뉴",
-  "key.minimap.waypointhotkey": "경유지 단축키",
+  "key.minimap.waypointhotkey": "경유지 만들기",
   "key.minimap.togglemobs": "레이더 토글",
   "key.minimap.toggleingamewaypoints": "경유지 토글",
   "minimap.waypoints.title": "경유지",
