@@ -127,10 +127,12 @@ public class WaypointManager {
             String name = resourceLocation.toString();
             if (name.toLowerCase().contains("waypoints/waypoint") && !name.toLowerCase().contains("small")) {
                 this.textureAtlasChooser.registerIconForResource(resourceLocation);
+                this.textureAtlasChooser.stitchNew();
             }
         }
 
-        this.textureAtlasChooser.stitch();
+//      I couldn't find a better way to make stitch sorted :(
+//      this.textureAtlasChooser.stitch();
     }
 
     public TextureAtlas getTextureAtlas() {
