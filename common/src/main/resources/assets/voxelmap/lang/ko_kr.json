@@ -92,7 +92,7 @@
   "options.minimap.movescoreboarddown": "미니맵 아래로 점수판 이동",
   "options.minimap.movemapdownwhilestatuseffect": "상태 효과 아래로 미니맵 이동",
   "key.category.voxelmap.controls.title": "미니맵 조작",
-  "controls.minimap.unbind1": "키를 설정 해제하려면 ESC 키를 누르십시오.",
+  "controls.minimap.unbind1": "키를 설정 해제하려면 ESC 키를 눌러주세요.",
   "controls.minimap.unbind2": "(단, 메뉴 키는 예외입니다. 설정 해제할 수 없습니다.)",
   "key.minimap.zoom": "확대",
   "key.minimap.togglefullscreen": "전체 화면 맵",
