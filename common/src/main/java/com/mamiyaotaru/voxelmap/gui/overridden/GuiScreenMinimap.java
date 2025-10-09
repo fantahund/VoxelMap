@@ -2,14 +2,14 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.Component;
+
+import java.util.List;
 
 public class GuiScreenMinimap extends Screen {
     protected GuiScreenMinimap() { this (Component.literal("")); }
@@ -25,23 +25,26 @@ public class GuiScreenMinimap extends Screen {
         if (!(text != null && text.getString() != null && !text.getString().isEmpty())) {
             return;
         }
-        ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(text.getVisualOrderText());
-        drawContext.renderTooltip(VoxelConstants.getMinecraft().font, List.of(clientTooltipComponent), x, y, DefaultTooltipPositioner.INSTANCE, null);
+
+//        ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(text.getVisualOrderText());
+//        drawContext.renderTooltip(VoxelConstants.getMinecraft().font, List.of(clientTooltipComponent), x, y, DefaultTooltipPositioner.INSTANCE, null);
+
+        Tooltip tooltip = Tooltip.create(text);
+        drawContext.setTooltipForNextFrame(this.getFont(), tooltip.toCharSequence(VoxelConstants.getMinecraft()), x, y);
     }
+
+    @Override
+    public Font getFont() { return super.getFont(); }
+
+    @Override
+    public List<? extends GuiEventListener> children() { return super.children(); }
 
     public int getWidth() { return width; }
 
     public int getHeight() { return height; }
 
-    public List<? extends GuiEventListener> getButtonList() { return children(); }
-
-    public Font getFontRenderer() { return font; }
-
     @Override
     public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-    }
-
-    public void renderBackgroundTexture(GuiGraphics context) {
         this.renderBlurredBackground(context);
         this.renderMenuBackground(context);
     }
