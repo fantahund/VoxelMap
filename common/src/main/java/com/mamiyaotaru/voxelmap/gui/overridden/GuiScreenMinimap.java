@@ -2,13 +2,9 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import java.util.List;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.Component;
 
 public class GuiScreenMinimap extends Screen {
@@ -25,8 +21,12 @@ public class GuiScreenMinimap extends Screen {
         if (!(text != null && text.getString() != null && !text.getString().isEmpty())) {
             return;
         }
-        ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(text.getVisualOrderText());
-        drawContext.renderTooltip(VoxelConstants.getMinecraft().font, List.of(clientTooltipComponent), x, y, DefaultTooltipPositioner.INSTANCE, null);
+
+//        ClientTooltipComponent clientTooltipComponent = ClientTooltipComponent.create(text.getVisualOrderText());
+//        drawContext.renderTooltip(VoxelConstants.getMinecraft().font, List.of(clientTooltipComponent), x, y, DefaultTooltipPositioner.INSTANCE, null);
+
+        Tooltip tooltip = Tooltip.create(text);
+        drawContext.setTooltipForNextFrame(this.getFont(), tooltip.toCharSequence(VoxelConstants.getMinecraft()), x, y);
     }
 
     public int getWidth() { return width; }

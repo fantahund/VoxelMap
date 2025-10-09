@@ -13,19 +13,19 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import org.apache.logging.log4j.Level;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 
 public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowListKeys.RowItem> {
     private final MapSettingsManager options;
     private final GuiMinimapControls parentGui;
-    private KeyMapping keyForEdit;
     private final ArrayList<RowItem> rowItems = new ArrayList<>();
-    private final ArrayList<KeyMapping> duplicateKeys = new ArrayList<>();
+    private KeyMapping keyForEdit;
+    private final HashMap<KeyMapping, Component> duplicateKeys = new HashMap<>();
 
     public GuiButtonRowListKeys(GuiMinimapControls parentScreen) {
         super(VoxelConstants.getMinecraft(), parentScreen.getWidth(), parentScreen.getHeight() - 114, 40, 20);
@@ -34,7 +34,7 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
         for (int i = 0; i < this.options.keyBindings.length; ++i) {
             int ii = i;
             this.rowItems.add(new RowItem(this.parentGui,
-                    new Button.Builder(null, button -> this.keyForEdit = this.options.keyBindings[ii]).bounds(0, 0, 75, 20).build(),
+                    new Button.Builder(Component.empty(), button -> this.keyForEdit = this.options.keyBindings[ii]).bounds(0, 0, 75, 20).build(),
                     new Button.Builder(Component.translatable("controls.reset"), button -> this.resetKeyMapping(ii)).bounds(0, 0, 50, 20).build(),
                     this.options.keyBindings[i]));
         }
@@ -90,10 +90,21 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
     private void checkDuplicateKeys() {
         this.duplicateKeys.clear();
         for (KeyMapping key : this.options.keyBindings) {
-            boolean isDuplicate = Arrays.stream(minecraft.options.keyMappings).anyMatch(compare -> key != compare && key.same(compare));
+            if (!key.isUnbound()) {
+                KeyMapping[] duplicates = Arrays.stream(minecraft.options.keyMappings).filter(compare -> key != compare && key.same(compare)).toArray(KeyMapping[]::new);
+                if (duplicates.length > 0) {
+                    boolean bl = false;
+                    MutableComponent details = Component.empty();
+                    for (KeyMapping duplicate : duplicates) {
+                        if (bl) {
+                            details.append(", ");
+                        }
+                        bl = true;
+                        details.append(Component.translatable(duplicate.getName()));
+                    }
 
-            if (isDuplicate) {
-                this.duplicateKeys.add(key);
+                    this.duplicateKeys.put(key, Component.translatable("controls.keybinds.duplicateKeybinds", details));
+                }
             }
         }
     }
@@ -125,6 +136,8 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
             if (this.button != null && this.buttonReset != null) {
                 guiGraphics.drawString(this.parentGui.getFont(), Component.translatable(this.keyMapping.getName()), getX() + 5, getY() + 5, 0xFFFFFFFF);
 
+                Component tooltip = null;
+
                 MutableComponent keyText = this.keyMapping.getTranslatedKeyMessage().copy();
                 if (GuiButtonRowListKeys.this.keyForEdit != null && GuiButtonRowListKeys.this.keyForEdit == this.keyMapping) {
                     keyText = Component.empty()
@@ -132,11 +145,15 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
                             .append(keyText.copy().withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(" <").withStyle(ChatFormatting.YELLOW));
 
-                } else if (GuiButtonRowListKeys.this.duplicateKeys.contains(this.keyMapping)) {
+                } else if (GuiButtonRowListKeys.this.duplicateKeys.containsKey(this.keyMapping)) {
                     keyText = Component.empty()
                             .append(Component.literal("[ ").withStyle(ChatFormatting.YELLOW))
                             .append(keyText.copy().withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(" ]").withStyle(ChatFormatting.YELLOW));
+
+                    if (this.button.isHovered()) {
+                        tooltip = GuiButtonRowListKeys.this.duplicateKeys.get(this.keyMapping);
+                    }
                 }
 
                 this.button.setMessage(keyText);
@@ -148,6 +165,10 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
                 this.buttonReset.setX(getX() + getWidth() - 55);
                 this.buttonReset.setY(getY());
                 this.buttonReset.render(guiGraphics, mouseX, mouseY, tickDelta);
+
+                if (tooltip != null) {
+                    this.parentGui.renderTooltip(guiGraphics, tooltip, mouseX, mouseY);
+                }
             }
         }
 
