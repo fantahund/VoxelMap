@@ -104,9 +104,17 @@ public class RadarSimple implements IRadar {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.position().x();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.position().z();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
-                    double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
-                    hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
-                    if (hypot < 961.0) {
+
+                    double scale = this.layoutVariables.zoomScaleAdjusted;
+                    boolean inRange;
+                    if (!this.minimapOptions.squareMap) {
+                        inRange = (wayX * wayX + wayZ * wayZ) / (scale * scale) < 32.0 * 32.0;
+                    } else {
+                        inRange = Mth.abs(wayX) / scale < 32.0 || Mth.abs(wayZ) / scale < 32.0;
+                    }
+                    inRange = inRange && Mth.abs(wayY) / scale < 32.0;
+
+                    if (inRange) {
                         Contact contact = new Contact((LivingEntity) entity, MobCategory.forEntity(entity));
                         this.contacts.add(contact);
                     }
@@ -146,7 +154,7 @@ public class RadarSimple implements IRadar {
 
             boolean inRange;
             if (!this.minimapOptions.squareMap) {
-                inRange = contact.distance < 31.0;
+                inRange = contact.distance < 28.5;
             } else {
                 double radLocate = Math.toRadians(contact.angle);
                 double dispX = contact.distance * Math.cos(radLocate);

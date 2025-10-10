@@ -134,7 +134,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
                 GuiMobs.setTooltip(this.parentGui, tooltip);
             }
-            Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type);
+            Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             if (sprite != null) {
                 sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY() - 2, 18, 18);
             }

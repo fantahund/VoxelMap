@@ -701,10 +701,6 @@ public class Map implements Runnable, IChangeObserver {
                 this.drawArrow(drawContext, this.scWidth / 2, this.scHeight / 2, scaleProj);
             } else {
                 this.renderMap(drawContext, mapX, mapY, scScale, scaleProj);
-                if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
-                    this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
-                    VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(drawContext, this.layoutVariables, scaleProj);
-                }
                 this.drawDirections(drawContext, mapX, mapY, scaleProj);
                 this.drawArrow(drawContext, mapX, mapY, scaleProj);
             }
@@ -1657,6 +1653,11 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().popMatrix();
 
         VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
+
+        if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
+            this.layoutVariables.updateVars(scScale, x, y, this.zoomScale, this.zoomScaleAdjusted);
+            VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(guiGraphics, this.layoutVariables, 1.0F);
+        }
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;

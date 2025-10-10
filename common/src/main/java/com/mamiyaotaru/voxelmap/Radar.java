@@ -61,7 +61,7 @@ public class Radar implements IRadar {
                 this.timer = 500;
                 if (this.options.outlines != this.lastOutlines) {
                     this.lastOutlines = this.options.outlines;
-                    entityMapImageManager.reset();
+//                    entityMapImageManager.reset();
                 }
             }
 
@@ -109,9 +109,17 @@ public class Radar implements IRadar {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.position().x();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.position().z();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
-                    double hypot = wayX * wayX + wayZ * wayZ + wayY * wayY;
-                    hypot /= this.layoutVariables.zoomScaleAdjusted * this.layoutVariables.zoomScaleAdjusted;
-                    if (hypot < 31 * 31) {
+
+                    double scale = this.layoutVariables.zoomScaleAdjusted;
+                    boolean inRange;
+                    if (!this.minimapOptions.squareMap) {
+                        inRange = (wayX * wayX + wayZ * wayZ) / (scale * scale) < 32.0 * 32.0;
+                    } else {
+                        inRange = Mth.abs(wayX) / scale < 32.0 || Mth.abs(wayZ) / scale < 32.0;
+                    }
+                    inRange = inRange && Mth.abs(wayY) / scale < 32.0;
+
+                    if (inRange) {
 
                         Contact contact = new Contact((LivingEntity) entity, MobCategory.forEntity(entity));
                         if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
@@ -119,7 +127,7 @@ public class Radar implements IRadar {
                         }
                         if (VoxelMap.radarOptions.isMobEnabled(contact.entity)) {
                             if (contact.icon == null) {
-                                contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, true);
+                                contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, options.outlines);
                             }
 
                             String scrubbedName = TextUtils.scrubCodes(contact.entity.getName().getString());
@@ -201,7 +209,7 @@ public class Radar implements IRadar {
 
             boolean inRange;
             if (!this.minimapOptions.squareMap) {
-                inRange = contact.distance < 31.0;
+                inRange = contact.distance < 28.5;
             } else {
                 double radLocate = Math.toRadians(contact.angle);
                 double dispX = contact.distance * Math.cos(radLocate);
