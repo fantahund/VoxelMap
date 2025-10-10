@@ -19,6 +19,7 @@ import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.BiomeMapData;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
@@ -112,18 +113,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private float mapPixelsX;
     private float mapPixelsY;
     private final Object closedLock = new Object();
-    private static final KeyMapping.Category KEY_CATEGORY_VOXELMAP = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("voxelmap", "movement")); // "key.categories.movement"
-    private final KeyMapping keyBindForward = new KeyMapping("key.forward.fake", 17, KEY_CATEGORY_VOXELMAP);
-    private final KeyMapping keyBindLeft = new KeyMapping("key.left.fake", 30, KEY_CATEGORY_VOXELMAP);
-    private final KeyMapping keyBindBack = new KeyMapping("key.back.fake", 31, KEY_CATEGORY_VOXELMAP);
-    private final KeyMapping keyBindRight = new KeyMapping("key.right.fake", 32, KEY_CATEGORY_VOXELMAP);
-    private final KeyMapping keyBindSprint = new KeyMapping("key.sprint.fake", 29, KEY_CATEGORY_VOXELMAP);
-    private final InputConstants.Key forwardCode;
-    private final InputConstants.Key leftCode;
-    private final InputConstants.Key backCode;
-    private final InputConstants.Key rightCode;
-    private final InputConstants.Key sprintCode;
-    final InputConstants.Key nullInput = InputConstants.getKey("key.keyboard.unknown");
     private Component multiworldButtonName;
     private MutableComponent multiworldButtonNameRed;
     int sideMargin = 10;
@@ -139,7 +128,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private PopupGuiButton buttonWaypoints;
     private final Minecraft minecraft = Minecraft.getInstance();
     private final ResourceLocation voxelmapSkinLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "persistentmap/playerskin");
+    private final ResourceLocation crosshairResource = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
     private boolean currentDragging;
+    private boolean keySprintPressed;
+    private boolean keyUpPressed;
+    private boolean keyDownPressed;
+    private boolean keyLeftPressed;
+    private boolean keyRightPressed;
 
     public GuiPersistentMap(Screen parent) {
         this.parent = parent;
@@ -156,12 +151,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (!gotSkin) {
             this.getSkin();
         }
-
-        this.forwardCode = InputConstants.getKey(minecraft.options.keyUp.saveString());
-        this.leftCode = InputConstants.getKey(minecraft.options.keyLeft.saveString());
-        this.backCode = InputConstants.getKey(minecraft.options.keyDown.saveString());
-        this.rightCode = InputConstants.getKey(minecraft.options.keyRight.saveString());
-        this.sprintCode = InputConstants.getKey(minecraft.options.keySprint.saveString());
     }
 
     private void getSkin() {
@@ -227,17 +216,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.mapPixelsY = (minecraft.getWindow().getHeight() - (int) (64.0F * this.scScale));
         this.lastStill = false;
         this.timeAtLastTick = System.currentTimeMillis();
-        this.keyBindForward.setKey(this.forwardCode);
-        this.keyBindLeft.setKey(this.leftCode);
-        this.keyBindBack.setKey(this.backCode);
-        this.keyBindRight.setKey(this.rightCode);
-        this.keyBindSprint.setKey(this.sprintCode);
-        minecraft.options.keyUp.setKey(this.nullInput);
-        minecraft.options.keyLeft.setKey(this.nullInput);
-        minecraft.options.keyDown.setKey(this.nullInput);
-        minecraft.options.keyRight.setKey(this.nullInput);
-        minecraft.options.keySprint.setKey(this.nullInput);
-        KeyMapping.resetMapping();
     }
 
     private void centerAt(int x, int z) {
@@ -316,17 +294,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private float bindZoom(float zoom) {
         zoom = Math.max(this.options.minZoom, zoom);
         return Math.min(this.options.maxZoom, zoom);
-    }
-
-    private float easeOut(float elapsedTime, float startValue, float finalDelta, float totalTime) {
-        float value;
-        if (elapsedTime == totalTime) {
-            value = startValue + finalDelta;
-        } else {
-            value = finalDelta * (-((float) Math.pow(2.0, -10.0F * elapsedTime / totalTime)) + 1.0F) + startValue;
-        }
-
-        return value;
     }
 
     @Override
@@ -435,10 +402,27 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(keyEvent)) {
-            keyEvent = new KeyEvent(256, -1, -1);
+            keyEvent = new KeyEvent(GLFW.GLFW_KEY_ESCAPE, -1, -1);
         }
 
+        keySprintPressed = minecraft.options.keySprint.matches(keyEvent) || keySprintPressed;
+        keyUpPressed = minecraft.options.keyUp.matches(keyEvent) || keyUpPressed;
+        keyDownPressed = minecraft.options.keyDown.matches(keyEvent) || keyDownPressed;
+        keyLeftPressed = minecraft.options.keyLeft.matches(keyEvent) || keyLeftPressed;
+        keyRightPressed = minecraft.options.keyRight.matches(keyEvent) || keyRightPressed;
+
         return super.keyPressed(keyEvent);
+    }
+
+    @Override
+    public boolean keyReleased(KeyEvent keyEvent) {
+        keySprintPressed = !minecraft.options.keySprint.matches(keyEvent) && keySprintPressed;
+        keyUpPressed = !minecraft.options.keyUp.matches(keyEvent) && keyUpPressed;
+        keyDownPressed = !minecraft.options.keyDown.matches(keyEvent) && keyDownPressed;
+        keyLeftPressed = !minecraft.options.keyLeft.matches(keyEvent) && keyLeftPressed;
+        keyRightPressed = !minecraft.options.keyRight.matches(keyEvent) && keyRightPressed;
+
+        return super.keyReleased(keyEvent);
     }
 
     @Override
@@ -459,7 +443,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         // FIXME 1.21.9
         // if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(modifiers, -1)) {
-        // super.keyPressed(new KeyEvent(256, -1, -1));
+        // super.keyPressed(new KeyEvent(GLFW.GLFW_KEY_ESCAPE, -1, -1));
         // }
 
         return super.charTyped(characterEvent);
@@ -509,7 +493,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             float previousZoom = this.zoom;
             long timeSinceZoom = System.currentTimeMillis() - this.timeOfZoom;
             if (timeSinceZoom < 700.0F) {
-                this.zoom = this.easeOut(timeSinceZoom, this.zoomStart, this.zoomGoal - this.zoomStart, 700.0F);
+                this.zoom = EasingUtils.easeOutExpo(this.zoomStart, this.zoomGoal, timeSinceZoom, 700.0F);
             } else {
                 this.zoom = this.zoomGoal;
             }
@@ -558,8 +542,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         } else {
             long timeSinceRelease = System.currentTimeMillis() - this.timeOfRelease;
             if (timeSinceRelease < 700.0F) {
-                this.deltaX = this.deltaXonRelease * (float) Math.exp((-timeSinceRelease) / 350.0F);
-                this.deltaY = this.deltaYonRelease * (float) Math.exp((-timeSinceRelease) / 350.0F);
+                this.deltaX = EasingUtils.easeOutExpo(this.deltaXonRelease, 0.0F, timeSinceRelease, 700.0F);
+                this.deltaY = EasingUtils.easeOutExpo(this.deltaYonRelease, 0.0F, timeSinceRelease, 700.0F);
             } else {
                 this.deltaX = 0.0F;
                 this.deltaY = 0.0F;
@@ -574,26 +558,26 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.timeAtLastTick = System.currentTimeMillis();
         if (!this.editingCoordinates) {
             int kbDelta = 5;
-            if (this.keyBindSprint.isDown()) {
+            if (keySprintPressed) {
                 kbDelta = 10;
             }
 
-            if (this.keyBindForward.isDown()) {
+            if (keyUpPressed) {
                 this.deltaY -= kbDelta / scaledZoom * timeSinceLastTick / 12.0F;
                 this.switchToKeyboardInput();
             }
 
-            if (this.keyBindBack.isDown()) {
+            if (keyDownPressed) {
                 this.deltaY += kbDelta / scaledZoom * timeSinceLastTick / 12.0F;
                 this.switchToKeyboardInput();
             }
 
-            if (this.keyBindLeft.isDown()) {
+            if (keyLeftPressed) {
                 this.deltaX -= kbDelta / scaledZoom * timeSinceLastTick / 12.0F;
                 this.switchToKeyboardInput();
             }
 
-            if (this.keyBindRight.isDown()) {
+            if (keyRightPressed) {
                 this.deltaX += kbDelta / scaledZoom * timeSinceLastTick / 12.0F;
                 this.switchToKeyboardInput();
             }
@@ -807,8 +791,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
             int scWidth = minecraft.getWindow().getGuiScaledWidth();
             int scHeight = minecraft.getWindow().getGuiScaledHeight();
-            ResourceLocation GUI_ICONS_TEXTURE = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_ICONS_TEXTURE, scWidth / 2 - 7, scHeight / 2 - 7, 0, 0, 15, 15, 15, 15);
+            guiGraphics.blit(RenderPipelines.CROSSHAIR, crosshairResource, scWidth / 2 - 8, scHeight / 2 - 8, 0, 0, 15, 15, 15, 15);
         } else {
             this.switchToMouseInput();
         }
@@ -962,18 +945,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void removed() {
-        minecraft.options.keyUp.setKey(this.forwardCode);
-        minecraft.options.keyLeft.setKey(this.leftCode);
-        minecraft.options.keyDown.setKey(this.backCode);
-        minecraft.options.keyRight.setKey(this.rightCode);
-        minecraft.options.keySprint.setKey(this.sprintCode);
-        this.keyBindForward.setKey(this.nullInput);
-        this.keyBindLeft.setKey(this.nullInput);
-        this.keyBindBack.setKey(this.nullInput);
-        this.keyBindRight.setKey(this.nullInput);
-        this.keyBindSprint.setKey(this.nullInput);
-        KeyMapping.resetMapping();
-        KeyMapping.releaseAll();
         synchronized (this.closedLock) {
             this.closed = true;
             this.persistentMap.getRegions(0, -1, 0, -1);

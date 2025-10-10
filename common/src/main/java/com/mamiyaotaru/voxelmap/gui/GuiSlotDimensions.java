@@ -101,7 +101,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             int width = GuiSlotDimensions.this.width;
             if (mouseX >= x + padding && mouseY >= getY() && mouseX <= x + width + padding && mouseY <= getY() + GuiSlotDimensions.this.defaultEntryHeight) {
                 Component tooltip;
-                if (this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
+                if (!this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
                     tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES;
                 } else {
                     tooltip = null;

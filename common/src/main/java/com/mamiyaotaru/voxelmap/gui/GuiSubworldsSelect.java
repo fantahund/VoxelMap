@@ -185,13 +185,17 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.camera.xOld = this.camera.xo = this.thePlayer.getX() - var4 * Math.sin(this.yaw / 180.0 * Math.PI);
         this.camera.zOld = this.camera.zo = this.thePlayer.getZ() + var4 * Math.cos(this.yaw / 180.0 * Math.PI);
         this.camera.setPosRaw(this.camera.xo, this.camera.yo, this.camera.zo);
-        float var5 = 1.0F;
+        float var5 = delta * 5.0F;
         this.yaw = (float) (this.yaw + var5 * (1.0 + 0.7F * Math.cos((this.yaw + 45.0F) / 45.0 * Math.PI)));
         super.render(drawContext, mouseX, mouseY, delta);
         if (this.newWorld) {
             this.newNameField.render(drawContext, mouseX, mouseY, delta);
         }
 
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
     }
 
     @Override

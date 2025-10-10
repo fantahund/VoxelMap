@@ -15,7 +15,6 @@
     "APIMixinNetHandlerPlayClient",
     "MixinChatHud",
     "MixinInGameHud",
-    "MixinKeyboard",
     "MixinWorldRenderer"
   ]
 }
