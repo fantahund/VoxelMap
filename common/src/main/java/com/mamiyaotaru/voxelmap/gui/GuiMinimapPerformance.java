@@ -25,6 +25,8 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
 
     public GuiMinimapPerformance(Screen par1GuiScreen) {
         this.parentScreen = par1GuiScreen;
+        this.setParentScreen(this.parentScreen);
+
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 

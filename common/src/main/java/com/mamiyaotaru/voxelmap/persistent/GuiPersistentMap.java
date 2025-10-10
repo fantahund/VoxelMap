@@ -143,6 +143,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     public GuiPersistentMap(Screen parent) {
         this.parent = parent;
+        this.setParentScreen(this.parent);
+
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.persistentMap = VoxelConstants.getVoxelMapInstance().getPersistentMap();

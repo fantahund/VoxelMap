@@ -28,6 +28,8 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     public GuiSubworldEdit(Screen parent, String subworldName) {
         this.parent = parent;
+        this.setParentScreen(this.parent);
+
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.originalSubworldName = subworldName;
         this.knownSubworldNames = new ArrayList<Object>(this.waypointManager.getKnownSubworldNames());

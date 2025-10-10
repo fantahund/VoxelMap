@@ -53,9 +53,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private final boolean editing;
 
     public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, Waypoint par2Waypoint, boolean editing) {
+        this.parentGui = par1GuiScreen;
+        this.setParentScreen(this.parentGui);
+
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
-        this.parentGui = par1GuiScreen;
         this.waypoint = par2Waypoint;
         this.red = this.waypoint.red;
         this.green = this.waypoint.green;
@@ -147,7 +149,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
         boolean OK = false;
-        if (this.popupOpen()) {
+        if (!this.popupOpen()) {
             OK = super.keyPressed(keyEvent);
             boolean acceptable = !this.waypointName.getValue().isEmpty();
 
@@ -171,7 +173,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     @Override
     public boolean charTyped(CharacterEvent characterEvent) {
         boolean OK = false;
-        if (this.popupOpen()) {
+        if (!this.popupOpen()) {
             OK = super.charTyped(characterEvent);
             boolean acceptable = !this.waypointName.getValue().isEmpty();
 
@@ -195,13 +197,20 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         double mouseX = mouseButtonEvent.x();
         double mouseY = mouseButtonEvent.y();
         int button = mouseButtonEvent.button();
-        if (this.popupOpen()) {
-            super.mouseClicked(mouseButtonEvent, doubleClick);
+
+        if (!this.popupOpen()) {
             this.waypointName.mouseClicked(mouseButtonEvent, doubleClick);
             this.waypointX.mouseClicked(mouseButtonEvent, doubleClick);
             this.waypointY.mouseClicked(mouseButtonEvent, doubleClick);
             this.waypointZ.mouseClicked(mouseButtonEvent, doubleClick);
-        } else if (this.choosingColor && button == 0) {
+            if (this.dimensionList != null) {
+                this.dimensionList.mouseClicked(mouseButtonEvent, doubleClick);
+            }
+
+            return super.mouseClicked(mouseButtonEvent, doubleClick);
+        }
+
+        if (this.choosingColor && button == 0) {
             int pickedColor = pickColor(colorPickerWidth, colorPickerHeight, (int) mouseX, (int) mouseY);
             if (pickedColor != -1) {
                 this.waypoint.red = ARGB.red(pickedColor) / 255.0F;
@@ -210,7 +219,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
                 this.choosingColor = false;
             }
-        } else if (this.choosingIcon && button == 0) {
+        }
+
+        if (this.choosingIcon && button == 0) {
             TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
 
             Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
@@ -221,40 +232,56 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             }
         }
 
-        if (this.popupOpen() && this.dimensionList != null) {
-            this.dimensionList.mouseClicked(mouseButtonEvent, doubleClick);
-        }
-
-        return true;
+        return false;
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (this.popupOpen() && this.dimensionList != null) {
-            this.dimensionList.mouseReleased(mouseButtonEvent);
+        if (!this.popupOpen()) {
+            if (this.dimensionList != null) {
+                this.dimensionList.mouseReleased(mouseButtonEvent);
+            }
+
+            return super.mouseReleased(mouseButtonEvent);
         }
 
-        return true;
+        return false;
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        return !this.popupOpen() || this.dimensionList == null || this.dimensionList.mouseDragged(mouseButtonEvent, deltaX, deltaY);
+        if (!this.popupOpen()) {
+            if (this.dimensionList != null) {
+                this.dimensionList.mouseDragged(mouseButtonEvent, deltaX, deltaY);
+            }
+
+            return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
+        }
+
+        return false;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        return !this.popupOpen() || this.dimensionList == null || this.dimensionList.mouseScrolled(mouseX, mouseY, 0, amount);
+        if (!this.popupOpen()) {
+            if (this.dimensionList != null) {
+                this.dimensionList.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
+            }
+
+            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
+        }
+
+        return false;
     }
 
     @Override
     public boolean overPopup(int mouseX, int mouseY) {
-        return !this.choosingColor && !this.choosingIcon;
+        return this.choosingColor || this.choosingIcon;
     }
 
     @Override
     public boolean popupOpen() {
-        return !this.choosingColor && !this.choosingIcon;
+        return this.choosingColor || this.choosingIcon;
     }
 
     @Override

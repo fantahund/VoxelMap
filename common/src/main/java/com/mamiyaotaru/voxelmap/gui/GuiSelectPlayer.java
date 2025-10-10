@@ -31,6 +31,8 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     public GuiSelectPlayer(Screen parentScreen, String locInfo, boolean sharingWaypoint) {
         this.parentScreen = parentScreen;
+        this.setParentScreen(this.parentScreen);
+
         this.locInfo = locInfo;
         this.sharingWaypoint = sharingWaypoint;
     }

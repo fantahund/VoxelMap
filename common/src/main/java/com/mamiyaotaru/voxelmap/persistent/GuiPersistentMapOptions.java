@@ -20,6 +20,8 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     public GuiPersistentMapOptions(Screen parent) {
         this.parent = parent;
+        this.setParentScreen(this.parent);
+
         this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
     }
 

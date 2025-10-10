@@ -20,6 +20,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     public GuiMinimapOptions(Screen parent) {
         this.parent = parent;
+        this.setParentScreen(this.parent);
+
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 

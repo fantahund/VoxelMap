@@ -28,6 +28,8 @@ public class GuiMobs extends GuiScreenMinimap {
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
         this.parentScreen = parentScreen;
+        this.setParentScreen(this.parentScreen);
+
         this.options = options;
     }
 

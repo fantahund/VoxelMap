@@ -16,6 +16,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
 
     public GuiMinimapControls(Screen parent) {
         this.parentScreen = parent;
+        this.setParentScreen(this.parentScreen);
     }
 
     public void init() {

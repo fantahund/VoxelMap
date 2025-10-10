@@ -51,6 +51,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     public GuiWaypoints(Screen parentScreen) {
         this.parentScreen = parentScreen;
+        this.setParentScreen(this.parentScreen);
+
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.highlightedWaypoint = this.waypointManager.getHighlightedWaypoint();

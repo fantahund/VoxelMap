@@ -19,6 +19,8 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
     public GuiWaypointsOptions(Screen parent, MapSettingsManager options) {
         this.parent = parent;
+        this.setParentScreen(this.parent);
+
         this.options = options;
     }
 

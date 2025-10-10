@@ -21,6 +21,8 @@ public class GuiRadarOptions extends GuiScreenMinimap {
 
     public GuiRadarOptions(Screen parent) {
         this.parent = parent;
+        this.setParentScreen(this.parent);
+
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
     }
 
