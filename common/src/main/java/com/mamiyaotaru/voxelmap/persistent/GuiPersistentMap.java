@@ -21,19 +21,16 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import com.mojang.blaze3d.platform.InputConstants;
-import java.awt.image.BufferedImage;
+
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.Keymap;
+
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -44,13 +41,11 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
 import org.joml.Matrix3x2fStack;
@@ -105,7 +100,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private float mapToGui = 0.5F;
     private float mouseDirectToMap = 1.0F;
     private float guiToDirectMouse = 2.0F;
-    private static boolean gotSkin;
     private boolean closed;
     private CachedRegion[] regions = new CachedRegion[0];
     BackgroundImageInfo backGroundImageInfo;
@@ -127,7 +121,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean passEvents;
     private PopupGuiButton buttonWaypoints;
     private final Minecraft minecraft = Minecraft.getInstance();
-    private final ResourceLocation voxelmapSkinLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "persistentmap/playerskin");
+    private Sprite playerHeadImage;
     private final ResourceLocation crosshairResource = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
     private boolean currentDragging;
     private boolean keySprintPressed;
@@ -148,36 +142,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.zoomStart = this.options.zoom;
         this.zoomGoal = this.options.zoom;
         this.persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
-        if (!gotSkin) {
-            this.getSkin();
+        if (playerHeadImage == null) {
+            playerHeadImage = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMob(VoxelConstants.getPlayer(), true);
         }
-    }
-
-    private void getSkin() {
-        BufferedImage skinImage = ImageUtils.createBufferedImageFromResourceLocation(VoxelConstants.getPlayer().getSkin().body().id());
-
-        if (skinImage == null) {
-            if (VoxelConstants.DEBUG) {
-                VoxelConstants.getLogger().warn("Got no player skin!");
-            }
-            return;
-        }
-
-        gotSkin = true;
-
-        boolean showHat = VoxelConstants.getPlayer().isModelPartShown(PlayerModelPart.HAT);
-        if (showHat) {
-            skinImage = ImageUtils.addImages(ImageUtils.loadImage(skinImage, 8, 8, 8, 8), ImageUtils.loadImage(skinImage, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-        } else {
-            skinImage = ImageUtils.loadImage(skinImage, 8, 8, 8, 8);
-        }
-
-        float scale = skinImage.getWidth() / 8.0F;
-        skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
-
-        DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
-        texture.setFilter(true, false);
-        minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 
     @Override
@@ -684,7 +651,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
 
-            if (gotSkin) {
+            if (playerHeadImage != null) {
                 float playerX = (float) GameVariableAccessShim.xCoordDouble();
                 float playerZ = (float) GameVariableAccessShim.zCoordDouble();
                 guiGraphics.pose().pushMatrix();
@@ -698,7 +665,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float y = -10.0F / this.scScale + playerZ * this.mapToGui;
                 float width = 20.0F / this.scScale;
                 float height = 20.0F / this.scScale;
-                VoxelMapGuiGraphics.blitFloat(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, voxelmapSkinLocation, x, y, width, height, 0, 1, 0, 1, 0xffffffff);
+                playerHeadImage.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x, y, width, height);
 
                 guiGraphics.pose().popMatrix();
             }

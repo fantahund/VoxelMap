@@ -421,13 +421,15 @@ public class EntityMapImageManager {
             return new ModelPart[] { witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head") };
         }
 
+        // horses
         for (ModelPart part : model.allParts()) {
-            // horses
             if (part.hasChild("head_parts")) {
                 return new ModelPart[] { part.getChild("head_parts") };
             }
+        }
 
-            // most mobs
+        // most mobs
+        for (ModelPart part : model.allParts()) {
             if (part.hasChild("head")) {
                 if (part.hasChild("body0")) {
                     // spider
@@ -435,18 +437,24 @@ public class EntityMapImageManager {
                 }
                 return new ModelPart[] { part.getChild("head") };
             }
+        }
 
-            // bee, ghast
+        // bee, ghast
+        for (ModelPart part : model.allParts()) {
             if (part.hasChild("body")) {
                 return new ModelPart[] { part.getChild("body") };
             }
+        }
 
-            // bee, ghast, slime
+        // bee, ghast, slime
+        for (ModelPart part : model.allParts()) {
             if (part.hasChild("cube")) {
                 return new ModelPart[] { part.getChild("cube") };
             }
+        }
 
-            // silverfish, endermite
+        // silverfish, endermite
+        for (ModelPart part : model.allParts()) {
             if (part.hasChild("segment0")) {
                 return new ModelPart[] { part.getChild("segment0"), part.getChild("segment1") };
             }

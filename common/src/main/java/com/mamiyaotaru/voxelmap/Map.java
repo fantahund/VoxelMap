@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
+import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
@@ -30,6 +31,7 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -56,6 +58,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -158,6 +161,8 @@ public class Map implements Runnable, IChangeObserver {
     private static double minTablistOffset;
     private static float statusIconOffset = 0.0F;
 
+    private final ResourceLocation resourceTextureAtlas = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/map_images");
+    private final TextureAtlas textureAtlas;
     private final ResourceLocation[] resourceMapImageFiltered = new ResourceLocation[5];
     private final ResourceLocation[] resourceMapImageUnfiltered = new ResourceLocation[5];
     private GpuTexture fboTexture;
@@ -247,6 +252,18 @@ public class Map implements Runnable, IChangeObserver {
         // minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
         // this.fboTexture = fboTexture.getTexture();
         this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
+
+        this.textureAtlas = new TextureAtlas("map_images", resourceTextureAtlas);
+        this.textureAtlas.setFilter(true, false);
+        try {
+            this.textureAtlas.reset();
+            this.textureAtlas.registerIconForBufferedImage("arrow", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceArrow).image());
+            this.textureAtlas.registerIconForBufferedImage("square_map", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMap).image());
+            this.textureAtlas.registerIconForBufferedImage("round_map", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMap).image());
+            this.textureAtlas.stitch();
+        } catch (Exception exception) {
+            VoxelConstants.getLogger().error("Failed getting map images " + exception.getLocalizedMessage(), exception);
+        }
     }
 
     public void forceFullRender(boolean forceFullRender) {
@@ -1809,7 +1826,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
         guiGraphics.pose().translate(-x, -y);
 
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
+        this.textureAtlas.getAtlasSprite("arrow").blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - 4, y - 4, 8, 8);
 
         guiGraphics.pose().popMatrix();
     }
@@ -1860,8 +1877,8 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void drawMapFrame(GuiGraphics guiGraphics, int x, int y, boolean squaremap) {
-        ResourceLocation frameResource = squaremap ? resourceSquareMap : resourceRoundMap;
-        guiGraphics.blit(VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, frameResource, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
+        String textureId = squaremap ? "square_map" : "round_map";
+        this.textureAtlas.getAtlasSprite(textureId).blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 32, y - 32, 64, 64);
     }
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
