@@ -29,6 +29,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     final ResourceLocation highlightedIconIdentifier = ResourceLocation.parse("voxelmap:images/waypoints/target.png");
+    protected long lastClicked;
     public boolean doubleClicked;
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
@@ -116,7 +117,8 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
 
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        this.doubleClicked = doubleClick;
+        this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 250L;
+        this.lastClicked = System.currentTimeMillis();
         return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 

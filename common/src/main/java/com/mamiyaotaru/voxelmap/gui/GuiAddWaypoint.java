@@ -199,14 +199,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         int button = mouseButtonEvent.button();
 
         if (!this.popupOpen()) {
-            this.waypointName.mouseClicked(mouseButtonEvent, doubleClick);
-            this.waypointX.mouseClicked(mouseButtonEvent, doubleClick);
-            this.waypointY.mouseClicked(mouseButtonEvent, doubleClick);
-            this.waypointZ.mouseClicked(mouseButtonEvent, doubleClick);
-            if (this.dimensionList != null) {
-                this.dimensionList.mouseClicked(mouseButtonEvent, doubleClick);
-            }
-
             return super.mouseClicked(mouseButtonEvent, doubleClick);
         }
 
@@ -237,41 +229,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (!this.popupOpen()) {
-            if (this.dimensionList != null) {
-                this.dimensionList.mouseReleased(mouseButtonEvent);
-            }
-
-            return super.mouseReleased(mouseButtonEvent);
-        }
-
-        return false;
+        return !this.popupOpen() && super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        if (!this.popupOpen()) {
-            if (this.dimensionList != null) {
-                this.dimensionList.mouseDragged(mouseButtonEvent, deltaX, deltaY);
-            }
-
-            return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
-        }
-
-        return false;
+        return !this.popupOpen() && super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        if (!this.popupOpen()) {
-            if (this.dimensionList != null) {
-                this.dimensionList.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
-            }
-
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
-        }
-
-        return false;
+        return !this.popupOpen() && super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
     }
 
     @Override
@@ -298,7 +266,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         drawContext.drawString(this.getFont(), I18n.get("X"), this.getWidth() / 2 - 100, this.getHeight() / 6 + 41, 0xFFFFFFFF);
         drawContext.drawString(this.getFont(), I18n.get("Y"), this.getWidth() / 2 - 28, this.getHeight() / 6 + 41, 0xFFFFFFFF);
         drawContext.drawString(this.getFont(), I18n.get("Z"), this.getWidth() / 2 + 44, this.getHeight() / 6 + 41, 0xFFFFFFFF);
-        super.render(drawContext, this.choosingColor || this.choosingIcon ? 0 : mouseX, this.choosingColor || this.choosingIcon ? 0 : mouseY, delta);
+        super.render(drawContext, this.popupOpen() ? 0 : mouseX, this.popupOpen() ? 0 : mouseY, delta);
 
         int buttonListY = this.getHeight() / 6 + 88;
         int color = this.waypoint.getUnifiedColor();

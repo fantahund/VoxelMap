@@ -78,7 +78,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
 
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 200L;
+        this.doubleClicked = System.currentTimeMillis() - this.lastClicked < 250L;
         this.lastClicked = System.currentTimeMillis();
         return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
@@ -130,7 +130,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             byte iconWidth = 18;
             int rightEdge = GuiSlotDimensions.this.getX() + GuiSlotDimensions.this.getWidth();
             boolean inRange = mouseX >= (rightEdge - iconWidth) && mouseX <= rightEdge;
-            if (inRange && GuiSlotDimensions.this.doubleClicked) {
+            if (inRange) {
                 this.parentGui.toggleDimensionSelected();
             }
 
