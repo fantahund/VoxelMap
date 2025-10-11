@@ -871,7 +871,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
             }
         } else {
-            name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
+            if (name.isEmpty()) {
+                name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
+            }
             target = true;
         }
 
@@ -984,7 +986,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.share"), 2, true, true);
         entries.add(entry);
 
-        this.createPopup(x, y, directX, directY, entries);
+        this.createPopup(x, y, directX, directY, 60, entries);
         if (VoxelConstants.DEBUG) {
             persistentMap.debugLog((int) cursorCoordX, (int) cursorCoordZ);
         }

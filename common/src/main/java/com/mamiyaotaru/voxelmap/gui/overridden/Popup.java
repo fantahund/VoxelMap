@@ -20,7 +20,7 @@ public class Popup {
     private final PopupGuiScreen parentGui;
     private final int padding = 6;
 
-    public Popup(int x, int y, int directX, int directY, ArrayList<PopupEntry> entries, PopupGuiScreen parentGui) {
+    public Popup(int x, int y, int directX, int directY, int minWidth, ArrayList<PopupEntry> entries, PopupGuiScreen parentGui) {
         this.fontRendererObj = VoxelConstants.getMinecraft().font;
         this.parentGui = parentGui;
         this.clickedDirectX = directX;
@@ -29,7 +29,7 @@ public class Popup {
         this.y = y - 1;
         this.entries = new PopupEntry[entries.size()];
         entries.toArray(this.entries);
-        this.w = 0;
+        this.w = minWidth;
         this.h = this.entries.length * 20;
 
         for (PopupEntry entry : this.entries) {

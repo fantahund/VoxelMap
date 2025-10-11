@@ -11,8 +11,8 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     public void removed() {
     }
 
-    public void createPopup(int x, int y, int directX, int directY, ArrayList<Popup.PopupEntry> entries) {
-        popups.add(new Popup(x, y, directX, directY, entries, this));
+    public void createPopup(int x, int y, int directX, int directY, int minWidth, ArrayList<Popup.PopupEntry> entries) {
+        popups.add(new Popup(x, y, directX, directY, minWidth, entries, this));
     }
 
     public void clearPopups() {

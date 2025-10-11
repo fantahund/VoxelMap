@@ -102,6 +102,7 @@
   "key.minimap.waypointhotkey": "Waypoint Hotkey",
   "key.minimap.togglemobs": "Toggle Mobs",
   "key.minimap.toggleingamewaypoints": "Toggle Waypoints",
+  "key.minimap.toggleminimap": "Toggle Minimap",
   "minimap.waypoints.title": "Waypoints",
   "minimap.waypoints.teleportto": "Teleport To",
   "minimap.waypoints.highlight": "Highlight",

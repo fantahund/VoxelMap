@@ -76,6 +76,7 @@ public class MapSettingsManager implements ISettingsManager {
     public KeyMapping keyBindWaypoint;
     public KeyMapping keyBindMobToggle;
     public KeyMapping keyBindWaypointToggle;
+    public KeyMapping keyBindMinimapToggle;
     public final KeyMapping[] keyBindings;
     private boolean somethingChanged;
     public static MapSettingsManager instance;
@@ -91,12 +92,13 @@ public class MapSettingsManager implements ISettingsManager {
         keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), category);
         keyBindFullscreen = new KeyMapping("key.minimap.togglefullscreen", InputConstants.getKey("key.keyboard.x").getValue(), category);
         keyBindMenu = new KeyMapping("key.minimap.voxelmapmenu", InputConstants.getKey("key.keyboard.m").getValue(), category);
-        keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", -1, category);
+        keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", InputConstants.getKey("key.keyboard.u").getValue(), category);
         keyBindWaypoint = new KeyMapping("key.minimap.waypointhotkey", InputConstants.getKey("key.keyboard.n").getValue(), category);
         keyBindMobToggle = new KeyMapping("key.minimap.togglemobs", -1, category);
         keyBindWaypointToggle = new KeyMapping("key.minimap.toggleingamewaypoints", -1, category);
+        keyBindMinimapToggle = new KeyMapping("key.minimap.toggleminimap", InputConstants.getKey("key.keyboard.o").getValue(), category);
 
-        this.keyBindings = new KeyMapping[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle};
+        this.keyBindings = new KeyMapping[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle, this.keyBindMinimapToggle};
     }
 
     public void addSecondaryOptionsManager(ISubSettingsManager secondarySettingsManager) {
@@ -147,6 +149,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Waypoint Key" -> this.bindKey(this.keyBindWaypoint, curLine[1]);
                         case "Mob Key" -> this.bindKey(this.keyBindMobToggle, curLine[1]);
                         case "In-game Waypoint Key" -> this.bindKey(this.keyBindWaypointToggle, curLine[1]);
+                        case "Toggle Minimap Key" -> this.bindKey(this.keyBindMinimapToggle, curLine[1]);
                         case "Teleport Command" -> this.teleportCommand = curLine[1];
                         case "Move Map Down While Status Effect" -> this.moveMapDownWhileStatusEffect = Boolean.parseBoolean(curLine[1]);
                         case "Move ScoreBoard Down" -> this.moveScoreBoardDown = Boolean.parseBoolean(curLine[1]);
@@ -222,6 +225,7 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Waypoint Key:" + this.keyBindWaypoint.saveString());
             out.println("Mob Key:" + this.keyBindMobToggle.saveString());
             out.println("In-game Waypoint Key:" + this.keyBindWaypointToggle.saveString());
+            out.println("Toggle Minimap Key:" + this.keyBindMinimapToggle.saveString());
             out.println("Teleport Command:" + this.teleportCommand);
             out.println("Move Map Down While Status Effect:" + this.moveMapDownWhileStatusEffect);
             out.println("Move ScoreBoard Down:" + this.moveScoreBoardDown);

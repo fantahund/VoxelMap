@@ -430,6 +430,10 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
+        if (minecraft.screen == null && this.options.keyBindMinimapToggle.consumeClick()) {
+            this.options.setOptionValue(EnumOptionsMinimap.HIDE);
+        }
+
         this.checkForChanges();
         if (VoxelMap.mapOptions.deathWaypointAllowed && minecraft.screen instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
             this.waypointManager.handleDeath();

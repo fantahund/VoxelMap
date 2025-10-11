@@ -54,7 +54,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         Button worldMapButton = new Button.Builder(Component.translatable("options.minimap.worldmap"), button -> VoxelConstants.getMinecraft().setScreen(new GuiPersistentMapOptions(this))).bounds(this.getWidth() / 2 + 5, this.getHeight() / 6 + 159 - 6, 150, 20).build();
         worldMapButton.active = VoxelMap.mapOptions.worldmapAllowed;
         this.addRenderableWidget(worldMapButton);
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 - 100, this.getHeight() / 6 + 183, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
     }
 
     protected void optionClicked(Button par1GuiButton) {

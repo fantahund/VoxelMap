@@ -64,7 +64,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             counter++;
         }
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), buttonx -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
 
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {

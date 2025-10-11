@@ -47,8 +47,8 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.subworldNameField.setFocused(true);
         this.subworldNameField.setValue(this.originalSubworldName);
         this.addRenderableWidget(this.subworldNameField);
-        this.addRenderableWidget(this.doneButton = new Button.Builder(Component.translatable("gui.done"), button -> this.changeNameClicked()).bounds(this.getWidth() / 2 - 155, this.getHeight() / 6 + 168, 150, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 + 5, this.getHeight() / 6 + 168, 150, 20).build());
+        this.addRenderableWidget(this.doneButton = new Button.Builder(Component.translatable("gui.done"), button -> this.changeNameClicked()).bounds(this.getWidth() / 2 - 155, this.getHeight() - 28, 150, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 + 5, this.getHeight() - 28, 150, 20).build());
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         this.addRenderableWidget(this.deleteButton = new Button.Builder(Component.translatable("selectServer.delete"), button -> this.deleteClicked()).bounds(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20).build());
         this.doneButton.active = this.isNameAcceptable();

@@ -74,7 +74,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.addRenderableWidget(this.teleportCommandButton);
         ++var2;
         ++var2;
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 - 100, this.getHeight() / 6 + 168, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
     }
 
     @Override
