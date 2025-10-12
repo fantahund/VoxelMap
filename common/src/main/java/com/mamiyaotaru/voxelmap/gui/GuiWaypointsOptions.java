@@ -8,11 +8,12 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINTDISTANCE, EnumOptionsMinimap.DISTANCEUNITCONVERSION, EnumOptionsMinimap.WAYPOINTNAMEBELOWICON, EnumOptionsMinimap.WAYPOINTDISTANCEBELOWNAME, EnumOptionsMinimap.DEATHPOINTS};
+    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES, EnumOptionsMinimap.DEATHPOINTS};
     private final Screen parent;
     private final MapSettingsManager options;
     protected Component screenTitle;
@@ -53,6 +54,20 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
         this.options.setOptionValue(option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
+
+        for (GuiEventListener item : children()) {
+            if (!(item instanceof GuiOptionButtonMinimap button)) {
+                continue;
+            }
+
+            switch (button.returnEnumOptions()) {
+                case SHOW_IN_GAME_WAYPOINT_NAMES -> button.active = this.options.showWaypoints;
+                case SHOW_IN_GAME_WAYPOINT_DISTANCES -> {
+                    button.setMessage(Component.literal(this.options.getKeyText(EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES)));
+                    button.active = this.options.showWaypoints;
+                }
+            }
+        }
     }
 
     @Override

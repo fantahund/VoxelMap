@@ -118,23 +118,23 @@ public class RadarSettingsManager implements ISubSettingsManager {
 
     public boolean getOptionBooleanValue(EnumOptionsMinimap par1EnumOptions) {
         return switch (par1EnumOptions) {
-            case SHOWRADAR -> this.showRadar;
-            case SHOWHOSTILES -> this.showHostiles;
-            case SHOWPLAYERS -> this.showPlayers;
-            case SHOWNEUTRALS -> this.showNeutrals;
-            case SHOWPLAYERHELMETS -> this.showHelmetsPlayers;
-            case SHOWMOBHELMETS -> this.showHelmetsMobs;
-            case SHOWPLAYERNAMES -> this.showPlayerNames;
-            case SHOWMOBNAMES -> this.showMobNames;
-            case RADAROUTLINES -> this.outlines;
-            case RADARFILTERING -> this.filtering;
-            case SHOWFACING -> this.showFacing;
+            case SHOW_RADAR -> this.showRadar;
+            case SHOW_HOSTILES -> this.showHostiles;
+            case SHOW_PLAYERS -> this.showPlayers;
+            case SHOW_NEUTRALS -> this.showNeutrals;
+            case SHOW_PLAYER_HELMETS -> this.showHelmetsPlayers;
+            case SHOW_MOB_HELMETS -> this.showHelmetsMobs;
+            case SHOW_PLAYER_NAMES -> this.showPlayerNames;
+            case SHOW_MOB_NAMES -> this.showMobNames;
+            case RADAR_OUTLINES -> this.outlines;
+            case RADAR_FILTERING -> this.filtering;
+            case SHOW_FACING -> this.showFacing;
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean)");
         };
     }
 
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {
-        if (Objects.requireNonNull(par1EnumOptions) == EnumOptionsMinimap.RADARMODE) {
+        if (Objects.requireNonNull(par1EnumOptions) == EnumOptionsMinimap.RADAR_MODE) {
             if (this.radarMode == 2) {
                 return I18n.get("options.minimap.radar.radarmode.full");
             }
@@ -150,18 +150,18 @@ public class RadarSettingsManager implements ISubSettingsManager {
 
     public void setOptionValue(EnumOptionsMinimap par1EnumOptions) {
         switch (par1EnumOptions) {
-            case SHOWRADAR -> this.showRadar = !this.showRadar;
-            case SHOWHOSTILES -> this.showHostiles = !this.showHostiles;
-            case SHOWPLAYERS -> this.showPlayers = !this.showPlayers;
-            case SHOWNEUTRALS -> this.showNeutrals = !this.showNeutrals;
-            case SHOWPLAYERHELMETS -> this.showHelmetsPlayers = !this.showHelmetsPlayers;
-            case SHOWMOBHELMETS -> this.showHelmetsMobs = !this.showHelmetsMobs;
-            case SHOWPLAYERNAMES -> this.showPlayerNames = !this.showPlayerNames;
-            case SHOWMOBNAMES -> this.showMobNames = !this.showMobNames;
-            case RADAROUTLINES -> this.outlines = !this.outlines;
-            case RADARFILTERING -> this.filtering = !this.filtering;
-            case SHOWFACING -> this.showFacing = !this.showFacing;
-            case RADARMODE -> {
+            case SHOW_RADAR -> this.showRadar = !this.showRadar;
+            case SHOW_HOSTILES -> this.showHostiles = !this.showHostiles;
+            case SHOW_PLAYERS -> this.showPlayers = !this.showPlayers;
+            case SHOW_NEUTRALS -> this.showNeutrals = !this.showNeutrals;
+            case SHOW_PLAYER_HELMETS -> this.showHelmetsPlayers = !this.showHelmetsPlayers;
+            case SHOW_MOB_HELMETS -> this.showHelmetsMobs = !this.showHelmetsMobs;
+            case SHOW_PLAYER_NAMES -> this.showPlayerNames = !this.showPlayerNames;
+            case SHOW_MOB_NAMES -> this.showMobNames = !this.showMobNames;
+            case RADAR_OUTLINES -> this.outlines = !this.outlines;
+            case RADAR_FILTERING -> this.filtering = !this.filtering;
+            case SHOW_FACING -> this.showFacing = !this.showFacing;
+            case RADAR_MODE -> {
                 if (this.radarMode == 2) {
                     this.radarMode = 1;
                 } else {

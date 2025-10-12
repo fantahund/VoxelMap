@@ -18,6 +18,7 @@ import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -94,7 +95,7 @@ public class WaypointContainer {
     private boolean isPointedAt(Waypoint waypoint, double distance, Camera camera) {
         Vec3 cameraPos = camera.getPosition();
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
-        double angle = degrees * 0.0174533;
+        double angle = degrees * Mth.DEG_TO_RAD;
         double size = Math.sin(angle) * distance;
         Vector3f cameraPosPlusDirection = camera.getLookVector();
         Vec3 cameraPosPlusDirectionTimesDistance = cameraPos.add(cameraPosPlusDirection.x * distance, cameraPosPlusDirection.y * distance, cameraPosPlusDirection.z * distance);
@@ -159,17 +160,7 @@ public class WaypointContainer {
                 isPointedAt = false;
             }
         }
-        String distStr;
-        if (this.options.distanceUnitConversion && distance > 10000.0) {
-            distStr = (Math.round(distance / 100.0) / 10.0) + "km";
-        } else if (distance >= 9999999.0F) {
-            distStr = (int) distance + "m";
-        } else {
-            distStr = (Math.round(distance * 10.0) / 10.0) + "m";
-        }
-        if (!this.options.waypointDistanceBelowName) {
-            name = name + " (" + distStr + ")";
-        }
+
         double maxDistance = minecraft.options.simulationDistance().get() * 16.0 * 0.99;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
@@ -179,15 +170,22 @@ public class WaypointContainer {
             adjustedDistance = maxDistance;
         }
 
-        float var14 = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
+        float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
         poseStack.pushPose();
         poseStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
         poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
-        poseStack.scale(-var14, -var14, -var14);
+        poseStack.scale(-scale, -scale, -scale);
 
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
-        fade = Math.min(fade, !pt.enabled && !target ? 0.3F : 1.0F);
+        if (!pt.enabled && !target) {
+            fade *= 0.5F;
+        }
+        float fadeNoDepth = fade;
+        if (!isPointedAt) {
+            fadeNoDepth *= 0.5F;
+        }
+
         float width = 10.0F;
         float r = target ? 1.0F : pt.red;
         float g = target ? 0.0F : pt.green;
@@ -208,57 +206,87 @@ public class WaypointContainer {
 
         renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getResourceLocation());
         VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(renderType);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, 0.3F * fade);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, 0.3F * fade);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, 0.3F * fade);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, 0.3F * fade);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fadeNoDepth);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, fadeNoDepth);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
         bufferSource.endBatch(renderType);
 
         Font fontRenderer = minecraft.font;
         if (isPointedAt) {
-            byte elevateBy = this.options.waypointNameBelowIcon ? (byte) 10 : (byte) -19;
-            byte elevateDistBy = this.options.waypointNameBelowIcon ? (byte) 30 : (byte) -39;
-            float distTextScale = 0.65F;
-
-            renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-            VertexConsumer vertexBackground = bufferSource.getBuffer(renderType);
-
-            int halfStringWidth = fontRenderer.width(name) / 2;
-            int halfDistStringWidth = fontRenderer.width(distStr) / 2;
-            vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-            vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-            vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-            vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-            vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            vertexBackground.addVertex(poseStack.last(), (-halfStringWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-            vertexBackground.addVertex(poseStack.last(), (halfStringWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-
-            if (this.options.waypointDistanceBelowName) {
-                poseStack.pushPose();
-                poseStack.scale(distTextScale, distTextScale, distTextScale);
-                vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 2), (9 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 2), (-2 + elevateDistBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfDistStringWidth - 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 1), (8 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfDistStringWidth + 1), (-1 + elevateDistBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                poseStack.popPose();
+            boolean moveLabelDown = this.options.waypointNamesLocation == 1;
+            String distanceString = "";
+            if (this.options.waypointNamesLocation == 0) {
+                name = "";
             }
-            bufferSource.endBatch(renderType);
+            if (this.options.waypointDistancesLocation != 0) {
+                if (this.options.distanceUnitConversion && distance >= 10000.0) {
+                    double converted = distance / 1000.0;
+                    distanceString = (int) distance + "." + (int) ((converted - (int) converted) * 10) + "km";
+                } else {
+                    distanceString = (int) distance + "." + (int) ((distance - (int) distance) * 10) + "m";
+                }
+                if (name.isEmpty()) {
+                    moveLabelDown = this.options.waypointDistancesLocation == 1;
+                    name = distanceString;
+                    distanceString = "";
+                } else if (this.options.waypointDistancesLocation == 1) {
+                    name += " (" + distanceString + ")";
+                    distanceString = "";
+                }
+            }
 
             int textColor = (int) (255.0F * fade) << 24 | 0x00CCCCCC;
-            fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
-            bufferSource.endLastBatch();
-            if (this.options.waypointDistanceBelowName) {
-                poseStack.pushPose();
-                poseStack.scale(distTextScale, distTextScale, distTextScale);
-                fontRenderer.drawInBatch(Component.literal(distStr), (-fontRenderer.width(distStr) / 2f), elevateDistBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
+            byte elevateBy;
+            int halfLabelWidth;
+
+            if (!name.isEmpty()) {
+                elevateBy = moveLabelDown ? (distanceString.isEmpty() ? (byte) -18 : (byte) -24) : (byte) 10;
+                halfLabelWidth = fontRenderer.width(name) / 2;
+
+                renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
+                VertexConsumer vertexBackground = bufferSource.getBuffer(renderType);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                bufferSource.endBatch(renderType);
+
+                fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
                 bufferSource.endLastBatch();
+            }
+
+            if (!distanceString.isEmpty()) {
+                float labelScale = 0.75F;
+
+                elevateBy = moveLabelDown ? (byte) -20 : (byte) 26;
+                halfLabelWidth = fontRenderer.width(distanceString) / 2;
+
+                poseStack.pushPose();
+                poseStack.scale(labelScale, labelScale, 1.0F);
+
+//                renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
+                VertexConsumer vertexBackground = bufferSource.getBuffer(renderType);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                bufferSource.endBatch(renderType);
+
+                fontRenderer.drawInBatch(Component.literal(distanceString), (-fontRenderer.width(distanceString) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
+                bufferSource.endLastBatch();
+
                 poseStack.popPose();
             }
+
         }
         poseStack.popPose();
     }

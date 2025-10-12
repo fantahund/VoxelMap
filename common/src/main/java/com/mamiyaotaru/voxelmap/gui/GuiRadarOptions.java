@@ -12,8 +12,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiRadarOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] FULL_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE,  EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWMOBNAMES, EnumOptionsMinimap.SHOWPLAYERNAMES, EnumOptionsMinimap.SHOWMOBHELMETS, EnumOptionsMinimap.SHOWPLAYERHELMETS, EnumOptionsMinimap.RADARFILTERING, EnumOptionsMinimap.RADAROUTLINES };
-    private static final EnumOptionsMinimap[] SIMPLE_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOWRADAR, EnumOptionsMinimap.RADARMODE, EnumOptionsMinimap.SHOWNEUTRALS, EnumOptionsMinimap.SHOWHOSTILES, EnumOptionsMinimap.SHOWPLAYERS, EnumOptionsMinimap.SHOWFACING };
+    private static final EnumOptionsMinimap[] FULL_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE,  EnumOptionsMinimap.SHOW_NEUTRALS, EnumOptionsMinimap.SHOW_HOSTILES, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES};
+    private static final EnumOptionsMinimap[] SIMPLE_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_NEUTRALS, EnumOptionsMinimap.SHOW_HOSTILES, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING};
 
     private final Screen parent;
     private final RadarSettingsManager options;
@@ -59,7 +59,7 @@ public class GuiRadarOptions extends GuiScreenMinimap {
         EnumOptionsMinimap option = guiOptionButtonMinimap.returnEnumOptions();
         options.setOptionValue(option);
 
-        if (guiOptionButtonMinimap.returnEnumOptions() == EnumOptionsMinimap.RADARMODE) {
+        if (guiOptionButtonMinimap.returnEnumOptions() == EnumOptionsMinimap.RADAR_MODE) {
             init();
             return;
         }
@@ -81,26 +81,26 @@ public class GuiRadarOptions extends GuiScreenMinimap {
             if (!(element instanceof GuiOptionButtonMinimap button)) {
                 continue;
             }
-            if (button.returnEnumOptions() != EnumOptionsMinimap.SHOWRADAR) {
+            if (button.returnEnumOptions() != EnumOptionsMinimap.SHOW_RADAR) {
                 button.active = options.showRadar;
             }
 
-            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWPLAYERS) {
+            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_PLAYERS) {
                 button.active = button.active && (options.radarAllowed || options.radarPlayersAllowed);
                 continue;
             }
 
-            if (!(button.returnEnumOptions() != EnumOptionsMinimap.SHOWNEUTRALS && button.returnEnumOptions() != EnumOptionsMinimap.SHOWHOSTILES)) {
+            if (!(button.returnEnumOptions() != EnumOptionsMinimap.SHOW_NEUTRALS && button.returnEnumOptions() != EnumOptionsMinimap.SHOW_HOSTILES)) {
                 button.active = button.active && (options.radarAllowed || options.radarMobsAllowed);
                 continue;
             }
 
-            if (!(button.returnEnumOptions() != EnumOptionsMinimap.SHOWPLAYERHELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOWPLAYERNAMES)) {
+            if (!(button.returnEnumOptions() != EnumOptionsMinimap.SHOW_PLAYER_HELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOW_PLAYER_NAMES)) {
                 button.active = button.active && options.showPlayers && (options.radarAllowed || options.radarPlayersAllowed);
                 continue;
             }
 
-            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOWMOBHELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOWMOBNAMES) {
+            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_MOB_HELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOW_MOB_NAMES) {
                 button.active = button.active && (options.showNeutrals || options.showHostiles) && (options.radarAllowed || options.radarMobsAllowed);
             }
         }

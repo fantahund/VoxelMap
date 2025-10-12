@@ -80,8 +80,6 @@
   "options.minimap.waypoints.deathpoints.tooltip": "Вступит в силу после следующей смерти",
   "options.minimap.waypoints.showwaypointnames": "Имена маркеров на карте",
   "options.minimap.waypoints.distanceunitconversion": "Перевод единиц измерения расстояния",
-  "options.minimap.waypoints.waypointnamebelowicon": "Имя маркера под иконкой",
-  "options.minimap.waypoints.waypointdistancebelowname": "Текст расстояния под именем",
   "options.minimap.mobs.title": "Показать/скрыть отдельные типы существ",
   "options.minimap.mobs.enable": "Включить иконки",
   "options.minimap.mobs.disable": "Выключить иконки",
