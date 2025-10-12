@@ -1954,7 +1954,7 @@ public class Map implements Runnable, IChangeObserver {
             String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
             int m = this.textWidth(xy) / 2;
             this.write(drawContext, xy, x / scale - m, textStart / scale, 0xFFFFFFFF); // X, Z
-            xy = Integer.toString(GameVariableAccessShim.yCoord());
+            xy = this.dCoord(GameVariableAccessShim.yCoord());
             m = this.textWidth(xy) / 2;
             this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 0xFFFFFFFF); // Y
             if (this.ztimer > 0) {
