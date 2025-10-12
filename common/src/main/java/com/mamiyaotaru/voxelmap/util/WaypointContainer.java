@@ -10,7 +10,6 @@ import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -19,26 +18,46 @@ import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public class WaypointContainer {
-    private final List<Waypoint> wayPts = new ArrayList<>();
+    private final List<ExtendedWaypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint;
     public final MapSettingsManager options;
     public final Minecraft minecraft = Minecraft.getInstance();
+
+    public static class ExtendedWaypoint implements Comparable<ExtendedWaypoint> {
+        public Waypoint waypoint;
+        public double offset;
+        public boolean target;
+
+        public ExtendedWaypoint(Waypoint waypoint) {
+            this.waypoint = waypoint;
+        }
+
+        public int compareTo(ExtendedWaypoint o) {
+            boolean skip1 = offset == -1.0 || (!waypoint.enabled && !target) || !waypoint.inWorld || !waypoint.inDimension;
+            boolean skip2 = o.offset == -1.0 || (!o.waypoint.enabled && !o.target) || !o.waypoint.inWorld || !o.waypoint.inDimension;
+
+            if (skip1 && !skip2) return 1;
+            if (!skip1 && skip2) return -1;
+
+            return Double.compare(offset, o.offset);
+        }
+    }
+
 
     public WaypointContainer(MapSettingsManager options) {
         this.options = options;
     }
 
     public void addWaypoint(Waypoint newWaypoint) {
-        this.wayPts.add(newWaypoint);
+        this.wayPts.add(new ExtendedWaypoint(newWaypoint));
     }
 
     public void removeWaypoint(Waypoint waypoint) {
-        this.wayPts.remove(waypoint);
+        this.wayPts.removeIf(point -> point.waypoint == waypoint);
     }
 
     public void setHighlightedWaypoint(Waypoint highlightedWaypoint) {
@@ -50,35 +69,42 @@ public class WaypointContainer {
     }
 
     public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        this.sortWaypoints();
         Vec3 cameraPos = camera.getPosition();
         double renderPosX = cameraPos.x;
         double renderPosY = cameraPos.y;
         double renderPosZ = cameraPos.z;
         if (this.options.showBeacons) {
-            for (Waypoint pt : this.wayPts) {
-                if (pt.isActive() || pt == this.highlightedWaypoint) {
-                    int x = pt.getX();
-                    int z = pt.getZ();
+            for (ExtendedWaypoint pt : this.wayPts) {
+                if (pt.waypoint.isActive() || pt.waypoint == this.highlightedWaypoint) {
+                    int x = pt.waypoint.getX();
+                    int z = pt.waypoint.getZ();
                     double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
-                    this.renderBeam(pt, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
+                    this.renderBeam(pt.waypoint, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
                 }
             }
         }
 
-        if (this.options.showWaypoints) {
-            for (Waypoint pt : this.wayPts) {
-                if (pt.isActive() || pt == this.highlightedWaypoint) {
-                    int x = pt.getX();
-                    int z = pt.getZ();
-                    int y = pt.getY();
-                    double distance = Math.sqrt(pt.getDistanceSqToCamera(camera));
-                    if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || pt == this.highlightedWaypoint) && !VoxelConstants.getMinecraft().options.hideGui) {
-                        boolean isPointedAt = this.isPointedAt(pt, distance, camera);
-                        String label = pt.name;
-                        this.renderLabel(poseStack, bufferSource, pt, distance, isPointedAt, label, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+        if (this.options.showWaypoints && !minecraft.options.hideGui) {
+            this.sortWaypoints();
+            boolean shiftDown = minecraft.options.keyShift.isDown();
+            int last = this.wayPts.size() - 1;
+            int i = 0;
+            for (ExtendedWaypoint pt : this.wayPts) {
+                boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
+                if (pt.waypoint.isActive() || isHighlighted) {
+                    int x = pt.waypoint.getX();
+                    int z = pt.waypoint.getZ();
+                    int y = pt.waypoint.getY();
+                    double distance = Math.sqrt(pt.waypoint.getDistanceSqToCamera(camera));
+                    if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || isHighlighted)) {
+                        double offset = getCenterOffset(pt.waypoint, distance, camera);
+                        boolean isPointedAt = offset != -1.0 && (shiftDown || i == last);
+                        this.renderLabel(poseStack, bufferSource, pt.waypoint, distance, isPointedAt, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+                        pt.offset = offset;
+                        pt.target = isHighlighted;
                     }
                 }
+                ++i;
             }
 
             if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hideGui) {
@@ -86,26 +112,35 @@ public class WaypointContainer {
                 int z = this.highlightedWaypoint.getZ();
                 int y = this.highlightedWaypoint.getY();
                 double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToCamera(camera));
-                boolean isPointedAt = this.isPointedAt(this.highlightedWaypoint, distance, camera);
-                this.renderLabel(poseStack, bufferSource, this.highlightedWaypoint, distance, isPointedAt, "", true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+                boolean isPointedAt = this.getCenterOffset(this.highlightedWaypoint, distance, camera) != -1.0F;
+                this.renderLabel(poseStack, bufferSource, this.highlightedWaypoint, distance, isPointedAt, true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
             }
         }
     }
 
-    private boolean isPointedAt(Waypoint waypoint, double distance, Camera camera) {
+    private double getCenterOffset(Waypoint waypoint, double distance, Camera camera) {
+        if (distance < 1.0) {
+            return -1.0;
+        }
+
         Vec3 cameraPos = camera.getPosition();
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * Mth.DEG_TO_RAD;
-        double size = Math.sin(angle) * distance;
-        Vector3f cameraPosPlusDirection = camera.getLookVector();
-        Vec3 cameraPosPlusDirectionTimesDistance = cameraPos.add(cameraPosPlusDirection.x * distance, cameraPosPlusDirection.y * distance, cameraPosPlusDirection.z * distance);
-        AABB axisalignedbb = new AABB((waypoint.getX() + 0.5F) - size, (waypoint.getY() + 1.65F) - size, (waypoint.getZ() + 0.5F) - size, (waypoint.getX() + 0.5F) + size, (waypoint.getY() + 1.5F) + size, (waypoint.getZ() + 0.5F) + size);
-        Optional<Vec3> raytraceresult = axisalignedbb.clip(cameraPos, cameraPosPlusDirectionTimesDistance);
-        if (axisalignedbb.contains(cameraPos)) {
-            return distance >= 1.0;
-        } else {
-            return raytraceresult.isPresent();
+        double size = Math.max(Math.sin(angle) * distance, 0.5);
+
+        Vector3f lookVector = camera.getLookVector();
+        Vec3 scaledLookVector = cameraPos.add(lookVector.x * distance, lookVector.y * distance, lookVector.z * distance);
+
+        double dx = (waypoint.x + 0.5F) - scaledLookVector.x;
+        double dy = (waypoint.y + 1.5F) - scaledLookVector.y;
+        double dz = (waypoint.z + 0.5F) - scaledLookVector.z;
+        double distFromCenter = dx * dx + dy * dy + dz * dz;
+
+        if (distFromCenter <= size * size) {
+            return distFromCenter;
         }
+
+        return -1.0;
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, PoseStack poseStack, BufferSource bufferSource) {
@@ -152,7 +187,8 @@ public class WaypointContainer {
         }
     }
 
-    private void renderLabel(PoseStack poseStack, BufferSource bufferSource, Waypoint pt, double distance, boolean isPointedAt, String name, boolean target, double baseX, double baseY, double baseZ/* , boolean withDepth, boolean withoutDepth */) {
+    private void renderLabel(PoseStack poseStack, BufferSource bufferSource, Waypoint pt, double distance, boolean isPointedAt, boolean target, double baseX, double baseY, double baseZ/* , boolean withDepth, boolean withoutDepth */) {
+        String name = pt.name;
         if (target) {
             if (pt.red == 2.0F && pt.green == 0.0F && pt.blue == 0.0F) {
                 name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
@@ -236,7 +272,7 @@ public class WaypointContainer {
                 }
             }
 
-            int textColor = (int) (255.0F * fade) << 24 | 0x00CCCCCC;
+            int textColor = (int) (255.0F * fade) << 24 | 0x00FFFFFF;
             byte elevateBy;
             int halfLabelWidth;
 
