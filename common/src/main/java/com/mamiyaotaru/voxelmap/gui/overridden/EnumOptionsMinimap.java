@@ -44,6 +44,7 @@ public enum EnumOptionsMinimap {
     MOVE_MAP_DOWN_WHILE_STATUS_EFFECT("options.minimap.movemapdownwhilestatuseffect", false, true, false),
     MOVE_SCOREBOARD_DOWN("options.minimap.movescoreboarddown", false, true, false),
     DISTANCE_UNIT_CONVERSION("options.minimap.waypoints.distanceunitconversion", false, true, false),
+    WAYPOINT_SIGN_SCALE("options.minimap.waypoints.waypointSignScale", true, false, false),
     SHOW_IN_GAME_WAYPOINT_NAMES("options.minimap.waypoints.showWaypointNames", false, false, true),
     SHOW_IN_GAME_WAYPOINT_DISTANCES("options.minimap.waypoints.showWaypointDistances", false, false, true);
 

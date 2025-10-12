@@ -80,6 +80,7 @@
   "options.minimap.waypoints.deathpoints.tooltip": "다음 사망 시 적용됩니다",
   "options.minimap.waypoints.showwaypointnames": "미니맵에 경유지 이름 표시",
   "options.minimap.waypoints.distanceunitconversion": "거리 단위 변환 사용",
+  "options.minimap.waypoints.waypointSignScale": "경유지 표지 크기",
   "options.minimap.waypoints.showWaypointNames": "경유지 이름 표시",
   "options.minimap.waypoints.showWaypointNames.aboveIcon": "아이콘 위에",
   "options.minimap.waypoints.showWaypointNames.belowIcon": "아이콘 아래에",

@@ -126,7 +126,7 @@ public class WaypointContainer {
         Vec3 cameraPos = camera.getPosition();
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * Mth.DEG_TO_RAD;
-        double size = Math.max(Math.sin(angle) * distance, 0.5);
+        double size = Math.max(Math.sin(angle) * distance, 0.5) * this.options.waypointSignScale;
 
         Vector3f lookVector = camera.getLookVector();
         Vec3 scaledLookVector = cameraPos.add(lookVector.x * distance, lookVector.y * distance, lookVector.z * distance);
@@ -206,7 +206,7 @@ public class WaypointContainer {
             adjustedDistance = maxDistance;
         }
 
-        float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F;
+        float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F * this.options.waypointSignScale;
         poseStack.pushPose();
         poseStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
@@ -258,7 +258,7 @@ public class WaypointContainer {
             if (this.options.waypointDistancesLocation != 0) {
                 if (this.options.distanceUnitConversion && distance >= 10000.0) {
                     double converted = distance / 1000.0;
-                    distanceString = (int) distance + "." + (int) ((converted - (int) converted) * 10) + "km";
+                    distanceString = (int) converted + "." + (int) ((converted - (int) converted) * 10) + "km";
                 } else {
                     distanceString = (int) distance + "." + (int) ((distance - (int) distance) * 10) + "m";
                 }

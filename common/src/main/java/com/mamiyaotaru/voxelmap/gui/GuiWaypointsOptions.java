@@ -12,8 +12,10 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.util.Objects;
+
 public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES, EnumOptionsMinimap.DEATHPOINTS};
+    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
     private final Screen parent;
     private final MapSettingsManager options;
     protected Component screenTitle;
@@ -32,13 +34,18 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
         for (EnumOptionsMinimap option : relevantOptions) {
             if (option.isFloat()) {
-                float distance = this.options.getOptionFloatValue(option);
-                if (distance < 0.0F) {
-                    distance = 10001.0F;
-                }
+                float value = this.options.getOptionFloatValue(option);
+                switch (option) {
+                    case WAYPOINT_DISTANCE -> {
+                        if (value < 0.0F) {
+                            value = 10001.0F;
+                        }
 
-                distance = (distance - 50.0F) / 9951.0F;
-                this.addRenderableWidget(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, distance, this.options));
+                        value = (value - 50.0F) / 9951.0F;
+                    }
+                    case WAYPOINT_SIGN_SCALE -> value = value - 0.5F;
+                }
+                this.addRenderableWidget(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, value, this.options));
             } else {
                 GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Component.literal(this.options.getKeyText(option)), this::optionClicked);
                 this.addRenderableWidget(optionButton);
@@ -66,6 +73,16 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
                     button.setMessage(Component.literal(this.options.getKeyText(EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES)));
                     button.active = this.options.showWaypoints;
                 }
+            }
+        }
+
+        for (GuiEventListener item : children()) {
+            if (!(item instanceof GuiOptionSliderMinimap slider)) {
+                continue;
+            }
+
+            if (slider.returnEnumOptions() == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
+                slider.active = this.options.showWaypoints;
             }
         }
     }

@@ -22,6 +22,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 public class MapSettingsManager implements ISettingsManager {
     private File settingsFile;
@@ -65,6 +66,7 @@ public class MapSettingsManager implements ISettingsManager {
     public boolean moveMapDownWhileStatusEffect = true;
     public boolean moveScoreBoardDown = true;
     public boolean distanceUnitConversion = true;
+    public float waypointSignScale = 1.0F;
     public int waypointNamesLocation = 2;
     public int waypointDistancesLocation = 2;
     public int sort = 1;
@@ -154,6 +156,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Move Map Down While Status Effect" -> this.moveMapDownWhileStatusEffect = Boolean.parseBoolean(curLine[1]);
                         case "Move ScoreBoard Down" -> this.moveScoreBoardDown = Boolean.parseBoolean(curLine[1]);
                         case "Distance Unit Conversion" -> this.distanceUnitConversion = Boolean.parseBoolean(curLine[1]);
+                        case "Waypoint Sign Scale" -> this.waypointSignScale = Float.parseFloat(curLine[1]);
                         case "Show In-game Waypoint Names" -> this.waypointNamesLocation = Integer.parseInt(curLine[1]);
                         case "Show In-game Waypoint Distances" -> this.waypointDistancesLocation  = Integer.parseInt(curLine[1]);
                     }
@@ -230,6 +233,7 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Move Map Down While Status Effect:" + this.moveMapDownWhileStatusEffect);
             out.println("Move ScoreBoard Down:" + this.moveScoreBoardDown);
             out.println("Distance Unit Conversion:" + this.distanceUnitConversion);
+            out.println("Waypoint Sign Scale:" + this.waypointSignScale);
             out.println("Show In-game Waypoint Names:" + this.waypointNamesLocation);
             out.println("Show In-game Waypoint Distances:" + this.waypointDistancesLocation);
 
@@ -252,6 +256,8 @@ public class MapSettingsManager implements ISettingsManager {
                 return s + (int) f;
             } else if (options == EnumOptionsMinimap.WAYPOINT_DISTANCE) {
                 return f < 0.0F ? s + I18n.get("options.minimap.waypoints.infinite") : s + (int) f;
+            } else if (options == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
+                return s + String.format("%.2fx", f);
             } else {
                 return f == 0.0F ? s + I18n.get("options.off") : s + (int) f + "%";
             }
@@ -270,8 +276,12 @@ public class MapSettingsManager implements ISettingsManager {
     public float getOptionFloatValue(EnumOptionsMinimap options) {
         if (options == EnumOptionsMinimap.ZOOM) {
             return this.zoom;
+        } else if (options == EnumOptionsMinimap.WAYPOINT_DISTANCE) {
+            return this.maxWaypointDisplayDistance;
+        } else if (options == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
+            return this.waypointSignScale;
         } else {
-            return options == EnumOptionsMinimap.WAYPOINT_DISTANCE ? this.maxWaypointDisplayDistance : 0.0F;
+            return 0.0F;
         }
     }
 
@@ -421,6 +431,12 @@ public class MapSettingsManager implements ISettingsManager {
             }
 
             this.maxWaypointDisplayDistance = (int) distance;
+        } else if (options == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
+            int stepCount = 100;
+            float scale = Math.round(value * stepCount) / (float) stepCount;
+            scale = scale + 0.5F;
+
+            this.waypointSignScale = scale;
         }
 
         this.somethingChanged = true;
