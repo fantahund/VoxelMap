@@ -131,9 +131,9 @@ public class WaypointContainer {
         Vector3f lookVector = camera.getLookVector();
         Vec3 scaledLookVector = cameraPos.add(lookVector.x * distance, lookVector.y * distance, lookVector.z * distance);
 
-        double dx = (waypoint.x + 0.5F) - scaledLookVector.x;
-        double dy = (waypoint.y + 1.5F) - scaledLookVector.y;
-        double dz = (waypoint.z + 0.5F) - scaledLookVector.z;
+        double dx = (waypoint.getX() + 0.5F) - scaledLookVector.x;
+        double dy = (waypoint.getY() + 1.5F) - scaledLookVector.y;
+        double dz = (waypoint.getZ() + 0.5F) - scaledLookVector.z;
         double distFromCenter = dx * dx + dy * dy + dz * dz;
 
         if (distFromCenter <= size * size) {
