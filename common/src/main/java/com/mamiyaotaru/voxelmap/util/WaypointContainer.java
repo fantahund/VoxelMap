@@ -256,12 +256,16 @@ public class WaypointContainer {
                 name = "";
             }
             if (this.options.waypointDistancesLocation != 0) {
-                if (this.options.distanceUnitConversion && distance >= 10000.0) {
+                boolean shouldConvertUnit = this.options.distanceUnitConversionMode != 0
+                        && ((this.options.distanceUnitConversionMode == 1 && distance > 1000.0) || (this.options.distanceUnitConversionMode == 2 && distance > 10000.0));
+
+                if (shouldConvertUnit) {
                     double converted = distance / 1000.0;
                     distanceString = (int) converted + "." + (int) ((converted - (int) converted) * 10) + "km";
                 } else {
                     distanceString = (int) distance + "." + (int) ((distance - (int) distance) * 10) + "m";
                 }
+
                 if (name.isEmpty()) {
                     moveLabelDown = this.options.waypointDistancesLocation == 1;
                     name = distanceString;

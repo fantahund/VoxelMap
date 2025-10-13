@@ -22,7 +22,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 
 public class MapSettingsManager implements ISettingsManager {
     private File settingsFile;
@@ -65,7 +64,7 @@ public class MapSettingsManager implements ISettingsManager {
 
     public boolean moveMapDownWhileStatusEffect = true;
     public boolean moveScoreBoardDown = true;
-    public boolean distanceUnitConversion = true;
+    public int distanceUnitConversionMode = 2;
     public float waypointSignScale = 1.0F;
     public int waypointNamesLocation = 2;
     public int waypointDistancesLocation = 2;
@@ -155,7 +154,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Teleport Command" -> this.teleportCommand = curLine[1];
                         case "Move Map Down While Status Effect" -> this.moveMapDownWhileStatusEffect = Boolean.parseBoolean(curLine[1]);
                         case "Move ScoreBoard Down" -> this.moveScoreBoardDown = Boolean.parseBoolean(curLine[1]);
-                        case "Distance Unit Conversion" -> this.distanceUnitConversion = Boolean.parseBoolean(curLine[1]);
+                        case "Distance Unit Conversion Mode" -> this.distanceUnitConversionMode = Integer.parseInt(curLine[1]);
                         case "Waypoint Sign Scale" -> this.waypointSignScale = Float.parseFloat(curLine[1]);
                         case "Show In-game Waypoint Names" -> this.waypointNamesLocation = Integer.parseInt(curLine[1]);
                         case "Show In-game Waypoint Distances" -> this.waypointDistancesLocation  = Integer.parseInt(curLine[1]);
@@ -232,7 +231,7 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Teleport Command:" + this.teleportCommand);
             out.println("Move Map Down While Status Effect:" + this.moveMapDownWhileStatusEffect);
             out.println("Move ScoreBoard Down:" + this.moveScoreBoardDown);
-            out.println("Distance Unit Conversion:" + this.distanceUnitConversion);
+            out.println("Distance Unit Conversion Mode:" + this.distanceUnitConversionMode);
             out.println("Waypoint Sign Scale:" + this.waypointSignScale);
             out.println("Show In-game Waypoint Names:" + this.waypointNamesLocation);
             out.println("Show In-game Waypoint Distances:" + this.waypointDistancesLocation);
@@ -304,7 +303,6 @@ public class MapSettingsManager implements ISettingsManager {
             case WORLD_BORDER -> this.worldborder;
             case MOVE_MAP_DOWN_WHILE_STATUS_EFFECT -> this.moveMapDownWhileStatusEffect;
             case MOVE_SCOREBOARD_DOWN -> this.moveScoreBoardDown;
-            case DISTANCE_UNIT_CONVERSION -> this.distanceUnitConversion;
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
         };
     }
@@ -391,6 +389,19 @@ public class MapSettingsManager implements ISettingsManager {
                     return "error";
                 }
             }
+            case DISTANCE_UNIT_CONVERSION -> {
+                if (this.distanceUnitConversionMode == 0) {
+                    return I18n.get("options.off");
+                } else if (this.distanceUnitConversionMode == 1) {
+                    return I18n.get("options.minimap.waypoints.distanceUnitConversion.from1000m");
+                } else {
+                    if (this.distanceUnitConversionMode == 2) {
+                        return I18n.get("options.minimap.waypoints.distanceUnitConversion.from10000m");
+                    }
+
+                    return "error";
+                }
+            }
             case SHOW_IN_GAME_WAYPOINT_NAMES -> {
                 if (this.waypointNamesLocation == 0) {
                     return I18n.get("options.off");
@@ -461,7 +472,6 @@ public class MapSettingsManager implements ISettingsManager {
             case WORLD_BORDER -> this.worldborder = !this.worldborder;
             case MOVE_MAP_DOWN_WHILE_STATUS_EFFECT -> this.moveMapDownWhileStatusEffect = !this.moveMapDownWhileStatusEffect;
             case MOVE_SCOREBOARD_DOWN -> this.moveScoreBoardDown = !this.moveScoreBoardDown;
-            case DISTANCE_UNIT_CONVERSION -> this.distanceUnitConversion = !this.distanceUnitConversion;
             case TERRAIN_DEPTH -> {
                 if (this.slopemap && this.heightmap) {
                     this.slopemap = false;
@@ -500,6 +510,12 @@ public class MapSettingsManager implements ISettingsManager {
                 ++this.deathpoints;
                 if (this.deathpoints > 2) {
                     this.deathpoints = 0;
+                }
+            }
+            case DISTANCE_UNIT_CONVERSION -> {
+                ++this.distanceUnitConversionMode;
+                if (this.distanceUnitConversionMode > 2) {
+                    this.distanceUnitConversionMode = 0;
                 }
             }
             case SHOW_IN_GAME_WAYPOINT_NAMES -> {

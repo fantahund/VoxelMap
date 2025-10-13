@@ -90,6 +90,27 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         drawContext.drawCenteredString(this.font, this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+
+        Component tooltip = null;
+
+        for (GuiEventListener item : children()) {
+            if (!(item instanceof GuiOptionButtonMinimap button)) {
+                continue;
+            }
+            if (!button.isHovered()) {
+                continue;
+            }
+            switch (button.returnEnumOptions()) {
+                case DEATHPOINTS -> tooltip = Component.translatable("options.minimap.waypoints.deathpoints.tooltip");
+                case DISTANCE_UNIT_CONVERSION -> tooltip = Component.translatable("options.minimap.waypoints.distanceUnitConversion.tooltip");
+            }
+        }
+
+        if (tooltip != null) {
+            this.renderTooltip(drawContext, tooltip, mouseX, mouseY);
+        }
+
+
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }

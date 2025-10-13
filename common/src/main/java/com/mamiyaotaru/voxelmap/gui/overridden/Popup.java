@@ -63,7 +63,7 @@ public class Popup {
         if (clicked) {
             for (int t = 0; t < this.entries.length; ++t) {
                 if (this.entries[t].enabled) {
-                    boolean entryClicked = mouseX >= this.x && mouseX <= (this.x + this.w) && mouseY >= (this.y + t * 20) && mouseY <= (this.y + (t + 1) * 20);
+                    boolean entryClicked = mouseX >= this.x && mouseX <= (this.x + this.w) && mouseY >= (this.y + t * 20) && mouseY < (this.y + (t + 1) * 20);
                     if (entryClicked) {
                         this.shouldClose = this.entries[t].causesClose;
                         this.parentGui.popupAction(this, this.entries[t].action);
@@ -100,7 +100,7 @@ public class Popup {
 
 
         for (int t = 0; t < this.entries.length; ++t) {
-            int color = !this.entries[t].enabled ? 0xFFA0A0A0 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY <= this.y + (t + 1) * 20 ? 0xFFFFFFA0 : 0xFFE0E0E0);
+            int color = !this.entries[t].enabled ? 0xFFA0A0A0 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY < this.y + (t + 1) * 20 ? 0xFFFFFFA0 : 0xFFE0E0E0);
             guiGraphics.drawString(this.fontRendererObj, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);
         }
         guiGraphics.pose().popMatrix();
