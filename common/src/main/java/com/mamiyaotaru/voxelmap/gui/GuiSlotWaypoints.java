@@ -17,6 +17,8 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
@@ -34,6 +36,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     protected long lastClicked;
     public boolean doubleClicked;
+    private final ResourceLocation targetIconLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/waypoints/target.png");
     private final TextureAtlas textureAtlas;
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
@@ -49,6 +52,13 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
 
         this.waypointsFiltered = new ArrayList<>(this.waypoints);
         this.waypointsFiltered.forEach(x -> this.addEntry((WaypointItem) x));
+
+        try {
+            DynamicTexture targetIcon = new DynamicTexture(() -> "Waypoint Target Icon", TextureContents.load(VoxelConstants.getMinecraft().getResourceManager(), targetIconLocation).image());
+            targetIcon.setFilter(true, false);
+            minecraft.getTextureManager().register(targetIconLocation, targetIcon);
+        } catch (Exception e) {
+        }
 
         this.textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlasChooser();
     }
@@ -165,7 +175,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y - 2, 18, 18, waypoint.getUnifiedColor());
 
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y - 2, 18, 18, 0xFFFF0000);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, targetIconLocation, x, y - 2, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
             }
         }
 

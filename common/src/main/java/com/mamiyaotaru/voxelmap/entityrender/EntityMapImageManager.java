@@ -168,7 +168,7 @@ public class EntityMapImageManager {
         EntityVariantData variant = null;
         EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
-            variant = new DefaultEntityVariantData(entity.getType(), player.getSkin().body().id(), null, size, addBorder);
+            variant = new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, size, addBorder);
         } else if (entity instanceof LivingEntity && baseRenderer instanceof LivingEntityRenderer renderer) {
             if (minecraft.getEntityRenderDispatcher().camera == null) {
                 minecraft.getEntityRenderDispatcher().camera = fakeCamera;
@@ -467,7 +467,7 @@ public class EntityMapImageManager {
     // We don't need to use this code anymore. (but I'll leave this code here in case we need it later!)
     //
     //private BufferedImage getPlayerIcon(AbstractClientPlayer player, int size, boolean addBorder) {
-    //    ResourceLocation skinLocation = player.getSkin().body().id();
+    //    ResourceLocation skinLocation = player.getSkin().body().texturePath();
     //    AbstractTexture skinTexture = minecraft.getTextureManager().getTexture(skinLocation);
     //    BufferedImage skinImage = null;
     //    if (skinTexture instanceof DynamicTexture dynamicTexture) {
