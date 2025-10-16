@@ -194,7 +194,7 @@
   "options.worldmap.minzoom": "최소 줌 배율",
   "options.worldmap.maxzoom": "최대 줌 배율",
   "options.worldmap.cachesize": "지역 캐시 크기",
-  "options.worldmap.multiworld": "다중 세계 설정...",
+  "options.worldmap.multiworld": "다중 세계...",
   "worldmap.disabled": "이 서버에서 세계지도를 사용할 수 없습니다.",
   "worldmap.multiworld.title": "VoxelMap - 다중 세계 선택",
   "worldmap.multiworld.select": "접속한 세계를 선택해주세요.",
