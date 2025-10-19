@@ -36,7 +36,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        this.screenTitle = I18n.get("options.minimap.detailsperformance");
+        this.screenTitle = I18n.get("options.minimap.detailsPerformance");
         int leftBorder = this.getLeftBorder();
         int var2 = 0;
 
@@ -60,14 +60,14 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
             worldSeedDisplay = I18n.get("selectWorld.versionUnknown");
         }
 
-        String buttonSeedText = I18n.get("options.minimap.worldseed") + ": " + worldSeedDisplay;
+        String buttonSeedText = I18n.get("options.minimap.worldSeed") + ": " + worldSeedDisplay;
         this.worldSeedButton = new GuiButtonText(this.getFont(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, Component.literal(buttonSeedText), button -> this.worldSeedButton.setEditing(true));
         this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
         this.worldSeedButton.active = !VoxelConstants.getMinecraft().hasSingleplayerServer();
         this.addRenderableWidget(this.worldSeedButton);
         ++var2;
 
-        String buttonTeleportText = I18n.get("options.minimap.teleportcommand") + ": " + VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand;
+        String buttonTeleportText = I18n.get("options.minimap.teleportCommand") + ": " + VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand;
         this.teleportCommandButton = new GuiButtonText(this.getFont(), leftBorder + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), 150, 20, Component.literal(buttonTeleportText), button -> this.teleportCommandButton.setEditing(true));
         this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
         this.teleportCommandButton.active = VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand == null;
@@ -135,7 +135,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
             worldSeedDisplay = I18n.get("selectWorld.versionUnknown");
         }
 
-        String buttonText = I18n.get("options.minimap.worldseed") + ": " + worldSeedDisplay;
+        String buttonText = I18n.get("options.minimap.worldSeed") + ": " + worldSeedDisplay;
         this.worldSeedButton.setMessage(Component.literal(buttonText));
         this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
         VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
@@ -146,7 +146,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         String newTeleportCommand = this.teleportCommandButton.getText().isEmpty() ? "tp %p %x %y %z" : this.teleportCommandButton.getText();
         VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand = newTeleportCommand;
 
-        String buttonText = I18n.get("options.minimap.teleportcommand") + ": " + newTeleportCommand;
+        String buttonText = I18n.get("options.minimap.teleportCommand") + ": " + newTeleportCommand;
         this.teleportCommandButton.setMessage(Component.literal(buttonText));
         this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
     }

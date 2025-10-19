@@ -100,10 +100,10 @@ public class WorldMatcher {
                 MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
                 if (!WorldMatcher.this.cancelled && this.candidateRegions.size() == 1 && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
                     VoxelConstants.getVoxelMapInstance().newSubWorldName(this.candidateRegions.get(0).getSubworldName(), false);
-                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundworld1") + ":" + " §a" + this.candidateRegions.get(0).getSubworldName() + ".§r" + " " + I18n.get("worldmap.multiworld.foundworld2"));
+                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundWorld1") + ":" + " §a" + this.candidateRegions.get(0).getSubworldName() + ".§r" + " " + I18n.get("worldmap.multiworld.foundWorld2"));
                 } else if (!WorldMatcher.this.cancelled && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
                     MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
-                    MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18n.get("worldmap.multiworld.unknownsubworld"));
+                    MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18n.get("worldmap.multiworld.unknownSubworld"));
                 }
 
             }

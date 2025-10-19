@@ -26,8 +26,8 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     final GuiMobs parentGui;
     static final Component ENABLED = Component.translatable("options.minimap.mobs.enabled");
     static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
-    static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enabletooltip");
-    static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disabletooltip");
+    static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enableTooltip");
+    static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disableTooltip");
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
 

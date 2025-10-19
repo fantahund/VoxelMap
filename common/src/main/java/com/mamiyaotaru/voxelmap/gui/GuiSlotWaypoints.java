@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -10,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -21,17 +19,16 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ARGB;
 
 class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointItem> {
     private final ArrayList<WaypointItem> waypoints;
     private ArrayList<?> waypointsFiltered;
     final GuiWaypoints parentGui;
     private String filterString = "";
-    static final Component TOOLTIP_ENABLE = Component.translatable("minimap.waypoints.enabletooltip");
-    static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disabletooltip");
-    static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlighttooltip");
-    static final Component TOOLTIP_HIGHLIGHT_REMOVE = Component.translatable("minimap.waypoints.removehighlighttooltip");
+    static final Component TOOLTIP_ENABLE = Component.translatable("minimap.waypoints.enableTooltip");
+    static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disableTooltip");
+    static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlightTooltip");
+    static final Component TOOLTIP_HIGHLIGHT_REMOVE = Component.translatable("minimap.waypoints.removeHighlightTooltip");
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     protected long lastClicked;

@@ -326,7 +326,7 @@ public class Map implements Runnable, IChangeObserver {
 
     public void newWorldName() {
         String subworldName = this.waypointManager.getCurrentSubworldDescriptor(true);
-        StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18n.get("worldmap.multiworld.newworld")).append(":").append(" ");
+        StringBuilder subworldNameBuilder = (new StringBuilder("§r")).append(I18n.get("worldmap.multiworld.newWorld")).append(":").append(" ");
         if (subworldName.isEmpty() && this.waypointManager.isMultiworld()) {
             subworldNameBuilder.append("???");
         } else if (!subworldName.isEmpty()) {
@@ -416,15 +416,15 @@ public class Map implements Runnable, IChangeObserver {
         if (minecraft.screen == null && this.options.keyBindFullscreen.consumeClick()) {
             this.fullscreenMap = !this.fullscreenMap;
             if (this.zoom == 4) {
-                this.error = I18n.get("minimap.ui.zoomlevel") + " (0.25x)";
+                this.error = I18n.get("minimap.ui.zoomLevel") + " (0.25x)";
             } else if (this.zoom == 3) {
-                this.error = I18n.get("minimap.ui.zoomlevel") + " (0.5x)";
+                this.error = I18n.get("minimap.ui.zoomLevel") + " (0.5x)";
             } else if (this.zoom == 2) {
-                this.error = I18n.get("minimap.ui.zoomlevel") + " (1.0x)";
+                this.error = I18n.get("minimap.ui.zoomLevel") + " (1.0x)";
             } else if (this.zoom == 1) {
-                this.error = I18n.get("minimap.ui.zoomlevel") + " (2.0x)";
+                this.error = I18n.get("minimap.ui.zoomLevel") + " (2.0x)";
             } else {
-                this.error = I18n.get("minimap.ui.zoomlevel") + " (4.0x)";
+                this.error = I18n.get("minimap.ui.zoomLevel") + " (4.0x)";
             }
         }
 
@@ -507,19 +507,19 @@ public class Map implements Runnable, IChangeObserver {
     private void cycleZoomLevel() {
         if (this.options.zoom == 4) {
             this.options.zoom = 3;
-            this.error = I18n.get("minimap.ui.zoomlevel") + " (0.5x)";
+            this.error = I18n.get("minimap.ui.zoomLevel") + " (0.5x)";
         } else if (this.options.zoom == 3) {
             this.options.zoom = 2;
-            this.error = I18n.get("minimap.ui.zoomlevel") + " (1.0x)";
+            this.error = I18n.get("minimap.ui.zoomLevel") + " (1.0x)";
         } else if (this.options.zoom == 2) {
             this.options.zoom = 1;
-            this.error = I18n.get("minimap.ui.zoomlevel") + " (2.0x)";
+            this.error = I18n.get("minimap.ui.zoomLevel") + " (2.0x)";
         } else if (this.options.zoom == 1) {
             this.options.zoom = 0;
-            this.error = I18n.get("minimap.ui.zoomlevel") + " (4.0x)";
+            this.error = I18n.get("minimap.ui.zoomLevel") + " (4.0x)";
         } else if (this.options.zoom == 0) {
             this.options.zoom = 4;
-            this.error = I18n.get("minimap.ui.zoomlevel") + " (0.25x)";
+            this.error = I18n.get("minimap.ui.zoomLevel") + " (0.25x)";
         }
 
         this.options.saveAll();

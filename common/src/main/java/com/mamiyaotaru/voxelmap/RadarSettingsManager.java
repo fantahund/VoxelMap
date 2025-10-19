@@ -136,10 +136,10 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {
         if (Objects.requireNonNull(par1EnumOptions) == EnumOptionsMinimap.RADAR_MODE) {
             if (this.radarMode == 2) {
-                return I18n.get("options.minimap.radar.radarmode.full");
+                return I18n.get("options.minimap.radar.radarMode.full");
             }
 
-            return I18n.get("options.minimap.radar.radarmode.simple");
+            return I18n.get("options.minimap.radar.radarMode.simple");
         }
         throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
     }

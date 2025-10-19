@@ -52,7 +52,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
-import org.joml.Matrix3x2fStack;
 import org.lwjgl.glfw.GLFW;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
@@ -974,14 +973,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             entries.add(entry);
             entry = new Popup.PopupEntry(I18n.get("selectServer.delete"), 5, true, true);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.get(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, true);
+            entry = new Popup.PopupEntry(I18n.get(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, true);
         } else {
-            entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newwaypoint"), 0, true, VoxelMap.mapOptions.waypointsAllowed);
+            entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newWaypoint"), 0, true, VoxelMap.mapOptions.waypointsAllowed);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.get(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removehighlight"), 1, true, VoxelMap.mapOptions.waypointsAllowed);
+            entry = new Popup.PopupEntry(I18n.get(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, VoxelMap.mapOptions.waypointsAllowed);
         }
         entries.add(entry);
-        entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.teleportto"), 3, true, true);
+        entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.teleportTo"), 3, true, true);
         entries.add(entry);
         entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.share"), 2, true, true);
         entries.add(entry);
@@ -1115,7 +1114,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (hovered != null) {
                     this.deleteClicked = true;
                     this.selectedWaypoint = hovered;
-                    Component title = Component.translatable("minimap.waypoints.deleteconfirm");
+                    Component title = Component.translatable("minimap.waypoints.deleteConfirm");
                     Component explanation = Component.translatable("selectServer.deleteWarning", this.selectedWaypoint.name);
                     Component affirm = Component.translatable("selectServer.deleteButton");
                     Component deny = Component.translatable("gui.cancel");

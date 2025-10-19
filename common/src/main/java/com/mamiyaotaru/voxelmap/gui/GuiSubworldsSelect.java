@@ -56,7 +56,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     public void init() {
         ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
-            ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isthismultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
+            ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isThisMultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
             VoxelConstants.getMinecraft().setScreen(confirmScreen);
         } else {
             VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
@@ -102,7 +102,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         int numButtons = selectButtons.length - 1;
         int i = (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth;
         if (!this.newWorld) {
-            selectButtons[numButtons] = new Button.Builder(Component.literal("< " + I18n.get("worldmap.multiworld.newname") + " >"), button -> {
+            selectButtons[numButtons] = new Button.Builder(Component.literal("< " + I18n.get("worldmap.multiworld.newName") + " >"), button -> {
                 this.newWorld = true;
                 this.newNameField.setFocused(true);
             }).bounds(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20).build();

@@ -15,7 +15,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final Screen parent;
     private final PersistentMapSettingsManager options;
     private final Component screenTitle = Component.translatable("options.worldmap.title");
-    private final Component cacheSettings = Component.translatable("options.worldmap.cachesettings");
+    private final Component cacheSettings = Component.translatable("options.worldmap.cacheSettings");
     private final Component warning = Component.translatable("options.worldmap.warning");
 
     public GuiPersistentMapOptions(Screen parent) {

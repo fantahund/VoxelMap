@@ -91,13 +91,13 @@ public class MapSettingsManager implements ISettingsManager {
         KeyMapping.Category category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("voxelmap", "controls.title"));
 
         keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), category);
-        keyBindFullscreen = new KeyMapping("key.minimap.togglefullscreen", InputConstants.getKey("key.keyboard.x").getValue(), category);
-        keyBindMenu = new KeyMapping("key.minimap.voxelmapmenu", InputConstants.getKey("key.keyboard.m").getValue(), category);
-        keyBindWaypointMenu = new KeyMapping("key.minimap.waypointmenu", InputConstants.getKey("key.keyboard.u").getValue(), category);
-        keyBindWaypoint = new KeyMapping("key.minimap.waypointhotkey", InputConstants.getKey("key.keyboard.n").getValue(), category);
-        keyBindMobToggle = new KeyMapping("key.minimap.togglemobs", -1, category);
-        keyBindWaypointToggle = new KeyMapping("key.minimap.toggleingamewaypoints", -1, category);
-        keyBindMinimapToggle = new KeyMapping("key.minimap.toggleminimap", InputConstants.getKey("key.keyboard.o").getValue(), category);
+        keyBindFullscreen = new KeyMapping("key.minimap.toggleFullscreen", InputConstants.getKey("key.keyboard.x").getValue(), category);
+        keyBindMenu = new KeyMapping("key.minimap.voxelmapMenu", InputConstants.getKey("key.keyboard.m").getValue(), category);
+        keyBindWaypointMenu = new KeyMapping("key.minimap.waypointMenu", InputConstants.getKey("key.keyboard.u").getValue(), category);
+        keyBindWaypoint = new KeyMapping("key.minimap.waypointHotkey", InputConstants.getKey("key.keyboard.n").getValue(), category);
+        keyBindMobToggle = new KeyMapping("key.minimap.toggleMobs", -1, category);
+        keyBindWaypointToggle = new KeyMapping("key.minimap.toggleInGameWaypoints", -1, category);
+        keyBindMinimapToggle = new KeyMapping("key.minimap.toggleMinimap", InputConstants.getKey("key.keyboard.o").getValue(), category);
 
         this.keyBindings = new KeyMapping[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle, this.keyBindMinimapToggle};
     }
@@ -321,24 +321,24 @@ public class MapSettingsManager implements ISettingsManager {
             }
             case IN_GAME_WAYPOINTS -> {
                 if (this.waypointsAllowed && this.showBeacons && this.showWaypoints) {
-                    return I18n.get("options.minimap.ingamewaypoints.both");
+                    return I18n.get("options.minimap.inGameWaypoints.both");
                 } else if (this.waypointsAllowed && this.showBeacons) {
-                    return I18n.get("options.minimap.ingamewaypoints.beacons");
+                    return I18n.get("options.minimap.inGameWaypoints.beacons");
                 } else if (this.waypointsAllowed && this.showWaypoints) {
-                    return I18n.get("options.minimap.ingamewaypoints.signs");
+                    return I18n.get("options.minimap.inGameWaypoints.signs");
                 }
                 return I18n.get("options.off");
             }
             case LOCATION -> {
                 if (this.mapCorner == 0) {
-                    return I18n.get("options.minimap.location.topleft");
+                    return I18n.get("options.minimap.location.topLeft");
                 } else if (this.mapCorner == 1) {
-                    return I18n.get("options.minimap.location.topright");
+                    return I18n.get("options.minimap.location.topRight");
                 } else if (this.mapCorner == 2) {
-                    return I18n.get("options.minimap.location.bottomright");
+                    return I18n.get("options.minimap.location.bottomRight");
                 } else {
                     if (this.mapCorner == 3) {
-                        return I18n.get("options.minimap.location.bottomleft");
+                        return I18n.get("options.minimap.location.bottomLeft");
                     }
 
                     return "Error";
@@ -367,10 +367,10 @@ public class MapSettingsManager implements ISettingsManager {
                 if (this.biomeOverlay == 0) {
                     return I18n.get("options.off");
                 } else if (this.biomeOverlay == 1) {
-                    return I18n.get("options.minimap.biomeoverlay.solid");
+                    return I18n.get("options.minimap.biomeOverlay.solid");
                 } else {
                     if (this.biomeOverlay == 2) {
-                        return I18n.get("options.minimap.biomeoverlay.transparent");
+                        return I18n.get("options.minimap.biomeOverlay.transparent");
                     }
 
                     return "error";
@@ -380,7 +380,7 @@ public class MapSettingsManager implements ISettingsManager {
                 if (this.deathpoints == 0) {
                     return I18n.get("options.off");
                 } else if (this.deathpoints == 1) {
-                    return I18n.get("options.minimap.waypoints.deathpoints.mostrecent");
+                    return I18n.get("options.minimap.waypoints.deathpoints.mostRecent");
                 } else {
                     if (this.deathpoints == 2) {
                         return I18n.get("options.minimap.waypoints.deathpoints.all");
@@ -550,7 +550,7 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public String getKeyBindingDescription(int keybindIndex) {
-        return this.keyBindings[keybindIndex].getName().equals("key.minimap.voxelmapmenu") ? I18n.get("key.minimap.menu") : I18n.get(this.keyBindings[keybindIndex].getName());
+        return this.keyBindings[keybindIndex].getName().equals("key.minimap.voxelmapMenu") ? I18n.get("key.minimap.menu") : I18n.get(this.keyBindings[keybindIndex].getName());
     }
 
     public Component getKeybindDisplayString(int keybindIndex) {

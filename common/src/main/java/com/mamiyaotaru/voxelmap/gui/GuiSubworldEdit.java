@@ -69,7 +69,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
 
     private void deleteClicked() {
         this.deleteClicked = true;
-        Component title = Component.translatable("worldmap.subworld.deleteconfirm");
+        Component title = Component.translatable("worldmap.subworld.deleteConfirm");
         Component explanation = Component.translatable("selectServer.deleteWarning", this.originalSubworldName);
         Component affirm = Component.translatable("selectServer.deleteButton");
         Component deny = Component.translatable("gui.cancel");
