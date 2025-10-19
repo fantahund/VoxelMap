@@ -1,13 +1,9 @@
 {
-  "﻿minimap.ui.welcome1": "Vedligeholdelse af MamiyaOtaru",
+  "minimap.ui.welcome1": "Vedligeholdelse af %s",
   "minimap.ui.welcome2": "Oversat af Xyoin",
   "minimap.ui.welcome3": "Velkommen til VoxelMap, der er et",
   "minimap.ui.welcome4": "antal af features og commands tilgængelig.",
-  "minimap.ui.welcome5a": "Zoom ind/ud",
-  "minimap.ui.welcome5b": "Indstillinger",
-  "minimap.ui.welcome6": "Sæt full screen map til/fra.",
-  "minimap.ui.welcome7": "Tilføj et hurtigt vejpunkt.",
-  "minimap.ui.welcome8": "Skjul denne besked",
+  "minimap.ui.welcome5": "Skjul denne besked",
   "minimap.ui.zoomLevel": "Zoom Niveau:",
   "minimap.ui.otherOptions": "Andre Indstillinger",
   "options.minimap.title": "Minimap Indstillinger",
@@ -95,8 +91,8 @@
   "minimap.waypoints.applicableDimensions": "Dimensioner hvor dine vejpunkter vil blive vist",
   "minimap.waypoints.dimension.applies": "Synlig i denne dimension",
   "minimap.waypoints.dimension.notApplies": "Ikke synlig i denne dimension",
-  "minimap.general.name": "Navn",
-  "minimap.general.distance": "Distance",
-  "minimap.general.created": "Skabt",
-  "minimap.general.color": "Farve"
+  "minimap.waypoints.sortByName": "Navn",
+  "minimap.waypoints.sortByDistance": "Distance",
+  "minimap.waypoints.sortByCreated": "Skabt",
+  "minimap.waypoints.sortByColor": "Farve"
 }
