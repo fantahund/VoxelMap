@@ -63,10 +63,4 @@ public class GuiScreenMinimap extends Screen {
 
         return super.keyPressed(keyEvent);
     }
-
-    @Override
-    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        this.renderBlurredBackground(context);
-        this.renderMenuBackground(context);
-    }
 }
