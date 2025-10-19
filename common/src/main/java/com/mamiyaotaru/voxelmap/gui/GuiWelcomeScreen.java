@@ -97,7 +97,8 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         }
 
         // Title Box
-        this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop - 3, 5, 1, boxColor);
+        boxWidth = getFont().width(this.welcomeTexts.getFirst());
+        this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop - 3, 4, 1, boxColor);
         guiGraphics.drawCenteredString(getFont(), this.welcomeTexts.getFirst(), centerX, boxTop - lineHeight - 3, 0xFFFFFFFF);
 
         boxTop += lineHeight * this.welcomeTexts.size();
