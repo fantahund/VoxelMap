@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Maintained by MamiyaOtaru",
+  "minimap.ui.welcome1": "Maintained by MamiyaOtaru",
   "minimap.ui.welcome2": "Translated by: LuffyMonkie\t",
   "minimap.ui.welcome3": "Chào mừng tới VoxelMap, đây là ",
   "minimap.ui.welcome4": "một số tính năng và câu lệnh có sẵn cho bạn.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Tùy chọn Radar",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Hiển thị quái vật",
+  "options.minimap.radar.showMobs.showHostiles": "Hiển thị quái vật",
+  "options.minimap.radar.showMobs.showNeutrals": "Hiển thị động vật",
   "options.minimap.radar.showPlayers": "Hiển thị người chơi",
-  "options.minimap.radar.showNeutrals": "Hiển thị động vật",
   "options.minimap.radar.iconOutlines": "Viền ngoài biểu tượng",
   "options.minimap.radar.iconFiltering": "Lọc biểu tưởng",
   "options.minimap.radar.showPlayerHelmets": "Hiển thị giáp người chơi",

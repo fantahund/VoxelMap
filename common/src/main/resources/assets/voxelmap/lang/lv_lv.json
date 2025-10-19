@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Izveidoja: MamiyaOtaru ",
+  "minimap.ui.welcome1": "Izveidoja: MamiyaOtaru ",
   "minimap.ui.welcome2": "Pārtulkoja: Niknais007 ",
   "minimap.ui.welcome3": "Apsveicu Tevi ar VoxelMap ieinstalēšanu, šīs ir  ",
   "minimap.ui.welcome4": "tev pieejamas komandas. ",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radars... ",
   "options.minimap.radar.title": "Radara Uzstādījumi ",
   "options.minimap.radar.showRadar": "Radars ",
-  "options.minimap.radar.showHostiles": "Rādīt agresīvos ",
+  "options.minimap.radar.showMobs.showHostiles": "Rādīt agresīvos ",
+  "options.minimap.radar.showMobs.showNeutrals": "Rādīt neitrālos ",
   "options.minimap.radar.showPlayers": "Rādīt citus spēlētājus ",
-  "options.minimap.radar.showNeutrals": "Rādīt neitrālos ",
   "options.minimap.radar.iconOutlines": "Ikonu ārlīnijas ",
   "options.minimap.radar.iconFiltering": "Ikonu filtrēšana ",
   "options.minimap.radar.showPlayerNames": "Rādīt spēlētāju vārdus ",

@@ -8,11 +8,10 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.Objects;
 
 public class GuiWaypointsOptions extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
@@ -48,6 +47,12 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
                 this.addRenderableWidget(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, value, this.options));
             } else {
                 GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Component.literal(this.options.getKeyText(option)), this::optionClicked);
+
+                switch (option) {
+                    case DEATHPOINTS -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.deathpoints.tooltip")));
+                    case DISTANCE_UNIT_CONVERSION -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.distanceUnitConversion.tooltip")));
+                }
+
                 this.addRenderableWidget(optionButton);
             }
 
@@ -90,26 +95,6 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         drawContext.drawCenteredString(this.font, this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
-
-        Component tooltip = null;
-
-        for (GuiEventListener item : children()) {
-            if (!(item instanceof GuiOptionButtonMinimap button)) {
-                continue;
-            }
-            if (!button.isHovered()) {
-                continue;
-            }
-            switch (button.returnEnumOptions()) {
-                case DEATHPOINTS -> tooltip = Component.translatable("options.minimap.waypoints.deathpoints.tooltip");
-                case DISTANCE_UNIT_CONVERSION -> tooltip = Component.translatable("options.minimap.waypoints.distanceUnitConversion.tooltip");
-            }
-        }
-
-        if (tooltip != null) {
-            this.renderTooltip(drawContext, tooltip, mouseX, mouseY);
-        }
-
 
         super.render(drawContext, mouseX, mouseY, delta);
     }

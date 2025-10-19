@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Mentinut de MamiyaOtaru",
+  "minimap.ui.welcome1": "Mentinut de MamiyaOtaru",
   "minimap.ui.welcome2": "Tradus de : DreamersRO",
   "minimap.ui.welcome3": "Bine ai venit pe VoxelMap, aici sunt",
   "minimap.ui.welcome4": "multe facilitati si comenzi pentru tine.",
@@ -34,9 +34,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Optiunile Radarului",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Arata Inamicii",
+  "options.minimap.radar.showMobs.showHostiles": "Arata Inamicii",
+  "options.minimap.radar.showMobs.showNeutrals": "Arata Neutralii",
   "options.minimap.radar.showPlayers": "Arata Jucatorii",
-  "options.minimap.radar.showNeutrals": "Arata Neutralii",
   "options.minimap.radar.iconOutlines": "Pictograma contururi",
   "options.minimap.radar.iconFiltering": "Pictograma de filtrare",
   "options.minimap.radar.showPlayerHelmets": "Arata Castile Jucatorilor",

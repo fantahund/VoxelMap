@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Поддръжка: MamiyaOtaru",
+  "minimap.ui.welcome1": "Поддръжка: MamiyaOtaru",
   "minimap.ui.welcome2": "Превод: f3n1xX",
   "minimap.ui.welcome3": "Добре Дошли във VoxelMap тук ",
   "minimap.ui.welcome4": "редица функции и команди, достъпни за Вас.",
@@ -34,9 +34,9 @@
   "options.minimap.radar": "Радар...",
   "options.minimap.radar.title": "Опции на радара",
   "options.minimap.radar.showRadar": "Радар",
-  "options.minimap.radar.showHostiles": "Показвай враговете (чудовища)",
+  "options.minimap.radar.showMobs.showHostiles": "Показвай враговете (чудовища)",
+  "options.minimap.radar.showMobs.showNeutrals": "Показвай неутралните (животни)",
   "options.minimap.radar.showPlayers": "Показвай хората",
-  "options.minimap.radar.showNeutrals": "Показвай неутралните (животни)",
   "options.minimap.radar.iconOutlines": "Очертаване на икони",
   "options.minimap.radar.iconFiltering": "Филтриране на икони",
   "options.minimap.radar.showPlayerHelmets": "Показвай хората",

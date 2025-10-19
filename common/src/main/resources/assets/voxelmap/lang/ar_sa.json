@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "تم تعديله من قبل MamiyaOtaru",
+  "minimap.ui.welcome1": "تم تعديله من قبل MamiyaOtaru",
   "minimap.ui.welcome2": "تمت الترجمة بواسطة xBCOLA",
   "minimap.ui.welcome3": "مرحبا بكم في VoxelMap، هناك",
   "minimap.ui.welcome4": "عدد من المميزات والأوامر المتوفرة لديك.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "رادار ...",
   "options.minimap.radar.title": "خيارات الرادار",
   "options.minimap.radar.showRadar": "رادار",
-  "options.minimap.radar.showHostiles": "مشاهدة المعادن",
+  "options.minimap.radar.showMobs.showHostiles": "مشاهدة المعادن",
+  "options.minimap.radar.showMobs.showNeutrals": "مشاهدة الحيوانات",
   "options.minimap.radar.showPlayers": "مشاهدة اللاعبين",
-  "options.minimap.radar.showNeutrals": "مشاهدة الحيوانات",
   "options.minimap.radar.iconOutlines": "خطوط الرموز عريضة",
   "options.minimap.radar.iconFiltering": "تصفية الرموز",
   "options.minimap.radar.showPlayerNames": "إظهار أسم اللاعب",

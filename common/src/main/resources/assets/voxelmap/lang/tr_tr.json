@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Yapimci: MamiyaOtaru",
+  "minimap.ui.welcome1": "Yapimci: MamiyaOtaru",
   "minimap.ui.welcome2": "Çeviren:iheartcookie, ",
   "minimap.ui.welcome3": "VoxelMap'a hoşgeldiniz, size uygun bazı",
   "minimap.ui.welcome4": "özellikler ve komutlar var.",
@@ -34,9 +34,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Radar Ayarları",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Saldırganları Göster",
+  "options.minimap.radar.showMobs.showHostiles": "Saldırganları Göster",
+  "options.minimap.radar.showMobs.showNeutrals": "Nötrleri Göster",
   "options.minimap.radar.showPlayers": "Oyuncuları Göster",
-  "options.minimap.radar.showNeutrals": "Nötrleri Göster",
   "options.minimap.radar.iconOutlines": "Simge Çerçevesi",
   "options.minimap.radar.iconFiltering": "Simge Filtreleme",
   "options.minimap.radar.showPlayerHelmets": "Oyuncu Kasklari Göster",

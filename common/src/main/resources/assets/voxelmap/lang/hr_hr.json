@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Održava MamiyaOtaru",
+  "minimap.ui.welcome1": "Održava MamiyaOtaru",
   "minimap.ui.welcome2": "Preveo: NuclearBanana",
   "minimap.ui.welcome3": "Dobrodošli u VoxelMap, postoji",
   "minimap.ui.welcome4": "veliki broj komandi koje su vam dostupne.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Podešavanje Radara",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Prikaži Neprijatelje",
+  "options.minimap.radar.showMobs.showHostiles": "Prikaži Neprijatelje",
+  "options.minimap.radar.showMobs.showNeutrals": "Prikaži Mirne",
   "options.minimap.radar.showPlayers": "Prikaži Igrače",
-  "options.minimap.radar.showNeutrals": "Prikaži Mirne",
   "options.minimap.radar.iconOutlines": "Nacrti Ikona",
   "options.minimap.radar.iconFiltering": "Filtriranje Ikona",
   "options.minimap.radar.showPlayerNames": "Prikaži Imena Igrača",

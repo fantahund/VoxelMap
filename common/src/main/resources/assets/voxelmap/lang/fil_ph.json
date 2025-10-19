@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Pinananatili ni MamiyaOtaru ",
+  "minimap.ui.welcome1": "Pinananatili ni MamiyaOtaru ",
   "minimap.ui.welcome2": "Tinagalog ni RedstonedPeaHD",
   "minimap.ui.welcome3": "Kamusta sa VoxelMap, mayroong mga",
   "minimap.ui.welcome4": "mga tampok at commands na magagamit mo.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radar... ",
   "options.minimap.radar.title": "Radar Options ",
   "options.minimap.radar.showRadar": "Radar ",
-  "options.minimap.radar.showHostiles": "Ipakita ang kaaway ",
+  "options.minimap.radar.showMobs.showHostiles": "Ipakita ang kaaway ",
+  "options.minimap.radar.showMobs.showNeutrals": "Ipakita ang niyutral",
   "options.minimap.radar.showPlayers": "Ipakita ang iba pang tao",
-  "options.minimap.radar.showNeutrals": "Ipakita ang niyutral",
   "options.minimap.radar.iconOutlines": "Icon Outlines ",
   "options.minimap.radar.iconFiltering": "Icon Filtering",
   "options.minimap.radar.showPlayerNames": "Ipakita ang mga pangalan ng tao",

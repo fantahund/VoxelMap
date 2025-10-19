@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Dikembangkan oleh MamiyaOtaru",
+  "minimap.ui.welcome1": "Dikembangkan oleh MamiyaOtaru",
   "minimap.ui.welcome2": "Diterjemahkan oleh Bobby Wibowo",
   "minimap.ui.welcome3": "Selamat datang di VoxelMap, ada beberapa",
   "minimap.ui.welcome4": "fitur dan perintah yang tersedia untuk anda.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Pengaturan Radar",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Tampilkan Mob Jahat",
+  "options.minimap.radar.showMobs.showHostiles": "Tampilkan Mob Jahat",
+  "options.minimap.radar.showMobs.showNeutrals": "Tampilkan Mob Netral",
   "options.minimap.radar.showPlayers": "Tampilkan Pemain",
-  "options.minimap.radar.showNeutrals": "Tampilkan Mob Netral",
   "options.minimap.radar.iconOutlines": "Garis Luar Ikon",
   "options.minimap.radar.iconFiltering": "Penyaringan Ikon",
   "options.minimap.radar.showPlayerNames": "Tampilkan Nama Pemain",

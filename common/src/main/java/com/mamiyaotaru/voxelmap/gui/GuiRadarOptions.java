@@ -7,13 +7,14 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiRadarOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] FULL_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE,  EnumOptionsMinimap.SHOW_NEUTRALS, EnumOptionsMinimap.SHOW_HOSTILES, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES};
-    private static final EnumOptionsMinimap[] SIMPLE_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_NEUTRALS, EnumOptionsMinimap.SHOW_HOSTILES, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING};
+    private static final EnumOptionsMinimap[] FULL_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE,  EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES};
+    private static final EnumOptionsMinimap[] SIMPLE_RELEVANT_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING};
 
     private final Screen parent;
     private final RadarSettingsManager options;
@@ -39,13 +40,19 @@ public class GuiRadarOptions extends GuiScreenMinimap {
             EnumOptionsMinimap option = relevantOptions[i];
             GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + i % 2 * 160, this.getHeight() / 6 + 24 * (i >> 1), option, Component.literal(options.getKeyText(option)), this::optionClicked);
 
+            // TODO: remove this code after radar helmet icon implementation
+            switch (option) {
+                case SHOW_MOB_HELMETS, SHOW_PLAYER_HELMETS -> optionButton.setTooltip(Tooltip.create(Component.translatable("minimap.ui.workInProgress")));
+            }
+            //
+
             addRenderableWidget(optionButton);
         }
 
         iterateButtonOptions();
 
         if (options.radarMode == 2) {
-            addRenderableWidget(new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, options))).bounds(getWidth() / 2 + 5, getHeight() / 6 + 120, 150, 20).build());
+            addRenderableWidget(new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, options))).bounds(getWidth() / 2 - 155, getHeight() / 6 + 135 - 6, 150, 20).build());
         }
 
         addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), x -> VoxelConstants.getMinecraft().setScreen(parent)).bounds(getWidth() / 2 - 100, getHeight() - 28, 200, 20).build());
@@ -81,27 +88,38 @@ public class GuiRadarOptions extends GuiScreenMinimap {
             if (!(element instanceof GuiOptionButtonMinimap button)) {
                 continue;
             }
+
             if (button.returnEnumOptions() != EnumOptionsMinimap.SHOW_RADAR) {
                 button.active = options.showRadar;
             }
 
             if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_PLAYERS) {
-                button.active = button.active && (options.radarAllowed || options.radarPlayersAllowed);
+                button.active = options.radarAllowed || options.radarPlayersAllowed;
                 continue;
             }
 
-            if (!(button.returnEnumOptions() != EnumOptionsMinimap.SHOW_NEUTRALS && button.returnEnumOptions() != EnumOptionsMinimap.SHOW_HOSTILES)) {
-                button.active = button.active && (options.radarAllowed || options.radarMobsAllowed);
+            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_MOBS) {
+                button.active = options.radarAllowed || options.radarMobsAllowed;
                 continue;
             }
 
-            if (!(button.returnEnumOptions() != EnumOptionsMinimap.SHOW_PLAYER_HELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOW_PLAYER_NAMES)) {
-                button.active = button.active && options.showPlayers && (options.radarAllowed || options.radarPlayersAllowed);
+            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_PLAYER_HELMETS || button.returnEnumOptions() == EnumOptionsMinimap.SHOW_PLAYER_NAMES) {
+                button.active = options.showPlayers && (options.radarAllowed || options.radarPlayersAllowed);
+                // TODO: remove this code after radar helmet icon implementation
+                if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_PLAYER_HELMETS) {
+                    button.active = false;
+                }
+                //
                 continue;
             }
 
-            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_MOB_HELMETS && button.returnEnumOptions() != EnumOptionsMinimap.SHOW_MOB_NAMES) {
-                button.active = button.active && (options.showNeutrals || options.showHostiles) && (options.radarAllowed || options.radarMobsAllowed);
+            if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_MOB_HELMETS || button.returnEnumOptions() == EnumOptionsMinimap.SHOW_MOB_NAMES) {
+                button.active = (options.showNeutrals || options.showHostiles) && (options.radarAllowed || options.radarMobsAllowed);
+                // TODO: remove this code after radar helmet icon implementation
+                if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_MOB_HELMETS) {
+                    button.active = false;
+                }
+                //
             }
         }
     }

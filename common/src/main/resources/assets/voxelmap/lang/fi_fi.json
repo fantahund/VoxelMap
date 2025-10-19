@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Ylläpitäjänä MamiyaOtaru",
+  "minimap.ui.welcome1": "Ylläpitäjänä MamiyaOtaru",
   "minimap.ui.welcome2": "Kääntäjä: Featherweight -45",
   "minimap.ui.welcome3": "Tervetuloa VoxelMapiin, jossa on",
   "minimap.ui.welcome4": "monia toimintoja ja komentoja sinun käytössäsi.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Tutka...",
   "options.minimap.radar.title": "Tutkan asetukset",
   "options.minimap.radar.showRadar": "Tutka",
-  "options.minimap.radar.showHostiles": "Näytä viholliset",
+  "options.minimap.radar.showMobs.showHostiles": "Näytä viholliset",
+  "options.minimap.radar.showMobs.showNeutrals": "Näytä neutraalit",
   "options.minimap.radar.showPlayers": "Näytä pelaajat",
-  "options.minimap.radar.showNeutrals": "Näytä neutraalit",
   "options.minimap.radar.iconOutlines": "Ikoni-rajaus",
   "options.minimap.radar.iconFiltering": "Ikoni-filtterointi",
   "options.minimap.radar.showPlayerNames": "Näytä pelaajien nimet",

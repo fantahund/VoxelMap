@@ -34,9 +34,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Opções de Radar",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Mostrar Hostís",
+  "options.minimap.radar.showMobs.showHostiles": "Mostrar Hostís",
+  "options.minimap.radar.showMobs.showNeutrals": "Mostar Neutros",
   "options.minimap.radar.showPlayers": "Mostrar Jogadores",
-  "options.minimap.radar.showNeutrals": "Mostar Neutros",
   "options.minimap.radar.iconOutlines": "Contorno de ícone",
   "options.minimap.radar.iconFiltering": "Filtragem de ícone",
   "options.minimap.radar.showPlayerHelmets": "Mostar elmos de jogadores",
@@ -83,6 +83,6 @@
   "minimap.waypoints.enableTooltip": "Habilitar Waypoint ",
   "minimap.waypoints.disableTooltip": "Desabilitar Waypoint",
   "minimap.waypoints.applicableDimensions": "Dimensões onde o waypoint será visível",
-  "inimap.waypoints.dimension.applies": "Visível nesta dimensão",
+  "minimap.waypoints.dimension.applies": "Visível nesta dimensão",
   "minimap.waypoints.dimension.notApplies": "Oculto nesta dimensão"
 }

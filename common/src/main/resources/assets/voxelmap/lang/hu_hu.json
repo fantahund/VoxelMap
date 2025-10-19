@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Karbantartó: MamiyaOtaru",
+  "minimap.ui.welcome1": "Karbantartó: MamiyaOtaru",
   "minimap.ui.welcome2": "Fordította: waltzer",
   "minimap.ui.welcome3": "Üdvözlet a VoxelMap-ban, ahol",
   "minimap.ui.welcome4": "számos funkciót és parancsot érhetsz el.",
@@ -34,9 +34,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Radar beállítások\"",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Ellenség mutatása",
+  "options.minimap.radar.showMobs.showHostiles": "Ellenség mutatása",
+  "options.minimap.radar.showMobs.showNeutrals": "Semlegesek mutatása",
   "options.minimap.radar.showPlayers": "Játékosok mutatása",
-  "options.minimap.radar.showNeutrals": "Semlegesek mutatása",
   "options.minimap.radar.iconOutlines": "Ikon körvonal",
   "options.minimap.radar.iconFiltering": "Ikon szűrés",
   "options.minimap.radar.showPlayerHelmets": "Játékos páncélzat mutatása",

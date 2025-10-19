@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Drives av MamiyaOtaru",
+  "minimap.ui.welcome1": "Drives av MamiyaOtaru",
   "minimap.ui.welcome2": "Oversatt av: tynnoel99",
   "minimap.ui.welcome3": "Velkommen til Zan's Minimap, det finnes",
   "minimap.ui.welcome4": "mange funksjoner og kommandoer du kan bruke.",
@@ -34,9 +34,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Radarvalg",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Vis Fiender",
+  "options.minimap.radar.showMobs.showHostiles": "Vis Fiender",
+  "options.minimap.radar.showMobs.showNeutrals": "Vis Nøytrale",
   "options.minimap.radar.showPlayers": "Vis Spillere",
-  "options.minimap.radar.showNeutrals": "Vis Nøytrale",
   "options.minimap.radar.iconOutlines": "Ikonkanter",
   "options.minimap.radar.iconFiltering": "Ikonfiltrering",
   "options.minimap.radar.showPlayerHelmets": "Vis Spillerenes Hjelmer",

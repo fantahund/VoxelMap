@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,7 +17,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final PersistentMapSettingsManager options;
     private final Component screenTitle = Component.translatable("options.worldmap.title");
     private final Component cacheSettings = Component.translatable("options.worldmap.cacheSettings");
-    private final Component warning = Component.translatable("options.worldmap.warning");
+    private final Component warning = Component.translatable("options.worldmap.warning").withStyle(ChatFormatting.RED);
 
     public GuiPersistentMapOptions(Screen parent) {
         this.parent = parent;

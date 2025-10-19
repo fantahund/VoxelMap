@@ -39,7 +39,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         super.render(guiGraphics, mouseX, mouseY, delta);
         guiGraphics.drawCenteredString(this.getFont(), I18n.get("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() - 64, 0xFFFFFFFF);
-        guiGraphics.drawCenteredString(this.getFont(), I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() - 48, 0xFFFFFFFF);
+        guiGraphics.drawCenteredString(this.getFont(), "§e" + I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() - 48, 0xFFFFFFFF);
         guiGraphics.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
     }
 }

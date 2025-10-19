@@ -3,26 +3,26 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mojang.serialization.DataResult;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Objects;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashSet;
+
 public class RadarSettingsManager implements ISubSettingsManager {
     private boolean somethingChanged;
     public int radarMode = 2;
     public boolean showRadar = true;
     public boolean showHostiles = true;
-    public boolean showPlayers = true;
     public boolean showNeutrals;
+    public boolean showPlayers = true;
     public boolean showPlayerNames = true;
     public boolean showMobNames = true;
     public boolean outlines = true;
@@ -49,8 +49,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     case "Radar Mode" -> this.radarMode = Math.max(1, Math.min(2, Integer.parseInt(curLine[1])));
                     case "Show Radar" -> this.showRadar = Boolean.parseBoolean(curLine[1]);
                     case "Show Hostiles" -> this.showHostiles = Boolean.parseBoolean(curLine[1]);
-                    case "Show Players" -> this.showPlayers = Boolean.parseBoolean(curLine[1]);
                     case "Show Neutrals" -> this.showNeutrals = Boolean.parseBoolean(curLine[1]);
+                    case "Show Players" -> this.showPlayers = Boolean.parseBoolean(curLine[1]);
                     case "Filter Mob Icons" -> this.filtering = Boolean.parseBoolean(curLine[1]);
                     case "Outline Mob Icons" -> this.outlines = Boolean.parseBoolean(curLine[1]);
                     case "Show Player Helmets" -> this.showHelmetsPlayers = Boolean.parseBoolean(curLine[1]);
@@ -86,8 +86,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Radar Mode:" + this.radarMode);
         out.println("Show Radar:" + this.showRadar);
         out.println("Show Hostiles:" + this.showHostiles);
-        out.println("Show Players:" + this.showPlayers);
         out.println("Show Neutrals:" + this.showNeutrals);
+        out.println("Show Players:" + this.showPlayers);
         out.println("Filter Mob Icons:" + this.filtering);
         out.println("Outline Mob Icons:" + this.outlines);
         out.println("Show Player Helmets:" + this.showHelmetsPlayers);
@@ -119,9 +119,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean getOptionBooleanValue(EnumOptionsMinimap par1EnumOptions) {
         return switch (par1EnumOptions) {
             case SHOW_RADAR -> this.showRadar;
-            case SHOW_HOSTILES -> this.showHostiles;
             case SHOW_PLAYERS -> this.showPlayers;
-            case SHOW_NEUTRALS -> this.showNeutrals;
             case SHOW_PLAYER_HELMETS -> this.showHelmetsPlayers;
             case SHOW_MOB_HELMETS -> this.showHelmetsMobs;
             case SHOW_PLAYER_NAMES -> this.showPlayerNames;
@@ -134,12 +132,25 @@ public class RadarSettingsManager implements ISubSettingsManager {
     }
 
     public String getOptionListValue(EnumOptionsMinimap par1EnumOptions) {
-        if (Objects.requireNonNull(par1EnumOptions) == EnumOptionsMinimap.RADAR_MODE) {
-            if (this.radarMode == 2) {
-                return I18n.get("options.minimap.radar.radarMode.full");
-            }
+        switch (par1EnumOptions) {
+            case RADAR_MODE -> {
+                if (this.radarMode == 2) {
+                    return I18n.get("options.minimap.radar.radarMode.full");
+                }
 
-            return I18n.get("options.minimap.radar.radarMode.simple");
+                return I18n.get("options.minimap.radar.radarMode.simple");
+            }
+            case SHOW_MOBS -> {
+                if (!this.showHostiles && !this.showNeutrals) {
+                    return I18n.get("options.off");
+                } else if (this.showHostiles && !this.showNeutrals) {
+                    return I18n.get("options.minimap.radar.showMobs.showHostiles");
+                } else if (!this.showHostiles) {
+                    return I18n.get("options.minimap.radar.showMobs.showNeutrals");
+                } else {
+                    return I18n.get("options.minimap.radar.showMobs.showAll");
+                }
+            }
         }
         throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
     }
@@ -151,9 +162,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public void setOptionValue(EnumOptionsMinimap par1EnumOptions) {
         switch (par1EnumOptions) {
             case SHOW_RADAR -> this.showRadar = !this.showRadar;
-            case SHOW_HOSTILES -> this.showHostiles = !this.showHostiles;
             case SHOW_PLAYERS -> this.showPlayers = !this.showPlayers;
-            case SHOW_NEUTRALS -> this.showNeutrals = !this.showNeutrals;
             case SHOW_PLAYER_HELMETS -> this.showHelmetsPlayers = !this.showHelmetsPlayers;
             case SHOW_MOB_HELMETS -> this.showHelmetsMobs = !this.showHelmetsMobs;
             case SHOW_PLAYER_NAMES -> this.showPlayerNames = !this.showPlayerNames;
@@ -166,6 +175,19 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     this.radarMode = 1;
                 } else {
                     this.radarMode = 2;
+                }
+            }
+            case SHOW_MOBS -> {
+                if (!this.showHostiles && !this.showNeutrals) {
+                    this.showHostiles = true;
+                } else if (this.showHostiles && !this.showNeutrals) {
+                    this.showHostiles = false;
+                    this.showNeutrals = true;
+                } else if (!this.showHostiles) {
+                    this.showHostiles = true;
+                } else {
+                    this.showHostiles = false;
+                    this.showNeutrals = false;
                 }
             }
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());

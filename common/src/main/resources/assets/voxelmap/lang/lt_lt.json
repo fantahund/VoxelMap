@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Sukurta: MamiyaOtaru",
+  "minimap.ui.welcome1": "Sukurta: MamiyaOtaru",
   "minimap.ui.welcome2": "Išversta: biwegas",
   "minimap.ui.welcome3": "Sveiki Atvyke į VoxelMap, cia yra",
   "minimap.ui.welcome4": "pilna funkciju ir komandu galimų tau.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radaras...",
   "options.minimap.radar.title": "Radaro Parinktys",
   "options.minimap.radar.showRadar": "Radaras",
-  "options.minimap.radar.showHostiles": "Rodyti Priešus",
+  "options.minimap.radar.showMobs.showHostiles": "Rodyti Priešus",
+  "options.minimap.radar.showMobs.showNeutrals": "Rodyti Neutralius",
   "options.minimap.radar.showPlayers": "Rodyti Žaidėjus",
-  "options.minimap.radar.showNeutrals": "Rodyti Neutralius",
   "options.minimap.radar.iconOutlines": "Paryškintos Ikonos",
   "options.minimap.radar.iconFiltering": "Ikonų Filtravimas",
   "options.minimap.radar.showPlayerHelmets": "Rodyti Žaidėjų kepures",

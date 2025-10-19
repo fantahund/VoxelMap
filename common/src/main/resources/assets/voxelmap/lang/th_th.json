@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "ดูแลโดย MamiyaOtaru ",
+  "minimap.ui.welcome1": "ดูแลโดย MamiyaOtaru ",
   "minimap.ui.welcome2": "แปลโดย: MLSTS, INC. (MATIT LEESATHAPRON)! ",
   "minimap.ui.welcome3": "ยินดีต้อนรับสู่ VoxelMap, ",
   "minimap.ui.welcome4": "มีฟีเจอร์และคำสั่งที่สามารถใช้ได้คือ",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "เรดาร์... ",
   "options.minimap.radar.title": "ตัวเลือกเรดาร์ ",
   "options.minimap.radar.showRadar": "เรดาร์ ",
-  "options.minimap.radar.showHostiles": "แสดงศัตรู ",
+  "options.minimap.radar.showMobs.showHostiles": "แสดงศัตรู ",
+  "options.minimap.radar.showMobs.showNeutrals": "แสดงสัตว์ ",
   "options.minimap.radar.showPlayers": "แสดงผู้เล่น ",
-  "options.minimap.radar.showNeutrals": "แสดงสัตว์ ",
   "options.minimap.radar.iconOutlines": "แสดงลายเส้นบนไอคอน ",
   "options.minimap.radar.iconFiltering": "กรองไอคอน",
   "options.minimap.radar.showPlayerNames": "แสดงชื่อของผู้เล่น ",

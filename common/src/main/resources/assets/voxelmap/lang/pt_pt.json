@@ -1,5 +1,5 @@
 {
-  "﻿minimap.ui.welcome1": "Mantido por MamiyaOtaru",
+  "minimap.ui.welcome1": "Mantido por MamiyaOtaru",
   "minimap.ui.welcome2": "Traduzido por: Sackboy3108 e i3lff",
   "minimap.ui.welcome3": "Bem vindo ao VoxelMap, existem",
   "minimap.ui.welcome4": "algumas opções e comandos disponí­veis para ti.",
@@ -35,9 +35,9 @@
   "options.minimap.radar": "Radar...",
   "options.minimap.radar.title": "Opções de Radar",
   "options.minimap.radar.showRadar": "Radar",
-  "options.minimap.radar.showHostiles": "Mostrar Hostis",
+  "options.minimap.radar.showMobs.showHostiles": "Mostrar Hostis",
+  "options.minimap.radar.showMobs.showNeutrals": "Mostar Neutros",
   "options.minimap.radar.showPlayers": "Mostrar Jogadores",
-  "options.minimap.radar.showNeutrals": "Mostar Neutros",
   "options.minimap.radar.iconOutlines": "Contornos de ícone",
   "options.minimap.radar.iconFiltering": "Filtragem de ícone",
   "options.minimap.radar.showPlayerNames": "Mostrar nomes de jogadores",
