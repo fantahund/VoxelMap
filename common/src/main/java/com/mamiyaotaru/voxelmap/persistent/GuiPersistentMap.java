@@ -25,13 +25,7 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -53,6 +47,12 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
 import org.lwjgl.glfw.GLFW;
+
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();
@@ -775,9 +775,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
 
-            // player head always
             float width = iconsWidth * 0.75F;
             float height = iconsHeight * 0.75F;
+
+            boolean hover = cursorCoordX >= playerX - width / 2 * guiToMap && cursorCoordX <= playerX + width / 2 * guiToMap && cursorCoordZ >= playerZ - height / 2 * guiToMap && cursorCoordZ <= playerZ + height / 2 * guiToMap;
+            if (hover) {
+                guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
+                renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
+            }
 
             int x = this.width / 2;
             int y = this.height / 2;
@@ -862,6 +867,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         String name = pt.name;
 
         boolean hover = pt.inWorld && pt.inDimension && cursorCoordX >= ptX - iconsWidth / 2 * guiToMap && cursorCoordX <= ptX + iconsWidth / 2 * guiToMap && cursorCoordZ >= ptZ - iconsHeight / 2 * guiToMap && cursorCoordZ <= ptZ + iconsHeight / 2 * guiToMap;
+        if (hover) {
+            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
+            renderTooltip(guiGraphics, Component.literal("X: " + pt.getX() + ", Y: " + pt.getY() + ", Z: " + pt.getZ()), this.mouseX, this.mouseY);
+        }
+
         boolean target = false;
         TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         if (icon == null) {

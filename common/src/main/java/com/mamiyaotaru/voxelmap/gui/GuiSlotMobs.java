@@ -4,8 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.MobCategory;
-import java.util.ArrayList;
-import java.util.Iterator;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,6 +18,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 
 class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
@@ -127,6 +129,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             if (mouseX >= getX() - padding && mouseY >= getY() && mouseX <= getX() + 215 + padding && mouseY <= getY() + GuiSlotMobs.this.defaultEntryHeight) {
                 Component tooltip;
                 if (mouseX >= getX() + 215 - 16 - padding && mouseX <= getX() + 215 + padding) {
+                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
                     tooltip = isEnabled ? GuiSlotMobs.TOOLTIP_DISABLE : GuiSlotMobs.TOOLTIP_ENABLE;
                 } else {
                     tooltip = isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED;

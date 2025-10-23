@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
-import java.util.ArrayList;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -12,6 +12,8 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+
+import java.util.ArrayList;
 
 class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.DimensionItem> {
     private static final Component APPLIES = Component.translatable("minimap.waypoints.dimension.applies");
@@ -102,6 +104,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             if (mouseX >= x + padding && mouseY >= getY() && mouseX <= x + width + padding && mouseY <= getY() + GuiSlotDimensions.this.defaultEntryHeight) {
                 Component tooltip;
                 if (!this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
+                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
                     tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES;
                 } else {
                     tooltip = null;

@@ -2,10 +2,12 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
-import java.util.ArrayList;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
+
+import java.util.ArrayList;
 
 public class Popup {
     private final Font fontRendererObj;
@@ -100,7 +102,11 @@ public class Popup {
 
 
         for (int t = 0; t < this.entries.length; ++t) {
-            int color = !this.entries[t].enabled ? 0xFFA0A0A0 : (mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY < this.y + (t + 1) * 20 ? 0xFFFFFFA0 : 0xFFE0E0E0);
+            boolean hover = mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY < this.y + (t + 1) * 20;
+            if (hover) {
+                guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
+            }
+            int color = !this.entries[t].enabled ? 0xFFA0A0A0 : (hover ? 0xFFFFFFA0 : 0xFFE0E0E0);
             guiGraphics.drawString(this.fontRendererObj, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);
         }
         guiGraphics.pose().popMatrix();

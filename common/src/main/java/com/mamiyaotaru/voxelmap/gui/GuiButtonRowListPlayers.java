@@ -2,12 +2,10 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.authlib.GameProfile;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.input.InputWithModifiers;
@@ -21,16 +19,20 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.entity.player.PlayerSkin;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Optional;
+
 public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowListPlayers.Row> {
     private final ArrayList<PlayerInfo> players;
     private ArrayList<PlayerInfo> playersFiltered;
     final GuiSelectPlayer parentGui;
     final Row everyoneRow;
-    static final Component ALL = Component.translatable("minimap.waypointShare.all");
-    static final Component TITLE = Component.translatable("minimap.waypointShare.shareWithEveryone");
-    static final Component EXPLANATION = Component.translatable("minimap.waypointShare.shareWithEveryone2");
-    static final Component AFFIRM = Component.translatable("gui.yes");
-    static final Component DENY = Component.translatable("gui.cancel");
+    static final Component EVERYONE = Component.translatable("minimap.waypointShare.all");
+    static final Component CONFIRM_TITLE = Component.translatable("minimap.waypointShare.shareWithEveryone");
+    static final Component CONFIRM_EXPLANATION = Component.translatable("minimap.waypointShare.shareWithEveryone2");
+    static final Component CONFIRM_AFFIRM = Component.translatable("gui.yes");
+    static final Component CONFIRM_DENY = Component.translatable("gui.cancel");
 
     public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
         super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight() - 65 + 4 - 89, 89, 25);
@@ -38,11 +40,12 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         ClientPacketListener netHandlerPlayClient = VoxelConstants.getPlayer().connection;
         this.players = new ArrayList<>(netHandlerPlayClient.getOnlinePlayers());
         this.sort();
-        Button everyoneButton = new Button(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, ALL, null, null) {
+        Button everyoneButton = new Button(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, EVERYONE, null, null) {
             @Override
             public void onPress(InputWithModifiers inputWithModifiers) {
             }
         };
+        everyoneButton.setTooltip(Tooltip.create(Component.translatable("minimap.waypointShare.shareWithName", EVERYONE)));
         this.everyoneRow = new Row(everyoneButton, -1);
         this.updateFilter("");
     }
@@ -56,8 +59,9 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             return null;
         } else {
             Component name = this.getPlayerName(ScoreboardEntry);
-            return new Button.Builder(name, button -> {
-            }).bounds(x, y, 150, 20).build();
+            Button btn = new Button.Builder(name, button -> {}).bounds(x, y, 150, 20).build();
+            btn.setTooltip(Tooltip.create(Component.translatable("minimap.waypointShare.shareWithName", name)));
+            return btn;
         }
     }
 
@@ -106,7 +110,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
     public void buttonClicked(int id) {
         if (id == -1) {
             this.parentGui.allClicked = true;
-            ConfirmScreen confirmScreen = new ConfirmScreen(this.parentGui, TITLE, EXPLANATION, AFFIRM, DENY);
+            ConfirmScreen confirmScreen = new ConfirmScreen(this.parentGui, CONFIRM_TITLE, CONFIRM_EXPLANATION, CONFIRM_AFFIRM, CONFIRM_DENY);
             this.minecraft.setScreen(confirmScreen);
         } else {
             PlayerInfo ScoreboardEntry = this.playersFiltered.get(id);
@@ -153,11 +157,6 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
                 button.render(drawContext, mouseX, mouseY, partialTicks);
                 if (id != -1) {
                     this.drawIconForButton(drawContext, button, id);
-                }
-
-                if (button.isHovered() && mouseY >= GuiButtonRowListPlayers.this.getY() && mouseY <= GuiButtonRowListPlayers.this.getBottom()) {
-                    Component tooltip = Component.translatable("minimap.waypointShare.shareWithName", button.getMessage());
-                    GuiSelectPlayer.setTooltip(GuiButtonRowListPlayers.this.parentGui, tooltip);
                 }
             }
 

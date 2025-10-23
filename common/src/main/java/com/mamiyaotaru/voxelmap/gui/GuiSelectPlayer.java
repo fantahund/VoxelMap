@@ -22,7 +22,6 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected boolean allClicked;
     protected EditBox message;
     protected EditBox filter;
-    private Component tooltip;
     private final String locInfo;
     static final MutableComponent SHARE_MESSAGE = (Component.translatable("minimap.waypointShare.shareMessage")).append(":");
     static final Component SHARE_WITH = Component.translatable("minimap.waypointShare.shareWith");
@@ -135,7 +134,6 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.tooltip = null;
         this.playerList.render(drawContext, mouseX, mouseY, delta);
         drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
@@ -144,14 +142,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         drawContext.drawCenteredString(this.getFont(), SHARE_WITH, this.getWidth() / 2, 75, 0xFFFFFFFF);
         drawContext.drawString(this.getFont(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 50, 0xFFA0A0A0);
         this.filter.render(drawContext, mouseX, mouseY, delta);
-        if (this.tooltip != null) {
-            this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);
-        }
 
-    }
-
-    static void setTooltip(GuiSelectPlayer par0GuiWaypoints, Component par1Str) {
-        par0GuiWaypoints.tooltip = par1Str;
     }
 
     @Override

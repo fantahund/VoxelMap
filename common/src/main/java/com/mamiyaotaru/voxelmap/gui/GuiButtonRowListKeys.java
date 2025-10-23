@@ -8,6 +8,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -151,9 +152,11 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
                             .append(keyText.copy().withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(" ]").withStyle(ChatFormatting.YELLOW));
 
-                    if (this.button.isHovered()) {
-                        tooltip = GuiButtonRowListKeys.this.duplicateKeys.get(this.keyMapping);
-                    }
+                    tooltip = GuiButtonRowListKeys.this.duplicateKeys.get(this.keyMapping);
+                }
+
+                if (tooltip != null) {
+                    this.button.setTooltip(Tooltip.create(tooltip));
                 }
 
                 this.button.setMessage(keyText);
@@ -165,10 +168,6 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
                 this.buttonReset.setX(getX() + getWidth() - 55);
                 this.buttonReset.setY(getY());
                 this.buttonReset.render(guiGraphics, mouseX, mouseY, tickDelta);
-
-                if (tooltip != null) {
-                    this.parentGui.renderTooltip(guiGraphics, tooltip, mouseX, mouseY);
-                }
             }
         }
 

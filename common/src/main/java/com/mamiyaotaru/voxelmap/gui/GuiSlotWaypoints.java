@@ -4,11 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -20,6 +16,11 @@ import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+
 class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointItem> {
     private final ArrayList<WaypointItem> waypoints;
     private ArrayList<?> waypointsFiltered;
@@ -28,7 +29,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     static final Component TOOLTIP_ENABLE = Component.translatable("minimap.waypoints.enableTooltip");
     static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disableTooltip");
     static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlightTooltip");
-    static final Component TOOLTIP_HIGHLIGHT_REMOVE = Component.translatable("minimap.waypoints.removeHighlightTooltip");
+    static final Component TOOLTIP_UNHIGHLIGHT = Component.translatable("minimap.waypoints.removeHighlightTooltip");
     final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
     final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
     protected long lastClicked;
@@ -155,9 +156,11 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + entryHeight) {
                 Component tooltip;
                 if (mouseX >= x + 215 - iconWidth - padding && mouseX <= x + 215 + padding) {
+                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
                     tooltip = this.waypoint.enabled ? GuiSlotWaypoints.TOOLTIP_DISABLE : GuiSlotWaypoints.TOOLTIP_ENABLE;
                 } else if (mouseX >= x + padding && mouseX <= x + iconWidth + padding) {
-                    tooltip = this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_HIGHLIGHT_REMOVE : TOOLTIP_HIGHLIGHT;
+                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
+                    tooltip = this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT;
                 } else {
                     String tooltipText = "X: " + this.waypoint.getX() + ", Y: " + this.waypoint.getY() + ", Z: " + this.waypoint.getZ();
 
