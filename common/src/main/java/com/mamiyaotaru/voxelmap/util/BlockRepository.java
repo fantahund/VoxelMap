@@ -1,11 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -13,6 +8,12 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlockRepository {
     public static Block air = Blocks.AIR;
@@ -49,10 +50,11 @@ public class BlockRepository {
     public static Block barrier;
     public static Block chorusPlant;
     public static Block chorusFlower;
+    public static Block leafLitter;
     public static HashSet<Block> biomeBlocks;
-    public static Block[] biomeBlocksArray = { grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water };
+    public static Block[] biomeBlocksArray;
     public static HashSet<Block> shapedBlocks;
-    public static Block[] shapedBlocksArray = { ladder, vine };
+    public static Block[] shapedBlocksArray;
     private static final ConcurrentHashMap<BlockState, Integer> stateToInt = new ConcurrentHashMap<>(1024);
     private static final ReferenceArrayList<BlockState> blockStates = new ReferenceArrayList<>(16384);
     private static int count = 1;
@@ -92,15 +94,19 @@ public class BlockRepository {
         barrier = Blocks.BARRIER;
         chorusPlant = Blocks.CHORUS_PLANT;
         chorusFlower = Blocks.CHORUS_FLOWER;
-        biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water};
+        leafLitter = Blocks.LEAF_LITTER;
+        biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water, leafLitter};
         biomeBlocks = new HashSet<>(Arrays.asList(biomeBlocksArray));
         shapedBlocksArray = new Block[]{ladder, vine};
         shapedBlocks = new HashSet<>(Arrays.asList(shapedBlocksArray));
 
         for (Block block : BuiltInRegistries.BLOCK) {
-            if (block instanceof DoorBlock || block instanceof SignBlock) {
-                shapedBlocks.add(block);
+            switch (block) {
+                case DoorBlock doorBlock -> shapedBlocks.add(block);
+                case SignBlock signBlock -> shapedBlocks.add(block);
+                default -> {}
             }
+
         }
 
     }

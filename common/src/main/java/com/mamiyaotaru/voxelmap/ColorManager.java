@@ -8,29 +8,6 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.awt.image.RasterFormatException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import javax.imageio.ImageIO;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -70,6 +47,30 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 
+import javax.imageio.ImageIO;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.RasterFormatException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 public class ColorManager {
     private boolean resourcePacksChanged;
     private ClientLevel world;
@@ -92,8 +93,10 @@ public class ColorManager {
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
     private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
     private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
+    private final ColorResolver mangroveColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_MANGROVE;
     private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColor(blockPos.getX(), blockPos.getZ());
     private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor();
+    private final ColorResolver dryFoliageColorResolver = (blockState, biomex, blockPos) -> biomex.getDryFoliageColor();
     private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
     private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
 
@@ -648,14 +651,20 @@ public class ColorManager {
             colorResolver = this.spruceColorResolver;
         } else if (block == BlockRepository.birchLeaves) {
             colorResolver = this.birchColorResolver;
-        } else if (block != BlockRepository.oakLeaves && block != BlockRepository.jungleLeaves && block != BlockRepository.acaciaLeaves && block != BlockRepository.darkOakLeaves && block != BlockRepository.mangroveLeaves && block != BlockRepository.vine) {
-            if (block == BlockRepository.redstone) {
+        } else if (block == BlockRepository.mangroveLeaves) {
+            colorResolver = this.mangroveColorResolver;
+        } else {
+            boolean isFoliage = block == BlockRepository.oakLeaves || block == BlockRepository.jungleLeaves  || block == BlockRepository.acaciaLeaves || block == BlockRepository.darkOakLeaves || block == BlockRepository.vine;
+            boolean isDryFoliage = block == BlockRepository.leafLitter;
+            if (isFoliage) {
+                colorResolver = this.foliageColorResolver;
+            } else if (isDryFoliage) {
+                colorResolver = this.dryFoliageColorResolver;
+            } else if (block == BlockRepository.redstone) {
                 colorResolver = this.redstoneColorResolver;
             } else if (BlockRepository.biomeBlocks.contains(block)) {
                 colorResolver = this.grassColorResolver;
             }
-        } else {
-            colorResolver = this.foliageColorResolver;
         }
 
         if (colorResolver != null) {
