@@ -8,7 +8,6 @@ import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MobCategory;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
-import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.RemotePlayer;
@@ -27,6 +26,8 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+
+import java.util.ArrayList;
 
 public class Radar implements IRadar {
     private final MapSettingsManager minimapOptions;
@@ -269,13 +270,13 @@ public class Radar implements IRadar {
 
                     if (contact.name != null && ((this.options.showPlayerNames && contact.category == MobCategory.PLAYER) || (this.options.showMobNames && contact.category != MobCategory.PLAYER && contact.entity.hasCustomName()))) {
 
-                        float scaleFactor = this.layoutVariables.scScale / this.options.fontScale;
-                        guiGraphics.pose().scale(1.0F / scaleFactor, 1.0F / scaleFactor);
+                        float scaleFactor = this.options.fontScale / 4.0F;
+                        guiGraphics.pose().scale( scaleFactor, scaleFactor);
 
                         int m = minecraft.font.width(contact.name) / 2;
 
                         guiGraphics.pose().pushMatrix();
-                        guiGraphics.drawString(minecraft.font, contact.name, (int) (x * scaleFactor - m), (int) ((y + 3) * scaleFactor), 0xFFFFFFFF, false);
+                        guiGraphics.drawString(minecraft.font, contact.name, (int) (x / scaleFactor - m), (int) ((y + 3) / scaleFactor), 0xFFFFFFFF, false);
                         guiGraphics.pose().popMatrix();
                     }
                 } catch (Exception e) {

@@ -654,7 +654,7 @@ public class Map implements Runnable, IChangeObserver {
             ++scScaleOrig;
         }
 
-        int scScale = scScaleOrig + (this.fullscreenMap ? 0 : this.options.sizeModifier);
+        int scScale = Math.max(1, scScaleOrig + (this.fullscreenMap ? 0 : this.options.sizeModifier));
         double scaledWidthD = (double) minecraft.getWindow().getWidth() / scScale;
         double scaledHeightD = (double) minecraft.getWindow().getHeight() / scScale;
         this.scWidth = Mth.ceil(scaledWidthD);
