@@ -29,3 +29,4 @@ accessible class net/minecraft/client/gui/GuiGraphics$ScissorStack
 accessible field net/minecraft/client/gui/GuiGraphics scissorStack Lnet/minecraft/client/gui/GuiGraphics$ScissorStack;
 
 accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFZ)Lorg/joml/Vector4f;
+accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
