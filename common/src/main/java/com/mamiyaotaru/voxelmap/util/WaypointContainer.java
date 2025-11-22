@@ -91,20 +91,28 @@ public class WaypointContainer {
             int i = 0;
             for (ExtendedWaypoint pt : this.wayPts) {
                 boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
-                if (pt.waypoint.isActive() || isHighlighted) {
-                    int x = pt.waypoint.getX();
-                    int z = pt.waypoint.getZ();
-                    int y = pt.waypoint.getY();
-                    double distance = Math.sqrt(pt.waypoint.getDistanceSqToCamera(camera));
-                    if ((distance < this.options.maxWaypointDisplayDistance || this.options.maxWaypointDisplayDistance < 0 || isHighlighted)) {
-                        double offset = getCenterOffset(pt.waypoint, distance, camera);
-                        boolean isPointedAt = offset != -1.0 && (shiftDown || i == last);
-                        this.renderLabel(poseStack, bufferSource, pt.waypoint, distance, isPointedAt, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
-                        pt.offset = offset;
-                        pt.target = isHighlighted;
-                    }
+                if (!pt.waypoint.isActive() && !isHighlighted) {
+                    i++;
+                    continue;
                 }
-                ++i;
+
+                int x = pt.waypoint.getX();
+                int z = pt.waypoint.getZ();
+                int y = pt.waypoint.getY();
+                double distance = Math.sqrt(pt.waypoint.getDistanceSqToCamera(camera));
+
+                if (distance >= this.options.maxWaypointDisplayDistance && this.options.maxWaypointDisplayDistance >= 0 && !isHighlighted) {
+                    i++;
+                    continue;
+                }
+
+                double offset = getCenterOffset(pt.waypoint, distance, camera);
+                boolean isPointedAt = offset != -1.0 && (shiftDown || i == last);
+                this.renderLabel(poseStack, bufferSource, pt.waypoint, distance, isPointedAt, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+                pt.offset = offset;
+                pt.target = isHighlighted;
+
+                i++;
             }
 
             if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hideGui) {
