@@ -70,23 +70,7 @@ public class WaypointContainer {
 
     public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
         Vec3 cameraPos = camera.getPosition();
-        double renderPosX = cameraPos.x;
-        double renderPosY = cameraPos.y;
-        double renderPosZ = cameraPos.z;
-        if (this.options.showBeacons) {
-            for (ExtendedWaypoint pt : this.wayPts) {
-                boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
-                boolean isEffectivelyActive = pt.waypoint.isActive();
-                if (isHighlighted) isEffectivelyActive = true;
-
-                if (!isEffectivelyActive) continue;
-
-                int x = pt.waypoint.getX();
-                int z = pt.waypoint.getZ();
-                double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
-                this.renderBeam(pt.waypoint, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
-            }
-        }
+        this.renderWaypointsBeams(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
 
         if (this.options.showWaypoints && !minecraft.options.hideGui) {
             this.sortWaypoints();
@@ -123,7 +107,7 @@ public class WaypointContainer {
 
                 pt.offset = getCenterOffset(pt.waypoint, distance, camera);
                 boolean isPointedAt = pt.offset != -1.0 && (shiftDown || i == last);
-                this.renderLabel(poseStack, bufferSource, pt.waypoint, distance, isPointedAt, false, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+                this.renderLabel(poseStack, bufferSource, pt.waypoint, distance, isPointedAt, false, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
                 i++;
             }
 
@@ -133,8 +117,26 @@ public class WaypointContainer {
                 int y = this.highlightedWaypoint.getY();
                 double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToCamera(camera));
                 boolean isPointedAt = this.getCenterOffset(this.highlightedWaypoint, distance, camera) != -1.0F;
-                this.renderLabel(poseStack, bufferSource, this.highlightedWaypoint, distance, isPointedAt, true, x - renderPosX, y - renderPosY + 1.12, z - renderPosZ);
+                this.renderLabel(poseStack, bufferSource, this.highlightedWaypoint, distance, isPointedAt, true, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
             }
+        }
+    }
+
+    public void renderWaypointsBeams(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+        Vec3 cameraPos = camera.getPosition();
+        double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - cameraPos.y;
+
+        if (!this.options.showBeacons) return;
+        for (ExtendedWaypoint pt : this.wayPts) {
+            boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
+            boolean isEffectivelyActive = pt.waypoint.isActive();
+            if (isHighlighted) isEffectivelyActive = true;
+
+            if (!isEffectivelyActive) continue;
+
+            int x = pt.waypoint.getX();
+            int z = pt.waypoint.getZ();
+            this.renderBeam(pt.waypoint, x - cameraPos.x, bottomOfWorld, z - cameraPos.z, poseStack, bufferSource);
         }
     }
 
