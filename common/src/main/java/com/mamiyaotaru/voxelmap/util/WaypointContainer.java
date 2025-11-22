@@ -75,12 +75,16 @@ public class WaypointContainer {
         double renderPosZ = cameraPos.z;
         if (this.options.showBeacons) {
             for (ExtendedWaypoint pt : this.wayPts) {
-                if (pt.waypoint.isActive() || pt.waypoint == this.highlightedWaypoint) {
-                    int x = pt.waypoint.getX();
-                    int z = pt.waypoint.getZ();
-                    double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
-                    this.renderBeam(pt.waypoint, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
-                }
+                boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
+                boolean isEffectivelyActive = pt.waypoint.isActive();
+                if (isHighlighted) isEffectivelyActive = true;
+
+                if (!isEffectivelyActive) continue;
+
+                int x = pt.waypoint.getX();
+                int z = pt.waypoint.getZ();
+                double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - renderPosY;
+                this.renderBeam(pt.waypoint, x - renderPosX, bottomOfWorld, z - renderPosZ, poseStack, bufferSource);
             }
         }
 
