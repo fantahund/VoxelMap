@@ -167,34 +167,35 @@ public class EntityMapImageManager {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
+        EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
             return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, size, addBorder);
-        } else if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
-            EntityRenderState renderState = renderer2.createRenderState(entity2, 0.5f);
-
-            return getVariantData(entity, renderer, renderState, size, addBorder);
-
-        } else if (entity instanceof EnderDragon entity2 && renderer instanceof EnderDragonRenderer renderer2) {
-            EntityRenderState renderState = renderer2.createRenderState(entity2, 0.5f);
-
-            return getVariantData(entity, renderer, renderState, size, addBorder);
-
         }
-        return null;
+
+        if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
+            renderState = renderer2.createRenderState(entity2, 0.5f);
+        } else if (entity instanceof EnderDragon entity2 && renderer instanceof EnderDragonRenderer renderer2) {
+            renderState = renderer2.createRenderState(entity2, 0.5f);
+        }
+
+        if (renderState == null) {
+            return null;
+        }
+
+        return getVariantData(entity, renderer, renderState, size, addBorder);
     }
 
+    @SuppressWarnings("rawtypes")
     private EntityModel getEntityModel(EntityRenderer renderer) {
         if (renderer instanceof LivingEntityRenderer renderer2) {
             return renderer2.getModel();
-
         } else if (renderer instanceof EnderDragonRenderer renderer2) {
             return ((AccessorEnderDragonRenderer) renderer2).getModel();
-
         }
         return null;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings("rawtypes")
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
         EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, size, addBorder);
