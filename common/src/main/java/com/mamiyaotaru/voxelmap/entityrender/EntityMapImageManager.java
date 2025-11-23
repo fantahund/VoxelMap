@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
+import com.mamiyaotaru.voxelmap.mixins.AccessorEnderDragonRenderer;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
@@ -27,17 +28,6 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -55,6 +45,7 @@ import net.minecraft.client.model.TropicalFishModelB;
 import net.minecraft.client.model.WitherBossModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
@@ -68,8 +59,20 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityMapImageManager {
     public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/mobs");
@@ -162,29 +165,44 @@ public class EntityMapImageManager {
         return DefaultEntityVariantDataFactory.createSimpleVariantData(entity, renderer, state, size, addBorder);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
+        if (entity instanceof AbstractClientPlayer player) {
+            return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, size, addBorder);
+        } else if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
+            EntityRenderState renderState = renderer2.createRenderState(entity2, 0.5f);
+
+            return getVariantData(entity, renderer, renderState, size, addBorder);
+
+        } else if (entity instanceof EnderDragon entity2 && renderer instanceof EnderDragonRenderer renderer2) {
+            EntityRenderState renderState = renderer2.createRenderState(entity2, 0.5f);
+
+            return getVariantData(entity, renderer, renderState, size, addBorder);
+
+        }
+        return null;
+    }
+
+    private EntityModel getEntityModel(EntityRenderer renderer) {
+        if (renderer instanceof LivingEntityRenderer renderer2) {
+            return renderer2.getModel();
+
+        } else if (renderer instanceof EnderDragonRenderer renderer2) {
+            return ((AccessorEnderDragonRenderer) renderer2).getModel();
+
+        }
+        return null;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        EntityVariantData variant = null;
-        EntityRenderState renderState = null;
-        if (entity instanceof AbstractClientPlayer player) {
-            variant = new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, size, addBorder);
-        } else if (entity instanceof LivingEntity && baseRenderer instanceof LivingEntityRenderer renderer) {
-            if (minecraft.getEntityRenderDispatcher().camera == null) {
-                minecraft.getEntityRenderDispatcher().camera = fakeCamera;
-            }
+        EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, size, addBorder);
 
-            renderState = renderer.createRenderState(entity, 0.5f);
-
-            if (minecraft.getEntityRenderDispatcher().camera == fakeCamera) {
-                minecraft.getEntityRenderDispatcher().camera = null;
-            }
-
-            variant = getVariantData(entity, renderer, renderState, size, addBorder);
-        }
         if (variant == null) {
             return null;
         }
+
         Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(variant);
         if (existing != null && existing != textureAtlas.getMissingImage()) {
             // VoxelConstants.getLogger().info("EntityMapImageManager: Existing type " + entity.getType().getDescriptionId());
@@ -228,21 +246,26 @@ public class EntityMapImageManager {
         String rotation = mobProperties.getProperty("rotation", "");
         if (!rotation.isEmpty()) {
             for (String data : rotation.split(",")) {
+                if (data.length() < 2) continue;
+
+                char key = data.charAt(0);
                 float degrees = Float.parseFloat(data.substring(1));
-                if (data.startsWith("x")) {
-                    pose.mulPose(Axis.XP.rotationDegrees(degrees));
-                }
-                if (data.startsWith("y")) {
-                    pose.mulPose(Axis.YP.rotationDegrees(degrees));
-                }
-                if (data.startsWith("z")) {
-                    pose.mulPose(Axis.ZP.rotationDegrees(degrees));
+
+                switch (key) {
+                    case 'x' -> pose.mulPose(Axis.XP.rotationDegrees(degrees));
+                    case 'y' -> pose.mulPose(Axis.YP.rotationDegrees(degrees));
+                    case 'z' -> pose.mulPose(Axis.ZP.rotationDegrees(degrees));
                 }
             }
         }
 
-        @SuppressWarnings("rawtypes")
-        EntityModel model = ((LivingEntityRenderer) baseRenderer).getModel();
+        EntityModel model = getEntityModel(baseRenderer);
+
+        if (model == null) {
+            return null;
+        }
+
+
         // setupAnim() causes an error when the entity is a player.
         // model.setupAnim((LivingEntityRenderState) renderState);
 
@@ -257,7 +280,6 @@ public class EntityMapImageManager {
         }
         if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
             SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.get(0);
-            slimeOuter.model.setupAnim(renderState);
             slimeOuter.model.root().render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color
         }
 
