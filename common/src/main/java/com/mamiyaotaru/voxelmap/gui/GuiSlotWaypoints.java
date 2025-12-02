@@ -152,7 +152,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
             int x = getX();
             int y = getY();
             int entryHeight = getHeight();
-            drawContext.drawCenteredString(this.parentGui.getFont(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 3, this.waypoint.getUnifiedColor());
+            drawContext.drawCenteredString(this.parentGui.getFont(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 5, this.waypoint.getUnifiedColor());
             byte padding = 3;
             byte iconWidth = 16;
             if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + entryHeight) {
@@ -173,11 +173,11 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                     GuiWaypoints.setTooltip(GuiSlotWaypoints.this.parentGui, tooltip);
                 }
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y - 2, 0.0F, 0.0F, 18, 18, 18, 18);
-            textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y - 2, 18, 18, waypoint.getUnifiedColor());
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y, 0.0F, 0.0F, 18, 18, 18, 18);
+            textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, waypoint.getUnifiedColor());
 
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, targetIconLocation, x, y - 2, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, targetIconLocation, x, y, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
             }
         }
 

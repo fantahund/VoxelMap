@@ -124,7 +124,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
             int color = 0xFF000000 + (red << 16) + (green << 8);
-            drawContext.drawCenteredString(this.parentGui.getFont(), this.name, this.parentGui.getWidth() / 2, getY() + 3, color);
+            drawContext.drawCenteredString(this.parentGui.getFont(), this.name, this.parentGui.getWidth() / 2, getY() + 5, color);
             byte padding = 3;
             if (mouseX >= getX() - padding && mouseY >= getY() && mouseX <= getX() + 215 + padding && mouseY <= getY() + GuiSlotMobs.this.defaultEntryHeight) {
                 Component tooltip;
@@ -139,9 +139,9 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             if (sprite != null) {
-                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY() - 2, 18, 18);
+                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY(), 18, 18);
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY() - 2, 0.0F, 0.0F, 18, 18, 18, 18);
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY(), 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
         @Override
