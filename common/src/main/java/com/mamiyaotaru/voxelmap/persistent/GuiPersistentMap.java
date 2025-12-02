@@ -221,6 +221,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.timeAtLastTick = System.currentTimeMillis();
     }
 
+    @Override
+    public void added() {
+        currentDragging = false;
+        super.added();
+    }
+
     private void centerAt(int x, int z) {
         if (this.oldNorth) {
             this.mapCenterX = (-z);
