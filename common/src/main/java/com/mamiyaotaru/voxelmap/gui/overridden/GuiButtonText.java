@@ -9,7 +9,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
-public class GuiButtonText extends Button {
+public class GuiButtonText extends Button.Plain {
     private boolean editing;
     private final EditBox textField;
 
@@ -25,8 +25,7 @@ public class GuiButtonText extends Button {
             textField.render(drawContext, mouseX, mouseY, delta);
             return;
         }
-
-        super.renderWidget(drawContext, mouseX, mouseY, delta);
+        super.renderContents(drawContext, mouseX, mouseY, delta);
     }
 
     @Override

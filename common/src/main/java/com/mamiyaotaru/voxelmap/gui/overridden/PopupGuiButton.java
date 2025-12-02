@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
-public class PopupGuiButton extends Button {
+public class PopupGuiButton extends Button.Plain {
     final IPopupGuiScreen parentScreen;
 
     public PopupGuiButton(int x, int y, int width, int height, Component message, OnPress onPress, IPopupGuiScreen parentScreen) {
@@ -20,7 +20,6 @@ public class PopupGuiButton extends Button {
             mouseX = 0;
             mouseY = 0;
         }
-
-        super.renderWidget(drawContext, mouseX, mouseY, delta);
+        super.renderContents(drawContext, mouseX, mouseY, delta);
     }
 }
