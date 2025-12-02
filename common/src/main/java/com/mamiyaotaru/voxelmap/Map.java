@@ -546,7 +546,7 @@ public class Map implements Runnable, IChangeObserver {
                     this.lastGamma = minecraft.options.gamma().get();
                 }
 
-                float sunBrightness = this.world.getSkyDarken();
+                float sunBrightness = 1 - (this.world.getSkyDarken() / 15f);
                 if (Math.abs(this.lastSunBrightness - sunBrightness) > 0.01 || sunBrightness == 1.0 && sunBrightness != this.lastSunBrightness || sunBrightness == 0.0 && sunBrightness != this.lastSunBrightness) {
                     lightChanged = true;
                     this.needSkyColor = true;

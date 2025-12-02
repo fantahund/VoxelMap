@@ -41,7 +41,7 @@ public class CPULightmap {
     public void setup() {
         AmbientLightFactor = MINECRAFT.level.dimensionType().ambientLight();
 
-        float g = MINECRAFT.level.getSkyDarken();
+        float g = 1 - (MINECRAFT.level.getSkyDarken() / 15f);
         float h = g * 0.95F + 0.05F;
 
         SkyFactor = h;
