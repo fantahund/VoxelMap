@@ -13,7 +13,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class GuiMobs extends GuiScreenMinimap {
     private final Screen parentScreen;
@@ -24,7 +24,7 @@ public class GuiMobs extends GuiScreenMinimap {
     private Button buttonDisable;
     protected EditBox filter;
     private Component tooltip;
-    protected ResourceLocation selectedMobId;
+    protected Identifier selectedMobId;
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
         this.parentScreen = parentScreen;
@@ -110,15 +110,15 @@ public class GuiMobs extends GuiScreenMinimap {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
     }
 
-    protected void setSelectedMob(ResourceLocation id) {
+    protected void setSelectedMob(Identifier id) {
         this.selectedMobId = id;
     }
 
-    private boolean isMobEnabled(ResourceLocation mobId) {
+    private boolean isMobEnabled(Identifier mobId) {
         return !VoxelMap.radarOptions.hiddenMobs.contains(mobId);
     }
 
-    private void setMobEnabled(ResourceLocation mobId, boolean enabled) {
+    private void setMobEnabled(Identifier mobId, boolean enabled) {
         if (enabled) {
             VoxelMap.radarOptions.hiddenMobs.remove(mobId);
         } else {

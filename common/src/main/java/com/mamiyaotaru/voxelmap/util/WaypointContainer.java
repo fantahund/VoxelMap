@@ -15,11 +15,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class WaypointContainer {
     private final List<ExtendedWaypoint> wayPts = new ArrayList<>();
@@ -74,7 +75,7 @@ public class WaypointContainer {
     }
 
     public void renderWaypointsBeams(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        Vec3 cameraPos = camera.getPosition();
+        Vec3 cameraPos = camera.position();
         double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - cameraPos.y;
 
         if (!this.options.showBeacons) return;
@@ -95,7 +96,7 @@ public class WaypointContainer {
         if (!this.options.showWaypoints) return;
         if (minecraft.options.hideGui) return;
 
-        Vec3 cameraPos = camera.getPosition();
+        Vec3 cameraPos = camera.position();
         this.sortWaypoints();
         boolean shiftDown = minecraft.options.keyShift.isDown();
         int last = this.wayPts.size() - 1;
@@ -149,13 +150,13 @@ public class WaypointContainer {
             return -1.0;
         }
 
-        Vec3 cameraPos = camera.getPosition();
+        Vec3 cameraPos = camera.position();
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * Mth.DEG_TO_RAD;
         double size = Math.max(Math.sin(angle) * distance, 0.5) * this.options.waypointSignScale;
 
-        Vector3f lookVector = camera.getLookVector();
-        Vec3 scaledLookVector = cameraPos.add(lookVector.x * distance, lookVector.y * distance, lookVector.z * distance);
+        Vector3fc lookVector = camera.forwardVector();
+        Vec3 scaledLookVector = cameraPos.add(lookVector.x() * distance, lookVector.y() * distance, lookVector.z() * distance);
 
         double dx = (waypoint.getX() + 0.5F) - scaledLookVector.x;
         double dy = (waypoint.getY() + 1.5F) - scaledLookVector.y;
@@ -235,8 +236,8 @@ public class WaypointContainer {
         float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F * this.options.waypointSignScale;
         poseStack.pushPose();
         poseStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getYRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.getXRot()));
+        poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.yRot()));
+        poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.xRot()));
         poseStack.scale(-scale, -scale, -scale);
 
         float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
@@ -258,7 +259,7 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
         }
 
-        RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getResourceLocation());
+        RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getIdentifier());
         VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(renderType);
         vertexIconDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fade);
         vertexIconDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fade);
@@ -266,7 +267,7 @@ public class WaypointContainer {
         vertexIconDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fade);
         bufferSource.endBatch(renderType);
 
-        renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getResourceLocation());
+        renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getIdentifier());
         VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(renderType);
         vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
         vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fadeNoDepth);

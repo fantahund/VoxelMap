@@ -3,10 +3,10 @@ package com.mamiyaotaru.voxelmap.packets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record WorldIdC2S() implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<WorldIdC2S> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("worldinfo", "world_id"));
+    public static final CustomPacketPayload.Type<WorldIdC2S> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("worldinfo", "world_id"));
     public static final StreamCodec<FriendlyByteBuf, WorldIdC2S> PACKET_CODEC = StreamCodec.ofMember(WorldIdC2S::write, WorldIdC2S::new);
 
     public WorldIdC2S(FriendlyByteBuf buf) {

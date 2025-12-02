@@ -7,7 +7,7 @@ import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
@@ -31,11 +31,11 @@ public class DimensionManager {
         Registry<DimensionType> dimensionTypeRegistry = VoxelConstants.getMinecraft().getConnection().registryAccess().lookupOrThrow(Registries.DIMENSION_TYPE);
 
         for (ResourceKey<Level> vanillaWorldKey : this.vanillaWorlds) {
-            ResourceKey<DimensionType> typeKey = ResourceKey.create(Registries.DIMENSION_TYPE, vanillaWorldKey.location());
+            ResourceKey<DimensionType> typeKey = ResourceKey.create(Registries.DIMENSION_TYPE, vanillaWorldKey.identifier());
             Optional<Reference<DimensionType>> optionalDimension = dimensionTypeRegistry.get(typeKey);
             if (optionalDimension.isPresent()) {
                 DimensionType dimensionType = optionalDimension.get().value();
-                DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.location().getPath(), vanillaWorldKey.location());
+                DimensionContainer dimensionContainer = new DimensionContainer(dimensionType, vanillaWorldKey.identifier().getPath(), vanillaWorldKey.identifier());
                 this.dimensions.add(dimensionContainer);
             }
         }
@@ -44,10 +44,10 @@ public class DimensionManager {
     }
 
     public void enteredWorld(Level world) {
-        ResourceLocation resourceLocation = world.dimension().location();
-        DimensionContainer dim = this.getDimensionContainerByResourceLocation(resourceLocation);
+        Identifier Identifier = world.dimension().identifier();
+        DimensionContainer dim = this.getDimensionContainerByIdentifier(Identifier);
         if (dim == null) {
-            dim = new DimensionContainer(world.dimensionType(), resourceLocation.getPath(), resourceLocation);
+            dim = new DimensionContainer(world.dimensionType(), Identifier.getPath(), Identifier);
             this.dimensions.add(dim);
             this.sort();
         }
@@ -62,21 +62,21 @@ public class DimensionManager {
 
     private void sort() {
         this.dimensions.sort((dim1, dim2) -> {
-            if (dim1.resourceLocation.equals(Level.OVERWORLD.location())) {
+            if (dim1.Identifier.equals(Level.OVERWORLD.identifier())) {
                 return -1;
-            } else if (dim1.resourceLocation.equals(Level.NETHER.location()) && !dim2.resourceLocation.equals(Level.OVERWORLD.location())) {
+            } else if (dim1.Identifier.equals(Level.NETHER.identifier()) && !dim2.Identifier.equals(Level.OVERWORLD.identifier())) {
                 return -1;
             } else {
-                return dim1.resourceLocation.equals(Level.END.location()) && !dim2.resourceLocation.equals(Level.OVERWORLD.location()) && !dim2.resourceLocation.equals(Level.NETHER.location()) ? -1 : String.CASE_INSENSITIVE_ORDER.compare(dim1.name, dim2.name);
+                return dim1.Identifier.equals(Level.END.identifier()) && !dim2.Identifier.equals(Level.OVERWORLD.identifier()) && !dim2.Identifier.equals(Level.NETHER.identifier()) ? -1 : String.CASE_INSENSITIVE_ORDER.compare(dim1.name, dim2.name);
             }
         });
     }
 
     public DimensionContainer getDimensionContainerByWorld(Level world) {
-        ResourceLocation resourceLocation = world.dimension().location();
-        DimensionContainer dim = this.getDimensionContainerByResourceLocation(resourceLocation);
+        Identifier Identifier = world.dimension().identifier();
+        DimensionContainer dim = this.getDimensionContainerByIdentifier(Identifier);
         if (dim == null) {
-            dim = new DimensionContainer(world.dimensionType(), resourceLocation.getPath(), resourceLocation);
+            dim = new DimensionContainer(world.dimensionType(), Identifier.getPath(), Identifier);
             this.dimensions.add(dim);
             this.sort();
         }
@@ -86,10 +86,10 @@ public class DimensionManager {
 
     public DimensionContainer getDimensionContainerByIdentifier(String ident) {
         DimensionContainer dim;
-        ResourceLocation resourceLocation = ResourceLocation.parse(ident);
-        dim = this.getDimensionContainerByResourceLocation(resourceLocation);
+        Identifier identifier = Identifier.parse(ident);
+        dim = this.getDimensionContainerByIdentifier(identifier);
         if (dim == null) {
-            dim = new DimensionContainer(null, resourceLocation.getPath(), resourceLocation);
+            dim = new DimensionContainer(null, identifier.getPath(), identifier);
             this.dimensions.add(dim);
             this.sort();
         }
@@ -97,7 +97,7 @@ public class DimensionManager {
         return dim;
     }
 
-    public DimensionContainer getDimensionContainerByResourceLocation(ResourceLocation resourceLocation) {
-        return this.dimensions.stream().filter(dim -> resourceLocation.equals(dim.resourceLocation)).findFirst().orElse(null);
+    public DimensionContainer getDimensionContainerByIdentifier(Identifier Identifier) {
+        return this.dimensions.stream().filter(dim -> Identifier.equals(dim.Identifier)).findFirst().orElse(null);
     }
 }

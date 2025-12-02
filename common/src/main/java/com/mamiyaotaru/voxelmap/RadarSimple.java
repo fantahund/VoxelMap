@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -27,7 +27,7 @@ public class RadarSimple implements IRadar {
     public final MapSettingsManager minimapOptions;
     public final RadarSettingsManager options;
     private final TextureAtlas textureAtlas;
-    public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/radarsimple/marker");
+    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath("voxelmap", "atlas/radarsimple/marker");
     private boolean completedLoading;
     private int timer = 500;
     private float direction;
@@ -50,10 +50,10 @@ public class RadarSimple implements IRadar {
 
         try {
             this.textureAtlas.reset();
-            NativeImage contact = TextureContents.load(Minecraft.getInstance().getResourceManager(), ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/contact.png")).image();
+            NativeImage contact = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath("voxelmap", "images/radar/contact.png")).image();
             contact = ImageUtils.fillOutline(contact, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("contact", contact);
-            NativeImage facing = TextureContents.load(Minecraft.getInstance().getResourceManager(), ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/contact_facing.png")).image();
+            NativeImage facing = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath("voxelmap", "images/radar/contact_facing.png")).image();
             facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
             this.textureAtlas.stitch();

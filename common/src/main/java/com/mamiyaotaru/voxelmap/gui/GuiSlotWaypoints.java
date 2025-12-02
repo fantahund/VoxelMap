@@ -14,7 +14,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -30,11 +30,11 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disableTooltip");
     static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlightTooltip");
     static final Component TOOLTIP_UNHIGHLIGHT = Component.translatable("minimap.waypoints.removeHighlightTooltip");
-    final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
-    final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
+    final Identifier visibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
+    final Identifier invisibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
     protected long lastClicked;
     public boolean doubleClicked;
-    private final ResourceLocation targetIconLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "images/waypoints/target.png");
+    private final Identifier targetIconLocation = Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/target.png");
     private final TextureAtlas textureAtlas;
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {

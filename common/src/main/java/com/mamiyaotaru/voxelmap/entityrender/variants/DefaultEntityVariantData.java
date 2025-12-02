@@ -2,17 +2,17 @@ package com.mamiyaotaru.voxelmap.entityrender.variants;
 
 import com.mamiyaotaru.voxelmap.entityrender.EntityVariantData;
 import java.util.Objects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 
 public class DefaultEntityVariantData implements EntityVariantData {
     private final EntityType<?> type;
-    private final ResourceLocation primaryTexture;
-    private final ResourceLocation secondaryTexture;
+    private final Identifier primaryTexture;
+    private final Identifier secondaryTexture;
     private final int size;
     private final boolean addBorder;
 
-    public DefaultEntityVariantData(EntityType<?> type, ResourceLocation primaryTexture, ResourceLocation secondaryTexture, int size, boolean addBorder) {
+    public DefaultEntityVariantData(EntityType<?> type, Identifier primaryTexture, Identifier secondaryTexture, int size, boolean addBorder) {
         this.type = type;
         this.primaryTexture = primaryTexture;
         this.secondaryTexture = secondaryTexture;
@@ -26,12 +26,12 @@ public class DefaultEntityVariantData implements EntityVariantData {
     }
 
     @Override
-    public ResourceLocation getPrimaryTexture() {
+    public Identifier getPrimaryTexture() {
         return primaryTexture;
     }
 
     @Override
-    public ResourceLocation getSecondaryTexture() {
+    public Identifier getSecondaryTexture() {
         return secondaryTexture;
     }
 

@@ -23,6 +23,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ComparisonCachedRegion {
@@ -52,10 +53,9 @@ public class ComparisonCachedRegion {
         if (!Objects.equals(subworldName, "")) {
             this.subworldNamePathPart = TextUtils.scrubNameFile(subworldName) + "/";
         }
-
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        this.underground = !world.effects().constantAmbientLight() && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling();
+        this.underground = world.dimensionType().cardinalLightType() != DimensionType.CardinalLightType.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling();
         this.x = x;
         this.z = z;
     }

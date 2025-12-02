@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import java.util.Optional;
 import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,14 +33,14 @@ public final class BlockStateParser {
         int curlyBracketCloseIndex = resourceString.indexOf('}');
         resourceString = resourceString.substring(curlyBracketOpenIndex == -1 ? 0 : curlyBracketOpenIndex + 1, curlyBracketCloseIndex == -1 ? resourceString.length() : curlyBracketCloseIndex);
         String[] resourceStringParts = resourceString.split(":");
-        ResourceLocation resourceLocation = null;
+        Identifier Identifier = null;
 
         if (resourceStringParts.length == 1) {
-            resourceLocation = ResourceLocation.parse(resourceStringParts[0]);
+            Identifier = Identifier.parse(resourceStringParts[0]);
         } else if (resourceStringParts.length == 2) {
-            resourceLocation = ResourceLocation.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
+            Identifier = Identifier.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
         }
-        Reference<Block> blockRef = BuiltInRegistries.BLOCK.get(resourceLocation).orElse(null);
+        Reference<Block> blockRef = BuiltInRegistries.BLOCK.get(Identifier).orElse(null);
         if (blockRef == null) {
             return null;
         }

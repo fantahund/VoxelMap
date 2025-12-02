@@ -19,7 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -209,7 +209,7 @@ public final class CommandUtils {
     }
 
     public static void sendWaypoint(Waypoint waypoint) {
-        ResourceLocation resourceLocation = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()).resourceLocation;
+        Identifier Identifier = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()).Identifier;
         int color = ((int) (waypoint.red * 255.0F) & 0xFF) << 16 | ((int) (waypoint.green * 255.0F) & 0xFF) << 8 | (int) (waypoint.blue * 255.0F) & 0xFF;
         StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
@@ -224,7 +224,7 @@ public final class CommandUtils {
         }
 
         String suffix = waypoint.imageSuffix;
-        Object[] args = {TextUtils.scrubNameRegex(waypoint.name), waypoint.getX(), waypoint.getY(), waypoint.getZ(), resourceLocation.toString()};
+        Object[] args = {TextUtils.scrubNameRegex(waypoint.name), waypoint.getX(), waypoint.getY(), waypoint.getZ(), Identifier.toString()};
         String message = String.format("[name:%s, x:%s, y:%s, z:%s, dim:%s", args);
         if (world != null && !world.isEmpty()) {
             message = message + ", world:" + world;

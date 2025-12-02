@@ -17,7 +17,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
 public class TextureAtlas extends AbstractTexture {
@@ -30,21 +30,21 @@ public class TextureAtlas extends AbstractTexture {
     private Stitcher stitcher;
     private boolean linearFilter;
     private boolean mipmap;
-    private ResourceLocation resourceLocation;
+    private Identifier Identifier;
 
-    public TextureAtlas(String basePath, ResourceLocation resourceLocation) {
-        this(basePath, resourceLocation, null);
+    public TextureAtlas(String basePath, Identifier Identifier) {
+        this(basePath, Identifier, null);
     }
 
-    public TextureAtlas(String basePath, ResourceLocation resourceLocation, IIconCreator iconCreator) {
+    public TextureAtlas(String basePath, Identifier Identifier, IIconCreator iconCreator) {
         this.mapRegisteredSprites = Maps.newHashMap();
         this.mapUploadedSprites = Maps.newHashMap();
         this.missingImage = new Sprite("missingno", this);
         this.failedImage = new Sprite("notfound", this);
         this.basePath = basePath;
         this.iconCreator = iconCreator;
-        this.resourceLocation = resourceLocation;
-        Minecraft.getInstance().getTextureManager().register(resourceLocation, this);
+        this.Identifier = Identifier;
+        Minecraft.getInstance().getTextureManager().register(Identifier, this);
     }
 
     @Override
@@ -229,24 +229,24 @@ public class TextureAtlas extends AbstractTexture {
         return icon;
     }
 
-    public Sprite registerIconForResource(ResourceLocation resourceLocation) {
-        if (resourceLocation == null) {
+    public Sprite registerIconForResource(Identifier Identifier) {
+        if (Identifier == null) {
             throw new IllegalArgumentException("Location cannot be null!");
         } else {
-            Sprite icon = this.mapRegisteredSprites.get(resourceLocation.toString());
+            Sprite icon = this.mapRegisteredSprites.get(Identifier.toString());
             if (icon == null) {
-                icon = Sprite.spriteFromResourceLocation(resourceLocation, this);
+                icon = Sprite.spriteFromIdentifier(Identifier, this);
 
                 try {
-                    TextureContents image = TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceLocation);
+                    TextureContents image = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier);
                     icon.setTextureData(image.image());
                 } catch (RuntimeException var6) {
-                    VoxelConstants.getLogger().error("Unable to parse metadata from " + resourceLocation, var6);
+                    VoxelConstants.getLogger().error("Unable to parse metadata from " + Identifier, var6);
                 } catch (IOException var7) {
-                    VoxelConstants.getLogger().error("Using missing texture, unable to load " + resourceLocation, var7);
+                    VoxelConstants.getLogger().error("Using missing texture, unable to load " + Identifier, var7);
                 }
 
-                this.mapRegisteredSprites.put(resourceLocation.toString(), icon);
+                this.mapRegisteredSprites.put(Identifier.toString(), icon);
             }
 
             return icon;
@@ -322,7 +322,7 @@ public class TextureAtlas extends AbstractTexture {
         return this.stitcher.getCurrentImageHeight();
     }
 
-    public ResourceLocation getResourceLocation() {
-        return resourceLocation;
+    public Identifier getIdentifier() {
+        return Identifier;
     }
 }

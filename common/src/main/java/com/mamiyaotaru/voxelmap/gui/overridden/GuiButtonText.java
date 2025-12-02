@@ -20,7 +20,7 @@ public class GuiButtonText extends Button {
 
 
     @Override
-    public void renderWidget(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void renderContents(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         if (editing) {
             textField.render(drawContext, mouseX, mouseY, delta);
             return;

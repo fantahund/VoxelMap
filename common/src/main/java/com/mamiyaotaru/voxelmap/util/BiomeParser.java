@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 
@@ -16,7 +16,7 @@ public class BiomeParser {
         String[] lineParts = line.split(" ");
 
         int id = Integer.parseInt(lineParts[0]);
-        Biome biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(lineParts[1])).get().value();
+        Biome biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Identifier.parse(lineParts[1])).get().value();
         if (biome != null) {
             map.forcePut(biome, id);
         }

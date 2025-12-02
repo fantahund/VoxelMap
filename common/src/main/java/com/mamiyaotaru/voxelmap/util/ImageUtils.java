@@ -23,7 +23,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.ReloadableTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryUtil;
 
 public class ImageUtils {
@@ -46,22 +46,22 @@ public class ImageUtils {
         return image;
     }
 
-    public static NativeImage createNativeImageFromResourceLocation(ResourceLocation resourceLocation) {
+    public static NativeImage createNativeImageFromIdentifier(Identifier Identifier) {
         try {
-            return TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceLocation).image();
+            return TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier).image();
         } catch (Exception var5) {
             return null;
         }
     }
 
-    public static BufferedImage createBufferedImageFromResourceLocation(ResourceLocation resourceLocation) {
+    public static BufferedImage createBufferedImageFromIdentifier(Identifier Identifier) {
         try {
-            AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(resourceLocation);
+            AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(Identifier);
             BufferedImage image = null;
             if (texture instanceof DynamicTexture dynamicTexture) {
                 image = bufferedImageFromNativeImage(dynamicTexture.getPixels());
             } else if (texture instanceof ReloadableTexture) {
-                InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
+                InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier).get().open();
                 image = ImageIO.read(is);
                 is.close();
                 if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
@@ -126,21 +126,21 @@ public class ImageUtils {
         return bufferedImage;
     }
 
-    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h) {
-        return blankImage(resourceLocation, w, h, 64, 32);
+    public static BufferedImage blankImage(Identifier Identifier, int w, int h) {
+        return blankImage(Identifier, w, h, 64, 32);
     }
 
-    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h, int imageWidth, int imageHeight) {
-        return blankImage(resourceLocation, w, h, imageWidth, imageHeight, 0, 0, 0, 0);
+    public static BufferedImage blankImage(Identifier Identifier, int w, int h, int imageWidth, int imageHeight) {
+        return blankImage(Identifier, w, h, imageWidth, imageHeight, 0, 0, 0, 0);
     }
 
-    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h, int r, int g, int b, int a) {
-        return blankImage(resourceLocation, w, h, 64, 32, r, g, b, a);
+    public static BufferedImage blankImage(Identifier Identifier, int w, int h, int r, int g, int b, int a) {
+        return blankImage(Identifier, w, h, 64, 32, r, g, b, a);
     }
 
-    public static BufferedImage blankImage(ResourceLocation resourceLocation, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
+    public static BufferedImage blankImage(Identifier Identifier, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceLocation).get().open();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier).get().open();
             BufferedImage mobSkin = ImageIO.read(is);
             is.close();
             BufferedImage temp = new BufferedImage(w * mobSkin.getWidth() / imageWidth, h * mobSkin.getWidth() / imageWidth, 6);
@@ -150,7 +150,7 @@ public class ImageUtils {
             g2.dispose();
             return temp;
         } catch (Exception var13) {
-            VoxelConstants.getLogger().error("Failed getting mob: " + resourceLocation.toString() + " - " + var13.getLocalizedMessage(), var13);
+            VoxelConstants.getLogger().error("Failed getting mob: " + Identifier.toString() + " - " + var13.getLocalizedMessage(), var13);
             return null;
         }
     }
@@ -202,16 +202,16 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h) {
-        return loadImage(resourceLocation, x, y, w, h, 64, 32);
+    public static BufferedImage loadImage(Identifier Identifier, int x, int y, int w, int h) {
+        return loadImage(Identifier, x, y, w, h, 64, 32);
     }
 
-    public static BufferedImage loadImage(ResourceLocation resourceLocation, int x, int y, int w, int h, int imageWidth, int imageHeight) {
-        BufferedImage mobSkin = createBufferedImageFromResourceLocation(resourceLocation);
+    public static BufferedImage loadImage(Identifier Identifier, int x, int y, int w, int h, int imageWidth, int imageHeight) {
+        BufferedImage mobSkin = createBufferedImageFromIdentifier(Identifier);
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);
         } else {
-            VoxelConstants.getLogger().warn("Failed getting image: " + resourceLocation.toString());
+            VoxelConstants.getLogger().warn("Failed getting image: " + Identifier.toString());
             return null;
         }
     }

@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.joml.Matrix3x2f;
 
 public class VoxelMapGuiGraphics {
@@ -20,11 +20,11 @@ public class VoxelMapGuiGraphics {
         blitFloatGradient(graphics, pipeline, textureView, x, y, w, h, minu, maxu, minv, maxv, color, color);
     }
 
-    public static void blitFloatGradient(GuiGraphics graphics, RenderPipeline pipeline, ResourceLocation texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color, int color2) {
+    public static void blitFloatGradient(GuiGraphics graphics, RenderPipeline pipeline, Identifier texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color, int color2) {
         blitFloatGradient(graphics, pipeline, Minecraft.getInstance().getTextureManager().getTexture(texture).getTextureView(), x, y, w, h, minu, maxu, minv, maxv, color, color2);
     }
 
-    public static void blitFloat(GuiGraphics graphics, RenderPipeline pipeline, ResourceLocation texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color) {
+    public static void blitFloat(GuiGraphics graphics, RenderPipeline pipeline, Identifier texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color) {
         blitFloatGradient(graphics, pipeline, Minecraft.getInstance().getTextureManager().getTexture(texture).getTextureView(), x, y, w, h, minu, maxu, minv, maxv, color, color);
     }
 

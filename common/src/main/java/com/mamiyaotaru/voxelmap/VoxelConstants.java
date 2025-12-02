@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,7 @@ public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
-    private static final ResourceLocation OPTIONS_BACKGROUND_TEXTURE = ResourceLocation.parse("textures/block/dirt.png");
+    private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.parse("textures/block/dirt.png");
     public static final boolean DEBUG = false;
     private static boolean initialized;
     private static Events events;
@@ -86,7 +86,7 @@ public final class VoxelConstants {
 
     static { elapsedTicks = 0; }
 
-    public static ResourceLocation getOptionsBackgroundTexture() {
+    public static Identifier getOptionsBackgroundTexture() {
         return OPTIONS_BACKGROUND_TEXTURE;
     }
 

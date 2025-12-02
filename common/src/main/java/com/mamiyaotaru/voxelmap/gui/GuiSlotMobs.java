@@ -14,7 +14,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,8 +30,8 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
     static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enableTooltip");
     static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disableTooltip");
-    final ResourceLocation visibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
-    final ResourceLocation invisibleIconIdentifier = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
+    final Identifier visibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
+    final Identifier invisibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
         super(VoxelConstants.getMinecraft(), par1GuiMobs.getWidth(), par1GuiMobs.getHeight() - 110, 40, 18);
@@ -42,7 +42,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
             if (entry.getValue().create(Minecraft.getInstance().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
-                this.mobs.add(new MobItem(this.parentGui, entry.getValue(), entry.getKey().location()));
+                this.mobs.add(new MobItem(this.parentGui, entry.getValue(), entry.getKey().identifier()));
             }
         });
 
@@ -101,12 +101,12 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     public class MobItem extends AbstractSelectionList.Entry<MobItem> {
         private final GuiMobs parentGui;
         private final EntityType<?> type;
-        private final ResourceLocation id;
+        private final Identifier id;
         private final Component name;
         private final String nameString;
         private final MobCategory category;
 
-        protected MobItem(GuiMobs mobsScreen, EntityType<?> type, ResourceLocation id) {
+        protected MobItem(GuiMobs mobsScreen, EntityType<?> type, Identifier id) {
             this.type = type;
             this.parentGui = mobsScreen;
             this.id = id;

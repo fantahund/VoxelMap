@@ -5,10 +5,10 @@ import java.nio.charset.StandardCharsets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record WorldIdS2C(String worldName) implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<WorldIdS2C> PACKET_ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath("worldinfo", "world_id"));
+    public static final CustomPacketPayload.Type<WorldIdS2C> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("worldinfo", "world_id"));
     public static final StreamCodec<FriendlyByteBuf, WorldIdS2C> PACKET_CODEC = StreamCodec.ofMember(WorldIdS2C::write, WorldIdS2C::new);
 
     public WorldIdS2C(FriendlyByteBuf buf) {

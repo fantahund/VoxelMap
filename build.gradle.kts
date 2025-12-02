@@ -1,12 +1,12 @@
 plugins {
     id("java")
-    id("fabric-loom") version ("1.11-SNAPSHOT") apply (false)
+    id("fabric-loom") version ("1.13-SNAPSHOT") apply (false)
 }
 
-val MINECRAFT_VERSION by extra { "1.21.10" }
+val MINECRAFT_VERSION by extra { "1.21.11-pre3" }
 val NEOFORGE_VERSION by extra { "21.5.47-beta" }
-val FABRIC_LOADER_VERSION by extra { "0.17.3" }
-val FABRIC_API_VERSION by extra { "0.138.0+1.21.10" }
+val FABRIC_LOADER_VERSION by extra { "0.18.1" }
+val FABRIC_API_VERSION by extra { "0.139.3+1.21.11" }
 val VOXELMAP_VERSION by extra { "1.15.9" }
 
 val MOD_VERSION by extra { "$MINECRAFT_VERSION-$VOXELMAP_VERSION" }

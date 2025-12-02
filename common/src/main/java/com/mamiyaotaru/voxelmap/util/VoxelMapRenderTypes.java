@@ -1,42 +1,33 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import java.util.function.Function;
-import net.minecraft.Util;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Util;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 
 public class VoxelMapRenderTypes {
-
     public static final RenderType WAYPOINT_BEAM = RenderType.create(
             "voxelmap_waypoint_beam",
-            0x00C000, // buffer size
-            VoxelMapPipelines.WAYPOINT_BEAM_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .createCompositeState(false));
+            RenderSetup.builder(VoxelMapPipelines.WAYPOINT_BEAM_PIPELINE)
+                    .createRenderSetup());
 
-    public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_DEPTHTEST = Util.memoize(
-            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
+    public static final Function<Identifier, RenderType> WAYPOINT_ICON_DEPTHTEST = Util.memoize(
+            (Function<Identifier, RenderType>) (identifier -> RenderType.create(
                     "voxelmap_icon_depthtest",
-                    0x00C000, // buffer size
-                    VoxelMapPipelines.WAYPOINT_ICON_DEPTHTEST_PIPELINE,
-                    RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
-                            .createCompositeState(false))));
+                    RenderSetup.builder(VoxelMapPipelines.WAYPOINT_ICON_DEPTHTEST_PIPELINE)
+                            .withTexture("Sampler0", identifier)
+                            .createRenderSetup())));
 
-    public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_NO_DEPTHTEST = Util.memoize(
-            (Function<ResourceLocation, RenderType>) (resourceLocation -> RenderType.create(
+    public static final Function<Identifier, RenderType> WAYPOINT_ICON_NO_DEPTHTEST = Util.memoize(
+            (Function<Identifier, RenderType>) (identifier -> RenderType.create(
                     "voxelmap_icon_no_depthtest",
-                    0x00C000, // buffer size
-                    VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE,
-                    RenderType.CompositeState.builder()
-                            .setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false))
-                            .createCompositeState(false))));
+                    RenderSetup.builder(VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE)
+                            .withTexture("Sampler0", identifier)
+                            .createRenderSetup())));
 
     public static final RenderType WAYPOINT_TEXT_BACKGROUND = RenderType.create(
             "voxelmap_beacon_text_background",
-            0x00C000, // buffer size
-            VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .createCompositeState(false));
+            RenderSetup.builder(VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND_PIPELINE)
+                    .createRenderSetup());
 }

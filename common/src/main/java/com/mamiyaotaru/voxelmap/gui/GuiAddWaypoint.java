@@ -19,12 +19,12 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    private static final ResourceLocation PICKER = ResourceLocation.parse("voxelmap:images/colorpicker.png");
-    private static final ResourceLocation TARGET = ResourceLocation.parse("voxelmap:images/waypoints/target.png");
+    private static final Identifier PICKER = Identifier.parse("voxelmap:images/colorpicker.png");
+    private static final Identifier TARGET = Identifier.parse("voxelmap:images/waypoints/target.png");
     final WaypointManager waypointManager;
     final ColorManager colorManager;
     private final IGuiWaypoints parentGui;

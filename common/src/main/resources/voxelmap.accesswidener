@@ -2,31 +2,30 @@ accessWidener   v2  named
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/minecraft/world/level/biome/Biome$ClimateSettings;
 accessible class net/minecraft/client/gui/components/AbstractSelectionList$Entry
-# accessible field net/minecraft/client/KeyMapping CATEGORY_SORT_ORDER Ljava/util/Map;
-accessible field net/minecraft/client/model/WolfModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/WolfModel head Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/QuadrupedModel head Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/LavaSlimeModel bodyCubes [Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/FelineModel head Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/HoglinModel head Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/ChickenModel head Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/BeeModel bone Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/AxolotlModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/LavaSlimeModel bodyCubes [Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/FelineModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/HoglinModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/ChickenModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/BeeModel bone Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/AxolotlModel head Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
-accessible field net/minecraft/client/model/SkullModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/SkullModel head Lnet/minecraft/client/model/geom/ModelPart;
 mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;
-accessible field net/minecraft/client/model/ShulkerModel head Lnet/minecraft/client/model/geom/ModelPart;
-accessible field net/minecraft/client/model/AbstractEquineModel headParts Lnet/minecraft/client/model/geom/ModelPart;
-# accessible field net/minecraft/client/renderer/LightTexture target Lcom/mojang/blaze3d/pipeline/TextureTarget;
+#1.21.11 accessible field net/minecraft/client/model/ShulkerModel head Lnet/minecraft/client/model/geom/ModelPart;
+#1.21.11 accessible field net/minecraft/client/model/AbstractEquineModel headParts Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/renderer/RenderPipelines GUI_TEXTURED_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setTextureState (Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
-accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder createCompositeState (Z)Lnet/minecraft/client/renderer/RenderType$CompositeState;
-
-accessible field net/minecraft/client/renderer/entity/layers/SlimeOuterLayer model Lnet/minecraft/client/model/SlimeModel;
+#1.21.11 accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder setTextureState (Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;
+#1.21.11 accessible method net/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder createCompositeState (Z)Lnet/minecraft/client/renderer/RenderType$CompositeState;
+accessible field net/minecraft/client/renderer/entity/layers/SlimeOuterLayer model Lnet/minecraft/client/model/monster/slime/SlimeModel;
 accessible field net/minecraft/client/renderer/entity/LivingEntityRenderer layers Ljava/util/List;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
 accessible field net/minecraft/client/gui/GuiGraphics guiRenderState Lnet/minecraft/client/gui/render/state/GuiRenderState;
 accessible class net/minecraft/client/gui/GuiGraphics$ScissorStack
 accessible field net/minecraft/client/gui/GuiGraphics scissorStack Lnet/minecraft/client/gui/GuiGraphics$ScissorStack;
-
-accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFZ)Lorg/joml/Vector4f;
+accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IF)Lorg/joml/Vector4f;
 accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
+
+accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
+accessible method net/minecraft/client/multiplayer/ClientLevel getSkyFlashTime ()I

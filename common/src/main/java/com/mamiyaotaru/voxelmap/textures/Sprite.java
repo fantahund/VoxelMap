@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class Sprite {
     private final Object iconName;
@@ -24,8 +24,8 @@ public class Sprite {
         this.textureAtlas = textureAtlas;
     }
 
-    public static Sprite spriteFromResourceLocation(ResourceLocation resourceLocation, TextureAtlas textureAtlas) {
-        String name = resourceLocation.toString();
+    public static Sprite spriteFromIdentifier(Identifier Identifier, TextureAtlas textureAtlas) {
+        String name = Identifier.toString();
         return spriteFromString(name, textureAtlas);
     }
 
@@ -124,11 +124,11 @@ public class Sprite {
     }
 
     public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, minU, maxU, minV, maxV, color);
-        // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getResourceLocation(), x, y, w, h, 0, 1, 0, 1, color);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, minU, maxU, minV, maxV, color);
+        // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, 0, 1, 0, 1, color);
     }
 
-    public ResourceLocation getResourceLocation() {
-        return textureAtlas.getResourceLocation();
+    public Identifier getIdentifier() {
+        return textureAtlas.getIdentifier();
     }
 }

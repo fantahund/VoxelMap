@@ -11,15 +11,15 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 
 class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.DimensionItem> {
     private static final Component APPLIES = Component.translatable("minimap.waypoints.dimension.applies");
     private static final Component NOT_APPLIES = Component.translatable("minimap.waypoints.dimension.notApplies");
-    private static final ResourceLocation CONFIRM = ResourceLocation.parse("textures/gui/sprites/container/beacon/confirm.png");
-    private static final ResourceLocation CANCEL = ResourceLocation.parse("textures/gui/sprites/container/beacon/cancel.png");
+    private static final Identifier CONFIRM = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
+    private static final Identifier CANCEL = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
     private final GuiAddWaypoint parentGui;
     private final ArrayList<DimensionItem> dimensions;

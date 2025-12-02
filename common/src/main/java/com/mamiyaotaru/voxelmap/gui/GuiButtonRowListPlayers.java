@@ -14,7 +14,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.entity.player.PlayerSkin;
@@ -168,7 +168,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
             Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).getNow(Optional.empty());
             if (optionalSkin.isPresent()) {
-                ResourceLocation skinIdentifier = optionalSkin.get().body().texturePath();
+                Identifier skinIdentifier = optionalSkin.get().body().texturePath();
                 drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
                 if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
                     drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);

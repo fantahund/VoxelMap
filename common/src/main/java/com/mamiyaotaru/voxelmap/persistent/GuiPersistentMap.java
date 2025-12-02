@@ -41,7 +41,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.biome.Biome;
@@ -125,8 +125,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean passEvents;
     private PopupGuiButton buttonWaypoints;
     private final Minecraft minecraft = Minecraft.getInstance();
-    private final ResourceLocation voxelmapSkinLocation = ResourceLocation.fromNamespaceAndPath("voxelmap", "persistentmap/playerskin");
-    private final ResourceLocation crosshairResource = ResourceLocation.parse("textures/gui/sprites/hud/crosshair.png");
+    private final Identifier voxelmapSkinLocation = Identifier.fromNamespaceAndPath("voxelmap", "persistentmap/playerskin");
+    private final Identifier crosshairResource = Identifier.parse("textures/gui/sprites/hud/crosshair.png");
     private boolean currentDragging;
     private boolean keySprintPressed;
     private boolean keyUpPressed;
@@ -155,7 +155,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void getSkin() {
-        BufferedImage skinImage = ImageUtils.createBufferedImageFromResourceLocation(VoxelConstants.getPlayer().getSkin().body().texturePath());
+        BufferedImage skinImage = ImageUtils.createBufferedImageFromIdentifier(VoxelConstants.getPlayer().getSkin().body().texturePath());
 
         if (skinImage == null) {
             if (VoxelConstants.DEBUG) {
@@ -635,7 +635,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         guiGraphics.pose().scale(this.mapToGui, this.mapToGui);
         if (VoxelMap.mapOptions.worldmapAllowed) {
             for (CachedRegion region : this.regions) {
-                ResourceLocation resource = region.getTextureLocation();
+                Identifier resource = region.getTextureLocation();
                 if (resource != null) {
                     guiGraphics.blit(VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, resource, region.getX() * 256, region.getZ() * 256, 0, 0, region.getWidth(), region.getWidth(), region.getWidth(), region.getWidth());
                 }

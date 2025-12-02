@@ -2,10 +2,10 @@ package com.mamiyaotaru.voxelmap.util;
 
 import java.awt.image.BufferedImage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class BackgroundImageInfo {
-    private ResourceLocation imageLocation;
+    private Identifier imageLocation;
     public final int left;
     public final int top;
     private final int right;
@@ -14,11 +14,11 @@ public class BackgroundImageInfo {
     public final int height;
     public final float scale;
 
-    public BackgroundImageInfo(ResourceLocation imageLocation, BufferedImage image, int left, int top, float scale) {
+    public BackgroundImageInfo(Identifier imageLocation, BufferedImage image, int left, int top, float scale) {
         this(imageLocation, image, left, top, (int) (image.getWidth() * scale), (int) (image.getHeight() * scale));
     }
 
-    public BackgroundImageInfo(ResourceLocation imageLocation, BufferedImage image, int left, int top, int width, int height) {
+    public BackgroundImageInfo(Identifier imageLocation, BufferedImage image, int left, int top, int width, int height) {
         this.imageLocation = imageLocation;
         this.left = left;
         this.top = top;
@@ -35,7 +35,7 @@ public class BackgroundImageInfo {
         Minecraft.getInstance().getTextureManager().release(imageLocation);
     }
 
-    public ResourceLocation getImageLocation() {
+    public Identifier getImageLocation() {
         return imageLocation;
     }
 }

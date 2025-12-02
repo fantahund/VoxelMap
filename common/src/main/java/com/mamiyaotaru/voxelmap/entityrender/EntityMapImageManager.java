@@ -28,21 +28,21 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.model.CamelModel;
-import net.minecraft.client.model.CodModel;
+import net.minecraft.client.model.animal.camel.CamelModel;
+import net.minecraft.client.model.animal.fish.CodModel;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.HappyGhastModel;
-import net.minecraft.client.model.LavaSlimeModel;
-import net.minecraft.client.model.LlamaModel;
-import net.minecraft.client.model.SalmonModel;
-import net.minecraft.client.model.SlimeModel;
-import net.minecraft.client.model.TropicalFishModelA;
-import net.minecraft.client.model.TropicalFishModelB;
-import net.minecraft.client.model.WitherBossModel;
+import net.minecraft.client.model.animal.ghast.HappyGhastModel;
+import net.minecraft.client.model.monster.slime.MagmaCubeModel;
+import net.minecraft.client.model.animal.llama.LlamaModel;
+import net.minecraft.client.model.animal.fish.SalmonModel;
+import net.minecraft.client.model.monster.slime.SlimeModel;
+import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
+import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
+import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
@@ -53,13 +53,14 @@ import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -75,12 +76,12 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityMapImageManager {
-    public static final ResourceLocation resourceTextureAtlasMarker = ResourceLocation.fromNamespaceAndPath("voxelmap", "atlas/mobs");
+    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath("voxelmap", "atlas/mobs");
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
     private GpuTexture fboDepthTexture;
     private GpuTexture fboTexture;
-    private final ResourceLocation resourceFboTexture = ResourceLocation.fromNamespaceAndPath("voxelmap", "entityimagemanager/fbo");
+    private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath("voxelmap", "entityimagemanager/fbo");
     private Tesselator fboTessellator = new Tesselator(4096);
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
@@ -91,7 +92,7 @@ public class EntityMapImageManager {
     private GpuTextureView fboDepthTextureView;
     private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
     private final HashMap<String, Properties> mobPropertiesMap = new HashMap<>();
-    private final Class<?>[] fullRenderModels = new Class[] { CodModel.class, LavaSlimeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishModelA.class, TropicalFishModelB.class };
+    private final Class<?>[] fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
@@ -116,17 +117,17 @@ public class EntityMapImageManager {
         }
 
         this.textureAtlas.reset();
-        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
 
         mobPropertiesMap.clear();
         variantDataFactories.clear();
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png")));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, ResourceLocation.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png")));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, ResourceLocation.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
-        // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, ResourceLocation.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png")));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png")));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
+        // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
@@ -222,10 +223,10 @@ public class EntityMapImageManager {
         //     return sprite;
         // }
 
-        ResourceLocation resourceLocation = variant.getPrimaryTexture();
-        ResourceLocation resourceLocation2 = variant.getSecondaryTexture();
+        Identifier Identifier = variant.getPrimaryTexture();
+        Identifier Identifier2 = variant.getSecondaryTexture();
 
-        // VoxelConstants.getLogger().info(" -> " + resourceLocation);
+        // VoxelConstants.getLogger().info(" -> " + Identifier);
         RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 
@@ -284,8 +285,8 @@ public class EntityMapImageManager {
             slimeOuter.model.root().render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color
         }
 
-        AbstractTexture texture = minecraft.getTextureManager().getTexture(resourceLocation);
-        AbstractTexture texture2 = resourceLocation2 == null ? null : minecraft.getTextureManager().getTexture(resourceLocation2);
+        AbstractTexture texture = minecraft.getTextureManager().getTexture(Identifier);
+        AbstractTexture texture2 = Identifier2 == null ? null : minecraft.getTextureManager().getTexture(Identifier2);
 
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
@@ -294,8 +295,7 @@ public class EntityMapImageManager {
                         RenderSystem.getModelViewMatrix(),
                         new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
                         new Vector3f(),
-                        RenderSystem.getTextureMatrix(),
-                        RenderSystem.getShaderLineWidth());
+                        new Matrix4f());
 
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
@@ -325,7 +325,7 @@ public class EntityMapImageManager {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-                renderPass.bindSampler("Sampler0", texture.getTextureView());
+                renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
                 // renderPass.bindSampler("Sampler1", texture.getTexture()); // overlay
                 // minecraft.gameRenderer.overlayTexture().setupOverlayColor();
                 // renderPass.bindSampler("Sampler2", texture.getTexture()); // lightmap
@@ -335,7 +335,7 @@ public class EntityMapImageManager {
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
 
                 if (texture2 != null) {
-                    renderPass.bindSampler("Sampler0", texture2.getTextureView());
+                    renderPass.bindTexture("Sampler0", texture2.getTextureView(), texture2.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
@@ -419,7 +419,7 @@ public class EntityMapImageManager {
             return mobPropertiesMap.get(filePath);
         } else {
             Properties properties = new Properties();
-            Optional<Resource> resource = minecraft.getResourceManager().getResource(ResourceLocation.parse(filePath));
+            Optional<Resource> resource = minecraft.getResourceManager().getResource(Identifier.parse(filePath));
             if (resource.isPresent()) {
                 try (InputStream inputStream = resource.get().open()) {
                     properties.load(inputStream);
@@ -490,13 +490,13 @@ public class EntityMapImageManager {
     // We don't need to use this code anymore. (but I'll leave this code here in case we need it later!)
     //
     //private BufferedImage getPlayerIcon(AbstractClientPlayer player, int size, boolean addBorder) {
-    //    ResourceLocation skinLocation = player.getSkin().body().texturePath();
+    //    Identifier skinLocation = player.getSkin().body().texturePath();
     //    AbstractTexture skinTexture = minecraft.getTextureManager().getTexture(skinLocation);
     //    BufferedImage skinImage = null;
     //    if (skinTexture instanceof DynamicTexture dynamicTexture) {
     //        skinImage = ImageUtils.bufferedImageFromNativeImage(dynamicTexture.getPixels());
     //    } else { // should be ReloadableImage
-    //        skinImage = ImageUtils.createBufferedImageFromResourceLocation(skinLocation);
+    //        skinImage = ImageUtils.createBufferedImageFromIdentifier(skinLocation);
     //    }
     //
     //    if (skinImage == null) {

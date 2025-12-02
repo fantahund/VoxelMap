@@ -21,7 +21,7 @@ import java.util.List;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class MapSettingsManager implements ISettingsManager {
     private File settingsFile;
@@ -88,7 +88,7 @@ public class MapSettingsManager implements ISettingsManager {
 
     public MapSettingsManager() {
         instance = this;
-        KeyMapping.Category category = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath("voxelmap", "controls.title"));
+        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("voxelmap", "controls.title"));
 
         keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.getKey("key.keyboard.z").getValue(), category);
         keyBindFullscreen = new KeyMapping("key.minimap.toggleFullscreen", InputConstants.getKey("key.keyboard.x").getValue(), category);

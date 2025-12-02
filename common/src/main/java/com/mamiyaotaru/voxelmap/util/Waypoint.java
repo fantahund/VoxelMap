@@ -92,7 +92,7 @@ public class Waypoint implements Serializable, Comparable<Waypoint> {
     }
 
     public double getDistanceSqToCamera(Camera par1Entity) {
-        Vec3 pos = par1Entity.getPosition();
+        Vec3 pos = par1Entity.position();
         double var2 = this.getX() + 0.5 - pos.x;
         double var4 = this.getY() + 0.5 - pos.y;
         double var6 = this.getZ() + 0.5 - pos.z;

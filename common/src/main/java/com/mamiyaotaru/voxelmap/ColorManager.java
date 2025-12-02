@@ -8,7 +8,7 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import net.minecraft.ResourceLocationException;
+import net.minecraft.IdentifierException;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -24,7 +24,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
@@ -164,7 +164,7 @@ public class ColorManager {
         BlockRepository.getBlocks();
         this.loadColorPicker();
         this.loadTexturePackTerrainImage();
-        TextureAtlasSprite missing = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(ResourceLocation.parse("missingno"));
+        TextureAtlasSprite missing = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.parse("missingno"));
         this.failedToLoadX = missing.getU0();
         this.failedToLoadY = missing.getV0();
         this.loaded = false;
@@ -284,7 +284,7 @@ public class ColorManager {
 
     private void loadColorPicker() {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.fromNamespaceAndPath("voxelmap", "images/colorpicker.png")).get().open();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath("voxelmap", "images/colorpicker.png")).get().open();
             Image picker = ImageIO.read(is);
             is.close();
             this.colorPicker = new BufferedImage(picker.getWidth(null), picker.getHeight(null), 2);
@@ -464,14 +464,14 @@ public class ColorManager {
             Block material = blockState.getBlock();
             if (block instanceof LiquidBlock) {
                 if (material == Blocks.WATER) {
-                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/water_flow"));
+                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.parse("minecraft:blocks/water_flow"));
                 } else if (material == Blocks.LAVA) {
-                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/lava_flow"));
+                    icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.parse("minecraft:blocks/lava_flow"));
                 }
             } else if (material == Blocks.WATER) {
-                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/water_still"));
+                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.parse("minecraft:blocks/water_still"));
             } else if (material == Blocks.LAVA) {
-                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(ResourceLocation.parse("minecraft:blocks/lava_still"));
+                icon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.parse("minecraft:blocks/lava_still"));
             }
         }
 
@@ -740,7 +740,7 @@ public class ColorManager {
     private void processCTM() {
         this.renderPassThreeBlendMode = "alpha";
         Properties properties = new Properties();
-        ResourceLocation propertiesFile = ResourceLocation.fromNamespaceAndPath("minecraft", "optifine/renderpass.properties");
+        Identifier propertiesFile = Identifier.fromNamespaceAndPath("minecraft", "optifine/renderpass.properties");
 
         try {
             InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile).get().open();
@@ -755,7 +755,7 @@ public class ColorManager {
 
         String namespace = "minecraft";
 
-        for (ResourceLocation s : this.findResources(namespace, "/optifine/ctm", ".properties", true, false, true)) {
+        for (Identifier s : this.findResources(namespace, "/optifine/ctm", ".properties", true, false, true)) {
             try {
                 this.loadCTM(s);
             } catch (IllegalArgumentException ignored) {
@@ -774,7 +774,7 @@ public class ColorManager {
 
     }
 
-    private void loadCTM(ResourceLocation propertiesFile) {
+    private void loadCTM(Identifier propertiesFile) {
         if (propertiesFile != null) {
             BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
             BlockModelShaper blockModelShapes = blockRendererDispatcher.getBlockModelShaper();
@@ -842,7 +842,7 @@ public class ColorManager {
                         matchTiles = "minecraft:blocks/" + matchTiles;
                     }
 
-                    ResourceLocation matchID = ResourceLocation.parse(matchTiles);
+                    Identifier matchID = Identifier.parse(matchTiles);
                     TextureAtlasSprite compareIcon = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(matchID);
                     if (compareIcon.atlasLocation() != MissingTextureAtlasSprite.getLocation()) {
                         ArrayList<BlockState> tmpList = new ArrayList<>();
@@ -885,7 +885,7 @@ public class ColorManager {
             if (!blockStates.isEmpty()) {
                 if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.isEmpty())) {
                     try {
-                        ResourceLocation pngResource = ResourceLocation.fromNamespaceAndPath(propertiesFile.getNamespace(), tilePath);
+                        Identifier pngResource = Identifier.fromNamespaceAndPath(propertiesFile.getNamespace(), tilePath);
                         InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource).get().open();
                         Image top = ImageIO.read(is);
                         is.close();
@@ -1077,11 +1077,11 @@ public class ColorManager {
     }
 
     private int parseBiomeName(String name) {
-        Biome biome = this.world.registryAccess().lookupOrThrow(Registries.BIOME).get(ResourceLocation.parse(name)).get().value();
+        Biome biome = this.world.registryAccess().lookupOrThrow(Registries.BIOME).get(Identifier.parse(name)).get().value();
         return biome != null ? this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome) : -1;
     }
 
-    private List<ResourceLocation> findResources(String namespace, String startingPath, String suffixMaybeNull, boolean recursive, boolean directories, boolean sortByFilename) {
+    private List<Identifier> findResources(String namespace, String startingPath, String suffixMaybeNull, boolean recursive, boolean directories, boolean sortByFilename) {
         if (startingPath == null) {
             startingPath = "";
         }
@@ -1091,9 +1091,9 @@ public class ColorManager {
         }
 
         String suffix = suffixMaybeNull == null ? "" : suffixMaybeNull;
-        ArrayList<ResourceLocation> resources;
+        ArrayList<Identifier> resources;
 
-        Map<ResourceLocation, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().listResources(startingPath, asset -> asset.getPath().endsWith(suffix));
+        Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().listResources(startingPath, asset -> asset.getPath().endsWith(suffix));
         resources = resourceMap.keySet().stream().filter(candidate -> candidate.getNamespace().equals(namespace)).collect(Collectors.toCollection(ArrayList::new));
 
         if (sortByFilename) {
@@ -1104,7 +1104,7 @@ public class ColorManager {
                 return result != 0 ? result : o1.getPath().compareTo(o2.getPath());
             });
         } else {
-            resources.sort(Comparator.comparing(ResourceLocation::getPath));
+            resources.sort(Comparator.comparing(Identifier::getPath));
         }
 
         return resources;
@@ -1114,7 +1114,7 @@ public class ColorManager {
         Properties properties = new Properties();
 
         try {
-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(ResourceLocation.parse("optifine/color.properties")).get().open();
+            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("optifine/color.properties")).get().open();
             if (input != null) {
                 properties.load(input);
                 input.close();
@@ -1147,11 +1147,11 @@ public class ColorManager {
             if (key.startsWith("palette.block")) {
                 String filename = key.substring("palette.block.".length());
                 filename = filename.replace("~", "optifine");
-                this.processColorPropertyHelper(ResourceLocation.parse(filename), properties.getProperty(key), globalGrid);
+                this.processColorPropertyHelper(Identifier.parse(filename), properties.getProperty(key), globalGrid);
             }
         }
 
-        for (ResourceLocation resource : this.findResources("minecraft", "/optifine/colormap/blocks", ".properties", true, false, true)) {
+        for (Identifier resource : this.findResources("minecraft", "/optifine/colormap/blocks", ".properties", true, false, true)) {
             Properties colorProperties = new Properties();
 
             try {
@@ -1172,13 +1172,13 @@ public class ColorManager {
             }
 
             String source = colorProperties.getProperty("source");
-            ResourceLocation resourcePNG;
+            Identifier resourcePNG;
             if (source != null) {
-                resourcePNG = ResourceLocation.fromNamespaceAndPath(resource.getNamespace(), source);
+                resourcePNG = Identifier.fromNamespaceAndPath(resource.getNamespace(), source);
 
                 VoxelConstants.getMinecraft().getResourceManager().getResource(resourcePNG);
             } else {
-                resourcePNG = ResourceLocation.fromNamespaceAndPath(resource.getNamespace(), resource.getPath().replace(".properties", ".png"));
+                resourcePNG = Identifier.fromNamespaceAndPath(resource.getNamespace(), resource.getPath().replace(".properties", ".png"));
             }
 
             String format = colorProperties.getProperty("format");
@@ -1198,20 +1198,20 @@ public class ColorManager {
             this.processColorProperty(resourcePNG, names, grid, yOffset);
         }
 
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/water.png"), "water", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/watercolorx.png"), "water", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/swampgrass.png"), "grass_block grass fern tall_grass large_fern", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/swampgrasscolor.png"), "grass_block grass fern tall_grass large_fern", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/swampfoliage.png"), "oak_leaves vine", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/swampfoliagecolor.png"), "oak_leaves vine", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/pine.png"), "spruce_leaves", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/pinecolor.png"), "spruce_leaves", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/birch.png"), "birch_leaves", globalGrid);
-        this.processColorPropertyHelper(ResourceLocation.parse("optifine/colormap/birchcolor.png"), "birch_leaves", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/water.png"), "water", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/watercolorx.png"), "water", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/swampgrass.png"), "grass_block grass fern tall_grass large_fern", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/swampgrasscolor.png"), "grass_block grass fern tall_grass large_fern", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/swampfoliage.png"), "oak_leaves vine", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/swampfoliagecolor.png"), "oak_leaves vine", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/pine.png"), "spruce_leaves", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/pinecolor.png"), "spruce_leaves", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/birch.png"), "birch_leaves", globalGrid);
+        this.processColorPropertyHelper(Identifier.parse("optifine/colormap/birchcolor.png"), "birch_leaves", globalGrid);
     }
 
-    private void processColorPropertyHelper(ResourceLocation resource, String list, boolean grid) {
-        ResourceLocation resourceProperties = ResourceLocation.fromNamespaceAndPath(resource.getNamespace(), resource.getPath().replace(".png", ".properties"));
+    private void processColorPropertyHelper(Identifier resource, String list, boolean grid) {
+        Identifier resourceProperties = Identifier.fromNamespaceAndPath(resource.getNamespace(), resource.getPath().replace(".png", ".properties"));
         Properties colorProperties = new Properties();
         int yOffset = 0;
 
@@ -1237,7 +1237,7 @@ public class ColorManager {
         this.processColorProperty(resource, list, grid, yOffset);
     }
 
-    private void processColorProperty(ResourceLocation resource, String list, boolean grid, int yOffset) {
+    private void processColorProperty(Identifier resource, String list, boolean grid, int yOffset) {
         int[][] tints = new int[this.sizeOfBiomeArray][32];
 
         for (int[] row : tints) {
@@ -1293,11 +1293,11 @@ public class ColorManager {
             int blockStateID = BlockRepository.getStateId(blockState);
             int[][] previousTints = this.blockTintTables.get(blockStateID);
             if (swamp && previousTints == null) {
-                ResourceLocation defaultResource;
+                Identifier defaultResource;
                 if (resource.getPath().contains("grass")) {
-                    defaultResource = ResourceLocation.parse("textures/colormap/grass.png");
+                    defaultResource = Identifier.parse("textures/colormap/grass.png");
                 } else {
-                    defaultResource = ResourceLocation.parse("textures/colormap/foliage.png");
+                    defaultResource = Identifier.parse("textures/colormap/foliage.png");
                 }
 
                 String stateString = blockState.toString().toLowerCase();
@@ -1330,9 +1330,9 @@ public class ColorManager {
 
     private Block getBlockFromName(String name) {
         try {
-            ResourceLocation resourceLocation = ResourceLocation.parse(name);
-            return BuiltInRegistries.BLOCK.containsKey(resourceLocation) ? BuiltInRegistries.BLOCK.get(resourceLocation).get().value() : null;
-        } catch (ResourceLocationException | NumberFormatException var3) {
+            Identifier identifier = Identifier.parse(name);
+            return BuiltInRegistries.BLOCK.containsKey(identifier) ? BuiltInRegistries.BLOCK.get(identifier).get().value() : null;
+        } catch (IdentifierException | NumberFormatException var3) {
             return null;
         }
     }
