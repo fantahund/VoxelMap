@@ -5,6 +5,8 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -53,7 +55,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
 
         try {
             DynamicTexture targetIcon = new DynamicTexture(() -> "Waypoint Target Icon", TextureContents.load(VoxelConstants.getMinecraft().getResourceManager(), targetIconLocation).image());
-            targetIcon.setFilter(true, false);
+            targetIcon.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
             minecraft.getTextureManager().register(targetIconLocation, targetIcon);
         } catch (Exception e) {
         }

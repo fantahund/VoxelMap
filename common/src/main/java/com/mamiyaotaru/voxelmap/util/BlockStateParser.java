@@ -33,14 +33,14 @@ public final class BlockStateParser {
         int curlyBracketCloseIndex = resourceString.indexOf('}');
         resourceString = resourceString.substring(curlyBracketOpenIndex == -1 ? 0 : curlyBracketOpenIndex + 1, curlyBracketCloseIndex == -1 ? resourceString.length() : curlyBracketCloseIndex);
         String[] resourceStringParts = resourceString.split(":");
-        Identifier Identifier = null;
+        Identifier identifier = null;
 
         if (resourceStringParts.length == 1) {
-            Identifier = Identifier.parse(resourceStringParts[0]);
+            identifier = Identifier.parse(resourceStringParts[0]);
         } else if (resourceStringParts.length == 2) {
-            Identifier = Identifier.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
+            identifier = Identifier.fromNamespaceAndPath(resourceStringParts[0], resourceStringParts[1]);
         }
-        Reference<Block> blockRef = BuiltInRegistries.BLOCK.get(Identifier).orElse(null);
+        Reference<Block> blockRef = BuiltInRegistries.BLOCK.get(identifier).orElse(null);
         if (blockRef == null) {
             return null;
         }

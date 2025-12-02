@@ -40,7 +40,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         ClientPacketListener netHandlerPlayClient = VoxelConstants.getPlayer().connection;
         this.players = new ArrayList<>(netHandlerPlayClient.getOnlinePlayers());
         this.sort();
-        Button everyoneButton = new Button(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, EVERYONE, null, null) {
+        Button everyoneButton = new Button.Plain(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, EVERYONE, null, null) {
             @Override
             public void onPress(InputWithModifiers inputWithModifiers) {
             }

@@ -19,7 +19,6 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 public class WaypointContainer {

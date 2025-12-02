@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
+import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 
 public class BlockModel {
@@ -23,7 +24,7 @@ public class BlockModel {
         this.failedToLoadY = failedToLoadY;
         this.faces = new ArrayList<>();
         for (BakedQuad quad2 : quads) {
-            face = new BlockFace(quad2.vertices());
+            face = new BlockFace(quad2);
             if (!face.isClockwise || face.isVertical) {
                 continue;
             }
@@ -147,6 +148,21 @@ public class BlockModel {
         final boolean isClockwise;
         final float yLevel;
         final BlockVertex[] longestSide;
+
+        public BlockFace(BakedQuad quad) {
+            this.vertices = new BlockVertex[4];
+
+            this.vertices[0] = new BlockVertex(quad.position0().x(), quad.position0().y(), quad.position0().z(), UVPair.unpackU(quad.packedUV0()), UVPair.unpackV(quad.packedUV0()));
+            this.vertices[1] = new BlockVertex(quad.position1().x(), quad.position1().y(), quad.position1().z(), UVPair.unpackU(quad.packedUV1()), UVPair.unpackV(quad.packedUV1()));
+            this.vertices[2] = new BlockVertex(quad.position2().x(), quad.position2().y(), quad.position2().z(), UVPair.unpackU(quad.packedUV2()), UVPair.unpackV(quad.packedUV2()));
+            this.vertices[3] = new BlockVertex(quad.position3().x(), quad.position3().y(), quad.position3().z(), UVPair.unpackU(quad.packedUV3()), UVPair.unpackV(quad.packedUV3()));
+
+            this.isHorizontal = this.checkIfHorizontal();
+            this.isVertical = this.checkIfVertical();
+            this.isClockwise = this.checkIfClockwise();
+            this.yLevel = this.calculateY();
+            this.longestSide = this.getLongestSide();
+        }
 
         BlockFace(int[] values) {
             int arraySize = values.length;

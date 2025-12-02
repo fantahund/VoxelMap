@@ -6,6 +6,8 @@ import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -83,7 +85,7 @@ public class CompressibleGLBufferedImage {
 
         if (this.texture == null) {
             this.texture = new DynamicTexture(() -> "", new NativeImage(Format.RGBA, width, height, false));
-            this.texture.setClamp(true);
+            this.texture.sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.NEAREST, FilterMode.LINEAR, false);
             Minecraft.getInstance().getTextureManager().register(location, texture);
         }
 

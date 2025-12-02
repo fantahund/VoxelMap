@@ -5,6 +5,8 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.awt.image.BufferedImage;
@@ -47,12 +49,11 @@ public class TextureAtlas extends AbstractTexture {
         Minecraft.getInstance().getTextureManager().register(Identifier, this);
     }
 
-    @Override
     public void setFilter(boolean linearFilter, boolean mipmap) {
         this.linearFilter = linearFilter;
         this.mipmap = mipmap;
         if (texture != null) {
-            super.setFilter(linearFilter, mipmap);
+            sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,  linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, false);
         }
     }
 
@@ -103,7 +104,7 @@ public class TextureAtlas extends AbstractTexture {
 
         texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1, 1);
         textureView = RenderSystem.getDevice().createTextureView(texture);
-        super.setFilter(linearFilter, mipmap);
+        // super.setFilter(linearFilter, mipmap);
         HashMap<Object, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
         for (Sprite icon : this.stitcher.getStitchSlots()) {
             Object iconName = icon.getIconName();
@@ -159,7 +160,7 @@ public class TextureAtlas extends AbstractTexture {
             VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[] { this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath });
             texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1, 1);
             textureView = RenderSystem.getDevice().createTextureView(texture);
-            super.setFilter(linearFilter, mipmap);
+            // super.setFilter(linearFilter, mipmap);
         }
 
         HashMap<Object, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);

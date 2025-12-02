@@ -26,6 +26,8 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -177,7 +179,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
 
         DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
-        texture.setFilter(true, false);
+        texture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
         minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 

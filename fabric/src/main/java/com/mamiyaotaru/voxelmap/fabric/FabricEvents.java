@@ -11,11 +11,11 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class FabricEvents implements Events {
     FabricEvents() {
-        ResourceLocation voxelMapMinimapLayer = ResourceLocation.parse("voxelmap:minimap");
+        Identifier voxelMapMinimapLayer = Identifier.parse("voxelmap:minimap");
         HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, voxelMapMinimapLayer, new HudElement() {
             @Override
             public void render(GuiGraphics context, DeltaTracker tickCounter) {

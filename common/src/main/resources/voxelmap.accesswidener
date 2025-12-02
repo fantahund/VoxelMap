@@ -29,3 +29,4 @@ accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
 
 accessible method net/minecraft/client/renderer/rendertype/RenderType create (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
 accessible method net/minecraft/client/multiplayer/ClientLevel getSkyFlashTime ()I
+accessible field net/minecraft/client/renderer/texture/AbstractTexture sampler Lcom/mojang/blaze3d/textures/GpuSampler;
