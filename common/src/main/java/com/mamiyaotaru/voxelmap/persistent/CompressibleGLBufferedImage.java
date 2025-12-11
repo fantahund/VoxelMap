@@ -85,7 +85,7 @@ public class CompressibleGLBufferedImage {
 
         if (this.texture == null) {
             this.texture = new DynamicTexture(() -> "", new NativeImage(Format.RGBA, width, height, false));
-            this.texture.sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.NEAREST, FilterMode.LINEAR, false);
+            this.texture.sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.NEAREST, FilterMode.NEAREST, false);
             Minecraft.getInstance().getTextureManager().register(location, texture);
         }
 
