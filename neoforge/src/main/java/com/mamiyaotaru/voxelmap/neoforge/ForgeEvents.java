@@ -77,9 +77,8 @@ public class ForgeEvents implements Events {
 
         @SubscribeEvent
         public void onRenderGui(RenderGuiOverlayEvent.Pre event) {
-            if (event.getOverlay().id().equals(new ResourceLocation("minecraft", "crosshair"))) {
-                VoxelConstants.renderOverlay(event.getGuiGraphics());
-            }
+            // In 1.20.1, render on all overlays or check specific overlay name
+            VoxelConstants.renderOverlay(event.getGuiGraphics());
         }
 
         @SubscribeEvent
