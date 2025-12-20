@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.neoforge;
 
 import com.mamiyaotaru.voxelmap.ModApiBridge;
-import net.neoforged.fml.ModList;
+import net.minecraftforge.fml.ModList;
 
 public class NeoForgeModApiBridge implements ModApiBridge {
     @Override

@@ -16,7 +16,7 @@ import java.util.TreeMap;
 import net.minecraft.util.Util;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.NotNull;
 
@@ -61,7 +61,7 @@ public final class BiomeRepository {
         }
 
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath("voxelmap", "conf/biomecolors.txt")).get().open();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(new ResourceLocation("voxelmap", "conf/biomecolors.txt")).get().open();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             String sCurrentLine;
@@ -171,13 +171,13 @@ public final class BiomeRepository {
 
     @NotNull
     public static String getName(Biome biome) {
-        Identifier Identifier = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome);
-        String translationKey = Util.makeDescriptionId("biome", Identifier);
+        ResourceLocation ResourceLocation = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome);
+        String translationKey = Util.makeDescriptionId("biome", ResourceLocation);
 
         String name = I18n.get(translationKey);
 
         if (name.equals(translationKey)) {
-            return TextUtils.prettify(Identifier.getPath());
+            return TextUtils.prettify(ResourceLocation.getPath());
         }
         return name;
     }

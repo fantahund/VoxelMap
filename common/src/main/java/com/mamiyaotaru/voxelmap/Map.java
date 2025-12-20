@@ -58,7 +58,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -95,11 +95,11 @@ public class Map implements Runnable, IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
     // private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
-    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/mmarrow.png");
-    private final Identifier resourceSquareMap = Identifier.fromNamespaceAndPath("voxelmap", "images/squaremap.png");
-    private final Identifier resourceRoundMap = Identifier.fromNamespaceAndPath("voxelmap", "images/roundmap.png");
-    private final Identifier squareStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/square.png");
-    private final Identifier circleStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/circle.png");
+    private final ResourceLocation resourceArrow = new ResourceLocation("voxelmap", "images/mmarrow.png");
+    private final ResourceLocation resourceSquareMap = new ResourceLocation("voxelmap", "images/squaremap.png");
+    private final ResourceLocation resourceRoundMap = new ResourceLocation("voxelmap", "images/roundmap.png");
+    private final ResourceLocation squareStencil = new ResourceLocation("voxelmap", "images/square.png");
+    private final ResourceLocation circleStencil = new ResourceLocation("voxelmap", "images/circle.png");
     private ClientLevel world;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
@@ -113,7 +113,7 @@ public class Map implements Runnable, IChangeObserver {
     private final FullMapData[] mapData = new FullMapData[5];
     private final MapChunkCache[] chunkCache = new MapChunkCache[5];
     private DynamicMoveableTexture[] mapImages;
-    private Identifier[] mapResources;
+    private ResourceLocation[] mapResources;
     private final DynamicMoveableTexture[] mapImagesFiltered = new DynamicMoveableTexture[5];
     private final DynamicMoveableTexture[] mapImagesUnfiltered = new DynamicMoveableTexture[5];
     private BlockState transparentBlockState;
@@ -162,25 +162,25 @@ public class Map implements Runnable, IChangeObserver {
     private double zoomScaleAdjusted = 1.0;
     private static double minTablistOffset;
     private static float statusIconOffset = 0.0F;
-    
-    private final Identifier[] resourceMapImageFiltered = new Identifier[5];
-    private final Identifier[] resourceMapImageUnfiltered = new Identifier[5];
+
+    private final ResourceLocation[] resourceMapImageFiltered = new ResourceLocation[5];
+    private final ResourceLocation[] resourceMapImageUnfiltered = new ResourceLocation[5];
     private GpuTexture fboTexture;
     private GpuTextureView fboTextureView;
     private Tesselator fboTessellator = new Tesselator(4096);
     private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
     public Map() {
-        resourceMapImageFiltered[0] = Identifier.fromNamespaceAndPath("voxelmap", "map/filtered/0");
-        resourceMapImageFiltered[1] = Identifier.fromNamespaceAndPath("voxelmap", "map/filtered/1");
-        resourceMapImageFiltered[2] = Identifier.fromNamespaceAndPath("voxelmap", "map/filtered/2");
-        resourceMapImageFiltered[3] = Identifier.fromNamespaceAndPath("voxelmap", "map/filtered/3");
-        resourceMapImageFiltered[4] = Identifier.fromNamespaceAndPath("voxelmap", "map/filtered/4");
-        resourceMapImageUnfiltered[0] = Identifier.fromNamespaceAndPath("voxelmap", "map/unfiltered/0");
-        resourceMapImageUnfiltered[1] = Identifier.fromNamespaceAndPath("voxelmap", "map/unfiltered/1");
-        resourceMapImageUnfiltered[2] = Identifier.fromNamespaceAndPath("voxelmap", "map/unfiltered/2");
-        resourceMapImageUnfiltered[3] = Identifier.fromNamespaceAndPath("voxelmap", "map/unfiltered/3");
-        resourceMapImageUnfiltered[4] = Identifier.fromNamespaceAndPath("voxelmap", "map/unfiltered/4");
+        resourceMapImageFiltered[0] = new ResourceLocation("voxelmap", "map/filtered/0");
+        resourceMapImageFiltered[1] = new ResourceLocation("voxelmap", "map/filtered/1");
+        resourceMapImageFiltered[2] = new ResourceLocation("voxelmap", "map/filtered/2");
+        resourceMapImageFiltered[3] = new ResourceLocation("voxelmap", "map/filtered/3");
+        resourceMapImageFiltered[4] = new ResourceLocation("voxelmap", "map/filtered/4");
+        resourceMapImageUnfiltered[0] = new ResourceLocation("voxelmap", "map/unfiltered/0");
+        resourceMapImageUnfiltered[1] = new ResourceLocation("voxelmap", "map/unfiltered/1");
+        resourceMapImageUnfiltered[2] = new ResourceLocation("voxelmap", "map/unfiltered/2");
+        resourceMapImageUnfiltered[3] = new ResourceLocation("voxelmap", "map/unfiltered/3");
+        resourceMapImageUnfiltered[4] = new ResourceLocation("voxelmap", "map/unfiltered/4");
 
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();

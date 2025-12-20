@@ -53,7 +53,7 @@ import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -76,12 +76,12 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityMapImageManager {
-    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath("voxelmap", "atlas/mobs");
+    public static final ResourceLocation resourceTextureAtlasMarker = new ResourceLocation("voxelmap", "atlas/mobs");
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
     private GpuTexture fboDepthTexture;
     private GpuTexture fboTexture;
-    private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath("voxelmap", "entityimagemanager/fbo");
+    private final ResourceLocation resourceFboTexture = new ResourceLocation("voxelmap", "entityimagemanager/fbo");
     private Tesselator fboTessellator = new Tesselator(4096);
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
@@ -117,9 +117,9 @@ public class EntityMapImageManager {
         }
 
         this.textureAtlas.reset();
-        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(new ResourceLocation("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(new ResourceLocation("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(new ResourceLocation("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
 
         mobPropertiesMap.clear();
@@ -170,7 +170,7 @@ public class EntityMapImageManager {
     private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
         EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
-            return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, size, addBorder);
+            return new DefaultEntityVariantData(entity.getType(), minecraft.getSkinManager().getInsecureSkin(player.getGameProfile()).texture(), null, size, addBorder);
         }
 
         if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
@@ -223,8 +223,8 @@ public class EntityMapImageManager {
         //     return sprite;
         // }
 
-        Identifier Identifier = variant.getPrimaryTexture();
-        Identifier Identifier2 = variant.getSecondaryTexture();
+        ResourceLocation ResourceLocation = variant.getPrimaryTexture();
+        ResourceLocation ResourceLocation2 = variant.getSecondaryTexture();
 
         // VoxelConstants.getLogger().info(" -> " + Identifier);
         RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
@@ -285,8 +285,8 @@ public class EntityMapImageManager {
             slimeOuter.model.root().render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color
         }
 
-        AbstractTexture texture = minecraft.getTextureManager().getTexture(Identifier);
-        AbstractTexture texture2 = Identifier2 == null ? null : minecraft.getTextureManager().getTexture(Identifier2);
+        AbstractTexture texture = minecraft.getTextureManager().getTexture(ResourceLocation);
+        AbstractTexture texture2 = ResourceLocation2 == null ? null : minecraft.getTextureManager().getTexture(ResourceLocation2);
 
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
@@ -419,7 +419,7 @@ public class EntityMapImageManager {
             return mobPropertiesMap.get(filePath);
         } else {
             Properties properties = new Properties();
-            Optional<Resource> resource = minecraft.getResourceManager().getResource(Identifier.parse(filePath));
+            Optional<Resource> resource = minecraft.getResourceManager().getResource(new ResourceLocation(filePath));
             if (resource.isPresent()) {
                 try (InputStream inputStream = resource.get().open()) {
                     properties.load(inputStream);

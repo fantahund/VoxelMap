@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.zip.DataFormatException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -32,7 +32,7 @@ public class CompressibleGLBufferedImage {
     private final Object bufferLock = new Object();
     private boolean isCompressed;
     private final boolean compressNotDelete;
-    private final Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "mapimage/" + UUID.randomUUID());
+    private final ResourceLocation location = new ResourceLocation("voxelmap", "mapimage/" + UUID.randomUUID());
     private DynamicTexture texture;
 
     public CompressibleGLBufferedImage(int width, int height, int imageType) {
@@ -50,7 +50,7 @@ public class CompressibleGLBufferedImage {
         return this.bytes;
     }
 
-    public Identifier getTextureLocation() {
+    public ResourceLocation getTextureLocation() {
         return this.texture != null ? this.location : null;
     }
 

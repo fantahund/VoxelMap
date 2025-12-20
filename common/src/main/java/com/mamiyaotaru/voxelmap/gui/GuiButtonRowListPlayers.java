@@ -51,7 +51,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
     }
 
     private Component getPlayerName(PlayerInfo ScoreboardEntryIn) {
-        return Component.literal(ScoreboardEntryIn.getProfile().name());
+        return Component.literal(ScoreboardEntryIn.getProfile().getName());
     }
 
     private Button createButtonFor(int x, int y, PlayerInfo ScoreboardEntry) {
@@ -165,14 +165,12 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         private void drawIconForButton(GuiGraphics drawContext, Button button, int id) {
             PlayerInfo networkPlayerInfo = GuiButtonRowListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
-            Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
-            Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).getNow(Optional.empty());
-            if (optionalSkin.isPresent()) {
-                Identifier skinIdentifier = optionalSkin.get().body().texturePath();
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
-                if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
-                    drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
-                }
+            Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.getId());
+            PlayerSkin playerSkin = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(gameProfile);
+            Identifier skinIdentifier = playerSkin.texture();
+            drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
+            if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
             }
         }
 
