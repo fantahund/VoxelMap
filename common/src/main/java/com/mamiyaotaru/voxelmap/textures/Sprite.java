@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class Sprite {
     private final Object iconName;
@@ -25,8 +25,8 @@ public class Sprite {
         this.textureAtlas = textureAtlas;
     }
 
-    public static Sprite spriteFromIdentifier(Identifier Identifier, TextureAtlas textureAtlas) {
-        String name = Identifier.toString();
+    public static Sprite spriteFromIdentifier(ResourceLocation ResourceLocation, TextureAtlas textureAtlas) {
+        String name = ResourceLocation.toString();
         return spriteFromString(name, textureAtlas);
     }
 
@@ -131,7 +131,7 @@ public class Sprite {
         // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, 0, 1, 0, 1, color);
     }
 
-    public Identifier getIdentifier() {
+    public ResourceLocation getIdentifier() {
         return textureAtlas.getIdentifier();
     }
 }

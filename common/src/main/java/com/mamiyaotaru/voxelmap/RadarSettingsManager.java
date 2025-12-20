@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mojang.serialization.DataResult;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -33,7 +33,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean radarAllowed = true;
     public boolean radarPlayersAllowed = true;
     public boolean radarMobsAllowed = true;
-    public final HashSet<Identifier> hiddenMobs = new HashSet<>();
+    public final HashSet<ResourceLocation> hiddenMobs = new HashSet<>();
 
     float fontScale = 1.0F;
 
@@ -74,9 +74,9 @@ public class RadarSettingsManager implements ISubSettingsManager {
 
         this.hiddenMobs.clear();
         for (String s : mobsToHide) {
-            DataResult<Identifier> location = Identifier.read(s);
-            if (location.isSuccess()) {
-                this.hiddenMobs.add(location.getOrThrow());
+            try {
+                this.hiddenMobs.add(new ResourceLocation(s));
+            } catch (Exception ignored) {
             }
         }
     }
@@ -97,7 +97,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Font Scale:" + this.fontScale);
         out.println("Show Facing:" + this.showFacing);
         out.print("Hidden Mobs:");
-        for (Identifier mob : hiddenMobs) {
+        for (ResourceLocation mob : hiddenMobs) {
             out.print(mob.toString() + ",");
         }
         out.println();

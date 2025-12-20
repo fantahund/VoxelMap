@@ -21,7 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.ReloadableTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
 
 public class ImageUtils {
@@ -43,7 +43,7 @@ public class ImageUtils {
         return image;
     }
 
-    public static NativeImage createNativeImageFromIdentifier(Identifier Identifier) {
+    public static NativeImage createNativeImageFromIdentifier(ResourceLocation Identifier) {
         try {
             return NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(Identifier).get().open());
         } catch (Exception var5) {
@@ -51,7 +51,7 @@ public class ImageUtils {
         }
     }
 
-    public static BufferedImage createBufferedImageFromIdentifier(Identifier Identifier) {
+    public static BufferedImage createBufferedImageFromIdentifier(ResourceLocation Identifier) {
         try {
             AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(Identifier);
             BufferedImage image = null;
@@ -132,19 +132,19 @@ public class ImageUtils {
         return bufferedImage;
     }
 
-    public static BufferedImage blankImage(Identifier Identifier, int w, int h) {
+    public static BufferedImage blankImage(ResourceLocation Identifier, int w, int h) {
         return blankImage(Identifier, w, h, 64, 32);
     }
 
-    public static BufferedImage blankImage(Identifier Identifier, int w, int h, int imageWidth, int imageHeight) {
+    public static BufferedImage blankImage(ResourceLocation Identifier, int w, int h, int imageWidth, int imageHeight) {
         return blankImage(Identifier, w, h, imageWidth, imageHeight, 0, 0, 0, 0);
     }
 
-    public static BufferedImage blankImage(Identifier Identifier, int w, int h, int r, int g, int b, int a) {
+    public static BufferedImage blankImage(ResourceLocation Identifier, int w, int h, int r, int g, int b, int a) {
         return blankImage(Identifier, w, h, 64, 32, r, g, b, a);
     }
 
-    public static BufferedImage blankImage(Identifier Identifier, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
+    public static BufferedImage blankImage(ResourceLocation Identifier, int w, int h, int imageWidth, int imageHeight, int r, int g, int b, int a) {
         try {
             InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier).get().open();
             BufferedImage mobSkin = ImageIO.read(is);
@@ -208,11 +208,11 @@ public class ImageUtils {
         return image;
     }
 
-    public static BufferedImage loadImage(Identifier Identifier, int x, int y, int w, int h) {
+    public static BufferedImage loadImage(ResourceLocation Identifier, int x, int y, int w, int h) {
         return loadImage(Identifier, x, y, w, h, 64, 32);
     }
 
-    public static BufferedImage loadImage(Identifier Identifier, int x, int y, int w, int h, int imageWidth, int imageHeight) {
+    public static BufferedImage loadImage(ResourceLocation Identifier, int x, int y, int w, int h, int imageWidth, int imageHeight) {
         BufferedImage mobSkin = createBufferedImageFromIdentifier(Identifier);
         if (mobSkin != null) {
             return loadImage(mobSkin, x, y, w, h, imageWidth, imageHeight);

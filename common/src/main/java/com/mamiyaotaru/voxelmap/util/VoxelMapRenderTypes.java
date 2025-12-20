@@ -5,7 +5,7 @@ import net.minecraft.util.Util;
 // TODO: 1.20.1 Port - RenderSetup doesn't exist in 1.20.1, this is a 1.21.x API
 // import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class VoxelMapRenderTypes {
     // TODO: 1.20.1 Port - RenderSetup and RenderPipeline APIs are 1.21.x only
@@ -19,16 +19,16 @@ public class VoxelMapRenderTypes {
             //         .createRenderSetup());
 
     // TODO: Replace with proper 1.20.1 RenderType for waypoint icons with depth test
-    public static final Function<Identifier, RenderType> WAYPOINT_ICON_DEPTHTEST = Util.memoize(
-            (Function<Identifier, RenderType>) (identifier -> null)); // RenderType.create(
+    public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_DEPTHTEST = Util.memoize(
+            (Function<ResourceLocation, RenderType>) (identifier -> null)); // RenderType.create(
                     // "voxelmap_icon_depthtest",
                     // RenderSetup.builder(VoxelMapPipelines.WAYPOINT_ICON_DEPTHTEST_PIPELINE)
                     //         .withTexture("Sampler0", identifier)
                     //         .createRenderSetup())));
 
     // TODO: Replace with proper 1.20.1 RenderType for waypoint icons without depth test
-    public static final Function<Identifier, RenderType> WAYPOINT_ICON_NO_DEPTHTEST = Util.memoize(
-            (Function<Identifier, RenderType>) (identifier -> null)); // RenderType.create(
+    public static final Function<ResourceLocation, RenderType> WAYPOINT_ICON_NO_DEPTHTEST = Util.memoize(
+            (Function<ResourceLocation, RenderType>) (identifier -> null)); // RenderType.create(
                     // "voxelmap_icon_no_depthtest",
                     // RenderSetup.builder(VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTHTEST_PIPELINE)
                     //         .withTexture("Sampler0", identifier)

@@ -36,7 +36,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -681,7 +681,7 @@ public class CachedRegion {
         return this.width;
     }
 
-    public Identifier getTextureLocation() {
+    public ResourceLocation getTextureLocation() {
         if (this.image != null) {
             if (!this.refreshingImage) {
                 synchronized (this.image) {

@@ -515,7 +515,7 @@ public class WaypointManager {
                     }
 
                     if (dimensionsString.toString().isEmpty()) {
-                        dimensionsString.append(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(BuiltinDimensionTypes.OVERWORLD.identifier()).getStorageName());
+                        dimensionsString.append(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(BuiltinDimensionTypes.OVERWORLD.location()).getStorageName());
                     }
 
                     out.println("name:" + TextUtils.scrubName(pt.name) + ",x:" + pt.x + ",z:" + pt.z + ",y:" + pt.y + ",enabled:" + pt.enabled + ",red:" + pt.red + ",green:" + pt.green + ",blue:" + pt.blue + ",suffix:" + pt.imageSuffix + ",world:" + TextUtils.scrubName(pt.world) + ",dimensions:" + dimensionsString);
@@ -661,7 +661,7 @@ public class WaypointManager {
                                                     dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(convertOldFormat));
                                                 }
                                                 if (dimensions.isEmpty()) {
-                                                    dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(BuiltinDimensionTypes.OVERWORLD.identifier()));
+                                                    dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByIdentifier(BuiltinDimensionTypes.OVERWORLD.location()));
                                                 }
                                             }
                                         }

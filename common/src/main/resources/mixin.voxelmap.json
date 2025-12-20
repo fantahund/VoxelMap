@@ -1,7 +1,7 @@
 {
   "package": "com.mamiyaotaru.voxelmap.mixins",
   "required": true,
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_17",
   "refmap": "voxelmap.refmap.json",
   "injectors": {
     "defaultRequire": 1

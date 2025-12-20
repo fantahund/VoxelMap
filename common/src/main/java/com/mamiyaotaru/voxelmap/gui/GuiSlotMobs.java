@@ -11,10 +11,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
+// import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -30,8 +31,8 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
     static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enableTooltip");
     static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disableTooltip");
-    final Identifier visibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
-    final Identifier invisibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
+    final ResourceLocation visibleIconIdentifier = new ResourceLocation("textures/gui/sprites/container/beacon/confirm.png");
+    final ResourceLocation invisibleIconIdentifier = new ResourceLocation("textures/gui/sprites/container/beacon/cancel.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
         super(VoxelConstants.getMinecraft(), par1GuiMobs.getWidth(), par1GuiMobs.getHeight() - 110, 40, 18);
@@ -42,7 +43,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
 
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
             if (entry.getValue().create(Minecraft.getInstance().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
-                this.mobs.add(new MobItem(this.parentGui, entry.getValue(), entry.getKey().identifier()));
+                this.mobs.add(new MobItem(this.parentGui, entry.getValue(), entry.getKey().location()));
             }
         });
 
@@ -101,12 +102,12 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     public class MobItem extends AbstractSelectionList.Entry<MobItem> {
         private final GuiMobs parentGui;
         private final EntityType<?> type;
-        private final Identifier id;
+        private final ResourceLocation id;
         private final Component name;
         private final String nameString;
         private final MobCategory category;
 
-        protected MobItem(GuiMobs mobsScreen, EntityType<?> type, Identifier id) {
+        protected MobItem(GuiMobs mobsScreen, EntityType<?> type, ResourceLocation id) {
             this.type = type;
             this.parentGui = mobsScreen;
             this.id = id;
@@ -139,9 +140,11 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             if (sprite != null) {
-                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY(), 18, 18);
+                // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+                sprite.blit(drawContext, null, getX() + 2, getY(), 18, 18);
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY(), 0.0F, 0.0F, 18, 18, 18, 18);
+            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+            drawContext.blit(null, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY(), 0.0F, 0.0F, 18, 18, 18, 18);
         }
 
         @Override

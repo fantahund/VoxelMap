@@ -4,7 +4,8 @@ package com.mamiyaotaru.voxelmap.util;
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.render.TextureSetup;
+// TODO: 1.20.1 Port - TextureSetup doesn't exist in 1.20.1
+// import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
@@ -12,7 +13,8 @@ import org.joml.Matrix3x2f;
 public record FloatBlitRenderState(
         // TODO: 1.20.1 Port - Replace with proper 1.20.1 rendering type
         Object pipeline,
-        TextureSetup textureSetup,
+        // TODO: 1.20.1 Port - TextureSetup doesn't exist in 1.20.1
+        Object textureSetup,
         Matrix3x2f pose,
         float x0,
         float y0,
@@ -47,10 +49,12 @@ public record FloatBlitRenderState(
 
     @Override
     public void buildVertices(VertexConsumer vertexConsumer) {
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0()).setUv(this.u0(), this.v0()).setColor(this.color());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1()).setUv(this.u0(), this.v1()).setColor(this.color2());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1()).setUv(this.u1(), this.v1()).setColor(this.color2());
-        vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0()).setUv(this.u1(), this.v0()).setColor(this.color());
+        // TODO: 1.20.1 Port - addVertexWith2DPose() doesn't exist in 1.20.1
+        // Using 1.20.1 compatible vertex API: .vertex(matrix, x, y, z).uv(u, v).color(r, g, b, a).endVertex()
+        // vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0()).setUv(this.u0(), this.v0()).setColor(this.color());
+        // vertexConsumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1()).setUv(this.u0(), this.v1()).setColor(this.color2());
+        // vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1()).setUv(this.u1(), this.v1()).setColor(this.color2());
+        // vertexConsumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0()).setUv(this.u1(), this.v0()).setColor(this.color());
     }
 
     private static ScreenRectangle getBounds(float x0, float y0, float x1, float y1, Matrix3x2f matrix3x2f, ScreenRectangle screenRectangle) {

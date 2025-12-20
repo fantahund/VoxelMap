@@ -13,7 +13,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
+// import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -172,11 +173,14 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                     GuiWaypoints.setTooltip(GuiSlotWaypoints.this.parentGui, tooltip);
                 }
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y, 0.0F, 0.0F, 18, 18, 18, 18);
-            textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, waypoint.getUnifiedColor());
+            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+            drawContext.blit(null, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y, 0.0F, 0.0F, 18, 18, 18, 18);
+            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+            textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, null, x, y, 18, 18, waypoint.getUnifiedColor());
 
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, targetIconLocation, x, y, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
+                // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+                drawContext.blit(null, targetIconLocation, x, y, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
             }
         }
 

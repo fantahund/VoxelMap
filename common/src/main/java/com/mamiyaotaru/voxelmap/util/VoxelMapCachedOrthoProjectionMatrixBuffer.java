@@ -17,17 +17,21 @@ public class VoxelMapCachedOrthoProjectionMatrixBuffer implements AutoCloseable 
     private final GpuBufferSlice bufferSlice;
 
     public VoxelMapCachedOrthoProjectionMatrixBuffer(String string, float left, float right, float bottom, float top, float zNear, float zFar) {
-        GpuDevice gpuDevice = RenderSystem.getDevice();
-        this.buffer = gpuDevice.createBuffer(() -> "Projection matrix UBO " + string, GpuBuffer.USAGE_UNIFORM + GpuBuffer.USAGE_COPY_DST, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
-        this.bufferSlice = this.buffer.slice(0, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+        // TODO: 1.20.1 Port - RenderSystem.getDevice() doesn't exist in 1.20.1
+        // GpuDevice gpuDevice = RenderSystem.getDevice();
+        // this.buffer = gpuDevice.createBuffer(() -> "Projection matrix UBO " + string, GpuBuffer.USAGE_UNIFORM + GpuBuffer.USAGE_COPY_DST, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+        this.buffer = null; // TODO: Replace with 1.20.1 compatible buffer creation
+        // this.bufferSlice = this.buffer.slice(0, RenderSystem.PROJECTION_MATRIX_UBO_SIZE);
+        this.bufferSlice = null; // TODO: Replace with 1.20.1 compatible buffer slice
 
-        Matrix4f matrix4f = new Matrix4f().ortho(left, right, bottom, top, zNear, zFar);
+        // Matrix4f matrix4f = new Matrix4f().ortho(left, right, bottom, top, zNear, zFar);
 
-        try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-            ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)
-                    .putMat4f(matrix4f).get();
-            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), byteBuffer);
-        }
+        // try (MemoryStack memoryStack = MemoryStack.stackPush()) {
+        //     ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, RenderSystem.PROJECTION_MATRIX_UBO_SIZE)
+        //             .putMat4f(matrix4f).get();
+        //     // TODO: 1.20.1 Port - RenderSystem.getDevice() doesn't exist in 1.20.1
+        //     RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.buffer.slice(), byteBuffer);
+        // }
     }
 
     public GpuBufferSlice getBuffer() {

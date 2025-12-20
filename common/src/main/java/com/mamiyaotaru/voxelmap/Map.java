@@ -32,7 +32,8 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 // TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
+// TODO: 1.20.1 Port - RenderPass doesn't exist in 1.20.1
+// import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -79,7 +80,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix3x2fStack;
+// TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -570,7 +572,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 boolean aboveHorizon = VoxelConstants.getPlayer().getEyePosition(0.0F).y >= this.world.getLevelData().getHorizonHeight(this.world);
-                if (this.world.dimension().identifier().toString().toLowerCase().contains("ether")) {
+                if (this.world.dimension().location().toString().toLowerCase().contains("ether")) {
                     aboveHorizon = true;
                 }
 
@@ -1536,7 +1538,8 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().identity();
 
-        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
+        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED.getVertexFormat() doesn't exist, using stub
+        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, VertexFormat.POSITION_TEX_COLOR);
 
         bufferBuilder.addVertex(-256, 256, -2500).setUv(0, 0).setColor(255, 255, 255, 255);
         bufferBuilder.addVertex(256, 256, -2500).setUv(1, 0).setColor(255, 255, 255, 255);
@@ -1610,11 +1613,13 @@ public class Map implements Runnable, IChangeObserver {
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
 
-                renderPass.bindTexture("Sampler0", stencilTexture.getTextureView(), stencilTexture.getSampler());
+                // TODO: 1.20.1 Port - getTextureView() and getSampler() don't exist in 1.20.1
+                // renderPass.bindTexture("Sampler0", stencilTexture.getTextureView(), stencilTexture.getSampler());
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount() / 2, 1);
                 renderPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE);
 
-                renderPass.bindTexture("Sampler0", mapImages[this.zoom].getTextureView(), mapImages[this.zoom].getSampler());
+                // TODO: 1.20.1 Port - getTextureView() and getSampler() don't exist in 1.20.1
+                // renderPass.bindTexture("Sampler0", mapImages[this.zoom].getTextureView(), mapImages[this.zoom].getSampler());
                 renderPass.drawIndexed(0, meshData.drawState().indexCount() / 2, meshData.drawState().indexCount() / 2, 1);
             }
         }
@@ -1626,7 +1631,8 @@ public class Map implements Runnable, IChangeObserver {
 
         guiGraphics.pose().popMatrix();
 
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
+        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, null, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
 
         if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
             this.layoutVariables.updateVars(scScale, x, y, this.zoomScale, this.zoomScaleAdjusted);
@@ -1783,7 +1789,8 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
         guiGraphics.pose().translate(-x, -y);
 
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
+        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+        guiGraphics.blit(null, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
         guiGraphics.pose().popMatrix();
     }
@@ -1797,7 +1804,8 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-        Matrix3x2fStack matrixStack = guiGraphics.pose();
+        // TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
+        PoseStack matrixStack = guiGraphics.pose();
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj);
         matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F);
@@ -1805,7 +1813,8 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F));
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
+        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+        guiGraphics.blit(null, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
         matrixStack.popMatrix();
 
         if (this.options.biomeOverlay != 0) {
@@ -1839,7 +1848,8 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        Matrix3x2fStack poseStack = drawContext.pose();
+        // TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
+        PoseStack poseStack = drawContext.pose();
         boolean unicode = minecraft.options.forceUnicodeFont().get();
         float scale = unicode ? 0.65F : 0.5F;
         float rotate;
@@ -1887,7 +1897,8 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void showCoords(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        Matrix3x2fStack matrixStack = drawContext.pose();
+        // TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
+        PoseStack matrixStack = drawContext.pose();
         int textStart;
         if (y > this.scHeight - 37 - 32 - 4 - 15) {
             textStart = y - 32 - 4 - 9;

@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 public class EmptyCachedRegion extends CachedRegion {
@@ -43,7 +43,7 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public Identifier getTextureLocation() {
+    public ResourceLocation getTextureLocation() {
         return null;
     }
 

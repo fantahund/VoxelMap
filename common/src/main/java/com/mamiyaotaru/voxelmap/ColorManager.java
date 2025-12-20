@@ -8,7 +8,7 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import net.minecraft.IdentifierException;
+import net.minecraft.ResourceLocationException;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -1332,7 +1332,7 @@ public class ColorManager {
         try {
             ResourceLocation identifier = new ResourceLocation(name);
             return BuiltInRegistries.BLOCK.containsKey(identifier) ? BuiltInRegistries.BLOCK.get(identifier).get().value() : null;
-        } catch (IdentifierException | NumberFormatException var3) {
+        } catch (ResourceLocationException | NumberFormatException var3) {
             return null;
         }
     }

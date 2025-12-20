@@ -8,19 +8,19 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
 public class DefaultEntityVariantDataFactory implements EntityVariantDataFactory {
     private final EntityType<?> type;
-    private final Identifier secondaryTexture;
+    private final ResourceLocation secondaryTexture;
 
     public DefaultEntityVariantDataFactory(EntityType<?> type) {
         this(type, null);
     }
 
-    public DefaultEntityVariantDataFactory(EntityType<?> type, Identifier secondaryTexture) {
+    public DefaultEntityVariantDataFactory(EntityType<?> type, ResourceLocation secondaryTexture) {
         this.type = type;
         this.secondaryTexture = secondaryTexture;
     }

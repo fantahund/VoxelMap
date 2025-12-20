@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.mixins;
 
 import net.minecraft.client.model.monster.dragon.EnderDragonModel;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
@@ -12,7 +12,7 @@ public interface AccessorEnderDragonRenderer {
     EnderDragonModel getModel();
 
     @Accessor("DRAGON_LOCATION")
-    static Identifier getTextureLocation() {
+    static ResourceLocation getTextureLocation() {
         throw new AssertionError();
     }
 }
