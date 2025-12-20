@@ -1,48 +1,33 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version ("1.13-SNAPSHOT")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
-val FABRIC_LOADER_VERSION: String by rootProject.extra
-val FABRIC_API_VERSION: String by rootProject.extra
+val NEOFORGE_VERSION: String by rootProject.extra
 
 repositories {
     maven { url = uri("https://api.modrinth.com/maven") }
+    maven { url = uri("https://maven.neoforged.net/releases/") }
+    maven { url = uri("https://repo.spongepowered.org/maven/") }
 }
 
 dependencies {
-    minecraft(group = "com.mojang", name = "minecraft", version = MINECRAFT_VERSION)
-    mappings(loom.layered() {
-        officialMojangMappings()
-    })
-    compileOnly("net.fabricmc:sponge-mixin:0.16.4+mixin.0.8.7")
-    modCompileOnly("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
+    compileOnly("net.neoforged:neoforge:${NEOFORGE_VERSION}")
+    compileOnly("org.spongepowered:mixin:0.8.5")
 
     compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
-
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
-
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 }
 
 sourceSets {
-
-}
-
-loom {
-    @Suppress("UnstableApiUsage")
-    mixin {
-        defaultRefmapName.set("voxelmap.refmap.json")
-        useLegacyMixinAp = false
-    }
-
-    accessWidenerPath = file("src/main/resources/voxelmap.accesswidener")
-
-    mods {
-        val main by creating { // to match the default mod generated for Forge
-            sourceSet("main")
+    main {
+        java {
+            srcDir("src/main/java")
+        }
+        resources {
+            srcDir("src/main/resources")
         }
     }
 }

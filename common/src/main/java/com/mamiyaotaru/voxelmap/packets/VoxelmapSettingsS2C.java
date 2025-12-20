@@ -5,13 +5,10 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
-public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<VoxelmapSettingsS2C> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("voxelmap", "settings"));
-    public static final StreamCodec<FriendlyByteBuf, VoxelmapSettingsS2C> PACKET_CODEC = StreamCodec.ofMember(VoxelmapSettingsS2C::write, VoxelmapSettingsS2C::new);
+public record VoxelmapSettingsS2C(String settingsJson) {
+    public static final ResourceLocation PACKET_ID = new ResourceLocation("voxelmap", "settings");
 
     public VoxelmapSettingsS2C(FriendlyByteBuf buf) {
         this(parse(buf));
@@ -27,10 +24,6 @@ public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPa
         buf.writeUtf(settingsJson);
     }
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET_ID;
-    }
 
     public static void parsePacket(VoxelmapSettingsS2C packet) {
         @SuppressWarnings("unchecked")

@@ -1,13 +1,10 @@
 package com.mamiyaotaru.voxelmap.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
-public record WorldIdC2S() implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<WorldIdC2S> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("worldinfo", "world_id"));
-    public static final StreamCodec<FriendlyByteBuf, WorldIdC2S> PACKET_CODEC = StreamCodec.ofMember(WorldIdC2S::write, WorldIdC2S::new);
+public record WorldIdC2S() {
+    public static final ResourceLocation PACKET_ID = new ResourceLocation("worldinfo", "world_id");
 
     public WorldIdC2S(FriendlyByteBuf buf) {
         this();
@@ -18,10 +15,5 @@ public record WorldIdC2S() implements CustomPacketPayload {
         buf.writeByte(0);
         buf.writeByte(42);
         buf.writeByte(0);
-    }
-
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return PACKET_ID;
     }
 }

@@ -1,6 +1,6 @@
 plugins {
     id("idea")
-    id("net.neoforged.moddev") version "2.0.32-beta"
+    id("net.neoforged.gradle.userdev") version "7.0.57"
     id("java-library")
     id("maven-publish")
 }
@@ -72,21 +72,15 @@ tasks.jar {
 
 tasks.jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 
-neoForge {
-    // Specify the version of NeoForge to use.
-    version = NEOFORGE_VERSION
-
-    runs {
-        create("client") {
-            client()
-        }
+runs {
+    configureEach {
+        systemProperty("forge.logging.markers", "REGISTRIES")
+        systemProperty("forge.logging.console.level", "debug")
+        modSource(project.sourceSets.main.get())
+        modSource(project.project(":common").sourceSets.main.get())
     }
-
-    mods {
-        create("voxelmap") {
-            sourceSet(sourceSets.main.get())
-            sourceSet(project.project(":common").sourceSets.main.get())
-        }
+    create("client") {
+        client()
     }
 }
 
@@ -95,7 +89,8 @@ tasks.named("compileTestJava").configure {
 }
 
 dependencies {
+    implementation("net.neoforged:neoforge:${NEOFORGE_VERSION}")
     compileOnly(project.project(":common").sourceSets.main.get().output)
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)

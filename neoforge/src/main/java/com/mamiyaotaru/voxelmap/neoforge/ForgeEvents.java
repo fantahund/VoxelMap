@@ -4,15 +4,17 @@ import com.mamiyaotaru.voxelmap.Events;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
+import com.mamiyaotaru.voxelmap.packets.WorldIdC2S;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 
 public class ForgeEvents implements Events {
     private VoxelMap map;
@@ -32,10 +34,15 @@ public class ForgeEvents implements Events {
         map.onConfigurationInit();
     }
 
-    public void registerPackets(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
-        registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
-        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+    public void registerPackets(final RegisterPayloadHandlerEvent event) {
+        final IPayloadRegistrar registrar = event.registrar("1");
+        registrar.play(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C::new, handler -> handler
+                .client(VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain));
+        registrar.play(WorldIdS2C.PACKET_ID, WorldIdS2C::new, handler -> handler
+                .client(VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain)
+                .server((data, context) -> {}));
+        registrar.play(WorldIdC2S.PACKET_ID, WorldIdC2S::new, handler -> handler
+                .server((data, context) -> {}));
     }
 
     private static class ForgeEventListener {
@@ -46,8 +53,10 @@ public class ForgeEvents implements Events {
         }
 
         @SubscribeEvent
-        public void onRenderGui(RenderGuiEvent.Pre event) {
-            VoxelConstants.renderOverlay(event.getGuiGraphics());
+        public void onRenderGui(RenderGuiOverlayEvent.Pre event) {
+            if (event.getOverlay().id().equals(new ResourceLocation("minecraft", "crosshair"))) {
+                VoxelConstants.renderOverlay(event.getGuiGraphics());
+            }
         }
 
         @SubscribeEvent

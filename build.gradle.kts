@@ -1,12 +1,9 @@
 plugins {
     id("java")
-    id("fabric-loom") version ("1.13-SNAPSHOT") apply (false)
 }
 
-val MINECRAFT_VERSION by extra { "1.21.11" }
-val NEOFORGE_VERSION by extra { "21.5.47-beta" }
-val FABRIC_LOADER_VERSION by extra { "0.18.2" }
-val FABRIC_API_VERSION by extra { "0.139.4+1.21.11" }
+val MINECRAFT_VERSION by extra { "1.20.1" }
+val NEOFORGE_VERSION by extra { "20.1.20" }
 val VOXELMAP_VERSION by extra { "1.15.11" }
 
 val MOD_VERSION by extra { "$MINECRAFT_VERSION-$VOXELMAP_VERSION" }
@@ -27,7 +24,7 @@ tasks.jar {
 subprojects {
     apply(plugin = "maven-publish")
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
     tasks.processResources {
         filesMatching("META-INF/neoforge.mods.toml") {
@@ -40,7 +37,7 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release.set(17)
     }
 
     tasks.withType<GenerateModuleMetadata>().configureEach {
