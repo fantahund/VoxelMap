@@ -15,9 +15,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
-// TODO: 1.20.1 Port - RenderPass doesn't exist in 1.20.1
 // import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;

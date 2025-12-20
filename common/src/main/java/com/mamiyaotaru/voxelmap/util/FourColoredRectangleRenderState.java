@@ -1,10 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
-// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-// TODO: 1.20.1 Port - TextureSetup doesn't exist in 1.20.1
 // import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.util.Mth;

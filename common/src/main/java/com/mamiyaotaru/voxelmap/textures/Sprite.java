@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
-// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;

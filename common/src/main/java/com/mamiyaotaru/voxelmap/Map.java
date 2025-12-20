@@ -30,9 +30,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
 // import com.mojang.blaze3d.pipeline.RenderPipeline;
-// TODO: 1.20.1 Port - RenderPass doesn't exist in 1.20.1
 // import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -50,7 +48,6 @@ import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
-// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
 // import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -80,7 +77,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-// TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -1804,7 +1800,6 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-        // TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
         PoseStack matrixStack = guiGraphics.pose();
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj);
@@ -1848,7 +1843,6 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        // TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
         PoseStack poseStack = drawContext.pose();
         boolean unicode = minecraft.options.forceUnicodeFont().get();
         float scale = unicode ? 0.65F : 0.5F;
@@ -1897,7 +1891,6 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void showCoords(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        // TODO: 1.20.1 Port - Using PoseStack instead of Matrix3x2fStack
         PoseStack matrixStack = drawContext.pose();
         int textStart;
         if (y > this.scHeight - 37 - 32 - 4 - 15) {
