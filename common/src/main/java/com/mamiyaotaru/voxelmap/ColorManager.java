@@ -304,7 +304,7 @@ public class ColorManager {
     }
 
     private void loadTexturePackTerrainImage() {
-        GLUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
+        GLUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getId(), image -> {
             terrainBuff = image;
             loadedTerrainImage = true;
         });

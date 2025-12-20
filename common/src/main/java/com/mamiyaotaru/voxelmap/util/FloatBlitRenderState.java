@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
+// import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -9,7 +10,8 @@ import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
 
 public record FloatBlitRenderState(
-        RenderPipeline pipeline,
+        // TODO: 1.20.1 Port - Replace with proper 1.20.1 rendering type
+        Object pipeline,
         TextureSetup textureSetup,
         Matrix3x2f pose,
         float x0,

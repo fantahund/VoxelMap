@@ -6,7 +6,6 @@
   "package": "com.mamiyaotaru.voxelmap.neoforge.mixins",
   "target": "@env(DEFAULT)",
   "client": [
-    "MixinRenderPipelines"
   ],
   "injectors": {
     "defaultRequire": 1

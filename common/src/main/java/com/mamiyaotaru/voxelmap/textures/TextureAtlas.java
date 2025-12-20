@@ -7,7 +7,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -18,7 +17,6 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -102,8 +100,9 @@ public class TextureAtlas extends AbstractTexture {
 
         VoxelConstants.getLogger().info("Created: {}x{} {}-atlas", new Object[] { this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath });
 
-        texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1, 1);
-        textureView = RenderSystem.getDevice().createTextureView(texture);
+        // TODO: GpuTexture doesn't exist in 1.20.1 - need to use direct OpenGL texture creation
+        // texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1, 1);
+        // textureView = RenderSystem.getDevice().createTextureView(texture);
         // super.setFilter(linearFilter, mipmap);
         HashMap<Object, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
         for (Sprite icon : this.stitcher.getStitchSlots()) {
@@ -114,7 +113,8 @@ public class TextureAtlas extends AbstractTexture {
 
             try {
                 if (icon.getTextureData() != null) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                    // TODO: Replace writeToTexture with OpenGL upload for 1.20.1
+                    // RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
                 }
             } catch (Throwable var10) {
                 CrashReport crashReport = CrashReport.forThrowable(var10, "Stitching texture atlas");
@@ -152,16 +152,17 @@ public class TextureAtlas extends AbstractTexture {
 
         this.stitcher.doStitchNew();
 
-        if (texture == null || oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
-            if (texture != null) {
-                texture.close();
-                texture = null;
-            }
-            VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[] { this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath });
-            texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1, 1);
-            textureView = RenderSystem.getDevice().createTextureView(texture);
-            // super.setFilter(linearFilter, mipmap);
-        }
+        // TODO: GpuTexture doesn't exist in 1.20.1 - need to use direct OpenGL texture creation
+        // if (texture == null || oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
+        //     if (texture != null) {
+        //         texture.close();
+        //         texture = null;
+        //     }
+        //     VoxelConstants.getLogger().info("Resized to: {}x{} {}-atlas", new Object[] { this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), this.basePath });
+        //     texture = RenderSystem.getDevice().createTexture("voxelmap-atlas", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight(), 1, 1);
+        //     textureView = RenderSystem.getDevice().createTextureView(texture);
+        //     // super.setFilter(linearFilter, mipmap);
+        // }
 
         HashMap<Object, Sprite> tempMapRegisteredSprites = Maps.newHashMap(this.mapRegisteredSprites);
         for (Sprite icon : this.stitcher.getStitchSlots()) {
@@ -172,7 +173,8 @@ public class TextureAtlas extends AbstractTexture {
 
             try {
                 if (icon.getTextureData() != null) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                    // TODO: Replace writeToTexture with OpenGL upload for 1.20.1
+                    // RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
                 }
             } catch (Throwable var11) {
                 CrashReport crashReport = CrashReport.forThrowable(var11, "Stitching texture atlas");
@@ -200,7 +202,8 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void saveDebugImage() {
-        ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
+        // TODO: saveImage removed - GpuTexture doesn't exist in 1.20.1
+        // ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
     }
 
     public Sprite getIconAt(float x, float y) {
@@ -239,8 +242,8 @@ public class TextureAtlas extends AbstractTexture {
                 icon = Sprite.spriteFromIdentifier(Identifier, this);
 
                 try {
-                    TextureContents image = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier);
-                    icon.setTextureData(image.image());
+                    NativeImage image = NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(Identifier).get().open());
+                    icon.setTextureData(image);
                 } catch (RuntimeException var6) {
                     VoxelConstants.getLogger().error("Unable to parse metadata from " + Identifier, var6);
                 } catch (IOException var7) {

@@ -1,7 +1,8 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
+// import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.Identifier;
@@ -119,11 +120,13 @@ public class Sprite {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
     }
 
-    public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h) {
+    // TODO: 1.20.1 Port - Replace with proper 1.20.1 rendering type
+    public void blit(GuiGraphics guiGraphics, Object renderTypeMap, float x, float y, float w, float h) {
         blit(guiGraphics, renderTypeMap, x, y, w, h, 0xffffffff);
     }
 
-    public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
+    // TODO: 1.20.1 Port - Replace with proper 1.20.1 rendering type
+    public void blit(GuiGraphics guiGraphics, Object renderTypeMap, float x, float y, float w, float h, int color) {
         VoxelMapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, minU, maxU, minV, maxV, color);
         // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, 0, 1, 0, 1, color);
     }

@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -14,7 +15,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -54,8 +54,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.waypointsFiltered.forEach(x -> this.addEntry((WaypointItem) x));
 
         try {
-            DynamicTexture targetIcon = new DynamicTexture(() -> "Waypoint Target Icon", TextureContents.load(VoxelConstants.getMinecraft().getResourceManager(), targetIconLocation).image());
-            targetIcon.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            DynamicTexture targetIcon = new DynamicTexture(NativeImage.read(VoxelConstants.getMinecraft().getResourceManager().getResource(targetIconLocation).get().open()));
             minecraft.getTextureManager().register(targetIconLocation, targetIcon);
         } catch (Exception e) {
         }

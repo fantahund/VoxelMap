@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -50,10 +49,10 @@ public class RadarSimple implements IRadar {
 
         try {
             this.textureAtlas.reset();
-            NativeImage contact = TextureContents.load(Minecraft.getInstance().getResourceManager(), new ResourceLocation("voxelmap", "images/radar/contact.png")).image();
+            NativeImage contact = NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation("voxelmap", "images/radar/contact.png")).get().open());
             contact = ImageUtils.fillOutline(contact, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("contact", contact);
-            NativeImage facing = TextureContents.load(Minecraft.getInstance().getResourceManager(), new ResourceLocation("voxelmap", "images/radar/contact_facing.png")).image();
+            NativeImage facing = NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation("voxelmap", "images/radar/contact_facing.png")).get().open());
             facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
             this.textureAtlas.stitch();

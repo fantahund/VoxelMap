@@ -178,8 +178,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float scale = skinImage.getWidth() / 8.0F;
         skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
 
-        DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
-        texture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+        DynamicTexture texture = new DynamicTexture(ImageUtils.nativeImageFromBufferedImage(skinImage));
         minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 

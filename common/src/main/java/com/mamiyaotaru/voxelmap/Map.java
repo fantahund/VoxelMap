@@ -30,12 +30,11 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
+// import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -50,10 +49,10 @@ import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderPipelines;
+// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
+// import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -165,8 +164,9 @@ public class Map implements Runnable, IChangeObserver {
 
     private final ResourceLocation[] resourceMapImageFiltered = new ResourceLocation[5];
     private final ResourceLocation[] resourceMapImageUnfiltered = new ResourceLocation[5];
-    private GpuTexture fboTexture;
-    private GpuTextureView fboTextureView;
+    // TODO: GpuTexture doesn't exist in 1.20.1 - need to use direct OpenGL FBO
+    // private GpuTexture fboTexture;
+    // private GpuTextureView fboTextureView;
     private Tesselator fboTessellator = new Tesselator(4096);
     private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
@@ -202,31 +202,21 @@ public class Map implements Runnable, IChangeObserver {
         this.chunkCache[2] = new MapChunkCache(9, 9, this);
         this.chunkCache[3] = new MapChunkCache(17, 17, this);
         this.chunkCache[4] = new MapChunkCache(33, 33, this);
-        this.mapImagesFiltered[0] = new DynamicMoveableTexture("voxelmap-map-32", 32, 32, true);
-        this.mapImagesFiltered[1] = new DynamicMoveableTexture("voxelmap-map-64", 64, 64, true);
-        this.mapImagesFiltered[2] = new DynamicMoveableTexture("voxelmap-map-128", 128, 128, true);
-        this.mapImagesFiltered[3] = new DynamicMoveableTexture("voxelmap-map-256", 256, 256, true);
-        this.mapImagesFiltered[4] = new DynamicMoveableTexture("voxelmap-map-512", 512, 512, true);
-        this.mapImagesFiltered[0].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesFiltered[1].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesFiltered[2].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesFiltered[3].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesFiltered[4].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+        this.mapImagesFiltered[0] = new DynamicMoveableTexture(32, 32, true);
+        this.mapImagesFiltered[1] = new DynamicMoveableTexture(64, 64, true);
+        this.mapImagesFiltered[2] = new DynamicMoveableTexture(128, 128, true);
+        this.mapImagesFiltered[3] = new DynamicMoveableTexture(256, 256, true);
+        this.mapImagesFiltered[4] = new DynamicMoveableTexture(512, 512, true);
         minecraft.getTextureManager().register(resourceMapImageFiltered[0], this.mapImagesFiltered[0]);
         minecraft.getTextureManager().register(resourceMapImageFiltered[1], this.mapImagesFiltered[1]);
         minecraft.getTextureManager().register(resourceMapImageFiltered[2], this.mapImagesFiltered[2]);
         minecraft.getTextureManager().register(resourceMapImageFiltered[3], this.mapImagesFiltered[3]);
         minecraft.getTextureManager().register(resourceMapImageFiltered[4], this.mapImagesFiltered[4]);
-        this.mapImagesUnfiltered[0] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-32", 32, 32, true);
-        this.mapImagesUnfiltered[1] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-64", 64, 64, true);
-        this.mapImagesUnfiltered[2] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-128", 128, 128, true);
-        this.mapImagesUnfiltered[3] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-256", 256, 256, true);
-        this.mapImagesUnfiltered[4] = new ScaledDynamicMutableTexture("voxelmap-map-unfiltered-512", 512, 512, true);
-        this.mapImagesUnfiltered[0].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesUnfiltered[1].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesUnfiltered[2].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesUnfiltered[3].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        this.mapImagesUnfiltered[4].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+        this.mapImagesUnfiltered[0] = new ScaledDynamicMutableTexture(32, 32, true);
+        this.mapImagesUnfiltered[1] = new ScaledDynamicMutableTexture(64, 64, true);
+        this.mapImagesUnfiltered[2] = new ScaledDynamicMutableTexture(128, 128, true);
+        this.mapImagesUnfiltered[3] = new ScaledDynamicMutableTexture(256, 256, true);
+        this.mapImagesUnfiltered[4] = new ScaledDynamicMutableTexture(512, 512, true);
         minecraft.getTextureManager().register(resourceMapImageUnfiltered[0], this.mapImagesUnfiltered[0]);
         minecraft.getTextureManager().register(resourceMapImageUnfiltered[1], this.mapImagesUnfiltered[1]);
         minecraft.getTextureManager().register(resourceMapImageUnfiltered[2], this.mapImagesUnfiltered[2]);
@@ -245,24 +235,22 @@ public class Map implements Runnable, IChangeObserver {
         this.setZoomScale();
 
         final int fboTextureSize = 512;
-        this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
-        this.fboTextureView = RenderSystem.getDevice().createTextureView(this.fboTexture);
+        // TODO: GpuTexture doesn't exist in 1.20.1 - need to use direct OpenGL FBO
+        // this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
+        // this.fboTextureView = RenderSystem.getDevice().createTextureView(this.fboTexture);
         // DynamicTexture fboTexture = new DynamicTexture("voxelmap-fbotexture", fboTextureSize, fboTextureSize, true);
         // minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
         // this.fboTexture = fboTexture.getTexture();
         this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
 
         try {
-            DynamicTexture arrowTexture = new DynamicTexture(() -> "Minimap Arrow", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceArrow).image());
-            arrowTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            DynamicTexture arrowTexture = new DynamicTexture(NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(resourceArrow).get().open()));
             minecraft.getTextureManager().register(resourceArrow, arrowTexture);
 
-            DynamicTexture squareMapTexture = new DynamicTexture(() -> "Minimap Square Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMap).image());
-            squareMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            DynamicTexture squareMapTexture = new DynamicTexture(NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(resourceSquareMap).get().open()));
             minecraft.getTextureManager().register(resourceSquareMap, squareMapTexture);
 
-            DynamicTexture roundMapTexture = new DynamicTexture(() -> "Minimap Round Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMap).image());
-            roundMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            DynamicTexture roundMapTexture = new DynamicTexture(NativeImage.read(Minecraft.getInstance().getResourceManager().getResource(resourceRoundMap).get().open()));
             minecraft.getTextureManager().register(resourceRoundMap, roundMapTexture);
         } catch (Exception exception) {
             VoxelConstants.getLogger().error("Failed getting map images " + exception.getLocalizedMessage(), exception);
@@ -1591,9 +1579,11 @@ public class Map implements Runnable, IChangeObserver {
                         new Vector3f(),
                         new Matrix4f());
 
-        RenderPipeline renderPipeline = VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_PIPELINE;
+        // TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1, this entire section needs rewrite
+        Object renderPipeline = VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_PIPELINE;
         try (MeshData meshData = bufferBuilder.build()) {
-            GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+            // TODO: 1.20.1 Port - Replace with 1.20.1 compatible vertex buffer upload
+            GpuBuffer vertexBuffer = null; // renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -1601,7 +1591,8 @@ public class Map implements Runnable, IChangeObserver {
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
+                // TODO: 1.20.1 Port - Replace with 1.20.1 compatible index buffer upload
+                indexBuffer = null; // renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
 

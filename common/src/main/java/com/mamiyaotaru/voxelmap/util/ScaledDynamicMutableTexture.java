@@ -3,19 +3,19 @@ package com.mamiyaotaru.voxelmap.util;
 public class ScaledDynamicMutableTexture extends DynamicMoveableTexture {
     private final int scale;
 
-    public ScaledDynamicMutableTexture(String label, int width, int height, boolean clear) {
-        super(label, 512, 512, clear);
+    public ScaledDynamicMutableTexture(int width, int height, boolean clear) {
+        super(512, 512, clear);
         this.scale = 512 / width;
     }
 
     @Override
     public int getWidth() {
-        return this.getPixels().getWidth();
+        return this.getPixelsRGBA().getWidth();
     }
 
     @Override
     public int getHeight() {
-        return this.getPixels().getHeight();
+        return this.getPixelsRGBA().getHeight();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ScaledDynamicMutableTexture extends DynamicMoveableTexture {
 
         for (int t = 0; t < this.scale; ++t) {
             for (int s = 0; s < this.scale; ++s) {
-                this.getPixels().setPixel(x * this.scale + t, y * this.scale + s, color);
+                this.getPixelsRGBA().setPixel(x * this.scale + t, y * this.scale + s, color);
             }
         }
 

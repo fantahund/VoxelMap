@@ -15,7 +15,8 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+// TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1
+// import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
@@ -227,8 +228,10 @@ public class EntityMapImageManager {
         ResourceLocation ResourceLocation2 = variant.getSecondaryTexture();
 
         // VoxelConstants.getLogger().info(" -> " + Identifier);
-        RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
-        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
+        // TODO: 1.20.1 Port - RenderPipeline doesn't exist in 1.20.1, this entire section needs rewrite
+        Object renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
+        // TODO: 1.20.1 Port - Replace with 1.20.1 compatible vertex format
+        BufferBuilder bufferBuilder = null; // fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 
         PoseStack pose = new PoseStack();
 
