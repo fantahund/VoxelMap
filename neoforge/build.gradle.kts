@@ -1,17 +1,16 @@
 plugins {
     id("idea")
-    id("net.neoforged.gradle.userdev") version "7.0.57"
+    id("net.minecraftforge.gradle") version "[6.0,6.2)"
     id("java-library")
     id("maven-publish")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
-val PARCHMENT_VERSION: String? by rootProject.extra
-val NEOFORGE_VERSION: String by rootProject.extra
+val FORGE_VERSION: String by rootProject.extra
 val MOD_VERSION: String by rootProject.extra
 
 base {
-    archivesName = "voxelmap-neoforge"
+    archivesName = "voxelmap-forge"
 }
 
 sourceSets {
@@ -20,20 +19,8 @@ sourceSets {
 
 repositories {
     mavenLocal()
-    maven("https://maven.su5ed.dev/releases")
-    maven("https://maven.neoforged.net/releases/")
-
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = uri("https://api.modrinth.com/maven")
-            }
-        }
-        filter {
-            includeGroup("maven.modrinth")
-        }
-    }
+    maven("https://maven.minecraftforge.net/")
+    maven("https://api.modrinth.com/maven")
 }
 
 val serviceJar: Jar by tasks.creating(Jar::class) {
@@ -65,22 +52,29 @@ tasks.jar {
 
     from(rootDir.resolve("LICENSE.md"))
 
-    filesMatching("neoforge.mods.toml") {
+    filesMatching("mods.toml") {
         expand(mapOf("version" to MOD_VERSION))
     }
 }
 
 tasks.jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 
-runs {
-    configureEach {
-        systemProperty("forge.logging.markers", "REGISTRIES")
-        systemProperty("forge.logging.console.level", "debug")
-        modSource(project.sourceSets.main.get())
-        modSource(project.project(":common").sourceSets.main.get())
-    }
-    create("client") {
-        client()
+minecraft {
+    mappings("official", MINECRAFT_VERSION)
+
+    runs {
+        create("client") {
+            workingDirectory(project.file("run"))
+            property("forge.logging.markers", "REGISTRIES")
+            property("forge.logging.console.level", "debug")
+
+            mods {
+                create("voxelmap") {
+                    source(sourceSets.main.get())
+                    source(project.project(":common").sourceSets.main.get())
+                }
+            }
+        }
     }
 }
 
@@ -89,7 +83,7 @@ tasks.named("compileTestJava").configure {
 }
 
 dependencies {
-    implementation("net.neoforged:neoforge:${NEOFORGE_VERSION}")
+    minecraft("net.minecraftforge:forge:${MINECRAFT_VERSION}-${FORGE_VERSION}")
     compileOnly(project.project(":common").sourceSets.main.get().output)
 }
 

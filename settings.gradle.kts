@@ -3,7 +3,7 @@ rootProject.name = "voxelmap"
 pluginManagement {
     repositories {
         mavenLocal()
-        maven { url = uri("https://maven.neoforged.net/releases/") }
+        maven { url = uri("https://maven.minecraftforge.net/") }
         gradlePluginPortal()
     }
 }

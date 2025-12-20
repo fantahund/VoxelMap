@@ -13,9 +13,9 @@ description = "Minimap and world map"
 displayURL = "https://github.com/fantahund/Voxelmap"
 
 [[dependencies.voxelmap]]
-modId = "neoforge"
+modId = "forge"
 type = "required"
-versionRange = "[20.1,)"
+versionRange = "[47,48)"
 ordering = "NONE"
 side = "CLIENT"
 

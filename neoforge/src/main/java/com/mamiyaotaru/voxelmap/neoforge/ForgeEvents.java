@@ -7,17 +7,29 @@ import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
 import com.mamiyaotaru.voxelmap.packets.WorldIdC2S;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.GameShuttingDownEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.event.GameShuttingDownEvent;
+
+import java.util.function.Supplier;
 
 public class ForgeEvents implements Events {
     private VoxelMap map;
+    private static final String PROTOCOL_VERSION = "1";
+    public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
+            new ResourceLocation("voxelmap", "main"),
+            () -> PROTOCOL_VERSION,
+            PROTOCOL_VERSION::equals,
+            PROTOCOL_VERSION::equals
+    );
 
     ForgeEvents() {
     }
@@ -27,22 +39,33 @@ public class ForgeEvents implements Events {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
-        NeoForge.EVENT_BUS.register(new ForgeEventListener(map));
+        MinecraftForge.EVENT_BUS.register(new ForgeEventListener(map));
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
         map.onConfigurationInit();
     }
 
-    public void registerPackets(final RegisterPayloadHandlerEvent event) {
-        final IPayloadRegistrar registrar = event.registrar("1");
-        registrar.play(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C::new, handler -> handler
-                .client(VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain));
-        registrar.play(WorldIdS2C.PACKET_ID, WorldIdS2C::new, handler -> handler
-                .client(VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain)
-                .server((data, context) -> {}));
-        registrar.play(WorldIdC2S.PACKET_ID, WorldIdC2S::new, handler -> handler
-                .server((data, context) -> {}));
+    public void registerPackets(final FMLClientSetupEvent event) {
+        int id = 0;
+        CHANNEL.registerMessage(id++, VoxelmapSettingsS2C.class,
+            VoxelmapSettingsS2C::write,
+            VoxelmapSettingsS2C::new,
+            (msg, ctx) -> VoxelmapSettingsChannelHandlerNeoForge.handleDataOnMain(msg, ctx),
+            () -> NetworkDirection.PLAY_TO_CLIENT
+        );
+        CHANNEL.registerMessage(id++, WorldIdS2C.class,
+            WorldIdS2C::write,
+            WorldIdS2C::new,
+            (msg, ctx) -> VoxelmapWorldIdChannelHandlerNeoForge.handleDataOnMain(msg, ctx),
+            () -> NetworkDirection.PLAY_TO_CLIENT
+        );
+        CHANNEL.registerMessage(id++, WorldIdC2S.class,
+            WorldIdC2S::write,
+            WorldIdC2S::new,
+            (msg, ctx) -> { ctx.get().setPacketHandled(true); },
+            () -> NetworkDirection.PLAY_TO_SERVER
+        );
     }
 
     private static class ForgeEventListener {

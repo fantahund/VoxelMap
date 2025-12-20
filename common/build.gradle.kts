@@ -4,16 +4,16 @@ plugins {
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
-val NEOFORGE_VERSION: String by rootProject.extra
+val FORGE_VERSION: String by rootProject.extra
 
 repositories {
     maven { url = uri("https://api.modrinth.com/maven") }
-    maven { url = uri("https://maven.neoforged.net/releases/") }
+    maven { url = uri("https://maven.minecraftforge.net/") }
     maven { url = uri("https://repo.spongepowered.org/maven/") }
 }
 
 dependencies {
-    compileOnly("net.neoforged:neoforge:${NEOFORGE_VERSION}")
+    compileOnly("net.minecraftforge:forge:${MINECRAFT_VERSION}-${FORGE_VERSION}")
     compileOnly("org.spongepowered:mixin:0.8.5")
 
     compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")

@@ -3,7 +3,7 @@ plugins {
 }
 
 val MINECRAFT_VERSION by extra { "1.20.1" }
-val NEOFORGE_VERSION by extra { "20.1.20" }
+val FORGE_VERSION by extra { "47.4.0" }
 val VOXELMAP_VERSION by extra { "1.15.11" }
 
 val MOD_VERSION by extra { "$MINECRAFT_VERSION-$VOXELMAP_VERSION" }
@@ -27,7 +27,7 @@ subprojects {
     java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
     tasks.processResources {
-        filesMatching("META-INF/neoforge.mods.toml") {
+        filesMatching("META-INF/mods.toml") {
             expand(mapOf("version" to MOD_VERSION))
         }
     }

@@ -1,18 +1,18 @@
 package com.mamiyaotaru.voxelmap.neoforge;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.common.Mod;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-@Mod(value = "voxelmap", dist = Dist.CLIENT)
+@Mod(value = "voxelmap")
 public class VoxelmapNeoForgeMod {
 
     private static IEventBus modEventBus;
 
-    public VoxelmapNeoForgeMod(IEventBus modEventBus, ModContainer container) {
-        VoxelmapNeoForgeMod.modEventBus = modEventBus;
+    public VoxelmapNeoForgeMod() {
+        VoxelmapNeoForgeMod.modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         VoxelConstants.setEvents(new ForgeEvents());
         VoxelConstants.setPacketBridge(new NeoForgePacketBridge());
     }
