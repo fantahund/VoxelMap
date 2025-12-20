@@ -120,15 +120,12 @@ public class Sprite {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
     }
 
-    // TODO: 1.20.1 Port - Replace with proper 1.20.1 rendering type
     public void blit(GuiGraphics guiGraphics, Object renderTypeMap, float x, float y, float w, float h) {
         blit(guiGraphics, renderTypeMap, x, y, w, h, 0xffffffff);
     }
 
-    // TODO: 1.20.1 Port - Replace with proper 1.20.1 rendering type
     public void blit(GuiGraphics guiGraphics, Object renderTypeMap, float x, float y, float w, float h, int color) {
         VoxelMapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, minU, maxU, minV, maxV, color);
-        // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, 0, 1, 0, 1, color);
     }
 
     public ResourceLocation getIdentifier() {

@@ -12,7 +12,6 @@ import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
-// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
 // import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -169,10 +168,10 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
             Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.getId());
             PlayerSkin playerSkin = VoxelConstants.getMinecraft().getSkinManager().getInsecureSkin(gameProfile);
             ResourceLocation skinIdentifier = playerSkin.texture();
-            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+           
             drawContext.blit(null, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
             if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
-                // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+               
                 drawContext.blit(null, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
             }
         }

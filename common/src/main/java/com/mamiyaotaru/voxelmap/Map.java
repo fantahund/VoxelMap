@@ -1631,7 +1631,7 @@ public class Map implements Runnable, IChangeObserver {
 
         guiGraphics.pose().popMatrix();
 
-        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+       
         VoxelMapGuiGraphics.blitFloat(guiGraphics, null, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
 
         if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
@@ -1789,7 +1789,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
         guiGraphics.pose().translate(-x, -y);
 
-        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+       
         guiGraphics.blit(null, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
 
         guiGraphics.pose().popMatrix();
@@ -1813,7 +1813,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F));
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+       
         guiGraphics.blit(null, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
         matrixStack.popMatrix();
 

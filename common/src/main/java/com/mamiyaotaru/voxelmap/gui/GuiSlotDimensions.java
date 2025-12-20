@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
 // import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -119,7 +118,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             // 2 float: u,v start texture (in pixels - see last 2 int)
             // 2 int: height, width on screen
             // 2 int: height, width full texture in pixels
-            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+           
             drawContext.blit(null, this.parentGui.waypoint.dimensions.contains(this.dim) ? CONFIRM : CANCEL, x + width - iconWidth, getY() - 3, 0, 0, 18, 18, 18, 18);
         }
 

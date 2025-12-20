@@ -630,7 +630,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
         if (this.backGroundImageInfo != null) {
-            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+           
             guiGraphics.blitSprite(null, backGroundImageInfo.getImageLocation(), backGroundImageInfo.left, backGroundImageInfo.top + 32, 0, 0, backGroundImageInfo.width, backGroundImageInfo.height, backGroundImageInfo.width, backGroundImageInfo.height);
         }
 
@@ -816,7 +816,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
             int scWidth = minecraft.getWindow().getGuiScaledWidth();
             int scHeight = minecraft.getWindow().getGuiScaledHeight();
-            // TODO: 1.20.1 Port - RenderPipelines.CROSSHAIR doesn't exist, using null
+           
             guiGraphics.blit(null, crosshairResource, scWidth / 2 - 8, scHeight / 2 - 8, 0, 0, 15, 15, 15, 15);
         } else {
             this.switchToMouseInput();
@@ -956,7 +956,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         int colorStart = (startAlpha << 24) | colorBase;
         int colorEnd = (endAlpha << 24) | colorBase;
         float renderedTextureSize = 32.0F;
-        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+       
         VoxelMapGuiGraphics.blitFloatGradient(guiGraphics, null, VoxelConstants.getOptionsBackgroundTexture(), 0, startY, this.getWidth(), endY, 0, this.width / renderedTextureSize, 0, endY / renderedTextureSize, colorStart, colorEnd);
     }
 

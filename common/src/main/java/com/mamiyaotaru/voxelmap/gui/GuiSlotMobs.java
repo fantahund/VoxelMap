@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
 // import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -140,10 +139,10 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             if (sprite != null) {
-                // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+               
                 sprite.blit(drawContext, null, getX() + 2, getY(), 18, 18);
             }
-            // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+           
             drawContext.blit(null, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY(), 0.0F, 0.0F, 18, 18, 18, 18);
         }
 

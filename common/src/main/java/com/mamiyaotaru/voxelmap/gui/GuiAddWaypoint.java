@@ -16,7 +16,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-// TODO: 1.20.1 Port - RenderPipelines doesn't exist in 1.20.1
 // import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -270,7 +269,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         int color = this.waypoint.getUnifiedColor();
 
         drawContext.fill(this.getWidth() / 2 - 25, buttonListY + 24 + 5, this.getWidth() / 2 - 25 + 16, buttonListY + 24 + 5 + 10, color);
-        // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+       
         waypointManager.getTextureAtlasChooser().getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png").blit(drawContext, null, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 
         if (this.choosingColor || this.choosingIcon) {
@@ -280,7 +279,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int anchorX = this.getWidth() / 2 - colorPickerWidth / 2;
                 int anchorY = this.getHeight() / 2 - colorPickerHeight / 2;
 
-                // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+               
                 drawContext.blit(null, PICKER, anchorX, anchorY, 0f, 0f, colorPickerWidth, colorPickerHeight, colorPickerWidth, colorPickerHeight);
 
                 int pickedColor = pickColor(colorPickerWidth, colorPickerHeight, mouseX, mouseY);
@@ -288,7 +287,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     int red = ARGB.red(pickedColor);
                     int green = ARGB.green(pickedColor);
                     int blue = ARGB.blue(pickedColor);
-                    // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+                   
                     drawContext.blit(null, TARGET, mouseX - 8, mouseY - 8, 0f, 0f, 16, 16, 16, 16);
                     drawContext.drawCenteredString(this.getFont(), "R: " + red + ", G: " + green + ", B: " + blue, this.getWidth() / 2, this.getHeight() / 2 + colorPickerHeight / 2 + 8, pickedColor);
                 }
@@ -300,14 +299,14 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int anchorX = (int) (this.getWidth() / 2.0F - chooser.getWidth() / 2.0F);
                 int anchorY = (int) (this.getHeight() / 2.0F - chooser.getHeight() / 2.0F);
 
-                // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+               
                 drawContext.blit(null, WaypointManager.resourceTextureAtlasWaypointChooser, anchorX, anchorY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xFFC8C8C8);
 
                 Sprite pickedIcon = pickIcon(mouseX, mouseY);
                 if (pickedIcon != chooser.getMissingImage()) {
                     int iconPreviewX = pickedIcon.getOriginX() + anchorX;
                     int iconPreviewY = pickedIcon.getOriginY() + anchorY;
-                    // TODO: 1.20.1 Port - RenderPipelines.GUI_TEXTURED doesn't exist, using null
+                   
                     pickedIcon.blit(drawContext, null, iconPreviewX - 4, iconPreviewY - 4, 40, 40, color);
 
                     this.tooltip = Component.translatable(((String) (pickedIcon.getIconName())).replace("voxelmap:images/waypoints/", "minimap.waypoints.").replace(".png", ""));
