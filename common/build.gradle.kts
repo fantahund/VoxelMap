@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version ("1.14-SNAPSHOT")
+    id("net.fabricmc.fabric-loom") version ("1.14-SNAPSHOT")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
@@ -13,17 +13,14 @@ repositories {
 }
 
 dependencies {
-    minecraft(group = "com.mojang", name = "minecraft", version = MINECRAFT_VERSION)
-    mappings(loom.layered() {
-        officialMojangMappings()
-    })
+    minecraft("com.mojang:minecraft:${MINECRAFT_VERSION}")
     compileOnly("net.fabricmc:sponge-mixin:0.16.4+mixin.0.8.7")
-    modCompileOnly("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
+    compileOnly("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
 
-    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
-    annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
+    // compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
+    // annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
 
 }
 

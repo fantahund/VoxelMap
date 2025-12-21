@@ -445,7 +445,7 @@ public class ColorManager {
                     if (modelImage != null) {
                         color = this.getColorForCoordinatesAndImage(new float[]{0.0F, 1.0F, 0.0F, 1.0F}, modelImage);
                     } else {
-                        VoxelConstants.getLogger().warn(String.format("Block texture for block %s is missing!", blockState.getBlockHolder().getRegisteredName()));
+                        VoxelConstants.getLogger().warn(String.format("Block texture for block %s is missing!", blockState.typeHolder().getRegisteredName()));
                     }
                 }
             }

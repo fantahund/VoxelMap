@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version ("1.14-SNAPSHOT")
+    id("net.fabricmc.fabric-loom") version ("1.14-SNAPSHOT")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
@@ -15,13 +15,10 @@ base {
 
 dependencies {
     minecraft("com.mojang:minecraft:${MINECRAFT_VERSION}")
-    mappings(loom.layered {
-        officialMojangMappings()
-    })
-    modImplementation("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
+    implementation("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
-    implementation(project.project(":common").sourceSets.getByName("main").output)
+    implementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
+    implementation(project.project(":common"))
 }
 
 tasks.named("compileTestJava").configure {
@@ -68,7 +65,7 @@ tasks {
         from(zipTree(project.project(":common").tasks.jar.get().archiveFile))
     }
 
-    remapJar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
+    jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 }
 
 publishing {

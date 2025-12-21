@@ -49,7 +49,6 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -119,7 +118,6 @@ public class Map implements Runnable, IChangeObserver {
     private BlockState transparentBlockState;
     private BlockState surfaceBlockState;
     private boolean imageChanged = true;
-    private LightTexture lightmapTexture;
     private boolean needLightmapRefresh = true;
     private int tickWithLightChange;
     private boolean lastPaused = true;
@@ -320,7 +318,6 @@ public class Map implements Runnable, IChangeObserver {
 
     public void newWorld(ClientLevel world) {
         this.world = world;
-        this.lightmapTexture = this.getLightmapTexture();
         this.mapData[this.zoom].blank();
         this.doFullRender = true;
         VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
@@ -340,10 +337,6 @@ public class Map implements Runnable, IChangeObserver {
 
     public void onTickInGame(GuiGraphics drawContext) {
         this.northRotate = this.options.oldNorth ? 90 : 0;
-
-        if (this.lightmapTexture == null) {
-            this.lightmapTexture = this.getLightmapTexture();
-        }
 
         if (minecraft.screen == null && this.options.welcome) {
             minecraft.setScreen(new GuiWelcomeScreen(null));
@@ -522,10 +515,6 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private LightTexture getLightmapTexture() {
-        return minecraft.gameRenderer.lightTexture();
-    }
-
     public void calculateCurrentLightAndSkyColor() {
         try {
             if (this.world != null) {
@@ -611,7 +600,7 @@ public class Map implements Runnable, IChangeObserver {
     private int getSkyColor() {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
-        Vector4f color = Minecraft.getInstance().gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getDarkenWorldAmount(0.0F));
+        Vector4f color = Minecraft.getInstance().gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getBossOverlayWorldDarkening(0.0F));
         float r = color.x;
         float g = color.y;
         float b = color.z;
