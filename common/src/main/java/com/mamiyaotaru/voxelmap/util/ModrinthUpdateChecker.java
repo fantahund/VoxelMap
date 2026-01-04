@@ -45,18 +45,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
- * Checks Modrinth for the latest compatible version and shows an in-game chat message if an update exists.
- * This implementation returns both the version number and the changelog, because the Modrinth versions API
- * provides a "changelog" field in each version object. [page:1]
+ * Utility class to check for newer versions of a project hosted on Modrinth.
+ * <p>
+ * Compared to the old implementation, this one also aggregates changelogs for all
+ * versions newer than the currently installed version, because the Modrinth version
+ * list response includes a "changelog" field per version object. [page:2]
  */
 public class ModrinthUpdateChecker {
 
     /**
-     * Modrinth API endpoint to list a project's versions.
-     * Each entry can include "version_number", "game_versions", "loaders" and "changelog". [page:1]
+     * Modrinth endpoint to list versions of a project. [page:2]
      */
     private static final String API_URL = "https://api.modrinth.com/v2/project/{id}/version";
 
@@ -66,21 +69,24 @@ public class ModrinthUpdateChecker {
     @Nullable
     private final String minecraftVersion;
 
+    private static final int green = 0xA8E6CF;
+    private static final int red = 0xFF9AA2;
+
     /**
-     * Container for data returned from Modrinth that we need in-game.
-     * "version" is the normalized version string used for comparison and the download page URL.
-     * "changelog" is shown as a hover tooltip on the download button text. [page:1]
+     * Data we need for update UI:
+     * - version: normalized version string used for comparisons and URL building
+     * - changelog: raw changelog text from Modrinth (may contain multiple lines) [page:2]
      */
-    public record UpdateInfo(String version, @Nullable String changelog) {
+    public record VersionInfo(String version, @Nullable String changelog) {
     }
 
     /**
-     * Create a new update checker for the given project.
-     * Checks the latest compatible version for the given loader and any Minecraft version.
-     *
-     * @param projectId the Modrinth project ID or slug
-     * @param loader    the loader name used by Modrinth (example: "fabric")
+     * Result of the update check:
+     * - latestVersion: latest compatible version (normalized)
+     * - updates: all versions that are newer than the installed version
      */
+    public record UpdateResult(String latestVersion, List<VersionInfo> updates) {}
+
     public ModrinthUpdateChecker(String projectId, String loader) {
         this(projectId, loader, null);
     }
@@ -100,12 +106,11 @@ public class ModrinthUpdateChecker {
     }
 
     /**
-     * Performs an async request to Modrinth and passes the latest compatible version + changelog
-     * to the provided consumer. [page:1]
-     *
-     * @param consumer callback receiving UpdateInfo (version + changelog)
+     * Fetches versions from Modrinth and returns an aggregated update result.
+     * The Modrinth response is an array of version objects containing fields like
+     * version_number, loaders, game_versions, and changelog. [page:2]
      */
-    public void checkVersion(Consumer<UpdateInfo> consumer) {
+    public void checkUpdates(String installedModVersion, Consumer<UpdateResult> consumer) {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_URL.replace("{id}", projectId))).GET().build();
@@ -114,10 +119,10 @@ public class ModrinthUpdateChecker {
                 if (response.statusCode() != 200) return;
 
                 JsonArray versionsArray = JsonParser.parseString(response.body()).getAsJsonArray();
-                UpdateInfo latest = getLatestVersionInfo(versionsArray);
-                if (latest == null) return;
+                UpdateResult result = buildUpdateResult(installedModVersion, versionsArray);
+                if (result == null) return;
 
-                consumer.accept(latest);
+                consumer.accept(result);
             });
         } catch (Exception exception) {
             VoxelConstants.getLogger().log(Level.ERROR, exception);
@@ -125,44 +130,40 @@ public class ModrinthUpdateChecker {
     }
 
     /**
-     * From the Modrinth versions list, finds the newest entry that matches:
-     * - requested loader
-     * - requested Minecraft version (if not null) [page:1]
+     * Builds a list of all compatible versions from Modrinth, then:
+     * - finds the latest version
+     * - filters the versions that are newer than the installed version
      * <p>
-     * Returns version_number (normalized) plus the "changelog" text. [page:1]
-     * <p>
-     * Note: This keeps your existing comparison approach (string compare on a normalized version).
-     * If you later want "true newest" ordering, consider sorting by Modrinth's date_published. [page:1]
-     *
-     * @param versions response array from GET /project/{id|slug}/version [page:1]
-     * @return UpdateInfo or null if none match
+     * Uses version_number and changelog from the Modrinth version objects. [page:2]
      */
     @Nullable
-    protected UpdateInfo getLatestVersionInfo(JsonArray versions) {
-        JsonObject newest = versions.asList().stream()
+    protected UpdateResult buildUpdateResult(String installedModVersion, JsonArray versions) {
+        String installedRaw = getRawVersion(installedModVersion);
+
+        List<VersionInfo> compatible = versions.asList().stream()
                 .map(JsonElement::getAsJsonObject)
                 .filter(this::isVersionCompatible)
-                .max(Comparator.comparing(o -> getRawVersion(o.get("version_number").getAsString())))
-                .orElse(null);
+                .map(obj -> new VersionInfo(
+                        getRawVersion(obj.get("version_number").getAsString()),
+                        (obj.has("changelog") && !obj.get("changelog").isJsonNull()) ? obj.get("changelog").getAsString() : null
+                )).collect(Collectors.toList());
 
-        if (newest == null) return null;
+        if (compatible.isEmpty()) return null;
 
-        String rawVersion = getRawVersion(newest.get("version_number").getAsString());
+        String latest = compatible.stream().map(VersionInfo::version).max(String::compareTo).orElse(null);
 
-        String changelog = null;
-        if (newest.has("changelog") && !newest.get("changelog").isJsonNull()) {
-            changelog = newest.get("changelog").getAsString();
-        }
+        if (latest == null) return null;
 
-        return new UpdateInfo(rawVersion, changelog);
+        List<VersionInfo> updates = compatible.stream()
+                .filter(v -> v.version().compareTo(installedRaw) > 0)
+                .sorted(Comparator.comparing(VersionInfo::version))
+                .collect(Collectors.toList());
+
+        return new UpdateResult(latest, updates);
     }
 
     /**
-     * Checks if a version object is compatible with the given loader and (optional) Minecraft version.
-     * The Modrinth versions API contains "game_versions" and "loaders" arrays for each version. [page:1]
-     *
-     * @param version Modrinth version object
-     * @return true if compatible
+     * Modrinth version objects include "game_versions" and "loaders". [page:2]
      */
     protected boolean isVersionCompatible(JsonObject version) {
         JsonArray gameVersions = version.get("game_versions").getAsJsonArray();
@@ -174,60 +175,83 @@ public class ModrinthUpdateChecker {
     }
 
     /**
-     * Normalizes a version string to the part you compare against.
-     * Example: "fabric-1.2+1.17.1" -> "1.2"
-     *
-     * @param version the version string
-     * @return normalized version
+     * Normalizes a version string to a comparable value.
      */
     public static String getRawVersion(String version) {
-        if (version.isEmpty()) return version;
+        if (version == null || version.isEmpty()) return "";
         version = version.replaceAll("^\\D+", "");
         String[] split = version.split("\\+");
         return split[0];
     }
 
     /**
-     * Checks for updates and shows a clickable message in chat:
-     * - The download part is clickable (OpenUrl).
-     * - The download part shows the changelog as hover text (SHOW_TEXT). [page:0][page:1]
+     * Builds a multiline hover component like:
      * <p>
-     * This assumes you already have these translations:
-     * voxelmap.update.prefix, voxelmap.update.link, voxelmap.update.suffix
+     * 1.1:
+     * Change1
+     * Change2
+     * 1.2:
+     * Change1
+     * <p>
+     * It respects multi-line changelog strings by splitting on line separators.
      */
-    public static void checkUpdates() {
-        String modVersion = FabricLoader.getInstance().getModContainer("voxelmap").map(container -> container.getMetadata().getVersion().getFriendlyString()).orElse(null);
-        String minecraftVersion = SharedConstants.getCurrentVersion().name();
+    public static Component buildAggregatedChangelogHover(List<VersionInfo> updates) {
+        if (updates == null || updates.isEmpty()) {
+            return Component.literal("No changelog available.");
+        }
 
-        new ModrinthUpdateChecker("voxelmap-updated", VoxelConstants.getModApiBridge().getModLoader(), minecraftVersion).checkVersion(info -> {
-            if (modVersion == null || ModrinthUpdateChecker.getRawVersion(modVersion).equals(info.version())) {
+        Component out = Component.translatable("voxelmap.update.changes").setStyle(Style.EMPTY.withColor(red)).append("\n");
+
+        for (int i = 0; i < updates.size(); i++) {
+            VersionInfo v = updates.get(i);
+
+            if (i > 0) out = out.copy().append(Component.literal("\n"));
+
+            out = out.copy().append(Component.literal(v.version() + ":").setStyle(Style.EMPTY.withColor(red)));
+
+            String changelog = (v.changelog() == null) ? "" : v.changelog();
+            String[] lines = changelog.split("\\R", -1);
+
+            if (lines.length == 0 || (lines.length == 1 && lines[0].isBlank())) {
+                out = out.copy().append(Component.literal("\n  (No changelog provided.)").setStyle(Style.EMPTY.withColor(green)));
+                continue;
+            }
+
+            for (String line : lines) {
+                out = out.copy().append(Component.literal("\n " + line).setStyle(Style.EMPTY.withColor(green)));
+            }
+        }
+
+        return out;
+    }
+
+    public static void checkUpdates() {
+        String modVersion = FabricLoader.getInstance()
+                .getModContainer("voxelmap")
+                .map(container -> container.getMetadata().getVersion().getFriendlyString())
+                .orElse(null);
+
+        if (modVersion == null) return;
+
+        String mcVersion = SharedConstants.getCurrentVersion().name();
+
+        new ModrinthUpdateChecker("voxelmap-updated", VoxelConstants.getModApiBridge().getModLoader(), mcVersion).checkUpdates(modVersion, result -> {
+            String installedRaw = getRawVersion(modVersion);
+            if (installedRaw.equals(result.latestVersion())) {
                 VoxelConstants.getLogger().info("Voxelmap is up to date.");
                 return;
             }
 
-            VoxelConstants.getLogger().info("Newer version of Voxelmap available: {}", info.version());
-
-            String url = "https://modrinth.com/mod/voxelmap-updated/version/" + info.version();
-            int green = 0xA8E6CF;
-            int red = 0xFF9AA2;
-
-            Component prefix = Component.translatable("voxelmap.update.prefix", info.version()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(green)));
+            String url = "https://modrinth.com/mod/voxelmap-updated/version/" + result.latestVersion();
+            Component prefix = Component.translatable("voxelmap.update.prefix", result.latestVersion()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(green)));
             Component suffix = Component.translatable("voxelmap.update.suffix").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(green)));
-            Component hover;
-            if (info.changelog() == null || info.changelog().isBlank()) {
-                hover = Component.literal("No changelog provided.");
-            } else {
-                String[] lines = info.changelog().split("\\R", -1);
-                Component built = Component.translatable("voxelmap.update.changes").setStyle(Style.EMPTY.withColor(red)).append(Component.literal("\n"));
+            Component hover = buildAggregatedChangelogHover(result.updates());
+            Style linkStyle = Style.EMPTY
+                    .withColor(TextColor.fromRgb(red))
+                    .withUnderlined(true)
+                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
+                    .withHoverEvent(new HoverEvent.ShowText(hover));
 
-                for (int i = 0; i < lines.length; i++) {
-                    if (i > 0) built = built.copy().append(Component.literal("\n"));
-                    built = built.copy().append(Component.literal(lines[i]).setStyle(Style.EMPTY.withColor(green)));
-                }
-                hover = built;
-            }
-
-            Style linkStyle = Style.EMPTY.withColor(TextColor.fromRgb(red)).withUnderlined(true).withClickEvent(new ClickEvent.OpenUrl(URI.create(url))).withHoverEvent(new HoverEvent.ShowText(hover));
             Component link = Component.translatable("voxelmap.update.link").setStyle(linkStyle);
             Component msg = prefix.copy().append(link).append(suffix);
             VoxelConstants.getMinecraft().execute(() -> VoxelConstants.getPlayer().displayClientMessage(msg, false));
