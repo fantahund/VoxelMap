@@ -8,4 +8,9 @@ public class FabricModApiBridge implements ModApiBridge {
     public boolean isModEnabled(String modID) {
         return FabricLoader.getInstance().isModLoaded(modID);
     }
+
+    @Override
+    public String getModLoader() {
+        return "fabric";
+    }
 }

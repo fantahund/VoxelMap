@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
+import com.mamiyaotaru.voxelmap.util.ModrinthUpdateChecker;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import java.util.ArrayDeque;
@@ -279,6 +280,7 @@ public class VoxelMap implements PreparableReloadListener {
 
     public void onJoinServer() {
         this.radar.onJoinServer();
+        ModrinthUpdateChecker.checkUpdates();
     }
 
     public void onDisconnect() {

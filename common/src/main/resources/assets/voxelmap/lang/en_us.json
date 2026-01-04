@@ -207,5 +207,8 @@
   "worldmap.multiworld.unknownSubworld": "Unknown world!  Please select your current world in the Multiworld screen.",
   "worldmap.subworld.edit": "Edit Multiworld Name",
   "worldmap.subworld.name": "Multiworld Name",
-  "worldmap.subworld.deleteConfirm": "Confirm Delete Multiworld"
+  "worldmap.subworld.deleteConfirm": "Confirm Delete Multiworld",
+  "voxelmap.update.prefix": "A new version of VoxelMap is available (%s). ",
+  "voxelmap.update.link": "Download on Modrinth",
+  "voxelmap.update.suffix": "."
 }
