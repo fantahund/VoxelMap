@@ -5,10 +5,13 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -25,6 +28,7 @@ public class ForgeEvents implements Events {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
         NeoForge.EVENT_BUS.register(new ForgeEventListener(map));
     }
 
@@ -35,7 +39,12 @@ public class ForgeEvents implements Events {
     public void registerPackets(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
         registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
-        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+        //FIXME 1.21.11 registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+    }
+
+    private void registerReloadListener(final AddClientReloadListenersEvent event) {
+        event.addListener(Identifier.fromNamespaceAndPath("voxelmap", "reload_listener"), map);
+        map.applyResourceManager(VoxelConstants.getMinecraft().getResourceManager());
     }
 
     private static class ForgeEventListener {
@@ -46,8 +55,10 @@ public class ForgeEvents implements Events {
         }
 
         @SubscribeEvent
-        public void onRenderGui(RenderGuiEvent.Pre event) {
-            VoxelConstants.renderOverlay(event.getGuiGraphics());
+        public void onRenderGui(RenderGuiLayerEvent.Post event) {
+            if (event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY)) {
+                VoxelConstants.renderOverlay(event.getGuiGraphics());
+            }
         }
 
         @SubscribeEvent

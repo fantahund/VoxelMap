@@ -49,7 +49,6 @@ public class VoxelMap implements PreparableReloadListener {
         mapOptions.addSecondaryOptionsManager(radarOptions);
         this.persistentMapOptions = new PersistentMapSettingsManager();
         mapOptions.addSecondaryOptionsManager(this.persistentMapOptions);
-        BiomeRepository.loadBiomeColors();
         this.colorManager = new ColorManager();
         this.waypointManager = new WaypointManager();
         this.dimensionManager = new DimensionManager();
@@ -83,9 +82,6 @@ public class VoxelMap implements PreparableReloadListener {
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
-        ReloadableResourceManager resourceManager = (ReloadableResourceManager) VoxelConstants.getMinecraft().getResourceManager();
-        resourceManager.registerReloadListener(this);
-        this.apply(resourceManager);
     }
 
     @Override
@@ -93,17 +89,17 @@ public class VoxelMap implements PreparableReloadListener {
         return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(sharedState.resourceManager()), executor2);
     }
 
-    private void apply(ResourceManager resourceManager) {
+    public void applyResourceManager(ResourceManager resourceManager) {
+        this.apply(resourceManager);
+    }
+
+    protected void apply(ResourceManager resourceManager) {
         this.waypointManager.onResourceManagerReload(resourceManager);
         if (this.radar != null) {
             this.radar.onResourceManagerReload(resourceManager);
         }
 
-        if (this.radarSimple != null) {
-            this.radarSimple.onResourceManagerReload(resourceManager);
-        }
-
-        this.colorManager.onResourceManagerReload(resourceManager);
+        BiomeRepository.loadBiomeColors();
     }
 
     public void onTickInGame(GuiGraphics guiGraphics) {

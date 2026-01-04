@@ -2,11 +2,11 @@ package com.mamiyaotaru.voxelmap.neoforge;
 
 import com.mamiyaotaru.voxelmap.PacketBridge;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 public class NeoForgePacketBridge implements PacketBridge {
     @Override
     public void sendWorldIDPacket() {
-        PacketDistributor.sendToServer(new WorldIdS2C(""));
+        //FIXME 1.21.11 ClientPacketDistributor.sendToServer(new WorldIdS2C(""));
     }
 }

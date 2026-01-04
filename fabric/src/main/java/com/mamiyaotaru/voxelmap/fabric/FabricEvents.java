@@ -9,9 +9,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.util.Unit;
 
 public class FabricEvents implements Events {
     FabricEvents() {
@@ -31,5 +34,8 @@ public class FabricEvents implements Events {
         ClientPlayConnectionEvents.INIT.register((handler, client) -> map.onPlayInit());
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> map.onJoinServer());
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> map.onClientStopping());
+
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.parse("voxelmap:reload_listener"), (sharedState, executor, preparationBarrier, executor2) -> preparationBarrier.wait(Unit.INSTANCE).thenRunAsync(() -> map.applyResourceManager(sharedState.resourceManager()), executor2));
+        map.applyResourceManager(VoxelConstants.getMinecraft().getResourceManager());
     }
 }
