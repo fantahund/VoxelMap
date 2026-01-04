@@ -210,5 +210,6 @@
   "worldmap.subworld.deleteConfirm": "Confirm Delete Multiworld",
   "voxelmap.update.prefix": "A new version of VoxelMap is available (%s). ",
   "voxelmap.update.link": "Download on Modrinth",
-  "voxelmap.update.suffix": "."
+  "voxelmap.update.suffix": ".",
+  "voxelmap.update.changes": "Changes:"
 }

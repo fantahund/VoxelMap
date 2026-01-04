@@ -149,5 +149,6 @@
   "worldmap.subworld.deleteConfirm": "Welt löschen bestätigen",
   "voxelmap.update.prefix": "Eine neue Version von VoxelMap ist verfügbar (%s). ",
   "voxelmap.update.link": "Download auf Modrinth",
-  "voxelmap.update.suffix": "."
+  "voxelmap.update.suffix": ".",
+  "voxelmap.update.changes": "Änderungen:"
 }
