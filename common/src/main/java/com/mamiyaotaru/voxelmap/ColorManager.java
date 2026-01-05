@@ -1272,7 +1272,7 @@ public class ColorManager {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
                         double var1 = Mth.clamp(biome.getBaseTemperature(), 0.0F, 1.0F);
-                        double var2 = Mth.clamp(biome.climateSettings.downfall(), 0.0F, 1.0F);
+                        double var2 = Mth.clamp(VoxelConstants.getModApiBridge().getBiomeClimateSettings(biome).downfall(), 0.0F, 1.0F);
 
                         var2 *= var1;
                         var1 = 1.0 - var1;
