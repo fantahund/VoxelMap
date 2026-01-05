@@ -12,6 +12,7 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -29,6 +30,7 @@ public class ForgeEvents implements Events {
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         NeoForge.EVENT_BUS.register(new ForgeEventListener(map));
     }
 
@@ -39,7 +41,11 @@ public class ForgeEvents implements Events {
     public void registerPackets(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
         registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
-        //FIXME 1.21.11 registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+    }
+
+    public void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
+        event.register(WorldIdS2C.PACKET_ID, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
     }
 
     private void registerReloadListener(final AddClientReloadListenersEvent event) {

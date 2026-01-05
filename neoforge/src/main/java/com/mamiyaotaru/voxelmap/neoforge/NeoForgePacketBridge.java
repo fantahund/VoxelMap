@@ -7,6 +7,6 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 public class NeoForgePacketBridge implements PacketBridge {
     @Override
     public void sendWorldIDPacket() {
-        //FIXME 1.21.11 ClientPacketDistributor.sendToServer(new WorldIdS2C(""));
+        ClientPacketDistributor.sendToServer(new WorldIdS2C(""));
     }
 }
