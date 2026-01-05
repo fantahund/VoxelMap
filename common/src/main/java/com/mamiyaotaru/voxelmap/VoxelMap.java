@@ -99,6 +99,7 @@ public class VoxelMap implements PreparableReloadListener {
             this.radar.onResourceManagerReload(resourceManager);
         }
 
+        this.colorManager.onResourceManagerReload(resourceManager);
         BiomeRepository.loadBiomeColors();
     }
 
