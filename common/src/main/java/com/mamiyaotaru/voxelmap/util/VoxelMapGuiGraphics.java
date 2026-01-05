@@ -24,7 +24,14 @@ public class VoxelMapGuiGraphics {
     }
 
     public static void blitFloatGradient(GuiGraphics graphics, RenderPipeline pipeline, AbstractTexture texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color, int color2) {
-        blitFloatGradient(graphics, pipeline, texture.getTextureView(), texture.getSampler(), x, y, w, h, minu, maxu, minv, maxv, color, color2);
+        try {
+            GpuTextureView textureView = texture.getTextureView();
+            GpuSampler sampler = texture.getSampler();
+            if (textureView != null && sampler != null) {
+                blitFloatGradient(graphics, pipeline, textureView, sampler, x, y, w, h, minu, maxu, minv, maxv, color, color2);
+            }
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     public static void blitFloat(GuiGraphics graphics, RenderPipeline pipeline, AbstractTexture texture, float x, float y, float w, float h, float minu, float maxu, float minv, float maxv, int color) {
