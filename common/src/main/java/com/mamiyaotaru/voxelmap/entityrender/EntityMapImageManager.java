@@ -108,7 +108,7 @@ public class EntityMapImageManager {
         fboDepthTextureView = RenderSystem.getDevice().createTextureView(this.fboDepthTexture);
 
         projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 256.0F, -256.0F, -256.0F, 256.0F, 1000.0F, 21000.0F);
-
+        reset();
     }
 
     public void reset() {

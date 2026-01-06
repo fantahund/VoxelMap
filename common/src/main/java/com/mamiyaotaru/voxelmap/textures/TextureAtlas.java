@@ -140,12 +140,6 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void stitchNew() {
-        if (this.stitcher == null) {
-            int glMaxTextureSize = RenderSystem.getDevice().getMaxTextureSize();
-            this.stitcher = new Stitcher(glMaxTextureSize, glMaxTextureSize, 0);
-            this.initMissingImage();
-        }
-
         for (Map.Entry<Object, Sprite> entry : this.mapRegisteredSprites.entrySet()) {
             Sprite icon = entry.getValue();
             if (icon.getTextureData() != null) {
@@ -206,9 +200,7 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void saveDebugImage() {
-        if (this.stitcher != null) {
-            ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
-        }
+        ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
     }
 
     public Sprite getIconAt(float x, float y) {
@@ -316,19 +308,19 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public int getWidth() {
-        return this.stitcher != null ? this.stitcher.getCurrentWidth() : 0;
+        return this.stitcher.getCurrentWidth();
     }
 
     public int getHeight() {
-        return this.stitcher != null ? this.stitcher.getCurrentHeight() : 0;
+        return this.stitcher.getCurrentHeight();
     }
 
     public int getImageWidth() {
-        return this.stitcher != null ? this.stitcher.getCurrentImageWidth() : 0;
+        return this.stitcher.getCurrentImageWidth();
     }
 
     public int getImageHeight() {
-        return this.stitcher != null ? this.stitcher.getCurrentImageHeight() : 0;
+        return this.stitcher.getCurrentImageHeight();
     }
 
     public Identifier getIdentifier() {
