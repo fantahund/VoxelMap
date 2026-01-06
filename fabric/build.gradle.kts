@@ -36,12 +36,6 @@ loom {
     if (project(":common").file("src/main/resources/voxelmap.accesswidener").exists())
         accessWidenerPath.set(project(":common").file("src/main/resources/voxelmap.accesswidener"))
 
-    @Suppress("UnstableApiUsage")
-    mixin {
-        defaultRefmapName.set("voxelmap.fabric.refmap.json")
-        useLegacyMixinAp = false
-    }
-
     runs {
         named("client") {
             client()
