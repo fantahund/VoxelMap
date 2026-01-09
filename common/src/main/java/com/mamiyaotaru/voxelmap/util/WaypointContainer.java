@@ -2,14 +2,12 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -20,6 +18,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3fc;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class WaypointContainer {
     private final List<ExtendedWaypoint> wayPts = new ArrayList<>();
@@ -253,9 +255,9 @@ public class WaypointContainer {
         float g = target ? 0.0F : pt.green;
         float b = target ? 0.0F : pt.blue;
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        Sprite icon = target ? textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png") : textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
+        Sprite icon = target ? textureAtlas.getAtlasSprite("marker/target") : textureAtlas.getAtlasSprite("selectable/" + pt.imageSuffix);
         if (icon == textureAtlas.getMissingImage()) {
-            icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
+            icon = textureAtlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
         }
 
         RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getIdentifier());

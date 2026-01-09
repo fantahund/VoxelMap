@@ -59,6 +59,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -95,11 +96,11 @@ public class Map implements Runnable, IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
     // private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
-    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/mmarrow.png");
-    private final Identifier resourceSquareMap = Identifier.fromNamespaceAndPath("voxelmap", "images/squaremap.png");
-    private final Identifier resourceRoundMap = Identifier.fromNamespaceAndPath("voxelmap", "images/roundmap.png");
-    private final Identifier squareStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/square.png");
-    private final Identifier circleStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/circle.png");
+    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap_arrow.png");
+    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/square_map_frame.png");
+    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/square_map_stencil.png");
+    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/round_map_frame.png");
+    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/round_map_stencil.png");
     private ClientLevel world;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;
@@ -252,18 +253,26 @@ public class Map implements Runnable, IChangeObserver {
         // this.fboTexture = fboTexture.getTexture();
         this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
 
+        loadMapTextures();
+    }
+
+    public void onResourceManagerReload(ResourceManager resourceManager) {
+        loadMapTextures();
+    }
+
+    private void loadMapTextures() {
         try {
             DynamicTexture arrowTexture = new DynamicTexture(() -> "Minimap Arrow", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceArrow).image());
             arrowTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
             minecraft.getTextureManager().register(resourceArrow, arrowTexture);
 
-            DynamicTexture squareMapTexture = new DynamicTexture(() -> "Minimap Square Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMap).image());
+            DynamicTexture squareMapTexture = new DynamicTexture(() -> "Minimap Square Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMapFrame).image());
             squareMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            minecraft.getTextureManager().register(resourceSquareMap, squareMapTexture);
+            minecraft.getTextureManager().register(resourceSquareMapFrame, squareMapTexture);
 
-            DynamicTexture roundMapTexture = new DynamicTexture(() -> "Minimap Round Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMap).image());
+            DynamicTexture roundMapTexture = new DynamicTexture(() -> "Minimap Round Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMapFrame).image());
             roundMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            minecraft.getTextureManager().register(resourceRoundMap, roundMapTexture);
+            minecraft.getTextureManager().register(resourceRoundMapFrame, roundMapTexture);
         } catch (Exception exception) {
             VoxelConstants.getLogger().error("Failed getting map images " + exception.getLocalizedMessage(), exception);
         }
@@ -1607,9 +1616,9 @@ public class Map implements Runnable, IChangeObserver {
 
             AbstractTexture stencilTexture = null;
             if (this.options.squareMap) {
-                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(squareStencil);
+                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(resourceSquareMapStencil);
             } else {
-                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(circleStencil);
+                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(resourceRoundMapStencil);
             }
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0x00000000))) {
@@ -1656,31 +1665,20 @@ public class Map implements Runnable, IChangeObserver {
                 if (pt.isActive() || pt == highlightedPoint) {
                     double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
                     if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                        this.drawWaypoint(guiGraphics, pt, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, null, null, null, null);
+                        this.drawWaypoint(guiGraphics, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
                     }
                 }
             }
 
             if (highlightedPoint != null) {
-                this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, scScale, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("voxelmap:images/waypoints/target.png"), 1.0F, 0.0F, 0.0F);
+                this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
             }
         }
         guiGraphics.pose().popMatrix();
     }
 
-    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, TextureAtlas textureAtlas, int x, int y, int scScale, double lastXDouble, double lastZDouble, Sprite icon, Float r, Float g, Float b) {
+    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
         boolean uprightIcon = icon != null;
-        if (r == null) {
-            r = pt.red;
-        }
-
-        if (g == null) {
-            g = pt.green;
-        }
-
-        if (b == null) {
-            b = pt.blue;
-        }
 
         double wayX = lastXDouble - pt.getX() - 0.5;
         double wayY = lastZDouble - pt.getZ() - 0.5;
@@ -1712,23 +1710,15 @@ public class Map implements Runnable, IChangeObserver {
         boolean target = false;
         if (far) {
             if (icon == null) {
-                if (scScale >= 3) {
-                    icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/marker" + pt.imageSuffix + ".png");
-                } else {
-                    icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/marker" + pt.imageSuffix + "Small.png");
-                }
+                icon = textureAtlas.getAtlasSprite("marker/" + pt.imageSuffix);
 
                 if (icon == textureAtlas.getMissingImage()) {
-                    if (scScale >= 3) {
-                        icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/marker.png");
-                    } else {
-                        icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/markerSmall.png");
-                    }
+                    icon = textureAtlas.getAtlasSprite("marker/arrow");
                 }
             } else {
                 target = true;
             }
-            int color = pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
+            int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
                 guiGraphics.pose().pushMatrix();
@@ -1751,23 +1741,15 @@ public class Map implements Runnable, IChangeObserver {
             }
         } else {
             if (icon == null) {
-                if (scScale >= 3) {
-                    icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
-                } else {
-                    icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + "Small.png");
-                }
+                icon = textureAtlas.getAtlasSprite("selectable/" + pt.imageSuffix);
 
                 if (icon == textureAtlas.getMissingImage()) {
-                    if (scScale >= 3) {
-                        icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
-                    } else {
-                        icon = textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypointSmall.png");
-                    }
+                    icon = textureAtlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
                 }
             } else {
                 target = true;
             }
-            int color = pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
+            int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
                 guiGraphics.pose().pushMatrix();
@@ -1843,7 +1825,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void drawMapFrame(GuiGraphics guiGraphics, int x, int y, boolean squaremap) {
-        Identifier frameResource = squaremap ? resourceSquareMap : resourceRoundMap;
+        Identifier frameResource = squaremap ? resourceSquareMapFrame : resourceRoundMapFrame;
         guiGraphics.blit(VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, frameResource, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
     }
 

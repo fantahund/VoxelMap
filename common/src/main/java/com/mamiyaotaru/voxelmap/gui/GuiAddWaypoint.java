@@ -23,8 +23,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    private static final Identifier PICKER = Identifier.parse("voxelmap:images/colorpicker.png");
-    private static final Identifier TARGET = Identifier.parse("voxelmap:images/waypoints/target.png");
+    private static final Identifier PICKER = Identifier.parse("voxelmap:images/color_picker.png");
     final WaypointManager waypointManager;
     final ColorManager colorManager;
     private final IGuiWaypoints parentGui;
@@ -215,7 +214,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
             if (pickedIcon != chooser.getMissingImage()) {
-                this.waypoint.imageSuffix = ((String) pickedIcon.getIconName()).replace("voxelmap:images/waypoints/waypoint", "").replace(".png", "");
+                this.waypoint.imageSuffix = WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", "");
 
                 this.choosingIcon = false;
             }
@@ -269,7 +268,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         int color = this.waypoint.getUnifiedColor();
 
         drawContext.fill(this.getWidth() / 2 - 25, buttonListY + 24 + 5, this.getWidth() / 2 - 25 + 16, buttonListY + 24 + 5 + 10, color);
-        waypointManager.getTextureAtlasChooser().getAtlasSprite("voxelmap:images/waypoints/waypoint" + this.waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
+
+        TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
+        Sprite icon = chooser.getAtlasSprite("selectable/" + this.waypoint.imageSuffix);
+        if (icon == chooser.getMissingImage()) {
+            icon = chooser.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
+        }
+        icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 
         if (this.choosingColor || this.choosingIcon) {
             this.renderTransparentBackground(drawContext);
@@ -285,18 +290,16 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     int red = ARGB.red(pickedColor);
                     int green = ARGB.green(pickedColor);
                     int blue = ARGB.blue(pickedColor);
-                    drawContext.blit(RenderPipelines.GUI_TEXTURED, TARGET, mouseX - 8, mouseY - 8, 0f, 0f, 16, 16, 16, 16);
+                    waypointManager.getTextureAtlas().getAtlasSprite("marker/target").blit(drawContext, RenderPipelines.GUI_TEXTURED, mouseX - 8, mouseY - 8, 16, 16, 0xFFFFFFFF);
                     drawContext.drawCenteredString(this.getFont(), "R: " + red + ", G: " + green + ", B: " + blue, this.getWidth() / 2, this.getHeight() / 2 + colorPickerHeight / 2 + 8, pickedColor);
                 }
             }
 
             if (this.choosingIcon) {
-                TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
-
                 int anchorX = (int) (this.getWidth() / 2.0F - chooser.getWidth() / 2.0F);
                 int anchorY = (int) (this.getHeight() / 2.0F - chooser.getHeight() / 2.0F);
 
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, WaypointManager.resourceTextureAtlasWaypointChooser, anchorX, anchorY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xFFC8C8C8);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, chooser.getIdentifier(), anchorX, anchorY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xFFC8C8C8);
 
                 Sprite pickedIcon = pickIcon(mouseX, mouseY);
                 if (pickedIcon != chooser.getMissingImage()) {
@@ -304,7 +307,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     int iconPreviewY = pickedIcon.getOriginY() + anchorY;
                     pickedIcon.blit(drawContext, RenderPipelines.GUI_TEXTURED, iconPreviewX - 4, iconPreviewY - 4, 40, 40, color);
 
-                    this.tooltip = Component.translatable(((String) (pickedIcon.getIconName())).replace("voxelmap:images/waypoints/", "minimap.waypoints.").replace(".png", ""));
+                    this.tooltip = Component.translatable("minimap.waypoints.icon." + WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", ""));
                 }
             }
         }

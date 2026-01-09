@@ -10,18 +10,18 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
-import java.util.ArrayDeque;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.Level;
+
+import java.util.ArrayDeque;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public class VoxelMap implements PreparableReloadListener {
     public static MapSettingsManager mapOptions;
@@ -101,6 +101,10 @@ public class VoxelMap implements PreparableReloadListener {
 
         this.colorManager.onResourceManagerReload(resourceManager);
         BiomeRepository.loadBiomeColors();
+
+        if (this.map != null) {
+            this.map.onResourceManagerReload(resourceManager);
+        }
     }
 
     public void onTickInGame(GuiGraphics guiGraphics) {

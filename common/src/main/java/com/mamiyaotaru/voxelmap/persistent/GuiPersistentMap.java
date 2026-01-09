@@ -771,11 +771,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         if (VoxelMap.mapOptions.waypointsAllowed && this.options.showWaypoints) {
             for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                this.drawWaypoint(guiGraphics, pt, cursorCoordX, cursorCoordZ, null);
+                this.drawWaypoint(guiGraphics, pt, cursorCoordX, cursorCoordZ, null, false);
             }
 
             if (this.waypointManager.getHighlightedWaypoint() != null) {
-                this.drawWaypoint(guiGraphics, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas().getAtlasSprite("voxelmap:images/waypoints/target.png"));
+                TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+                this.drawWaypoint(guiGraphics, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, atlas.getAtlasSprite("marker/target"), true);
             }
         }
 
@@ -864,7 +865,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon) {
+    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon, boolean highlight) {
         if (!pt.inWorld || !pt.inDimension) {
             return;
         }
@@ -883,9 +884,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         boolean target = false;
         TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         if (icon == null) {
-            icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + pt.imageSuffix + ".png");
+            icon = atlas.getAtlasSprite("selectable/" + pt.imageSuffix);
             if (icon == atlas.getMissingImage()) {
-                icon = atlas.getAtlasSprite("voxelmap:images/waypoints/waypoint.png");
+                icon = atlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
             }
         } else {
             if (name.isEmpty()) {
@@ -909,7 +910,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         guiGraphics.pose().rotate(locate);
         guiGraphics.pose().translate(-x, -y);
 
-        int color = pt.getUnifiedColor(!pt.enabled && !target && !hover ? 0.3F : 1.0F);
+        int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target && !hover ? 0.3F : 1.0F);
 
         icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - iconsWidth / 2, y - iconsHeight / 2, iconsWidth, iconsHeight, color);
 

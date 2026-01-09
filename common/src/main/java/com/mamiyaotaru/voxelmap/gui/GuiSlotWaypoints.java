@@ -1,20 +1,18 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -36,7 +34,6 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     final Identifier invisibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
     protected long lastClicked;
     public boolean doubleClicked;
-    private final Identifier targetIconLocation = Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/target.png");
     private final TextureAtlas textureAtlas;
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
@@ -53,14 +50,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.waypointsFiltered = new ArrayList<>(this.waypoints);
         this.waypointsFiltered.forEach(x -> this.addEntry((WaypointItem) x));
 
-        try {
-            DynamicTexture targetIcon = new DynamicTexture(() -> "Waypoint Target Icon", TextureContents.load(VoxelConstants.getMinecraft().getResourceManager(), targetIconLocation).image());
-            targetIcon.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            minecraft.getTextureManager().register(targetIconLocation, targetIcon);
-        } catch (Exception e) {
-        }
-
-        this.textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlasChooser();
+        this.textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
     }
 
     @Override
@@ -173,11 +163,17 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                     GuiWaypoints.setTooltip(GuiSlotWaypoints.this.parentGui, tooltip);
                 }
             }
+
             drawContext.blit(RenderPipelines.GUI_TEXTURED, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y, 0.0F, 0.0F, 18, 18, 18, 18);
-            textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, waypoint.getUnifiedColor());
+
+            Sprite icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
+            if (icon == textureAtlas.getMissingImage()) {
+                icon = textureAtlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
+            }
+            icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, waypoint.getUnifiedColor());
 
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, targetIconLocation, x, y, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
+                textureAtlas.getAtlasSprite("marker/target").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, 0xFFFF0000);
             }
         }
 

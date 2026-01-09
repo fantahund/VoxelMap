@@ -14,6 +14,23 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerList;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.User;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.Connection;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
+import net.minecraft.world.level.storage.LevelResource;
+
+import javax.imageio.ImageIO;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -31,6 +48,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,22 +58,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import javax.imageio.ImageIO;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.network.Connection;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
-import net.minecraft.world.level.storage.LevelResource;
 
 public class WaypointManager {
     public final MapSettingsManager options;
@@ -80,6 +82,7 @@ public class WaypointManager {
     private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
+    public static final String fallbackIconName = "point";
     public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath("voxelmap", "atlas/waypoints");
     public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath("voxelmap", "atlas/waypoint-chooser");
     public final Minecraft minecraft = Minecraft.getInstance();
@@ -97,42 +100,57 @@ public class WaypointManager {
         List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {
 
-            Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().listResources("images", asset -> asset.getPath().endsWith(".png"));
+            Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().listResources("images/waypoints", asset -> asset.getPath().endsWith(".png"));
             for (Identifier candidate : resourceMap.keySet()) {
-                if (candidate.getNamespace().equals("voxelmap") && candidate.getPath().contains("images/waypoints")) {
+                if (candidate.getNamespace().equals("voxelmap")) {
                     images.add(candidate);
                 }
             }
 
-            Sprite markerIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/marker.png"));
-            Sprite markerIconSmall = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/markersmall.png"));
-
             for (Identifier Identifier : images) {
                 Sprite icon = textureAtlas.registerIconForResource(Identifier);
                 String name = Identifier.toString();
-                if (name.toLowerCase().contains("waypoints/waypoint") && !name.toLowerCase().contains("small")) {
-                    textureAtlas.registerMaskedIcon(name.replace(".png", "Small.png"), icon);
-                    textureAtlas.registerMaskedIcon(name.replace("waypoints/waypoint", "waypoints/marker"), markerIcon);
-                    textureAtlas.registerMaskedIcon(name.replace("waypoints/waypoint", "waypoints/marker").replace(".png", "Small.png"), markerIconSmall);
-                } else if (name.toLowerCase().contains("waypoints/marker") && !name.toLowerCase().contains("small")) {
-                    textureAtlas.registerMaskedIcon(name.replace(".png", "Small.png"), icon);
-                }
+                textureAtlas.registerMaskedIcon(toSimpleName(name), icon);
             }
 
+            Sprite markerIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/marker/arrow.png"));
+            textureAtlas.registerMaskedIcon(toSimpleName(markerIcon.getIconName().toString()), markerIcon);
+
+            Sprite targetIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/marker/target.png"));
+            textureAtlas.registerMaskedIcon(toSimpleName(targetIcon.getIconName().toString()), markerIcon);
+
         };
+
         this.textureAtlas.loadTextureAtlas(iconCreator);
         this.textureAtlasChooser.reset();
 
+        images.sort(Comparator.comparingInt((Identifier id) -> {
+            if (toSimpleName(id.toString()).replace("selectable/", "").equals(fallbackIconName)) {
+                return 0;
+            }
+            return 1;
+        }).thenComparing(Identifier::compareTo));
+
         for (Identifier Identifier : images) {
             String name = Identifier.toString();
-            if (name.toLowerCase().contains("waypoints/waypoint") && !name.toLowerCase().contains("small")) {
-                this.textureAtlasChooser.registerIconForResource(Identifier);
+            if (name.toLowerCase().contains("waypoints/selectable")) {
+                Sprite icon = this.textureAtlasChooser.registerIconForResource(Identifier);
+                this.textureAtlasChooser.registerMaskedIcon(toSimpleName(name), icon);
                 this.textureAtlasChooser.stitchNew();
             }
         }
 
 //      I couldn't find a better way to make stitch sorted :(
 //      this.textureAtlasChooser.stitch();
+    }
+
+    public static String toSimpleName(String name) {
+        String prefix = "voxelmap:images/waypoints/";
+        if (!name.startsWith(prefix)) {
+            return name;
+        }
+
+        return name.substring(prefix.length()).replace(".png", "");
     }
 
     public TextureAtlas getTextureAtlas() {
