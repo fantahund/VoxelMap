@@ -5,6 +5,11 @@ import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,10 +23,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.KeyMapping;
-import net.minecraft.client.resources.language.I18n;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 public class MapSettingsManager implements ISettingsManager {
     private File settingsFile;
@@ -50,7 +51,7 @@ public class MapSettingsManager implements ISettingsManager {
     private boolean preToggleBeacons;
     private boolean preToggleSigns = true;
     public int deathpoints = 1;
-    public int maxWaypointDisplayDistance = 1000;
+    public int maxWaypointDisplayDistance = -1;
     protected boolean welcome = true;
     public int zoom = 2;
     public int sizeModifier = 1;
