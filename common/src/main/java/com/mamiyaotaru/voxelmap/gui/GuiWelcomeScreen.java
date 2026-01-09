@@ -9,8 +9,10 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +66,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         }
 
         Component closeThisMessage = Component.translatable("minimap.ui.welcome5").withStyle(ChatFormatting.GRAY);
-        this.addRenderableWidget(this.closeButton = new PlainTextButton(getWidth() / 2 - 110, getHeight() / 2, 100, 10, closeThisMessage, button -> {
+        this.addRenderableWidget(this.closeButton = new PlainTextButton(getWidth() / 2 + 9, getHeight() / 2, 95, 10, closeThisMessage, button -> {
             this.options.setOptionValue(EnumOptionsMinimap.WELCOME_SCREEN);
             this.options.saveAll();
 
@@ -72,7 +74,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         }, getFont()));
 
         Component controls = Component.translatable("options.controls").withStyle(ChatFormatting.GRAY);
-        this.addRenderableWidget(this.controlsButton = new PlainTextButton(getWidth() / 2 + 10, getHeight() / 2, 100, 10, controls, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
+        this.addRenderableWidget(this.controlsButton = new PlainTextButton(getWidth() / 2 - 104, getHeight() / 2, 95, 10, controls, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
     }
 
     @Override
@@ -82,7 +84,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
 
         int lineHeight = getFont().lineHeight;
 
-        int boxColor = ARGB.color((int) (minecraft.options.textBackgroundOpacity().get().floatValue() * 255.0F), 0, 0, 0);
+        int boxColor = ARGB.color(128, 0, 0, 0);
         int boxTop = centerY - ((this.welcomeTexts.size() * lineHeight) / 2);
 
         // Main Box
@@ -92,20 +94,20 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         }
         this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1), 4, 1, boxColor);
 
+        // Title Box
+        this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1) + 22, 6, 1, boxColor);
+
+        // Main Text
         for (int i = 1; i < this.welcomeTexts.size(); ++i) {
             guiGraphics.drawString(getFont(), this.welcomeTexts.get(i), centerX - (boxWidth / 2), boxTop + lineHeight * (i - 1), 0xFFFFFFFF);
         }
 
-        // Title Box
-        boxWidth = getFont().width(this.welcomeTexts.getFirst());
-        this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop - 3, 4, 1, boxColor);
+        //  Title Text
         guiGraphics.drawCenteredString(getFont(), this.welcomeTexts.getFirst(), centerX, boxTop - lineHeight - 3, 0xFFFFFFFF);
-
         boxTop += lineHeight * this.welcomeTexts.size();
 
 
         // Buttons
-
         this.drawBox(guiGraphics, this.closeButton.getX(), boxTop, this.closeButton.getX() + this.closeButton.getWidth(), boxTop + this.closeButton.getHeight(), 4, 1, boxColor);
         this.closeButton.setY(boxTop);
 
@@ -121,5 +123,20 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
 
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
+    public boolean keyPressed(KeyEvent keyEvent) {
+        if (keyEvent.key() == GLFW.GLFW_KEY_ESCAPE) {
+            this.options.setOptionValue(EnumOptionsMinimap.WELCOME_SCREEN);
+            this.options.saveAll();
+        }
+
+        return super.keyPressed(keyEvent);
     }
 }
