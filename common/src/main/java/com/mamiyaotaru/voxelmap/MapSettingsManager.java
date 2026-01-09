@@ -98,7 +98,7 @@ public class MapSettingsManager implements ISettingsManager {
         keyBindWaypoint = new KeyMapping("key.minimap.waypointHotkey", InputConstants.getKey("key.keyboard.n").getValue(), category);
         keyBindMobToggle = new KeyMapping("key.minimap.toggleMobs", -1, category);
         keyBindWaypointToggle = new KeyMapping("key.minimap.toggleInGameWaypoints", -1, category);
-        keyBindMinimapToggle = new KeyMapping("key.minimap.toggleMinimap", InputConstants.getKey("key.keyboard.o").getValue(), category);
+        keyBindMinimapToggle = new KeyMapping("key.minimap.toggleMinimap", InputConstants.getKey("key.keyboard.h").getValue(), category);
 
         this.keyBindings = new KeyMapping[]{this.keyBindMenu, this.keyBindWaypointMenu, this.keyBindZoom, this.keyBindFullscreen, this.keyBindWaypoint, this.keyBindMobToggle, this.keyBindWaypointToggle, this.keyBindMinimapToggle};
     }

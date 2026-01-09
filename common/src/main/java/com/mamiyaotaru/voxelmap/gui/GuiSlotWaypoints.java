@@ -168,7 +168,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
 
             Sprite icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
             if (icon == textureAtlas.getMissingImage()) {
-                icon = textureAtlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
+                icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
             icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, waypoint.getUnifiedColor());
 

@@ -257,7 +257,7 @@ public class WaypointContainer {
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         Sprite icon = target ? textureAtlas.getAtlasSprite("marker/target") : textureAtlas.getAtlasSprite("selectable/" + pt.imageSuffix);
         if (icon == textureAtlas.getMissingImage()) {
-            icon = textureAtlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
+            icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
         }
 
         RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getIdentifier());

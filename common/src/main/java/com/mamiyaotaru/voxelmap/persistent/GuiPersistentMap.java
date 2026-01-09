@@ -886,7 +886,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (icon == null) {
             icon = atlas.getAtlasSprite("selectable/" + pt.imageSuffix);
             if (icon == atlas.getMissingImage()) {
-                icon = atlas.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
+                icon = atlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
         } else {
             if (name.isEmpty()) {

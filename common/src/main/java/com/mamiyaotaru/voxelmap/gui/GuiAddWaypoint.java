@@ -272,7 +272,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
         Sprite icon = chooser.getAtlasSprite("selectable/" + this.waypoint.imageSuffix);
         if (icon == chooser.getMissingImage()) {
-            icon = chooser.getAtlasSprite("selectable/" + WaypointManager.fallbackIconName);
+            icon = chooser.getAtlasSprite(WaypointManager.fallbackIconLocation);
         }
         icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 

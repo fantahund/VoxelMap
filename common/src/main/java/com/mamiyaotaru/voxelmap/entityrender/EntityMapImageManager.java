@@ -413,7 +413,7 @@ public class EntityMapImageManager {
 
     private Properties getMobProperties(Entity entity) {
         String entityId = entity.getType().getDescriptionId();
-        String filePath = ("textures/icons/" + entityId + ".properties").toLowerCase();
+        String filePath = ("voxelmap:configs/radar_icon/" + entityId + ".properties").toLowerCase();
 
         if (mobPropertiesMap.containsKey(filePath)) {
             return mobPropertiesMap.get(filePath);

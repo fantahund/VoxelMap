@@ -13,13 +13,18 @@ import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.Level;
 
+import java.io.InputStream;
 import java.util.ArrayDeque;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -40,6 +45,7 @@ public class VoxelMap implements PreparableReloadListener {
     private String worldName = "";
     private static String passMessage;
     private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque<>();
+    private Properties imageProperties;
     VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
@@ -94,6 +100,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     protected void apply(ResourceManager resourceManager) {
+        this.loadImageProperties();
+
         this.waypointManager.onResourceManagerReload(resourceManager);
         if (this.radar != null) {
             this.radar.onResourceManagerReload(resourceManager);
@@ -297,5 +305,23 @@ public class VoxelMap implements PreparableReloadListener {
 
     public Radar getNotSimpleRadar() {
         return radar;
+    }
+
+    public Properties getImageProperties() {
+        if (this.imageProperties == null) {
+            this.loadImageProperties();
+        }
+        return this.imageProperties;
+    }
+
+    private void loadImageProperties() {
+        this.imageProperties = new Properties();
+        Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("voxelmap:configs/images.properties"));
+        if (resource.isPresent()) {
+            try (InputStream inputStream = resource.get().open()) {
+                this.imageProperties.load(inputStream);
+            } catch (Exception ignored) {
+            }
+        }
     }
 }

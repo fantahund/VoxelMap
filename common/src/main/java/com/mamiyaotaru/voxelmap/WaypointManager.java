@@ -82,7 +82,7 @@ public class WaypointManager {
     private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
-    public static final String fallbackIconName = "point";
+    public static final String fallbackIconLocation = "selectable/point";
     public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath("voxelmap", "atlas/waypoints");
     public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath("voxelmap", "atlas/waypoint-chooser");
     public final Minecraft minecraft = Minecraft.getInstance();
@@ -125,7 +125,7 @@ public class WaypointManager {
         this.textureAtlasChooser.reset();
 
         images.sort(Comparator.comparingInt((Identifier id) -> {
-            if (toSimpleName(id.toString()).replace("selectable/", "").equals(fallbackIconName)) {
+            if (toSimpleName(id.toString()).equals(fallbackIconLocation)) {
                 return 0;
             }
             return 1;
@@ -142,6 +142,10 @@ public class WaypointManager {
 
 //      I couldn't find a better way to make stitch sorted :(
 //      this.textureAtlasChooser.stitch();
+
+        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypoint_icon_filtering", "true"));
+        this.textureAtlas.setFilter(useFiltering, false);
+        this.textureAtlasChooser.setFilter(useFiltering, false);
     }
 
     public static String toSimpleName(String name) {
