@@ -305,9 +305,9 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
         private void iterateButtonOptions() {
             this.layout.visitWidgets(widget -> {
+                widget.active = this.options.showRadar;
                 if (widget instanceof GuiOptionButtonMinimap button) {
                     EnumOptionsMinimap option = button.returnEnumOptions();
-                    button.active = this.options.showRadar;
                     switch (option) {
                         case SHOW_RADAR -> button.active = this.options.radarAllowed;
                         case SHOW_PLAYERS -> button.active = button.active && (this.options.radarAllowed || this.options.radarPlayersAllowed);
