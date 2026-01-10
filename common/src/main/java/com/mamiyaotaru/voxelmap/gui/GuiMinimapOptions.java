@@ -157,6 +157,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private class BasicTabEntry extends GridLayoutTab {
         protected GuiMinimapOptions parent;
         private final int tabIndex;
+
         public BasicTabEntry(Component component, GuiMinimapOptions parent, int tabIndex) {
             super(component);
             this.parent = parent;
@@ -173,6 +174,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             if (this.tabIndex != -1) {
                 this.parent.lastTabIndex = this.tabIndex;
             }
+            this.layout.setY(40);
         }
     }
 
