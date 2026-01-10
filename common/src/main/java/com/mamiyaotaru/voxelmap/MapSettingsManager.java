@@ -43,7 +43,7 @@ public class MapSettingsManager implements ISettingsManager {
     public boolean chunkGrid;
     public boolean slimeChunks;
     public boolean worldborder = true;
-    public boolean squareMap = true;
+    public boolean squareMap = false;
     public boolean rotates = true;
     public boolean oldNorth;
     public boolean showBeacons;
@@ -55,7 +55,7 @@ public class MapSettingsManager implements ISettingsManager {
     protected boolean welcome = true;
     public int zoom = 2;
     public int sizeModifier = 1;
-    public int mapCorner = 0;
+    public int mapCorner = 1;
 
     public Boolean cavesAllowed = true;
     public boolean worldmapAllowed = true;
