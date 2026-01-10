@@ -174,7 +174,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             if (this.tabIndex != -1) {
                 this.parent.lastTabIndex = this.tabIndex;
             }
-            this.layout.setY(40);
+            this.layout.setY(this.parent.height / 6);
         }
     }
 
