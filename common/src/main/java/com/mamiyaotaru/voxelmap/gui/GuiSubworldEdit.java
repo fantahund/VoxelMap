@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.ArrayList;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -15,8 +14,9 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
+
 public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer {
-    private final Screen parent;
     private final WaypointManager waypointManager;
     private final ArrayList<?> knownSubworldNames;
     private final String originalSubworldName;
@@ -27,8 +27,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     private boolean deleteClicked;
 
     public GuiSubworldEdit(Screen parent, String subworldName) {
-        this.parent = parent;
-        this.setParentScreen(this.parent);
+        this.lastScreen = parent;
 
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.originalSubworldName = subworldName;
@@ -48,7 +47,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         this.subworldNameField.setValue(this.originalSubworldName);
         this.addRenderableWidget(this.subworldNameField);
         this.addRenderableWidget(this.doneButton = new Button.Builder(Component.translatable("gui.done"), button -> this.changeNameClicked()).bounds(this.getWidth() / 2 - 155, this.getHeight() - 28, 150, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 + 5, this.getHeight() - 28, 150, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> this.onClose()).bounds(this.getWidth() / 2 + 5, this.getHeight() - 28, 150, 20).build());
         int buttonListY = this.getHeight() / 6 + 82 + 6;
         this.addRenderableWidget(this.deleteButton = new Button.Builder(Component.translatable("selectServer.delete"), button -> this.deleteClicked()).bounds(this.getWidth() / 2 - 50, buttonListY + 24, 100, 20).build());
         this.doneButton.active = this.isNameAcceptable();
@@ -64,7 +63,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
             this.waypointManager.changeSubworldName(this.originalSubworldName, this.currentSubworldName);
         }
 
-        VoxelConstants.getMinecraft().setScreen(this.parent);
+        this.onClose();
     }
 
     private void deleteClicked() {
@@ -85,7 +84,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
                 this.waypointManager.deleteSubworld(this.originalSubworldName);
             }
 
-            VoxelConstants.getMinecraft().setScreen(this.parent);
+            this.onClose();
         }
 
     }

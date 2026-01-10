@@ -60,7 +60,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();
     private final PersistentMap persistentMap;
     private final WaypointManager waypointManager;
-    private final Screen parent;
     private final MapSettingsManager mapOptions;
     private final PersistentMapSettingsManager options;
     protected String screenTitle = "World Map";
@@ -139,8 +138,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private int iconsHeight = 16;
 
     public GuiPersistentMap(Screen parent) {
-        this.parent = parent;
-        this.setParentScreen(this.parent);
+        this.lastScreen = parent;
 
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -208,7 +206,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 3 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("menu.options"), button -> minecraft.setScreen(new GuiMinimapOptions(this)), this));
-        this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("gui.done"), button -> minecraft.setScreen(parent), this));
+        this.addRenderableWidget(new PopupGuiButton(this.sideMargin + 4 * (this.buttonWidth + this.buttonSeparation), this.getHeight() - 28, this.buttonWidth, 20, Component.translatable("gui.done"), button -> this.onClose(), this));
         this.coordinates = new EditBox(this.getFont(), this.sideMargin, 10, 140, 20, null);
         this.top = 32;
         this.bottom = this.getHeight() - 32;

@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
@@ -15,13 +14,11 @@ import net.minecraft.network.chat.Component;
 
 public class GuiWaypointsOptions extends GuiScreenMinimap {
     private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
-    private final Screen parent;
     private final MapSettingsManager options;
     protected Component screenTitle;
 
     public GuiWaypointsOptions(Screen parent, MapSettingsManager options) {
-        this.parent = parent;
-        this.setParentScreen(this.parent);
+        this.lastScreen = parent;
 
         this.options = options;
     }
@@ -59,7 +56,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
             ++var2;
         }
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parent)).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
     }
 
     protected void optionClicked(Button par1GuiButton) {

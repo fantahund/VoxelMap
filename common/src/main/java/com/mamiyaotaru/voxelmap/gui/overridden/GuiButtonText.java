@@ -8,6 +8,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 public class GuiButtonText extends Button.Plain {
     private boolean editing;
@@ -42,6 +43,11 @@ public class GuiButtonText extends Button.Plain {
         }
 
         textField.setFocused(editing);
+
+        textField.setX(this.getX() + 1);
+        textField.setY(this.getY() + 1);
+        textField.setWidth(this.getWidth() - 2);
+        textField.setHeight(this.getHeight() - 2);
     }
 
     @Override
@@ -50,7 +56,7 @@ public class GuiButtonText extends Button.Plain {
         if (!(editing)) {
             return super.keyPressed(keyEvent);
         }
-        if (keyCode != 257 && keyCode != 335 && keyCode != 258) {
+        if (keyCode != GLFW.GLFW_KEY_ENTER && keyCode != GLFW.GLFW_KEY_KP_ENTER && keyCode != GLFW.GLFW_KEY_TAB) {
             return textField.keyPressed(keyEvent);
         }
 

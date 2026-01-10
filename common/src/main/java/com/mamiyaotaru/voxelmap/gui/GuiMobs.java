@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
@@ -16,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 public class GuiMobs extends GuiScreenMinimap {
-    private final Screen parentScreen;
     protected final RadarSettingsManager options;
     protected Component screenTitle;
     private GuiSlotMobs mobsList;
@@ -27,8 +25,7 @@ public class GuiMobs extends GuiScreenMinimap {
     protected Identifier selectedMobId;
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
-        this.parentScreen = parentScreen;
-        this.setParentScreen(this.parentScreen);
+        this.lastScreen = parentScreen;
 
         this.options = options;
     }
@@ -47,7 +44,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.addRenderableWidget(this.filter);
         this.addRenderableWidget(this.buttonEnable = new Button.Builder(Component.translatable("options.minimap.mobs.enable"), button -> this.setMobEnabled(this.selectedMobId, true)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 28, 100, 20).build());
         this.addRenderableWidget(this.buttonDisable = new Button.Builder(Component.translatable("options.minimap.mobs.disable"), button -> this.setMobEnabled(this.selectedMobId, false)).bounds(this.getWidth() / 2 - 50, this.getHeight() - 28, 100, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 + 4 + 50, this.getHeight() - 28, 100, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 + 4 + 50, this.getHeight() - 28, 100, 20).build());
         this.setFocused(this.filter);
         this.filter.setFocused(true);
         boolean isSomethingSelected = this.selectedMobId != null;

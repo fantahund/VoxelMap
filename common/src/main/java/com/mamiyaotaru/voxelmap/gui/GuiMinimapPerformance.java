@@ -19,13 +19,11 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
     private GuiButtonText worldSeedButton;
     private GuiButtonText teleportCommandButton;
     private GuiOptionButtonMinimap slimeChunksButton;
-    private final Screen parentScreen;
     protected String screenTitle = "Details / Performance";
     private final MapSettingsManager options;
 
     public GuiMinimapPerformance(Screen par1GuiScreen) {
-        this.parentScreen = par1GuiScreen;
-        this.setParentScreen(this.parentScreen);
+        this.lastScreen = par1GuiScreen;
 
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
@@ -74,7 +72,7 @@ public class GuiMinimapPerformance extends GuiScreenMinimap {
         this.addRenderableWidget(this.teleportCommandButton);
         ++var2;
         ++var2;
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
     }
 
     @Override

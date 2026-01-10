@@ -13,6 +13,7 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -50,7 +51,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     public GuiAddWaypoint(IGuiWaypoints par1GuiScreen, Waypoint par2Waypoint, boolean editing) {
         this.parentGui = par1GuiScreen;
-        this.setParentScreen(this.parentGui);
+        this.lastScreen = (Screen) par1GuiScreen;
 
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
@@ -115,7 +116,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             return;
         }
 
-        VoxelConstants.getMinecraft().setScreen(null);
+        this.onClose();
     }
 
     protected void acceptWaypoint() {
@@ -132,13 +133,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
         if (editing) {
             waypointManager.saveWaypoints();
-            VoxelConstants.getMinecraft().setScreen(null);
+            this.onClose();
 
             return;
         }
 
         waypointManager.addWaypoint(waypoint);
-        VoxelConstants.getMinecraft().setScreen(null);
+        this.onClose();
     }
 
     @Override
