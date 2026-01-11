@@ -315,21 +315,22 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
-
-        if (this.slimeChunksButton != null && this.worldSeedButton != null && this.teleportCommandButton != null) {
-            if (keyCode == GLFW.GLFW_KEY_TAB) {
+        if (keyCode == GLFW.GLFW_KEY_TAB) {
+            if (this.worldSeedButton != null) {
                 this.worldSeedButton.keyPressed(keyEvent);
+            }
+            if (this.teleportCommandButton != null) {
                 this.teleportCommandButton.keyPressed(keyEvent);
             }
+        }
 
-            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
-                if (this.worldSeedButton.isEditing()) {
-                    this.newSeed();
-                } else if (this.teleportCommandButton.isEditing()) {
-                    this.newTeleportCommand();
-                }
-
+        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
+            if (this.worldSeedButton != null && this.worldSeedButton.isEditing()) {
+                this.newSeed();
+            } else if (this.teleportCommandButton != null && this.teleportCommandButton.isEditing()) {
+                this.newTeleportCommand();
             }
+
         }
 
         return super.keyPressed(keyEvent);
@@ -338,17 +339,15 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     @Override
     public boolean charTyped(CharacterEvent characterEvent) {
         boolean OK = super.charTyped(characterEvent);
-        if (this.slimeChunksButton != null && this.worldSeedButton != null && this.teleportCommandButton != null) {
-            if (characterEvent.codepoint() == '\r') {
-                if (this.worldSeedButton.isEditing()) {
-                    this.newSeed();
-                } else if (this.teleportCommandButton.isEditing()) {
-                    this.newTeleportCommand();
-                }
-
+        if (characterEvent.codepoint() == '\r') {
+            if (this.worldSeedButton != null && this.worldSeedButton.isEditing()) {
+                this.newSeed();
+            } else if (this.teleportCommandButton != null && this.teleportCommandButton.isEditing()) {
+                this.newTeleportCommand();
             }
 
         }
+
         return OK;
     }
 
@@ -374,27 +373,35 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     private void newSeed() {
-        String newSeed = this.worldSeedButton.getText();
-        VoxelConstants.getVoxelMapInstance().setWorldSeed(newSeed);
-        String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
-        if (worldSeedDisplay.isEmpty()) {
-            worldSeedDisplay = I18n.get("selectWorld.versionUnknown");
+        if (this.worldSeedButton != null) {
+            String newSeed = this.worldSeedButton.getText();
+            VoxelConstants.getVoxelMapInstance().setWorldSeed(newSeed);
+            String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
+            if (worldSeedDisplay.isEmpty()) {
+                worldSeedDisplay = I18n.get("selectWorld.versionUnknown");
+            }
+
+            String buttonText = I18n.get("options.minimap.worldSeed") + ": " + worldSeedDisplay;
+            this.worldSeedButton.setMessage(Component.literal(buttonText));
+            this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
+            VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
+        }
+        if (this.slimeChunksButton != null) {
+            this.slimeChunksButton.active = VoxelConstants.getMinecraft().hasSingleplayerServer() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
         }
 
-        String buttonText = I18n.get("options.minimap.worldSeed") + ": " + worldSeedDisplay;
-        this.worldSeedButton.setMessage(Component.literal(buttonText));
-        this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
-        VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
-        this.slimeChunksButton.active = VoxelConstants.getMinecraft().hasSingleplayerServer() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
     }
 
     private void newTeleportCommand() {
-        String newTeleportCommand = this.teleportCommandButton.getText().isEmpty() ? "tp %p %x %y %z" : this.teleportCommandButton.getText();
-        VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand = newTeleportCommand;
+        if (teleportCommandButton != null) {
+            String newTeleportCommand = this.teleportCommandButton.getText().isEmpty() ? "tp %p %x %y %z" : this.teleportCommandButton.getText();
+            VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand = newTeleportCommand;
 
-        String buttonText = I18n.get("options.minimap.teleportCommand") + ": " + newTeleportCommand;
-        this.teleportCommandButton.setMessage(Component.literal(buttonText));
-        this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
+            String buttonText = I18n.get("options.minimap.teleportCommand") + ": " + newTeleportCommand;
+            this.teleportCommandButton.setMessage(Component.literal(buttonText));
+            this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
+        }
+
     }
 
     private void setOptionValue(EnumOptionsMinimap option) {
