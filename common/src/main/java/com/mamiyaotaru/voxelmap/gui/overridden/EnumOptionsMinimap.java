@@ -42,6 +42,7 @@ public enum EnumOptionsMinimap {
     CACHE_SIZE("options.worldmap.cacheSize", true, false, false),
     MOVE_MAP_DOWN_WHILE_STATUS_EFFECT("options.minimap.moveMapBelowStatusEffectIcons", false, true, false),
     MOVE_SCOREBOARD_DOWN("options.minimap.moveScoreboardBelowMap", false, true, false),
+    TELEPORT_COMMAND("Teleport Command", false, false, false),
     DISTANCE_UNIT_CONVERSION("options.minimap.waypoints.distanceUnitConversion", false, false, true),
     WAYPOINT_SIGN_SCALE("options.minimap.waypoints.waypointSignScale", true, false, false),
     SHOW_IN_GAME_WAYPOINT_NAMES("options.minimap.waypoints.showWaypointNames", false, false, true),

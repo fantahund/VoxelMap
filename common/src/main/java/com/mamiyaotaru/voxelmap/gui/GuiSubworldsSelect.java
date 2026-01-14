@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.ArrayList;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,6 +22,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
+
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
     private Component title;
     private Component select;
@@ -32,7 +33,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private float yaw;
     private final CameraType thirdPersonViewOrig;
     private String[] worlds;
-    private final Screen parent;
     final LocalPlayer thePlayer;
     final LocalPlayer camera;
     private final WaypointManager waypointManager;
@@ -40,8 +40,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     public GuiSubworldsSelect(Screen parent) {
         ClientLevel clientWorld = VoxelConstants.getClientWorld();
 
-        this.parent = parent;
-        this.setParentScreen(this.parent);
+        this.lastScreen = parent;
 
         this.thePlayer = VoxelConstants.getPlayer();
         this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), Input.EMPTY, false);
@@ -115,7 +114,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     @Override
     public void accept(boolean b) {
         if (!b) {
-            VoxelConstants.getMinecraft().setScreen(this.parent);
+            this.onClose();
         } else {
             this.multiworld = true;
             VoxelConstants.getMinecraft().setScreen(this);
@@ -207,7 +206,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     private void worldSelected(String selectedSubworldName) {
         this.waypointManager.setSubworldName(selectedSubworldName, false);
-        VoxelConstants.getMinecraft().setScreen(this.parent);
+        this.onClose();
     }
 
     private void editWorld(String subworldNameToEdit) {

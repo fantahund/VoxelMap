@@ -8,9 +8,6 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import java.util.Optional;
-import java.util.Random;
-import java.util.TreeSet;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -23,8 +20,11 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
 
+import java.util.Optional;
+import java.util.Random;
+import java.util.TreeSet;
+
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
-    private final Screen parentScreen;
     protected final MapSettingsManager options;
     protected final WaypointManager waypointManager;
     protected Component screenTitle;
@@ -50,8 +50,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private boolean changedSort;
 
     public GuiWaypoints(Screen parentScreen) {
-        this.parentScreen = parentScreen;
-        this.setParentScreen(this.parentScreen);
+        this.lastScreen = parentScreen;
 
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
@@ -81,7 +80,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         this.addRenderableWidget(this.buttonTeleport = new Button.Builder(Component.translatable("minimap.waypoints.teleportTo"), button -> this.teleportClicked()).bounds(this.getWidth() / 2 - 154, this.getHeight() - 28, 74, 20).build());
         this.addRenderableWidget(this.buttonShare = new Button.Builder(Component.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(this.selectedWaypoint)).bounds(this.getWidth() / 2 - 76, this.getHeight() - 28, 74, 20).build());
         this.addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this, this.options))).bounds(this.getWidth() / 2 + 2, this.getHeight() - 28, 74, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 + 80, this.getHeight() - 28, 74, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 + 80, this.getHeight() - 28, 74, 20).build());
         this.setFocused(this.filter);
         this.filter.setFocused(true);
         boolean isSomethingSelected = this.selectedWaypoint != null;

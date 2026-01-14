@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -10,17 +9,15 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
 public class GuiMinimapControls extends GuiScreenMinimap {
-    private final Screen parentScreen;
     protected String screenTitle = "Controls";
     private GuiButtonRowListKeys keymapList;
 
     public GuiMinimapControls(Screen parent) {
-        this.parentScreen = parent;
-        this.setParentScreen(this.parentScreen);
+        this.lastScreen = parent;
     }
 
     public void init() {
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
         this.screenTitle = I18n.get("key.category.voxelmap.controls.title");
 
         this.keymapList = new GuiButtonRowListKeys(this);

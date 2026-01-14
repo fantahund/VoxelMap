@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GuiWelcomeScreen extends GuiScreenMinimap {
-    private Screen parent;
     private MapSettingsManager options;
 
     private PlainTextButton closeButton;
@@ -27,8 +26,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     private final ArrayList<Component> welcomeTexts = new ArrayList<>();
 
     public GuiWelcomeScreen(Screen parentScreen) {
-        this.parent = parentScreen;
-        this.setParentScreen(this.parent);
+        this.lastScreen = parentScreen;
 
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }

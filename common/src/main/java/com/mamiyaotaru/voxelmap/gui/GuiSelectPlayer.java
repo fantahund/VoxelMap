@@ -15,7 +15,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
-    private final Screen parentScreen;
     protected Component screenTitle = Component.literal("players");
     private final boolean sharingWaypoint;
     private GuiButtonRowListPlayers playerList;
@@ -29,8 +28,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     static final Component SHARE_COORDINATES = Component.translatable("minimap.waypointShare.titleCoordinate");
 
     public GuiSelectPlayer(Screen parentScreen, String locInfo, boolean sharingWaypoint) {
-        this.parentScreen = parentScreen;
-        this.setParentScreen(this.parentScreen);
+        this.lastScreen = parentScreen;
 
         this.locInfo = locInfo;
         this.sharingWaypoint = sharingWaypoint;
@@ -52,7 +50,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, null);
         this.filter.setMaxLength(35);
         this.addRenderableWidget(this.filter);
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> this.onClose()).bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
         this.setFocused(this.filter);
         this.filter.setFocused(true);
     }
@@ -112,7 +110,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
                     VoxelConstants.getPlayer().connection.sendChat(combined);
                 }
 
-                VoxelConstants.getMinecraft().setScreen(this.parentScreen);
+                this.onClose();
             } else {
                 VoxelConstants.getMinecraft().setScreen(this);
             }
@@ -129,7 +127,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
             VoxelConstants.getPlayer().connection.sendCommand(combined);
         }
 
-        VoxelConstants.getMinecraft().setScreen(this.parentScreen);
+        this.onClose();
     }
 
     @Override
