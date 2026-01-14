@@ -45,9 +45,10 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private final ArrayList<AbstractWidget> optionButtons = new ArrayList<>();
     private int pageIndex = 0;
     private String pageState = "";
-    private int pageStateOffset = 0;
     private int tabIndex = 0;
     private int lastTabIndex = 0;
+    private Button nextPageButton;
+    private Button prevPageButton;
 
     private static final EnumOptionsMinimap[] generalOptions = { EnumOptionsMinimap.SHOW_COORDS, EnumOptionsMinimap.HIDE_MINIMAP, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE_MAP, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.IN_GAME_WAYPOINTS, EnumOptionsMinimap.CAVE_MODE, EnumOptionsMinimap.MOVE_MAP_DOWN_WHILE_STATUS_EFFECT, EnumOptionsMinimap.MOVE_SCOREBOARD_DOWN };
     private static final EnumOptionsMinimap[] performanceOptions = { EnumOptionsMinimap.DYNAMIC_LIGHTING, EnumOptionsMinimap.TERRAIN_DEPTH, EnumOptionsMinimap.WATER_TRANSPARENCY, EnumOptionsMinimap.BLOCK_TRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNK_GRID, EnumOptionsMinimap.BIOME_OVERLAY, EnumOptionsMinimap.SLIME_CHUNKS, EnumOptionsMinimap.WORLD_BORDER, EnumOptionsMinimap.TELEPORT_COMMAND };
@@ -93,20 +94,19 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         this.layout.visitWidgets(this::addRenderableWidget);
         this.layout.arrangeElements();
 
-        this.replaceButtons();
-
-        Button nextPageButton = new Button.Builder(Component.literal(">"), button -> {
+        this.nextPageButton = new Button.Builder(Component.literal(">"), button -> {
             this.pageIndex++;
             this.replaceButtons();
         }).bounds(this.width / 2 + 140, this.height / 6 + 120, 40, 20).build();
-        this.addRenderableWidget(nextPageButton);
+        this.addRenderableWidget(this.nextPageButton);
 
-        Button prevPageButton = new Button.Builder(Component.literal("<"), button -> {
+        this.prevPageButton = new Button.Builder(Component.literal("<"), button -> {
             this.pageIndex--;
             this.replaceButtons();
         }).bounds(this.width / 2 - 180, this.height / 6 + 120, 40, 20).build();
-        this.addRenderableWidget(prevPageButton);
+        this.addRenderableWidget(this.prevPageButton);
 
+        this.replaceButtons();
     }
 
     public void replaceButtons() {
@@ -148,6 +148,9 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         int pageStart = itemCount * this.pageIndex;
         int pageEnd = Math.min(itemCount * (this.pageIndex + 1), relevantOptions.length);
 
+        this.nextPageButton.active = pageCount > 0;
+        this.prevPageButton.active = pageCount > 0;
+
         GridLayout gridLayout = new GridLayout();
         gridLayout.defaultCellSetting().paddingHorizontal(4).paddingBottom(4).alignHorizontallyCenter();
         GridLayout.RowHelper row = gridLayout.createRowHelper(2);
@@ -180,11 +183,9 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
 
         int additionalButtonX = this.width / 2 - 75;
-        int additionalButtonY = this.height / 6 + 120;
+        int additionalButtonY = this.height / 6 + 144;
 
         // Additional Buttons
-        this.pageStateOffset = 0;
-
         if (relevantOptions == performanceOptions) {
             String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
             if (worldSeedDisplay.isEmpty()) {
@@ -196,15 +197,11 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
             this.worldSeedButton.active = !VoxelConstants.getMinecraft().hasSingleplayerServer();
             this.addOptionButton(this.worldSeedButton);
-
-            this.pageStateOffset = -15;
         }
 
         if (relevantOptions == radarFullOptions) {
             this.mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, this.radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
             this.addOptionButton(this.mobListButton);
-
-            this.pageStateOffset = -15;
         }
 
         gridLayout.visitWidgets(this::addOptionButton);
@@ -291,7 +288,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         super.render(drawContext, mouseX, mouseY, delta);
         drawContext.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
 
-        drawContext.drawCenteredString(this.font, this.pageState, this.width / 2, this.height / 6 + 130 + this.pageStateOffset, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.font, this.pageState, this.width / 2, this.height / 6 + 126, 0xFFFFFFFF);
     }
 
     @Override
