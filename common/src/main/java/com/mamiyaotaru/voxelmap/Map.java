@@ -640,9 +640,7 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        if (this.options.coords) {
-            this.showCoords(drawContext, mapX, mapY, scaleProj);
-        }
+        this.showCoords(drawContext, mapX, mapY, scaleProj);
     }
 
     private void checkForChanges() {
@@ -1815,30 +1813,46 @@ public class Map implements Runnable, IChangeObserver {
 
     private void showCoords(GuiGraphics drawContext, int x, int y, float scaleProj) {
         Matrix3x2fStack matrixStack = drawContext.pose();
-        int textStart;
-        if (y > this.scHeight - 37 - 32 - 4 - 15) {
-            textStart = y - 32 - 4 - 9;
-        } else {
-            textStart = y + 32 + 4;
-        }
-
-        matrixStack.pushMatrix();
-        matrixStack.scale(scaleProj, scaleProj);
 
         if (!this.options.hide && !this.fullscreenMap) {
-            boolean unicode = minecraft.options.forceUnicodeFont().get();
-            float scale = unicode ? 0.65F : 0.5F;
+            int textStart;
+            if (y > this.scHeight - 37 - 32 - 4 - 15) {
+                textStart = y - 32 - 4 - 9;
+            } else {
+                textStart = y + 32 + 4;
+            }
+            int lineCount = 0;
+            int lineHeight = 10;
+            float scale = 0.5F;
             matrixStack.pushMatrix();
-            matrixStack.scale(scale, scale);
-            String xy = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
-            int m = this.textWidth(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale, 0xFFFFFFFF); // X, Z
-            xy = this.dCoord(GameVariableAccessShim.yCoord());
-            m = this.textWidth(xy) / 2;
-            this.write(drawContext, xy, x / scale - m, textStart / scale + 10.0F, 0xFFFFFFFF); // Y
+            matrixStack.scale(scale * scaleProj, scale * scaleProj);
+
+            int halfWidth;
+            String coords;
+
+            if (this.options.coords) {
+                coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
+                halfWidth = this.textWidth(coords) / 2;
+                this.write(drawContext, coords, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // X, Z
+                lineCount++;
+
+                coords = this.dCoord(GameVariableAccessShim.yCoord());
+                halfWidth = this.textWidth(coords) / 2;
+                this.write(drawContext, coords, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // Y
+                lineCount++;
+            }
+
+            if (this.options.showBiome) {
+                coords = BiomeRepository.getName(this.lastBiome);
+                halfWidth = this.textWidth(coords) / 2;
+                this.write(drawContext, coords, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // BIOME
+                lineCount++;
+            }
+
             if (!this.message.isEmpty()) {
-                m = this.textWidth(this.message) / 2;
-                this.write(drawContext, this.message, x / scale - m, textStart / scale + 19.0F, 0xFFFFFFFF); // WORLD NAME
+                halfWidth = this.textWidth(this.message) / 2;
+                this.write(drawContext, this.message, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // WORLD NAME
+                lineCount++;
             }
 
             matrixStack.popMatrix();
@@ -1862,14 +1876,12 @@ public class Map implements Runnable, IChangeObserver {
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
             int m = this.textWidth(stats) / 2;
-            this.write(drawContext, stats, (this.scWidth / 2f - m), 5.0F, 0xFFFFFFFF);
+            this.write(drawContext, stats, (this.scWidth * scaleProj / 2f - m), 5.0F, 0xFFFFFFFF);
             if (!this.message.isEmpty()) {
                 m = this.textWidth(this.message) / 2;
-                this.write(drawContext, this.message, (this.scWidth / 2f - m), 15.0F, 0xFFFFFFFF);
+                this.write(drawContext, this.message, (this.scWidth * scaleProj / 2f - m), 15.0F, 0xFFFFFFFF);
             }
         }
-
-        matrixStack.popMatrix();
     }
 
     private String dCoord(int paramInt1) {

@@ -103,6 +103,8 @@
   "options.minimap.mobs.disabled": "이 아이콘은 보여지지 않습니다.",
   "options.minimap.moveScoreboardBelowMap": "미니맵 아래로 점수판 이동",
   "options.minimap.moveMapBelowStatusEffectIcons": "상태 효과 아래로 미니맵 이동",
+  "options.minimap.showBiome": "바이옴 표시",
+  "options.minimap.updateNotifier": "업데이트 알림",
   "key.category.voxelmap.controls.title": "미니맵 조작",
   "controls.minimap.unbind1": "키를 설정 해제하려면 ESC 키를 눌러주세요.",
   "controls.minimap.unbind2": "(단, 메뉴 키는 예외입니다. 설정 해제할 수 없습니다.)",

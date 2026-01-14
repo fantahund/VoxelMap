@@ -103,6 +103,8 @@
   "options.minimap.mobs.disableTooltip": "Click to hide icon",
   "options.minimap.moveScoreboardBelowMap": "Move Scoreboard Below Map",
   "options.minimap.moveMapBelowStatusEffectIcons": "Move Map Below Status Effect Icons",
+  "options.minimap.showBiome": "Display Biome",
+  "options.minimap.updateNotifier": "Update Notifier",
   "key.category.voxelmap.controls.title": "Minimap Controls",
   "controls.minimap.unbind1": "To unbind a key, select it and press 'Escape'.",
   "controls.minimap.unbind2": "(Except for the Menu Key - it can't be unbound)",

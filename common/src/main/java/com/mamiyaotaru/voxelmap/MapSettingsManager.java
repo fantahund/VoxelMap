@@ -56,6 +56,8 @@ public class MapSettingsManager implements ISettingsManager {
     public int zoom = 2;
     public int sizeModifier = 1;
     public int mapCorner = 1;
+    public boolean showBiome = false;
+    public boolean updateNotifier = true;
 
     public Boolean cavesAllowed = true;
     public boolean worldmapAllowed = true;
@@ -159,6 +161,8 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Waypoint Sign Scale" -> this.waypointSignScale = Float.parseFloat(curLine[1]);
                         case "Show In-game Waypoint Names" -> this.waypointNamesLocation = Integer.parseInt(curLine[1]);
                         case "Show In-game Waypoint Distances" -> this.waypointDistancesLocation  = Integer.parseInt(curLine[1]);
+                        case "Show Biome" -> this.showBiome = Boolean.parseBoolean(curLine[1]);
+                        case "Update Notifier" -> this.updateNotifier = Boolean.parseBoolean(curLine[1]);
                     }
                 }
                 KeyMapping.resetMapping();
@@ -236,6 +240,8 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Waypoint Sign Scale:" + this.waypointSignScale);
             out.println("Show In-game Waypoint Names:" + this.waypointNamesLocation);
             out.println("Show In-game Waypoint Distances:" + this.waypointDistancesLocation);
+            out.println("Show Biome:" + this.showBiome);
+            out.println("Update Notifier:" + this.updateNotifier);
 
             for (ISubSettingsManager subSettingsManager : this.subSettingsManagers) {
                 subSettingsManager.saveAll(out);
@@ -304,6 +310,8 @@ public class MapSettingsManager implements ISettingsManager {
             case WORLD_BORDER -> this.worldborder;
             case MOVE_MAP_DOWN_WHILE_STATUS_EFFECT -> this.moveMapDownWhileStatusEffect;
             case MOVE_SCOREBOARD_DOWN -> this.moveScoreBoardDown;
+            case SHOW_BIOME -> this.showBiome;
+            case UPDATE_NOTIFIER -> this.updateNotifier;
             default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean applicable to minimap)");
         };
     }
@@ -531,6 +539,8 @@ public class MapSettingsManager implements ISettingsManager {
                     this.waypointDistancesLocation = 0;
                 }
             }
+            case SHOW_BIOME -> this.showBiome = !this.showBiome;
+            case UPDATE_NOTIFIER -> this.updateNotifier = !this.updateNotifier;
             default ->
                     throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
         }
