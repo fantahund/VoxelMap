@@ -755,11 +755,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     for (AbstractMapData.BiomeLabel biomeLabel : labels) {
                         if (biomeLabel.segmentSize > minimumSize) {
                             String label = biomeLabel.name; // + " (" + biomeLabel.x + "," + biomeLabel.z + ")";
-                            int nameWidth = this.chkLen(label);
                             float x = biomeLabel.x * biomeScaleX / this.scScale;
                             float z = biomeLabel.z * biomeScaleY / this.scScale;
 
-                            this.write(guiGraphics, label, x - (nameWidth / 2f), this.top + z - 3.0F, 0xFFFFFFFF);
+                            this.writeCentered(guiGraphics, label, x, this.top + z - 3.0F, 0xFFFFFFFF, true);
                         }
                     }
                 }
@@ -914,10 +913,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
             float fontScale = 1.0F;
-            int halfWidth = this.chkLen(name) / 2;
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().scale(fontScale, fontScale);
-            this.write(guiGraphics, name, x / fontScale - halfWidth, y / fontScale + iconsHeight / 2, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF);
+            this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + iconsHeight / 2, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
             guiGraphics.pose().popMatrix();
         }
 
@@ -1176,11 +1174,27 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         minecraft.setScreen(this);
     }
 
-    private int chkLen(String string) {
-        return this.getFont().width(string);
+    private int textWidth(String string) {
+        return minecraft.font.width(string);
     }
 
-    private void write(GuiGraphics drawContext, String string, float x, float y, int color) {
-        drawContext.drawString(this.font, string, (int) x, (int) y, color);
+    private int textWidth(Component text) {
+        return minecraft.font.width(text);
+    }
+
+    private void write(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
+        write(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
+    }
+
+    private void write(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
+        drawContext.drawString(minecraft.font, text, (int) x, (int) y, color, shadow);
+    }
+
+    private void writeCentered(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
+        writeCentered(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
+    }
+
+    private void writeCentered(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
+        drawContext.drawString(minecraft.font, text, (int) x - (textWidth(text) / 2), (int) y, color, shadow);
     }
 }

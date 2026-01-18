@@ -1743,13 +1743,12 @@ public class Map implements Runnable, IChangeObserver {
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
                     String name = o.name;
-                    int nameWidth = this.textWidth(name);
                     float x = (float) (o.x * factor);
                     float z = (float) (o.z * factor);
                     if (this.options.oldNorth) {
-                        this.write(guiGraphics, name, (left + 256) - z - (nameWidth / 2f), top + x - 3.0F, 0xFFFFFFFF);
+                        this.writeCentered(guiGraphics, name, (left + 256) - z, top + x - 3.0F, 0xFFFFFFFF, true);
                     } else {
-                        this.write(guiGraphics, name, left + x - (nameWidth / 2f), top + z - 3.0F, 0xFFFFFFFF);
+                        this.writeCentered(guiGraphics, name, left + x, top + z - 3.0F, 0xFFFFFFFF, true);
                     }
                 }
             }
@@ -1765,8 +1764,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
         Matrix3x2fStack poseStack = drawContext.pose();
-        boolean unicode = minecraft.options.forceUnicodeFont().get();
-        float scale = unicode ? 0.65F : 0.5F;
+        float scale = 0.5F;
         float rotate;
         if (this.options.rotates) {
             rotate = -this.direction - 90.0F - this.northRotate;
@@ -1774,17 +1772,17 @@ public class Map implements Runnable, IChangeObserver {
             rotate = -90.0F;
         }
 
-        float distance;
+        float distance = 33.5F;
         if (this.options.squareMap) {
             if (this.options.rotates) {
                 float tempdir = this.direction % 90.0F;
                 tempdir = 45.0F - Math.abs(45.0F - tempdir);
-                distance = (float) (33.5 / scale / Math.cos(Math.toRadians(tempdir)));
+                distance /= scale * Mth.cos(Math.toRadians(tempdir));
             } else {
-                distance = 33.5F / scale;
+                distance /= scale;
             }
         } else {
-            distance = 32.0F / scale;
+            distance /= scale;
         }
 
         poseStack.pushMatrix();
@@ -1792,20 +1790,20 @@ public class Map implements Runnable, IChangeObserver {
         poseStack.scale(scale, scale);
 
         poseStack.pushMatrix();
-        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate - 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate - 90.0)))));
-        this.write(drawContext, "N", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
+        poseStack.translate(distance * Mth.sin(-(rotate - 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate - 90.0F) * Mth.DEG_TO_RAD));
+        this.writeCentered(drawContext, "N", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
         poseStack.popMatrix();
         poseStack.pushMatrix();
-        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-rotate))), (float) (distance * Math.cos(Math.toRadians(-rotate))));
-        this.write(drawContext, "E", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
+        poseStack.translate(distance * Mth.sin(-(rotate) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate) * Mth.DEG_TO_RAD));
+        this.writeCentered(drawContext, "E", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
         poseStack.popMatrix();
         poseStack.pushMatrix();
-        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate + 90.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate + 90.0)))));
-        this.write(drawContext, "S", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
+        poseStack.translate(distance * Mth.sin(-(rotate + 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 90.0F) * Mth.DEG_TO_RAD));
+        this.writeCentered(drawContext, "S", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
         poseStack.popMatrix();
         poseStack.pushMatrix();
-        poseStack.translate((float) (distance * Math.sin(Math.toRadians(-(rotate + 180.0)))), (float) (distance * Math.cos(Math.toRadians(-(rotate + 180.0)))));
-        this.write(drawContext, "W", x / scale - 2.0F, y / scale - 4.0F, 0xFFFFFFFF);
+        poseStack.translate(distance * Mth.sin(-(rotate + 180.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 180.0F) * Mth.DEG_TO_RAD));
+        this.writeCentered(drawContext, "W", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
         poseStack.popMatrix();
 
         poseStack.popMatrix();
@@ -1827,31 +1825,26 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.pushMatrix();
             matrixStack.scale(scale * scaleProj, scale * scaleProj);
 
-            int halfWidth;
             String coords;
 
             if (this.options.coords) {
                 coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
-                halfWidth = this.textWidth(coords) / 2;
-                this.write(drawContext, coords, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // X, Z
+                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
 
                 coords = this.dCoord(GameVariableAccessShim.yCoord());
-                halfWidth = this.textWidth(coords) / 2;
-                this.write(drawContext, coords, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // Y
+                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // Y
                 lineCount++;
             }
 
             if (this.options.showBiome) {
                 coords = BiomeRepository.getName(this.lastBiome);
-                halfWidth = this.textWidth(coords) / 2;
-                this.write(drawContext, coords, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // BIOME
+                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // BIOME
                 lineCount++;
             }
 
             if (!this.message.isEmpty()) {
-                halfWidth = this.textWidth(this.message) / 2;
-                this.write(drawContext, this.message, x / scale - halfWidth, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF); // WORLD NAME
+                this.writeCentered(drawContext, this.message, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // WORLD NAME
                 lineCount++;
             }
 
@@ -1875,11 +1868,9 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
-            int m = this.textWidth(stats) / 2;
-            this.write(drawContext, stats, (this.scWidth * scaleProj / 2f - m), 5.0F, 0xFFFFFFFF);
+            this.writeCentered(drawContext, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, 0xFFFFFFFF, true);
             if (!this.message.isEmpty()) {
-                m = this.textWidth(this.message) / 2;
-                this.write(drawContext, this.message, (this.scWidth * scaleProj / 2f - m), 15.0F, 0xFFFFFFFF);
+                this.writeCentered(drawContext, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, 0xFFFFFFFF, true);
             }
         }
     }
@@ -1901,16 +1892,24 @@ public class Map implements Runnable, IChangeObserver {
         return minecraft.font.width(string);
     }
 
-    private void write(GuiGraphics drawContext, String text, float x, float y, int color) {
-        write(drawContext, Component.nullToEmpty(text), x, y, color);
-    }
-
     private int textWidth(Component text) {
         return minecraft.font.width(text);
     }
 
-    private void write(GuiGraphics drawContext, Component text, float x, float y, int color) {
-        drawContext.drawString(minecraft.font, text, (int) x, (int) y, color);
+    private void write(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
+        write(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
+    }
+
+    private void write(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
+        drawContext.drawString(minecraft.font, text, (int) x, (int) y, color, shadow);
+    }
+
+    private void writeCentered(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
+        writeCentered(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
+    }
+
+    private void writeCentered(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
+        drawContext.drawString(minecraft.font, text, (int) x - (textWidth(text) / 2), (int) y, color, shadow);
     }
 
     public static double getMinTablistOffset() {
