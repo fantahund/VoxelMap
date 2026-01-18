@@ -1772,17 +1772,17 @@ public class Map implements Runnable, IChangeObserver {
             rotate = -90.0F;
         }
 
-        float distance = 33.5F;
+        float distance;
         if (this.options.squareMap) {
             if (this.options.rotates) {
                 float tempdir = this.direction % 90.0F;
                 tempdir = 45.0F - Math.abs(45.0F - tempdir);
-                distance /= scale * Mth.cos(Math.toRadians(tempdir));
+                distance = 33.5F / scale / Mth.cos(Math.toRadians(tempdir));
             } else {
-                distance /= scale;
+                distance = 33.5F / scale;
             }
         } else {
-            distance /= scale;
+            distance = 32.5F / scale;
         }
 
         poseStack.pushMatrix();
