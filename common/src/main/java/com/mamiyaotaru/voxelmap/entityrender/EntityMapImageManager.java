@@ -3,7 +3,9 @@ package com.mamiyaotaru.voxelmap.entityrender;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.variants.SheepVariantDataFactory;
 import com.mamiyaotaru.voxelmap.mixins.AccessorEnderDragonRenderer;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -28,22 +30,22 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
-import net.minecraft.util.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.animal.camel.CamelModel;
 import net.minecraft.client.model.animal.fish.CodModel;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.animal.ghast.HappyGhastModel;
-import net.minecraft.client.model.monster.slime.MagmaCubeModel;
-import net.minecraft.client.model.animal.llama.LlamaModel;
 import net.minecraft.client.model.animal.fish.SalmonModel;
-import net.minecraft.client.model.monster.slime.SlimeModel;
-import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
 import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
-import net.minecraft.client.model.monster.wither.WitherBossModel;
+import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
+import net.minecraft.client.model.animal.ghast.HappyGhastModel;
+import net.minecraft.client.model.animal.llama.LlamaModel;
+import net.minecraft.client.model.animal.sheep.SheepModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.monster.slime.MagmaCubeModel;
+import net.minecraft.client.model.monster.slime.SlimeModel;
+import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -55,16 +57,19 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -129,6 +134,8 @@ public class EntityMapImageManager {
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
+        addVariantDataFactory(new SheepVariantDataFactory(EntityType.SHEEP));
+        addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
                 requestImageForMobType(t, 32, true);
@@ -363,31 +370,45 @@ public class EntityMapImageManager {
             // } catch (IOException e) {
             // e.printStackTrace();
             // }
-            if (model instanceof CamelModel) {
-                Graphics2D g = image.createGraphics();
-                g.setComposite(AlphaComposite.Clear);
-                g.fillRect(0, 192, image.getWidth(), image.getHeight());
-            }
-            if (model instanceof LlamaModel) {
-                Graphics2D g = image.createGraphics();
-                g.setComposite(AlphaComposite.Clear);
-                g.fillRect(0, 248, image.getWidth(), image.getHeight());
-            }
-            if (model instanceof HappyGhastModel) {
-                Graphics2D g = image.createGraphics();
-                g.setComposite(AlphaComposite.Clear);
-                g.fillRect(0,  352, image.getWidth(), image.getHeight());
+            int targetSize = -1;
+            switch (model) {
+                case CamelModel camelModel -> {
+                    Graphics2D g = image.createGraphics();
+                    g.setComposite(AlphaComposite.Clear);
+                    g.fillRect(0, 192, image.getWidth(), image.getHeight());
+                }
+                case LlamaModel llamaModel -> {
+                    Graphics2D g = image.createGraphics();
+                    g.setComposite(AlphaComposite.Clear);
+                    g.fillRect(0, 248, image.getWidth(), image.getHeight());
+                }
+                case HappyGhastModel happyGhastModel -> {
+                    Graphics2D g = image.createGraphics();
+                    g.setComposite(AlphaComposite.Clear);
+                    g.fillRect(0,  352, image.getWidth(), image.getHeight());
+                }
+                case SalmonModel salmonModel -> targetSize = 64;
+                case SheepModel sheepModel -> {
+                    Sheep sheepEntity = (Sheep) entity;
+                    if (!sheepEntity.isSheared()) {
+                        Graphics2D g = image.createGraphics();
+                        g.setComposite(AlphaComposite.DstOver);
+                        g.setColor(new Color(sheepEntity.getColor().getTextureDiffuseColor()));
+                        g.fillRect(242, 262, image.getWidth() - 484, image.getHeight() - 484);
+                    }
+                }
+                default -> {}
             }
             image = ImageUtils.trim(image);
-            float maxSize = Math.max(image.getHeight(), image.getWidth());
-            float targetSize = maxSize;
-            if (model instanceof SalmonModel) {
-                targetSize = 64.0F;
+
+            int maxSize = Math.max(image.getHeight(), image.getWidth());
+            float scale = Float.parseFloat(getMobProperties(entity).getProperty("scale", "1.0"));
+            if (targetSize == -1) {
+                targetSize = maxSize;
             }
-            Properties mobProperties = getMobProperties(entity);
-            targetSize *= Float.parseFloat(mobProperties.getProperty("scale", "1.0"));
+            targetSize = (int) (targetSize * scale);
             if (maxSize > 0 && maxSize != targetSize) {
-                image = ImageUtils.scaleImage(image, targetSize / maxSize);
+                image = ImageUtils.scaleImage(image, (float) targetSize / maxSize);
             }
 
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
