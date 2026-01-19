@@ -61,7 +61,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.joml.Matrix4f;
@@ -383,7 +382,8 @@ public class EntityMapImageManager {
             // } catch (IOException e) {
             // e.printStackTrace();
             // }
-            float modelScale = 1.0F;
+
+            boolean useFixedScale = false;
             switch (model) {
                 case CamelModel camelModel -> {
                     Graphics2D g = image.createGraphics();
@@ -400,10 +400,7 @@ public class EntityMapImageManager {
                     g.setComposite(AlphaComposite.Clear);
                     g.fillRect(0,  352, image.getWidth(), image.getHeight());
                 }
-                case SalmonModel salmonModel -> {
-                    Salmon salmonEntity = (Salmon) entity;
-                    modelScale = salmonEntity.getSalmonScale();
-                }
+                case SalmonModel salmonModel -> useFixedScale = true;
                 case SheepModel sheepModel -> {
                     Sheep sheepEntity = (Sheep) entity;
                     if (!sheepEntity.isSheared()) {
@@ -418,10 +415,15 @@ public class EntityMapImageManager {
 
             float scale = Float.parseFloat(getMobProperties(entity).getProperty("scale", "1.0"));
             image = ImageUtils.trim(image);
-            // make trimmed image power-of-two
-            image = ImageUtils.intoSquare(image);
-            image = ImageUtils.scaleImage(image, scale / modelScale);
+            if (useFixedScale) {
+                int maxSize = Math.max(image.getWidth(), image.getHeight());
+                image = ImageUtils.scaleImage(image, 64.0F / maxSize);
+            }
+            image = ImageUtils.scaleImage(image, scale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
+
+            // make the image power-of-two
+            image = ImageUtils.intoSquare(image);
 
             BufferedImage image3 = image;
             taskQueue.add(() -> {
