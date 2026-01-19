@@ -5,6 +5,15 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.textures.GpuTexture;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.resources.Identifier;
+import org.lwjgl.system.MemoryUtil;
+
+import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -17,14 +26,6 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import javax.imageio.ImageIO;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.ReloadableTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
-import net.minecraft.resources.Identifier;
-import org.lwjgl.system.MemoryUtil;
 
 public class ImageUtils {
     public static void saveImage(String name, GpuTexture texture) {
@@ -296,13 +297,12 @@ public class ImageUtils {
 
     public static BufferedImage intoSquare(BufferedImage base) {
         int dim = Math.max(base.getWidth(), base.getHeight());
-        int t = 1;
+        int size = 1;
 
-        while (Math.pow(2.0, t - 1) < dim) {
-            ++t;
+        while (size < dim) {
+            size = size << 1;
         }
 
-        int size = (int) Math.pow(2.0, t);
         BufferedImage frame = new BufferedImage(size, size, base.getType());
         Graphics gfx = frame.getGraphics();
         gfx.drawImage(base, (size - base.getWidth()) / 2, (size - base.getHeight()) / 2, base.getWidth(), base.getHeight(), null);
