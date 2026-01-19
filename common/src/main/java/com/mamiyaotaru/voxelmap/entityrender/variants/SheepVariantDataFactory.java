@@ -15,11 +15,14 @@ public class SheepVariantDataFactory extends DefaultEntityVariantDataFactory {
         super(type);
     }
 
-    @SuppressWarnings({ "rawtypes" })
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
-        int color = ((Sheep) entity).getColor().getTextureDiffuseColor();
-        Identifier variantId = Identifier.fromNamespaceAndPath("voxelmap", "entityvariant/sheep/" + color);
+        Sheep sheep = (Sheep) entity;
+
+        // it's a simple trick to create different variant data for each sheep.
+        String location = sheep.isSheared() ? "sheared" : Integer.toString(sheep.getColor().getTextureDiffuseColor());
+        Identifier variantId = Identifier.fromNamespaceAndPath("voxelmap", "entityvariant/sheep/" + location);
 
         return new DefaultEntityVariantData(getType(), variantId, ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), size, addBorder);
     }
