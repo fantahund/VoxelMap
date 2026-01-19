@@ -30,13 +30,13 @@ public class DefaultEntityVariantDataFactory implements EntityVariantDataFactory
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
-        return new DefaultEntityVariantData(type, ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), secondaryTexture, size, addBorder);
+    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder) {
+        return new DefaultEntityVariantData(type, ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), secondaryTexture, identifier, size, addBorder);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static EntityVariantData createSimpleVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
-        return new DefaultEntityVariantData(entity.getType(), ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), null, size, addBorder);
+    public static EntityVariantData createSimpleVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder) {
+        return new DefaultEntityVariantData(entity.getType(), ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), null, identifier, size, addBorder);
     }
 
 }

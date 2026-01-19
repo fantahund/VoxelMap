@@ -9,6 +9,6 @@ public interface EntityVariantDataFactory {
 
     EntityType<?> getType();
 
-    EntityVariantData createVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder);
+    EntityVariantData createVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder);
 
 }

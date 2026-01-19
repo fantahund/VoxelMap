@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
-import com.mamiyaotaru.voxelmap.entityrender.variants.SheepVariantDataFactory;
 import com.mamiyaotaru.voxelmap.mixins.AccessorEnderDragonRenderer;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -62,6 +61,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.joml.Matrix4f;
@@ -134,8 +134,8 @@ public class EntityMapImageManager {
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
-        addVariantDataFactory(new SheepVariantDataFactory(EntityType.SHEEP));
         addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
+
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
                 requestImageForMobType(t, 32, true);
@@ -162,22 +162,22 @@ public class EntityMapImageManager {
         return requestImageForMob(e, -1, addBorder);
     }
 
-    private EntityVariantData getVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, int size, boolean addBorder) {
+    private EntityVariantData getVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder) {
         EntityVariantDataFactory factory = variantDataFactories.get(entity.getType());
         if (factory != null) {
-            EntityVariantData data = factory.createVariantData(entity, renderer, state, size, addBorder);
+            EntityVariantData data = factory.createVariantData(entity, renderer, state, identifier, size, addBorder);
             if (data != null) {
                 return data;
             }
         }
-        return DefaultEntityVariantDataFactory.createSimpleVariantData(entity, renderer, state, size, addBorder);
+        return DefaultEntityVariantDataFactory.createSimpleVariantData(entity, renderer, state, identifier, size, addBorder);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
+    private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, String identifier, int size, boolean addBorder) {
         EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
-            return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, size, addBorder);
+            return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, identifier, size, addBorder);
         }
 
         if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
@@ -190,7 +190,7 @@ public class EntityMapImageManager {
             return null;
         }
 
-        return getVariantData(entity, renderer, renderState, size, addBorder);
+        return getVariantData(entity, renderer, renderState, identifier, size, addBorder);
     }
 
     @SuppressWarnings("rawtypes")
@@ -206,7 +206,8 @@ public class EntityMapImageManager {
     @SuppressWarnings("rawtypes")
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, size, addBorder);
+        String identifier = getEntityIdentifier(entity);
+        EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, identifier, size, addBorder);
 
         if (variant == null) {
             return null;
@@ -361,6 +362,18 @@ public class EntityMapImageManager {
         return sprite;
     }
 
+    private String getEntityIdentifier(Entity entity) {
+        String identifier = null;
+        switch (entity) {
+            case Sheep sheep -> identifier = sheep.isSheared() ? "sheared" : Integer.toString(sheep.getColor().getTextureDiffuseColor());
+//            case Salmon salmon -> identifier = Float.toString(salmon.getSalmonScale());
+
+            default -> {}
+        }
+
+        return identifier;
+    }
+
     private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
@@ -370,7 +383,7 @@ public class EntityMapImageManager {
             // } catch (IOException e) {
             // e.printStackTrace();
             // }
-            int targetSize = -1;
+            float modelScale = 1.0F;
             switch (model) {
                 case CamelModel camelModel -> {
                     Graphics2D g = image.createGraphics();
@@ -387,7 +400,10 @@ public class EntityMapImageManager {
                     g.setComposite(AlphaComposite.Clear);
                     g.fillRect(0,  352, image.getWidth(), image.getHeight());
                 }
-                case SalmonModel salmonModel -> targetSize = 64;
+                case SalmonModel salmonModel -> {
+                    Salmon salmonEntity = (Salmon) entity;
+                    modelScale = salmonEntity.getSalmonScale();
+                }
                 case SheepModel sheepModel -> {
                     Sheep sheepEntity = (Sheep) entity;
                     if (!sheepEntity.isSheared()) {
@@ -399,18 +415,12 @@ public class EntityMapImageManager {
                 }
                 default -> {}
             }
-            image = ImageUtils.trim(image);
 
-            int maxSize = Math.max(image.getHeight(), image.getWidth());
             float scale = Float.parseFloat(getMobProperties(entity).getProperty("scale", "1.0"));
-            if (targetSize == -1) {
-                targetSize = maxSize;
-            }
-            targetSize = (int) (targetSize * scale);
-            if (maxSize > 0 && maxSize != targetSize) {
-                image = ImageUtils.scaleImage(image, (float) targetSize / maxSize);
-            }
-
+            image = ImageUtils.trim(image);
+            // make trimmed image power-of-two
+            image = ImageUtils.intoSquare(image);
+            image = ImageUtils.scaleImage(image, scale / modelScale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
             BufferedImage image3 = image;
