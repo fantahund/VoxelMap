@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -17,18 +16,22 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
 
 public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
     private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.parse("textures/block/dirt.png");
+    private static final Identifier CHECK_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
+    private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
     public static final boolean DEBUG = false;
     private static boolean initialized;
     private static Events events;
@@ -88,6 +91,14 @@ public final class VoxelConstants {
 
     public static Identifier getOptionsBackgroundTexture() {
         return OPTIONS_BACKGROUND_TEXTURE;
+    }
+
+    public static Identifier getCheckMarkerTexture() {
+        return CHECK_MARKER_TEXTURE;
+    }
+
+    public static Identifier getCrossMarkerTexture() {
+        return CROSS_MARKER_TEXTURE;
     }
 
     public static void lateInit() {

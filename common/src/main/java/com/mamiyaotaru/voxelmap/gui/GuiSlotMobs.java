@@ -2,16 +2,15 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.MobCategory;
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -30,8 +29,6 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
     static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
     static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enableTooltip");
     static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disableTooltip");
-    final Identifier visibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
-    final Identifier invisibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
     GuiSlotMobs(GuiMobs par1GuiMobs) {
         super(VoxelConstants.getMinecraft(), par1GuiMobs.getWidth(), par1GuiMobs.getHeight() - 110, 40, 18);
@@ -105,6 +102,8 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         private final Component name;
         private final String nameString;
         private final MobCategory category;
+        private final GuiIconElement mobIcon;
+        private final GuiIconElement mobToggle;
 
         protected MobItem(GuiMobs mobsScreen, EntityType<?> type, Identifier id) {
             this.type = type;
@@ -113,6 +112,8 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             this.name = type.getDescription();
             this.nameString = name.getString();
             this.category = MobCategory.forEntityType(type);
+            this.mobIcon = new GuiIconElement(this.getX() + 2, this.getY(), 18, 18, false, (element) -> {});
+            this.mobToggle = new GuiIconElement(this.getX() + this.getWidth() - 20, this.getY(), 18, 18, true, (element) -> this.parentGui.toggleMobVisibility());
         }
 
         @Override
@@ -125,23 +126,24 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             int green = isNeutral ? 255 : 0;
             int color = 0xFF000000 + (red << 16) + (green << 8);
             drawContext.drawCenteredString(this.parentGui.getFont(), this.name, this.parentGui.getWidth() / 2, getY() + 5, color);
-            byte padding = 3;
-            if (mouseX >= getX() - padding && mouseY >= getY() && mouseX <= getX() + 215 + padding && mouseY <= getY() + GuiSlotMobs.this.defaultEntryHeight) {
-                Component tooltip;
-                if (mouseX >= getX() + 215 - 16 - padding && mouseX <= getX() + 215 + padding) {
-                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
-                    tooltip = isEnabled ? GuiSlotMobs.TOOLTIP_DISABLE : GuiSlotMobs.TOOLTIP_ENABLE;
-                } else {
-                    tooltip = isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED;
-                }
 
-                GuiMobs.setTooltip(this.parentGui, tooltip);
-            }
+            this.mobIcon.setPosition(this.getX() + 2, this.getY());
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             if (sprite != null) {
-                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY(), 18, 18);
+                int width = Math.min(18, sprite.getIconWidth() / 3);
+                int height = Math.min(18, sprite.getIconHeight() / 3);
+
+                this.mobIcon.render(drawContext, mouseX, mouseY, sprite, width, height, 0xFFFFFFFF);
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY(), 0.0F, 0.0F, 18, 18, 18, 18);
+
+            this.mobToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
+            this.mobToggle.render(drawContext, mouseX, mouseY, isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+
+            if (this.mobIcon.getHovered(mouseX, mouseY)) {
+                GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED);
+            } else if (this.mobToggle.getHovered(mouseX, mouseY)) {
+                GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.TOOLTIP_ENABLE : GuiSlotMobs.TOOLTIP_DISABLE);
+            }
         }
 
         @Override
@@ -153,12 +155,9 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
 
             GuiSlotMobs.this.setSelected(this);
-            int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;
-            byte padding = 3;
-            int width = 215;
-            if (mouseX >= (leftEdge + width - 16 - padding) && mouseX <= (leftEdge + width + padding)) {
-                this.parentGui.toggleMobVisibility();
-            }
+
+            this.mobIcon.mouseClicked(mouseButtonEvent, doubleClick);
+            this.mobToggle.mouseClicked(mouseButtonEvent, doubleClick);
 
             return true;
         }

@@ -1,15 +1,14 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -88,37 +87,24 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
     public class DimensionItem extends AbstractSelectionList.Entry<DimensionItem> {
         private final GuiAddWaypoint parentGui;
         private final DimensionContainer dim;
+        private final GuiIconElement dimToggle;
 
         protected DimensionItem(GuiAddWaypoint waypointScreen, DimensionContainer dim) {
             this.parentGui = waypointScreen;
             this.dim = dim;
+            this.dimToggle = new GuiIconElement(this.getX() + this.getWidth() - 20, this.getY(), 18, 18, true, element -> this.parentGui.toggleDimensionSelected());
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             drawContext.drawCenteredString(this.parentGui.getFont(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.width / 2, getY() + 3, 0xFFFFFFFF);
-            byte padding = 4;
-            byte iconWidth = 18;
-            int x = this.parentGui.getWidth() / 2;
-            int width = GuiSlotDimensions.this.width;
-            if (mouseX >= x + padding && mouseY >= getY() && mouseX <= x + width + padding && mouseY <= getY() + GuiSlotDimensions.this.defaultEntryHeight) {
-                Component tooltip;
-                if (!this.parentGui.popupOpen() && mouseX >= x + width - iconWidth - padding && mouseX <= x + width) {
-                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
-                    tooltip = this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES;
-                } else {
-                    tooltip = null;
-                }
 
-                GuiAddWaypoint.setTooltip(this.parentGui, tooltip);
+            this.dimToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
+            this.dimToggle.render(drawContext, mouseX, mouseY, this.parentGui.waypoint.dimensions.contains(this.dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+
+            if (this.dimToggle.getHovered(mouseX, mouseY)) {
+                GuiAddWaypoint.setTooltip(this.parentGui, this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES);
             }
-
-            // show check mark / cross
-            // 2 int: x,y screen
-            // 2 float: u,v start texture (in pixels - see last 2 int)
-            // 2 int: height, width on screen
-            // 2 int: height, width full texture in pixels
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.parentGui.waypoint.dimensions.contains(this.dim) ? CONFIRM : CANCEL, x + width - iconWidth, getY() - 3, 0, 0, 18, 18, 18, 18);
         }
 
         @Override
@@ -130,12 +116,8 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             }
 
             GuiSlotDimensions.this.setSelected(this);
-            byte iconWidth = 18;
-            int rightEdge = GuiSlotDimensions.this.getX() + GuiSlotDimensions.this.getWidth();
-            boolean inRange = mouseX >= (rightEdge - iconWidth) && mouseX <= rightEdge;
-            if (inRange) {
-                this.parentGui.toggleDimensionSelected();
-            }
+
+            this.dimToggle.mouseClicked(mouseButtonEvent, doubleClick);
 
             return true;
         }
