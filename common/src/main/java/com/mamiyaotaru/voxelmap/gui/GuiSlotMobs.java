@@ -139,9 +139,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             }
             Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             if (sprite != null) {
-                float width = sprite.getIconWidth() / 3.0F;
-                float height = sprite.getIconHeight() / 3.0F;
-                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() - (width / 2) + 9.0F, getY() - (height / 2.0F) + 9.0F, width, height);
+                sprite.blit(drawContext, RenderPipelines.GUI_TEXTURED, getX() + 2, getY(), 18, 18);
             }
             drawContext.blit(RenderPipelines.GUI_TEXTURED, isEnabled ? GuiSlotMobs.this.visibleIconIdentifier : GuiSlotMobs.this.invisibleIconIdentifier, getX() + 198, getY(), 0.0F, 0.0F, 18, 18, 18, 18);
         }

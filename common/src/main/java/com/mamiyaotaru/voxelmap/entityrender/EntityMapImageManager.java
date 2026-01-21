@@ -253,17 +253,21 @@ public class EntityMapImageManager {
 
         Properties mobProperties = getMobProperties(entity);
         String rotation = mobProperties.getProperty("rotation", "");
-        if (!rotation.isEmpty()) {
-            for (String data : rotation.split(",")) {
-                if (data.length() < 2) continue;
 
-                char key = data.charAt(0);
-                float degrees = Float.parseFloat(data.substring(1));
+        if (rotation.startsWith("{") && rotation.endsWith("}")) {
+            String content = rotation.substring(rotation.indexOf('{') + 1, rotation.indexOf('}'));
+
+            for (String entry : content.split(",")) {
+                String[] keyValue = entry.split(":");
+                if (keyValue.length != 2) continue;
+
+                String key = keyValue[0].trim();
+                float value = Float.parseFloat(keyValue[1].trim());
 
                 switch (key) {
-                    case 'x' -> pose.mulPose(Axis.XP.rotationDegrees(degrees));
-                    case 'y' -> pose.mulPose(Axis.YP.rotationDegrees(degrees));
-                    case 'z' -> pose.mulPose(Axis.ZP.rotationDegrees(degrees));
+                    case "x" -> pose.mulPose(Axis.XP.rotationDegrees(value));
+                    case "y" -> pose.mulPose(Axis.YP.rotationDegrees(value));
+                    case "z" -> pose.mulPose(Axis.ZP.rotationDegrees(value));
                 }
             }
         }
@@ -421,9 +425,6 @@ public class EntityMapImageManager {
             }
             image = ImageUtils.scaleImage(image, scale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
-
-            // make the image power-of-two
-            image = ImageUtils.intoSquare(image);
 
             BufferedImage image3 = image;
             taskQueue.add(() -> {

@@ -265,13 +265,13 @@ public class Radar implements IRadar {
                     // }
                     // }
 
-                    int imageSize = (int) (contact.icon.getIconWidth() / 8.0F);
-                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - imageSize / 2, y + yOffset - imageSize / 2, imageSize, imageSize, color);
+                    float imageWidth = contact.icon.getIconWidth() / 8.0F;
+                    float imageHeight = contact.icon.getIconHeight() / 8.0F;
+                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
 
                     if (contact.name != null && ((this.options.showPlayerNames && contact.category == MobCategory.PLAYER) || (this.options.showMobNames && contact.category != MobCategory.PLAYER && contact.entity.hasCustomName()))) {
-
                         float scaleFactor = this.options.fontScale / 4.0F;
-                        guiGraphics.pose().scale( scaleFactor, scaleFactor);
+                        guiGraphics.pose().scale(scaleFactor, scaleFactor);
 
                         int m = minecraft.font.width(contact.name) / 2;
 
