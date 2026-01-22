@@ -99,7 +99,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.waypointName.setFocused(true);
         this.dimensionList = new GuiSlotDimensions(this);
         this.addRenderableWidget(dimensionList);
-        this.colorPicker = new GuiHSVColorPicker(this.getWidth() / 2, this.getHeight() / 2, 200, 70, 14, picker -> this.colorPicked(picker.getColor()));
+        this.colorPicker = new GuiHSVColorPicker(this.getWidth() / 2, this.getHeight() / 2, 200, 140, 14, picker -> this.colorPicked(picker.getColor()));
         this.colorPicker.setColor(ARGB.colorFromFloat(1.0F, this.red, this.green, this.blue));
         this.popupDoneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() - 28, 150, 20, Component.translatable("gui.done"), button -> this.closePopup(true), this);
         this.popupCancelButton = new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() - 28, 150, 20, Component.translatable("gui.cancel"), button -> this.closePopup(false), this);
@@ -334,6 +334,12 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             if (this.choosingColor) {
                 drawContext.drawCenteredString(this.getFont(), I18n.get("minimap.waypoints.colorPicker.title"), this.getWidth() / 2, 20, 0xFFFFFFFF);
+
+                int x0 = this.colorPicker.getX() - (this.colorPicker.getWidth() / 2) - 30;
+                int y0 = this.colorPicker.getY() - (this.colorPicker.getHeight() / 2) - 10;
+                int x1 = this.colorPicker.getX() + (this.colorPicker.getWidth() / 2) + 30;
+                int y1 = this.colorPicker.getY() + (this.colorPicker.getHeight() / 2) + 20;
+                drawContext.fill(x0, y0, x1, y1, 0xB4000000);
                 this.colorPicker.render(drawContext, mouseX, mouseY, delta);
 
                 int pickerColor = this.colorPicker.getColor();

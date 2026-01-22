@@ -181,7 +181,7 @@ public class GuiHSVColorPicker {
     }
 
     private int getWheelRadius() {
-        return this.height;
+        return this.height / 2;
     }
 
     private int getWheelX() {
