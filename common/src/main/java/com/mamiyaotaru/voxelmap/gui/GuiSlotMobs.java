@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -132,12 +133,13 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             if (sprite != null) {
                 int width = Math.min(18, sprite.getIconWidth() / 3);
                 int height = Math.min(18, sprite.getIconHeight() / 3);
-
-                this.mobIcon.render(drawContext, mouseX, mouseY, sprite, width, height, 0xFFFFFFFF);
+                this.mobIcon.setIconSize(width, height);
+                this.mobIcon.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, sprite, 0xFFFFFFFF);
             }
 
+            Identifier toggleIcon = isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             this.mobToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
-            this.mobToggle.render(drawContext, mouseX, mouseY, isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            this.mobToggle.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
 
             if (this.mobIcon.getHovered(mouseX, mouseY)) {
                 GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED);

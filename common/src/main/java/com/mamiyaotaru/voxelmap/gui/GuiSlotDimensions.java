@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -99,8 +100,9 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             drawContext.drawCenteredString(this.parentGui.getFont(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.width / 2, getY() + 3, 0xFFFFFFFF);
 
+            Identifier toggleIcon = this.parentGui.waypoint.dimensions.contains(this.dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             this.dimToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
-            this.dimToggle.render(drawContext, mouseX, mouseY, this.parentGui.waypoint.dimensions.contains(this.dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            this.dimToggle.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
 
             if (this.dimToggle.getHovered(mouseX, mouseY)) {
                 GuiAddWaypoint.setTooltip(this.parentGui, this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES);

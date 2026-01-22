@@ -12,7 +12,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -146,13 +148,14 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                 icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
             this.waypointIcon.setPosition(this.getX() + 2, this.getY());
-            this.waypointIcon.render(drawContext, mouseX, mouseY, icon, this.waypoint.getUnifiedColor());
+            this.waypointIcon.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, icon, this.waypoint.getUnifiedColor());
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                this.waypointIcon.render(drawContext, mouseX, mouseY, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
+                this.waypointIcon.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
             }
 
+            Identifier toggleIcon = this.waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             this.waypointToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
-            this.waypointToggle.render(drawContext, mouseX, mouseY, this.waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            this.waypointToggle.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
 
             if (this.waypointIcon.getHovered(mouseX, mouseY)) {
                 GuiWaypoints.setTooltip(this.parentGui, this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT);
