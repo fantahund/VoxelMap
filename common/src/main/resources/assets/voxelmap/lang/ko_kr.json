@@ -146,6 +146,8 @@
   "minimap.waypoints.errorSavingWaypoints": "경유지를 저장하는 중에 오류가 발생하였습니다.",
   "minimap.waypoints.errorLoadingWaypoints": "경유지를 불러오는 중에 오류가 발생하였습니다.",
   "minimap.waypoints.noWaypointsExist": "이 세계 또는 서버에 경유지가 존재하지 않습니다.",
+  "minimap.waypoints.colorPicker.title": "색상 선택",
+  "minimap.waypoints.iconPicker.title": "아이콘 선택",
   "minimap.waypoints.icon.point": "포인트",
   "minimap.waypoints.icon.apple": "사과",
   "minimap.waypoints.icon.axe": "도끼",

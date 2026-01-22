@@ -146,6 +146,8 @@
   "minimap.waypoints.errorSavingWaypoints": "An error occurred while saving waypoints.",
   "minimap.waypoints.errorLoadingWaypoints": "An error occurred while loading waypoints.",
   "minimap.waypoints.noWaypointsExist": "No waypoints exist for this world/server.",
+  "minimap.waypoints.colorPicker.title": "Choose Color",
+  "minimap.waypoints.iconPicker.title": "Choose Icon",
   "minimap.waypoints.icon.point": "Point",
   "minimap.waypoints.icon.apple": "Apple",
   "minimap.waypoints.icon.axe": "Axe",

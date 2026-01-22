@@ -8,7 +8,10 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.IdentifierException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -16,9 +19,11 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -75,7 +80,7 @@ public class ColorManager {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
-    private BufferedImage colorPicker;
+    private Identifier colorPicker = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel.png");
     private int sizeOfBiomeArray;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
@@ -121,7 +126,7 @@ public class ColorManager {
         return this.blockColors[BlockRepository.airID];
     }
 
-    public BufferedImage getColorPicker() {
+    public Identifier getColorPicker() {
         return this.colorPicker;
     }
 
@@ -284,15 +289,10 @@ public class ColorManager {
 
     private void loadColorPicker() {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker.png")).get().open();
-            Image picker = ImageIO.read(is);
-            is.close();
-            this.colorPicker = new BufferedImage(picker.getWidth(null), picker.getHeight(null), 2);
-            Graphics gfx = this.colorPicker.createGraphics();
-            gfx.drawImage(picker, 0, 0, null);
-            gfx.dispose();
-        } catch (Exception var4) {
-            VoxelConstants.getLogger().error("Error loading color picker: " + var4.getLocalizedMessage());
+            DynamicTexture pickerTexture = new DynamicTexture(() -> "Color Picker", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.colorPicker).image());
+            pickerTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            VoxelConstants.getMinecraft().getTextureManager().register(this.colorPicker, pickerTexture);
+        } catch (Exception exception) {
         }
 
     }
