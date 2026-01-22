@@ -307,6 +307,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
+    protected void renderBlurredBackground(GuiGraphics guiGraphics) {
+        if (!this.popupOpen()) {
+            super.renderBlurredBackground(guiGraphics);
+        }
+    }
+
+    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         this.tooltip = null;
         this.buttonEnabled.setMessage(Component.literal(I18n.get("minimap.waypoints.enabled") + " " + (this.waypoint.enabled ? I18n.get("options.on") : I18n.get("options.off"))));
@@ -331,6 +338,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, this.getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 
         if (this.popupOpen()) {
+            drawContext.nextStratum();
+            drawContext.blurBeforeThisStratum();
+
             this.renderTransparentBackground(drawContext);
 
             if (this.choosingColor) {
@@ -357,7 +367,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int pickerX = (this.getWidth() - chooser.getWidth()) / 2;
                 int pickerY = (this.getHeight() - chooser.getHeight()) / 2;
 
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, chooser.getIdentifier(), pickerX, pickerY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xFFC8C8C8);
+                drawContext.blit(RenderPipelines.GUI_TEXTURED, chooser.getIdentifier(), pickerX, pickerY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xBFFFFFFF);
 
                 int iconX = icon.getOriginX() + pickerX;
                 int iconY = icon.getOriginY() + pickerY;
