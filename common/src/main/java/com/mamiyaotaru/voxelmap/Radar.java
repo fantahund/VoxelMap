@@ -137,7 +137,7 @@ public class Radar implements IRadar {
                             }
 
                             if (this.options.showHelmetsPlayers && contact.category == MobCategory.PLAYER || this.options.showHelmetsMobs && contact.category != MobCategory.PLAYER) {
-                                // this.getArmor(contact, entity);
+                                contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, options.outlines);
                             }
 
                             this.contacts.add(contact);
@@ -175,6 +175,10 @@ public class Radar implements IRadar {
         double lastY = GameVariableAccessShim.yCoordDouble();
 
         for (Contact contact : this.contacts) {
+            if (contact.icon == null) {
+                continue;
+            }
+
             contact.updateLocation();
             double contactX = contact.x;
             double contactZ = contact.z;
@@ -238,36 +242,17 @@ public class Radar implements IRadar {
                         yOffset = -4.0F;
                     }
 
-                    // if (Stream.of(EnumMobs.GHAST, EnumMobs.GHASTATTACKING, EnumMobs.WITHER, EnumMobs.WITHERINVULNERABLE, EnumMobs.VEX, EnumMobs.VEXCHARGING, EnumMobs.PUFFERFISH, EnumMobs.PUFFERFISHHALF, EnumMobs.PUFFERFISHFULL).anyMatch(enumMobs -> contact.type == enumMobs)) {
-                    // if (contact.type != EnumMobs.GHAST && contact.type != EnumMobs.GHASTATTACKING) {
-                    // if (contact.type != EnumMobs.WITHER && contact.type != EnumMobs.WITHERINVULNERABLE) {
-                    // if (contact.type != EnumMobs.VEX && contact.type != EnumMobs.VEXCHARGING) {
-                    // int size = ((Pufferfish) contact.entity).getPuffState();
-                    // switch (size) {
-                    // case 0 -> contact.type = EnumMobs.PUFFERFISH;
-                    // case 1 -> contact.type = EnumMobs.PUFFERFISHHALF;
-                    // case 2 -> contact.type = EnumMobs.PUFFERFISHFULL;
-                    // }
-                    // } else {
-                    // if (contact.entity instanceof Vex vex) {
-                    // contact.type = vex.isCharging() ? EnumMobs.VEXCHARGING : EnumMobs.VEX;
-                    // }
-                    // }
-                    // } else {
-                    // if (contact.entity instanceof WitherBoss witherBoss) {
-                    // contact.type = witherBoss.getInvulnerableTicks() > 0 ? EnumMobs.WITHERINVULNERABLE : EnumMobs.WITHER;
-                    // }
-                    // }
-                    // } else {
-                    // if (contact.entity instanceof Ghast ghast) {
-                    // contact.type = ghast.isCharging() ? EnumMobs.GHASTATTACKING : EnumMobs.GHAST;
-                    // }
-                    // }
-                    // }
-
                     float imageWidth = contact.icon.getIconWidth() / 8.0F;
                     float imageHeight = contact.icon.getIconHeight() / 8.0F;
                     contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
+
+                    if (contact.armorIcon != null) {
+                        float helmetWidth = contact.armorIcon.getIconWidth() / 8.0F;
+                        float helmetHeight = contact.armorIcon.getIconHeight() / 8.0F;
+                        float helmetOffset = Float.parseFloat(this.entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
+
+                        contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - (helmetWidth / 2), y + yOffset + helmetOffset - (helmetHeight / 2), helmetWidth, helmetWidth, color);
+                    }
 
                     if (contact.name != null && ((this.options.showPlayerNames && contact.category == MobCategory.PLAYER) || (this.options.showMobNames && contact.category != MobCategory.PLAYER && contact.entity.hasCustomName()))) {
                         float scaleFactor = this.options.fontScale / 4.0F;
