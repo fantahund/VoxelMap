@@ -148,18 +148,21 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
                 icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
             this.waypointIcon.setPosition(this.getX() + 2, this.getY());
-            this.waypointIcon.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, icon, this.waypoint.getUnifiedColor());
+            this.waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, icon, this.waypoint.getUnifiedColor());
+            this.waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                this.waypointIcon.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
+                this.waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
+                this.waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
             }
 
             Identifier toggleIcon = this.waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             this.waypointToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
-            this.waypointToggle.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
+            this.waypointToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
+            this.waypointToggle.render(drawContext, mouseX, mouseY, tickDelta);
 
-            if (this.waypointIcon.getHovered(mouseX, mouseY)) {
+            if (this.waypointIcon.isMouseOver(mouseX, mouseY)) {
                 GuiWaypoints.setTooltip(this.parentGui, this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT);
-            } else if (this.waypointToggle.getHovered(mouseX, mouseY)) {
+            } else if (this.waypointToggle.isMouseOver(mouseX, mouseY)) {
                 GuiWaypoints.setTooltip(this.parentGui, this.waypoint.enabled ? GuiSlotWaypoints.TOOLTIP_DISABLE : GuiSlotWaypoints.TOOLTIP_ENABLE);
             } else if (mouseX >= this.getX() && mouseX <= this.getX() + this.getWidth() && mouseY >= this.getY() && mouseY <= this.getY() + this.getHeight()) {
                 GuiWaypoints.setTooltip(this.parentGui, Component.literal("X: " + this.waypoint.getX() + ", Y: " + this.waypoint.getY() + ", Z: " + this.waypoint.getZ()));
