@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -337,9 +338,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
                 int x0 = this.colorPicker.getX() - (this.colorPicker.getWidth() / 2) - 30;
                 int y0 = this.colorPicker.getY() - (this.colorPicker.getHeight() / 2) - 10;
-                int x1 = this.colorPicker.getX() + (this.colorPicker.getWidth() / 2) + 30;
-                int y1 = this.colorPicker.getY() + (this.colorPicker.getHeight() / 2) + 20;
-                drawContext.fill(x0, y0, x1, y1, 0xB4000000);
+                int x1 = this.colorPicker.getWidth() + 60;
+                int y1 = this.colorPicker.getHeight() + 30;
+                TooltipRenderUtil.renderTooltipBackground(drawContext, x0, y0, x1, y1, null);
                 this.colorPicker.render(drawContext, mouseX, mouseY, delta);
 
                 int pickerColor = this.colorPicker.getColor();
