@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
+import org.lwjgl.glfw.GLFW;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
     final WaypointManager waypointManager;
@@ -99,9 +100,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.dimensionList = new GuiSlotDimensions(this);
         this.addRenderableWidget(dimensionList);
         this.colorPicker = new GuiHSVColorPicker(this.getWidth() / 2, this.getHeight() / 2, 200, 70, 14, picker -> this.colorPicked(picker.getColor()));
-        this.colorPicker.setColor(ARGB.colorFromFloat(1.0F, this.waypoint.red, this.waypoint.green, this.waypoint.blue));
-        this.popupDoneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() - 28, 150, 20, Component.translatable("gui.done"), button -> this.closePopup(false), this);
-        this.popupCancelButton = new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() - 28, 150, 20, Component.translatable("gui.cancel"), button -> this.closePopup(true), this);
+        this.colorPicker.setColor(ARGB.colorFromFloat(1.0F, this.red, this.green, this.blue));
+        this.popupDoneButton = new PopupGuiButton(this.getWidth() / 2 - 155, this.getHeight() - 28, 150, 20, Component.translatable("gui.done"), button -> this.closePopup(true), this);
+        this.popupCancelButton = new PopupGuiButton(this.getWidth() / 2 + 5, this.getHeight() - 28, 150, 20, Component.translatable("gui.cancel"), button -> this.closePopup(false), this);
     }
 
     @Override
@@ -146,10 +147,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         this.onClose();
     }
 
-    private void closePopup(boolean cancel) {
+    private void closePopup(boolean apply) {
         if (this.choosingColor) {
             this.choosingColor = false;
-            if (cancel) {
+            if (!apply) {
+                colorPicker.setColor(ARGB.colorFromFloat(1.0F, red, green, blue));
                 waypoint.red = red;
                 waypoint.green = green;
                 waypoint.blue = blue;
@@ -158,7 +160,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
         if (this.choosingIcon) {
             this.choosingIcon = false;
-            if (cancel) {
+            if (!apply) {
                 waypoint.imageSuffix = suffix;
             }
         }
@@ -182,10 +184,17 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             }
 
             this.doneButton.active = acceptable;
-            if ((keyCode == 257 || keyCode == 335) && acceptable) {
+            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && acceptable) {
                 this.acceptWaypoint();
             }
         }
+
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            this.closePopup(false);
+        }
+
+        this.popupDoneButton.keyPressed(keyEvent);
+        this.popupCancelButton.keyPressed(keyEvent);
 
         return OK;
     }
@@ -207,6 +216,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
             this.doneButton.active = acceptable;
         }
+
+        this.popupDoneButton.charTyped(characterEvent);
+        this.popupCancelButton.charTyped(characterEvent);
 
         return OK;
     }
@@ -323,6 +335,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             if (this.choosingColor) {
                 drawContext.drawCenteredString(this.getFont(), I18n.get("minimap.waypoints.colorPicker.title"), this.getWidth() / 2, 20, 0xFFFFFFFF);
                 this.colorPicker.render(drawContext, mouseX, mouseY, delta);
+
+                int pickerColor = this.colorPicker.getColor();
+                int red = ARGB.red(pickerColor);
+                int green = ARGB.green(pickerColor);
+                int blue = ARGB.blue(pickerColor);
+                String hex = String.format("%06X", pickerColor & 0xFFFFFF);
+                drawContext.drawCenteredString(this.getFont(), "R: " + red + ", G: " + green + ", B: " + blue + " (#" + hex + ")", this.getWidth() / 2, this.getHeight() / 2 + 75, pickerColor);
             }
 
             if (this.choosingIcon) {
