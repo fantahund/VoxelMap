@@ -67,7 +67,7 @@ public class MapSettingsManager implements ISettingsManager {
 
     public boolean moveMapDownWhileStatusEffect = true;
     public boolean moveScoreBoardDown = true;
-    public int distanceUnitConversionMode = 2;
+    public int distanceUnitConversionMode = 1;
     public float waypointSignScale = 1.0F;
     public int waypointNamesLocation = 2;
     public int waypointDistancesLocation = 2;

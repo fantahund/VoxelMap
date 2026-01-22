@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -29,11 +30,11 @@ public class GuiIconElement {
     }
 
     public boolean getHovered(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        if (this.getHovered(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+        if (mouseButtonEvent.button() == 0 && this.getHovered(mouseButtonEvent.x(), mouseButtonEvent.y())) {
             this.onPress.onPress(this);
 
             return true;
@@ -60,15 +61,20 @@ public class GuiIconElement {
 
     private void renderInternal(GuiGraphics guiGraphics, int mouseX, int mouseY, Object icon, int iconWidth, int iconHeight, int color) {
         int iconX = this.x + ((this.width - iconWidth) / 2);
-        int iconY = this.y + ((this.height - iconHeight) / 2);;
-        if (icon instanceof Sprite sprite) {
-            sprite.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, iconX, iconY, iconWidth, iconHeight, color);
-        }
-        if (icon instanceof Identifier identifier) {
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, identifier, iconX, iconY, 0.0F, 0.0f, iconWidth, iconHeight, iconWidth, iconHeight, color);
-        }
+        int iconY = this.y + ((this.height - iconHeight) / 2);
+        this.blitIcon(guiGraphics, RenderPipelines.GUI_TEXTURED, icon, iconX, iconY, iconWidth, iconHeight, color);
+
         if (this.changeCursor && this.getHovered(mouseX, mouseY)) {
             guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
+        }
+    }
+
+    private void blitIcon(GuiGraphics guiGraphics, RenderPipeline pipeline, Object icon, int x, int y, int width, int height, int color) {
+        if (icon instanceof Sprite sprite) {
+            sprite.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x, y, width, height, color);
+        }
+        if (icon instanceof Identifier identifier) {
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, identifier, x, y, 0.0F, 0.0F, width, height, width, height, color);
         }
     }
 
