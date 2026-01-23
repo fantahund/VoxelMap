@@ -3,6 +3,8 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -11,7 +13,7 @@ import net.minecraft.util.Mth;
 
 import java.awt.Color;
 
-public class GuiHSVColorPicker {
+public class GuiHSVColorPicker implements Renderable, GuiEventListener {
     private final Identifier roundHandle = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/round_handle.png");
     private final Identifier roundHandleTint = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/round_handle_tint.png");
     private final Identifier verticalHandle = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/vertical_handle.png");
@@ -28,6 +30,7 @@ public class GuiHSVColorPicker {
     private int color;
     private boolean pickingColor = false;
     private boolean pickingValue = false;
+    private boolean focused;
 
     public GuiHSVColorPicker(int x, int y, int width, int height, int sliderWidth, OnColorChange onColorChange) {
         this.x = x;
@@ -97,7 +100,8 @@ public class GuiHSVColorPicker {
         this.height = height;
     }
 
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent) {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         this.pickingColor = this.getWheelHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
         this.pickingValue = this.getSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
         if (mouseButtonEvent.button() == 0 && this.getPicking()) {
@@ -108,6 +112,7 @@ public class GuiHSVColorPicker {
         return false;
     }
 
+    @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
         if (mouseButtonEvent.button() == 0 && this.getPicking()) {
             this.pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
@@ -117,6 +122,17 @@ public class GuiHSVColorPicker {
         return false;
     }
 
+    @Override
+    public void setFocused(boolean bl) {
+        this.focused = bl;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return this.focused;
+    }
+
+    @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         int wheelColor = Color.getHSBColor(this.h, this.s, 1.0F).getRGB();
         int wheelRadius = this.getWheelRadius();

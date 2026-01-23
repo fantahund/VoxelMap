@@ -236,7 +236,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         }
 
         if (this.choosingColor) {
-            this.colorPicker.mouseClicked(mouseButtonEvent);
+            this.colorPicker.mouseClicked(mouseButtonEvent, doubleClick);
         }
 
         if (this.choosingIcon && button == 0) {
@@ -357,8 +357,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int red = ARGB.red(pickerColor);
                 int green = ARGB.green(pickerColor);
                 int blue = ARGB.blue(pickerColor);
-                String hex = String.format("%06X", pickerColor & 0xFFFFFF);
-                drawContext.drawCenteredString(this.getFont(), "R: " + red + ", G: " + green + ", B: " + blue + " (#" + hex + ")", this.getWidth() / 2, this.getHeight() / 2 + 75, pickerColor);
+                String text = "R: " + red + ", G: " + green + ", B: " + blue + " (#" + String.format("%06X", pickerColor & 0xFFFFFF) + ")";
+                int halfWidth = this.getFont().width(text) / 2;
+                drawContext.fill(this.getWidth() / 2 - halfWidth - 2, this.getHeight() / 2 + 78, this.getWidth() / 2 + halfWidth + 2, this.getHeight() / 2 + 89, color);
+                drawContext.fill(this.getWidth() / 2 - halfWidth - 1, this.getHeight() / 2 + 79, this.getWidth() / 2 + halfWidth + 1, this.getHeight() / 2 + 88, ARGB.black(0.15F));
+                drawContext.drawString(this.getFont(), text, this.getWidth() / 2 - halfWidth, this.getHeight() / 2 + 80, 0xFFFFFFFF, false);
             }
 
             if (this.choosingIcon) {
