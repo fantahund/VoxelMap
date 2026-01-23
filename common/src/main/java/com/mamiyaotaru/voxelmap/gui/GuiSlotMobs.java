@@ -133,17 +133,17 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             if (sprite != null) {
                 int width = Math.min(18, sprite.getIconWidth() / 3);
                 int height = Math.min(18, sprite.getIconHeight() / 3);
-                this.mobIcon.setIconSize(width, height);
-                this.mobIcon.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, sprite, 0xFFFFFFFF);
+                this.mobIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, sprite, width, height, 0xFFFFFFFF);
+                this.mobIcon.render(drawContext, mouseX, mouseY, tickDelta);
             }
 
-            Identifier toggleIcon = isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             this.mobToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
-            this.mobToggle.render(drawContext, mouseX, mouseY, RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
+            this.mobToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            this.mobToggle.render(drawContext, mouseX, mouseY, tickDelta);
 
-            if (this.mobIcon.getHovered(mouseX, mouseY)) {
+            if (this.mobIcon.isMouseOver(mouseX, mouseY)) {
                 GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED);
-            } else if (this.mobToggle.getHovered(mouseX, mouseY)) {
+            } else if (this.mobToggle.isMouseOver(mouseX, mouseY)) {
                 GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.TOOLTIP_ENABLE : GuiSlotMobs.TOOLTIP_DISABLE);
             }
         }

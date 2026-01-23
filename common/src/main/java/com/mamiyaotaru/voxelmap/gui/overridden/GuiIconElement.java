@@ -4,44 +4,50 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.resources.Identifier;
 
-public class GuiIconElement {
-    private final boolean changeCursor;
+public class GuiIconElement implements Renderable, GuiEventListener {
+    private final boolean cursorEvent;
     private final OnPress onPress;
     private int x;
     private int y;
     private int width;
     private int height;
+    private boolean focused;
+
+    private RenderPipeline pipeline;
+    private Object icon;
     private int iconWidth;
     private int iconHeight;
+    private int iconColor;
 
-    public GuiIconElement(int x, int y, int width, int height, boolean changeCursor, OnPress onPress) {
-        this(x, y, width, height, width, height, changeCursor, onPress);
-    }
-
-    public GuiIconElement(int x, int y, int width, int height, int iconWidth, int iconHeight, boolean changeCursor, OnPress onPress) {
-        this.changeCursor = changeCursor;
+    public GuiIconElement(int x, int y, int width, int height, boolean cursorEvent, OnPress onPress) {
+        this.cursorEvent = cursorEvent;
         this.onPress = onPress;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.iconWidth = iconWidth;
-        this.iconHeight = iconHeight;
     }
 
-    public boolean getHovered(int mouseX, int mouseY) {
-        return getHovered((double) mouseX, (double) mouseY);
+    public void setIconForRender(RenderPipeline pipeline, Object icon, int color) {
+        this.setIconForRender(pipeline, icon, this.width, this.height, color);
     }
 
-    public boolean getHovered(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    public void setIconForRender(RenderPipeline pipeline, Object icon, int width, int height, int color) {
+        this.pipeline = pipeline;
+        this.icon = icon;
+        this.iconWidth = width;
+        this.iconHeight = height;
+        this.iconColor = color;
     }
 
+    @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        if (mouseButtonEvent.button() == 0 && this.getHovered(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+        if (mouseButtonEvent.button() == 0 && this.isMouseOver(mouseButtonEvent.x(), mouseButtonEvent.y())) {
             this.onPress.onPress(this);
 
             return true;
@@ -50,22 +56,38 @@ public class GuiIconElement {
         return false;
     }
 
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, RenderPipeline pipeline, Sprite icon, int color) {
-        this.renderInternal(guiGraphics, mouseX, mouseY, pipeline, icon, color);
+    @Override
+    public void setFocused(boolean bl) {
+        this.focused = bl;
     }
 
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, RenderPipeline pipeline, Identifier icon, int color) {
-        this.renderInternal(guiGraphics, mouseX, mouseY, pipeline, icon, color);
+    @Override
+    public boolean isFocused() {
+        return this.focused;
     }
 
-    private void renderInternal(GuiGraphics guiGraphics, int mouseX, int mouseY, RenderPipeline pipeline, Object icon, int color) {
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return mouseX >= this.x && mouseX < this.x + this.width && mouseY >= this.y && mouseY < this.y + this.height;
+    }
+
+    @Override
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        if (!this.canRender()) {
+            return;
+        }
+
         int iconX = this.x + ((this.width - this.iconWidth) / 2);
         int iconY = this.y + ((this.height - this.iconHeight) / 2);
-        this.blitIcon(guiGraphics, pipeline, icon, iconX, iconY, this.iconWidth, this.iconHeight, color);
+        this.blitIcon(guiGraphics, this.pipeline, this.icon, iconX, iconY, this.iconWidth, this.iconHeight, this.iconColor);
 
-        if (this.changeCursor && this.getHovered(mouseX, mouseY)) {
+        if (this.cursorEvent && this.isMouseOver(mouseX, mouseY)) {
             guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
         }
+    }
+
+    private boolean canRender() {
+        return this.pipeline != null && this.icon != null && this.iconWidth > 0 && this.iconHeight > 0;
     }
 
     private void blitIcon(GuiGraphics guiGraphics, RenderPipeline pipeline, Object icon, int x, int y, int width, int height, int color) {
@@ -93,17 +115,9 @@ public class GuiIconElement {
         return this.height;
     }
 
-    public int getIconWidth() {
-        return this.iconWidth;
-    }
-
-    public int getIconHeight() {
-        return this.iconHeight;
-    }
-
     public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
+        this.setX(x);
+        this.setY(y);
     }
 
     public void setX(int i) {
@@ -115,8 +129,8 @@ public class GuiIconElement {
     }
 
     public void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
+        this.setWidth(width);
+        this.setHeight(height);
     }
 
     public void setWidth(int i) {
@@ -125,19 +139,6 @@ public class GuiIconElement {
 
     public void setHeight(int i) {
         this.height = i;
-    }
-
-    public void setIconSize(int width, int height) {
-        this.iconWidth = width;
-        this.iconHeight = height;
-    }
-
-    public void setIconWidth(int i) {
-        this.iconWidth = i;
-    }
-
-    public void setIconHeight(int i) {
-        this.iconHeight = i;
     }
 
     public interface OnPress {

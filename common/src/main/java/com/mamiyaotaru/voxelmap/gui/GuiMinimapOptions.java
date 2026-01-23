@@ -11,7 +11,6 @@ import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
@@ -262,22 +261,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                 case SHOW_RADAR -> button2.active = !radarBlocked;
                 case SHOW_PLAYERS -> button2.active = button2.active && this.radarOptions.radarPlayersAllowed;
                 case SHOW_MOBS -> button2.active = button2.active && this.radarOptions.radarMobsAllowed;
-                case SHOW_PLAYER_HELMETS, SHOW_PLAYER_NAMES -> {
-                    button2.active = button2.active && this.radarOptions.showPlayers && this.radarOptions.radarPlayersAllowed;
-                    if (option == EnumOptionsMinimap.SHOW_PLAYER_HELMETS) {
-                        // TODO: remove this code after radar helmet icon implementation
-                        button2.active = false;
-                        button2.setTooltip(Tooltip.create(Component.translatable("minimap.ui.workInProgress")));
-                    }
-                }
-                case SHOW_MOB_HELMETS, SHOW_MOB_NAMES -> {
-                    button2.active = button2.active && (this.radarOptions.showNeutrals || this.radarOptions.showHostiles) && this.radarOptions.radarMobsAllowed;
-                    if (option == EnumOptionsMinimap.SHOW_MOB_HELMETS) {
-                        // TODO: remove this code after radar helmet icon implementation
-                        button2.active = false;
-                        button2.setTooltip(Tooltip.create(Component.translatable("minimap.ui.workInProgress")));
-                    }
-                }
+                case SHOW_PLAYER_HELMETS, SHOW_PLAYER_NAMES -> button2.active = button2.active && this.radarOptions.showPlayers && this.radarOptions.radarPlayersAllowed;
+                case SHOW_MOB_HELMETS, SHOW_MOB_NAMES -> button2.active = button2.active && (this.radarOptions.showNeutrals || this.radarOptions.showHostiles) && this.radarOptions.radarMobsAllowed;
             }
         }
     }
