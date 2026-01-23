@@ -64,6 +64,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -76,6 +77,7 @@ import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -116,7 +118,8 @@ public class EntityMapImageManager {
     private final HashMap<String, Properties> mobPropertiesMap = new HashMap<>();
     private final Class<?>[] fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
     private HumanoidModel humanoidModelForArmor;
-    private final HashMap<Identifier, Identifier> materialAndArmorMap = new HashMap<>();
+    private final RandomSource randomSource = RandomSource.create();
+    private final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
@@ -146,7 +149,7 @@ public class EntityMapImageManager {
 
         mobPropertiesMap.clear();
         variantDataFactories.clear();
-        materialAndArmorMap.clear();
+        armorDataFactories.clear();
 
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
         LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
@@ -369,77 +372,78 @@ public class EntityMapImageManager {
             image = ImageUtils.scaleImage(image, scale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
-            BufferedImage image3 = image;
-            taskQueue.add(() -> {
-                fulfilledImageCreationRequests++;
-
-                sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image3));
-                debugInfo("EntityMapImageManager: Buffered Image (" + fulfilledImageCreationRequests + "/" + imageCreationRequests + ") added to texture atlas " + entity.getType().getDescriptionId() + " (" + image3.getWidth() + " * " + image3.getHeight() + ")");
-                if (fulfilledImageCreationRequests == imageCreationRequests) {
-                    textureAtlas.stitchNew();
-                    debugInfo("EntityMapImageManager: Stiching!");
-                    if (VoxelConstants.DEBUG) {
-                        textureAtlas.saveDebugImage();
-                    }
-                }
-            });
+            addToTaskQueue(sprite, image, entity.getType().getDescriptionId().toString());
         });
     }
 
-    private Identifier getOrCreateArmorId(Identifier material) {
-        if (this.materialAndArmorMap.containsKey(material)) {
-            return this.materialAndArmorMap.get(material);
+    private EntityArmorData getArmorData(Identifier material, int size, boolean addBorder) {
+        EntityArmorDataFactory factory = armorDataFactories.get(material);
+        if (factory != null) {
+            return factory.createArmorData(size, addBorder);
         }
 
-        String location = "textures/entity/equipment/humanoid/" + material.getPath() + ".png";
-        Identifier identifier = Identifier.fromNamespaceAndPath(material.getNamespace(), location);
-        this.materialAndArmorMap.put(material, identifier);
+        return null;
+    }
 
-        return identifier;
+    private EntityArmorData getOrCreateArmorData(Identifier material, Identifier texture, int size, boolean addBorder) {
+        if (!armorDataFactories.containsKey(material)) {
+            EntityArmorDataFactory factory = new EntityArmorDataFactory(material, texture);
+            armorDataFactories.put(material, factory);
+        }
+
+        return getArmorData(material, size, addBorder);
     }
 
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-
-        if (!(entity instanceof LivingEntity livingEntity) || !(entityRenderer instanceof HumanoidMobRenderer<?,?,?>)) {
+        if (!(entity instanceof LivingEntity livingEntity) || !(entityRenderer instanceof HumanoidMobRenderer)) {
             return null;
         }
 
         ItemStack itemStack = livingEntity.getItemBySlot(EquipmentSlot.HEAD);
-        if (itemStack == ItemStack.EMPTY) {
+        if (itemStack.isEmpty()) {
             return null;
         }
 
-        Object atlasSpriteId = null;
-        Identifier armorId = null;
+        EntityArmorData armorData = null;
 
         // get item texture
-        Equippable equippable = null;
+        Equippable equippable = itemStack.get(DataComponents.EQUIPPABLE);
         Block block = null;
-        if ((equippable = itemStack.get(DataComponents.EQUIPPABLE)) != null && equippable.assetId().isPresent()) {
-            Identifier material = equippable.assetId().get().identifier();
-            armorId = getOrCreateArmorId(material);
-
-            atlasSpriteId = armorId;
-        } else if (itemStack.getItem() instanceof BlockItem blockItem) {
-            block = blockItem.getBlock();
-            if (block.defaultBlockState().getRenderShape() != RenderShape.MODEL) {
-                return null;
+        if (equippable != null) {
+            Optional<ResourceKey<EquipmentAsset>> assetId = equippable.assetId();
+            if (assetId.isPresent()) {
+                Identifier material = assetId.get().identifier();
+                armorData = getArmorData(material, size, addBorder);
+                if (armorData == null) {
+                    Identifier texture = Identifier.fromNamespaceAndPath(material.getNamespace(), "textures/entity/equipment/humanoid/" + material.getPath() + ".png");
+                    armorData = getOrCreateArmorData(material, texture, size, addBorder);
+                }
             }
+        } else if (itemStack.getItem() instanceof BlockItem blockItem) {
+            Block tempBlock = blockItem.getBlock();
+            if (tempBlock.defaultBlockState().getRenderShape() == RenderShape.MODEL) {
+                block = tempBlock;
+                Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
+                armorData = getArmorData(blockId, size, addBorder);
+                if (armorData == null) {
+                    Identifier texture = minecraft.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).location();
+                    armorData = getOrCreateArmorData(blockId, texture, size, addBorder);
+                }
+            }
+        }
 
-            Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
-            armorId = minecraft.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).location();
-
-            atlasSpriteId = blockId;
-        } else {
+        if (armorData == null) {
             return null;
         }
 
-        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(atlasSpriteId);
+        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(armorData);
         if (existing != null && existing != textureAtlas.getMissingImage()) {
             return existing;
         }
-        Sprite sprite = textureAtlas.registerEmptyIcon(atlasSpriteId);
+        Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
+
+        Identifier armorTexture = armorData.getTexture();
 
         CaptureContext context = this.setupCapture();
         PoseStack pose = context.poseStack();
@@ -457,12 +461,12 @@ public class EntityMapImageManager {
 
             BlockState blockState = block.defaultBlockState();
             BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
-            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(RandomSource.create());
+            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.randomSource);
 
-            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, 0xFFFFFFFF);
+            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, 0x00F000F0);
         }
 
-        this.doCapture(context, armorId, null);
+        this.doCapture(context, armorTexture, null);
 
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
@@ -483,19 +487,23 @@ public class EntityMapImageManager {
             newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
             newImage = ImageUtils.fillOutline(ImageUtils.pad(newImage), addBorder, true, 37.5F, 37.5F, 2);
 
-            BufferedImage image3 = newImage;
-            taskQueue.add(() -> {
-                fulfilledImageCreationRequests++;
+            addToTaskQueue(sprite, newImage, sprite.getIconName().toString());
+        });
+    }
 
-                sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image3));
+    private void addToTaskQueue(Sprite sprite, BufferedImage image, String debugId) {
+        taskQueue.add(() -> {
+            fulfilledImageCreationRequests++;
 
-                if (fulfilledImageCreationRequests == imageCreationRequests) {
-                    textureAtlas.stitchNew();
-                    if (VoxelConstants.DEBUG) {
-                        textureAtlas.saveDebugImage();
-                    }
+            sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image));
+            debugInfo("EntityMapImageManager: Buffered Image (" + fulfilledImageCreationRequests + "/" + imageCreationRequests + ") added to texture atlas " + debugId + " (" + image.getWidth() + " * " + image.getHeight() + ")");
+            if (fulfilledImageCreationRequests == imageCreationRequests) {
+                textureAtlas.stitchNew();
+                debugInfo("EntityMapImageManager: Stiching!");
+                if (VoxelConstants.DEBUG) {
+                    textureAtlas.saveDebugImage();
                 }
-            });
+            }
         });
     }
 
