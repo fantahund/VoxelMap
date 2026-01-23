@@ -57,6 +57,7 @@ import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.BlockPos;
@@ -396,7 +397,7 @@ public class EntityMapImageManager {
 
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        if (!(entity instanceof LivingEntity livingEntity) || !(entityRenderer instanceof HumanoidMobRenderer)) {
+        if (!(entity instanceof LivingEntity livingEntity) || (!(entityRenderer instanceof AvatarRenderer) && !(entityRenderer instanceof HumanoidMobRenderer))) {
             return null;
         }
 
