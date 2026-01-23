@@ -49,6 +49,8 @@ import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.model.monster.slime.SlimeModel;
 import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
@@ -57,10 +59,13 @@ import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -69,7 +74,12 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -80,6 +90,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -388,13 +399,9 @@ public class EntityMapImageManager {
     }
 
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
-        EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
+        EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
 
-        if (!(baseRenderer instanceof HumanoidMobRenderer<?,?,?> renderer)) {
-            return null;
-        }
-
-        if (!(entity instanceof LivingEntity livingEntity)) {
+        if (!(entity instanceof LivingEntity livingEntity) || !(entityRenderer instanceof HumanoidMobRenderer<?,?,?>)) {
             return null;
         }
 
@@ -403,24 +410,57 @@ public class EntityMapImageManager {
             return null;
         }
 
-        Identifier material = itemStack.get(DataComponents.EQUIPPABLE).assetId().get().identifier();
-        Identifier armorId = getOrCreateArmorId(material);
+        Object atlasSpriteId = null;
+        Identifier armorId = null;
 
-        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(armorId);
+        // get item texture
+        Equippable equippable = null;
+        Block block = null;
+        if ((equippable = itemStack.get(DataComponents.EQUIPPABLE)) != null && equippable.assetId().isPresent()) {
+            Identifier material = equippable.assetId().get().identifier();
+            armorId = getOrCreateArmorId(material);
+
+            atlasSpriteId = armorId;
+        } else if (itemStack.getItem() instanceof BlockItem blockItem) {
+            block = blockItem.getBlock();
+            if (block.defaultBlockState().getRenderShape() != RenderShape.MODEL) {
+                return null;
+            }
+
+            Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
+            armorId = minecraft.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).location();
+
+            atlasSpriteId = blockId;
+        } else {
+            return null;
+        }
+
+        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(atlasSpriteId);
         if (existing != null && existing != textureAtlas.getMissingImage()) {
             return existing;
         }
-        Sprite sprite = textureAtlas.registerEmptyIcon(armorId);
+        Sprite sprite = textureAtlas.registerEmptyIcon(atlasSpriteId);
 
         CaptureContext context = this.setupCapture();
         PoseStack pose = context.poseStack();
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
-        ModelPart part = this.humanoidModelForArmor.root().getChild("head");
-        part.xRot = 0;
-        part.yRot = 0;
-        part.zRot = 0;
-        part.render(pose, bufferBuilder, 15, 0, 0xFFFFFFFF);
+        if (equippable != null) {
+            ModelPart part = humanoidModelForArmor.root().getChild("head");
+            part.xRot = 0;
+            part.yRot = 0;
+            part.zRot = 0;
+            part.render(pose, bufferBuilder, 15, 0, 0xFFFFFFFF);
+        } else if (block != null) {
+            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
+            pose.scale(0.65F, 0.65F, 0.65F);
+
+            BlockState blockState = block.defaultBlockState();
+            BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
+            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(RandomSource.create());
+
+            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, 0xFFFFFFFF);
+        }
 
         this.doCapture(context, armorId, null);
 
@@ -441,7 +481,7 @@ public class EntityMapImageManager {
             // make the image square and align it at the top
             BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), BufferedImage.TYPE_4BYTE_ABGR);
             newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
-            newImage = ImageUtils.fillOutline(ImageUtils.pad(newImage), addBorder, true, newImage.getWidth(), newImage.getHeight(), 2);
+            newImage = ImageUtils.fillOutline(ImageUtils.pad(newImage), addBorder, true, 37.5F, 37.5F, 2);
 
             BufferedImage image3 = newImage;
             taskQueue.add(() -> {
