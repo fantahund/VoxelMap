@@ -27,7 +27,6 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
 
     public GuiWelcomeScreen(Screen parentScreen) {
         this.lastScreen = parentScreen;
-
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
@@ -40,6 +39,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         this.welcomeTexts.add(Component.literal("VoxelMap!").withStyle(ChatFormatting.RED));
         this.welcomeTexts.add(Component.translatable("minimap.ui.welcome1", maintainers));
         this.welcomeTexts.add(Component.translatable("minimap.ui.welcome2"));
+        this.welcomeTexts.add(Component.empty());
         this.welcomeTexts.add(Component.translatable("minimap.ui.welcome3"));
         this.welcomeTexts.add(Component.translatable("minimap.ui.welcome4"));
         this.welcomeTexts.add(Component.empty());
@@ -64,15 +64,15 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         }
 
         Component closeThisMessage = Component.translatable("minimap.ui.welcome5").withStyle(ChatFormatting.GRAY);
-        this.addRenderableWidget(this.closeButton = new PlainTextButton(getWidth() / 2 + 9, getHeight() / 2, 95, 10, closeThisMessage, button -> {
+        this.addRenderableWidget(this.closeButton = new PlainTextButton(0, 0, 100, 10, closeThisMessage, button -> {
             this.options.setOptionValue(EnumOptionsMinimap.WELCOME_SCREEN);
             this.options.saveAll();
 
-            minecraft.setScreen(null);
+            this.onClose();
         }, getFont()));
 
         Component controls = Component.translatable("options.controls").withStyle(ChatFormatting.GRAY);
-        this.addRenderableWidget(this.controlsButton = new PlainTextButton(getWidth() / 2 - 104, getHeight() / 2, 95, 10, controls, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
+        this.addRenderableWidget(this.controlsButton = new PlainTextButton(0, 0, 100, 10, controls, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
     }
 
     @Override
@@ -106,11 +106,13 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
 
 
         // Buttons
+        this.closeButton.setWidth((boxWidth / 2) - 8);
+        this.closeButton.setPosition(getWidth() / 2 + 8, boxTop);
         this.drawBox(guiGraphics, this.closeButton.getX(), boxTop, this.closeButton.getX() + this.closeButton.getWidth(), boxTop + this.closeButton.getHeight(), 4, 1, boxColor);
-        this.closeButton.setY(boxTop);
 
+        this.controlsButton.setWidth((boxWidth / 2) - 8);
+        this.controlsButton.setPosition((getWidth() / 2) - (boxWidth / 2), boxTop);
         this.drawBox(guiGraphics, this.controlsButton.getX(), boxTop, this.controlsButton.getX() + this.controlsButton.getWidth(), boxTop + this.controlsButton.getHeight(), 4, 1, boxColor);
-        this.controlsButton.setY(boxTop);
 
         super.render(guiGraphics, mouseX, mouseY, delta);
     }
@@ -126,6 +128,11 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    @Override
+    public boolean isInGameUi() {
+        return true;
     }
 
     @Override

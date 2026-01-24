@@ -1,6 +1,6 @@
 {
   "minimap.ui.welcome1": "모드 유지관리: %s",
-  "minimap.ui.welcome2": "한국어 번역: Algamja11",
+  "minimap.ui.welcome2": "한국어 번역: ENlGMA a.k.a 이니그마, Gamja(감자)",
   "minimap.ui.welcome3": "VoxelMap을 이용해주셔서 감사합니다.",
   "minimap.ui.welcome4": "저희가 준비한 여러 기능들을 이용해보세요!",
   "minimap.ui.welcome5": "이 메시지 닫기",
@@ -49,8 +49,8 @@
   "options.minimap.radar.showPlayers": "플레이어 표시",
   "options.minimap.radar.iconOutlines": "아이콘 테두리",
   "options.minimap.radar.iconFiltering": "아이콘 필터링",
-  "options.minimap.radar.showPlayerHelmets": "플레이어 헬멧 표시",
-  "options.minimap.radar.showMobHelmets": "몹 헬멧 표시",
+  "options.minimap.radar.showPlayerHelmets": "플레이어 투구 표시",
+  "options.minimap.radar.showMobHelmets": "몹 투구 표시",
   "options.minimap.radar.showPlayerNames": "플레이어 이름 표시",
   "options.minimap.radar.showMobNames": "몹 이름 표시",
   "options.minimap.radar.randomobs": "랜덤 몹",
