@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
 import com.mamiyaotaru.voxelmap.mixins.AccessorEnderDragonRenderer;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -48,16 +49,16 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.model.monster.slime.SlimeModel;
 import net.minecraft.client.model.monster.wither.WitherBossModel;
+import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
+import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
-import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.BlockPos;
@@ -162,6 +163,8 @@ public class EntityMapImageManager {
         // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
         addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.ZOMBIE_VILLAGER));
 
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
@@ -397,7 +400,7 @@ public class EntityMapImageManager {
 
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        if (!(entity instanceof LivingEntity livingEntity) || (!(entityRenderer instanceof AvatarRenderer) && !(entityRenderer instanceof HumanoidMobRenderer))) {
+        if (!(entity instanceof LivingEntity livingEntity) || !(entityRenderer instanceof LivingEntityRenderer<?,?,?> livingEntityRenderer) || !(livingEntityRenderer.getModel() instanceof HumanoidModel)) {
             return null;
         }
 
@@ -536,9 +539,17 @@ public class EntityMapImageManager {
             }
         }
 
-        // some special mobs
+        // wither
         if (model instanceof WitherBossModel witherModel) {
             return new ModelPart[] { witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head") };
+        }
+
+        // villager
+        if (model instanceof VillagerModel villagerModel) {
+            return new ModelPart[] { villagerModel.root().getChild("head"), villagerModel.root().getChild("head").getChild("hat") };
+        }
+        if (model instanceof ZombieVillagerModel<?> zombieVillagerModel) {
+            return new ModelPart[] { zombieVillagerModel.root().getChild("head"), zombieVillagerModel.root().getChild("head").getChild("hat") };
         }
 
         // horses
