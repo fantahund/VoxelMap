@@ -26,6 +26,7 @@ public enum EnumOptionsMinimap {
     MOVE_SCOREBOARD_DOWN("options.minimap.moveScoreboardBelowMap", false, true, false),
     SHOW_BIOME("options.minimap.showBiome", false, true, false),
     UPDATE_NOTIFIER("options.minimap.updateNotifier", false, true, false),
+    COLOR_PICKER_MODE("options.minimap.colorPickerMode", false, false, true),
     RADAR_MODE("options.minimap.radar.radarMode", false, false, true),
     SHOW_RADAR("options.minimap.radar.showRadar", false, true, false),
     SHOW_MOBS("options.minimap.radar.showMobs", false, false, true),

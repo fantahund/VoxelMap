@@ -80,7 +80,8 @@ public class ColorManager {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
-    private Identifier colorPicker = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel.png");
+    private Identifier hueColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue.png");
+    private Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue_sat.png");
     private int sizeOfBiomeArray;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
@@ -126,8 +127,12 @@ public class ColorManager {
         return this.blockColors[BlockRepository.airID];
     }
 
-    public Identifier getColorPicker() {
-        return this.colorPicker;
+    public Identifier getHueColorWheel() {
+        return this.hueColorWheel;
+    }
+
+    public Identifier getHueSatColorWheel() {
+        return this.hueSatColorWheel;
     }
 
     public void onResourceManagerReload(ResourceManager resourceManager) {
@@ -289,9 +294,14 @@ public class ColorManager {
 
     private void loadColorPicker() {
         try {
-            DynamicTexture pickerTexture = new DynamicTexture(() -> "Color Picker", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.colorPicker).image());
-            pickerTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            VoxelConstants.getMinecraft().getTextureManager().register(this.colorPicker, pickerTexture);
+            DynamicTexture hueWheelTexture = new DynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image());
+            hueWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            VoxelConstants.getMinecraft().getTextureManager().register(this.hueColorWheel, hueWheelTexture);
+
+            DynamicTexture hueSatWheelTexture = new DynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
+            hueSatWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            VoxelConstants.getMinecraft().getTextureManager().register(this.hueSatColorWheel, hueSatWheelTexture);
+
         } catch (Exception exception) {
         }
 
