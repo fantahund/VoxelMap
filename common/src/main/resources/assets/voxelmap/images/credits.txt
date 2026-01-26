@@ -1,0 +1,12 @@
+-- Waypoints --
+Designmodo.com ( http://designmodo.com/linecons-free )
+camera, cloud, diamond, fire, gear, heart, key, like, record, science, star, world
+
+Piotr Makarewicz ( https://dribbble.com/ilepixeli )
+house, person
+
+icojam ( http://www.icojam.com/blog/?p=668 )
+apple, carrot, fish, flower, steak, tree
+
+-- Color Picker --
+color wheel image by Crossover1370, CC BY-SA 4.0 ( https://commons.wikimedia.org/wiki/File:Color_circle_(RGB).png )

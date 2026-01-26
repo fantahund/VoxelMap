@@ -38,7 +38,7 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
         for (DimensionContainer dim : dimensionManager.getDimensions()) {
             DimensionItem item = new DimensionItem(this.parentGui, dim);
             this.dimensions.add(item);
-            if (dim.equals(this.parentGui.waypoint.dimensions.first())) {
+            if (dim.equals(this.parentGui.dimensions.first())) {
                 first = item;
             }
         }
@@ -101,11 +101,11 @@ class GuiSlotDimensions extends AbstractSelectionList<GuiSlotDimensions.Dimensio
             drawContext.drawCenteredString(this.parentGui.getFont(), this.dim.getDisplayName(), this.parentGui.getWidth() / 2 + GuiSlotDimensions.this.width / 2, getY() + 3, 0xFFFFFFFF);
 
             this.dimToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
-            this.dimToggle.setIconForRender(RenderPipelines.GUI_TEXTURED,  this.parentGui.waypoint.dimensions.contains(this.dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            this.dimToggle.setIconForRender(RenderPipelines.GUI_TEXTURED,  this.parentGui.dimensions.contains(this.dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
             this.dimToggle.render(drawContext, mouseX, mouseY, tickDelta);
 
             if (this.dimToggle.isMouseOver(mouseX, mouseY)) {
-                GuiAddWaypoint.setTooltip(this.parentGui, this.parentGui.waypoint.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES);
+                GuiAddWaypoint.setTooltip(this.parentGui, this.parentGui.dimensions.contains(this.dim) ? APPLIES : NOT_APPLIES);
             }
         }
 

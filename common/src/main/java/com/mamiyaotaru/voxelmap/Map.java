@@ -96,11 +96,11 @@ public class Map implements Runnable, IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
     // private final float[] lastLightBrightnessTable = new float[16];
     private final Object coordinateLock = new Object();
-    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap_arrow.png");
-    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/square_map_frame.png");
-    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/square_map_stencil.png");
-    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/round_map_frame.png");
-    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/round_map_stencil.png");
+    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/minimap_arrow.png");
+    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_frame.png");
+    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_stencil.png");
+    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_frame.png");
+    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_stencil.png");
     private ClientLevel world;
     private final MapSettingsManager options;
     private final LayoutVariables layoutVariables;

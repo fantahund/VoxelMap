@@ -58,6 +58,7 @@ public class MapSettingsManager implements ISettingsManager {
     public int mapCorner = 1;
     public boolean showBiome = false;
     public boolean updateNotifier = true;
+    public int colorPickerMode = 0;
 
     public Boolean cavesAllowed = true;
     public boolean worldmapAllowed = true;
@@ -163,6 +164,7 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Show In-game Waypoint Distances" -> this.waypointDistancesLocation  = Integer.parseInt(curLine[1]);
                         case "Show Biome" -> this.showBiome = Boolean.parseBoolean(curLine[1]);
                         case "Update Notifier" -> this.updateNotifier = Boolean.parseBoolean(curLine[1]);
+                        case "Color Picker Mode" -> this.colorPickerMode = Integer.parseInt(curLine[1]);
                     }
                 }
                 KeyMapping.resetMapping();
@@ -242,6 +244,7 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Show In-game Waypoint Distances:" + this.waypointDistancesLocation);
             out.println("Show Biome:" + this.showBiome);
             out.println("Update Notifier:" + this.updateNotifier);
+            out.println("Color Picker Mode:" + this.colorPickerMode);
 
             for (ISubSettingsManager subSettingsManager : this.subSettingsManagers) {
                 subSettingsManager.saveAll(out);
@@ -437,6 +440,17 @@ public class MapSettingsManager implements ISettingsManager {
                     return "error";
                 }
             }
+            case COLOR_PICKER_MODE -> {
+                if (this.colorPickerMode == 0) {
+                    return I18n.get("options.minimap.colorPickerMode.simple");
+                } else {
+                    if (this.colorPickerMode == 1) {
+                        return I18n.get("options.minimap.colorPickerMode.full");
+                    }
+
+                    return "error";
+                }
+            }
             default ->
                     throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a list value applicable to minimap)");
         }
@@ -481,6 +495,8 @@ public class MapSettingsManager implements ISettingsManager {
             case WORLD_BORDER -> this.worldborder = !this.worldborder;
             case MOVE_MAP_DOWN_WHILE_STATUS_EFFECT -> this.moveMapDownWhileStatusEffect = !this.moveMapDownWhileStatusEffect;
             case MOVE_SCOREBOARD_DOWN -> this.moveScoreBoardDown = !this.moveScoreBoardDown;
+            case SHOW_BIOME -> this.showBiome = !this.showBiome;
+            case UPDATE_NOTIFIER -> this.updateNotifier = !this.updateNotifier;
             case TERRAIN_DEPTH -> {
                 if (this.slopemap && this.heightmap) {
                     this.slopemap = false;
@@ -539,8 +555,12 @@ public class MapSettingsManager implements ISettingsManager {
                     this.waypointDistancesLocation = 0;
                 }
             }
-            case SHOW_BIOME -> this.showBiome = !this.showBiome;
-            case UPDATE_NOTIFIER -> this.updateNotifier = !this.updateNotifier;
+            case COLOR_PICKER_MODE -> {
+                ++this.colorPickerMode;
+                if (this.colorPickerMode > 1) {
+                    this.colorPickerMode = 0;
+                }
+            }
             default ->
                     throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
         }
