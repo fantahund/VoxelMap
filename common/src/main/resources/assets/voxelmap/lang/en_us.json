@@ -217,5 +217,7 @@
   "worldmap.multiworld.unknownSubworld": "Unknown world!  Please select your current world in the Multiworld screen.",
   "worldmap.subworld.edit": "Edit Multiworld Name",
   "worldmap.subworld.name": "Multiworld Name",
-  "worldmap.subworld.deleteConfirm": "Confirm Delete Multiworld"
+  "worldmap.subworld.deleteConfirm": "Confirm Delete Multiworld",
+  "resourcePack.minimap.voxelmapLegacy.title": "VoxelMap Legacy",
+  "resourcePack.minimap.voxelmapLegacy.description": "The classic look of VoxelMap"
 }

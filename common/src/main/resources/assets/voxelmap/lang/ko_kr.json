@@ -217,5 +217,7 @@
   "worldmap.multiworld.unknownSubworld": "알 수 없는 세계입니다! 다중 세계 설정에서 현재 세계를 선택해주세요.",
   "worldmap.subworld.edit": "다중 세계 이름 수정",
   "worldmap.subworld.name": "다중 세계 이름",
-  "worldmap.subworld.deleteConfirm": "다중 세계 삭제 수락"
+  "worldmap.subworld.deleteConfirm": "다중 세계 삭제 수락",
+  "resourcePack.minimap.voxelmapLegacy.title": "VoxelMap 레거시",
+  "resourcePack.minimap.voxelmapLegacy.description": "오래된 VoxelMap의 모습"
 }

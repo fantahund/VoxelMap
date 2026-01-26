@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "voxelmap",
   "version": "${version}",
-  "name": "Voxelmap",
+  "name": "VoxelMap",
   "description": "Minimap and world map",
   "authors": [
     "Lahwran ",

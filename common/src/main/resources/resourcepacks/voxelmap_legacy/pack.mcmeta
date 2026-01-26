@@ -1,0 +1,9 @@
+{
+  "pack": {
+    "min_format": 75,
+    "max_format": 999,
+    "description": {
+      "translate": "resourcePack.minimap.voxelmapLegacy.description"
+    }
+  }
+}

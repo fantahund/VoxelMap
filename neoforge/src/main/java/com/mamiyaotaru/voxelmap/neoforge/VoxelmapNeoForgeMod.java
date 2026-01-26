@@ -13,7 +13,7 @@ public class VoxelmapNeoForgeMod {
 
     public VoxelmapNeoForgeMod(IEventBus modEventBus, ModContainer container) {
         VoxelmapNeoForgeMod.modEventBus = modEventBus;
-        VoxelConstants.setEvents(new ForgeEvents());
+        VoxelConstants.setEvents(new NeoForgeEvents());
         VoxelConstants.setPacketBridge(new NeoForgePacketBridge());
     }
 
