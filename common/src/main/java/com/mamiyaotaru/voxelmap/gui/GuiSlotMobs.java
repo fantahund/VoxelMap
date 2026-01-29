@@ -105,6 +105,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         private final MobCategory category;
         private final GuiIconElement mobIcon;
         private final GuiIconElement mobToggle;
+        private Sprite mobSprite;
 
         protected MobItem(GuiMobs mobsScreen, EntityType<?> type, Identifier id) {
             this.type = type;
@@ -128,12 +129,13 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             int color = 0xFF000000 + (red << 16) + (green << 8);
             drawContext.drawCenteredString(this.parentGui.getFont(), this.name, this.parentGui.getWidth() / 2, getY() + 5, color);
 
-            this.mobIcon.setPosition(this.getX() + 2, this.getY());
-            Sprite sprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
-            if (sprite != null) {
-                int width = Math.min(18, sprite.getIconWidth() / 3);
-                int height = Math.min(18, sprite.getIconHeight() / 3);
-                this.mobIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, sprite, width, height, 0xFFFFFFFF);
+            if (this.mobSprite == null) {
+                this.mobSprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
+            } else {
+                int iconWidth = Math.min(18, this.mobSprite.getIconWidth() / 3);
+                int iconHeight = Math.min(18, this.mobSprite.getIconHeight() / 3);
+                this.mobIcon.setPosition(this.getX() + 2, this.getY());
+                this.mobIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, this.mobSprite, iconWidth, iconHeight, 0xFFFFFFFF);
                 this.mobIcon.render(drawContext, mouseX, mouseY, tickDelta);
             }
 

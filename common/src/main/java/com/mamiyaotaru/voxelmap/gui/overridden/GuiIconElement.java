@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphics;
@@ -77,8 +78,8 @@ public class GuiIconElement implements Renderable, GuiEventListener {
             return;
         }
 
-        int iconX = this.x + ((this.width - this.iconWidth) / 2);
-        int iconY = this.y + ((this.height - this.iconHeight) / 2);
+        float iconX = this.x + ((this.width - this.iconWidth) / 2.0F);
+        float iconY = this.y + ((this.height - this.iconHeight) / 2.0F);
         this.blitIcon(guiGraphics, this.pipeline, this.icon, iconX, iconY, this.iconWidth, this.iconHeight, this.iconColor);
 
         if (this.cursorEvent && this.isMouseOver(mouseX, mouseY)) {
@@ -90,12 +91,12 @@ public class GuiIconElement implements Renderable, GuiEventListener {
         return this.pipeline != null && this.icon != null && this.iconWidth > 0 && this.iconHeight > 0;
     }
 
-    private void blitIcon(GuiGraphics guiGraphics, RenderPipeline pipeline, Object icon, int x, int y, int width, int height, int color) {
+    private void blitIcon(GuiGraphics guiGraphics, RenderPipeline pipeline, Object icon, float x, float y, int width, int height, int color) {
         if (icon instanceof Sprite sprite) {
             sprite.blit(guiGraphics, pipeline, x, y, width, height, color);
         }
         if (icon instanceof Identifier identifier) {
-            guiGraphics.blit(pipeline, identifier, x, y, 0.0F, 0.0F, width, height, width, height, color);
+            VoxelMapGuiGraphics.blitFloat(guiGraphics, pipeline, identifier, x, y, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
         }
     }
 
