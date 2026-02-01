@@ -146,7 +146,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             if (this.mobIcon.isMouseOver(mouseX, mouseY)) {
                 GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.ENABLED : GuiSlotMobs.DISABLED);
             } else if (this.mobToggle.isMouseOver(mouseX, mouseY)) {
-                GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.TOOLTIP_ENABLE : GuiSlotMobs.TOOLTIP_DISABLE);
+                GuiMobs.setTooltip(this.parentGui, isEnabled ? GuiSlotMobs.TOOLTIP_DISABLE : GuiSlotMobs.TOOLTIP_ENABLE);
             }
         }
 
