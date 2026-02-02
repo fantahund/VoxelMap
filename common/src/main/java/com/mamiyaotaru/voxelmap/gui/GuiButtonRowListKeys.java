@@ -157,6 +157,8 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
 
                 if (tooltip != null) {
                     this.button.setTooltip(Tooltip.create(tooltip));
+                } else {
+                    this.button.setTooltip(null);
                 }
 
                 this.button.setMessage(keyText);
