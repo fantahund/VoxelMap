@@ -1827,13 +1827,17 @@ public class Map implements Runnable, IChangeObserver {
 
             String coords;
 
-            if (this.options.coords) {
+            if (this.options.coordsMode == 1) {
                 coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
                 this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
 
                 coords = this.dCoord(GameVariableAccessShim.yCoord());
                 this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // Y
+                lineCount++;
+            } else if (this.options.coordsMode == 2) {
+                coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.yCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
+                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
             }
 
@@ -1879,7 +1883,7 @@ public class Map implements Runnable, IChangeObserver {
         if (paramInt1 < 0) {
             return "-" + Math.abs(paramInt1);
         } else {
-            return paramInt1 > 0 ? "+" + paramInt1 : " " + paramInt1;
+            return paramInt1 > 0 ? "+" + paramInt1 : Integer.toHexString(paramInt1);
         }
     }
 

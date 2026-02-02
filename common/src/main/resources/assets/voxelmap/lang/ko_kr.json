@@ -12,6 +12,8 @@
   "options.minimap.tab.radar": "레이더",
   "options.minimap.tab.worldmap": "세계지도",
   "options.minimap.showCoordinates": "좌표 표시",
+  "options.minimap.showCoordinates.classic": "클래식",
+  "options.minimap.showCoordinates.horizontal": "가로형",
   "options.minimap.hideMinimap": "미니맵 숨기기",
   "options.minimap.caveMode": "동굴 모드",
   "options.minimap.dynamicLighting": "다이나믹 라이팅",

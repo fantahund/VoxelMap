@@ -12,6 +12,8 @@
   "options.minimap.tab.radar": "Radar",
   "options.minimap.tab.worldmap": "Worldmap",
   "options.minimap.showCoordinates": "Display Coordinates",
+  "options.minimap.showCoordinates.classic": "Classic",
+  "options.minimap.showCoordinates.horizontal": "Horizontal",
   "options.minimap.hideMinimap": "Hide Minimap",
   "options.minimap.caveMode": "Enable Cave Mode",
   "options.minimap.dynamicLighting": "Dynamic Lighting",
