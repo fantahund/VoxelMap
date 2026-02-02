@@ -5,12 +5,11 @@ import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
-import com.mamiyaotaru.voxelmap.util.MobCategory;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
@@ -18,12 +17,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.bee.Bee;
-import net.minecraft.world.entity.animal.polarbear.PolarBear;
-import net.minecraft.world.entity.animal.rabbit.Rabbit;
-import net.minecraft.world.entity.animal.wolf.Wolf;
-import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 
@@ -90,8 +83,44 @@ public class Radar implements IRadar {
     }
 
     private boolean isEntityShown(Entity entity) {
-        return entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && this.isHostile(entity)
-                || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && this.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && this.isNeutral(entity));
+        if (entity.isInvisibleTo(VoxelConstants.getPlayer()) || entity.equals(VoxelConstants.getPlayer()) || !(entity instanceof LivingEntity)) {
+            return false;
+        }
+
+        boolean playersAllowed = this.options.radarAllowed || this.options.radarPlayersAllowed;
+        boolean mobsAllowed = this.options.radarAllowed || this.options.radarMobsAllowed;
+
+        return switch (VoxelMapMobCategory.forEntity(entity)) {
+            case PLAYER -> playersAllowed;
+            case HOSTILE -> mobsAllowed && this.options.showHostiles;
+            case NEUTRAL -> mobsAllowed && this.options.showNeutrals;
+        };
+    }
+
+    private float getEntityMaxHeight(Entity entity) {
+        if (entity.getType() == EntityType.PHANTOM) {
+            return 64.0F;
+        }
+
+        return 32.0F;
+    }
+
+    private boolean isInRange(Entity entity, double dx, double dy, double dz, double cullDist) {
+        double scale = layoutVariables.zoomScaleAdjusted;
+        dx /= scale;
+        dy /= scale;
+        dz /= scale;
+
+        if (Math.abs(dy) > getEntityMaxHeight(entity) + cullDist) {
+            return false;
+        }
+
+        double maxDist = 28.5 + cullDist;
+        if (!minimapOptions.squareMap) {
+            return (dx * dx + dz * dz) <= (maxDist * maxDist);
+        } else {
+            return Math.abs(dx) <= maxDist && Math.abs(dz) <= maxDist;
+        }
     }
 
     public void calculateMobs() {
@@ -111,18 +140,8 @@ public class Radar implements IRadar {
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.position().z();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
 
-                    double scale = this.layoutVariables.zoomScaleAdjusted;
-                    boolean inRange;
-                    if (!this.minimapOptions.squareMap) {
-                        inRange = (wayX * wayX + wayZ * wayZ) / (scale * scale) < 32.0 * 32.0;
-                    } else {
-                        inRange = Mth.abs(wayX) / scale < 32.0 || Mth.abs(wayZ) / scale < 32.0;
-                    }
-                    inRange = inRange && Mth.abs(wayY) / scale < 32.0;
-
-                    if (inRange) {
-
-                        Contact contact = new Contact((LivingEntity) entity, MobCategory.forEntity(entity));
+                    if (this.isInRange(entity, wayX, wayY, wayZ, 5.0)) {
+                        Contact contact = new Contact((LivingEntity) entity, VoxelMapMobCategory.forEntity(entity));
                         if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
                             contact.yFudge = 1;
                         }
@@ -136,7 +155,7 @@ public class Radar implements IRadar {
                                 contact.setRotationFactor(contact.rotationFactor + 180);
                             }
 
-                            if (this.options.showHelmetsPlayers && contact.category == MobCategory.PLAYER || this.options.showHelmetsMobs && contact.category != MobCategory.PLAYER) {
+                            if (this.options.showHelmetsPlayers && contact.category == VoxelMapMobCategory.PLAYER || this.options.showHelmetsMobs && contact.category != VoxelMapMobCategory.PLAYER) {
                                 contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, options.outlines);
                             }
 
@@ -169,7 +188,8 @@ public class Radar implements IRadar {
     public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().scale(scaleProj, scaleProj);
-        double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
+
+        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
         double lastX = GameVariableAccessShim.xCoordDouble();
         double lastZ = GameVariableAccessShim.zCoordDouble();
         double lastY = GameVariableAccessShim.yCoordDouble();
@@ -186,15 +206,13 @@ public class Radar implements IRadar {
             double wayX = lastX - contactX;
             double wayZ = lastZ - contactZ;
             double wayY = lastY - contactY;
-            double entityMax = max;
-            if (contact.entity.getType() == EntityType.PHANTOM) {
-                entityMax *= 2;
-            }
-            double adjustedDiff = entityMax - Math.max(Math.abs(wayY), 0);
-            contact.brightness = (float) Math.max(adjustedDiff / entityMax, 0.0);
+
+            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
+            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
+            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
-            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
+            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
 
             int color;
             if (wayY < 0) {
@@ -212,28 +230,19 @@ public class Radar implements IRadar {
                 contact.angle -= 90.0F;
             }
 
-            boolean inRange;
-            if (!this.minimapOptions.squareMap) {
-                inRange = contact.distance < 28.5;
-            } else {
-                double radLocate = Math.toRadians(contact.angle);
-                double dispX = contact.distance * Math.cos(radLocate);
-                double dispY = contact.distance * Math.sin(radLocate);
-                inRange = Math.abs(dispX) <= 28.5 && Math.abs(dispY) <= 28.5;
-            }
-
-            if (inRange) {
+            double scaledDistance = contact.distance / zoomScale;
+            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
                 try {
                     guiGraphics.pose().pushMatrix();
                     if (this.options.filtering) {
                         guiGraphics.pose().translate(x, y);
                         guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
-                        guiGraphics.pose().translate(0.0f, (float) -contact.distance);
+                        guiGraphics.pose().translate(0.0f, (float) -scaledDistance);
                         guiGraphics.pose().rotate((contact.angle + contact.rotationFactor) * Mth.DEG_TO_RAD);
                         guiGraphics.pose().translate(-x, -y);
                     } else {
-                        wayZ = Math.cos(Math.toRadians(contact.angle)) * contact.distance;
-                        wayX = Math.sin(Math.toRadians(contact.angle)) * contact.distance;
+                        wayZ = Math.cos(Math.toRadians(contact.angle)) * scaledDistance;
+                        wayX = Math.sin(Math.toRadians(contact.angle)) * scaledDistance;
                         guiGraphics.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale);
                     }
 
@@ -254,7 +263,7 @@ public class Radar implements IRadar {
                         contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - (helmetWidth / 2), y + yOffset + helmetOffset - (helmetHeight / 2), helmetWidth, helmetWidth, color);
                     }
 
-                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == MobCategory.PLAYER) || (this.options.showMobNames && contact.category != MobCategory.PLAYER && contact.entity.hasCustomName()))) {
+                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER && contact.entity.hasCustomName()))) {
                         float scaleFactor = this.options.fontScale / 4.0F;
                         guiGraphics.pose().scale(scaleFactor, scaleFactor);
 
@@ -272,41 +281,6 @@ public class Radar implements IRadar {
             }
         }
         guiGraphics.pose().popMatrix();
-    }
-
-    private boolean isHostile(Entity entity) {
-        if (entity instanceof Enemy) {
-            return true;
-        } else if (entity instanceof ZombifiedPiglin zombifiedPiglinEntity) {
-            return zombifiedPiglinEntity.getPersistentAngerTarget() != null && zombifiedPiglinEntity.getPersistentAngerTarget().equals(VoxelConstants.getPlayer().getUUID());
-        } else if (entity instanceof Bee beeEntity) {
-            return beeEntity.isAngry();
-        } else if (entity instanceof PolarBear polarBearEntity) {
-            for (PolarBear object : polarBearEntity.level().getEntitiesOfClass(PolarBear.class, polarBearEntity.getBoundingBox().inflate(8.0, 4.0, 8.0))) {
-                if (object.isBaby()) {
-                    return true;
-                }
-            }
-            return false;
-        } else if (entity instanceof Rabbit rabbitEntity) {
-            return rabbitEntity.getVariant() == Rabbit.Variant.EVIL;
-        } else if (entity instanceof Wolf wolfEntity) {
-            return wolfEntity.isAngry();
-        } else {
-            return false;
-        }
-    }
-
-    private boolean isPlayer(Entity entity) {
-        return entity instanceof RemotePlayer;
-    }
-
-    private boolean isNeutral(Entity entity) {
-        if (!(entity instanceof LivingEntity)) {
-            return false;
-        } else {
-            return !(entity instanceof Player) && !this.isHostile(entity);
-        }
     }
 
     public void onJoinServer() {

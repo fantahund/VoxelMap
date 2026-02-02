@@ -2,10 +2,11 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.UUID;
 
 public class Contact {
     public double x;
@@ -15,7 +16,7 @@ public class Contact {
     public float angle;
     public double distance;
     public float brightness;
-    public MobCategory category;
+    public VoxelMapMobCategory category;
     public UUID uuid;
     public Component name;
     public int rotationFactor;
@@ -24,7 +25,7 @@ public class Contact {
     public Sprite armorIcon;
     public int armorColor = -1;
 
-    public Contact(LivingEntity entity, MobCategory category) {
+    public Contact(LivingEntity entity, VoxelMapMobCategory category) {
         this.entity = entity;
         this.category = category;
         this.uuid = entity.getUUID();

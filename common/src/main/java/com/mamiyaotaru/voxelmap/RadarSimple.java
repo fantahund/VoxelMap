@@ -4,13 +4,10 @@ import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
-import com.mamiyaotaru.voxelmap.util.MobCategory;
+import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.platform.NativeImage;
-import java.util.ArrayList;
-import java.util.Comparator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureContents;
@@ -20,7 +17,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 
 public class RadarSimple implements IRadar {
     private LayoutVariables layoutVariables;
@@ -38,6 +39,8 @@ public class RadarSimple implements IRadar {
         this.options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
         this.textureAtlas = new TextureAtlas("pings", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(true, false);
+
+        this.loadTexturePackIcons();
     }
 
     @Override
@@ -51,10 +54,8 @@ public class RadarSimple implements IRadar {
         try {
             this.textureAtlas.reset();
             NativeImage contact = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath("voxelmap", "images/radar/contact.png")).image();
-            contact = ImageUtils.fillOutline(contact, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("contact", contact);
             NativeImage facing = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath("voxelmap", "images/radar/contact_facing.png")).image();
-            facing = ImageUtils.fillOutline(facing, false, true, 32.0F, 32.0F, 0);
             this.textureAtlas.registerIconForBufferedImage("facing", facing);
             this.textureAtlas.stitch();
             this.completedLoading = true;
@@ -94,28 +95,59 @@ public class RadarSimple implements IRadar {
         }
     }
 
+    private boolean isEntityShown(Entity entity) {
+        if (entity.isInvisibleTo(VoxelConstants.getPlayer()) || entity.equals(VoxelConstants.getPlayer()) || !(entity instanceof LivingEntity)) {
+            return false;
+        }
+
+        boolean playersAllowed = this.options.radarAllowed || this.options.radarPlayersAllowed;
+        boolean mobsAllowed = this.options.radarAllowed || this.options.radarMobsAllowed;
+
+        return switch (VoxelMapMobCategory.forEntity(entity)) {
+            case PLAYER -> playersAllowed;
+            case HOSTILE -> mobsAllowed && this.options.showHostiles;
+            case NEUTRAL -> mobsAllowed && this.options.showNeutrals;
+        };
+    }
+
+    private float getEntityMaxHeight(Entity entity) {
+        if (entity.getType() == EntityType.PHANTOM) {
+            return 64.0F;
+        }
+
+        return 32.0F;
+    }
+
+    private boolean isInRange(Entity entity, double dx, double dy, double dz, double cullDist) {
+        double scale = layoutVariables.zoomScaleAdjusted;
+        dx /= scale;
+        dy /= scale;
+        dz /= scale;
+
+        if (Math.abs(dy) > getEntityMaxHeight(entity) + cullDist) {
+            return false;
+        }
+
+        double maxDist = 28.5 + cullDist;
+        if (!minimapOptions.squareMap) {
+            return (dx * dx + dz * dz) <= (maxDist * maxDist);
+        } else {
+            return Math.abs(dx) <= maxDist && Math.abs(dz) <= maxDist;
+        }
+    }
+
     public void calculateMobs() {
         this.contacts.clear();
 
         for (Entity entity : VoxelConstants.getClientWorld().entitiesForRendering()) {
             try {
-                if (entity != null && !entity.isInvisibleTo(VoxelConstants.getPlayer()) && (this.options.showHostiles && (this.options.radarAllowed || this.options.radarMobsAllowed) && MobCategory.isHostile(entity)
-                        || this.options.showPlayers && (this.options.radarAllowed || this.options.radarPlayersAllowed) && MobCategory.isPlayer(entity) || this.options.showNeutrals && this.options.radarMobsAllowed && MobCategory.isNeutral(entity))) {
+                if (isEntityShown(entity)) {
                     int wayX = GameVariableAccessShim.xCoord() - (int) entity.position().x();
                     int wayZ = GameVariableAccessShim.zCoord() - (int) entity.position().z();
                     int wayY = GameVariableAccessShim.yCoord() - (int) entity.position().y();
 
-                    double scale = this.layoutVariables.zoomScaleAdjusted;
-                    boolean inRange;
-                    if (!this.minimapOptions.squareMap) {
-                        inRange = (wayX * wayX + wayZ * wayZ) / (scale * scale) < 32.0 * 32.0;
-                    } else {
-                        inRange = Mth.abs(wayX) / scale < 32.0 || Mth.abs(wayZ) / scale < 32.0;
-                    }
-                    inRange = inRange && Mth.abs(wayY) / scale < 32.0;
-
-                    if (inRange) {
-                        Contact contact = new Contact((LivingEntity) entity, MobCategory.forEntity(entity));
+                    if (this.isInRange(entity, wayX, wayY, wayZ, 5.0)) {
+                        Contact contact = new Contact((LivingEntity) entity, VoxelMapMobCategory.forEntity(entity));
                         this.contacts.add(contact);
                     }
                 }
@@ -128,7 +160,7 @@ public class RadarSimple implements IRadar {
     }
 
     public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
-        double max = this.layoutVariables.zoomScaleAdjusted * 32.0;
+        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
 
         for (Contact contact : this.contacts) {
             contact.updateLocation();
@@ -138,13 +170,19 @@ public class RadarSimple implements IRadar {
             double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
             double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
             double wayY = GameVariableAccessShim.yCoord() - contactY;
-            double adjustedDiff = max - Math.abs(wayY);
-            contact.brightness = (float) Math.max(adjustedDiff / max, 0.0);
+
+            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
+            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
+            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
             contact.brightness *= contact.brightness;
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
-            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ) / this.layoutVariables.zoomScaleAdjusted;
+            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
 
             int color = wayY < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
+            switch (contact.category) {
+                case HOSTILE -> color = ARGB.multiply(color, 0xFFFF8080);
+                case NEUTRAL -> color = ARGB.multiply(color, 0xFF80FF80);
+            }
 
             if (this.minimapOptions.rotates) {
                 contact.angle += this.direction;
@@ -152,17 +190,8 @@ public class RadarSimple implements IRadar {
                 contact.angle -= 90.0F;
             }
 
-            boolean inRange;
-            if (!this.minimapOptions.squareMap) {
-                inRange = contact.distance < 28.5;
-            } else {
-                double radLocate = Math.toRadians(contact.angle);
-                double dispX = contact.distance * Math.cos(radLocate);
-                double dispY = contact.distance * Math.sin(radLocate);
-                inRange = Math.abs(dispX) <= 28.5 && Math.abs(dispY) <= 28.5;
-            }
-
-            if (inRange) {
+            double scaledDistance = contact.distance / zoomScale;
+            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
                 try {
                     guiGraphics.pose().pushMatrix();
                     guiGraphics.pose().scale(scaleProj, scaleProj);
@@ -175,7 +204,7 @@ public class RadarSimple implements IRadar {
 
                     guiGraphics.pose().translate(x, y);
                     guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
-                    guiGraphics.pose().translate(0.0f, (float) -contact.distance);
+                    guiGraphics.pose().translate(0.0f, (float) -scaledDistance);
                     guiGraphics.pose().rotate((contact.angle + contactFacing) * Mth.DEG_TO_RAD);
                     guiGraphics.pose().translate(-x, -y);
 

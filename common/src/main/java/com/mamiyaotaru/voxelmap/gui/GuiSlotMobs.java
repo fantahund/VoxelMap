@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mamiyaotaru.voxelmap.util.MobCategory;
+import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -102,7 +102,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         private final Identifier id;
         private final Component name;
         private final String nameString;
-        private final MobCategory category;
+        private final VoxelMapMobCategory category;
         private final GuiIconElement mobIcon;
         private final GuiIconElement mobToggle;
         private Sprite mobSprite;
@@ -113,14 +113,14 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             this.id = id;
             this.name = type.getDescription();
             this.nameString = name.getString();
-            this.category = MobCategory.forEntityType(type);
+            this.category = VoxelMapMobCategory.forEntityType(type);
             this.mobIcon = new GuiIconElement(this.getX() + 2, this.getY(), 18, 18, false, (element) -> {});
             this.mobToggle = new GuiIconElement(this.getX() + this.getWidth() - 20, this.getY(), 18, 18, true, (element) -> this.parentGui.toggleMobVisibility());
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            boolean isHostile = category == MobCategory.HOSTILE;
+            boolean isHostile = category == VoxelMapMobCategory.HOSTILE;
             boolean isNeutral = !isHostile;
             boolean isEnabled = VoxelMap.radarOptions.isMobEnabled(type);
 
