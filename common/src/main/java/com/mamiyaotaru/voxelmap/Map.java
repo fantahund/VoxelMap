@@ -94,68 +94,26 @@ import java.util.TreeSet;
 
 public class Map implements Runnable, IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
-    // private final float[] lastLightBrightnessTable = new float[16];
-    private final Object coordinateLock = new Object();
+    private final MapSettingsManager options;
+    private final ColorManager colorManager;
+    private final WaypointManager waypointManager;
+    private final LayoutVariables layoutVariables;
+    private final Random generator = new Random();
+
+    // Map UI
     private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/minimap_arrow.png");
     private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_frame.png");
     private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_stencil.png");
     private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_frame.png");
     private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_stencil.png");
-    private ClientLevel world;
-    private final MapSettingsManager options;
-    private final LayoutVariables layoutVariables;
-    private final ColorManager colorManager;
-    private final WaypointManager waypointManager;
-    private final int availableProcessors = Runtime.getRuntime().availableProcessors();
-    private final boolean multicore = this.availableProcessors > 1;
-    private final int heightMapResetHeight = this.multicore ? 2 : 5;
-    private final int heightMapResetTime = this.multicore ? 300 : 3000;
-    private final boolean threading = this.multicore;
-    private BlockState transparentBlockState;
-    private BlockState surfaceBlockState;
-    private boolean imageChanged = true;
-    private LightTexture lightmapTexture;
-    private boolean needLightmapRefresh = true;
-    private int tickWithLightChange;
-    private boolean lastPaused = true;
-    private double lastGamma;
-    private float lastSunBrightness;
-    private float lastLightning;
-    private float lastPotion;
-    private final int[] lastLightmapValues = { -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216 };
-    private boolean lastBeneathRendering;
-    private boolean needSkyColor;
-    private boolean lastAboveHorizon = true;
-    private int lastBiome;
-    private int lastSkyColor;
-    private final Random generator = new Random();
-    private Screen lastGuiScreen;
-    private boolean fullscreenMap;
-    private int zoom;
     private int scWidth;
     private int scHeight;
-    private int heightMapFudge;
-    private int timer;
-    private boolean doFullRender = true;
-    private boolean zoomChanged;
-    private int lastX;
-    private int lastZ;
-    private int lastY;
-    private int lastImageX;
-    private int lastImageZ;
-    private boolean lastFullscreen;
-    private float direction;
-    private int northRotate;
-    private Thread zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
-    private int zCalcTicker;
-    private int[] lightmapColors = new int[256];
-    private double zoomScale = 1.0;
-    private double zoomScaleAdjusted = 1.0;
-    private static double minTablistOffset;
-    private static float statusIconOffset = 0.0F;
     private String message = "";
     private long messageTime;
+    private static double minTablistOffset;
+    private static float statusIconOffset = 0.0F;
 
+    // Map Data
     private final int mapDataCount = 5;
     private final FullMapData[] mapData = new FullMapData[this.mapDataCount];
     private final MapChunkCache[] chunkCache = new MapChunkCache[this.mapDataCount];
@@ -166,10 +124,64 @@ public class Map implements Runnable, IChangeObserver {
     private final Identifier[] resourceMapImageFiltered = new Identifier[this.mapDataCount];
     private final Identifier[] resourceMapImageUnfiltered = new Identifier[this.mapDataCount];
 
-    private GpuTexture fboTexture;
-    private GpuTextureView fboTextureView;
-    private Tesselator fboTessellator = new Tesselator(4096);
-    private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
+    // Map Core Calculation
+    private final int availableProcessors = Runtime.getRuntime().availableProcessors();
+    private final boolean multicore = this.availableProcessors > 1;
+    private final boolean threading = this.multicore;
+    private Thread zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+    private int zCalcTicker;
+    private final Object coordinateLock = new Object();
+    private ClientLevel world;
+    private int updateTimer;
+    private boolean doFullRender = true;
+    private boolean imageChanged = true;
+
+    // Map Terrain Calculation
+    private final int heightMapResetHeight = this.multicore ? 2 : 5;
+    private final int heightMapResetTime = this.multicore ? 300 : 3000;
+    private int heightMapFudge;
+    private boolean lastBeneathRendering;
+    private BlockState transparentBlockState;
+    private BlockState surfaceBlockState;
+
+    // Map Player Calculation
+    private boolean zoomChanged;
+    private int zoom;
+    private double zoomScale = 1.0;
+    private double zoomScaleAdjusted = 1.0;
+    private int lastX;
+    private int lastZ;
+    private int lastY;
+    private int lastImageX;
+    private int lastImageZ;
+    private float direction;
+    private int rotationFactor;
+    private boolean fullscreenMap;
+    private boolean lastFullscreen;
+    private Screen lastGuiScreen;
+
+    // Map Light Calculation
+    private boolean needLightmapRefresh = true;
+    private int tickWithLightChange;
+    private LightTexture lightmapTexture;
+    private final int[] lightmapColors = new int[256];
+    private final int[] lastLightmapValues = { -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216 };
+    // private final float[] lastLightBrightnessTable = new float[16];
+    private boolean needSkyColor;
+    private int lastSkyColor;
+    private double lastGamma;
+    private float lastSunBrightness;
+    private float lastLightning;
+    private float lastNightVision;
+    private boolean lastPaused = true;
+    private boolean lastAboveHorizon = true;
+    private int lastBiome;
+
+    // Map Rendering
+    private final GpuTexture fboTexture;
+    private final GpuTextureView fboTextureView;
+    private final Tesselator fboTessellator = new Tesselator(4096);
+    private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -315,7 +327,7 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     public void onTickInGame(GuiGraphics drawContext) {
-        this.northRotate = this.options.oldNorth ? 90 : 0;
+        this.rotationFactor = this.options.oldNorth ? 90 : 0;
 
         if (this.lightmapTexture == null) {
             this.lightmapTexture = this.getLightmapTexture();
@@ -442,7 +454,7 @@ public class Map implements Runnable, IChangeObserver {
             this.drawMinimap(drawContext);
         }
 
-        this.timer = this.timer > 5000 ? 0 : this.timer + 1;
+        this.updateTimer = this.updateTimer > 5000 ? 0 : this.updateTimer + 1;
     }
 
     private void cycleZoomLevel() {
@@ -499,14 +511,14 @@ public class Map implements Runnable, IChangeObserver {
                     this.lastSunBrightness = sunBrightness;
                 }
 
-                float potionEffect = 0.0F;
+                float nightVision = 0.0F;
                 if (VoxelConstants.getPlayer().hasEffect(MobEffects.NIGHT_VISION)) {
                     int duration = VoxelConstants.getPlayer().getEffect(MobEffects.NIGHT_VISION).getDuration();
-                    potionEffect = duration > 200 ? 1.0F : 0.7F + Mth.sin((duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
+                    nightVision = duration > 200 ? 1.0F : 0.7F + Mth.sin((duration - 1.0F) * (float) Math.PI * 0.2F) * 0.3F;
                 }
 
-                if (this.lastPotion != potionEffect) {
-                    this.lastPotion = potionEffect;
+                if (this.lastNightVision != nightVision) {
+                    this.lastNightVision = nightVision;
                     lightChanged = true;
                 }
 
@@ -521,7 +533,7 @@ public class Map implements Runnable, IChangeObserver {
                     lightChanged = true;
                 }
 
-                boolean scheduledUpdate = (this.timer - 50) % 50 == 0;
+                boolean scheduledUpdate = (this.updateTimer - 50) % 50 == 0;
                 if (lightChanged || scheduledUpdate) {
                     this.tickWithLightChange = VoxelConstants.getElapsedTicks();
                     this.needLightmapRefresh = true;
@@ -1500,7 +1512,7 @@ public class Map implements Runnable, IChangeObserver {
 
         // guiGraphics.pose().translate(256, 256);
         if (!this.options.rotates) {
-            guiGraphics.pose().rotate(-this.northRotate * Mth.DEG_TO_RAD);
+            guiGraphics.pose().rotate(-this.rotationFactor * Mth.DEG_TO_RAD);
         } else {
             guiGraphics.pose().rotate(this.direction * Mth.DEG_TO_RAD);
         }
@@ -1622,7 +1634,7 @@ public class Map implements Runnable, IChangeObserver {
         if (this.options.rotates) {
             locate += this.direction;
         } else {
-            locate -= this.northRotate;
+            locate -= this.rotationFactor;
         }
 
         hypot /= this.zoomScaleAdjusted;
@@ -1705,7 +1717,7 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.pose().scale(scaleProj, scaleProj);
 
         guiGraphics.pose().translate(x, y);
-        guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.northRotate) * Mth.DEG_TO_RAD);
+        guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.rotationFactor) * Mth.DEG_TO_RAD);
         guiGraphics.pose().translate(-x, -y);
 
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
@@ -1726,7 +1738,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj);
         matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F);
-        matrixStack.rotate(this.northRotate * Mth.DEG_TO_RAD);
+        matrixStack.rotate(this.rotationFactor * Mth.DEG_TO_RAD);
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F));
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
@@ -1767,7 +1779,7 @@ public class Map implements Runnable, IChangeObserver {
         float scale = 0.5F;
         float rotate;
         if (this.options.rotates) {
-            rotate = -this.direction - 90.0F - this.northRotate;
+            rotate = -this.direction - 90.0F - this.rotationFactor;
         } else {
             rotate = -90.0F;
         }
@@ -1854,7 +1866,7 @@ public class Map implements Runnable, IChangeObserver {
 
             matrixStack.popMatrix();
         } else {
-            int heading = (int) (this.direction + this.northRotate);
+            int heading = (int) (this.direction + this.rotationFactor);
             if (heading > 360) {
                 heading -= 360;
             }
