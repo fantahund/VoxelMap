@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFa
 import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
-import com.mamiyaotaru.voxelmap.mixins.AccessorEnderDragonRenderer;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
@@ -228,7 +227,7 @@ public class EntityMapImageManager {
         if (renderer instanceof LivingEntityRenderer renderer2) {
             return renderer2.getModel();
         } else if (renderer instanceof EnderDragonRenderer renderer2) {
-            return ((AccessorEnderDragonRenderer) renderer2).getModel();
+            return renderer2.model;
         }
         return null;
     }

@@ -1,4 +1,4 @@
-accessWidener   v2  named
+accessWidener v2 named
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/minecraft/world/level/biome/Biome$ClimateSettings;
 accessible class net/minecraft/client/gui/components/AbstractSelectionList$Entry
@@ -12,6 +12,7 @@ accessible field net/minecraft/client/model/QuadrupedModel head Lnet/minecraft/c
 #1.21.11 accessible field net/minecraft/client/model/AxolotlModel head Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
 #1.21.11 accessible field net/minecraft/client/model/SkullModel head Lnet/minecraft/client/model/geom/ModelPart;
+accessible field net/minecraft/client/renderer/entity/EnderDragonRenderer model Lnet/minecraft/client/model/monster/dragon/EnderDragonModel;
 mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;
 #1.21.11 accessible field net/minecraft/client/model/ShulkerModel head Lnet/minecraft/client/model/geom/ModelPart;
 #1.21.11 accessible field net/minecraft/client/model/AbstractEquineModel headParts Lnet/minecraft/client/model/geom/ModelPart;
