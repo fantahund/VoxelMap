@@ -37,7 +37,7 @@ public class NeoForgeEvents implements Events {
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
-        NeoForge.EVENT_BUS.register(new ForgeEventListener(map));
+        NeoForge.EVENT_BUS.register(new NeoForgeEventListener(map));
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
@@ -63,10 +63,10 @@ public class NeoForgeEvents implements Events {
         map.applyResourceManager(VoxelConstants.getMinecraft().getResourceManager());
     }
 
-    private static class ForgeEventListener {
+    private static class NeoForgeEventListener {
         private final VoxelMap map;
 
-        public ForgeEventListener(VoxelMap map) {
+        public NeoForgeEventListener(VoxelMap map) {
             this.map = map;
         }
 
