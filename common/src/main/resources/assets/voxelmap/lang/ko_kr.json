@@ -221,5 +221,11 @@
   "worldmap.subworld.name": "다중 세계 이름",
   "worldmap.subworld.deleteConfirm": "다중 세계 삭제 수락",
   "resourcePack.minimap.voxelmapLegacy.title": "VoxelMap 레거시",
-  "resourcePack.minimap.voxelmapLegacy.description": "오래된 VoxelMap의 모습"
+  "resourcePack.minimap.voxelmapLegacy.description": "오래된 VoxelMap의 모습",
+  "voxelmap.update.prefix": "VoxelMap의 새로운 버전 %s을(를) 사용할 수 있습니다. ",
+  "voxelmap.update.link": "Modrinth에서 다운로드",
+  "voxelmap.update.suffix": ".",
+  "voxelmap.update.changes": "변경 사항:",
+  "voxelmap.update.noChangelogAvailable": "변경 사항을 확인할 수 없습니다.",
+  "voxelmap.update.noChangelogProvided": "(변경 사항이 제공되지 않았습니다.)"
 }

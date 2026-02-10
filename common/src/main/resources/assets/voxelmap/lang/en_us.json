@@ -225,5 +225,7 @@
   "voxelmap.update.prefix": "A new version of VoxelMap is available (%s). ",
   "voxelmap.update.link": "Download on Modrinth",
   "voxelmap.update.suffix": ".",
-  "voxelmap.update.changes": "Changes:"
+  "voxelmap.update.changes": "Changes:",
+  "voxelmap.update.noChangelogAvailable": "No changelog available.",
+  "voxelmap.update.noChangelogProvided": "(No changelog provided.)"
 }

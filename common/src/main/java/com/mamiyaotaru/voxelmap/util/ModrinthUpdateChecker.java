@@ -197,7 +197,7 @@ public class ModrinthUpdateChecker {
      */
     public static Component buildAggregatedChangelogHover(List<VersionInfo> updates) {
         if (updates == null || updates.isEmpty()) {
-            return Component.literal("No changelog available.");
+            return Component.translatable("voxelmap.update.noChangelogAvailable");
         }
 
         Component out = Component.translatable("voxelmap.update.changes").setStyle(Style.EMPTY.withColor(red)).append("\n");
@@ -213,7 +213,7 @@ public class ModrinthUpdateChecker {
             String[] lines = changelog.split("\\R", -1);
 
             if (lines.length == 0 || (lines.length == 1 && lines[0].isBlank())) {
-                out = out.copy().append(Component.literal("\n  (No changelog provided.)").setStyle(Style.EMPTY.withColor(green)));
+                out = out.copy().append(Component.literal("\n ").append(Component.translatable("voxelmap.update.noChangelogProvided")).setStyle(Style.EMPTY.withColor(green)));
                 continue;
             }
 
