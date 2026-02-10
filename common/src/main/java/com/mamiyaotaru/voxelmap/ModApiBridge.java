@@ -11,4 +11,6 @@ public interface ModApiBridge {
     default ClimateSettings getBiomeClimateSettings(Biome biome) {
         return null;
     }
+
+    String getModLoader();
 }

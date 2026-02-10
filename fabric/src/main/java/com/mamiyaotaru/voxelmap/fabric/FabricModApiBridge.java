@@ -15,4 +15,9 @@ public class FabricModApiBridge implements ModApiBridge {
     public ClimateSettings getBiomeClimateSettings(Biome biome) {
         return biome.climateSettings;
     }
+
+    @Override
+    public String getModLoader() {
+        return "fabric";
+    }
 }
