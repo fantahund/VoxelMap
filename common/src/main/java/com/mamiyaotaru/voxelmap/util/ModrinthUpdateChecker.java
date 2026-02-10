@@ -226,10 +226,10 @@ public class ModrinthUpdateChecker {
     }
 
     public static void checkUpdates() {
-        String modVersion = FabricLoader.getInstance()
-                .getModContainer("voxelmap")
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse(null);
+        if (!VoxelConstants.getVoxelMapInstance().getMapOptions().updateNotifier) {
+            return;
+        }
+        String modVersion = FabricLoader.getInstance().getModContainer("voxelmap").map(container -> container.getMetadata().getVersion().getFriendlyString()).orElse(null);
 
         if (modVersion == null) return;
 
@@ -246,11 +246,7 @@ public class ModrinthUpdateChecker {
             Component prefix = Component.translatable("voxelmap.update.prefix", result.latestVersion()).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(green)));
             Component suffix = Component.translatable("voxelmap.update.suffix").setStyle(Style.EMPTY.withColor(TextColor.fromRgb(green)));
             Component hover = buildAggregatedChangelogHover(result.updates());
-            Style linkStyle = Style.EMPTY
-                    .withColor(TextColor.fromRgb(red))
-                    .withUnderlined(true)
-                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
-                    .withHoverEvent(new HoverEvent.ShowText(hover));
+            Style linkStyle = Style.EMPTY.withColor(TextColor.fromRgb(red)).withUnderlined(true).withClickEvent(new ClickEvent.OpenUrl(URI.create(url))).withHoverEvent(new HoverEvent.ShowText(hover));
 
             Component link = Component.translatable("voxelmap.update.link").setStyle(linkStyle);
             Component msg = prefix.copy().append(link).append(suffix);

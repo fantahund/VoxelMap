@@ -15,4 +15,9 @@ public class NeoForgeModApiBridge implements ModApiBridge {
     public ClimateSettings getBiomeClimateSettings(Biome biome) {
         return biome.getModifiedClimateSettings();
     }
+
+    @Override
+    public String getModLoader() {
+        return "neoforge";
+    }
 }
