@@ -1603,26 +1603,26 @@ public class Map implements Runnable, IChangeObserver {
         VertexConsumer frameBuffer = guiBufferSource.getBuffer(frameRenderType);
         drawTexturedQuad(matrixStack, frameBuffer, x - 32.0F, y - 32.0F, 10.0F, 64, 64, 0, 1, 0, 1, 0xFFFFFFFF);
 
-//
-//        double lastXDouble = GameVariableAccessShim.xCoordDouble();
-//        double lastZDouble = GameVariableAccessShim.zCoordDouble();
-//        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-//        if (VoxelMap.mapOptions.waypointsAllowed) {
-//            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
-//
-//            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-//                if (pt.isActive() || pt == highlightedPoint) {
-//                    double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
-//                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-//                        this.drawWaypoint(guiGraphics, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
-//                    }
-//                }
-//            }
-//
-//            if (highlightedPoint != null) {
-//                this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
-//            }
-//        }
+
+        double lastXDouble = GameVariableAccessShim.xCoordDouble();
+        double lastZDouble = GameVariableAccessShim.zCoordDouble();
+        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+        if (VoxelMap.mapOptions.waypointsAllowed) {
+            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
+
+            for (Waypoint pt : this.waypointManager.getWaypoints()) {
+                if (pt.isActive() || pt == highlightedPoint) {
+                    double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
+                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
+                        this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
+                    }
+                }
+            }
+
+            if (highlightedPoint != null) {
+                this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
+            }
+        }
         matrixStack.popMatrix();
     }
 
@@ -1637,7 +1637,7 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
+    private void drawWaypoint(Matrix4fStack matrixStack, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
         boolean uprightIcon = icon != null;
 
         double wayX = lastXDouble - pt.getX() - 0.5;
@@ -1667,6 +1667,9 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
+        RenderType waypointRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(waypointManager.getTextureAtlas().getIdentifier());
+        VertexConsumer waypointBuffer = guiBufferSource.getBuffer(waypointRenderType);
+
         boolean target = false;
         if (far) {
             if (icon == null) {
@@ -1681,23 +1684,23 @@ public class Map implements Runnable, IChangeObserver {
             int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
-                guiGraphics.pose().pushMatrix();
-                guiGraphics.pose().translate(x, y);
-                guiGraphics.pose().rotate(-locate * Mth.DEG_TO_RAD);
+                matrixStack.pushMatrix();
+                matrixStack.translate(x, y, 0.0F);
+                matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
                 if (uprightIcon) {
-                    guiGraphics.pose().translate(0.0f, -hypot);
-                    guiGraphics.pose().rotate(locate * Mth.DEG_TO_RAD);
-                    guiGraphics.pose().translate(-x, -y);
+                    matrixStack.translate(0.0F, -hypot, 0.0F);
+                    matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
+                    matrixStack.translate(-x, -y, 0.0F);
                 } else {
-                    guiGraphics.pose().translate(-x, -y);
-                    guiGraphics.pose().translate(0.0f, -hypot);
+                    matrixStack.translate(-x, -y, 0.0F);
+                    matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
+                drawTexturedQuad(matrixStack, waypointBuffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), color);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
-                guiGraphics.pose().popMatrix();
+                matrixStack.popMatrix();
             }
         } else {
             if (icon == null) {
@@ -1712,16 +1715,16 @@ public class Map implements Runnable, IChangeObserver {
             int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
-                guiGraphics.pose().pushMatrix();
-                guiGraphics.pose().rotate(-locate * Mth.DEG_TO_RAD);
-                guiGraphics.pose().translate(0.0f, -hypot);
-                guiGraphics.pose().rotate(locate * Mth.DEG_TO_RAD);
-
-                icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
+                matrixStack.pushMatrix();
+                matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
+                matrixStack.translate(0.0F, -hypot, 0.0F);
+                matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
+                
+                drawTexturedQuad(matrixStack, waypointBuffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), color);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {
-                guiGraphics.pose().popMatrix();
+                matrixStack.popMatrix();
             }
         }
     }
