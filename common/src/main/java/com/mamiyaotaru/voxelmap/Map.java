@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.GuiWelcomeScreen;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
-import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -22,36 +21,36 @@ import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
+import com.mamiyaotaru.voxelmap.util.RegisterableGPUTexture;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat.Mode;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.resources.language.I18n;
@@ -82,13 +81,11 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix3x2fStack;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.OptionalInt;
 import java.util.Random;
 import java.util.TreeSet;
 
@@ -178,10 +175,14 @@ public class Map implements Runnable, IChangeObserver {
     private int lastBiome;
 
     // Map Rendering
-    private final GpuTexture fboTexture;
-    private final GpuTextureView fboTextureView;
-    private final Tesselator fboTessellator = new Tesselator(4096);
-    private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
+    private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "map_fbo_texture");
+    private final RegisterableGPUTexture mapFboTexture;
+    private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
+    private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "gui_fbo_texture");
+    private final RegisterableGPUTexture guiFboTexture;
+    private final CachedOrthoProjectionMatrixBuffer guiProjection;
+    private final MultiBufferSource.BufferSource guiBufferSource;
+    private final Matrix4fStack guiMatrixStack = new Matrix4fStack(16);
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -227,12 +228,14 @@ public class Map implements Runnable, IChangeObserver {
         this.setZoomScale();
 
         final int fboTextureSize = 512;
-        this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-fbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
-        this.fboTextureView = RenderSystem.getDevice().createTextureView(this.fboTexture);
-        // DynamicTexture fboTexture = new DynamicTexture("voxelmap-fbotexture", fboTextureSize, fboTextureSize, true);
-        // minecraft.getTextureManager().register(resourceFboTexture, fboTexture);
-        // this.fboTexture = fboTexture.getTexture();
-        this.projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
+        this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
+        this.mapFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        minecraft.getTextureManager().register(this.mapFboTextureLocation, this.mapFboTexture);
+
+        this.guiProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Gui Projection", 100.0F, 3000.0F, true);
+        this.guiFboTexture = new RegisterableGPUTexture();
+        this.guiBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
+        minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
 
         this.loadMapTextures();
     }
@@ -641,18 +644,31 @@ public class Map implements Runnable, IChangeObserver {
         }
         Map.statusIconOffset = statusIconOffset;
 
-        if (!this.options.hide) {
-            if (this.fullscreenMap) {
-                this.renderMapFull(drawContext, this.scWidth, this.scHeight, scaleProj);
-                this.drawArrow(drawContext, this.scWidth / 2, this.scHeight / 2, scaleProj);
-            } else {
-                this.renderMap(drawContext, mapX, mapY, scScale, scaleProj);
-                this.drawDirections(drawContext, mapX, mapY, scaleProj);
-                this.drawArrow(drawContext, mapX, mapY, scaleProj);
-            }
-        }
+        int mapY2 = mapY;
+        renderOnGuiFBO(() -> {
+            RenderSystem.getModelViewStack().pushMatrix();
+            RenderSystem.getModelViewStack().identity();
+            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
+            guiMatrixStack.pushMatrix();
 
-        this.showCoords(drawContext, mapX, mapY, scaleProj);
+            if (!this.options.hide) {
+                if (this.fullscreenMap) {
+                    this.renderMapFull(drawContext, scWidth, scHeight, scaleProj);
+                    this.drawArrow(guiMatrixStack, scWidth / 2, scHeight / 2, scaleProj);
+                } else {
+                    this.renderMap(guiMatrixStack, mapX, mapY2, scScale, scaleProj);
+                    this.drawArrow(guiMatrixStack, mapX, mapY2, scaleProj);
+                    this.drawDirections(guiMatrixStack, mapX, mapY2, scaleProj);
+                }
+            }
+            this.showCoords(guiMatrixStack, mapX, mapY2, scaleProj);
+
+            guiBufferSource.endBatch(); // Build all vertices in buffer
+            guiMatrixStack.popMatrix();
+            RenderSystem.getModelViewStack().popMatrix();
+        });
+
+        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, drawContext.guiWidth(), drawContext.guiHeight(), 0.0F, 1.0F, 1.0F, 0.0F, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {
@@ -1478,14 +1494,46 @@ public class Map implements Runnable, IChangeObserver {
         return ARGB.toABGR(combinedLight);
     }
 
-    private void renderMap(GuiGraphics guiGraphics, int x, int y, int scScale, float scaleProj) {
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(scaleProj, scaleProj);
-
-        float scale = 1.0F;
-        if (this.options.squareMap && this.options.rotates) {
-            scale = 1.4142F;
+    private void renderOnGuiFBO(Runnable runnable) {
+        int windowWidth = minecraft.getWindow().getWidth();
+        int windowHeight = minecraft.getWindow().getHeight();
+        if (guiFboTexture.getWidth(0) != windowWidth || guiFboTexture.getHeight(0) != windowHeight) {
+            int usage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
+            guiFboTexture.setTexture(RenderSystem.getDevice().createTexture(() -> "VoxelMap Gui FBO", usage, TextureFormat.RGBA8, windowWidth, windowHeight, 1, 1));
+        } else {
+            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(guiFboTexture.getTexture(), 0x00000000);
         }
+
+        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
+        RenderSystem.setProjectionMatrix(guiProjection.getBuffer(minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight()), ProjectionType.ORTHOGRAPHIC);
+        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
+        RenderSystem.outputColorTextureOverride = guiFboTexture.getTextureView();
+
+        runnable.run();
+
+        RenderSystem.outputColorTextureOverride = lastColorTexture;
+        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+    }
+
+    private void renderOnMapFBO(Runnable runnable) {
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(mapFboTexture.getTexture(), 0x00000000);
+
+        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
+        RenderSystem.setProjectionMatrix(mapProjection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
+        RenderSystem.outputColorTextureOverride = mapFboTexture.getTextureView();
+
+        runnable.run();
+
+        RenderSystem.outputColorTextureOverride = lastColorTexture;
+        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+    }
+
+    private void renderMap(Matrix4fStack matrixStack, int x, int y, int scScale, float scaleProj) {
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
@@ -1495,132 +1543,98 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-        //
-        float multi = (float) (1.0 / this.zoomScale);
-        float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
-        float percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ) * multi;
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().identity();
+        guiBufferSource.endBatch(); // flush previous batches
 
-        BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, RenderPipelines.GUI_TEXTURED.getVertexFormat());
+        renderOnMapFBO(() -> {
+            float scale = 1.0F;
+            if (this.options.squareMap && this.options.rotates) {
+                scale = 1.4142F;
+            }
 
-        bufferBuilder.addVertex(-256, 256, -2500).setUv(0, 0).setColor(255, 255, 255, 255);
-        bufferBuilder.addVertex(256, 256, -2500).setUv(1, 0).setColor(255, 255, 255, 255);
-        bufferBuilder.addVertex(256, -256, -2500).setUv(1, 1).setColor(255, 255, 255, 255);
-        bufferBuilder.addVertex(-256, -256, -2500).setUv(0, 1).setColor(255, 255, 255, 255);
+            float multi = (float) (1.0 / this.zoomScale);
+            float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
+            float percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ) * multi;
 
-        // guiGraphics.pose().translate(256, 256);
-        if (!this.options.rotates) {
-            guiGraphics.pose().rotate(-this.rotationFactor * Mth.DEG_TO_RAD);
-        } else {
-            guiGraphics.pose().rotate(this.direction * Mth.DEG_TO_RAD);
-        }
-        guiGraphics.pose().scale(scale, scale);
-        // guiGraphics.pose().translate(-256, -256);
-        guiGraphics.pose().translate(-percentX * 512.0F / 64.0F, percentY * 512.0F / 64.0F);
+            RenderSystem.getModelViewStack().pushMatrix();
+            RenderSystem.getModelViewStack().identity();
 
-        Vector3f vector3f = new Vector3f();
-        guiGraphics.pose().transform(-256, 256, 1, vector3f);
-        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(0, 0).setColor(255, 255, 255, 255);
+            matrixStack.pushMatrix();
+            matrixStack.identity();
 
-        guiGraphics.pose().transform(256, 256, 1, vector3f);
-        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(1, 0).setColor(255, 255, 255, 255);
+            RenderType stencilRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(options.squareMap ? resourceSquareMapStencil : resourceRoundMapStencil);
+            VertexConsumer stencilBuffer = guiBufferSource.getBuffer(stencilRenderType);
+            drawTexturedQuad(matrixStack, stencilBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
 
-        guiGraphics.pose().transform(256, -256, 1, vector3f);
-        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(1, 1).setColor(255, 255, 255, 255);
-
-        guiGraphics.pose().transform(-256, -256, 1, vector3f);
-        bufferBuilder.addVertex(vector3f.x, vector3f.y, -2500).setUv(0, 1).setColor(255, 255, 255, 255);
-
-        ProjectionType originalProjectionType = RenderSystem.getProjectionType();
-        GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-
-        GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
-                .writeTransform(
-                        RenderSystem.getModelViewMatrix(),
-                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                        new Vector3f(),
-                        new Matrix4f());
-
-        RenderPipeline renderPipeline = VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_PIPELINE;
-        try (MeshData meshData = bufferBuilder.build()) {
-            GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
-            GpuBuffer indexBuffer;
-            VertexFormat.IndexType indexType;
-            if (meshData.indexBuffer() == null) {
-                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().mode());
-                indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
-                indexType = autoStorageIndexBuffer.type();
+            matrixStack.pushMatrix();
+            if (!options.rotates) {
+                matrixStack.rotate(Axis.ZP.rotationDegrees(-rotationFactor));
             } else {
-                indexBuffer = renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
-                indexType = meshData.drawState().indexType();
+                matrixStack.rotate(Axis.ZP.rotationDegrees(direction));
             }
+            matrixStack.scale(scale, scale, 1.0F);
+            matrixStack.translate(-percentX * 512.0F / 64.0F, percentY * 512.0F / 64.0F, 0.0F);
 
-            AbstractTexture stencilTexture = null;
-            if (this.options.squareMap) {
-                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(resourceSquareMapStencil);
-            } else {
-                stencilTexture = Minecraft.getInstance().getTextureManager().getTexture(resourceRoundMapStencil);
-            }
+            RenderType mapImageRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST_DST_ALPHA.apply(mapResources[zoom]);
+            VertexConsumer mapImageBuffer = guiBufferSource.getBuffer(mapImageRenderType);
+            drawTexturedQuad(matrixStack, mapImageBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0xFFFFFFFF);
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Voxelmap: Map to screen", fboTextureView, OptionalInt.of(0x00000000))) {
-                renderPass.setPipeline(renderPipeline);
-                RenderSystem.bindDefaultUniforms(renderPass);
-                renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-                renderPass.setVertexBuffer(0, vertexBuffer);
-                renderPass.setIndexBuffer(indexBuffer, indexType);
+            matrixStack.popMatrix();
+            matrixStack.popMatrix();
 
-                renderPass.bindTexture("Sampler0", stencilTexture.getTextureView(), stencilTexture.getSampler());
-                renderPass.drawIndexed(0, 0, meshData.drawState().indexCount() / 2, 1);
-                renderPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_DST_ALPHA_PIPELINE);
+            guiBufferSource.endBatch();
 
-                renderPass.bindTexture("Sampler0", mapImages[this.zoom].getTextureView(), mapImages[this.zoom].getSampler());
-                renderPass.drawIndexed(0, meshData.drawState().indexCount() / 2, meshData.drawState().indexCount() / 2, 1);
-            }
-        }
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
-        fboTessellator.clear();
-        // if (((saved++) % 1000) == 0)
-        // ImageUtils.saveImage("minimap_" + saved, fboTexture);
-
-        guiGraphics.pose().popMatrix();
-
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, fboTextureView, x - 32, y - 32, 64, 64, 0, 1, 0, 1, 0xffffffff);
-
-        if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
-            this.layoutVariables.updateVars(scScale, x, y, this.zoomScale, this.zoomScaleAdjusted);
-            VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(guiGraphics, this.layoutVariables, 1.0F);
-        }
+            RenderSystem.getModelViewStack().popMatrix();
+        });
+//
+//        if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
+//            this.layoutVariables.updateVars(scScale, x, y, this.zoomScale, this.zoomScaleAdjusted);
+//            VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(guiGraphics, this.layoutVariables, 1.0F);
+//        }
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
-        this.drawMapFrame(guiGraphics, x, y, this.options.squareMap);
 
-        double lastXDouble = GameVariableAccessShim.xCoordDouble();
-        double lastZDouble = GameVariableAccessShim.zCoordDouble();
-        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        if (VoxelMap.mapOptions.waypointsAllowed) {
-            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
+        RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(mapFboTextureLocation);
+        VertexConsumer mapBuffer = guiBufferSource.getBuffer(mapRenderType);
+        drawTexturedQuad(matrixStack, mapBuffer, x - 32.0F, y - 32.0F, 10.0F, 64, 64, 0, 1, 0, 1, 0xFFFFFFFF);
 
-            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                if (pt.isActive() || pt == highlightedPoint) {
-                    double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
-                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                        this.drawWaypoint(guiGraphics, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
-                    }
-                }
-            }
+        RenderType frameRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(options.squareMap ? resourceSquareMapFrame : resourceRoundMapFrame);
+        VertexConsumer frameBuffer = guiBufferSource.getBuffer(frameRenderType);
+        drawTexturedQuad(matrixStack, frameBuffer, x - 32.0F, y - 32.0F, 10.0F, 64, 64, 0, 1, 0, 1, 0xFFFFFFFF);
 
-            if (highlightedPoint != null) {
-                this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
-            }
-        }
-        guiGraphics.pose().popMatrix();
+//
+//        double lastXDouble = GameVariableAccessShim.xCoordDouble();
+//        double lastZDouble = GameVariableAccessShim.zCoordDouble();
+//        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+//        if (VoxelMap.mapOptions.waypointsAllowed) {
+//            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
+//
+//            for (Waypoint pt : this.waypointManager.getWaypoints()) {
+//                if (pt.isActive() || pt == highlightedPoint) {
+//                    double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
+//                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
+//                        this.drawWaypoint(guiGraphics, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
+//                    }
+//                }
+//            }
+//
+//            if (highlightedPoint != null) {
+//                this.drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
+//            }
+//        }
+        matrixStack.popMatrix();
+    }
+
+    private void drawTexturedQuad(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
+        float x1 = x + width;
+        float y1 = y + height;
+
+        vertexConsumer.addVertex(matrixStack, x, y, z).setUv(u0, v0).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x, y1, z).setUv(u0, v1).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x1, y1, z).setUv(u1, v1).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x1, y, z).setUv(u1, v0).setColor(color);
+
     }
 
     private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
@@ -1679,7 +1693,7 @@ public class Map implements Runnable, IChangeObserver {
                     guiGraphics.pose().translate(0.0f, -hypot);
                 }
 
-                icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
+                icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1703,7 +1717,7 @@ public class Map implements Runnable, IChangeObserver {
                 guiGraphics.pose().translate(0.0f, -hypot);
                 guiGraphics.pose().rotate(locate * Mth.DEG_TO_RAD);
 
-                icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - 4, y - 4, 8, 8, color);
+                icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {
@@ -1712,17 +1726,19 @@ public class Map implements Runnable, IChangeObserver {
         }
     }
 
-    private void drawArrow(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().scale(scaleProj, scaleProj);
+    private void drawArrow(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-        guiGraphics.pose().translate(x, y);
-        guiGraphics.pose().rotate((this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.rotationFactor) * Mth.DEG_TO_RAD);
-        guiGraphics.pose().translate(-x, -y);
+        matrixStack.translate(x, y, 0.0F);
+        matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.rotationFactor));
+        matrixStack.translate(-x, -y, 0.0F);
 
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resourceArrow, x - 4, y - 4, 0, 0, 8, 8, 8, 8);
+        RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(resourceArrow);
+        VertexConsumer buffer = guiBufferSource.getBuffer(renderType);
+        drawTexturedQuad(matrixStack, buffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
 
-        guiGraphics.pose().popMatrix();
+        matrixStack.popMatrix();
     }
 
     private void renderMapFull(GuiGraphics guiGraphics, int scWidth, int scHeight, float scaleProj) {
@@ -1745,37 +1761,31 @@ public class Map implements Runnable, IChangeObserver {
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
         matrixStack.popMatrix();
 
-        if (this.options.biomeOverlay != 0) {
-            double factor = Math.pow(2.0, 3 - this.zoom);
-            int minimumSize = (int) Math.pow(2.0, this.zoom);
-            minimumSize *= minimumSize;
-            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
-            matrixStack.pushMatrix();
-
-            for (AbstractMapData.BiomeLabel o : labels) {
-                if (o.segmentSize > minimumSize) {
-                    String name = o.name;
-                    float x = (float) (o.x * factor);
-                    float z = (float) (o.z * factor);
-                    if (this.options.oldNorth) {
-                        this.writeCentered(guiGraphics, name, (left + 256) - z, top + x - 3.0F, 0xFFFFFFFF, true);
-                    } else {
-                        this.writeCentered(guiGraphics, name, left + x, top + z - 3.0F, 0xFFFFFFFF, true);
-                    }
-                }
-            }
-
-            matrixStack.popMatrix();
-        }
+//        if (this.options.biomeOverlay != 0) {
+//            double factor = Math.pow(2.0, 3 - this.zoom);
+//            int minimumSize = (int) Math.pow(2.0, this.zoom);
+//            minimumSize *= minimumSize;
+//            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
+//            matrixStack.pushMatrix();
+//
+//            for (AbstractMapData.BiomeLabel o : labels) {
+//                if (o.segmentSize > minimumSize) {
+//                    String name = o.name;
+//                    float x = (float) (o.x * factor);
+//                    float z = (float) (o.z * factor);
+//                    if (this.options.oldNorth) {
+//                        this.writeCentered(name, (left + 256) - z, top + x - 3.0F, 0xFFFFFFFF, true);
+//                    } else {
+//                        this.writeCentered(name, left + x, top + z - 3.0F, 0xFFFFFFFF, true);
+//                    }
+//                }
+//            }
+//
+//            matrixStack.popMatrix();
+//        }
     }
 
-    private void drawMapFrame(GuiGraphics guiGraphics, int x, int y, boolean squaremap) {
-        Identifier frameResource = squaremap ? resourceSquareMapFrame : resourceRoundMapFrame;
-        guiGraphics.blit(VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, frameResource, x - 32, y - 32, 0, 0, 64, 64, 64, 64);
-    }
-
-    private void drawDirections(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        Matrix3x2fStack poseStack = drawContext.pose();
+    private void drawDirections(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
         float scale = 0.5F;
         float rotate;
         if (this.options.rotates) {
@@ -1797,32 +1807,31 @@ public class Map implements Runnable, IChangeObserver {
             distance = 32.5F / scale;
         }
 
-        poseStack.pushMatrix();
-        poseStack.scale(scaleProj, scaleProj);
-        poseStack.scale(scale, scale);
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
+        matrixStack.scale(scale, scale, 1.0F);
 
-        poseStack.pushMatrix();
-        poseStack.translate(distance * Mth.sin(-(rotate - 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate - 90.0F) * Mth.DEG_TO_RAD));
-        this.writeCentered(drawContext, "N", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
-        poseStack.popMatrix();
-        poseStack.pushMatrix();
-        poseStack.translate(distance * Mth.sin(-(rotate) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate) * Mth.DEG_TO_RAD));
-        this.writeCentered(drawContext, "E", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
-        poseStack.popMatrix();
-        poseStack.pushMatrix();
-        poseStack.translate(distance * Mth.sin(-(rotate + 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 90.0F) * Mth.DEG_TO_RAD));
-        this.writeCentered(drawContext, "S", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
-        poseStack.popMatrix();
-        poseStack.pushMatrix();
-        poseStack.translate(distance * Mth.sin(-(rotate + 180.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 180.0F) * Mth.DEG_TO_RAD));
-        this.writeCentered(drawContext, "W", x / scale, y / scale - 4.0F, 0xFFFFFFFF, true);
-        poseStack.popMatrix();
+        matrixStack.pushMatrix();
+        matrixStack.translate(distance * Mth.sin(-(rotate - 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate - 90.0F) * Mth.DEG_TO_RAD), 0.0F);
+        writeCentered(matrixStack, "N", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        matrixStack.popMatrix();
+        matrixStack.pushMatrix();
+        matrixStack.translate(distance * Mth.sin(-(rotate) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate) * Mth.DEG_TO_RAD), 0.0F);
+        writeCentered(matrixStack, "E", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        matrixStack.popMatrix();
+        matrixStack.pushMatrix();
+        matrixStack.translate(distance * Mth.sin(-(rotate + 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 90.0F) * Mth.DEG_TO_RAD), 0.0F);
+        writeCentered(matrixStack, "S", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        matrixStack.popMatrix();
+        matrixStack.pushMatrix();
+        matrixStack.translate(distance * Mth.sin(-(rotate + 180.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 180.0F) * Mth.DEG_TO_RAD), 0.0F);
+        writeCentered(matrixStack, "W", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        matrixStack.popMatrix();
 
-        poseStack.popMatrix();
+        matrixStack.popMatrix();
     }
 
-    private void showCoords(GuiGraphics drawContext, int x, int y, float scaleProj) {
-        Matrix3x2fStack matrixStack = drawContext.pose();
+    private void showCoords(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
 
         if (!this.options.hide && !this.fullscreenMap) {
             int textStart;
@@ -1835,32 +1844,32 @@ public class Map implements Runnable, IChangeObserver {
             int lineHeight = 10;
             float scale = 0.5F;
             matrixStack.pushMatrix();
-            matrixStack.scale(scale * scaleProj, scale * scaleProj);
+            matrixStack.scale(scale * scaleProj, scale * scaleProj, 1.0F);
 
             String coords;
 
             if (this.options.coordsMode == 1) {
                 coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
-                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // X, Z
+                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
 
                 coords = this.dCoord(GameVariableAccessShim.yCoord());
-                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // Y
+                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // Y
                 lineCount++;
             } else if (this.options.coordsMode == 2) {
                 coords = GameVariableAccessShim.xCoord() + ", " + GameVariableAccessShim.yCoord() + ", " + GameVariableAccessShim.zCoord();
-                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // X, Z
+                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
             }
 
             if (this.options.showBiome) {
                 coords = BiomeRepository.getName(this.lastBiome);
-                this.writeCentered(drawContext, coords, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // BIOME
+                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // BIOME
                 lineCount++;
             }
 
             if (!this.message.isEmpty()) {
-                this.writeCentered(drawContext, this.message, x / scale, textStart / scale + lineHeight * lineCount, 0xFFFFFFFF, true); // WORLD NAME
+                this.writeCentered(matrixStack, this.message, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // WORLD NAME
                 lineCount++;
             }
 
@@ -1884,9 +1893,9 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
-            this.writeCentered(drawContext, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, 0xFFFFFFFF, true);
+            this.writeCentered(matrixStack, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, 0.0F, 0xFFFFFFFF, true);
             if (!this.message.isEmpty()) {
-                this.writeCentered(drawContext, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, 0xFFFFFFFF, true);
+                this.writeCentered(matrixStack, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, 0.0F, 0xFFFFFFFF, true);
             }
         }
     }
@@ -1912,20 +1921,24 @@ public class Map implements Runnable, IChangeObserver {
         return minecraft.font.width(text);
     }
 
-    private void write(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
-        write(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
+    private void write(Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
+        write(matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    private void write(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
-        drawContext.drawString(minecraft.font, text, (int) x, (int) y, color, shadow);
+    private void write(Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
+        matrixStack.pushMatrix();
+        matrixStack.translate(x, y, z);
+        minecraft.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrixStack, guiBufferSource, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+
+        matrixStack.popMatrix();
     }
 
-    private void writeCentered(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
-        writeCentered(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
+    private void writeCentered(Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
+        writeCentered(matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    private void writeCentered(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
-        drawContext.drawString(minecraft.font, text, (int) x - (textWidth(text) / 2), (int) y, color, shadow);
+    private void writeCentered(Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
+        write(matrixStack, text, x - (textWidth(text) / 2.0F), y, z, color, shadow);
     }
 
     public static double getMinTablistOffset() {

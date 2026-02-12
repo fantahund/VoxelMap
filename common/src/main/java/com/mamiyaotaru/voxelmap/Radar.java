@@ -253,14 +253,14 @@ public class Radar implements IRadar {
 
                     float imageWidth = contact.icon.getIconWidth() / 8.0F;
                     float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
+                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
 
                     if (contact.armorIcon != null) {
                         float helmetWidth = contact.armorIcon.getIconWidth() / 8.0F;
                         float helmetHeight = contact.armorIcon.getIconHeight() / 8.0F;
                         float helmetOffset = Float.parseFloat(this.entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
 
-                        contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LESS_OR_EQUAL_DEPTH_PIPELINE, x - (helmetWidth / 2), y + yOffset + helmetOffset - (helmetHeight / 2), helmetWidth, helmetWidth, color);
+                        contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (helmetWidth / 2), y + yOffset + helmetOffset - (helmetHeight / 2), helmetWidth, helmetWidth, color);
                     }
 
                     if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER && contact.entity.hasCustomName()))) {

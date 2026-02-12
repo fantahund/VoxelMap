@@ -600,7 +600,7 @@ public class EntityMapImageManager {
         float scale = 64;
         poseStack.scale(scale, scale, -scale);
 
-        RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON_PIPELINE;
+        RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON;
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 
         return new CaptureContext(poseStack, renderPipeline, bufferBuilder);
