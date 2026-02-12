@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.GuiWelcomeScreen;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -653,7 +654,7 @@ public class Map implements Runnable, IChangeObserver {
 
             if (!this.options.hide) {
                 if (this.fullscreenMap) {
-                    this.renderMapFull(drawContext, scWidth, scHeight, scaleProj);
+                    this.renderMapFull(guiMatrixStack, scWidth, scHeight, scaleProj);
                     this.drawArrow(guiMatrixStack, scWidth / 2, scHeight / 2, scaleProj);
                 } else {
                     this.renderMap(guiMatrixStack, mapX, mapY2, scScale, scaleProj);
@@ -1719,7 +1720,7 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
-                
+
                 drawTexturedQuad(matrixStack, waypointBuffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), color);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
@@ -1744,7 +1745,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.popMatrix();
     }
 
-    private void renderMapFull(GuiGraphics guiGraphics, int scWidth, int scHeight, float scaleProj) {
+    private void renderMapFull(Matrix4fStack matrixStack, int scWidth, int scHeight, float scaleProj) {
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1753,39 +1754,40 @@ public class Map implements Runnable, IChangeObserver {
                 this.lastImageZ = this.lastZ;
             }
         }
-        Matrix3x2fStack matrixStack = guiGraphics.pose();
         matrixStack.pushMatrix();
-        matrixStack.scale(scaleProj, scaleProj);
-        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F);
-        matrixStack.rotate(this.rotationFactor * Mth.DEG_TO_RAD);
-        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F));
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
+        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, 0.0F);
+        matrixStack.rotate(Axis.ZP.rotationDegrees(rotationFactor));
+        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), 0.0F);
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, mapResources[this.zoom], left, top, 0, 0, 256, 256, 256, 256);
+        RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(mapResources[zoom]);
+        VertexConsumer mapBuffer = guiBufferSource.getBuffer(mapRenderType);
+        drawTexturedQuad(matrixStack, mapBuffer, left, top, 0.0F, 256.0f, 256.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
         matrixStack.popMatrix();
 
-//        if (this.options.biomeOverlay != 0) {
-//            double factor = Math.pow(2.0, 3 - this.zoom);
-//            int minimumSize = (int) Math.pow(2.0, this.zoom);
-//            minimumSize *= minimumSize;
-//            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
-//            matrixStack.pushMatrix();
-//
-//            for (AbstractMapData.BiomeLabel o : labels) {
-//                if (o.segmentSize > minimumSize) {
-//                    String name = o.name;
-//                    float x = (float) (o.x * factor);
-//                    float z = (float) (o.z * factor);
-//                    if (this.options.oldNorth) {
-//                        this.writeCentered(name, (left + 256) - z, top + x - 3.0F, 0xFFFFFFFF, true);
-//                    } else {
-//                        this.writeCentered(name, left + x, top + z - 3.0F, 0xFFFFFFFF, true);
-//                    }
-//                }
-//            }
-//
-//            matrixStack.popMatrix();
-//        }
+        if (this.options.biomeOverlay != 0) {
+            double factor = Math.pow(2.0, 3 - this.zoom);
+            int minimumSize = (int) Math.pow(2.0, this.zoom);
+            minimumSize *= minimumSize;
+            ArrayList<AbstractMapData.BiomeLabel> labels = this.mapData[this.zoom].getBiomeLabels();
+            matrixStack.pushMatrix();
+
+            for (AbstractMapData.BiomeLabel o : labels) {
+                if (o.segmentSize > minimumSize) {
+                    String name = o.name;
+                    float x = (float) (o.x * factor);
+                    float z = (float) (o.z * factor);
+                    if (this.options.oldNorth) {
+                        this.writeCentered(matrixStack, name, (left + 256) - z, top + x - 3.0F, 0.0F, 0xFFFFFFFF, true);
+                    } else {
+                        this.writeCentered(matrixStack, name, left + x, top + z - 3.0F, 0.0F, 0xFFFFFFFF, true);
+                    }
+                }
+            }
+
+            matrixStack.popMatrix();
+        }
     }
 
     private void drawDirections(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
