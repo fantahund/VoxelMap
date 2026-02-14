@@ -57,6 +57,7 @@ public class RenderUtils {
 
     public static void renderWithCustomProjection(GpuBufferSlice projection, float initialDepth, RegisterableGPUTexture fboTexture, Runnable runnable) {
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(fboTexture.getDepthTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
@@ -65,11 +66,14 @@ public class RenderUtils {
         RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
         RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
         GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
+        GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
         RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
+        RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
 
         runnable.run();
 
         RenderSystem.outputColorTextureOverride = lastColorTexture;
+        RenderSystem.outputDepthTextureOverride = lastDepthTexture;
         RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
 
@@ -89,6 +93,7 @@ public class RenderUtils {
             fboTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
         } else {
             RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
+            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(fboTexture.getDepthTexture(), 1.0);
         }
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -98,11 +103,14 @@ public class RenderUtils {
         RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
         RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(guiWidth, guiHeight), ProjectionType.ORTHOGRAPHIC);
         GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
+        GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
         RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
+        RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
 
         runnable.run();
 
         RenderSystem.outputColorTextureOverride = lastColorTexture;
+        RenderSystem.outputDepthTextureOverride = lastDepthTexture;
         RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
 
