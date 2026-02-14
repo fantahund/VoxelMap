@@ -36,6 +36,15 @@ public class VoxelMapRenderTypes {
             )
     );
 
+    public static final Function<Identifier, RenderType> GUI_TEXTURED_LEQUAL_DEPTH_TEST = Util.memoize(
+            identifier -> RenderType.create(
+                    "voxelmap_gui_textured_lequal_depth_test",
+                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST)
+                            .withTexture("Sampler0", identifier)
+                            .createRenderSetup()
+            )
+    );
+
     public static final RenderType WAYPOINT_BEAM = RenderType.create(
             "voxelmap_waypoint_beam",
             RenderSetup.builder(VoxelMapPipelines.WAYPOINT_BEAM)

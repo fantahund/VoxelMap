@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
@@ -39,6 +40,9 @@ public class Radar implements IRadar {
     private LayoutVariables layoutVariables;
     private int timer = 500;
     private float direction;
+    private double lastX;
+    private double lastY;
+    private double lastZ;
     private boolean lastOutlines = true;
     private int calculateMobsPart;
 
@@ -76,6 +80,10 @@ public class Radar implements IRadar {
                 this.direction += 360.0F;
             }
 
+            lastX = GameVariableAccessShim.xCoordDouble();
+            lastY = GameVariableAccessShim.yCoordDouble();
+            lastZ = GameVariableAccessShim.zCoordDouble();
+
             if (this.timer > 15) {
                 // long t0 = System.nanoTime();
                 this.calculateMobs();
@@ -85,7 +93,9 @@ public class Radar implements IRadar {
             }
 
             ++this.timer;
-            this.renderMapMobs(matrixStack, bufferSource, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
+
+            updateContacts();
+            renderMapMobs(matrixStack, bufferSource, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
         }
     }
 
@@ -192,108 +202,122 @@ public class Radar implements IRadar {
         });
     }
 
-    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
-        matrixStack.pushMatrix();
-        matrixStack.scale(scaleProj, scaleProj, 1.0F);
-
-        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
-        double lastX = GameVariableAccessShim.xCoordDouble();
-        double lastZ = GameVariableAccessShim.zCoordDouble();
-        double lastY = GameVariableAccessShim.yCoordDouble();
-
-        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(EntityMapImageManager.resourceTextureAtlasMarker);
-
+    private void updateContacts() {
         for (Contact contact : this.contacts) {
             if (contact.icon == null) {
                 continue;
             }
 
             contact.updateLocation();
-            double contactX = contact.x;
-            double contactZ = contact.z;
-            double contactY = contact.y;
-            double wayX = lastX - contactX;
-            double wayZ = lastZ - contactZ;
-            double wayY = lastY - contactY;
 
-            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
-            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
-            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
-            contact.brightness *= contact.brightness;
+            double wayX = lastX - contact.x;
+            double wayZ = lastZ - contact.z;
+            double wayY = lastY - contact.y;
+
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
-            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
-
-            int color;
-            if (wayY < 0) {
-                color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
-            } else {
-                if (contact.brightness < 0.3f) {
-                    contact.brightness = 0.3f;
-                }
-                color = ARGB.colorFromFloat(1.0f, contact.brightness, contact.brightness, contact.brightness);
-            }
-
-            if (this.minimapOptions.rotates) {
-                contact.angle += this.direction;
-            } else if (this.minimapOptions.oldNorth) {
+            if (minimapOptions.rotates) {
+                contact.angle += direction;
+            } else if (minimapOptions.oldNorth) {
                 contact.angle -= 90.0F;
             }
 
-            double scaledDistance = contact.distance / zoomScale;
-            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
-                try {
-                    matrixStack.pushMatrix();
-                    if (this.options.filtering) {
-                        matrixStack.translate(x, y, 0.0F);
-                        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-                        matrixStack.translate(0.0f, (float) -scaledDistance, 0.0F);
-                        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-                        matrixStack.translate(-x, -y, 0.0F);
-                    } else {
-                        wayZ = Math.cos(Math.toRadians(contact.angle)) * scaledDistance;
-                        wayX = Math.sin(Math.toRadians(contact.angle)) * scaledDistance;
-                        matrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0F);
-                    }
+            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
 
-                    float yOffset = 0.0F;
-                    if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
-                        yOffset = -4.0F;
-                    }
+            double maxHeight = getEntityMaxHeight(contact.entity) * layoutVariables.zoomScaleAdjusted;
+            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
+            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
+            contact.brightness *= contact.brightness;
+        }
+    }
 
-                    VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
+    public void renderMobIcons(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-                    float imageWidth = contact.icon.getIconWidth() / 8.0F;
-                    float imageHeight = contact.icon.getIconHeight() / 8.0F;
-//                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
-                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), 0.0F, imageWidth, imageHeight, color);
+        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(EntityMapImageManager.resourceTextureAtlasMarker);
+        VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
 
-                    if (contact.armorIcon != null) {
-                        float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
-                        float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                        float armorOffset = Float.parseFloat(this.entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
+        for (int i = 0; i < contacts.size(); i++) {
+            Contact contact = contacts.get(i);
 
-//                        contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), armorWidth, armorWidth, color);
-                        RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), 0.0F, armorWidth, armorHeight, color);
-                    }
-
-                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
-                        float scaleFactor = this.options.fontScale / 4.0F;
-
-                        matrixStack.pushMatrix();
-                        matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
-                        RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, 0.0F, 0xFFFFFFFF, false);
-
-                        matrixStack.popMatrix();
-                    }
-                } catch (Exception e) {
-                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
-                } finally {
-                    matrixStack.popMatrix();
-                }
+            float distance = (float) (contact.distance / layoutVariables.zoomScaleAdjusted);
+            int color;
+            if (lastY - contact.y < 0) {
+                color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+            } else {
+                float brightness = Math.max(0.3F, contact.brightness);
+                color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
             }
+
+            matrixStack.pushMatrix();
+            matrixStack.translate(x, y, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+            matrixStack.translate(0.0F, -distance, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+            matrixStack.translate(-x, -y, 0.0F);
+
+            float zOffset = i * 0.01F;
+            float yOffset = 0.0F;
+            if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
+                yOffset = -4.0F;
+            }
+
+            float imageWidth = contact.icon.getIconWidth() / 8.0F;
+            float imageHeight = contact.icon.getIconHeight() / 8.0F;
+            RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
+
+            if (contact.armorIcon != null) {
+                float armorOffset = Float.parseFloat(entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
+                float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
+                float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
+                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, color);
+            }
+            matrixStack.popMatrix();
+        }
+
+        bufferSource.endBatch(iconRenderType);
+
+        matrixStack.popMatrix();
+    }
+
+    public void renderMobNames(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
+
+        for (int i = 0; i < contacts.size(); i++) {
+            Contact contact = contacts.get(i);
+
+            float distance = (float) (contact.distance / layoutVariables.zoomScaleAdjusted);
+
+            matrixStack.pushMatrix();
+            matrixStack.translate(x, y, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+            matrixStack.translate(0.0F, -distance, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+            matrixStack.translate(-x, -y, 0.0F);
+
+            float zOffset = i * 0.01F;
+
+            if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
+                float scaleFactor = this.options.fontScale / 4.0F;
+
+                matrixStack.pushMatrix();
+                matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
+                RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, false);
+
+                matrixStack.popMatrix();
+            }
+
+            matrixStack.popMatrix();
         }
 
         matrixStack.popMatrix();
+    }
+
+    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
+        renderMobIcons(matrixStack, bufferSource, x, y, scaleProj);
+        renderMobNames(matrixStack, bufferSource, x, y, scaleProj);
+
     }
 
     public void onJoinServer() {
