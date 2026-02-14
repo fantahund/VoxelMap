@@ -81,6 +81,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.fish.Pufferfish;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.item.BlockItem;
@@ -217,7 +218,7 @@ public class EntityMapImageManager {
         return requestImageForMob(e, -1, addBorder);
     }
 
-    private EntityVariantData getVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder) {
+    private EntityVariantData getVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
         EntityVariantDataFactory factory = variantDataFactories.get(entity.getType());
         if (factory != null) {
             EntityVariantData data = factory.createVariantData(entity, renderer, state, identifier, size, addBorder);
@@ -229,7 +230,7 @@ public class EntityMapImageManager {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, String identifier, int size, boolean addBorder) {
+    private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int identifier, int size, boolean addBorder) {
         EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
             return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, identifier, size, addBorder);
@@ -261,7 +262,7 @@ public class EntityMapImageManager {
     @SuppressWarnings("rawtypes")
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        String identifier = getEntityIdentifier(entity);
+        int identifier = getMobIdentifier(entity);
         EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, identifier, size, addBorder);
 
         if (variant == null) {
@@ -340,16 +341,19 @@ public class EntityMapImageManager {
         return sprite;
     }
 
-    private String getEntityIdentifier(Entity entity) {
-        String identifier = null;
+    private int getMobIdentifier(Entity entity) {
+        int id = 0;
         switch (entity) {
-            case Sheep sheep -> identifier = sheep.isSheared() ? "sheared" : Integer.toString(sheep.getColor().getTextureDiffuseColor());
-//            case Salmon salmon -> identifier = Float.toString(salmon.getSalmonScale());
-
+            case Pufferfish pufferfish -> id = pufferfish.getPuffState();
+            case Sheep sheep -> id = (sheep.isSheared() ? (1 << 8) : sheep.getColor().getId());
             default -> {}
         }
 
-        return identifier;
+        if (entity instanceof LivingEntity livingEntity && livingEntity.isBaby()) {
+            id |= (1 << 9);
+        }
+
+        return id;
     }
 
     private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder) {

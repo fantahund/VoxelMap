@@ -35,7 +35,7 @@ public class HorseVariantDataFactory extends DefaultEntityVariantDataFactory {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder) {
+    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
         Horse horse = (Horse) entity;
         Markings markings = horse.getMarkings();
         Identifier secondaryTexture = LOCATION_BY_MARKINGS.get(markings);
