@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -13,9 +14,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.blockentity.BeaconRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.state.BeaconRenderState;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.BeaconBlock;
+import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3fc;
 
@@ -172,47 +186,17 @@ public class WaypointContainer {
     }
 
     private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, PoseStack poseStack, BufferSource bufferSource) {
-        int height = VoxelConstants.getClientWorld().getHeight();
-        float brightness = 0.1F;
-        double topWidthFactor = 1.05;
-        double bottomWidthFactor = 1.05;
-        float r = par1EntityWaypoint.red;
-        float b = par1EntityWaypoint.blue;
-        float g = par1EntityWaypoint.green;
+        int top = VoxelConstants.getClientWorld().getMaxY();
+        int color = par1EntityWaypoint.getUnifiedColor();
 
-        VertexConsumer vertexConsumerBeam = bufferSource.getBuffer(VoxelMapRenderTypes.WAYPOINT_BEAM);
+        poseStack.pushPose();
+        poseStack.translate(baseX, baseY, baseZ);
 
-        for (int width = 0; width < 4; ++width) {
-            double d6 = 0.1 + width * 0.2;
-            d6 *= topWidthFactor;
-            double d7 = 0.1 + width * 0.2;
-            d7 *= bottomWidthFactor;
+        SubmitNodeStorage submitNodeStorage = minecraft.gameRenderer.getFeatureRenderDispatcher().getSubmitNodeStorage();
+        float ticks = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        BeaconRenderer.submitBeaconBeam(poseStack, submitNodeStorage, BeaconRenderer.BEAM_LOCATION, 1.0F, ticks, 0, top, color, BeaconRenderer.SOLID_BEAM_RADIUS, BeaconRenderer.BEAM_GLOW_RADIUS);
 
-            for (int side = 0; side < 5; ++side) {
-                float vertX2 = (float) (baseX + 0.5 - d6);
-                float vertZ2 = (float) (baseZ + 0.5 - d6);
-                if (side == 1 || side == 2) {
-                    vertX2 = (float) (vertX2 + d6 * 2.0);
-                }
-
-                if (side == 2 || side == 3) {
-                    vertZ2 = (float) (vertZ2 + d6 * 2.0);
-                }
-
-                float vertX1 = (float) (baseX + 0.5 - d7);
-                float vertZ1 = (float) (baseZ + 0.5 - d7);
-                if (side == 1 || side == 2) {
-                    vertX1 = (float) (vertX1 + d7 * 2.0);
-                }
-
-                if (side == 2 || side == 3) {
-                    vertZ1 = (float) (vertZ1 + d7 * 2.0);
-                }
-
-                vertexConsumerBeam.addVertex(poseStack.last(), vertX1, (float) baseY + 0.0F, vertZ1).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
-                vertexConsumerBeam.addVertex(poseStack.last(), vertX2, (float) baseY + height, vertZ2).setColor(r * brightness, g * brightness, b * brightness, 0.8F);
-            }
-        }
+        poseStack.popPose();
     }
 
     private void renderLabel(PoseStack poseStack, BufferSource bufferSource, Waypoint pt, double distance, boolean isPointedAt, boolean target, double baseX, double baseY, double baseZ/* , boolean withDepth, boolean withoutDepth */) {
