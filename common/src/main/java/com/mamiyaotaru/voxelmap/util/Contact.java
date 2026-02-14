@@ -29,7 +29,8 @@ public class Contact {
         this.entity = entity;
         this.category = category;
         this.uuid = entity.getUUID();
-        this.name = entity.hasCustomName() || entity instanceof Player ? entity.getName() : null;
+//        this.name = entity.hasCustomName() || entity instanceof Player ? entity.getName() : null;
+        this.name = entity.getName();
         updateLocation();
     }
 

@@ -202,7 +202,6 @@ public class Radar implements IRadar {
         double lastY = GameVariableAccessShim.yCoordDouble();
 
         RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(EntityMapImageManager.resourceTextureAtlasMarker);
-        VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
 
         for (Contact contact : this.contacts) {
             if (contact.icon == null) {
@@ -261,6 +260,8 @@ public class Radar implements IRadar {
                         yOffset = -4.0F;
                     }
 
+                    VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
+
                     float imageWidth = contact.icon.getIconWidth() / 8.0F;
                     float imageHeight = contact.icon.getIconHeight() / 8.0F;
 //                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
@@ -275,11 +276,11 @@ public class Radar implements IRadar {
                         RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), 0.0F, armorWidth, armorHeight, color);
                     }
 
-                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER && contact.entity.hasCustomName()))) {
+                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
                         float scaleFactor = this.options.fontScale / 4.0F;
 
                         matrixStack.pushMatrix();
-                        matrixStack.scale(scaleFactor, scaleFactor, 0.0F);
+                        matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
                         RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, 0.0F, 0xFFFFFFFF, false);
 
                         matrixStack.popMatrix();
@@ -291,8 +292,6 @@ public class Radar implements IRadar {
                 }
             }
         }
-
-        bufferSource.endBatch(iconRenderType);
 
         matrixStack.popMatrix();
     }
