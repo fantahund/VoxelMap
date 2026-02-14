@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 
 import java.util.UUID;
 
@@ -38,8 +37,7 @@ public class Contact {
         this.entity = entity;
         this.category = category;
         this.uuid = entity.getUUID();
-//        this.name = entity.hasCustomName() || entity instanceof Player ? entity.getName() : null;
-        this.name = entity.getDisplayName();
+        this.name = entity.hasCustomName() || category == VoxelMapMobCategory.PLAYER ? entity.getDisplayName() : null;
         updateLocation();
     }
 
