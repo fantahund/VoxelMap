@@ -5,11 +5,17 @@ import com.mamiyaotaru.voxelmap.interfaces.IRadar;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
+import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
@@ -48,7 +54,7 @@ public class Radar implements IRadar {
     }
 
     @Override
-    public void onTickInGame(Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj) {
+    public void onTickInGame(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, LayoutVariables layoutVariables, float scaleProj) {
         entityMapImageManager.onRenderTick(matrixStack);
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
@@ -79,7 +85,7 @@ public class Radar implements IRadar {
             }
 
             ++this.timer;
-            this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
+            this.renderMapMobs(matrixStack, bufferSource, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
         }
     }
 
@@ -186,103 +192,109 @@ public class Radar implements IRadar {
         });
     }
 
-    public void renderMapMobs(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
-        // TODO: 풀레이더 구현
-//        guiGraphics.pose().pushMatrix();
-//        guiGraphics.pose().scale(scaleProj, scaleProj);
-//
-//        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
-//        double lastX = GameVariableAccessShim.xCoordDouble();
-//        double lastZ = GameVariableAccessShim.zCoordDouble();
-//        double lastY = GameVariableAccessShim.yCoordDouble();
-//
-//        for (Contact contact : this.contacts) {
-//            if (contact.icon == null) {
-//                continue;
-//            }
-//
-//            contact.updateLocation();
-//            double contactX = contact.x;
-//            double contactZ = contact.z;
-//            double contactY = contact.y;
-//            double wayX = lastX - contactX;
-//            double wayZ = lastZ - contactZ;
-//            double wayY = lastY - contactY;
-//
-//            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
-//            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
-//            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
-//            contact.brightness *= contact.brightness;
-//            contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
-//            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
-//
-//            int color;
-//            if (wayY < 0) {
-//                color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
-//            } else {
-//                if (contact.brightness < 0.3f) {
-//                    contact.brightness = 0.3f;
-//                }
-//                color = ARGB.colorFromFloat(1.0f, contact.brightness, contact.brightness, contact.brightness);
-//            }
-//
-//            if (this.minimapOptions.rotates) {
-//                contact.angle += this.direction;
-//            } else if (this.minimapOptions.oldNorth) {
-//                contact.angle -= 90.0F;
-//            }
-//
-//            double scaledDistance = contact.distance / zoomScale;
-//            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
-//                try {
-//                    guiGraphics.pose().pushMatrix();
-//                    if (this.options.filtering) {
-//                        guiGraphics.pose().translate(x, y);
-//                        guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
-//                        guiGraphics.pose().translate(0.0f, (float) -scaledDistance);
-//                        guiGraphics.pose().rotate((contact.angle + contact.rotationFactor) * Mth.DEG_TO_RAD);
-//                        guiGraphics.pose().translate(-x, -y);
-//                    } else {
-//                        wayZ = Math.cos(Math.toRadians(contact.angle)) * scaledDistance;
-//                        wayX = Math.sin(Math.toRadians(contact.angle)) * scaledDistance;
-//                        guiGraphics.pose().translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale);
-//                    }
-//
-//                    float yOffset = 0.0F;
-//                    if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
-//                        yOffset = -4.0F;
-//                    }
-//
-//                    float imageWidth = contact.icon.getIconWidth() / 8.0F;
-//                    float imageHeight = contact.icon.getIconHeight() / 8.0F;
+    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
+        matrixStack.pushMatrix();
+        matrixStack.scale(scaleProj, scaleProj, 1.0F);
+
+        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
+        double lastX = GameVariableAccessShim.xCoordDouble();
+        double lastZ = GameVariableAccessShim.zCoordDouble();
+        double lastY = GameVariableAccessShim.yCoordDouble();
+
+        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(EntityMapImageManager.resourceTextureAtlasMarker);
+        VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
+
+        for (Contact contact : this.contacts) {
+            if (contact.icon == null) {
+                continue;
+            }
+
+            contact.updateLocation();
+            double contactX = contact.x;
+            double contactZ = contact.z;
+            double contactY = contact.y;
+            double wayX = lastX - contactX;
+            double wayZ = lastZ - contactZ;
+            double wayY = lastY - contactY;
+
+            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
+            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
+            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
+            contact.brightness *= contact.brightness;
+            contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
+            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
+
+            int color;
+            if (wayY < 0) {
+                color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+            } else {
+                if (contact.brightness < 0.3f) {
+                    contact.brightness = 0.3f;
+                }
+                color = ARGB.colorFromFloat(1.0f, contact.brightness, contact.brightness, contact.brightness);
+            }
+
+            if (this.minimapOptions.rotates) {
+                contact.angle += this.direction;
+            } else if (this.minimapOptions.oldNorth) {
+                contact.angle -= 90.0F;
+            }
+
+            double scaledDistance = contact.distance / zoomScale;
+            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
+                try {
+                    matrixStack.pushMatrix();
+                    if (this.options.filtering) {
+                        matrixStack.translate(x, y, 0.0F);
+                        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+                        matrixStack.translate(0.0f, (float) -scaledDistance, 0.0F);
+                        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                        matrixStack.translate(-x, -y, 0.0F);
+                    } else {
+                        wayZ = Math.cos(Math.toRadians(contact.angle)) * scaledDistance;
+                        wayX = Math.sin(Math.toRadians(contact.angle)) * scaledDistance;
+                        matrixStack.translate((float) Math.round(-wayX * this.layoutVariables.scScale) / this.layoutVariables.scScale, (float) Math.round(-wayZ * this.layoutVariables.scScale) / this.layoutVariables.scScale, 0.0F);
+                    }
+
+                    float yOffset = 0.0F;
+                    if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
+                        yOffset = -4.0F;
+                    }
+
+                    float imageWidth = contact.icon.getIconWidth() / 8.0F;
+                    float imageHeight = contact.icon.getIconHeight() / 8.0F;
 //                    contact.icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), imageWidth, imageHeight, color);
-//
-//                    if (contact.armorIcon != null) {
-//                        float helmetWidth = contact.armorIcon.getIconWidth() / 8.0F;
-//                        float helmetHeight = contact.armorIcon.getIconHeight() / 8.0F;
-//                        float helmetOffset = Float.parseFloat(this.entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
-//
-//                        contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (helmetWidth / 2), y + yOffset + helmetOffset - (helmetHeight / 2), helmetWidth, helmetWidth, color);
-//                    }
-//
-//                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER && contact.entity.hasCustomName()))) {
-//                        float scaleFactor = this.options.fontScale / 4.0F;
-//                        guiGraphics.pose().scale(scaleFactor, scaleFactor);
-//
-//                        int m = minecraft.font.width(contact.name) / 2;
-//
-//                        guiGraphics.pose().pushMatrix();
-//                        guiGraphics.drawString(minecraft.font, contact.name, (int) (x / scaleFactor - m), (int) ((y + 3) / scaleFactor), 0xFFFFFFFF, false);
-//                        guiGraphics.pose().popMatrix();
-//                    }
-//                } catch (Exception e) {
-//                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
-//                } finally {
-//                    guiGraphics.pose().popMatrix();
-//                }
-//            }
-//        }
-//        guiGraphics.pose().popMatrix();
+                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), 0.0F, imageWidth, imageHeight, color);
+
+                    if (contact.armorIcon != null) {
+                        float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
+                        float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
+                        float armorOffset = Float.parseFloat(this.entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
+
+//                        contact.armorIcon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), armorWidth, armorWidth, color);
+                        RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), 0.0F, armorWidth, armorHeight, color);
+                    }
+
+                    if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER && contact.entity.hasCustomName()))) {
+                        float scaleFactor = this.options.fontScale / 4.0F;
+
+                        matrixStack.pushMatrix();
+                        matrixStack.scale(scaleFactor, scaleFactor, 0.0F);
+                        RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, 0.0F, 0xFFFFFFFF, false);
+
+                        matrixStack.popMatrix();
+                    }
+                } catch (Exception e) {
+                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
+                } finally {
+                    matrixStack.popMatrix();
+                }
+            }
+        }
+
+        bufferSource.endBatch(iconRenderType);
+
+        matrixStack.popMatrix();
     }
 
     public void onJoinServer() {

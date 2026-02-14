@@ -178,7 +178,6 @@ public class Map implements Runnable, IChangeObserver {
     // Map Rendering
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
-    private final CachedOrthoProjectionMatrixBuffer guiProjection;
     private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "gui_fbo_texture");
     private final RegisterableGPUTexture guiFboTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
@@ -232,7 +231,6 @@ public class Map implements Runnable, IChangeObserver {
 
         final int fboTextureSize = 512;
 
-        this.guiProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Gui Projection", 100.0F, 3000.0F, true);
         this.guiFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
         minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
@@ -1542,10 +1540,6 @@ public class Map implements Runnable, IChangeObserver {
             RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0xFFFFFFFF);
             matrixStack.popMatrix();
 
-            if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
-                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(matrixStack, layoutVariables, 1.0F);
-            }
-
             matrixStack.popMatrix();
 
             renderBufferSource.endBatch();
@@ -1578,6 +1572,10 @@ public class Map implements Runnable, IChangeObserver {
         RenderType frameRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(options.squareMap ? resourceSquareMapFrame : resourceRoundMapFrame);
         VertexConsumer frameBuffer = renderBufferSource.getBuffer(frameRenderType);
         RenderUtils.drawTexturedModalRect(matrixStack, frameBuffer, x - 32.0F, y - 32.0F, 10.0F, 64.0F, 64.0F, 0xFFFFFFFF);
+
+        if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
+            VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(matrixStack, renderBufferSource, layoutVariables, 1.0F);
+        }
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();

@@ -10,6 +10,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -67,7 +68,7 @@ public class RadarSimple implements IRadar {
     }
 
     @Override
-    public void onTickInGame(Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj) {
+    public void onTickInGame(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, LayoutVariables layoutVariables, float scaleProj) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -91,7 +92,7 @@ public class RadarSimple implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
+                this.renderMapMobs(matrixStack, bufferSource, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
             }
         }
     }
@@ -160,7 +161,7 @@ public class RadarSimple implements IRadar {
         this.contacts.sort(Comparator.comparingDouble(contact -> contact.y));
     }
 
-    public void renderMapMobs(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
         // TODO: 심플레이더 구현
 //        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
 //
