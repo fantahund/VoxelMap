@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
+import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
@@ -667,7 +668,7 @@ public class Map implements Runnable, IChangeObserver {
             renderMatrixStack.popMatrix();
         });
 
-        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, drawContext.guiWidth(), drawContext.guiHeight(), 0.0F, 1.0F, 1.0F, 0.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, drawContext.guiWidth(), drawContext.guiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {
@@ -1517,6 +1518,10 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.outputColorTextureOverride = lastColorTexture;
         RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+
+        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
+            GLUtils.flipTexture(src, dst, false, true);
+        });
     }
 
     private void drawWithMapProjection(RegisterableGPUTexture fboTexture, Runnable runnable) {
@@ -1536,6 +1541,10 @@ public class Map implements Runnable, IChangeObserver {
         RenderSystem.outputColorTextureOverride = lastColorTexture;
         RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+
+        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
+            GLUtils.flipTexture(src, dst, false, true);
+        });
     }
 
     private void renderMap(Matrix4fStack matrixStack, int x, int y, int scScale, float scaleProj) {
@@ -1602,7 +1611,7 @@ public class Map implements Runnable, IChangeObserver {
 
             RenderType stencilRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(options.squareMap ? resourceSquareMapStencil : resourceRoundMapStencil);
             VertexConsumer stencilBuffer = renderBufferSource.getBuffer(stencilRenderType);
-            drawTexturedQuad(matrixStack, stencilBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0xFFFFFFFF);
+            drawTexturedQuad(matrixStack, stencilBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
 
             RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST_DST_ALPHA.apply(mapFboTextureLocation);
             VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
