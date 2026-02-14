@@ -8,19 +8,14 @@ import com.mamiyaotaru.voxelmap.util.LayoutVariables;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,6 +23,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.joml.Matrix4fStack;
 
+import java.awt.DisplayMode;
 import java.util.ArrayList;
 
 public class Radar implements IRadar {
@@ -169,7 +165,7 @@ public class Radar implements IRadar {
 
                             String scrubbedName = TextUtils.scrubCodes(contact.entity.getName().getString());
                             if ((scrubbedName.equals("Dinnerbone") || scrubbedName.equals("Grumm")) && (!(contact.entity instanceof Player) || ((Player) contact.entity).isModelPartShown(PlayerModelPart.CAPE))) {
-                                contact.setRotationFactor(contact.rotationFactor + 180);
+                                contact.rotationFactor += 180;
                             }
 
                             if (this.options.showHelmetsPlayers && contact.category == VoxelMapMobCategory.PLAYER || this.options.showHelmetsMobs && contact.category != VoxelMapMobCategory.PLAYER) {
@@ -205,14 +201,21 @@ public class Radar implements IRadar {
     private void updateContacts() {
         for (Contact contact : this.contacts) {
             if (contact.icon == null) {
+                contact.displayState = Contact.DisplayState.HIDDEN;
                 continue;
             }
 
             contact.updateLocation();
-
             double wayX = lastX - contact.x;
             double wayZ = lastZ - contact.z;
             double wayY = lastY - contact.y;
+
+            if (!isInRange(contact.entity, wayX, wayY, wayZ, 0.0F)) {
+                contact.displayState = Contact.DisplayState.HIDDEN;
+                continue;
+            } else {
+                contact.displayState = Contact.DisplayState.ABOVE_FRAME;
+            }
 
             contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
             if (minimapOptions.rotates) {
@@ -230,7 +233,16 @@ public class Radar implements IRadar {
         }
     }
 
-    public void renderMobIcons(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
+    private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y) {
+        float distance = (float) (contact.distance / layoutVariables.zoomScaleAdjusted);
+        matrixStack.translate(x, y, 0.0F);
+        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+        matrixStack.translate(0.0F, -distance, 0.0F);
+        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+        matrixStack.translate(-x, -y, 0.0F);
+    }
+
+    public void renderMobIcons(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
@@ -240,7 +252,13 @@ public class Radar implements IRadar {
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
-            float distance = (float) (contact.distance / layoutVariables.zoomScaleAdjusted);
+            if (contact.displayState != displayState) {
+                continue;
+            }
+
+            matrixStack.pushMatrix();
+            applyContactTransform(matrixStack, contact, x, y);
+
             int color;
             if (lastY - contact.y < 0) {
                 color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
@@ -248,13 +266,6 @@ public class Radar implements IRadar {
                 float brightness = Math.max(0.3F, contact.brightness);
                 color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
             }
-
-            matrixStack.pushMatrix();
-            matrixStack.translate(x, y, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-            matrixStack.translate(0.0F, -distance, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-            matrixStack.translate(-x, -y, 0.0F);
 
             float zOffset = i * 0.01F;
             float yOffset = 0.0F;
@@ -280,43 +291,37 @@ public class Radar implements IRadar {
         matrixStack.popMatrix();
     }
 
-    public void renderMobNames(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
+    public void renderMobNames(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
-            float distance = (float) (contact.distance / layoutVariables.zoomScaleAdjusted);
-
-            matrixStack.pushMatrix();
-            matrixStack.translate(x, y, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-            matrixStack.translate(0.0F, -distance, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-            matrixStack.translate(-x, -y, 0.0F);
-
-            float zOffset = i * 0.01F;
+            if (contact.displayState != displayState) {
+                continue;
+            }
 
             if (contact.name != null && ((this.options.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (this.options.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
                 float scaleFactor = this.options.fontScale / 4.0F;
+                float zOffset = i * 0.01F;
 
                 matrixStack.pushMatrix();
+                applyContactTransform(matrixStack, contact, x, y);
                 matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
+
                 RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, false);
 
                 matrixStack.popMatrix();
             }
-
-            matrixStack.popMatrix();
         }
 
         matrixStack.popMatrix();
     }
 
     public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, int x, int y, float scaleProj) {
-        renderMobIcons(matrixStack, bufferSource, x, y, scaleProj);
-        renderMobNames(matrixStack, bufferSource, x, y, scaleProj);
+        renderMobIcons(matrixStack, bufferSource, Contact.DisplayState.ABOVE_FRAME, x, y, scaleProj);
+        renderMobNames(matrixStack, bufferSource, Contact.DisplayState.ABOVE_FRAME, x, y, scaleProj);
 
     }
 
