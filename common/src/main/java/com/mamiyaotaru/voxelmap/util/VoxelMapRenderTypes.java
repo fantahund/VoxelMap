@@ -1,23 +1,13 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import java.util.function.Function;
-
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.util.Util;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
+
+import java.util.function.Function;
 
 public class VoxelMapRenderTypes {
-    public static final Function<Identifier, RenderType> GUI_TEXTURED = Util.memoize(
-            identifier -> RenderType.create(
-                    "voxelmap_gui_textured",
-                    RenderSetup.builder(RenderPipelines.GUI_TEXTURED)
-                            .withTexture("Sampler0", identifier)
-                            .createRenderSetup()
-            )
-    );
-
     public static final Function<Identifier, RenderType> GUI_TEXTURED_NO_DEPTH_TEST = Util.memoize(
             identifier -> RenderType.create(
                     "voxelmap_gui_textured_no_depth_test",

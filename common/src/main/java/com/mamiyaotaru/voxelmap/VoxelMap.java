@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.interfaces.IRadar;
+import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
@@ -202,7 +202,7 @@ public class VoxelMap implements PreparableReloadListener {
         return this.settingsAndLightingChangeNotifier;
     }
 
-    public IRadar getRadar() {
+    public AbstractRadar getRadar() {
         if (radarOptions.showRadar) {
             if (radarOptions.radarMode == 1) {
                 return this.radarSimple;
