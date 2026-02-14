@@ -23,7 +23,7 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.RegisterableGPUTexture;
+import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
@@ -176,12 +176,12 @@ public class Map implements Runnable, IChangeObserver {
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
     private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "gui_fbo_texture");
-    private final RegisterableGPUTexture guiFboTexture;
+    private final DynamicAllocatedTexture guiFboTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
     private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "map_fbo_texture");
     private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "maksed_map_fbo_texture");
-    private final RegisterableGPUTexture mapFboTexture;
-    private final RegisterableGPUTexture maskedMapFboTexture;
+    private final DynamicAllocatedTexture mapFboTexture;
+    private final DynamicAllocatedTexture maskedMapFboTexture;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -228,13 +228,13 @@ public class Map implements Runnable, IChangeObserver {
 
         final int fboTextureSize = 512;
 
-        this.guiFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.guiFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
         minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
 
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
-        this.mapFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMapFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.mapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.maskedMapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
         minecraft.getTextureManager().register(this.mapFboTextureLocation, this.mapFboTexture);
         minecraft.getTextureManager().register(this.maskedMapFboTextureLocation, this.maskedMapFboTexture);
 
@@ -1562,7 +1562,7 @@ public class Map implements Runnable, IChangeObserver {
             VertexConsumer stencilBuffer = renderBufferSource.getBuffer(stencilRenderType);
             RenderUtils.drawTexturedModalRect(matrixStack, stencilBuffer, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F,0xFFFFFFFF);
 
-            RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST_DST_ALPHA.apply(mapFboTextureLocation);
+            RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_MASKED_NO_DEPTH_TEST.apply(mapFboTextureLocation);
             VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
             RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
 

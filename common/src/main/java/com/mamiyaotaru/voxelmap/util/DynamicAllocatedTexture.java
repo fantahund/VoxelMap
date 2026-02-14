@@ -6,16 +6,16 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 
-public class RegisterableGPUTexture extends AbstractTexture {
+public class DynamicAllocatedTexture extends AbstractTexture {
     private boolean refreshDepthTexture;
     private GpuTexture depthTexture;
     private GpuTextureView depthTextureView;
 
-    public RegisterableGPUTexture(GpuTexture texture) {
+    public DynamicAllocatedTexture(GpuTexture texture) {
         setTexture(texture);
     }
 
-    public RegisterableGPUTexture(GpuTexture texture, GpuTextureView textureView) {
+    public DynamicAllocatedTexture(GpuTexture texture, GpuTextureView textureView) {
         setTexture(texture, textureView);
     }
 

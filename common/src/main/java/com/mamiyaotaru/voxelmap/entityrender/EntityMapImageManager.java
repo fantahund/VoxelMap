@@ -16,9 +16,14 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -50,6 +55,8 @@ import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
@@ -59,6 +66,7 @@ import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -86,12 +94,14 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.system.MemoryStack;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -102,29 +112,49 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityMapImageManager {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath("voxelmap", "atlas/mobs");
+
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
-    private GpuTexture fboDepthTexture;
-    private GpuTexture fboTexture;
-    private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath("voxelmap", "entityimagemanager/fbo");
-    private Tesselator fboTessellator = new Tesselator(4096);
+    private final RandomSource randomSource = RandomSource.create();
+
+    private final HashMap<String, Properties> mobPropertiesMap = new HashMap<>();
+    private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
+    private final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
+    private final Class<?>[] fullRenderModels;
+    private final HumanoidModel<?> humanoidModel;
+
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
-    private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
-    private ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
-    private final Camera fakeCamera = new Camera();
-    private GpuTextureView fboTextureView;
-    private GpuTextureView fboDepthTextureView;
-    private VoxelMapCachedOrthoProjectionMatrixBuffer projection;
-    private final HashMap<String, Properties> mobPropertiesMap = new HashMap<>();
-    private final Class<?>[] fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
-    private HumanoidModel humanoidModelForArmor;
-    private final RandomSource randomSource = RandomSource.create();
-    private final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
+    private final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
+
+    private static final int LIGHT = LightTexture.FULL_BRIGHT;
+    private static final int OVERLAY = OverlayTexture.NO_OVERLAY;
+    private final GpuBuffer lightingBuffer;
+
+    private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
+    private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath("voxelmap", "entityimagemanager/fbo");
+    private final Tesselator fboTessellator = new Tesselator(4096);
+    private final GpuTexture fboTexture;
+    private final GpuTexture fboDepthTexture;
+    private final GpuTextureView fboTextureView;
+    private final GpuTextureView fboDepthTextureView;
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(true, false);
+
+        this.fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
+        CubeDeformation armorInflate = new CubeDeformation(1.0F);
+        LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
+        this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
+
+        Vector3f fullBright = new Vector3f(1.0F, -1.0F, 1.0F).normalize();
+        Vector3f fullBright2 = new Vector3f(-1.0F, -1.0F, 1.0F).normalize();
+        this.lightingBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Lighting UBO", GpuBuffer.USAGE_UNIFORM + GpuBuffer.USAGE_COPY_DST, Lighting.UBO_SIZE);
+        try (MemoryStack memoryStack = MemoryStack.stackPush()) {
+            ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, Lighting.UBO_SIZE).putVec3(fullBright).putVec3(fullBright2).get();
+            RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.lightingBuffer.slice(), byteBuffer);
+        }
 
         final int fboTextureSize = 512;
         this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-radarfbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
@@ -151,10 +181,6 @@ public class EntityMapImageManager {
         mobPropertiesMap.clear();
         variantDataFactories.clear();
         armorDataFactories.clear();
-
-        CubeDeformation armorInflate = new CubeDeformation(1.0F);
-        LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
-        this.humanoidModelForArmor = new HumanoidModel<>(layerDefinition.bakeRoot());
 
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png")));
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png")));
@@ -254,7 +280,7 @@ public class EntityMapImageManager {
         Identifier primaryTexture = variant.getPrimaryTexture();
         Identifier secondaryTexture = variant.getSecondaryTexture();
 
-        CaptureContext context = setupCapture();
+        CaptureContext context = setupCapture(VoxelMapPipelines.ENTITY_ICON);
         PoseStack pose = context.poseStack();
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
@@ -290,12 +316,12 @@ public class EntityMapImageManager {
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
-            part.render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color //TODO set model tint
+            part.render(pose, bufferBuilder, LIGHT, OVERLAY, 0xffffffff); // light, overlay, color //TODO set model tint
         }
 
         if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
             SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.get(0);
-            slimeOuter.model.root().render(pose, bufferBuilder, 15, 0, 0xffffffff); // light, overlay, color
+            slimeOuter.model.root().render(pose, bufferBuilder, LIGHT, OVERLAY, 0xffffffff); // light, overlay, color
         }
 
         boolean success = this.doCapture(context, primaryTexture, secondaryTexture);
@@ -448,16 +474,16 @@ public class EntityMapImageManager {
 
         Identifier armorTexture = armorData.getTexture();
 
-        CaptureContext context = this.setupCapture();
+        CaptureContext context = this.setupCapture(VoxelMapPipelines.ENTITY_ICON_CULLED);
         PoseStack pose = context.poseStack();
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
         if (equippable != null) {
-            ModelPart part = humanoidModelForArmor.root().getChild("head");
+            ModelPart part = humanoidModel.root().getChild("head");
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
-            part.render(pose, bufferBuilder, 15, 0, 0xFFFFFFFF);
+            part.render(pose, bufferBuilder, LIGHT, OVERLAY, 0xFFFFFFFF);
         } else if (block != null) {
             pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
             pose.scale(0.65F, 0.65F, 0.65F);
@@ -466,7 +492,7 @@ public class EntityMapImageManager {
             BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
             List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.randomSource);
 
-            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, 0x00F000F0);
+            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, LIGHT);
         }
 
         this.doCapture(context, armorTexture, null);
@@ -594,13 +620,12 @@ public class EntityMapImageManager {
         return new ModelPart[] { model.root() };
     }
 
-    private CaptureContext setupCapture() {
+    private CaptureContext setupCapture(RenderPipeline renderPipeline) {
         PoseStack poseStack = new PoseStack();
         poseStack.translate(0.0f, 0.0f, -3000.0f);
         float scale = 64;
         poseStack.scale(scale, scale, -scale);
 
-        RenderPipeline renderPipeline = VoxelMapPipelines.ENTITY_ICON;
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 
         return new CaptureContext(poseStack, renderPipeline, bufferBuilder);
@@ -613,6 +638,7 @@ public class EntityMapImageManager {
         AbstractTexture texture = minecraft.getTextureManager().getTexture(primaryId);
         AbstractTexture texture2 = secondaryId == null ? null : minecraft.getTextureManager().getTexture(secondaryId);
 
+        RenderSystem.setShaderLights(lightingBuffer.slice());
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
         GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
@@ -639,9 +665,6 @@ public class EntityMapImageManager {
                 indexType = meshData.drawState().indexType();
             }
 
-            // float size = 64.0F * scale;
-            // int width = fboTexture.getWidth(0);
-            // int height = fboTexture.getHeight(0);
             ProjectionType originalProjectionType = RenderSystem.getProjectionType();
             GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
             RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
@@ -651,10 +674,8 @@ public class EntityMapImageManager {
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
-                // renderPass.bindSampler("Sampler1", texture.getTexture()); // overlay
-                // minecraft.gameRenderer.overlayTexture().setupOverlayColor();
-                // renderPass.bindSampler("Sampler2", texture.getTexture()); // lightmap
-                // minecraft.gameRenderer.lightTexture().turnOnLightLayer();
+                renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);

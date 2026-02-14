@@ -20,20 +20,17 @@ public class VoxelMapPipelines {
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .build();
 
-    public static final BlendFunction DST_ALPHA = new BlendFunction(SourceFactor.DST_ALPHA, DestFactor.ONE_MINUS_DST_ALPHA);
-
-    public static final RenderPipeline GUI_TEXTURED_NO_DEPTH_TEST_DST_ALPHA = RenderPipeline
-            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-            .withLocation(Identifier.parse("voxelmap:pipeline/gui_textured_any_depth_dst_alpha"))
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-//            .withBlend(DST_ALPHA)
-            .withColorWrite(true, false)
-            .build();
-
     public static final RenderPipeline GUI_TEXTURED_LEQUAL_DEPTH_TEST = RenderPipeline
             .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.parse("voxelmap:pipeline/gui_textured_equal_depth"))
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
+
+    public static final RenderPipeline GUI_TEXTURED_MASKED_NO_DEPTH_TEST = RenderPipeline
+            .builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+            .withLocation(Identifier.parse("voxelmap:pipeline/gui_textured_masked_no_depth_test"))
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withColorWrite(true, false)
+            .build();
 
     public static final RenderPipeline WAYPOINT_BEAM = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withLocation(Identifier.parse("voxelmap:pipeline/waypoint_beam"))
@@ -48,14 +45,14 @@ public class VoxelMapPipelines {
     public static final RenderPipeline WAYPOINT_ICON_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.parse("voxelmap:pipeline/waypoint_icon"))
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
-            .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
+            .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthWrite(true)
             .build();
 
     public static final RenderPipeline WAYPOINT_ICON_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.parse("voxelmap:pipeline/waypoint_icon"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
+            .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthWrite(true)
             .build();
 
@@ -63,7 +60,7 @@ public class VoxelMapPipelines {
             .withLocation(Identifier.parse("voxelmap:pipeline/waypoint_background"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withDepthBias(1.0F, 7.0F)
-            .withBlend(new BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ONE_MINUS_SRC_ALPHA))
+            .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthWrite(false)
             .build();
 
@@ -81,10 +78,19 @@ public class VoxelMapPipelines {
             .withLocation(Identifier.parse("voxelmap:pipeline/entity_solid"))
             .withSampler("Sampler1")
             .withVertexFormat(ENTITY_VERTEX, VertexFormat.Mode.QUADS)
-            .withShaderDefine("EMISSIVE")
-            .withShaderDefine("NO_OVERLAY")
-            .withShaderDefine("NO_CARDINAL_LIGHTING")
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("PER_FACE_LIGHTING")
             .withBlend(BlendFunction.TRANSLUCENT)
+            .withCull(false)
+            .build();
+
+    public static final RenderPipeline ENTITY_ICON_CULLED = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+            .withLocation(Identifier.parse("voxelmap:pipeline/entity_solid"))
+            .withSampler("Sampler1")
+            .withVertexFormat(ENTITY_VERTEX, VertexFormat.Mode.QUADS)
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("PER_FACE_LIGHTING")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withCull(true)
             .build();
 }

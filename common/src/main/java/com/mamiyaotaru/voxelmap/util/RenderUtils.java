@@ -55,7 +55,7 @@ public class RenderUtils {
         drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
 
-    public static void renderWithCustomProjection(GpuBufferSlice projection, float initialDepth, RegisterableGPUTexture fboTexture, Runnable runnable) {
+    public static void renderWithCustomProjection(GpuBufferSlice projection, float initialDepth, DynamicAllocatedTexture fboTexture, Runnable runnable) {
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(fboTexture.getDepthTexture(), 1.0);
 
@@ -82,7 +82,7 @@ public class RenderUtils {
         });
     }
 
-    public static void renderWithFullscreenProjection(RegisterableGPUTexture fboTexture, Runnable runnable) {
+    public static void renderWithFullscreenProjection(DynamicAllocatedTexture fboTexture, Runnable runnable) {
         int windowWidth = MINECRAFT.getWindow().getWidth();
         int windowHeight = MINECRAFT.getWindow().getHeight();
         int guiWidth = MINECRAFT.getWindow().getGuiScaledWidth();

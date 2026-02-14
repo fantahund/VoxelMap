@@ -260,7 +260,7 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
         }
 
-        RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTHTEST.apply(icon.getIdentifier());
+        RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTH_TEST.apply(icon.getIdentifier());
         VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(renderType);
         vertexIconDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fade);
         vertexIconDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fade);
@@ -268,7 +268,7 @@ public class WaypointContainer {
         vertexIconDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fade);
         bufferSource.endBatch(renderType);
 
-        renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTHTEST.apply(icon.getIdentifier());
+        renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTH_TEST.apply(icon.getIdentifier());
         VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(renderType);
         vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
         vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fadeNoDepth);
