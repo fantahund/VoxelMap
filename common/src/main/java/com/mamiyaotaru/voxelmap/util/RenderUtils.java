@@ -1,0 +1,113 @@
+package com.mamiyaotaru.voxelmap.util;
+
+import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.Component;
+import org.joml.Matrix4fStack;
+
+public class RenderUtils {
+    private static final Minecraft MINECRAFT = Minecraft.getInstance();
+    private static final CachedOrthoProjectionMatrixBuffer FULLSCREEN_PROJECTION = new CachedOrthoProjectionMatrixBuffer("VoxelMap Fullscreen GUI Projection", 1000.0F, 3000.0F, true);
+
+    public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, int color) {
+        drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+    }
+
+    public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, Sprite sprite, float x, float y, float z, float width, float height, int color) {
+        drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
+    }
+
+    public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
+        float x1 = x + width;
+        float y1 = y + height;
+        vertexConsumer.addVertex(matrixStack, x, y, z).setUv(u0, v0).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x, y1, z).setUv(u0, v1).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x1, y1, z).setUv(u1, v1).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x1, y, z).setUv(u1, v0).setColor(color);
+    }
+
+    public static void drawString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
+        drawString(matrixStack, bufferSource, Component.nullToEmpty(text), x, y, z, color, shadow);
+    }
+
+    public static void drawString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
+        matrixStack.pushMatrix();
+        matrixStack.translate(x, y, z);
+        MINECRAFT.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrixStack, bufferSource, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+
+        matrixStack.popMatrix();
+    }
+
+    public static void drawCenteredString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
+        drawCenteredString(matrixStack, bufferSource, Component.nullToEmpty(text), x, y, z, color, shadow);
+    }
+
+    public static void drawCenteredString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
+        drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
+    }
+
+    public static void renderWithCustomProjection(GpuBufferSlice projection, float initialDepth, RegisterableGPUTexture fboTexture, Runnable runnable) {
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
+
+        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
+        RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
+        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
+        RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
+
+        runnable.run();
+
+        RenderSystem.outputColorTextureOverride = lastColorTexture;
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+
+        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
+            GLUtils.flipTexture(src, dst, false, true);
+        });
+    }
+
+    public static void renderWithFullscreenProjection(RegisterableGPUTexture fboTexture, Runnable runnable) {
+        int windowWidth = MINECRAFT.getWindow().getWidth();
+        int windowHeight = MINECRAFT.getWindow().getHeight();
+        int guiWidth = MINECRAFT.getWindow().getGuiScaledWidth();
+        int guiHeight = MINECRAFT.getWindow().getGuiScaledHeight();
+
+        if (fboTexture.getWidth(0) != windowWidth || fboTexture.getHeight(0) != windowHeight) {
+            GpuTexture texture = fboTexture.getTexture();
+            fboTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
+        } else {
+            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
+        }
+
+        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
+        RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(guiWidth, guiHeight), ProjectionType.ORTHOGRAPHIC);
+        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
+        RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
+
+        runnable.run();
+
+        RenderSystem.outputColorTextureOverride = lastColorTexture;
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+
+        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
+            GLUtils.flipTexture(src, dst, false, true);
+        });
+    }
+}

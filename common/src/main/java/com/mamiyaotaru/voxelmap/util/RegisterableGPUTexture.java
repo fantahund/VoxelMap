@@ -6,9 +6,6 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 
 public class RegisterableGPUTexture extends AbstractTexture {
-    public RegisterableGPUTexture() {
-    }
-
     public RegisterableGPUTexture(GpuTexture texture) {
         setTexture(texture);
     }

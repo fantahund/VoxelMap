@@ -31,7 +31,6 @@ import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.animal.camel.CamelModel;
@@ -84,6 +83,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -672,7 +672,7 @@ public class EntityMapImageManager {
         return true;
     }
 
-    public void onRenderTick(GuiGraphics drawContext) {
+    public void onRenderTick(Matrix4fStack matrixStack) {
         Runnable task;
         while ((task = taskQueue.poll()) != null) {
             task.run();

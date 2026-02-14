@@ -19,6 +19,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import org.joml.Matrix4fStack;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -66,7 +67,7 @@ public class RadarSimple implements IRadar {
     }
 
     @Override
-    public void onTickInGame(GuiGraphics guiGraphics, LayoutVariables layoutVariables, float scaleProj) {
+    public void onTickInGame(Matrix4fStack matrixStack, LayoutVariables layoutVariables, float scaleProj) {
         if (this.options.radarAllowed || this.options.radarMobsAllowed || this.options.radarPlayersAllowed) {
             this.layoutVariables = layoutVariables;
             if (this.options.isChanged()) {
@@ -90,7 +91,7 @@ public class RadarSimple implements IRadar {
 
             ++this.timer;
             if (this.completedLoading) {
-                this.renderMapMobs(guiGraphics, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
+                this.renderMapMobs(matrixStack, this.layoutVariables.mapX, this.layoutVariables.mapY, scaleProj);
             }
         }
     }
@@ -159,66 +160,67 @@ public class RadarSimple implements IRadar {
         this.contacts.sort(Comparator.comparingDouble(contact -> contact.y));
     }
 
-    public void renderMapMobs(GuiGraphics guiGraphics, int x, int y, float scaleProj) {
-        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
-
-        for (Contact contact : this.contacts) {
-            contact.updateLocation();
-            double contactX = contact.x;
-            double contactZ = contact.z;
-            double contactY = contact.y;
-            double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
-            double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
-            double wayY = GameVariableAccessShim.yCoord() - contactY;
-
-            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
-            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
-            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
-            contact.brightness *= contact.brightness;
-            contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
-            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
-
-            int color = wayY < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
-            switch (contact.category) {
-                case HOSTILE -> color = ARGB.multiply(color, 0xFFFF8080);
-                case NEUTRAL -> color = ARGB.multiply(color, 0xFF80FF80);
-            }
-
-            if (this.minimapOptions.rotates) {
-                contact.angle += this.direction;
-            } else if (this.minimapOptions.oldNorth) {
-                contact.angle -= 90.0F;
-            }
-
-            double scaledDistance = contact.distance / zoomScale;
-            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
-                try {
-                    guiGraphics.pose().pushMatrix();
-                    guiGraphics.pose().scale(scaleProj, scaleProj);
-                    float contactFacing = contact.entity.getYHeadRot();
-                    if (this.minimapOptions.rotates) {
-                        contactFacing -= this.direction;
-                    } else if (this.minimapOptions.oldNorth) {
-                        contactFacing += 90.0F;
-                    }
-
-                    guiGraphics.pose().translate(x, y);
-                    guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
-                    guiGraphics.pose().translate(0.0f, (float) -scaledDistance);
-                    guiGraphics.pose().rotate((contact.angle + contactFacing) * Mth.DEG_TO_RAD);
-                    guiGraphics.pose().translate(-x, -y);
-
-                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
-                    if (this.options.showFacing) {
-                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
-                    }
-                } catch (Exception e) {
-                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()));
-                } finally {
-                    guiGraphics.pose().popMatrix();
-                }
-            }
-        }
+    public void renderMapMobs(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+        // TODO: 심플레이더 구현
+//        double zoomScale = this.layoutVariables.zoomScaleAdjusted;
+//
+//        for (Contact contact : this.contacts) {
+//            contact.updateLocation();
+//            double contactX = contact.x;
+//            double contactZ = contact.z;
+//            double contactY = contact.y;
+//            double wayX = GameVariableAccessShim.xCoordDouble() - contactX;
+//            double wayZ = GameVariableAccessShim.zCoordDouble() - contactZ;
+//            double wayY = GameVariableAccessShim.yCoord() - contactY;
+//
+//            double maxHeight = this.getEntityMaxHeight(contact.entity) * zoomScale;
+//            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
+//            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
+//            contact.brightness *= contact.brightness;
+//            contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
+//            contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
+//
+//            int color = wayY < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
+//            switch (contact.category) {
+//                case HOSTILE -> color = ARGB.multiply(color, 0xFFFF8080);
+//                case NEUTRAL -> color = ARGB.multiply(color, 0xFF80FF80);
+//            }
+//
+//            if (this.minimapOptions.rotates) {
+//                contact.angle += this.direction;
+//            } else if (this.minimapOptions.oldNorth) {
+//                contact.angle -= 90.0F;
+//            }
+//
+//            double scaledDistance = contact.distance / zoomScale;
+//            if (this.isInRange(contact.entity, wayX, wayY, wayZ, 0.0)) {
+//                try {
+//                    guiGraphics.pose().pushMatrix();
+//                    guiGraphics.pose().scale(scaleProj, scaleProj);
+//                    float contactFacing = contact.entity.getYHeadRot();
+//                    if (this.minimapOptions.rotates) {
+//                        contactFacing -= this.direction;
+//                    } else if (this.minimapOptions.oldNorth) {
+//                        contactFacing += 90.0F;
+//                    }
+//
+//                    guiGraphics.pose().translate(x, y);
+//                    guiGraphics.pose().rotate(-contact.angle * Mth.DEG_TO_RAD);
+//                    guiGraphics.pose().translate(0.0f, (float) -scaledDistance);
+//                    guiGraphics.pose().rotate((contact.angle + contactFacing) * Mth.DEG_TO_RAD);
+//                    guiGraphics.pose().translate(-x, -y);
+//
+//                    this.textureAtlas.getAtlasSprite("contact").blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
+//                    if (this.options.showFacing) {
+//                        this.textureAtlas.getAtlasSprite("facing").blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - 4, y - 4, 8, 8, color);
+//                    }
+//                } catch (Exception e) {
+//                    VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()));
+//                } finally {
+//                    guiGraphics.pose().popMatrix();
+//                }
+//            }
+//        }
 
     }
 }

@@ -24,6 +24,7 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.RegisterableGPUTexture;
+import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
@@ -229,12 +230,13 @@ public class Map implements Runnable, IChangeObserver {
         this.zoom = this.options.zoom;
         this.setZoomScale();
 
+        final int fboTextureSize = 512;
+
         this.guiProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Gui Projection", 100.0F, 3000.0F, true);
-        this.guiFboTexture = new RegisterableGPUTexture();
+        this.guiFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
         minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
 
-        final int fboTextureSize = 512;
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
         this.mapFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
         this.maskedMapFboTexture = new RegisterableGPUTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
@@ -628,6 +630,8 @@ public class Map implements Runnable, IChangeObserver {
             mapY = 37;
         }
 
+        this.layoutVariables.updateVars(scScale, mapX, mapY, this.zoomScale, this.zoomScaleAdjusted);
+
         float statusIconOffset = 0.0F;
         if (VoxelMap.mapOptions.moveMapDownWhileStatusEffect) {
             if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getActiveEffects().isEmpty()) {
@@ -649,7 +653,7 @@ public class Map implements Runnable, IChangeObserver {
         Map.statusIconOffset = statusIconOffset;
 
         int mapY2 = mapY;
-        drawWithGuiProjection(guiFboTexture, () -> {
+        RenderUtils.renderWithFullscreenProjection(guiFboTexture, () -> {
             renderMatrixStack.pushMatrix();
 
             if (!this.options.hide) {
@@ -1494,58 +1498,6 @@ public class Map implements Runnable, IChangeObserver {
         return ARGB.toABGR(combinedLight);
     }
 
-    private void drawWithGuiProjection(RegisterableGPUTexture fboTexture, Runnable runnable) {
-        int windowWidth = minecraft.getWindow().getWidth();
-        int windowHeight = minecraft.getWindow().getHeight();
-        if (fboTexture.getWidth(0) != windowWidth || fboTexture.getHeight(0) != windowHeight) {
-            int usage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
-            fboTexture.setTexture(RenderSystem.getDevice().createTexture(() -> "VoxelMap Gui FBO", usage, TextureFormat.RGBA8, windowWidth, windowHeight, 1, 1));
-        } else {
-            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
-        }
-
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-        RenderSystem.setProjectionMatrix(guiProjection.getBuffer(minecraft.getWindow().getGuiScaledWidth(), minecraft.getWindow().getGuiScaledHeight()), ProjectionType.ORTHOGRAPHIC);
-        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
-        RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
-
-        runnable.run();
-
-        RenderSystem.outputColorTextureOverride = lastColorTexture;
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
-
-        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
-            GLUtils.flipTexture(src, dst, false, true);
-        });
-    }
-
-    private void drawWithMapProjection(RegisterableGPUTexture fboTexture, Runnable runnable) {
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
-
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-        RenderSystem.setProjectionMatrix(mapProjection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
-        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
-        RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
-
-        runnable.run();
-
-        RenderSystem.outputColorTextureOverride = lastColorTexture;
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
-
-        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
-            GLUtils.flipTexture(src, dst, false, true);
-        });
-    }
 
     private void renderMap(Matrix4fStack matrixStack, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
@@ -1564,7 +1516,7 @@ public class Map implements Runnable, IChangeObserver {
 
         // Draw map, radar, etc.
         // TODO: R A D A R
-        drawWithMapProjection(mapFboTexture, () -> {
+        RenderUtils.renderWithCustomProjection(mapProjection.getBuffer(), -2000.0F, mapFboTexture, () -> {
             float scale = 1.0F;
             if (this.options.squareMap && this.options.rotates) {
                 scale = 1.4142F;
@@ -1575,6 +1527,8 @@ public class Map implements Runnable, IChangeObserver {
 
             matrixStack.pushMatrix();
             matrixStack.identity();
+
+            matrixStack.pushMatrix();
             if (!options.rotates) {
                 matrixStack.rotate(Axis.ZP.rotationDegrees(rotationFactor));
             } else {
@@ -1585,58 +1539,45 @@ public class Map implements Runnable, IChangeObserver {
 
             RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(mapResources[zoom]);
             VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
-            drawTexturedQuad(matrixStack, mapBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-
+            RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0xFFFFFFFF);
             matrixStack.popMatrix();
 
-            textRenderingTest: {
-
-                matrixStack.pushMatrix();
-                matrixStack.identity();
-
-                matrixStack.scale(4.0F, 4.0F, 1.0F);
-                writeCentered(matrixStack, "Text in Minimap Render Pass", 0.0F, 20.0F, 0.0F, 0xFFFFFFFF, true);
-
-                matrixStack.popMatrix();
-
+            if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
+                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(matrixStack, layoutVariables, 1.0F);
             }
+
+            matrixStack.popMatrix();
 
             renderBufferSource.endBatch();
         });
 
         // Masking the drawn map
-        drawWithMapProjection(maskedMapFboTexture, () -> {
+        RenderUtils.renderWithCustomProjection(mapProjection.getBuffer(), -2000.0F, maskedMapFboTexture, () -> {
             matrixStack.pushMatrix();
             matrixStack.identity();
 
             RenderType stencilRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(options.squareMap ? resourceSquareMapStencil : resourceRoundMapStencil);
             VertexConsumer stencilBuffer = renderBufferSource.getBuffer(stencilRenderType);
-            drawTexturedQuad(matrixStack, stencilBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+            RenderUtils.drawTexturedModalRect(matrixStack, stencilBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F,0xFFFFFFFF);
 
             RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST_DST_ALPHA.apply(mapFboTextureLocation);
             VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
-            drawTexturedQuad(matrixStack, mapBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+            RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, -256.0F, -256.0F, -2500.0F, 512.0F, 512.0F, 0xFFFFFFFF);
 
             matrixStack.popMatrix();
             renderBufferSource.endBatch();
         });
-//
-//        if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
-//            this.layoutVariables.updateVars(scScale, x, y, this.zoomScale, this.zoomScaleAdjusted);
-//            VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(guiGraphics, this.layoutVariables, 1.0F);
-//        }
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
 
         RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(maskedMapFboTextureLocation);
         VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
-        drawTexturedQuad(matrixStack, mapBuffer, x - 32.0F, y - 32.0F, 10.0F, 64, 64, 0, 1, 0, 1, 0xFFFFFFFF);
+        RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, x - 32.0F, y - 32.0F, 10.0F, 64.0F, 64.0F, 0xFFFFFFFF);
 
         RenderType frameRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(options.squareMap ? resourceSquareMapFrame : resourceRoundMapFrame);
         VertexConsumer frameBuffer = renderBufferSource.getBuffer(frameRenderType);
-        drawTexturedQuad(matrixStack, frameBuffer, x - 32.0F, y - 32.0F, 10.0F, 64, 64, 0, 1, 0, 1, 0xFFFFFFFF);
-
+        RenderUtils.drawTexturedModalRect(matrixStack, frameBuffer, x - 32.0F, y - 32.0F, 10.0F, 64.0F, 64.0F, 0xFFFFFFFF);
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
@@ -1658,17 +1599,6 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
         matrixStack.popMatrix();
-    }
-
-    private void drawTexturedQuad(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
-        float x1 = x + width;
-        float y1 = y + height;
-
-        vertexConsumer.addVertex(matrixStack, x, y, z).setUv(u0, v0).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x, y1, z).setUv(u0, v1).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x1, y1, z).setUv(u1, v1).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x1, y, z).setUv(u1, v0).setColor(color);
-
     }
 
     private void drawWaypoint(Matrix4fStack matrixStack, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
@@ -1730,7 +1660,7 @@ public class Map implements Runnable, IChangeObserver {
                     matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                drawTexturedQuad(matrixStack, waypointBuffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), color);
+                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1754,7 +1684,7 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
 
-                drawTexturedQuad(matrixStack, waypointBuffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, icon.getMinU(), icon.getMaxU(), icon.getMinV(), icon.getMaxV(), color);
+                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {
@@ -1773,7 +1703,7 @@ public class Map implements Runnable, IChangeObserver {
 
         RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(resourceArrow);
         VertexConsumer buffer = renderBufferSource.getBuffer(renderType);
-        drawTexturedQuad(matrixStack, buffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        RenderUtils.drawTexturedModalRect(matrixStack, buffer, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, 0xFFFFFFFF);
 
         matrixStack.popMatrix();
     }
@@ -1796,7 +1726,7 @@ public class Map implements Runnable, IChangeObserver {
         int top = scHeight / 2 - 128;
         RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED.apply(mapResources[zoom]);
         VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
-        drawTexturedQuad(matrixStack, mapBuffer, left, top, 0.0F, 256.0f, 256.0F, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, left, top, 0.0F, 256.0f, 256.0F, 0xFFFFFFFF);
         matrixStack.popMatrix();
 
         if (this.options.biomeOverlay != 0) {
@@ -1812,9 +1742,9 @@ public class Map implements Runnable, IChangeObserver {
                     float x = (float) (o.x * factor);
                     float z = (float) (o.z * factor);
                     if (this.options.oldNorth) {
-                        this.writeCentered(matrixStack, name, (left + 256) - z, top + x - 3.0F, 0.0F, 0xFFFFFFFF, true);
+                        RenderUtils.drawCenteredString(matrixStack, renderBufferSource, name, (left + 256) - z, top + x - 3.0F, 0.0F, 0xFFFFFFFF, true);
                     } else {
-                        this.writeCentered(matrixStack, name, left + x, top + z - 3.0F, 0.0F, 0xFFFFFFFF, true);
+                        RenderUtils.drawCenteredString(matrixStack, renderBufferSource, name, left + x, top + z - 3.0F, 0.0F, 0xFFFFFFFF, true);
                     }
                 }
             }
@@ -1851,19 +1781,19 @@ public class Map implements Runnable, IChangeObserver {
 
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate - 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate - 90.0F) * Mth.DEG_TO_RAD), 0.0F);
-        writeCentered(matrixStack, "N", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        RenderUtils.drawCenteredString(matrixStack, renderBufferSource, "N", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate) * Mth.DEG_TO_RAD), 0.0F);
-        writeCentered(matrixStack, "E", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        RenderUtils.drawCenteredString(matrixStack, renderBufferSource, "E", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate + 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 90.0F) * Mth.DEG_TO_RAD), 0.0F);
-        writeCentered(matrixStack, "S", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        RenderUtils.drawCenteredString(matrixStack, renderBufferSource, "S", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate + 180.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 180.0F) * Mth.DEG_TO_RAD), 0.0F);
-        writeCentered(matrixStack, "W", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
+        RenderUtils.drawCenteredString(matrixStack, renderBufferSource, "W", x / scale, y / scale - 4.0F, 0.0F, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
 
         matrixStack.popMatrix();
@@ -1888,26 +1818,26 @@ public class Map implements Runnable, IChangeObserver {
 
             if (this.options.coordsMode == 1) {
                 coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
-                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // X, Z
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
 
                 coords = this.dCoord(GameVariableAccessShim.yCoord());
-                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // Y
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // Y
                 lineCount++;
             } else if (this.options.coordsMode == 2) {
                 coords = GameVariableAccessShim.xCoord() + ", " + GameVariableAccessShim.yCoord() + ", " + GameVariableAccessShim.zCoord();
-                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // X, Z
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // X, Z
                 lineCount++;
             }
 
             if (this.options.showBiome) {
                 coords = BiomeRepository.getName(this.lastBiome);
-                this.writeCentered(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // BIOME
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, coords, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // BIOME
                 lineCount++;
             }
 
             if (!this.message.isEmpty()) {
-                this.writeCentered(matrixStack, this.message, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // WORLD NAME
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, this.message, x / scale, textStart / scale + lineHeight * lineCount, 0.0F, 0xFFFFFFFF, true); // WORLD NAME
                 lineCount++;
             }
 
@@ -1931,9 +1861,9 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
-            this.writeCentered(matrixStack, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, 0.0F, 0xFFFFFFFF, true);
+            RenderUtils.drawCenteredString(matrixStack, renderBufferSource, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, 0.0F, 0xFFFFFFFF, true);
             if (!this.message.isEmpty()) {
-                this.writeCentered(matrixStack, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, 0.0F, 0xFFFFFFFF, true);
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, 0.0F, 0xFFFFFFFF, true);
             }
         }
     }
@@ -1957,26 +1887,6 @@ public class Map implements Runnable, IChangeObserver {
 
     private int textWidth(Component text) {
         return minecraft.font.width(text);
-    }
-
-    private void write(Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
-        write(matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
-    }
-
-    private void write(Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
-        matrixStack.pushMatrix();
-        matrixStack.translate(x, y, z);
-        minecraft.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrixStack, renderBufferSource, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
-
-        matrixStack.popMatrix();
-    }
-
-    private void writeCentered(Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
-        writeCentered(matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
-    }
-
-    private void writeCentered(Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
-        write(matrixStack, text, x - (textWidth(text) / 2.0F), y, z, color, shadow);
     }
 
     public static double getMinTablistOffset() {
