@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -13,23 +12,14 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Font.DisplayMode;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
-import net.minecraft.client.renderer.SubmitNodeCollection;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.blockentity.state.BeaconRenderState;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.BeaconBlock;
-import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3fc;
 
@@ -103,7 +93,9 @@ public class WaypointContainer {
 
             int x = pt.waypoint.getX();
             int z = pt.waypoint.getZ();
-            this.renderBeam(pt.waypoint, x - cameraPos.x, bottomOfWorld, z - cameraPos.z, poseStack, bufferSource);
+            double distance = Math.sqrt(pt.waypoint.getDistanceSqToCamera(camera));
+
+            this.renderBeam(poseStack, bufferSource, pt.waypoint, distance, x - cameraPos.x, bottomOfWorld, z - cameraPos.z);
         }
     }
 
@@ -185,18 +177,65 @@ public class WaypointContainer {
         return -1.0;
     }
 
-    private void renderBeam(Waypoint par1EntityWaypoint, double baseX, double baseY, double baseZ, PoseStack poseStack, BufferSource bufferSource) {
-        int top = VoxelConstants.getClientWorld().getMaxY();
-        int color = par1EntityWaypoint.getUnifiedColor();
+    private void renderBeam(PoseStack poseStack, BufferSource bufferSource, Waypoint par1EntityWaypoint, double distance, double baseX, double baseY, double baseZ) {
+        int height = VoxelConstants.getClientWorld().getHeight();
+
+        float spentTime = minecraft.getCameraEntity().tickCount + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        float texturePos = Mth.frac(spentTime * 0.2F - Mth.floor(spentTime * 0.1F));
+
+        // Edited from minecraft, net.minecraft.client.renderer.blockentity.BeaconRenderer
+        poseStack.pushPose();
+        poseStack.translate(baseX + 0.5, baseY, baseZ + 0.5);
 
         poseStack.pushPose();
-        poseStack.translate(baseX, baseY, baseZ);
+        poseStack.mulPose(Axis.YP.rotationDegrees(spentTime * 2.25F - 45.0F));
 
-        SubmitNodeStorage submitNodeStorage = minecraft.gameRenderer.getFeatureRenderDispatcher().getSubmitNodeStorage();
-        float ticks = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        BeaconRenderer.submitBeaconBeam(poseStack, submitNodeStorage, BeaconRenderer.BEAM_LOCATION, 1.0F, ticks, 0, top, color, BeaconRenderer.SOLID_BEAM_RADIUS, BeaconRenderer.BEAM_GLOW_RADIUS);
+        float beamRadius = BeaconRenderer.SOLID_BEAM_RADIUS / 1.4142F;
+        float beamMaxV = 1.0F - texturePos;
+        float beamMinV = height * (0.5F / BeaconRenderer.SOLID_BEAM_RADIUS) + beamMaxV;
+        int beamColor = par1EntityWaypoint.getUnifiedColor(1.0F);
+
+        RenderType beamRenderType = RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, false);
+        VertexConsumer beamBuffer = bufferSource.getBuffer(beamRenderType);
+        for (int face = 0; face < 4; ++face) {
+            float x = (face == 0 || face == 3) ? -beamRadius : beamRadius;
+            float z = (face < 2) ? -beamRadius : beamRadius;
+            float x2 = (face < 2) ? -beamRadius : beamRadius;
+            float z2 = (face == 1 || face == 2) ? -beamRadius : beamRadius;
+
+            beamBuffer.addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMinV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            beamBuffer.addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMaxV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            beamBuffer.addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMaxV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            beamBuffer.addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMinV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+
+        }
+        bufferSource.endBatch(beamRenderType);
 
         poseStack.popPose();
+
+        float glowRadius = BeaconRenderer.BEAM_GLOW_RADIUS;
+        float glowMaxV = 1.0F - texturePos;
+        float glowMinV = height + beamMaxV;
+        int glowColor = par1EntityWaypoint.getUnifiedColor(0.125F);
+
+        RenderType glowRenderType = RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, true);
+        VertexConsumer glowBuffer = bufferSource.getBuffer(glowRenderType);
+        for (int face = 0; face < 4; ++face) {
+            float x = (face == 0 || face == 3) ? -glowRadius : glowRadius;
+            float z = (face < 2) ? -glowRadius : glowRadius;
+            float x2 = (face < 2) ? -glowRadius : glowRadius;
+            float z2 = (face == 1 || face == 2) ? -glowRadius : glowRadius;
+
+            glowBuffer.addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMinV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            glowBuffer.addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMaxV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            glowBuffer.addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMaxV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            glowBuffer.addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMinV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+
+        }
+        bufferSource.endBatch(glowRenderType);
+
+        poseStack.popPose();
+
     }
 
     private void renderLabel(PoseStack poseStack, BufferSource bufferSource, Waypoint pt, double distance, boolean isPointedAt, boolean target, double baseX, double baseY, double baseZ/* , boolean withDepth, boolean withoutDepth */) {
@@ -209,7 +248,7 @@ public class WaypointContainer {
             }
         }
 
-        double maxDistance = minecraft.options.simulationDistance().get() * 16.0 * 0.99;
+        double maxDistance = minecraft.gameRenderer.getDepthFar() - 8.0;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;

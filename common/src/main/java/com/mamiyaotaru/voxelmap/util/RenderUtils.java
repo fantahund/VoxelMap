@@ -27,12 +27,10 @@ public class RenderUtils {
     }
 
     public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
-        float x1 = x + width;
-        float y1 = y + height;
-        vertexConsumer.addVertex(matrixStack, x, y, z).setUv(u0, v0).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x, y1, z).setUv(u0, v1).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x1, y1, z).setUv(u1, v1).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x1, y, z).setUv(u1, v0).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x + 0.0F, y + 0.0F, z).setUv(u0, v0).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x + 0.0F, y + height, z).setUv(u0, v1).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x + width, y + height, z).setUv(u1, v1).setColor(color);
+        vertexConsumer.addVertex(matrixStack, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
     }
 
     public static void drawString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
