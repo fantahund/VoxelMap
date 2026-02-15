@@ -55,6 +55,12 @@ public class RenderUtils {
     }
 
     public static void renderWithCustomProjection(GpuBufferSlice projection, float initialDepth, DynamicAllocatedTexture fboTexture, Runnable runnable) {
+        // I don't know why, but sometimes when the window loses focus, the projection matrix fails to be restored.
+        // So I made it so that rendering stops when the window loses focus.
+        if (!MINECRAFT.isWindowActive()) {
+            return;
+        }
+
         RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(fboTexture.getDepthTexture(), 1.0);
 
@@ -87,6 +93,10 @@ public class RenderUtils {
     }
 
     public static void renderWithFullscreenProjection(DynamicAllocatedTexture fboTexture, Runnable runnable) {
+        if (!MINECRAFT.isWindowActive()) {
+            return;
+        }
+
         int windowWidth = MINECRAFT.getWindow().getWidth();
         int windowHeight = MINECRAFT.getWindow().getHeight();
         int guiWidth = MINECRAFT.getWindow().getGuiScaledWidth();
