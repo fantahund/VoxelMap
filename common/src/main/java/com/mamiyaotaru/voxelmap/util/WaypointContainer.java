@@ -51,7 +51,7 @@ public class WaypointContainer {
             if (skip1 && !skip2) return 1;
             if (!skip1 && skip2) return -1;
 
-            return Double.compare(offset, o.offset);
+            return Float.compare(offset, o.offset);
         }
     }
 
