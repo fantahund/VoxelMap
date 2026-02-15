@@ -15,7 +15,6 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
-import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
@@ -150,12 +149,12 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         this.nextPageButton.active = pageCount > 0;
         this.prevPageButton.active = pageCount > 0;
 
-        GridLayout gridLayout = new GridLayout();
-        gridLayout.defaultCellSetting().paddingHorizontal(4).paddingBottom(4).alignHorizontallyCenter();
-        GridLayout.RowHelper row = gridLayout.createRowHelper(2);
         // Menu Buttons
         for (int i = pageStart; i < pageEnd; i++) {
             EnumOptionsMinimap option = relevantOptions[i];
+            int buttonX = this.getWidth() / 2 - 155 + (i - pageStart) % 2 * 160;
+            int buttonY = this.getHeight() / 6 + 24 * ((i - pageStart) >> 1);
+
             // List / Toggle
             if (option.isBoolean() || option.isList()) {
                 StringBuilder text = new StringBuilder().append(this.getKeyText(option));
@@ -163,8 +162,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                     text.append("§c").append(text);
                 }
 
-                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(0, 0, option, Component.literal(text.toString()), this::optionClicked);
-                row.addChild(optionButton);
+                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(buttonX, buttonY, option, Component.literal(text.toString()), this::optionClicked);
+                this.addOptionButton(optionButton);
 
                 if (option == EnumOptionsMinimap.SLIME_CHUNKS) {
                     this.slimeChunksButton = optionButton;
@@ -174,10 +173,10 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             // Text Field
             if (option == EnumOptionsMinimap.TELEPORT_COMMAND) {
                 String buttonTeleportText = I18n.get("options.minimap.teleportCommand") + ": " + VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand;
-                this.teleportCommandButton = new GuiButtonText(this.getFont(), 0, 0, 150, 20, Component.literal(buttonTeleportText), button -> this.teleportCommandButton.setEditing(true));
+                this.teleportCommandButton = new GuiButtonText(this.getFont(), buttonX, buttonY, 150, 20, Component.literal(buttonTeleportText), button -> this.teleportCommandButton.setEditing(true));
                 this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
                 this.teleportCommandButton.active = VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand == null;
-                row.addChild(this.teleportCommandButton);
+                this.addOptionButton(teleportCommandButton);
             }
         }
 
@@ -202,10 +201,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             this.mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, this.radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
             this.addOptionButton(this.mobListButton);
         }
-
-        gridLayout.visitWidgets(this::addOptionButton);
-        gridLayout.arrangeElements();
-        gridLayout.setPosition((this.width - gridLayout.getWidth()) / 2, this.height / 6);
 
         this.setButtonsActive();
 
