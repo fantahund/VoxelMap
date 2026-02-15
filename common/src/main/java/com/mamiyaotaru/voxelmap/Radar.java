@@ -11,14 +11,20 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.joml.Matrix4fStack;
 
+import java.util.HashMap;
+import java.util.Properties;
+
 public class Radar extends AbstractRadar {
     private final EntityMapImageManager entityMapImageManager;
+    private final HashMap<Entity, MobIconConfig> iconConfigs = new HashMap<>();
 
     public Radar() {
         super();
@@ -78,34 +84,40 @@ public class Radar extends AbstractRadar {
                 continue;
             }
 
-            matrixStack.pushMatrix();
-            applyContactTransform(matrixStack, contact, x, y);
+            try {
+                matrixStack.pushMatrix();
+                applyContactTransform(matrixStack, contact, x, y);
 
-            int color;
-            if (minimapContext.playerY - contact.y < 0) {
-                color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
-            } else {
-                float brightness = Math.max(0.3F, contact.brightness);
-                color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
+                int color;
+                if (minimapContext.playerY - contact.y < 0) {
+                    color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+                } else {
+                    float brightness = Math.max(0.3F, contact.brightness);
+                    color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
+                }
+
+                float zOffset = i * 0.01F;
+                float yOffset = 0.0F;
+                if (contact.entity.getVehicle() != null && isEntityShown(contact.entity.getVehicle())) {
+                    yOffset = -4.0F;
+                }
+
+                float imageWidth = contact.icon.getIconWidth() / 8.0F;
+                float imageHeight = contact.icon.getIconHeight() / 8.0F;
+                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
+
+                if (contact.armorIcon != null) {
+                    MobIconConfig iconConfig = getIconConfig(contact);
+                    float armorOffset = iconConfig.armorOffset();
+                    float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
+                    float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
+                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, color);
+                }
+            } catch (Exception e) {
+                VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
+            } finally {
+                matrixStack.popMatrix();
             }
-
-            float zOffset = i * 0.01F;
-            float yOffset = 0.0F;
-            if (contact.entity.getVehicle() != null && isEntityShown(contact.entity.getVehicle())) {
-                yOffset = -4.0F;
-            }
-
-            float imageWidth = contact.icon.getIconWidth() / 8.0F;
-            float imageHeight = contact.icon.getIconHeight() / 8.0F;
-            RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
-
-            if (contact.armorIcon != null) {
-                float armorOffset = Float.parseFloat(entityMapImageManager.getMobProperties(contact.entity).getProperty("helmetOffset", "0.0"));
-                float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
-                float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, color);
-            }
-            matrixStack.popMatrix();
         }
         bufferSource.endBatch(iconRenderType);
 
@@ -118,20 +130,33 @@ public class Radar extends AbstractRadar {
             }
 
             if (contact.name != null && ((radarOptions.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
-                float scaleFactor = radarOptions.fontScale / 4.0F;
-                float zOffset = i * 0.01F;
+                try {
+                    float scaleFactor = radarOptions.fontScale / 4.0F;
+                    float zOffset = i * 0.01F;
 
-                matrixStack.pushMatrix();
-                applyContactTransform(matrixStack, contact, x, y);
-                matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
+                    matrixStack.pushMatrix();
+                    applyContactTransform(matrixStack, contact, x, y);
+                    matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
 
-                RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, false);
-
-                matrixStack.popMatrix();
+                    RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, false);
+                } catch (Exception e) {
+                    VoxelConstants.getLogger().error("Error rendering mob name! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
+                } finally {
+                    matrixStack.popMatrix();
+                }
             }
         }
 
         matrixStack.popMatrix();
+    }
+
+    private MobIconConfig getIconConfig(Contact contact) {
+        return iconConfigs.computeIfAbsent(contact.entity, key -> {
+            Properties properties =  entityMapImageManager.getMobProperties(contact.entity);
+            float armorOffset = Float.parseFloat(properties.getProperty("helmetOffset", "0.0"));
+
+            return new MobIconConfig(armorOffset);
+        });
     }
 
     public void onJoinServer() {
@@ -140,5 +165,8 @@ public class Radar extends AbstractRadar {
 
     public EntityMapImageManager getEntityMapImageManager() {
         return entityMapImageManager;
+    }
+
+    private record MobIconConfig(float armorOffset) {
     }
 }
