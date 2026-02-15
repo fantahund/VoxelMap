@@ -4,10 +4,10 @@ import com.mojang.blaze3d.opengl.GlTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.system.MemoryUtil;
 
-public class DynamicMoveableTexture extends DynamicTexture {
+public class DynamicMutableTexture extends DynamicTexture {
     private final Object bufferLock = new Object();
 
-    public DynamicMoveableTexture(String label, int width, int height, boolean clear) {
+    public DynamicMutableTexture(String label, int width, int height, boolean clear) {
         super(label, width, height, clear);
     }
 

@@ -15,7 +15,7 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.DynamicMoveableTexture;
+import com.mamiyaotaru.voxelmap.util.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
@@ -112,10 +112,10 @@ public class Map implements Runnable, IChangeObserver {
     private final int mapDataCount = 5;
     private final FullMapData[] mapData = new FullMapData[this.mapDataCount];
     private final MapChunkCache[] chunkCache = new MapChunkCache[this.mapDataCount];
-    private DynamicMoveableTexture[] mapImages;
+    private DynamicMutableTexture[] mapImages;
     private Identifier[] mapResources;
-    private final DynamicMoveableTexture[] mapImagesFiltered = new DynamicMoveableTexture[this.mapDataCount];
-    private final DynamicMoveableTexture[] mapImagesUnfiltered = new DynamicMoveableTexture[this.mapDataCount];
+    private final DynamicMutableTexture[] mapImagesFiltered = new DynamicMutableTexture[this.mapDataCount];
+    private final DynamicMutableTexture[] mapImagesUnfiltered = new DynamicMutableTexture[this.mapDataCount];
     private final Identifier[] resourceMapImageFiltered = new Identifier[this.mapDataCount];
     private final Identifier[] resourceMapImageUnfiltered = new Identifier[this.mapDataCount];
 
@@ -205,7 +205,7 @@ public class Map implements Runnable, IChangeObserver {
             this.mapData[i] = new FullMapData(resolution, resolution);
             this.chunkCache[i] = new MapChunkCache(chunks, chunks, this);
 
-            this.mapImagesFiltered[i] = new DynamicMoveableTexture(String.format("voxelmap-map-%s", resolution), resolution, resolution, true);
+            this.mapImagesFiltered[i] = new DynamicMutableTexture(String.format("voxelmap-map-%s", resolution), resolution, resolution, true);
             this.mapImagesFiltered[i].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
             minecraft.getTextureManager().register(resourceMapImageFiltered[i], this.mapImagesFiltered[i]);
 
