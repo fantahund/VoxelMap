@@ -21,21 +21,23 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3fc;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class WaypointContainer {
-    private final List<ExtendedWaypoint> wayPts = new ArrayList<>();
-    private Waypoint highlightedWaypoint;
     public final MapSettingsManager options;
     public final Minecraft minecraft = Minecraft.getInstance();
 
+    private final List<ExtendedWaypoint> wayPts = new ArrayList<>();
+    private Waypoint highlightedWaypoint;
+
+    private static final float INVALID_OFFSET = -1.0F;
+
     public static class ExtendedWaypoint implements Comparable<ExtendedWaypoint> {
         public Waypoint waypoint;
-        public double offset;
+        public float offset;
         public boolean target;
 
         public ExtendedWaypoint(Waypoint waypoint) {
@@ -43,8 +45,8 @@ public class WaypointContainer {
         }
 
         public int compareTo(ExtendedWaypoint o) {
-            boolean skip1 = offset == -1.0 || (!waypoint.enabled && !target) || !waypoint.inWorld || !waypoint.inDimension;
-            boolean skip2 = o.offset == -1.0 || (!o.waypoint.enabled && !o.target) || !o.waypoint.inWorld || !o.waypoint.inDimension;
+            boolean skip1 = offset == INVALID_OFFSET || (!waypoint.enabled && !target) || !waypoint.inWorld || !waypoint.inDimension;
+            boolean skip2 = o.offset == INVALID_OFFSET || (!o.waypoint.enabled && !o.target) || !o.waypoint.inWorld || !o.waypoint.inDimension;
 
             if (skip1 && !skip2) return 1;
             if (!skip1 && skip2) return -1;
@@ -107,8 +109,9 @@ public class WaypointContainer {
         this.sortWaypoints();
         boolean shiftDown = minecraft.options.keyShift.isDown();
         int last = this.wayPts.size() - 1;
-        int i = 0;
-        for (ExtendedWaypoint pt : this.wayPts) {
+        for (int i = 0; i < wayPts.size(); i++) {
+            ExtendedWaypoint pt = wayPts.get(i);
+
             boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
             pt.target = isHighlighted;
 
@@ -116,8 +119,7 @@ public class WaypointContainer {
             if (isHighlighted) isEffectivelyActive = true;
 
             if (!isEffectivelyActive) {
-                pt.offset = -1;
-                i++;
+                pt.offset = INVALID_OFFSET;
                 continue;
             }
 
@@ -131,15 +133,13 @@ public class WaypointContainer {
             if (isHighlighted) isEffectivelyActive = true;
 
             if (!isEffectivelyActive) {
-                pt.offset = -1;
-                i++;
+                pt.offset = INVALID_OFFSET;
                 continue;
             }
 
             pt.offset = getCenterOffset(pt.waypoint, distance, camera);
-            boolean isPointedAt = pt.offset != -1.0 && (shiftDown || i == last);
+            boolean isPointedAt = pt.offset != INVALID_OFFSET && (shiftDown || i == last);
             this.renderLabel(poseStack, bufferSource, pt.waypoint, distance, isPointedAt, false, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
-            i++;
         }
 
         if (this.highlightedWaypoint != null && !VoxelConstants.getMinecraft().options.hideGui) {
@@ -147,34 +147,39 @@ public class WaypointContainer {
             int z = this.highlightedWaypoint.getZ();
             int y = this.highlightedWaypoint.getY();
             double distance = Math.sqrt(this.highlightedWaypoint.getDistanceSqToCamera(camera));
-            boolean isPointedAt = this.getCenterOffset(this.highlightedWaypoint, distance, camera) != -1.0F;
+            boolean isPointedAt = this.getCenterOffset(this.highlightedWaypoint, distance, camera) != INVALID_OFFSET;
             this.renderLabel(poseStack, bufferSource, this.highlightedWaypoint, distance, isPointedAt, true, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
         }
     }
 
-    private double getCenterOffset(Waypoint waypoint, double distance, Camera camera) {
+    private float getCenterOffset(Waypoint waypoint, double distance, Camera camera) {
         if (distance < 1.0) {
-            return -1.0;
+            return INVALID_OFFSET;
         }
 
         Vec3 cameraPos = camera.position();
+        float dx = (waypoint.getX() + 0.5F) - (float) cameraPos.x();
+        float dy = (waypoint.getY() + 1.5F) - (float) cameraPos.y();
+        float dz = (waypoint.getZ() + 0.5F) - (float) cameraPos.z();
+
+        float zo = camera.forwardVector().dot(dx, dy, dz);
+        if (zo < 0.0F) {
+            return INVALID_OFFSET;
+        }
+
+        float xo = camera.leftVector().dot(dx, dy, dz);
+        float yo = camera.upVector().dot(dx, dy, dz);
+        float centerOffset = (yo * yo) + (xo * xo);
+
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * Mth.DEG_TO_RAD;
         double size = Math.max(Math.sin(angle) * distance, 0.5) * this.options.waypointSignScale;
 
-        Vector3fc lookVector = camera.forwardVector();
-        Vec3 scaledLookVector = cameraPos.add(lookVector.x() * distance, lookVector.y() * distance, lookVector.z() * distance);
-
-        double dx = (waypoint.getX() + 0.5F) - scaledLookVector.x;
-        double dy = (waypoint.getY() + 1.5F) - scaledLookVector.y;
-        double dz = (waypoint.getZ() + 0.5F) - scaledLookVector.z;
-        double distFromCenter = dx * dx + dy * dy + dz * dz;
-
-        if (distFromCenter <= size * size) {
-            return distFromCenter;
+        if (centerOffset <= size * size) {
+            return centerOffset;
         }
 
-        return -1.0;
+        return INVALID_OFFSET;
     }
 
     private void renderBeam(PoseStack poseStack, BufferSource bufferSource, Waypoint par1EntityWaypoint, double distance, double baseX, double baseY, double baseZ) {
