@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -59,21 +60,26 @@ public class RenderUtils {
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-        RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
         GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
         GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
-        RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
-        RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
 
-        runnable.run();
+        try {
+            RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
+            RenderSystem.getModelViewStack().pushMatrix();
+            RenderSystem.getModelViewStack().identity();
+            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
+            RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
+            RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
 
-        RenderSystem.outputColorTextureOverride = lastColorTexture;
-        RenderSystem.outputDepthTextureOverride = lastDepthTexture;
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+            runnable.run();
+        } catch (Exception e) {
+            VoxelConstants.getLogger().error("Failed to render with custom projection. Exception: " + e);
+        } finally {
+            RenderSystem.outputColorTextureOverride = lastColorTexture;
+            RenderSystem.outputDepthTextureOverride = lastDepthTexture;
+            RenderSystem.getModelViewStack().popMatrix();
+            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+        }
 
         GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
             GLUtils.flipTexture(src, dst, false, true);
@@ -96,21 +102,26 @@ public class RenderUtils {
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-        RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(guiWidth, guiHeight), ProjectionType.ORTHOGRAPHIC);
         GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
         GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
-        RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
-        RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
 
-        runnable.run();
+        try {
+            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(guiWidth, guiHeight), ProjectionType.ORTHOGRAPHIC);
+            RenderSystem.getModelViewStack().pushMatrix();
+            RenderSystem.getModelViewStack().identity();
+            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
+            RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
+            RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
 
-        RenderSystem.outputColorTextureOverride = lastColorTexture;
-        RenderSystem.outputDepthTextureOverride = lastDepthTexture;
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+            runnable.run();
+        } catch (Exception e) {
+            VoxelConstants.getLogger().error("Failed to render with fullscreen projection. Exception: " + e);
+        } finally {
+            RenderSystem.outputColorTextureOverride = lastColorTexture;
+            RenderSystem.outputDepthTextureOverride = lastDepthTexture;
+            RenderSystem.getModelViewStack().popMatrix();
+            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+        }
 
         GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
             GLUtils.flipTexture(src, dst, false, true);
