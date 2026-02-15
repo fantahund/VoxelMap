@@ -74,11 +74,14 @@ public class GLUtils {
         int x1 = flipX ? 0 : width;
         int y1 = flipY ? 0 : height;
 
+        int lastReadFramebuffer = GlStateManager.getFrameBuffer(GL30.GL_READ_FRAMEBUFFER);
+        int lastDrawFramebuffer = GlStateManager.getFrameBuffer(GL30.GL_DRAW_FRAMEBUFFER);
+
         GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, src2.getFbo(device.directStateAccess(), null));
         GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, dst2.getFbo(device.directStateAccess(), null));
         GlStateManager._glBlitFrameBuffer(0, 0, width, height, x0, y0, x1, y1, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
-        GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0);
-        GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, 0);
+        GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, lastReadFramebuffer);
+        GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, lastDrawFramebuffer);
 
     }
 }
