@@ -41,7 +41,7 @@ public class GLUtils {
         }, 0);
     }
 
-    private static final Long2ObjectOpenHashMap<GpuTexture> TEXTURE_COPIES = new Long2ObjectOpenHashMap<>();
+    private static final Long2ObjectOpenHashMap<GpuTexture> TEXTURE_CACHES = new Long2ObjectOpenHashMap<>();
 
     public static void postProcessTexture(GpuTexture gpuTexture, BiConsumer<GpuTexture, GpuTexture> consumer) {
         RenderSystem.assertOnRenderThread();
@@ -51,10 +51,16 @@ public class GLUtils {
         TextureFormat format = gpuTexture.getFormat();
 
         long key = ((long) width << 40) | ((long) height << 16) | format.ordinal();
-        GpuTexture copy = TEXTURE_COPIES.computeIfAbsent(key, key2 -> {
+        GpuTexture copy;
+        if (TEXTURE_CACHES.containsKey(key) && !TEXTURE_CACHES.get(key).isClosed()) {
+            copy = TEXTURE_CACHES.get(key);
+        } else {
             int usage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
-            return RenderSystem.getDevice().createTexture("VoxelMap Texture Copy " + key, usage, format, width, height, 1, 1);
-        });
+            copy = RenderSystem.getDevice().createTexture("VoxelMap Texture Cache " + key, usage, format, width, height, 1, 1);
+
+            TEXTURE_CACHES.put(key, copy);
+        }
+
         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(gpuTexture, copy, 0, 0, 0, 0, 0, width, height);
 
         consumer.accept(copy, gpuTexture);
