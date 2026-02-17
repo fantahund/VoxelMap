@@ -496,7 +496,7 @@ public class EntityMapImageManager {
             BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
             List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.randomSource);
 
-            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, LIGHT);
+            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, OVERLAY);
         }
 
         this.doCapture(context, armorTexture, null);

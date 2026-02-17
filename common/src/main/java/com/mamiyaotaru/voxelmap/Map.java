@@ -649,7 +649,7 @@ public class Map implements Runnable, IChangeObserver {
                 GameVariableAccessShim.xCoordDouble(),
                 GameVariableAccessShim.yCoordDouble(),
                 GameVariableAccessShim.zCoordDouble(),
-                (!this.options.rotates && this.options.oldNorth) ? -90.0F : this.direction,
+                (this.options.rotates && !this.fullscreenMap) ? this.direction : -this.rotationFactor,
                 this.zoomScale,
                 this.zoomScaleAdjusted
         );
