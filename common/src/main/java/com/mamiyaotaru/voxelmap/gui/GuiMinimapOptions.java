@@ -132,6 +132,9 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             this.tabIndex = this.lastTabIndex;
             return;
         }
+        if (this.tabIndex != this.lastTabIndex) {
+            this.pageIndex = 0;
+        }
         this.lastTabIndex = this.tabIndex;
 
         int itemCount = 10;
