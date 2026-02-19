@@ -2,17 +2,12 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
-import com.mojang.blaze3d.opengl.GlTexture;
+import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.zip.DataFormatException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
@@ -20,6 +15,12 @@ import org.apache.logging.log4j.Level;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.zip.DataFormatException;
 
 public class CompressibleGLBufferedImage {
     private static final HashMap<Integer, ByteBuffer> byteBuffers = new HashMap<>(4);
@@ -104,7 +105,7 @@ public class CompressibleGLBufferedImage {
         ByteBuffer outBuffer = MemoryUtil.memByteBuffer(this.texture.getPixels().getPointer(), imageBytes);
         MemoryUtil.memCopy(buffer, outBuffer);
         this.texture.upload();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ((GlTexture) this.texture.getTexture()).glId());
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, GLUtils.getGlTexture(this.texture.getTexture()).glId());
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         this.compress();
     }

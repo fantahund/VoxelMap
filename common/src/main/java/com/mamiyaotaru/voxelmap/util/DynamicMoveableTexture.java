@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mojang.blaze3d.opengl.GlTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.system.MemoryUtil;
 
@@ -20,7 +19,7 @@ public class DynamicMoveableTexture extends DynamicTexture {
     }
 
     public int getIndex() {
-        return ((GlTexture) this.getTexture()).glId();
+        return GLUtils.getGlTexture(this.getTexture()).glId();
     }
 
     public void moveX(int offset) {
