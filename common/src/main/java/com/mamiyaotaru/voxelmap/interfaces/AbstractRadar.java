@@ -115,7 +115,7 @@ public abstract class AbstractRadar {
             contact.displayState = Contact.DisplayState.HIDDEN;
             return;
         } else {
-            contact.displayState = Contact.DisplayState.ABOVE_FRAME;
+            contact.displayState = Contact.DisplayState.BELOW_FRAME;
         }
 
         contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));

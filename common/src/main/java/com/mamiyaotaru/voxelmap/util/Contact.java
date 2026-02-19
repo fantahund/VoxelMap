@@ -10,7 +10,7 @@ import java.util.UUID;
 public class Contact {
     public enum DisplayState {
         HIDDEN,
-        ABOVE_FRAME
+        BELOW_FRAME
     }
 
     public final LivingEntity entity;
