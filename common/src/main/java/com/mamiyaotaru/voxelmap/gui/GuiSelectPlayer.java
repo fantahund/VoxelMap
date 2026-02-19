@@ -43,11 +43,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         this.screenTitle = this.sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
         this.playerList = new GuiButtonRowListPlayers(this);
         int messageStringWidth = this.getFont().width(I18n.get("minimap.waypointShare.shareMessage") + ":");
-        this.message = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, null);
+        this.message = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, Component.empty());
         this.message.setMaxLength(78);
         this.addRenderableWidget(this.message);
         int filterStringWidth = this.getFont().width(I18n.get("minimap.waypoints.filter") + ":");
-        this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, null);
+        this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 55, 305 - filterStringWidth - 5, 20, Component.empty());
         this.filter.setMaxLength(35);
         this.addRenderableWidget(this.filter);
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> this.onClose()).bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());

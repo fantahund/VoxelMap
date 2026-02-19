@@ -47,7 +47,12 @@ public class VoxelMap implements PreparableReloadListener {
     private static String passMessage;
     private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque<>();
     private Properties imageProperties;
+
     VoxelMap() {}
+
+    public void onEventsSet(Events events) {
+        events.initEvents(this);
+    }
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
         mapOptions = new MapSettingsManager();
@@ -83,7 +88,7 @@ public class VoxelMap implements PreparableReloadListener {
             this.radarSimple = null;
         }
 
-        VoxelConstants.getEvents().initEvents(this);
+        applyResourceManager(VoxelConstants.getMinecraft().getResourceManager());
         this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
         this.worldUpdateListener = new WorldUpdateListener();
