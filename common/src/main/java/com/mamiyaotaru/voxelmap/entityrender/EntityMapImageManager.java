@@ -613,6 +613,10 @@ public class EntityMapImageManager {
         AbstractTexture texture = minecraft.getTextureManager().getTexture(primaryId);
         AbstractTexture texture2 = secondaryId == null ? null : minecraft.getTextureManager().getTexture(secondaryId);
 
+        ProjectionType originalProjectionType = RenderSystem.getProjectionType();
+        GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+        RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
         GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
@@ -642,9 +646,6 @@ public class EntityMapImageManager {
             // float size = 64.0F * scale;
             // int width = fboTexture.getWidth(0);
             // int height = fboTexture.getHeight(0);
-            ProjectionType originalProjectionType = RenderSystem.getProjectionType();
-            GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-            RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);
@@ -664,9 +665,9 @@ public class EntityMapImageManager {
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
+        } finally {
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
-
         }
 
         return true;
