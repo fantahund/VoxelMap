@@ -19,9 +19,6 @@ import java.awt.image.BufferedImage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import java.awt.image.BufferedImage;
-import java.util.function.Consumer;
-
 public class GLUtils {
     public static GlDevice getGlDevice(GpuDevice gpuDevice) {
         return PlatformResolver.resolve(PlatformResolver.ResolverType.GPU_DEVICE_TO_GL_DEVICE, gpuDevice);
@@ -54,30 +51,26 @@ public class GLUtils {
         }, 0);
     }
 
-    private static final Long2ObjectOpenHashMap<GpuTexture> TEXTURE_CACHES = new Long2ObjectOpenHashMap<>();
+    private static final Long2ObjectOpenHashMap<GpuTexture> POST_PROCESS_CACHE = new Long2ObjectOpenHashMap<>();
 
     public static void postProcessTexture(GpuTexture gpuTexture, BiConsumer<GpuTexture, GpuTexture> consumer) {
         RenderSystem.assertOnRenderThread();
 
+        TextureFormat format = gpuTexture.getFormat();
         int width = gpuTexture.getWidth(0);
         int height = gpuTexture.getHeight(0);
-        TextureFormat format = gpuTexture.getFormat();
 
-        long key = ((long) width << 40) | ((long) height << 16) | format.ordinal();
-        GpuTexture copy;
-        if (TEXTURE_CACHES.containsKey(key) && !TEXTURE_CACHES.get(key).isClosed()) {
-            copy = TEXTURE_CACHES.get(key);
-        } else {
+        long key = ((long) width << 40) | ((long) height << 16) | (long) format.ordinal();
+        GpuTexture copy = POST_PROCESS_CACHE.get(key);
+        if (copy == null || copy.isClosed()) {
             int usage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
             copy = RenderSystem.getDevice().createTexture("VoxelMap Texture Cache " + key, usage, format, width, height, 1, 1);
 
-            TEXTURE_CACHES.put(key, copy);
+            POST_PROCESS_CACHE.put(key, copy);
         }
 
         RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(gpuTexture, copy, 0, 0, 0, 0, 0, width, height);
-
         consumer.accept(copy, gpuTexture);
-
     }
 
     public static void flipTexture(GpuTexture src, GpuTexture dst, boolean flipX, boolean flipY) {
@@ -86,9 +79,9 @@ public class GLUtils {
         GlDevice device = getGlDevice(RenderSystem.getDevice());
         GlTexture src2 = getGlTexture(src);
         GlTexture dst2 = getGlTexture(dst);
-
         int width = src2.getWidth(0);
         int height = src2.getHeight(0);
+
         int x0 = flipX ? width : 0;
         int y0 = flipY ? height : 0;
         int x1 = flipX ? 0 : width;
@@ -102,6 +95,5 @@ public class GLUtils {
         GlStateManager._glBlitFrameBuffer(0, 0, width, height, x0, y0, x1, y1, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
         GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, lastReadFramebuffer);
         GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, lastDrawFramebuffer);
-
     }
 }
