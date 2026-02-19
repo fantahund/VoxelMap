@@ -6,6 +6,7 @@ import com.mojang.blaze3d.opengl.GlDevice;
 import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -22,6 +23,10 @@ import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 public class GLUtils {
+    public static GlDevice getGlDevice(GpuDevice gpuDevice) {
+        return PlatformResolver.resolve(PlatformResolver.ResolverType.GPU_DEVICE_TO_GL_DEVICE, gpuDevice);
+    }
+
     public static GlTexture getGlTexture(GpuTexture gpuTexture) {
         return PlatformResolver.resolve(PlatformResolver.ResolverType.GPU_TEXTURE_TO_GL_TEXTURE, gpuTexture);
     }
@@ -77,7 +82,8 @@ public class GLUtils {
 
     public static void flipTexture(GpuTexture src, GpuTexture dst, boolean flipX, boolean flipY) {
         RenderSystem.assertOnRenderThread();
-        GlDevice device = (GlDevice) RenderSystem.getDevice();
+
+        GlDevice device = getGlDevice(RenderSystem.getDevice());
         GlTexture src2 = getGlTexture(src);
         GlTexture dst2 = getGlTexture(dst);
 

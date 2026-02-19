@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 public final class PlatformResolver {
     public enum ResolverType {
+        GPU_DEVICE_TO_GL_DEVICE,
         GPU_TEXTURE_TO_GL_TEXTURE
     }
 
