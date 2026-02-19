@@ -30,7 +30,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -229,7 +228,7 @@ public class ModrinthUpdateChecker {
         if (!VoxelConstants.getVoxelMapInstance().getMapOptions().updateNotifier) {
             return;
         }
-        String modVersion = FabricLoader.getInstance().getModContainer("voxelmap").map(container -> container.getMetadata().getVersion().getFriendlyString()).orElse(null);
+        String modVersion = VoxelConstants.getModVersion();
 
         if (modVersion == null) return;
 

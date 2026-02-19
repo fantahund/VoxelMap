@@ -57,7 +57,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.Level;
@@ -573,16 +572,16 @@ public class Map implements Runnable, IChangeObserver {
     private int getSkyColor() {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
-        Vector4f color = Minecraft.getInstance().gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getDarkenWorldAmount(0.0F));
-        float r = color.x;
-        float g = color.y;
-        float b = color.z;
+        Vector4f color = minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getDarkenWorldAmount(0.0F));
+        int r = (int) (color.x * 255.0F);
+        int g = (int) (color.y * 255.0F);
+        int b = (int) (color.z * 255.0F);
         if (!aboveHorizon) {
-            return 0x0A000000 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
+            return 0x0A000000 | (r << 16) | (g << 8) | b;
         } else {
-            int backgroundColor = 0xFF000000 + (int) (r * 255.0F) * 65536 + (int) (g * 255.0F) * 256 + (int) (b * 255.0F);
-            int sunsetColor = minecraft.gameRenderer.getMainCamera().attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, 0.0f);
-            return ColorUtils.colorAdder(sunsetColor, backgroundColor);
+//            int sunsetColor = minecraft.gameRenderer.getMainCamera().attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, 0.0F);
+//            return ColorUtils.colorAdder(sunsetColor, backgroundColor);
+            return 0xFF000000 | (r << 16) | (g << 8) | b;
         }
     }
 
@@ -1337,7 +1336,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
             }
             MutableBlockPosCache.release(blockPos);
-            return this.world.getMinY() - 1;
+            return Short.MIN_VALUE;
         }
     }
 

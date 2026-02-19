@@ -124,7 +124,7 @@ public class ColorManager {
     }
 
     public int getAirColor() {
-        return this.blockColors[BlockRepository.airID];
+        return ARGB.toABGR(this.blockColors[BlockRepository.airID]);
     }
 
     public Identifier getHueColorWheel() {

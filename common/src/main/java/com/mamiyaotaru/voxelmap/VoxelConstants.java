@@ -26,6 +26,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public final class VoxelConstants {
+    //TODO 1.21.11: use VoxelConstants.MOD_ID for identifier namespace
+    public static final String MOD_ID = "voxelmap";
+    private static String modVersion = null;
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     private static int elapsedTicks;
@@ -196,12 +199,12 @@ public final class VoxelConstants {
         return events;
     }
 
-    public static PacketBridge getPacketBridge() {
-        return packetBridge;
-    }
-
     public static void setPacketBridge(PacketBridge packetBridge) {
         VoxelConstants.packetBridge = packetBridge;
+    }
+
+    public static PacketBridge getPacketBridge() {
+        return packetBridge;
     }
 
     public static void setModApiBride(ModApiBridge modApiBridge) {
@@ -210,5 +213,13 @@ public final class VoxelConstants {
 
     public static ModApiBridge getModApiBridge() {
         return modApiBridge;
+    }
+
+    public static void setModVersion(String modVersion) {
+        VoxelConstants.modVersion = modVersion;
+    }
+
+    public static String getModVersion() {
+        return modVersion;
     }
 }
