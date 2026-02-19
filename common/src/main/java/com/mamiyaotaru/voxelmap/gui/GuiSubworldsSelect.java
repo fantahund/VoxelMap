@@ -108,7 +108,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             this.addRenderableWidget(selectButtons[numButtons]);
         }
 
-        this.newNameField = new EditBox(this.getFont(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, null);
+        this.newNameField = new EditBox(this.getFont(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, Component.empty());
     }
 
     @Override

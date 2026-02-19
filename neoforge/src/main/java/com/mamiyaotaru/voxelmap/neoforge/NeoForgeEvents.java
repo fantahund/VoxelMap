@@ -34,9 +34,9 @@ public class NeoForgeEvents implements Events {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         NeoForge.EVENT_BUS.register(new NeoForgeEventListener(map));
     }
 
@@ -55,12 +55,11 @@ public class NeoForgeEvents implements Events {
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {
-        event.addPackFinders(Identifier.fromNamespaceAndPath("voxelmap", "voxelmap_legacy"), PackType.CLIENT_RESOURCES, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackSource.BUILT_IN, true, Pack.Position.BOTTOM);
+        event.addPackFinders(Identifier.fromNamespaceAndPath("voxelmap", "resourcepacks/voxelmap_legacy"), PackType.CLIENT_RESOURCES, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackSource.BUILT_IN, false, Pack.Position.TOP);
     }
 
     private void registerReloadListener(final AddClientReloadListenersEvent event) {
         event.addListener(Identifier.fromNamespaceAndPath("voxelmap", "reload_listener"), map);
-        map.applyResourceManager(VoxelConstants.getMinecraft().getResourceManager());
     }
 
     private static class NeoForgeEventListener {

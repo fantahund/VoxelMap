@@ -193,6 +193,7 @@ public final class VoxelConstants {
 
     public static void setEvents(Events events) {
         VoxelConstants.events = events;
+        VoxelConstants.getVoxelMapInstance().onEventsSet(events);
     }
 
     public static Events getEvents() {
