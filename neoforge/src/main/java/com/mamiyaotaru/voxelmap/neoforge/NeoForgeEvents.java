@@ -34,9 +34,9 @@ public class NeoForgeEvents implements Events {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         NeoForge.EVENT_BUS.register(new NeoForgeEventListener(map));
     }
 
