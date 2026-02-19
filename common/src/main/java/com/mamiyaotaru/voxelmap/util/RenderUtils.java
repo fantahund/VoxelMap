@@ -54,11 +54,11 @@ public class RenderUtils {
         drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
 
-    public static void renderWithCustomProjection(GpuBufferSlice projection, float initialDepth, DynamicAllocatedTexture fboTexture, Runnable runnable) {
+    public static void renderWithCustomProjection(DynamicAllocatedTexture colorTexture, DynamicAllocatedTexture depthTexture, GpuBufferSlice projection, float initialDepth, Runnable runnable) {
         RenderSystem.assertOnRenderThread();
 
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(fboTexture.getDepthTexture(), 1.0);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(colorTexture.getTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture.getTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
@@ -70,8 +70,8 @@ public class RenderUtils {
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-            RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
-            RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
+            RenderSystem.outputColorTextureOverride = colorTexture.getTextureView();
+            RenderSystem.outputDepthTextureOverride = depthTexture.getTextureView();
 
             runnable.run();
         } catch (Exception e) {
@@ -83,12 +83,12 @@ public class RenderUtils {
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
 
-        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
+        GLUtils.postProcessTexture(colorTexture.getTexture(), (src, dst) -> {
             GLUtils.flipTexture(src, dst, false, true);
         });
     }
 
-    public static void renderWithFullscreenProjection(DynamicAllocatedTexture fboTexture, Runnable runnable) {
+    public static void renderWithFullscreenProjection(DynamicAllocatedTexture colorTexture, DynamicAllocatedTexture depthTexture, Runnable runnable) {
         RenderSystem.assertOnRenderThread();
 
         int windowWidth = MINECRAFT.getWindow().getWidth();
@@ -96,13 +96,18 @@ public class RenderUtils {
         int guiWidth = MINECRAFT.getWindow().getGuiScaledWidth();
         int guiHeight = MINECRAFT.getWindow().getGuiScaledHeight();
 
-        if (fboTexture.getWidth(0) != windowWidth || fboTexture.getHeight(0) != windowHeight) {
-            GpuTexture texture = fboTexture.getTexture();
-            fboTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
-        } else {
-            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(fboTexture.getTexture(), 0x00000000);
-            RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(fboTexture.getDepthTexture(), 1.0);
+        if (colorTexture.getWidth(0) != windowWidth || colorTexture.getHeight(0) != windowHeight) {
+            GpuTexture texture = colorTexture.getTexture();
+            colorTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
         }
+
+        if (depthTexture.getWidth(0) != windowWidth || depthTexture.getHeight(0) != windowHeight) {
+            GpuTexture texture = depthTexture.getTexture();
+            depthTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
+        }
+
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(colorTexture.getTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture.getTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
@@ -114,8 +119,8 @@ public class RenderUtils {
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-            RenderSystem.outputColorTextureOverride = fboTexture.getTextureView();
-            RenderSystem.outputDepthTextureOverride = fboTexture.getDepthTextureView();
+            RenderSystem.outputColorTextureOverride = colorTexture.getTextureView();
+            RenderSystem.outputDepthTextureOverride = depthTexture.getTextureView();
 
             runnable.run();
         } catch (Exception e) {
@@ -127,7 +132,7 @@ public class RenderUtils {
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
 
-        GLUtils.postProcessTexture(fboTexture.getTexture(), (src, dst) -> {
+        GLUtils.postProcessTexture(colorTexture.getTexture(), (src, dst) -> {
             GLUtils.flipTexture(src, dst, false, true);
         });
     }

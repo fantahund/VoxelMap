@@ -176,11 +176,14 @@ public class Map implements Runnable, IChangeObserver {
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
     private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "gui_fbo_texture");
     private final DynamicAllocatedTexture guiFboTexture;
+    private final DynamicAllocatedTexture guiFboDepthTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
     private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "map_fbo_texture");
     private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "maksed_map_fbo_texture");
     private final DynamicAllocatedTexture mapFboTexture;
     private final DynamicAllocatedTexture maskedMapFboTexture;
+    private final DynamicAllocatedTexture mapFboDepthTexture;
+    private final DynamicAllocatedTexture maskedMapFboDepthTexture;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -225,15 +228,19 @@ public class Map implements Runnable, IChangeObserver {
         this.zoom = this.options.zoom;
         this.setZoomScale();
 
-        final int fboTextureSize = 512;
-
-        this.guiFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
+        final int fboTextureSize = 512;
+        final int fboTextureUsage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
+
+        this.guiFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.guiFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
         minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
 
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
-        this.mapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.mapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.maskedMapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
+        this.mapFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
+        this.maskedMapFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map Depth  FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
         minecraft.getTextureManager().register(this.mapFboTextureLocation, this.mapFboTexture);
         minecraft.getTextureManager().register(this.maskedMapFboTextureLocation, this.maskedMapFboTexture);
 
@@ -654,7 +661,7 @@ public class Map implements Runnable, IChangeObserver {
         );
 
         int mapY2 = mapY;
-        RenderUtils.renderWithFullscreenProjection(guiFboTexture, () -> {
+        RenderUtils.renderWithFullscreenProjection(guiFboTexture, guiFboDepthTexture, () -> {
             renderMatrixStack.pushMatrix();
 
             if (!this.options.hide) {
@@ -1516,7 +1523,7 @@ public class Map implements Runnable, IChangeObserver {
         renderBufferSource.endBatch(); // Flush previous batches
 
         // Draw map, radar, etc.
-        RenderUtils.renderWithCustomProjection(mapProjection.getBuffer(), -2000.0F, mapFboTexture, () -> {
+        RenderUtils.renderWithCustomProjection(mapFboTexture, mapFboDepthTexture, mapProjection.getBuffer(), -2000.0F, () -> {
             float scale = 1.0F;
             if (this.options.squareMap && this.options.rotates) {
                 scale = 1.4142F;
@@ -1553,7 +1560,7 @@ public class Map implements Runnable, IChangeObserver {
         });
 
         // Masking the drawn map
-        RenderUtils.renderWithCustomProjection(mapProjection.getBuffer(), -2000.0F, maskedMapFboTexture, () -> {
+        RenderUtils.renderWithCustomProjection(maskedMapFboTexture, maskedMapFboDepthTexture, mapProjection.getBuffer(), -2000.0F, () -> {
             matrixStack.pushMatrix();
             matrixStack.identity();
 

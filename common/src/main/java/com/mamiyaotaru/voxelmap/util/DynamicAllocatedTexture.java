@@ -7,10 +7,6 @@ import com.mojang.blaze3d.textures.TextureFormat;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 
 public class DynamicAllocatedTexture extends AbstractTexture {
-    private boolean refreshDepthTexture;
-    private GpuTexture depthTexture;
-    private GpuTextureView depthTextureView;
-
     public DynamicAllocatedTexture(GpuTexture texture) {
         setTexture(texture);
     }
@@ -48,43 +44,5 @@ public class DynamicAllocatedTexture extends AbstractTexture {
 
         this.texture = texture;
         this.textureView = textureView;
-
-        this.refreshDepthTexture = true;
-    }
-
-    private void setupDepthTexture() {
-        RenderSystem.assertOnRenderThread();
-        if (this.refreshDepthTexture) {
-            this.refreshDepthTexture = false;
-
-            if (this.depthTexture != null) {
-                this.depthTexture.close();
-            }
-            if (this.depthTextureView != null) {
-                this.depthTextureView.close();
-            }
-
-            this.depthTexture = RenderSystem.getDevice().createTexture(
-                    this.texture.getLabel() + "-Depth",
-                    this.texture.usage(),
-                    TextureFormat.DEPTH32,
-                    this.texture.getWidth(0),
-                    this.texture.getHeight(0),
-                    this.texture.getDepthOrLayers(),
-                    this.texture.getMipLevels()
-            );
-
-            this.depthTextureView = RenderSystem.getDevice().createTextureView(this.depthTexture);
-        }
-    }
-
-    public GpuTexture getDepthTexture() {
-        setupDepthTexture();
-        return this.depthTexture;
-    }
-
-    public GpuTextureView getDepthTextureView() {
-        setupDepthTexture();
-        return this.depthTextureView;
     }
 }
