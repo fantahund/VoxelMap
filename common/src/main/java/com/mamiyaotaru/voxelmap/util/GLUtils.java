@@ -2,6 +2,14 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.PlatformResolver;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.opengl.GlDevice;
+import com.mojang.blaze3d.opengl.GlStateManager;
+import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.TextureFormat;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.util.ARGB;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -70,8 +78,8 @@ public class GLUtils {
     public static void flipTexture(GpuTexture src, GpuTexture dst, boolean flipX, boolean flipY) {
         RenderSystem.assertOnRenderThread();
         GlDevice device = (GlDevice) RenderSystem.getDevice();
-        GlTexture src2 = (GlTexture) src;
-        GlTexture dst2 = (GlTexture) dst;
+        GlTexture src2 = getGlTexture(src);
+        GlTexture dst2 = getGlTexture(dst);
 
         int width = src2.getWidth(0);
         int height = src2.getHeight(0);
