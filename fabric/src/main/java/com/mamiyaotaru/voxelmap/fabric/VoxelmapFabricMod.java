@@ -16,9 +16,4 @@ public class VoxelmapFabricMod implements ClientModInitializer {
         VoxelConstants.setPacketBridge(new FabricPacketBridge());
         VoxelConstants.setModApiBride(new FabricModApiBridge());
     }
-
-    private void registerResolvers() {
-        PlatformResolver.registerResolver(PlatformResolver.ResolverType.GPU_DEVICE_TO_GL_DEVICE, input -> (GlDevice) input);
-        PlatformResolver.registerResolver(PlatformResolver.ResolverType.GPU_TEXTURE_TO_GL_TEXTURE, input -> (GlTexture) input);
-    }
 }
