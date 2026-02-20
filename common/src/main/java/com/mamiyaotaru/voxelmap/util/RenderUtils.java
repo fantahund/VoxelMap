@@ -83,7 +83,7 @@ public class RenderUtils {
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
 
-        GLUtils.postProcessTexture(colorTexture.getTexture(), (src, dst) -> {
+        GLUtils.PostProcess.postProcessTexture(colorTexture.getTexture(), (src, dst) -> {
             GLUtils.flipTexture(src, dst, false, true);
         });
     }
@@ -132,7 +132,7 @@ public class RenderUtils {
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
 
-        GLUtils.postProcessTexture(colorTexture.getTexture(), (src, dst) -> {
+        GLUtils.PostProcess.postProcessTexture(colorTexture.getTexture(), (src, dst) -> {
             GLUtils.flipTexture(src, dst, false, true);
         });
     }
