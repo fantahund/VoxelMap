@@ -30,9 +30,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class VoxelMap implements PreparableReloadListener {
-    public static MapSettingsManager mapOptions;
-    public static RadarSettingsManager radarOptions;
-    private PersistentMapSettingsManager persistentMapOptions;
+    public static MapSettingsManager mapOptions = new MapSettingsManager();
+    public static RadarSettingsManager radarOptions = new RadarSettingsManager();
+    private PersistentMapSettingsManager persistentMapOptions = new PersistentMapSettingsManager();
+    private boolean initialized = false;
     private Map map;
     private Radar radar;
     private RadarSimple radarSimple;
@@ -55,17 +56,17 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
-        mapOptions = new MapSettingsManager();
+        initialized = true;
+
         mapOptions.showUnderMenus = showUnderMenus;
-        radarOptions = new RadarSettingsManager();
         mapOptions.addSecondaryOptionsManager(radarOptions);
-        this.persistentMapOptions = new PersistentMapSettingsManager();
-        mapOptions.addSecondaryOptionsManager(this.persistentMapOptions);
+        mapOptions.addSecondaryOptionsManager(persistentMapOptions);
+        mapOptions.loadAll();
+
         this.colorManager = new ColorManager();
         this.waypointManager = new WaypointManager();
         this.dimensionManager = new DimensionManager();
         this.persistentMap = new PersistentMap();
-        mapOptions.loadAll();
 
         try {
             if (isFair) {
@@ -88,12 +89,13 @@ public class VoxelMap implements PreparableReloadListener {
             this.radarSimple = null;
         }
 
-        applyResourceManager(VoxelConstants.getMinecraft().getResourceManager());
         this.map = new Map();
         this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
         this.worldUpdateListener = new WorldUpdateListener();
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
+
+        this.apply(VoxelConstants.getMinecraft().getResourceManager());
     }
 
     @Override
@@ -106,6 +108,10 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     protected void apply(ResourceManager resourceManager) {
+        if (!initialized) {
+            return;
+        }
+
         this.loadImageProperties();
 
         this.waypointManager.onResourceManagerReload(resourceManager);
@@ -221,6 +227,10 @@ public class VoxelMap implements PreparableReloadListener {
         return null;
     }
 
+    public Radar getFullRadar() {
+        return radar;
+    }
+
     public ColorManager getColorManager() {
         return this.colorManager;
     }
@@ -308,10 +318,6 @@ public class VoxelMap implements PreparableReloadListener {
     public void onClientStopping() {
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
-    }
-
-    public Radar getNotSimpleRadar() {
-        return radar;
     }
 
     public Properties getImageProperties() {

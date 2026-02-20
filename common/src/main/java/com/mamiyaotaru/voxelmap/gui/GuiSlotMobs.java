@@ -130,7 +130,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             drawContext.drawCenteredString(this.parentGui.getFont(), this.name, this.parentGui.getWidth() / 2, getY() + 5, color);
 
             if (this.mobSprite == null) {
-                this.mobSprite = VoxelConstants.getVoxelMapInstance().getNotSimpleRadar().getEntityMapImageManager().requestImageForMobType(type, true);
+                this.mobSprite = VoxelConstants.getVoxelMapInstance().getFullRadar().getEntityMapImageManager().requestImageForMobType(type, true);
             } else {
                 int iconWidth = Math.min(18, this.mobSprite.getIconWidth() / 3);
                 int iconHeight = Math.min(18, this.mobSprite.getIconHeight() / 3);
