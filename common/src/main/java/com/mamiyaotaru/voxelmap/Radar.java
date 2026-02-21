@@ -159,7 +159,9 @@ public class Radar extends AbstractRadar {
         });
     }
 
+    @Override
     public void onJoinServer() {
+        super.onJoinServer();
         entityMapImageManager.reset();
     }
 

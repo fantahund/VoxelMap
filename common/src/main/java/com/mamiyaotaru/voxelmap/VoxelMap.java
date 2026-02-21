@@ -315,8 +315,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onJoinServer() {
-        if (this.radar != null) {
-            this.radar.onJoinServer();
+        if (this.getRadar() != null) {
+            this.getRadar().onJoinServer();
         }
         ModrinthUpdateChecker.checkUpdates();
     }

@@ -178,4 +178,8 @@ public abstract class AbstractRadar {
             return Math.abs(dx) <= maxDist && Math.abs(dz) <= maxDist;
         }
     }
+
+    public void onJoinServer() {
+        contacts.clear();
+    }
 }
