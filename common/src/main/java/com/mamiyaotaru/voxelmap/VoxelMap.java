@@ -9,7 +9,6 @@ import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.ModrinthUpdateChecker;
-import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -176,7 +175,7 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public static void checkPermissionMessages(Component message) {
-        String msg = TextUtils.asFormattedString(message);
+        String msg = message.getString();
         msg = msg.replaceAll("§r", "");
 
         if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
