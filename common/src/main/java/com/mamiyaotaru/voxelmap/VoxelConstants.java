@@ -27,16 +27,17 @@ import java.util.Optional;
 
 public final class VoxelConstants {
     //TODO 1.21.11: use VoxelConstants.MOD_ID for identifier namespace
-    public static final String MOD_ID = "voxelmap";
-    private static String modVersion = null;
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
-    private static int elapsedTicks;
+    public static final String MOD_ID = "voxelmap";
+    public static final boolean DEBUG = false;
+
     private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.parse("textures/block/dirt.png");
     private static final Identifier CHECK_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
     private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
-    public static final boolean DEBUG = false;
-    private static boolean initialized;
+
+    private static String modVersion = null;
+    private static int elapsedTicks;
     private static Events events;
     private static PacketBridge packetBridge;
     private static ModApiBridge modApiBridge;
@@ -104,27 +105,12 @@ public final class VoxelConstants {
         return CROSS_MARKER_TEXTURE;
     }
 
-    public static void lateInit() {
-        initialized = true;
-        VoxelConstants.getVoxelMapInstance().lateInit(true, false);
-    }
-
     public static void clientTick() {
-        if (!initialized) {
-            lateInit();
-        }
-
-        if (initialized) {
-            VoxelConstants.getVoxelMapInstance().onTick();
-        }
+        VoxelConstants.getVoxelMapInstance().onTick();
 
     }
 
     public static void renderOverlay(GuiGraphics guiGraphics) {
-        if (!initialized) {
-            lateInit();
-        }
-
         try {
             VoxelConstants.getVoxelMapInstance().onTickInGame(guiGraphics);
         } catch (RuntimeException e) {
@@ -176,8 +162,9 @@ public final class VoxelConstants {
     }
 
     public static int moveScoreboard(int bottomX, int entriesHeight) {
+        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (VoxelMap.mapOptions.hide || !VoxelMap.mapOptions.minimapAllowed || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
+        if (mapSettingsManager.hide || !mapSettingsManager.minimapAllowed || mapSettingsManager.mapCorner != 1 || !mapSettingsManager.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...

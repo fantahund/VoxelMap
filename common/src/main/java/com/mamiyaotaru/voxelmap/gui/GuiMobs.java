@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -112,14 +111,14 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     private boolean isMobEnabled(Identifier mobId) {
-        return !VoxelMap.radarOptions.hiddenMobs.contains(mobId);
+        return !options.hiddenMobs.contains(mobId);
     }
 
     private void setMobEnabled(Identifier mobId, boolean enabled) {
         if (enabled) {
-            VoxelMap.radarOptions.hiddenMobs.remove(mobId);
+            options.hiddenMobs.remove(mobId);
         } else {
-            VoxelMap.radarOptions.hiddenMobs.add(mobId);
+            options.hiddenMobs.add(mobId);
         }
     }
 

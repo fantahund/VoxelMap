@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.Radar;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
@@ -122,7 +122,7 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             boolean isHostile = category == VoxelMapMobCategory.HOSTILE;
             boolean isNeutral = !isHostile;
-            boolean isEnabled = VoxelMap.radarOptions.isMobEnabled(type);
+            boolean isEnabled = parentGui.options.isMobEnabled(type);
 
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
@@ -130,7 +130,10 @@ class GuiSlotMobs extends AbstractSelectionList<GuiSlotMobs.MobItem> {
             drawContext.drawCenteredString(this.parentGui.getFont(), this.name, this.parentGui.getWidth() / 2, getY() + 5, color);
 
             if (this.mobSprite == null) {
-                this.mobSprite = VoxelConstants.getVoxelMapInstance().getFullRadar().getEntityMapImageManager().requestImageForMobType(type, true);
+                Radar radar = VoxelConstants.getVoxelMapInstance().getFullRadar();
+                if (radar != null) {
+                    this.mobSprite = radar.getEntityMapImageManager().requestImageForMobType(type, true);
+                }
             } else {
                 int iconWidth = Math.min(18, this.mobSprite.getIconWidth() / 3);
                 int iconHeight = Math.min(18, this.mobSprite.getIconHeight() / 3);

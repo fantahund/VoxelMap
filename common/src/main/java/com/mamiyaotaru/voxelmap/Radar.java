@@ -145,7 +145,7 @@ public class Radar implements IRadar {
                         if (contact.entity.getVehicle() != null && this.isEntityShown(contact.entity.getVehicle())) {
                             contact.yFudge = 1;
                         }
-                        if (VoxelMap.radarOptions.isMobEnabled(contact.entity)) {
+                        if (options.isMobEnabled(contact.entity)) {
                             if (contact.icon == null) {
                                 contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, options.outlines);
                             }
