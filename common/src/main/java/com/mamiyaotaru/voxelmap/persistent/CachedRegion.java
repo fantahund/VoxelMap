@@ -9,7 +9,6 @@ import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import com.mamiyaotaru.voxelmap.util.ReflectionUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -60,7 +59,7 @@ public class CachedRegion {
     private final ClientLevel world;
     private ServerLevel worldServer;
     private ServerChunkCache chunkProvider;
-    private BlockableEventLoop<RefreshRunnable> executor;
+    private BlockableEventLoop<Runnable> executor;
     private ChunkMap chunkLoader;
     private String subworldName;
     private String worldNamePathPart;
@@ -99,7 +98,6 @@ public class CachedRegion {
         this.world = null;
     }
 
-    @SuppressWarnings("unchecked")
     public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
         this.persistentMap = persistentMap;
         this.key = key;
@@ -131,8 +129,7 @@ public class CachedRegion {
 
             this.worldServer = (ServerLevel) optionalWorld.get();
             this.chunkProvider = worldServer.getChunkSource();
-            Class<?> executorClass = chunkProvider.getClass().getDeclaredClasses()[0];
-            this.executor = (BlockableEventLoop<RefreshRunnable>) ReflectionUtils.getPrivateFieldValueByType(chunkProvider, ServerChunkCache.class, executorClass);
+            this.executor = chunkProvider.mainThreadProcessor;
             this.chunkLoader = chunkProvider.chunkMap;
         }
 
