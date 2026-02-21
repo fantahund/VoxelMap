@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
@@ -333,7 +332,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.timeOfLastKBInput = 0L;
             int mouseDirectX = (int) minecraft.mouseHandler.xpos();
             int mouseDirectY = (int) minecraft.mouseHandler.ypos();
-            if (VoxelMap.mapOptions.worldmapAllowed) {
+            if (mapOptions.worldmapAllowed) {
                 this.createPopup((int) mouseButtonEvent.x(), (int) mouseButtonEvent.y(), mouseDirectX, mouseDirectY);
             }
         }
@@ -485,7 +484,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         guiGraphics.pose().pushMatrix();
-        this.buttonWaypoints.active = VoxelMap.mapOptions.waypointsAllowed;
+        this.buttonWaypoints.active = mapOptions.waypointsAllowed;
         this.zoomGoal = this.bindZoom(this.zoomGoal);
         if (this.mouseX != mouseX || this.mouseY != mouseY) {
             this.timeOfLastMouseInput = System.currentTimeMillis();
@@ -639,7 +638,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float cursorCoordZ = 0.0f;
         float cursorCoordX = 0.0f;
         guiGraphics.pose().scale(this.mapToGui, this.mapToGui);
-        if (VoxelMap.mapOptions.worldmapAllowed) {
+        if (mapOptions.worldmapAllowed) {
             for (CachedRegion region : this.regions) {
                 Identifier resource = region.getTextureLocation();
                 if (resource != null) {
@@ -647,7 +646,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
 
-            if (VoxelMap.mapOptions.worldborder) {
+            if (mapOptions.worldborder) {
                 WorldBorder worldBorder = minecraft.level.getWorldBorder();
                 float scale = 1.0f / (float) minecraft.getWindow().getGuiScale() / mapToGui;
 
@@ -766,7 +765,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
         guiGraphics.pose().popMatrix();
 
-        if (VoxelMap.mapOptions.waypointsAllowed && this.options.showWaypoints) {
+        if (mapOptions.waypointsAllowed && this.options.showWaypoints) {
             for (Waypoint pt : this.waypointManager.getWaypoints()) {
                 this.drawWaypoint(guiGraphics, pt, cursorCoordX, cursorCoordZ, null, false);
             }
@@ -820,7 +819,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         this.overlayBackground(guiGraphics, 0, this.top, 255, 255);
         this.overlayBackground(guiGraphics, this.bottom, this.getHeight(), 255, 255);
-        if (VoxelMap.mapOptions.worldmapAllowed) {
+        if (mapOptions.worldmapAllowed) {
             guiGraphics.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 16, 0xFFFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
             int z = (int) Math.floor(cursorCoordZ);
@@ -991,9 +990,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             entries.add(entry);
             entry = new Popup.PopupEntry(I18n.get(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, true);
         } else {
-            entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newWaypoint"), 0, true, VoxelMap.mapOptions.waypointsAllowed);
+            entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newWaypoint"), 0, true, mapOptions.waypointsAllowed);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.get(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, VoxelMap.mapOptions.waypointsAllowed);
+            entry = new Popup.PopupEntry(I18n.get(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, mapOptions.waypointsAllowed);
         }
         entries.add(entry);
         entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.teleportTo"), 3, true, true);
@@ -1009,7 +1008,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     private Waypoint getHovered(float cursorCoordX, float cursorCoordZ) {
-        if (!VoxelMap.mapOptions.waypointsAllowed) {
+        if (!mapOptions.waypointsAllowed) {
             return null;
         }
         Waypoint waypoint = null;

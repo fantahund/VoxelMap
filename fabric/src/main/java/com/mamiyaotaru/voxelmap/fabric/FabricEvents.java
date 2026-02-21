@@ -33,6 +33,7 @@ public class FabricEvents implements Events {
             }
         });
 
+        ClientLifecycleEvents.CLIENT_STARTED.register((client) -> map.onClientStarted());
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> map.onClientStopping());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> map.onDisconnect());
         ClientPlayConnectionEvents.INIT.register((handler, client) -> map.onPlayInit());

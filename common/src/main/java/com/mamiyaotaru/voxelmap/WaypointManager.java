@@ -771,7 +771,7 @@ public class WaypointManager {
     // }
 
     public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        if (VoxelMap.mapOptions.waypointsAllowed && this.waypointContainer != null) {
+        if (options.waypointsAllowed && this.waypointContainer != null) {
             this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
         }
     }

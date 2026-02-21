@@ -352,13 +352,13 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (minecraft.screen == null && this.options.keyBindWaypointMenu.consumeClick()) {
-            if (VoxelMap.mapOptions.waypointsAllowed) {
+            if (options.waypointsAllowed) {
                 minecraft.setScreen(new GuiWaypoints(null));
             }
         }
 
         if (minecraft.screen == null && this.options.keyBindWaypoint.consumeClick()) {
-            if (VoxelMap.mapOptions.waypointsAllowed) {
+            if (options.waypointsAllowed) {
                 float r;
                 float g;
                 float b;
@@ -404,7 +404,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         this.checkForChanges();
-        if (VoxelMap.mapOptions.deathWaypointAllowed && minecraft.screen instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
+        if (options.deathWaypointAllowed && minecraft.screen instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
             this.waypointManager.handleDeath();
         }
 
@@ -460,7 +460,7 @@ public class Map implements Runnable, IChangeObserver {
             this.message = "";
         }
 
-        if (enabled && VoxelMap.mapOptions.minimapAllowed) {
+        if (enabled && options.minimapAllowed) {
             this.drawMinimap(drawContext);
         }
 
@@ -632,7 +632,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         float statusIconOffset = 0.0F;
-        if (VoxelMap.mapOptions.moveMapDownWhileStatusEffect) {
+        if (options.moveMapDownWhileStatusEffect) {
             if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getActiveEffects().isEmpty()) {
 
                 for (MobEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getActiveEffects()) {
@@ -1590,7 +1590,7 @@ public class Map implements Runnable, IChangeObserver {
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        if (VoxelMap.mapOptions.waypointsAllowed) {
+        if (options.waypointsAllowed) {
             Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
 
             for (Waypoint pt : this.waypointManager.getWaypoints()) {

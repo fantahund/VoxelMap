@@ -41,6 +41,7 @@ public class NeoForgeEvents implements Events {
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
+        map.onClientStarted();
         map.onConfigurationInit();
     }
 
