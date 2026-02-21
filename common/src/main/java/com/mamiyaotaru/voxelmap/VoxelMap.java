@@ -30,10 +30,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class VoxelMap implements PreparableReloadListener {
-    public static MapSettingsManager mapOptions = new MapSettingsManager();
-    public static RadarSettingsManager radarOptions = new RadarSettingsManager();
-    private PersistentMapSettingsManager persistentMapOptions = new PersistentMapSettingsManager();
-    private boolean initialized = false;
+    private static final boolean SHOW_UNDER_MENUS = true;
+    private static final boolean IS_FAIR = false;
+    private static MapSettingsManager mapOptions;
+    private static RadarSettingsManager radarOptions;
+    private static PersistentMapSettingsManager persistentMapOptions;
+    private boolean fullyInitialized = false;
     private Map map;
     private Radar radar;
     private RadarSimple radarSimple;
@@ -51,32 +53,34 @@ public class VoxelMap implements PreparableReloadListener {
 
     VoxelMap() {}
 
-    public void onEventsSet(Events events) {
-        events.initEvents(this);
-    }
-
-    public void lateInit(boolean showUnderMenus, boolean isFair) {
-        initialized = true;
+    private void earlyInit(boolean showUnderMenus, boolean isFair) {
+        mapOptions = new MapSettingsManager();
+        radarOptions = new RadarSettingsManager();
+        persistentMapOptions = new PersistentMapSettingsManager();
 
         mapOptions.showUnderMenus = showUnderMenus;
+        radarOptions.radarAllowed = !isFair;
+        radarOptions.radarMobsAllowed = !isFair;
+        radarOptions.radarPlayersAllowed = !isFair;
+
         mapOptions.addSecondaryOptionsManager(radarOptions);
         mapOptions.addSecondaryOptionsManager(persistentMapOptions);
         mapOptions.loadAll();
 
+    }
+
+    private void lateInit() {
         this.colorManager = new ColorManager();
         this.waypointManager = new WaypointManager();
         this.dimensionManager = new DimensionManager();
         this.persistentMap = new PersistentMap();
 
         try {
-            if (isFair) {
-                radarOptions.radarAllowed = false;
-                radarOptions.radarMobsAllowed = false;
-                radarOptions.radarPlayersAllowed = false;
-            } else {
-                radarOptions.radarAllowed = true;
-                radarOptions.radarMobsAllowed = true;
-                radarOptions.radarPlayersAllowed = true;
+            boolean radarAllowed = radarOptions.radarAllowed;
+            boolean mobsAllowed = radarOptions.radarMobsAllowed;
+            boolean playersAllowed = radarOptions.radarPlayersAllowed;
+
+            if (radarAllowed || mobsAllowed || playersAllowed) {
                 this.radar = new Radar();
                 this.radarSimple = new RadarSimple();
             }
@@ -95,7 +99,7 @@ public class VoxelMap implements PreparableReloadListener {
         this.worldUpdateListener.addListener(this.map);
         this.worldUpdateListener.addListener(this.persistentMap);
 
-        this.apply(VoxelConstants.getMinecraft().getResourceManager());
+        this.fullyInitialized = true;
     }
 
     @Override
@@ -108,8 +112,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     protected void apply(ResourceManager resourceManager) {
-        if (!initialized) {
-            return;
+        if (!this.fullyInitialized) {
+            this.lateInit();
         }
 
         this.loadImageProperties();
@@ -127,7 +131,13 @@ public class VoxelMap implements PreparableReloadListener {
         }
     }
 
+    public void onEventsSet(Events events) {
+        events.initEvents(this);
+    }
+
     public void onTickInGame(GuiGraphics guiGraphics) {
+        if (!this.fullyInitialized) return;
+
         this.map.onTickInGame(guiGraphics);
         if (passMessage != null) {
             VoxelConstants.getMinecraft().gui.getChat().addMessage(Component.literal(passMessage));
@@ -137,6 +147,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onTick() {
+        if (!this.fullyInitialized) return;
+
         ClientLevel newWorld = GameVariableAccessShim.getWorld();
         if (this.world != newWorld) {
             this.world = newWorld;
@@ -202,7 +214,7 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public PersistentMapSettingsManager getPersistentMapOptions() {
-        return this.persistentMapOptions;
+        return persistentMapOptions;
     }
 
     public Map getMap() {
@@ -303,7 +315,9 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onJoinServer() {
-        this.radar.onJoinServer();
+        if (this.radar != null) {
+            this.radar.onJoinServer();
+        }
         ModrinthUpdateChecker.checkUpdates();
     }
 
@@ -313,6 +327,10 @@ public class VoxelMap implements PreparableReloadListener {
 
     public void onConfigurationInit() {
         clearServerSettings();
+    }
+
+    public void onClientStarted() {
+        earlyInit(SHOW_UNDER_MENUS, IS_FAIR);
     }
 
     public void onClientStopping() {
@@ -329,11 +347,15 @@ public class VoxelMap implements PreparableReloadListener {
 
     private void loadImageProperties() {
         this.imageProperties = new Properties();
-        Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("voxelmap:configs/images.properties"));
-        if (resource.isPresent()) {
+        Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "configs/images.properties");
+        Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(location);
+        if (resource.isEmpty()) {
+            VoxelConstants.getLogger().warn("Image properties file at {} is missing!", location);
+        } else {
             try (InputStream inputStream = resource.get().open()) {
                 this.imageProperties.load(inputStream);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                VoxelConstants.getLogger().warn("Failed to read image properties from {}. {}", location, e);
             }
         }
     }

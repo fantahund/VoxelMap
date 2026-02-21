@@ -11,6 +11,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -33,6 +34,7 @@ public class NeoForgeEvents implements Events {
     public void initEvents(VoxelMap map) {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerConfigs);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
@@ -41,6 +43,10 @@ public class NeoForgeEvents implements Events {
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
+        map.onClientStarted();
+    }
+
+    private void registerConfigs(final ModConfigEvent event) {
         map.onConfigurationInit();
     }
 

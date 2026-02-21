@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 
 public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final PersistentMapSettingsManager options;
+    private final MapSettingsManager mapOptions;
     private final Component screenTitle = Component.translatable("options.worldmap.title");
     private final Component cacheSettings = Component.translatable("options.worldmap.cacheSettings");
     private final Component warning = Component.translatable("options.worldmap.warning").withStyle(ChatFormatting.RED);
@@ -22,6 +23,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         this.lastScreen = parent;
 
         this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
+        this.mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
     @Override
@@ -35,10 +37,10 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             this.addRenderableWidget(optionButton);
 
             if (option == EnumOptionsMinimap.SHOW_WAYPOINTS) {
-                optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
+                optionButton.active = mapOptions.waypointsAllowed;
             }
             if (option == EnumOptionsMinimap.SHOW_WAYPOINT_NAMES) {
-                optionButton.active = VoxelMap.mapOptions.waypointsAllowed;
+                optionButton.active = mapOptions.waypointsAllowed;
             }
             counter++;
         }
@@ -68,7 +70,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_WAYPOINT_NAMES) {
-                    button.active = this.options.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
+                    button.active = this.options.showWaypoints && mapOptions.waypointsAllowed;
                 }
             }
         }
@@ -83,7 +85,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {
                 if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_WAYPOINT_NAMES) {
-                    button.active = this.options.showWaypoints && VoxelMap.mapOptions.waypointsAllowed;
+                    button.active = this.options.showWaypoints && mapOptions.waypointsAllowed;
                 }
             }
         }
