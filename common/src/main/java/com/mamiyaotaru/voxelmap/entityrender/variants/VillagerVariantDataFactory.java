@@ -23,7 +23,7 @@ public class VillagerVariantDataFactory extends DefaultEntityVariantDataFactory 
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, String identifier, int size, boolean addBorder) {
+    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
         Optional<ResourceKey<VillagerProfession>> optProfession = Optional.empty();
         if (entity instanceof Villager villager) {
             optProfession = villager.getVillagerData().profession().unwrapKey();
