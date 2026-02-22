@@ -10,8 +10,7 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
+import com.mojang.blaze3d.platform.NativeImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -30,7 +29,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import javax.imageio.ImageIO;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -53,7 +51,7 @@ import org.apache.logging.log4j.Level;
 public class CachedRegion {
     private final static int CHUNKS_WIDTH = 16;
     private final static int CHUNK_BLOCKS = 16;
-    private final static int REGION_WIDTH = CHUNKS_WIDTH * CHUNK_BLOCKS;
+    public final static int REGION_WIDTH = CHUNKS_WIDTH * CHUNK_BLOCKS;
     public static final EmptyCachedRegion EMPTY_REGION = new EmptyCachedRegion();
 
     private long mostRecentView;
@@ -77,7 +75,7 @@ public class CachedRegion {
     boolean remoteWorld;
     private final boolean[] liveChunkUpdateQueued = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
     private final boolean[] chunkUpdateQueued = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
-    private CompressibleGLBufferedImage image;
+    private CompressibleMapRegionTexture image;
     private CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
@@ -205,7 +203,7 @@ public class CachedRegion {
 
     private void load() {
         this.data = new CompressibleMapData(world);
-        this.image = new CompressibleGLBufferedImage(REGION_WIDTH, REGION_WIDTH);
+        this.image = new CompressibleMapRegionTexture();
         this.loadCachedData();
         this.loadCurrentData(this.world);
         if (!this.remoteWorld) {
@@ -630,28 +628,27 @@ public class CachedRegion {
                 this.image.setRGB(t, s, color24);
             }
         }
+        this.image.generateMipmaps();
     }
 
     private void saveImage() {
-        if (!this.empty) {
+        if (!this.empty && this.image != null) {
+
             File imageFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart + "/images/z1");
             imageFileDir.mkdirs();
             final File imageFile = new File(imageFileDir, this.key + ".png");
+                       
             if (this.liveChunksUpdated || !imageFile.exists()) {
+                NativeImage toSave = new NativeImage(REGION_WIDTH, REGION_WIDTH, false);
+                toSave.copyFrom(this.image.getData());
                 ThreadManager.executorService.execute(() -> {
-                    CachedRegion.this.threadLock.lock();
-
                     try {
-                        BufferedImage realBufferedImage = new BufferedImage(REGION_WIDTH, REGION_WIDTH, BufferedImage.TYPE_4BYTE_ABGR);
-                        byte[] dstArray = ((DataBufferByte) realBufferedImage.getRaster().getDataBuffer()).getData();
-                        System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, this.image.getData().length);
-                        ImageIO.write(realBufferedImage, "png", imageFile);
-                    } catch (IOException var6) {
-                        VoxelConstants.getLogger().error(var6);
+                        toSave.writeToFile(imageFile);
+                    } catch (IOException e) {
+                        VoxelConstants.getLogger().error(e);
                     } finally {
-                        this.threadLock.unlock();
+                        toSave.close();
                     }
-
                 });
             }
         }
@@ -682,7 +679,7 @@ public class CachedRegion {
         return REGION_WIDTH;
     }
 
-    public Identifier getTextureLocation() {
+    public Identifier getTextureLocation(float zoom) {
         if (this.image != null) {
             if (!this.refreshingImage) {
                 synchronized (this.image) {
@@ -693,7 +690,7 @@ public class CachedRegion {
                 }
             }
 
-            return this.image.getTextureLocation();
+            return this.image.getTextureLocation(zoom);
         } else {
             return null;
         }
@@ -758,14 +755,13 @@ public class CachedRegion {
 
         this.persistentMap.getSettingsAndLightingChangeNotifier().removeObserver(this);
         if (this.image != null) {
+            if (this.persistentMap.getOptions().outputImages) {
+                this.saveImage();
+            }
             this.image.deleteTexture();
         }
 
         this.saveData(true);
-        if (this.persistentMap.getOptions().outputImages) {
-            this.saveImage();
-        }
-
     }
 
     private final class FillChunkRunnable implements Runnable {

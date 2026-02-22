@@ -43,7 +43,7 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public Identifier getTextureLocation() {
+    public Identifier getTextureLocation(float zoom) {
         return null;
     }
 
