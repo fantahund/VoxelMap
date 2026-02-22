@@ -18,10 +18,6 @@ public class DynamicMutableTexture extends DynamicTexture {
         return this.getPixels().getHeight();
     }
 
-    public int getIndex() {
-        return GLUtils.getGlTexture(this.getTexture()).glId();
-    }
-
     public void moveX(int offset) {
         synchronized (this.bufferLock) {
             long pointer = this.getPixels().getPointer();
