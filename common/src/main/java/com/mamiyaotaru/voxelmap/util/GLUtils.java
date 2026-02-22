@@ -1,21 +1,14 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.PlatformResolver;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.opengl.GlTexture;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
-import net.minecraft.util.ARGB;
-
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
+import net.minecraft.util.ARGB;
 
 public class GLUtils {
-    public static GlTexture getGlTexture(GpuTexture gpuTexture) {
-        return PlatformResolver.resolve(PlatformResolver.ResolverType.GPU_TEXTURE_TO_GL_TEXTURE, gpuTexture);
-    }
-
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
         RenderSystem.assertOnRenderThread();
         int bytePerPixel = gpuTexture.getFormat().pixelSize();
