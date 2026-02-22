@@ -1,33 +1,29 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.PlatformResolver;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.opengl.GlDevice;
-import com.mojang.blaze3d.opengl.GlStateManager;
-import com.mojang.blaze3d.opengl.GlTexture;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.util.ARGB;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
 
 import java.awt.image.BufferedImage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class GLUtils {
-    public static GlDevice getGlDevice(GpuDevice gpuDevice) {
-        return PlatformResolver.resolve(PlatformResolver.ResolverType.GPU_DEVICE_TO_GL_DEVICE, gpuDevice);
-    }
-
-    public static GlTexture getGlTexture(GpuTexture gpuTexture) {
-        return PlatformResolver.resolve(PlatformResolver.ResolverType.GPU_TEXTURE_TO_GL_TEXTURE, gpuTexture);
-    }
+    private static final Tesselator TESSELATOR = new Tesselator(4096);
 
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
         RenderSystem.assertOnRenderThread();
@@ -52,69 +48,70 @@ public class GLUtils {
         }, 0);
     }
 
-    public static void flipTexture(GpuTexture src, GpuTexture dst, boolean flipX, boolean flipY) {
+    public static void flipTexture(GpuTextureView src, GpuTextureView dst, boolean flipX, boolean flipY) {
         RenderSystem.assertOnRenderThread();
 
-        GlDevice device = getGlDevice(RenderSystem.getDevice());
-        GlTexture src2 = getGlTexture(src);
-        GlTexture dst2 = getGlTexture(dst);
-        int width = src2.getWidth(0);
-        int height = src2.getHeight(0);
+        RenderPipeline pipeline = VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST;
+        BufferBuilder bufferBuilder = TESSELATOR.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
+        float u0 = flipX ? 1.0F : 0.0F;
+        float u1 = flipX ? 0.0F : 1.0F;
+        float v0 = flipY ? 0.0F : 1.0F;
+        float v1 = flipY ? 1.0F : 0.0F;
+        bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setUv(u0, v0).setColor(0xFFFFFFFF);
+        bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setUv(u0, v1).setColor(0xFFFFFFFF);
+        bufferBuilder.addVertex(1.0F, 1.0F, 0.0F).setUv(u1, v1).setColor(0xFFFFFFFF);
+        bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setUv(u1, v0).setColor(0xFFFFFFFF);
 
-        int x0 = flipX ? width : 0;
-        int y0 = flipY ? height : 0;
-        int x1 = flipX ? 0 : width;
-        int y1 = flipY ? 0 : height;
+        try (MeshData meshData = bufferBuilder.build()) {
+            GpuSampler nearest = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
+            RenderUtils.drawMeshWithTexture(dst, meshData, pipeline, TextureSetup.singleTexture(src, nearest), 1.0F, 1.0F);
+        }
 
-        int lastReadFramebuffer = GlStateManager.getFrameBuffer(GL30.GL_READ_FRAMEBUFFER);
-        int lastDrawFramebuffer = GlStateManager.getFrameBuffer(GL30.GL_DRAW_FRAMEBUFFER);
-
-        GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, src2.getFbo(device.directStateAccess(), null));
-        GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, dst2.getFbo(device.directStateAccess(), null));
-        GlStateManager._glBlitFrameBuffer(0, 0, width, height, x0, y0, x1, y1, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
-        GlStateManager._glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, lastReadFramebuffer);
-        GlStateManager._glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, lastDrawFramebuffer);
+        TESSELATOR.clear();
     }
 
     public static class PostProcess {
-        private static final int MAX_POST_PROCESS_CACHE_SIZE = 32;
-        private static final Long2ObjectOpenHashMap<GpuTexture> POST_PROCESS_CACHE = new Long2ObjectOpenHashMap<>();
+        private static final Long2ObjectOpenHashMap<GpuTextureView> POST_PROCESS_CACHE = new Long2ObjectOpenHashMap<>();
+        private static final int MAX_CACHE_COUNT = 32;
+        private static final int CACHE_USAGE = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
         private static int lastWindowWidth;
         private static int lastWindowHeight;
 
-        public static void postProcessTexture(GpuTexture gpuTexture, BiConsumer<GpuTexture, GpuTexture> consumer) {
+        public static void postProcessTexture(GpuTextureView src, BiConsumer<GpuTextureView, GpuTextureView> consumer) {
             RenderSystem.assertOnRenderThread();
             handlePostProcessCache();
 
-            TextureFormat format = gpuTexture.getFormat();
-            int width = gpuTexture.getWidth(0);
-            int height = gpuTexture.getHeight(0);
+            GpuTexture texture = src.texture();
+            TextureFormat format = texture.getFormat();
+            int width = texture.getWidth(0);
+            int height = texture.getHeight(0);
 
             // width (16bit), height (16bit), format (8bit)
             long key = ((long) width << 24) | ((long) height << 8) | (format.ordinal() & 0xFFL);
-            GpuTexture copy = POST_PROCESS_CACHE.get(key);
-            if (copy == null || copy.isClosed()) {
-                int usage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
-                copy = RenderSystem.getDevice().createTexture("VoxelMap Texture Cache " + key, usage, format, width, height, 1, 1);
+            GpuTextureView dst = POST_PROCESS_CACHE.get(key);
+            if (dst == null || dst.isClosed()) {
+                GpuTexture destTexture = RenderSystem.getDevice().createTexture("VoxelMap Texture Cache " + key, CACHE_USAGE, format, width, height, 1, 1);
+                dst = RenderSystem.getDevice().createTextureView(destTexture);
 
-                POST_PROCESS_CACHE.put(key, copy);
+                POST_PROCESS_CACHE.put(key, dst);
             }
 
-            RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(gpuTexture, copy, 0, 0, 0, 0, 0, width, height);
-            consumer.accept(copy, gpuTexture);
+            RenderSystem.getDevice().createCommandEncoder().copyTextureToTexture(texture, dst.texture(), 0, 0, 0, 0, 0, width, height);
+            consumer.accept(dst, src);
         }
 
         private static void handlePostProcessCache() {
             RenderSystem.assertOnRenderThread();
 
-            boolean overCapacity = POST_PROCESS_CACHE.size() > MAX_POST_PROCESS_CACHE_SIZE;
+            boolean overCapacity = POST_PROCESS_CACHE.size() > MAX_CACHE_COUNT;
             int windowWidth = VoxelConstants.getMinecraft().getWindow().getWidth();
             int windowHeight = VoxelConstants.getMinecraft().getWindow().getHeight();
 
             if (overCapacity || windowWidth != lastWindowWidth || windowHeight != lastWindowHeight) {
-                for (GpuTexture texture : POST_PROCESS_CACHE.values()) {
-                    if (texture != null && !texture.isClosed()) {
-                        texture.close();
+                for (GpuTextureView cache : POST_PROCESS_CACHE.values()) {
+                    if (cache != null && !cache.isClosed()) {
+                        cache.close();
+                        cache.texture().close();
                     }
                 }
                 POST_PROCESS_CACHE.clear();

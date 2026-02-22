@@ -21,9 +21,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
@@ -34,7 +32,6 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
@@ -56,7 +53,6 @@ import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
@@ -317,7 +313,7 @@ public class EntityMapImageManager {
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
-            part.render(pose, bufferBuilder, LIGHT, OVERLAY, 0xffffffff); // light, overlay, color //TODO set model tint
+            part.render(pose, bufferBuilder, LIGHT, OVERLAY, 0xffffffff); // light, overlay, color
         }
 
         if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
