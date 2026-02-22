@@ -51,10 +51,14 @@ import net.minecraft.world.level.storage.LevelResource;
 import org.apache.logging.log4j.Level;
 
 public class CachedRegion {
-    public static final EmptyCachedRegion emptyRegion = new EmptyCachedRegion();
+    private final static int CHUNKS_WIDTH = 16;
+    private final static int CHUNK_BLOCKS = 16;
+    private final static int REGION_WIDTH = CHUNKS_WIDTH * CHUNK_BLOCKS;
+    public static final EmptyCachedRegion EMPTY_REGION = new EmptyCachedRegion();
+
     private long mostRecentView;
     private long mostRecentChange;
-    private PersistentMap persistentMap;
+    private final PersistentMap persistentMap;
     private String key;
     private final ClientLevel world;
     private ServerLevel worldServer;
@@ -68,12 +72,11 @@ public class CachedRegion {
     private boolean underground;
     private int x;
     private int z;
-    private final int width = 256;
     private boolean empty = true;
     private boolean liveChunksUpdated;
     boolean remoteWorld;
-    private final boolean[] liveChunkUpdateQueued = new boolean[256];
-    private final boolean[] chunkUpdateQueued = new boolean[256];
+    private final boolean[] liveChunkUpdateQueued = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
+    private final boolean[] chunkUpdateQueued = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
     private CompressibleGLBufferedImage image;
     private CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
@@ -96,6 +99,7 @@ public class CachedRegion {
 
     public CachedRegion() {
         this.world = null;
+        this.persistentMap = null;
     }
 
     public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
@@ -157,10 +161,10 @@ public class CachedRegion {
     }
 
     public void registerChangeAt(int chunkX, int chunkZ) {
-        chunkX -= this.x * 16;
-        chunkZ -= this.z * 16;
+        chunkX -= this.x * CHUNKS_WIDTH;
+        chunkZ -= this.z * CHUNKS_WIDTH;
         this.dataUpdateQueued = true;
-        int index = chunkZ * 16 + chunkX;
+        int index = chunkZ * CHUNKS_WIDTH + chunkX;
         this.liveChunkUpdateQueued[index] = true;
     }
 
@@ -187,9 +191,9 @@ public class CachedRegion {
     }
 
     public void handleChangedChunk(LevelChunk chunk) {
-        int chunkX = chunk.getPos().x - this.x * 16;
-        int chunkZ = chunk.getPos().z - this.z * 16;
-        int index = chunkZ * 16 + chunkX;
+        int chunkX = chunk.getPos().x - this.x * CHUNKS_WIDTH;
+        int chunkZ = chunk.getPos().z - this.z * CHUNKS_WIDTH;
+        int index = chunkZ * CHUNKS_WIDTH + chunkX;
         if (!this.chunkUpdateQueued[index]) {
             this.chunkUpdateQueued[index] = true;
             this.mostRecentView = System.currentTimeMillis();
@@ -201,7 +205,7 @@ public class CachedRegion {
 
     private void load() {
         this.data = new CompressibleMapData(world);
-        this.image = new CompressibleGLBufferedImage(256, 256, 6);
+        this.image = new CompressibleGLBufferedImage(REGION_WIDTH, REGION_WIDTH);
         this.loadCachedData();
         this.loadCurrentData(this.world);
         if (!this.remoteWorld) {
@@ -212,10 +216,10 @@ public class CachedRegion {
     }
 
     private void loadCurrentData(ClientLevel world) {
-        for (int chunkX = 0; chunkX < 16; ++chunkX) {
-            for (int chunkZ = 0; chunkZ < 16; ++chunkZ) {
-                LevelChunk chunk = world.getChunk(this.x * 16 + chunkX, this.z * 16 + chunkZ);
-                if (chunk != null && !chunk.isEmpty() && world.hasChunk(this.x * 16 + chunkX, this.z * 16 + chunkZ) && this.isSurroundedByLoaded(chunk)) {
+        for (int chunkX = 0; chunkX < CHUNKS_WIDTH; ++chunkX) {
+            for (int chunkZ = 0; chunkZ < CHUNKS_WIDTH; ++chunkZ) {
+                LevelChunk chunk = world.getChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ);
+                if (chunk != null && !chunk.isEmpty() && world.hasChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ) && this.isSurroundedByLoaded(chunk)) {
                     this.loadChunkData(chunk, chunkX, chunkZ);
                 }
             }
@@ -224,12 +228,12 @@ public class CachedRegion {
     }
 
     private void loadModifiedData() {
-        for (int chunkX = 0; chunkX < 16; ++chunkX) {
-            for (int chunkZ = 0; chunkZ < 16; ++chunkZ) {
-                if (this.liveChunkUpdateQueued[chunkZ * 16 + chunkX]) {
-                    this.liveChunkUpdateQueued[chunkZ * 16 + chunkX] = false;
-                    LevelChunk chunk = this.world.getChunk(this.x * 16 + chunkX, this.z * 16 + chunkZ);
-                    if (chunk != null && !chunk.isEmpty() && this.world.hasChunk(this.x * 16 + chunkX, this.z * 16 + chunkZ)) {
+        for (int chunkX = 0; chunkX < CHUNKS_WIDTH; ++chunkX) {
+            for (int chunkZ = 0; chunkZ < CHUNKS_WIDTH; ++chunkZ) {
+                if (this.liveChunkUpdateQueued[chunkZ * CHUNKS_WIDTH + chunkX]) {
+                    this.liveChunkUpdateQueued[chunkZ * CHUNKS_WIDTH + chunkX] = false;
+                    LevelChunk chunk = this.world.getChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ);
+                    if (chunk != null && !chunk.isEmpty() && this.world.hasChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ)) {
                         this.loadChunkData(chunk, chunkX, chunkZ);
                     }
                 }
@@ -255,9 +259,9 @@ public class CachedRegion {
     }
 
     private void doLoadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
-        for (int t = 0; t < 16; ++t) {
-            for (int s = 0; s < 16; ++s) {
-                this.persistentMap.getAndStoreData(this.data, chunk.getLevel(), chunk, this.blockPos, this.underground, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s);
+        for (int t = 0; t < CHUNK_BLOCKS; ++t) {
+            for (int s = 0; s < CHUNK_BLOCKS; ++s) {
+                this.persistentMap.getAndStoreData(this.data, chunk.getLevel(), chunk, this.blockPos, this.underground, this.x * REGION_WIDTH, this.z * REGION_WIDTH, chunkX * CHUNK_BLOCKS + t, chunkZ * CHUNK_BLOCKS + s);
             }
         }
 
@@ -293,9 +297,9 @@ public class CachedRegion {
         if (!this.remoteWorld) {
             boolean full = true;
 
-            for (int t = 0; t < 16; ++t) {
-                for (int s = 0; s < 16; ++s) {
-                    if (!this.closed && this.data.getHeight(t * 16, s * 16) == Short.MIN_VALUE && this.data.getLight(t * 16, s * 16) == 0) {
+            for (int t = 0; t < CHUNKS_WIDTH; ++t) {
+                for (int s = 0; s < CHUNKS_WIDTH; ++s) {
+                    if (!this.closed && this.data.getHeight(t * CHUNK_BLOCKS, s * CHUNK_BLOCKS) == Short.MIN_VALUE && this.data.getLight(t * CHUNK_BLOCKS, s * CHUNK_BLOCKS) == 0) {
                         full = false;
                     }
                 }
@@ -307,8 +311,8 @@ public class CachedRegion {
                 if (regionFile.exists()) {
                     boolean dataChanged = false;
                     boolean loadedChunks = false;
-                    ChunkAccess[] chunks = new ChunkAccess[256];
-                    boolean[] chunkChanged = new boolean[256];
+                    ChunkAccess[] chunks = new ChunkAccess[CHUNKS_WIDTH * CHUNKS_WIDTH];
+                    boolean[] chunkChanged = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
                     Arrays.fill(chunks, null);
                     Arrays.fill(chunkChanged, false);
                     tickLock.readLock().lock();
@@ -321,11 +325,11 @@ public class CachedRegion {
 
                             long loadTime = System.currentTimeMillis();
                             CompletableFuture<?> loadFuture = CompletableFuture.runAsync(() -> {
-                                for (int tx = 0; tx < 16; ++tx) {
-                                    for (int sx = 0; sx < 16; ++sx) {
-                                        if (!this.closed && this.data.getHeight(tx * 16, sx * 16) == Short.MIN_VALUE && this.data.getLight(tx * 16, sx * 16) == 0) {
-                                            int index = tx + sx * 16;
-                                            ChunkPos chunkPos = new ChunkPos(this.x * 16 + tx, this.z * 16 + sx);
+                                for (int tx = 0; tx < CHUNKS_WIDTH; ++tx) {
+                                    for (int sx = 0; sx < CHUNKS_WIDTH; ++sx) {
+                                        if (!this.closed && this.data.getHeight(tx * CHUNK_BLOCKS, sx * CHUNK_BLOCKS) == Short.MIN_VALUE && this.data.getLight(tx * CHUNK_BLOCKS, sx * CHUNK_BLOCKS) == 0) {
+                                            int index = tx + sx * CHUNKS_WIDTH;
+                                            ChunkPos chunkPos = new ChunkPos(this.x * CHUNKS_WIDTH + tx, this.z * CHUNKS_WIDTH + sx);
                                             CompoundTag rawNbt = this.chunkLoader.read(chunkPos).join().get();
                                             CompoundTag nbt = this.chunkLoader.upgradeChunkTag(rawNbt, -1);
                                             if (!this.closed && nbt.contains("Level")) {
@@ -372,9 +376,9 @@ public class CachedRegion {
 
                         long calcTime = System.currentTimeMillis();
 
-                        for (int t = 0; t < 16; ++t) {
-                            for (int s = 0; s < 16; ++s) {
-                                int index = t + s * 16;
+                        for (int t = 0; t < CHUNKS_WIDTH; ++t) {
+                            for (int s = 0; s < CHUNKS_WIDTH; ++s) {
+                                int index = t + s * CHUNKS_WIDTH;
                                 if (!this.closed && chunks[index] != null) {
                                     loadedChunks = true;
                                     ++loadedChunkCount;
@@ -620,9 +624,9 @@ public class CachedRegion {
     }
 
     private void fillImage() {
-        for (int t = 0; t < 256; ++t) {
-            for (int s = 0; s < 256; ++s) {
-                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * 256, this.z * 256, t, s);
+        for (int t = 0; t < REGION_WIDTH; ++t) {
+            for (int s = 0; s < REGION_WIDTH; ++s) {
+                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
                 this.image.setRGB(t, s, color24);
             }
         }
@@ -638,7 +642,7 @@ public class CachedRegion {
                     CachedRegion.this.threadLock.lock();
 
                     try {
-                        BufferedImage realBufferedImage = new BufferedImage(this.width, this.width, 6);
+                        BufferedImage realBufferedImage = new BufferedImage(REGION_WIDTH, REGION_WIDTH, BufferedImage.TYPE_4BYTE_ABGR);
                         byte[] dstArray = ((DataBufferByte) realBufferedImage.getRaster().getDataBuffer()).getData();
                         System.arraycopy(CachedRegion.this.image.getData(), 0, dstArray, 0, this.image.getData().length);
                         ImageIO.write(realBufferedImage, "png", imageFile);
@@ -675,7 +679,7 @@ public class CachedRegion {
     }
 
     public int getWidth() {
-        return this.width;
+        return REGION_WIDTH;
     }
 
     public Identifier getTextureLocation() {
@@ -707,13 +711,9 @@ public class CachedRegion {
         return this.empty;
     }
 
-    public boolean isGroundAt(int blockX, int blockZ) {
-        return this.isLoaded() && this.getHeightAt(blockX, blockZ) > 0;
-    }
-
     public int getHeightAt(int blockX, int blockZ) {
-        int x = blockX - this.x * 256;
-        int z = blockZ - this.z * 256;
+        int x = blockX - this.x * REGION_WIDTH;
+        int z = blockZ - this.z * REGION_WIDTH;
         int y = this.data == null ? Short.MIN_VALUE : this.data.getHeight(x, z);
         if (this.underground && y == 255) {
             y = CommandUtils.getSafeHeight(blockX, 64, blockZ, this.world);
@@ -774,9 +774,9 @@ public class CachedRegion {
 
         private FillChunkRunnable(LevelChunk chunk) {
             this.chunk = chunk;
-            int chunkX = chunk.getPos().x - CachedRegion.this.x * 16;
-            int chunkZ = chunk.getPos().z - CachedRegion.this.z * 16;
-            this.index = chunkZ * 16 + chunkX;
+            int chunkX = chunk.getPos().x - CachedRegion.this.x * CHUNKS_WIDTH;
+            int chunkZ = chunk.getPos().z - CachedRegion.this.z * CHUNKS_WIDTH;
+            this.index = chunkZ * CHUNKS_WIDTH + chunkX;
         }
 
         @Override
@@ -788,8 +788,8 @@ public class CachedRegion {
                     CachedRegion.this.load();
                 }
 
-                int chunkX = this.chunk.getPos().x - CachedRegion.this.x * 16;
-                int chunkZ = this.chunk.getPos().z - CachedRegion.this.z * 16;
+                int chunkX = this.chunk.getPos().x - CachedRegion.this.x * CHUNKS_WIDTH;
+                int chunkZ = this.chunk.getPos().z - CachedRegion.this.z * CHUNKS_WIDTH;
                 CachedRegion.this.loadChunkData(this.chunk, chunkX, chunkZ);
             } catch (Exception ex) {
                 VoxelConstants.getLogger().log(Level.ERROR, "Error in FillChunkRunnable", ex);
@@ -821,7 +821,7 @@ public class CachedRegion {
                     CachedRegion.this.dataUpdateQueued = false;
                 }
 
-                for (; CachedRegion.this.dataUpdated || CachedRegion.this.displayOptionsChanged; CachedRegion.this.refreshingImage = false) {
+                if (CachedRegion.this.dataUpdated || CachedRegion.this.displayOptionsChanged) {
                     CachedRegion.this.dataUpdated = false;
                     CachedRegion.this.displayOptionsChanged = false;
                     CachedRegion.this.refreshingImage = true;
@@ -829,6 +829,7 @@ public class CachedRegion {
                         CachedRegion.this.fillImage();
                         CachedRegion.this.imageChanged = true;
                     }
+                    CachedRegion.this.refreshingImage = false;
                 }
 
                 if (this.forceCompress) {

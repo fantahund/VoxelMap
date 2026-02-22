@@ -63,11 +63,6 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public boolean isGroundAt(int blockX, int blockZ) {
-        return false;
-    }
-
-    @Override
     public int getHeightAt(int blockX, int blockZ) {
         return Short.MIN_VALUE;
     }

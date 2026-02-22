@@ -36,7 +36,7 @@ public class CompressibleGLBufferedImage {
     private final Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "mapimage/" + UUID.randomUUID());
     private DynamicTexture texture;
 
-    public CompressibleGLBufferedImage(int width, int height, int imageType) {
+    public CompressibleGLBufferedImage(int width, int height) {
         this.width = width;
         this.height = height;
         this.bytes = new byte[width * height * 4];
@@ -105,6 +105,7 @@ public class CompressibleGLBufferedImage {
         ByteBuffer outBuffer = MemoryUtil.memByteBuffer(this.texture.getPixels().getPointer(), imageBytes);
         MemoryUtil.memCopy(buffer, outBuffer);
         this.texture.upload();
+        // TODO we need something like MipmapGenerator.generateMipLevels(location, null, imageBytes, null, imageBytes)
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, GLUtils.getGlTexture(this.texture.getTexture()).glId());
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         this.compress();

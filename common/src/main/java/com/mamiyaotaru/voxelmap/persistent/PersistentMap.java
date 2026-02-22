@@ -790,7 +790,7 @@ public class PersistentMap implements IChangeObserver {
             while (iterator.hasNext()) {
                 CachedRegion region = iterator.next();
                 if (region.isLoaded() && region.isEmpty()) {
-                    this.cachedRegions.put(region.getKey(), CachedRegion.emptyRegion);
+                    this.cachedRegions.put(region.getKey(), CachedRegion.EMPTY_REGION);
                     region.cleanup();
                     iterator.remove();
                 }
@@ -863,7 +863,7 @@ public class PersistentMap implements IChangeObserver {
             CachedRegion cachedRegion;
             synchronized (this.cachedRegions) {
                 cachedRegion = this.cachedRegions.get(key);
-                if (cachedRegion == null || cachedRegion == CachedRegion.emptyRegion) {
+                if (cachedRegion == null || cachedRegion == CachedRegion.EMPTY_REGION) {
                     String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
                     String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
                     cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, regionX, regionZ);
@@ -901,13 +901,6 @@ public class PersistentMap implements IChangeObserver {
         int z = (int) Math.floor(blockZ / 256.0F);
         CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
         return cachedRegion != null && cachedRegion.isLoaded();
-    }
-
-    public boolean isGroundAt(int blockX, int blockZ) {
-        int x = (int) Math.floor(blockX / 256.0F);
-        int z = (int) Math.floor(blockZ / 256.0F);
-        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
-        return cachedRegion != null && cachedRegion.isGroundAt(blockX, blockZ);
     }
 
     public int getHeightAt(int blockX, int blockZ) {
