@@ -581,7 +581,7 @@ public class ColorManager {
         } else if (block == BlockRepository.mangroveLeaves) {
             colorResolver = this.mangroveColorResolver;
         } else {
-            boolean isFoliage = block == BlockRepository.oakLeaves || block == BlockRepository.jungleLeaves  || block == BlockRepository.acaciaLeaves || block == BlockRepository.darkOakLeaves || block == BlockRepository.vine;
+            boolean isFoliage = block == BlockRepository.oakLeaves || block == BlockRepository.jungleLeaves || block == BlockRepository.acaciaLeaves || block == BlockRepository.darkOakLeaves || block == BlockRepository.vine;
             boolean isDryFoliage = block == BlockRepository.leafLitter;
             if (isFoliage) {
                 colorResolver = this.foliageColorResolver;

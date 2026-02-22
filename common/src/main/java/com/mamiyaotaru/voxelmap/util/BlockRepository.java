@@ -51,6 +51,7 @@ public class BlockRepository {
     public static Block chorusPlant;
     public static Block chorusFlower;
     public static Block leafLitter;
+    public static Block bush;
     public static HashSet<Block> biomeBlocks;
     public static Block[] biomeBlocksArray;
     public static HashSet<Block> shapedBlocks;
@@ -95,7 +96,8 @@ public class BlockRepository {
         chorusPlant = Blocks.CHORUS_PLANT;
         chorusFlower = Blocks.CHORUS_FLOWER;
         leafLitter = Blocks.LEAF_LITTER;
-        biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water, leafLitter};
+        bush = Blocks.BUSH;
+        biomeBlocksArray = new Block[]{grassBlock, oakLeaves, spruceLeaves, birchLeaves, jungleLeaves, acaciaLeaves, darkOakLeaves, mangroveLeaves, grass, fern, tallGrass, largeFern, reeds, vine, lilypad, tallFlower, water, leafLitter, bush};
         biomeBlocks = new HashSet<>(Arrays.asList(biomeBlocksArray));
         shapedBlocksArray = new Block[]{ladder, vine};
         shapedBlocks = new HashSet<>(Arrays.asList(shapedBlocksArray));
