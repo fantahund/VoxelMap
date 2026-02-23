@@ -159,8 +159,7 @@ public class Map implements Runnable, IChangeObserver {
     private int tickWithLightChange;
     private LightTexture lightmapTexture;
     private final int[] lightmapColors = new int[256];
-    private final int[] lastLightmapValues = { -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216, -16777216 };
-    // private final float[] lastLightBrightnessTable = new float[16];
+    private final int[] lastLightmapValues = new int[16];
     private boolean needSkyColor;
     private int lastSkyColor;
     private double lastGamma;
