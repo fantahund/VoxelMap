@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.GpuDevice;
@@ -107,7 +108,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         }
         NativeImage localPixels = pixels;
         if (localPixels != null) {
-            localPixels.setPixel(x, y, color | 0xff000000);
+            localPixels.setPixel(x, y, ColorUtils.premultiplyWithAlpha(color));
         }
     }
 
