@@ -14,7 +14,7 @@ public class EnderDragonVarintDataFactory extends DefaultEntityVariantDataFactor
         super(type);
     }
 
-    @SuppressWarnings({ "rawtypes" })
+    @SuppressWarnings("rawtypes")
     @Override
     public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
         return new DefaultEntityVariantData(getType(), DRAGON_TEXTURE, null, identifier, size, addBorder);

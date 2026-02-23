@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
+import com.mamiyaotaru.voxelmap.util.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
@@ -117,6 +118,7 @@ public class EntityMapImageManager {
     private final HashMap<String, Properties> mobPropertiesMap = new HashMap<>();
     private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
     private final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
+    private final EmptySubmitNodeCollector emptySubmitNodeCollector = new EmptySubmitNodeCollector();
     private final Class<?>[] fullRenderModels;
     private final HumanoidModel<?> humanoidModel;
 
@@ -255,7 +257,7 @@ public class EntityMapImageManager {
         return null;
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
         int identifier = getMobIdentifier(entity);
@@ -301,6 +303,9 @@ public class EntityMapImageManager {
                 }
             }
         }
+
+        EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
+        ((EntityRenderer) baseRenderer).submit(renderState, pose, emptySubmitNodeCollector, minecraft.gameRenderer.getLevelRenderState().cameraRenderState);
 
         EntityModel model = getEntityModel(baseRenderer);
         if (model == null) {
