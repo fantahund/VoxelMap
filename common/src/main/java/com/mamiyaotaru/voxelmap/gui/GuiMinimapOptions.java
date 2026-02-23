@@ -21,7 +21,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -79,9 +78,9 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                 new OptionsTab(Component.translatable("controls.title"), 3),
                 new OptionsTab(Component.translatable("options.minimap.tab.worldmap"), 4)}).build();
 
-        this.tabNavigationBar.setFocused(true);
         this.tabNavigationBar.selectTab(this.tabIndex, false);
         this.tabNavigationBar.arrangeElements();
+        this.setFocused(this.tabNavigationBar);
         this.addRenderableWidget(this.tabNavigationBar);
 
         int tabBottom = this.tabNavigationBar.getRectangle().bottom();
@@ -105,6 +104,15 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         this.addRenderableWidget(this.prevPageButton);
 
         this.replaceButtons();
+    }
+
+    private void handleTabChange() {
+        if (this.tabManager.getCurrentTab() instanceof OptionsTab tab) {
+            if (tab.index() != this.tabIndex) {
+                this.tabIndex = tab.index();
+                this.replaceButtons();
+            }
+        }
     }
 
     public void replaceButtons() {
@@ -265,31 +273,18 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
     }
 
-
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         super.render(drawContext, mouseX, mouseY, delta);
         drawContext.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-
         drawContext.drawCenteredString(this.font, this.pageState, this.width / 2, this.height / 6 + 126, 0xFFFFFFFF);
+        this.handleTabChange();
     }
 
     @Override
     public void renderMenuBackground(GuiGraphics drawContext) {
         drawContext.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
         this.renderMenuBackground(drawContext, 0, this.layout.getHeaderHeight(), this.width, this.height);
-    }
-
-    @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        boolean bl = super.mouseClicked(mouseButtonEvent, doubleClick);
-        if (this.tabManager.getCurrentTab() instanceof OptionsTab tab) {
-            if (tab.index() != this.tabIndex) {
-                this.tabIndex = tab.index();
-                this.replaceButtons();
-            }
-        }
-        return bl;
     }
 
     @Override
