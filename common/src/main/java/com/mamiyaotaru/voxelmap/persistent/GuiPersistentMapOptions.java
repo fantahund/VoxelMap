@@ -65,7 +65,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             counter++;
         }
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), buttonx -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), buttonx -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
 
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionButtonMinimap button) {

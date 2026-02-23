@@ -17,7 +17,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
     }
 
     public void init() {
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
         this.screenTitle = I18n.get("key.category.voxelmap.controls.title");
 
         this.keymapList = new GuiButtonRowListKeys(this);

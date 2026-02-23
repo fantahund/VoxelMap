@@ -56,7 +56,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
             ++var2;
         }
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 28, 200, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
     }
 
     protected void optionClicked(Button par1GuiButton) {
