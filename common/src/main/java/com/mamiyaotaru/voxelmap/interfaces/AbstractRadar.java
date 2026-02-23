@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -35,7 +34,7 @@ public abstract class AbstractRadar {
 
     public abstract void onResourceManagerReload(ResourceManager resourceManager);
 
-    public abstract void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, float scaleProj);
+    public abstract void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
 
     protected abstract void initContact(Contact contact);
 
@@ -127,15 +126,6 @@ public abstract class AbstractRadar {
         double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
         contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
         contact.brightness *= contact.brightness;
-    }
-
-    protected void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y) {
-        float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
-        matrixStack.translate(x, y, 0.0F);
-        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-        matrixStack.translate(0.0F, -distance, 0.0F);
-        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-        matrixStack.translate(-x, -y, 0.0F);
     }
 
     protected boolean isEntityShown(Entity entity) {

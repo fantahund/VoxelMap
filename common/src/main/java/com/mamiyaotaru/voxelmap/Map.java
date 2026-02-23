@@ -1550,7 +1550,7 @@ public class Map implements Runnable, IChangeObserver {
 
             if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
                 VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(matrixStack, minimapContext);
-                VoxelConstants.getVoxelMapInstance().getRadar().renderMapMobs(matrixStack, renderBufferSource, Contact.DisplayState.BELOW_FRAME, 0, 0, 512.0F / 64.0F);
+                VoxelConstants.getVoxelMapInstance().getRadar().renderMapMobs(matrixStack, renderBufferSource, Contact.DisplayState.BELOW_FRAME, 0, 0, scScale, 512.0F / 64.0F);
             }
 
             matrixStack.popMatrix();

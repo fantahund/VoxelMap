@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -69,8 +70,23 @@ public class Radar extends AbstractRadar {
         }
     }
 
+    private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
+        float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
+        if (radarOptions.filtering) {
+            matrixStack.translate(x, y, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+            matrixStack.translate(0.0F, -distance, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+            matrixStack.translate(-x, -y, 0.0F);
+        } else {
+            double wayZ = Math.cos(Math.toRadians(contact.angle)) * distance;
+            double wayX = Math.sin(Math.toRadians(contact.angle)) * distance;
+            matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
+        }
+    }
+
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
@@ -86,7 +102,7 @@ public class Radar extends AbstractRadar {
 
             try {
                 matrixStack.pushMatrix();
-                applyContactTransform(matrixStack, contact, x, y);
+                applyContactTransform(matrixStack, contact, x, y, scScale);
 
                 int color;
                 if (minimapContext.playerY - contact.y < 0) {
@@ -135,7 +151,7 @@ public class Radar extends AbstractRadar {
                     float zOffset = i * 0.01F;
 
                     matrixStack.pushMatrix();
-                    applyContactTransform(matrixStack, contact, x, y);
+                    applyContactTransform(matrixStack, contact, x, y, scScale);
                     matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
 
                     RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, false);

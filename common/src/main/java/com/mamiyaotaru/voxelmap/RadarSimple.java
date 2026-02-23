@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -51,14 +52,23 @@ public class RadarSimple extends AbstractRadar {
     protected void initContact(Contact contact) {
     }
 
-    @Override
-    protected void updateContact(Contact contact) {
-        super.updateContact(contact);
-        contact.rotationFactor = contact.entity.getYHeadRot();
+    private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
+        float facing = contact.entity.getYHeadRot();
+        if (mapOptions.rotates) {
+            facing -= minimapContext.direction;
+        } else if (mapOptions.oldNorth) {
+            facing += 90.0F;
+        }
+        float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
+        matrixStack.translate(x, y, 0.0F);
+        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+        matrixStack.translate(0.0F, -distance, 0.0F);
+        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + facing));
+        matrixStack.translate(-x, -y, 0.0F);
     }
 
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
@@ -72,7 +82,7 @@ public class RadarSimple extends AbstractRadar {
 
             try {
                 matrixStack.pushMatrix();
-                applyContactTransform(matrixStack, contact, x, y);
+                applyContactTransform(matrixStack, contact, x, y, scScale);
 
                 int color = minimapContext.playerY - contact.y < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
                 switch (contact.category) {
