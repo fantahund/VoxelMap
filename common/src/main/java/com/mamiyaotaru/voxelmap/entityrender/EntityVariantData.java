@@ -10,4 +10,8 @@ public interface EntityVariantData {
     public Identifier getPrimaryTexture();
 
     public Identifier getSecondaryTexture();
+
+    public Identifier getTertiaryTexture();
+
+    public Identifier getQuaternaryTexture();
 }

@@ -38,8 +38,11 @@ public class HorseVariantDataFactory extends DefaultEntityVariantDataFactory {
     public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
         Horse horse = (Horse) entity;
         Markings markings = horse.getMarkings();
+
+        Identifier primaryTexture = ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state);
         Identifier secondaryTexture = LOCATION_BY_MARKINGS.get(markings);
-        return new DefaultEntityVariantData(getType(), ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), secondaryTexture == INVISIBLE_TEXTURE ? null : secondaryTexture, identifier, size, addBorder);
+
+        return new DefaultEntityVariantData(getType(), identifier, size, addBorder, primaryTexture, secondaryTexture == INVISIBLE_TEXTURE ? null : secondaryTexture, null, null);
     }
 
 }

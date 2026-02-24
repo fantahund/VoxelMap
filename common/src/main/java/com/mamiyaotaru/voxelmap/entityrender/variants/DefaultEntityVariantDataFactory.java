@@ -13,14 +13,18 @@ import net.minecraft.world.entity.EntityType;
 public class DefaultEntityVariantDataFactory implements EntityVariantDataFactory {
     private final EntityType<?> type;
     private final Identifier secondaryTexture;
+    private final Identifier tertiaryTexture;
+    private final Identifier quaternaryTexture;
 
     public DefaultEntityVariantDataFactory(EntityType<?> type) {
-        this(type, null);
+        this(type, null, null, null);
     }
 
-    public DefaultEntityVariantDataFactory(EntityType<?> type, Identifier secondaryTexture) {
+    public DefaultEntityVariantDataFactory(EntityType<?> type, Identifier secondaryTexture, Identifier tertiaryTexture, Identifier quaternaryTexture) {
         this.type = type;
         this.secondaryTexture = secondaryTexture;
+        this.tertiaryTexture = tertiaryTexture;
+        this.quaternaryTexture = quaternaryTexture;
     }
 
     @Override
@@ -31,12 +35,14 @@ public class DefaultEntityVariantDataFactory implements EntityVariantDataFactory
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
-        return new DefaultEntityVariantData(type, ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), secondaryTexture, identifier, size, addBorder);
+        Identifier primaryTexture = ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state);
+        return new DefaultEntityVariantData(type, identifier, size, addBorder, primaryTexture, secondaryTexture, tertiaryTexture, quaternaryTexture);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static EntityVariantData createSimpleVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
-        return new DefaultEntityVariantData(entity.getType(), ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state), null, identifier, size, addBorder);
+        Identifier primaryTexture = ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state);
+        return new DefaultEntityVariantData(entity.getType(), identifier, size, addBorder, primaryTexture, null, null, null);
     }
 
 }

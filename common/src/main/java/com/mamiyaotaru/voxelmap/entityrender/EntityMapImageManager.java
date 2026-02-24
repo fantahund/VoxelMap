@@ -181,10 +181,10 @@ public class EntityMapImageManager {
         variantDataFactories.clear();
         armorDataFactories.clear();
 
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png")));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png")));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
-        // addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png")));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), null, null));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), null, null));
+//        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, null, null, null));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
         addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
         addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
@@ -231,7 +231,7 @@ public class EntityMapImageManager {
     private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int identifier, int size, boolean addBorder) {
         EntityRenderState renderState = null;
         if (entity instanceof AbstractClientPlayer player) {
-            return new DefaultEntityVariantData(entity.getType(), player.getSkin().body().texturePath(), null, identifier, size, addBorder);
+            return new DefaultEntityVariantData(entity.getType(), identifier, size, addBorder, player.getSkin().body().texturePath(), null, null, null);
         }
 
         if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
@@ -278,6 +278,8 @@ public class EntityMapImageManager {
 
         Identifier primaryTexture = variant.getPrimaryTexture();
         Identifier secondaryTexture = variant.getSecondaryTexture();
+        Identifier tertiaryTexture = variant.getTertiaryTexture();
+        Identifier quaternaryTexture = variant.getQuaternaryTexture();
 
         CaptureContext context = setupCapture(VoxelMapPipelines.ENTITY_ICON);
         PoseStack pose = context.poseStack();
@@ -326,7 +328,7 @@ public class EntityMapImageManager {
             slimeOuter.model.root().render(pose, bufferBuilder, LIGHT, OVERLAY, 0xffffffff); // light, overlay, color
         }
 
-        boolean success = this.doCapture(context, primaryTexture, secondaryTexture);
+        boolean success = this.doCapture(context, primaryTexture, secondaryTexture, tertiaryTexture, quaternaryTexture);
         if (!success) {
             return null;
         }
@@ -500,7 +502,7 @@ public class EntityMapImageManager {
             blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, OVERLAY);
         }
 
-        this.doCapture(context, armorTexture, null);
+        this.doCapture(context, armorTexture, null, null, null);
 
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
@@ -636,12 +638,14 @@ public class EntityMapImageManager {
         return new CaptureContext(poseStack, renderPipeline, bufferBuilder);
     }
 
-    private boolean doCapture(CaptureContext context, Identifier primaryId, Identifier secondaryId) {
+    private boolean doCapture(CaptureContext context, Identifier primary, Identifier secondary, Identifier tertiary, Identifier quaternary) {
         RenderPipeline renderPipeline = context.renderPipeline();
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
-        AbstractTexture texture = minecraft.getTextureManager().getTexture(primaryId);
-        AbstractTexture texture2 = secondaryId == null ? null : minecraft.getTextureManager().getTexture(secondaryId);
+        AbstractTexture primaryTexture = minecraft.getTextureManager().getTexture(primary);
+        AbstractTexture secondaryTexture = secondary == null ? null : minecraft.getTextureManager().getTexture(secondary);
+        AbstractTexture tertiaryTexture = tertiary == null ? null : minecraft.getTextureManager().getTexture(tertiary);
+        AbstractTexture quaternaryTexture = quaternary  == null ? null : minecraft.getTextureManager().getTexture(quaternary);
 
         RenderSystem.setShaderLights(lightingBuffer.slice());
 		
@@ -679,15 +683,22 @@ public class EntityMapImageManager {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-                renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
+                renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
-
-                if (texture2 != null) {
-                    renderPass.bindTexture("Sampler0", texture2.getTextureView(), texture2.getSampler());
+                if (secondaryTexture != null) {
+                    renderPass.bindTexture("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
+                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+                }
+                if (tertiaryTexture != null) {
+                    renderPass.bindTexture("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
+                    renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+                }
+                if (quaternaryTexture != null) {
+                    renderPass.bindTexture("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
