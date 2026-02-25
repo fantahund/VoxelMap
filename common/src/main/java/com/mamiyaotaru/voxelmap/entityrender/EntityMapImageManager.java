@@ -98,6 +98,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -115,12 +116,13 @@ public class EntityMapImageManager {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final RandomSource randomSource = RandomSource.create();
 
-    private final HashMap<String, Properties> mobPropertiesMap = new HashMap<>();
     private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
     private final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
     private final EmptySubmitNodeCollector emptySubmitNodeCollector = new EmptySubmitNodeCollector();
     private final Class<?>[] fullRenderModels;
     private final HumanoidModel<?> humanoidModel;
+    private final HashMap<EntityType<?>, String> customMobIcons = new HashMap<>();
+    private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
 
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
@@ -177,7 +179,8 @@ public class EntityMapImageManager {
         this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
 
-        mobPropertiesMap.clear();
+        reloadConfigurations();
+
         variantDataFactories.clear();
         armorDataFactories.clear();
 
@@ -195,6 +198,75 @@ public class EntityMapImageManager {
                 requestImageForMobType(t, 32, true);
             });
         }
+    }
+
+    private void reloadConfigurations() {
+        customMobIcons.clear();
+        customMobProperties.clear();
+
+        BuiltInRegistries.ENTITY_TYPE.forEach(type -> {
+            String entityId = type.getDescriptionId();
+
+            Identifier iconPath = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/radar_icon/" + entityId + ".png");
+            Optional<Resource> iconResource = minecraft.getResourceManager().getResource(iconPath);
+            if (iconResource.isPresent() && loadCustomMobIcon(iconPath, entityId)) {
+                customMobIcons.put(type, entityId);
+            }
+
+            Identifier propertiesPath = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/radar_icon/" + entityId + ".properties");
+            Optional<Resource> propertiesResource = minecraft.getResourceManager().getResource(propertiesPath);
+            if (propertiesResource.isPresent()) {
+                Properties properties = new Properties();
+                try (InputStream is = propertiesResource.get().open()) {
+                    properties.load(is);
+                } catch (IOException ignored) { }
+
+                customMobProperties.put(type, properties);
+            }
+        });
+    }
+
+    private boolean loadCustomMobIcon(Identifier iconPath, String iconName) {
+        BufferedImage image = ImageUtils.createBufferedImageFromIdentifier(iconPath);
+        if (image == null) return false;
+
+        image = ImageUtils.trim(image);
+        image = ImageUtils.intoSquare(image);
+
+        BufferedImage newImage = ImageUtils.fillOutline(ImageUtils.pad(image), true, 2);
+        newImage = ImageUtils.intoSquare(newImage);
+
+        int maxTries = 3;
+        int tries = 0;
+
+        while (textureAtlas.getAtlasSprite(iconName) == textureAtlas.getMissingImage()) {
+            textureAtlas.registerIconForBufferedImage(iconName, image);
+            textureAtlas.stitchNew();
+
+            if (++tries > maxTries) return false;
+        }
+
+        tries = 0;
+        while (textureAtlas.getAtlasSprite(iconName + "_outlined") == textureAtlas.getMissingImage()) {
+            textureAtlas.registerIconForBufferedImage(iconName + "_outlined", newImage);
+            textureAtlas.stitchNew();
+
+            if (++tries > maxTries) return false;
+        }
+
+        return true;
+    }
+
+    public String getCustomMobIcon(EntityType<?> type, boolean outline) {
+        String icon = customMobIcons.get(type);
+        if (icon != null && outline) {
+            return icon + "_outlined";
+        }
+        return icon;
+    }
+
+    public Properties getCustomMobProperties(EntityType<?> type) {
+        return customMobProperties.get(type);
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {
@@ -259,6 +331,11 @@ public class EntityMapImageManager {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
+        String customIcon = getCustomMobIcon(entity.getType(), addBorder);
+        if (customIcon != null) {
+            return textureAtlas.getAtlasSpriteIncludingYetToBeStitched(customIcon);
+        }
+
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
         int identifier = getMobIdentifier(entity);
         EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, identifier, size, addBorder);
@@ -285,26 +362,27 @@ public class EntityMapImageManager {
         PoseStack pose = context.poseStack();
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
-        Properties mobProperties = getMobProperties(entity);
-        String rotation = mobProperties.getProperty("rotation", "");
+        Properties mobProperties = getCustomMobProperties(entity.getType());
+        float iconScale = 1.0F;
+        if (mobProperties != null) {
+            iconScale = Float.parseFloat(mobProperties.getProperty("scale", "1.0"));
 
-        if (rotation.startsWith("{") && rotation.endsWith("}")) {
-            String content = rotation.substring(rotation.indexOf('{') + 1, rotation.indexOf('}'));
+            String rotation = mobProperties.getProperty("rotation", "");
+            if (rotation.startsWith("{") && rotation.endsWith("}")) {
+                for (String entry : rotation.substring(1, rotation.length() - 1).split(",")) {
+                    String[] keyValue = entry.split(":");
+                    if (keyValue.length != 2) continue;
 
-            for (String entry : content.split(",")) {
-                String[] keyValue = entry.split(":");
-                if (keyValue.length != 2) continue;
-
-                String key = keyValue[0].trim();
-                float value = Float.parseFloat(keyValue[1].trim());
-
-                switch (key) {
-                    case "x" -> pose.mulPose(Axis.XP.rotationDegrees(value));
-                    case "y" -> pose.mulPose(Axis.YP.rotationDegrees(value));
-                    case "z" -> pose.mulPose(Axis.ZP.rotationDegrees(value));
+                    float value = Float.parseFloat(keyValue[1].trim());
+                    switch (keyValue[0].trim()) {
+                        case "x" -> pose.mulPose(Axis.XP.rotationDegrees(value));
+                        case "y" -> pose.mulPose(Axis.YP.rotationDegrees(value));
+                        case "z" -> pose.mulPose(Axis.ZP.rotationDegrees(value));
+                    }
                 }
             }
         }
+        float iconScale2 = iconScale;
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
         ((EntityRenderer) baseRenderer).submit(renderState, pose, emptySubmitNodeCollector, minecraft.gameRenderer.getLevelRenderState().cameraRenderState);
@@ -338,7 +416,7 @@ public class EntityMapImageManager {
         // }
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
-            postProcessRenderedMobImage(entity, sprite, model, image2, addBorder);
+            postProcessRenderedMobImage(entity, sprite, model, image2, addBorder, iconScale2);
         });
 
         return sprite;
@@ -359,7 +437,7 @@ public class EntityMapImageManager {
         return id;
     }
 
-    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder) {
+    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder, float scale) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
             image = ImageUtils.flipHorizontal(image);
@@ -399,7 +477,6 @@ public class EntityMapImageManager {
                 default -> {}
             }
 
-            float scale = Float.parseFloat(getMobProperties(entity).getProperty("scale", "1.0"));
             image = ImageUtils.trim(image);
             if (useFixedScale) {
                 int maxSize = Math.max(image.getWidth(), image.getHeight());
@@ -506,20 +583,20 @@ public class EntityMapImageManager {
 
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
-            postProcessArmorImage(sprite, image2, addBorder);
+            postProcessRenderedArmorImage(sprite, image2, addBorder);
         });
 
         return sprite;
     }
 
-    private void postProcessArmorImage(Sprite sprite, BufferedImage image2, boolean addBorder) {
+    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, boolean addBorder) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
             image = ImageUtils.flipHorizontal(image);
             image = ImageUtils.trim(image);
 
             // make the image square and align it at the top
-            BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), BufferedImage.TYPE_4BYTE_ABGR);
+            BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), image.getType());
             newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
             newImage = ImageUtils.fillOutline(ImageUtils.pad(newImage), addBorder, true, 37.5F, 37.5F, 2);
 
@@ -541,26 +618,6 @@ public class EntityMapImageManager {
                 }
             }
         });
-    }
-
-    public Properties getMobProperties(Entity entity) {
-        String entityId = entity.getType().getDescriptionId();
-        String filePath = ("voxelmap:configs/radar_icon/" + entityId + ".properties").toLowerCase();
-
-        if (mobPropertiesMap.containsKey(filePath)) {
-            return mobPropertiesMap.get(filePath);
-        } else {
-            Properties properties = new Properties();
-            Optional<Resource> resource = minecraft.getResourceManager().getResource(Identifier.parse(filePath));
-            if (resource.isPresent()) {
-                try (InputStream inputStream = resource.get().open()) {
-                    properties.load(inputStream);
-                } catch (Exception ignored) {
-                }
-            }
-            mobPropertiesMap.put(filePath, properties);
-            return properties;
-        }
     }
 
     private ModelPart[] getPartToRender(EntityModel<?> model) {

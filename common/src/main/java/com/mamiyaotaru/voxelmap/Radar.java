@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.joml.Matrix4fStack;
@@ -25,7 +25,7 @@ import java.util.Properties;
 
 public class Radar extends AbstractRadar {
     private final EntityMapImageManager entityMapImageManager;
-    private final HashMap<Entity, MobIconConfig> iconConfigs = new HashMap<>();
+    private final HashMap<EntityType<?>, MobIconConfig> iconConfigs = new HashMap<>();
 
     public Radar() {
         super();
@@ -167,9 +167,12 @@ public class Radar extends AbstractRadar {
     }
 
     private MobIconConfig getIconConfig(Contact contact) {
-        return iconConfigs.computeIfAbsent(contact.entity, key -> {
-            Properties properties =  entityMapImageManager.getMobProperties(contact.entity);
-            float armorOffset = Float.parseFloat(properties.getProperty("helmetOffset", "0.0"));
+        return iconConfigs.computeIfAbsent(contact.entity.getType(), key -> {
+            Properties properties = entityMapImageManager.getCustomMobProperties(key);
+            float armorOffset = 0.0F;
+            if (properties != null) {
+                armorOffset = Float.parseFloat(properties.getProperty("helmetOffset", "0.0"));
+            }
 
             return new MobIconConfig(armorOffset);
         });
