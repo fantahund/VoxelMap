@@ -251,10 +251,10 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void loadMapTextures() {
-        boolean arrowFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("minimap_arrow_filtering", "false"));
+        boolean arrowFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("minimap_arrow_filtering", "true"));
         FilterMode arrowFilterMode = arrowFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
 
-        boolean frameFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("minimap_frame_filtering", "false"));
+        boolean frameFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("minimap_frame_filtering", "true"));
         FilterMode frameFilterMode = frameFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
 
         try {
