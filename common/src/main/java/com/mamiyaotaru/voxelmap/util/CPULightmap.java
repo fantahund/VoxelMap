@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 
 /**
  * from lightmap.fsh + net.minecraft.client.renderer.LightTexture
@@ -10,88 +11,90 @@ public class CPULightmap {
     private static final CPULightmap INSTANCE = new CPULightmap();
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
 
-    private float blockLightRedFlicker = 0.0f;
+    private float blockLightRedFlicker = 0.0F;
 
-    private float AmbientLightFactor = 0.0f;
-    private float SkyFactor = 0.0f;
-    private float BlockFactor = 0.0f;
-    private float SkyLightColorR = 1.0f;
-    private float SkyLightColorG = 1.0f;
-    private float SkyLightColorB = 1.0f;
-    private float BrightnessFactor = 0.0f;
+    private float ambientLightFactor = 0.0F;
+    private float skyFactor = 0.0F;
+    private float blockFactor = 0.0F;
+    private float skyLightColorR = 1.0F;
+    private float skyLightColorG = 1.0F;
+    private float skyLightColorB = 1.0F;
+    private float brightnessFactor = 0.0F;
 
     public static CPULightmap getInstance() {
         return INSTANCE;
     }
 
     float mix(float v1, float v2, float mix) {
-        return v1 * (1 - mix) + v2 * mix;
+        return v1 * (1.0F - mix) + v2 * mix;
     }
 
-    float get_brightness(float level) {
-        float curved_level = level / (4.0f - 3.0f * level);
-        return mix(curved_level, 1.0f, AmbientLightFactor);
+    float getBrightness(float level) {
+        return level / (4.0F - 3.0F * level);
     }
 
     float notGamma(float x) {
-        float nx = 1.0f - x;
-        return 1.0f - nx * nx * nx * nx;
+        float nx = 1.0F - x;
+        return 1.0F - nx * nx * nx * nx;
     }
 
     public void setup() {
-        AmbientLightFactor = MINECRAFT.level.dimensionType().ambientLight();
+        ambientLightFactor = MINECRAFT.level.dimensionType().ambientLight();
 
-        float g = 1 - (MINECRAFT.level.getSkyDarken() / 15f);
+        float g = 1.0F - (MINECRAFT.level.getSkyDarken() / 15.0F);
         float h = g * 0.95F + 0.05F;
 
-        SkyFactor = h;
+        skyFactor = h;
 
-        this.blockLightRedFlicker = this.blockLightRedFlicker + (float) ((Math.random() - Math.random()) * Math.random() * Math.random() * 0.1);
-        this.blockLightRedFlicker *= 0.9F;
-        BlockFactor = this.blockLightRedFlicker + 1.5F;
+        blockLightRedFlicker = blockLightRedFlicker + (float) ((Math.random() - Math.random()) * Math.random() * Math.random() * 0.1);
+        blockLightRedFlicker *= 0.9F;
+        blockFactor = blockLightRedFlicker + 1.5F;
 
-        SkyLightColorR = g * 0.65f + 0.35f;
-        SkyLightColorG = g * 0.65f + 0.35f;
-        SkyLightColorB = 1f;
+        skyLightColorR = g * 0.65F + 0.35F;
+        skyLightColorG = g * 0.65F + 0.35F;
+        skyLightColorB = 1.0F;
 
         float p = MINECRAFT.options.gamma().get().floatValue();
-        BrightnessFactor = Math.max(0.0F, p);
+        brightnessFactor = Math.max(0.0F, p);
     }
 
     public int getLight(int blockLight, int skyLight) {
-        float block_brightness = get_brightness(blockLight / 15f) * BlockFactor;
-        float sky_brightness = get_brightness(skyLight / 15f) * SkyFactor;
+        float blockBrightness = getBrightness(blockLight / 15.0F) * blockFactor;
+        float skyBrightness = getBrightness(skyLight / 15.0F) * skyFactor;
 
         // cubic nonsense, dips to yellowish in the middle, white when fully saturated
-        float colorr = block_brightness;
-        float colorg = block_brightness * ((block_brightness * 0.6f + 0.4f) * 0.6f + 0.4f);
-        float colorb = block_brightness * (block_brightness * block_brightness * 0.6f + 0.4f);
+        float colorR = blockBrightness;
+        float colorG = blockBrightness * ((blockBrightness * 0.6F + 0.4F) * 0.6F + 0.4F);
+        float colorB = blockBrightness * (blockBrightness * blockBrightness * 0.6F + 0.4F);
 
-        colorr += SkyLightColorR * sky_brightness;
-        colorg += SkyLightColorG * sky_brightness;
-        colorb += SkyLightColorB * sky_brightness;
+        colorR = mix(colorR, 1.0F, ambientLightFactor);
+        colorG = mix(colorG, 1.0F, ambientLightFactor);
+        colorB = mix(colorB, 1.0F, ambientLightFactor);
 
-        colorr = Math.max(Math.min(colorr, 1.0f), 0.0f);
-        colorg = Math.max(Math.min(colorg, 1.0f), 0.0f);
-        colorb = Math.max(Math.min(colorb, 1.0f), 0.0f);
+        colorR += skyLightColorR * skyBrightness;
+        colorG += skyLightColorG * skyBrightness;
+        colorB += skyLightColorB * skyBrightness;
 
-        colorr = mix(colorr, notGamma(colorr), BrightnessFactor);
-        colorg = mix(colorg, notGamma(colorg), BrightnessFactor);
-        colorb = mix(colorb, notGamma(colorb), BrightnessFactor);
+        colorR = mix(colorR, 0.75F, 0.04F);
+        colorG = mix(colorG, 0.75F, 0.04F);
+        colorB = mix(colorB, 0.75F, 0.04F);
 
-        colorr = mix(colorr, 0.75f, 0.04f);
-        colorg = mix(colorg, 0.75f, 0.04f);
-        colorb = mix(colorb, 0.75f, 0.04f);
+        colorR = Mth.clamp(colorR, 0.0F, 1.0F);
+        colorG = Mth.clamp(colorG, 0.0F, 1.0F);
+        colorB = Mth.clamp(colorB, 0.0F, 1.0F);
 
-        // more light!
-        colorr = mix(colorr, 1f, 0.1f);
-        colorg = mix(colorg, 1f, 0.1f);
-        colorb = mix(colorb, 1f, 0.1f);
+        colorR = mix(colorR, notGamma(colorR), brightnessFactor);
+        colorG = mix(colorG, notGamma(colorG), brightnessFactor);
+        colorB = mix(colorB, notGamma(colorB), brightnessFactor);
 
-        colorr = Math.min(colorr, 1.0f);
-        colorg = Math.min(colorg, 1.0f);
-        colorb = Math.min(colorb, 1.0f);
+        colorR = mix(colorR, 0.75F, 0.04F);
+        colorG = mix(colorG, 0.75F, 0.04F);
+        colorB = mix(colorB, 0.75F, 0.04F);
 
-        return ARGB.colorFromFloat(1.0f, colorb, colorg, colorr);
+        colorR = Math.min(colorR, 1.0F);
+        colorG = Math.min(colorG, 1.0F);
+        colorB = Math.min(colorB, 1.0F);
+
+        return ARGB.colorFromFloat(1.0F, colorB, colorG, colorR);
     }
 }
