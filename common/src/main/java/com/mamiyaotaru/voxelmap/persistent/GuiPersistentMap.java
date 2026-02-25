@@ -133,8 +133,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private boolean keyDownPressed;
     private boolean keyLeftPressed;
     private boolean keyRightPressed;
-    private int iconsWidth = 16;
-    private int iconsHeight = 16;
+    private static final int ICON_WIDTH = 16;
+    private static final int ICON_HEIGHT = 16;
 
     public GuiPersistentMap(Screen parent) {
         this.lastScreen = parent;
@@ -780,10 +780,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
 
-            float width = iconsWidth * 0.75F;
-            float height = iconsHeight * 0.75F;
+            float width = ICON_WIDTH * 0.75F;
+            float height = ICON_HEIGHT * 0.75F;
 
-            boolean hover = cursorCoordX >= playerX - width / 2 * guiToMap && cursorCoordX <= playerX + width / 2 * guiToMap && cursorCoordZ >= playerZ - height / 2 * guiToMap && cursorCoordZ <= playerZ + height / 2 * guiToMap;
+            boolean hover = cursorCoordX >= playerX - width / 2.0F * guiToMap && cursorCoordX <= playerX + width / 2.0F * guiToMap
+                    && cursorCoordZ >= playerZ - height / 2.0F * guiToMap && cursorCoordZ <= playerZ + height / 2.0F * guiToMap;
             if (hover) {
                 guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
                 renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
@@ -804,7 +805,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.pose().rotate(locate);
             guiGraphics.pose().translate(-x, -y);
 
-            VoxelMapGuiGraphics.blitFloat(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, voxelmapSkinLocation, x - width / 2, y - height / 2, width, height, 0, 1, 0, 1, 0xFFFFFFFF);
+            VoxelMapGuiGraphics.blitFloat(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, voxelmapSkinLocation, x - width / 2.0F, y - height / 2.0F, width, height, 0, 1, 0, 1, 0xFFFFFFFF);
 
             guiGraphics.pose().popMatrix();
         }
@@ -861,7 +862,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         // nothing
     }
 
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon, boolean highlight) {
         if (!pt.inWorld || !pt.inDimension) {
             return;
@@ -872,7 +872,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         String name = pt.name;
 
-        boolean hover = pt.inWorld && pt.inDimension && cursorCoordX >= ptX - iconsWidth / 2 * guiToMap && cursorCoordX <= ptX + iconsWidth / 2 * guiToMap && cursorCoordZ >= ptZ - iconsHeight / 2 * guiToMap && cursorCoordZ <= ptZ + iconsHeight / 2 * guiToMap;
+        boolean hover = pt.inWorld && pt.inDimension
+                && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
+                && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
         if (hover) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             renderTooltip(guiGraphics, Component.literal("X: " + pt.getX() + ", Y: " + pt.getY() + ", Z: " + pt.getZ()), this.mouseX, this.mouseY);
@@ -909,13 +911,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target && !hover ? 0.3F : 1.0F);
 
-        icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - iconsWidth / 2, y - iconsHeight / 2, iconsWidth, iconsHeight, color);
+        icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, color);
 
         if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
             float fontScale = 1.0F;
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().scale(fontScale, fontScale);
-            this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + iconsHeight / 2, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
+            this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + ICON_HEIGHT / 2.0F, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
             guiGraphics.pose().popMatrix();
         }
 
@@ -1006,7 +1008,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
     }
 
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     private Waypoint getHovered(float cursorCoordX, float cursorCoordZ) {
         if (!mapOptions.waypointsAllowed) {
             return null;
@@ -1016,7 +1017,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         for (Waypoint pt : this.waypointManager.getWaypoints()) {
             float ptX = pt.getX() + 0.5F;
             float ptZ = pt.getZ() + 0.5F;
-            boolean hover = pt.inWorld && pt.inDimension && cursorCoordX >= ptX - iconsWidth / 2 * guiToMap && cursorCoordX <= ptX + iconsWidth / 2 * guiToMap && cursorCoordZ >= ptZ - iconsHeight / 2 * guiToMap && cursorCoordZ <= ptZ + iconsHeight / 2 * guiToMap;
+            boolean hover = pt.inWorld && pt.inDimension
+                    && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
+                    && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
             if (hover) {
                 waypoint = pt;
             }
@@ -1027,7 +1030,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             if (pt != null) {
                 float ptX = pt.getX() + 0.5F;
                 float ptZ = pt.getZ() + 0.5F;
-                boolean hover = pt.inWorld && pt.inDimension && cursorCoordX >= ptX - iconsWidth / 2 * guiToMap && cursorCoordX <= ptX + iconsWidth / 2 * guiToMap && cursorCoordZ >= ptZ - iconsHeight / 2 * guiToMap && cursorCoordZ <= ptZ + iconsHeight / 2 * guiToMap;
+                boolean hover = pt.inWorld && pt.inDimension
+                        && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
+                        && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
                 if (hover) {
                     waypoint = pt;
                 }
