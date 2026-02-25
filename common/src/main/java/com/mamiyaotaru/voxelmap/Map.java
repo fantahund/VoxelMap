@@ -1857,17 +1857,18 @@ public class Map implements Runnable, IChangeObserver {
             String ns = "";
             String ew = "";
             if (heading > 360 - 67.5 || heading <= 67.5) {
-                ns = "N";
+                ns = "north";
             } else if (heading > 180 - 67.5 && heading <= 180 + 67.5) {
-                ns = "S";
+                ns = "south";
             }
             if (heading > 90 - 67.5 && heading <= 90 + 67.5) {
-                ew = "E";
+                ew = "east";
             } else if (heading > 270 - 67.5 && heading <= 270 + 67.5) {
-                ew = "W";
+                ew = "west";
             }
 
-            String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + GameVariableAccessShim.yCoord() + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + ns + ew;
+            String direction = I18n.get("minimap.ui." + ns + ew);
+            String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.yCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + direction;
             RenderUtils.drawCenteredString(matrixStack, renderBufferSource, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
             if (!this.message.isEmpty()) {
                 RenderUtils.drawCenteredString(matrixStack, renderBufferSource, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
