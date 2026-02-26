@@ -73,7 +73,7 @@ public class GLUtils {
             GpuBufferSlice projection = BLIT_PROJECTION_BUFFER.getBuffer(BLIT_PROJECTION);
             GpuSampler nearest = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
 
-            RenderUtils.drawMeshWithTexture(dst, projection, meshData, pipeline, TextureSetup.singleTexture(src, nearest));
+            RenderUtils.drawMeshWithTexture(dst, projection, -2000.0F, meshData, pipeline, TextureSetup.singleTexture(src, nearest));
         }
 
         TESSELATOR.clear();

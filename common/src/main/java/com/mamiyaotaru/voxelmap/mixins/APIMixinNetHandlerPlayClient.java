@@ -12,15 +12,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPacketListener.class)
 public abstract class APIMixinNetHandlerPlayClient {
     @Inject(method = "sendCommand", at = @At("HEAD"), cancellable = true)
-    public void onSendCommand(String string, CallbackInfo cir) {
-        if (voxelmap$parseCommand(string)) {
-            cir.cancel();
+    public void onSendCommand(String command, CallbackInfo ci) {
+        if (voxelmap$parseCommand(command)) {
+            ci.cancel();
         }
     }
 
     @Inject(method = "sendUnattendedCommand", at = @At("HEAD"), cancellable = true)
-    public void onUnsignedCommand(String string, Screen screen, CallbackInfo ci) {
-        if (voxelmap$parseCommand(string)) {
+    public void onUnsignedCommand(String command, Screen screenAfterCommand, CallbackInfo ci) {
+        if (voxelmap$parseCommand(command)) {
             ci.cancel();
         }
     }

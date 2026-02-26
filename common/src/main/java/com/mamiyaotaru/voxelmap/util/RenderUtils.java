@@ -154,7 +154,7 @@ public class RenderUtils {
         });
     }
 
-    public static void drawMeshWithTexture(GpuTextureView colorTexture, GpuBufferSlice projection, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup) {
+    public static void drawMeshWithTexture(GpuTextureView colorTexture, GpuBufferSlice projection, float initialDepth, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup) {
         if (meshData == null) {
             return;
         }
@@ -162,11 +162,10 @@ public class RenderUtils {
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
         try {
-            // FIXME 26.1
-//            RenderSystem.setProjectionMatrix(IMMEDIATE_DRAW_PROJECTION.getBuffer(projWidth, projHeight), ProjectionType.ORTHOGRAPHIC);
+            RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
-            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
+            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
             GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms().writeTransform(
                     RenderSystem.getModelViewMatrix(),
                     new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
@@ -198,7 +197,7 @@ public class RenderUtils {
             VoxelConstants.getLogger().error("Immediate draw failed. Exception: " + e);
         } finally {
             RenderSystem.getModelViewStack().popMatrix();
-//            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
     }
 }
