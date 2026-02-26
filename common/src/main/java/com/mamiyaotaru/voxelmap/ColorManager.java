@@ -8,7 +8,10 @@ import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.IdentifierException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -16,9 +19,11 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -75,7 +80,8 @@ public class ColorManager {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
-    private BufferedImage colorPicker;
+    private Identifier hueColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue.png");
+    private Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue_sat.png");
     private int sizeOfBiomeArray;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
@@ -118,11 +124,15 @@ public class ColorManager {
     }
 
     public int getAirColor() {
-        return this.blockColors[BlockRepository.airID];
+        return ARGB.toABGR(this.blockColors[BlockRepository.airID]);
     }
 
-    public BufferedImage getColorPicker() {
-        return this.colorPicker;
+    public Identifier getHueColorWheel() {
+        return this.hueColorWheel;
+    }
+
+    public Identifier getHueSatColorWheel() {
+        return this.hueSatColorWheel;
     }
 
     public void onResourceManagerReload(ResourceManager resourceManager) {
@@ -199,100 +209,17 @@ public class ColorManager {
         this.loaded = true;
     }
 
-    // FIXME 1.21.5 Radar
-    // public final BufferedImage getBlockImage(BlockState blockState, ItemStack stack, Level world, float iconScale, float captureDepth) {
-    // try {
-    // BakedModel model = VoxelConstants.getMinecraft().getModelManager().getModel(stack, world, null, 0); //FIXME 1.21.4
-    // this.drawModel(Direction.EAST, blockState, model, stack, iconScale, captureDepth);
-    // BufferedImage blockImage = ImageUtils.createBufferedImageFromGLID(OpenGL.Utils.fboTextureId);
-    // if (VoxelConstants.DEBUG) {
-    // ImageIO.write(blockImage, "png", new File(VoxelConstants.getMinecraft().gameDirectory, blockState.getBlock().getName().getString() + "-" + Block.getId(blockState) + ".png"));
-    // }
-    // return blockImage;
-    // } catch (Exception var8) {
-    // VoxelConstants.getLogger().error("error getting block armor image for " + blockState.toString() + ": " + var8.getLocalizedMessage(), var8);
-    // return null;
-    // }
-    // }
-
-    // FIXME 1.21.5 Radar
-    // private void drawModel(Direction facing, BlockState blockState, BakedModel model, ItemStack stack, float scale, float captureDepth) {
-    // float size = 8.0F * scale;
-    // ItemTransforms transforms = model.getTransforms();
-    // ItemTransform headTransforms = transforms.head();
-    // Vector3f translations = headTransforms.translation;
-    // float transX = -translations.x() * size + 0.5F * size;
-    // float transY = translations.y() * size + 0.5F * size;
-    // float transZ = -translations.z() * size + 0.5F * size;
-    // Vector3f rotations = headTransforms.rotation;
-    // float rotX = rotations.x();
-    // float rotY = rotations.y();
-    // float rotZ = rotations.z();
-    // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, OpenGL.Utils.fboTextureId);
-    // int width = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TRANSFORM_BIT);
-    // int height = OpenGL.glGetTexLevelParameteri(OpenGL.GL11_GL_TEXTURE_2D, 0, OpenGL.GL11_GL_TEXTURE_HEIGHT);
-    // OpenGL.glBindTexture(OpenGL.GL11_GL_TEXTURE_2D, 0);
-    // OpenGL.glViewport(0, 0, width, height);
-    // Matrix4f minimapProjectionMatrix = RenderSystem.getProjectionMatrix();
-    // Matrix4f matrix4f = new Matrix4f().ortho(0.0F, width, height, 0.0F, 1000.0F, 3000.0F);
-    // RenderSystem.setProjectionMatrix(matrix4f, ProjectionType.ORTHOGRAPHIC);
-    // Matrix4fStack matrixStack = RenderSystem.getModelViewStack();
-    // matrixStack.pushMatrix();
-    // matrixStack.identity();
-    // matrixStack.translate(0.0f, 0.0f, -3000.0f + (captureDepth * scale));
-    // OpenGL.Utils.bindFramebuffer();
-    // OpenGL.glDepthMask(true);
-    // OpenGL.glEnable(OpenGL.GL11_GL_DEPTH_TEST);
-    // OpenGL.glEnable(OpenGL.GL11_GL_BLEND);
-    // OpenGL.glDisable(OpenGL.GL11_GL_CULL_FACE);
-    // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-    // OpenGL.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-    // OpenGL.glClearColor(1.0F, 1.0F, 1.0F, 0.0F);
-    // OpenGL.glClearDepth(1.0);
-    // OpenGL.glClear(OpenGL.GL11_GL_COLOR_BUFFER_BIT | OpenGL.GL11_GL_DEPTH_BUFFER_BIT);
-    // OpenGL.glBlendFunc(OpenGL.GL11_GL_SRC_ALPHA, OpenGL.GL11_GL_ONE_MINUS_SRC_ALPHA);
-    // matrixStack.pushMatrix();
-    // matrixStack.translate((width / 2f) - size / 2.0F + transX, (height / 2f) - size / 2.0F + transY, 0.0F + transZ);
-    // matrixStack.scale(size, size, size);
-    // VoxelConstants.getMinecraft().getTextureManager().getTexture(AtlasIds.BLOCKS).setFilter(false, false);
-    // OpenGL.Utils.img2(AtlasIds.BLOCKS);
-    // matrixStack.rotate(Axis.YP.rotationDegrees(180.0F));
-    // matrixStack.rotate(Axis.YP.rotationDegrees(rotY));
-    // matrixStack.rotate(Axis.XP.rotationDegrees(rotX));
-    // matrixStack.rotate(Axis.ZP.rotationDegrees(rotZ));
-    // if (facing == Direction.UP) {
-    // matrixStack.rotate(Axis.XP.rotationDegrees(90.0F));
-    // }
-    //
-    // Vector4f fullbright2 = new Vector4f(this.fullbright.x, fullbright.y, fullbright.z, 0);
-    // fullbright2.mul(matrixStack);
-    // Vector3f fullbright3 = new Vector3f(fullbright2.x, fullbright2.y, fullbright2.z);
-    // RenderSystem.setShaderLights(fullbright3, fullbright3);
-    // PoseStack newMatrixStack = new PoseStack();
-    // MultiBufferSource.BufferSource immediate = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-    // VoxelConstants.getMinecraft().getItemRenderer().render(stack, ItemDisplayContext.NONE, false, newMatrixStack, immediate, 15728880, OverlayTexture.NO_OVERLAY, model); //FIXME 1.21.4
-    // immediate.endBatch();
-    // matrixStack.popMatrix();
-    // matrixStack.popMatrix();
-    // OpenGL.glEnable(OpenGL.GL11_GL_CULL_FACE);
-    // OpenGL.glDisable(OpenGL.GL11_GL_DEPTH_TEST);
-    // OpenGL.glDepthMask(false);
-    // OpenGL.Utils.unbindFramebuffer();
-    // RenderSystem.setProjectionMatrix(minimapProjectionMatrix, ProjectionType.ORTHOGRAPHIC);
-    // OpenGL.glViewport(0, 0, VoxelConstants.getMinecraft().getWindow().getWidth(), VoxelConstants.getMinecraft().getWindow().getHeight());
-    // }
-
     private void loadColorPicker() {
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath("voxelmap", "images/colorpicker.png")).get().open();
-            Image picker = ImageIO.read(is);
-            is.close();
-            this.colorPicker = new BufferedImage(picker.getWidth(null), picker.getHeight(null), 2);
-            Graphics gfx = this.colorPicker.createGraphics();
-            gfx.drawImage(picker, 0, 0, null);
-            gfx.dispose();
-        } catch (Exception var4) {
-            VoxelConstants.getLogger().error("Error loading color picker: " + var4.getLocalizedMessage());
+            DynamicTexture hueWheelTexture = new DynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image());
+            hueWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            VoxelConstants.getMinecraft().getTextureManager().register(this.hueColorWheel, hueWheelTexture);
+
+            DynamicTexture hueSatWheelTexture = new DynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
+            hueSatWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            VoxelConstants.getMinecraft().getTextureManager().register(this.hueSatColorWheel, hueSatWheelTexture);
+
+        } catch (Exception exception) {
         }
 
     }
@@ -654,7 +581,7 @@ public class ColorManager {
         } else if (block == BlockRepository.mangroveLeaves) {
             colorResolver = this.mangroveColorResolver;
         } else {
-            boolean isFoliage = block == BlockRepository.oakLeaves || block == BlockRepository.jungleLeaves  || block == BlockRepository.acaciaLeaves || block == BlockRepository.darkOakLeaves || block == BlockRepository.vine;
+            boolean isFoliage = block == BlockRepository.oakLeaves || block == BlockRepository.jungleLeaves || block == BlockRepository.acaciaLeaves || block == BlockRepository.darkOakLeaves || block == BlockRepository.vine;
             boolean isDryFoliage = block == BlockRepository.leafLitter;
             if (isFoliage) {
                 colorResolver = this.foliageColorResolver;
@@ -1272,7 +1199,7 @@ public class ColorManager {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
                         double var1 = Mth.clamp(biome.getBaseTemperature(), 0.0F, 1.0F);
-                        double var2 = Mth.clamp(biome.climateSettings.downfall(), 0.0F, 1.0F);
+                        double var2 = Mth.clamp(VoxelConstants.getModApiBridge().getBiomeClimateSettings(biome).downfall(), 0.0F, 1.0F);
 
                         var2 *= var1;
                         var1 = 1.0 - var1;

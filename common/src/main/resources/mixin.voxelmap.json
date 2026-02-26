@@ -10,7 +10,6 @@
     "conformVisibility": true
   },
   "client": [
-    "AccessorEnderDragonRenderer",
     "APIMixinChatListenerHud",
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",

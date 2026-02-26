@@ -34,4 +34,15 @@ public final class ColorUtils {
         float blue = (blue1 + blue2) / alpha;
         return ((int) (alpha * 255.0F) & 0xFF) << 24 | ((int) red & 0xFF) << 16 | ((int) green & 0xFF) << 8 | (int) blue & 0xFF;
     }
+
+    public static int premultiplyWithAlpha(int color) {
+        int alpha = color >> 24 & 0xFF;
+        if (alpha == 0xFF) {
+            return color;
+        }
+        byte r = (byte) ((color & 0xFF) * alpha / 255);
+        byte g = (byte) ((color >> 8 & 0xFF) * alpha / 255);
+        byte b = (byte) ((color >> 16 & 0xFF) * alpha / 255);
+        return 0xFF << 24 | (r & 0xFF) | (g & 0xFF) << 8 | (b & 0xFF) << 16;
+    }
 }

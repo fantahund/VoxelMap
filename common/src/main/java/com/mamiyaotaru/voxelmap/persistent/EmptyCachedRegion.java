@@ -43,7 +43,7 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
-    public Identifier getTextureLocation() {
+    public Identifier getTextureLocation(float zoom) {
         return null;
     }
 
@@ -60,11 +60,6 @@ public class EmptyCachedRegion extends CachedRegion {
     @Override
     public boolean isEmpty() {
         return true;
-    }
-
-    @Override
-    public boolean isGroundAt(int blockX, int blockZ) {
-        return false;
     }
 
     @Override

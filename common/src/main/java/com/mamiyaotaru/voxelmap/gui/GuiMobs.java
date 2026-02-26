@@ -1,8 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
-import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -16,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 public class GuiMobs extends GuiScreenMinimap {
-    private final Screen parentScreen;
     protected final RadarSettingsManager options;
     protected Component screenTitle;
     private GuiSlotMobs mobsList;
@@ -27,8 +24,7 @@ public class GuiMobs extends GuiScreenMinimap {
     protected Identifier selectedMobId;
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
-        this.parentScreen = parentScreen;
-        this.setParentScreen(this.parentScreen);
+        this.lastScreen = parentScreen;
 
         this.options = options;
     }
@@ -42,12 +38,12 @@ public class GuiMobs extends GuiScreenMinimap {
         this.screenTitle = Component.translatable("options.minimap.mobs.title");
         this.mobsList = new GuiSlotMobs(this);
         int filterStringWidth = this.getFont().width(I18n.get("minimap.waypoints.filter") + ":");
-        this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 56, 305 - filterStringWidth - 5, 20, null);
+        this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
         this.filter.setMaxLength(35);
         this.addRenderableWidget(this.filter);
-        this.addRenderableWidget(this.buttonEnable = new Button.Builder(Component.translatable("options.minimap.mobs.enable"), button -> this.setMobEnabled(this.selectedMobId, true)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 28, 100, 20).build());
-        this.addRenderableWidget(this.buttonDisable = new Button.Builder(Component.translatable("options.minimap.mobs.disable"), button -> this.setMobEnabled(this.selectedMobId, false)).bounds(this.getWidth() / 2 - 50, this.getHeight() - 28, 100, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> VoxelConstants.getMinecraft().setScreen(this.parentScreen)).bounds(this.getWidth() / 2 + 4 + 50, this.getHeight() - 28, 100, 20).build());
+        this.addRenderableWidget(this.buttonEnable = new Button.Builder(Component.translatable("options.minimap.mobs.enable"), button -> this.setMobEnabled(this.selectedMobId, true)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 26, 100, 20).build());
+        this.addRenderableWidget(this.buttonDisable = new Button.Builder(Component.translatable("options.minimap.mobs.disable"), button -> this.setMobEnabled(this.selectedMobId, false)).bounds(this.getWidth() / 2 - 50, this.getHeight() - 26, 100, 20).build());
+        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 + 4 + 50, this.getHeight() - 26, 100, 20).build());
         this.setFocused(this.filter);
         this.filter.setFocused(true);
         boolean isSomethingSelected = this.selectedMobId != null;
@@ -115,14 +111,14 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     private boolean isMobEnabled(Identifier mobId) {
-        return !VoxelMap.radarOptions.hiddenMobs.contains(mobId);
+        return !options.hiddenMobs.contains(mobId);
     }
 
     private void setMobEnabled(Identifier mobId, boolean enabled) {
         if (enabled) {
-            VoxelMap.radarOptions.hiddenMobs.remove(mobId);
+            options.hiddenMobs.remove(mobId);
         } else {
-            VoxelMap.radarOptions.hiddenMobs.add(mobId);
+            options.hiddenMobs.add(mobId);
         }
     }
 
@@ -139,7 +135,7 @@ public class GuiMobs extends GuiScreenMinimap {
         this.buttonEnable.active = isSomethingSelected && !this.isMobEnabled(this.selectedMobId);
         this.buttonDisable.active = isSomethingSelected && this.isMobEnabled(this.selectedMobId);
         super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawString(this.getFont(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 51, 0xFFA0A0A0);
+        drawContext.drawString(this.getFont(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 49, 0xFFA0A0A0);
         this.filter.render(drawContext, mouseX, mouseY, delta);
         if (this.tooltip != null) {
             this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);

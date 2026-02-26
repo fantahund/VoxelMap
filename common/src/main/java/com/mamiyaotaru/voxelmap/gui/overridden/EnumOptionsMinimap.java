@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 public enum EnumOptionsMinimap {
-    SHOW_COORDS("options.minimap.showCoordinates", false, true, false),
+    SHOW_COORDS("options.minimap.showCoordinates", false, false, true),
     HIDE_MINIMAP("options.minimap.hideMinimap", false, true, false),
     CAVE_MODE("options.minimap.caveMode", false, true, false),
     DYNAMIC_LIGHTING("options.minimap.dynamicLighting", false, true, false),
@@ -22,6 +22,11 @@ public enum EnumOptionsMinimap {
     CHUNK_GRID("options.minimap.chunkGrid", false, true, false),
     SLIME_CHUNKS("options.minimap.slimeChunks", false, true, false),
     WORLD_BORDER("options.minimap.worldBorder", false, true, false),
+    MOVE_MAP_DOWN_WHILE_STATUS_EFFECT("options.minimap.moveMapBelowStatusEffectIcons", false, true, false),
+    MOVE_SCOREBOARD_DOWN("options.minimap.moveScoreboardBelowMap", false, true, false),
+    SHOW_BIOME("options.minimap.showBiome", false, true, false),
+    UPDATE_NOTIFIER("options.minimap.updateNotifier", false, true, false),
+    COLOR_PICKER_MODE("options.minimap.colorPickerMode", false, false, true),
     RADAR_MODE("options.minimap.radar.radarMode", false, false, true),
     SHOW_RADAR("options.minimap.radar.showRadar", false, true, false),
     SHOW_MOBS("options.minimap.radar.showMobs", false, false, true),
@@ -40,8 +45,7 @@ public enum EnumOptionsMinimap {
     MIN_ZOOM("options.worldmap.minZoom", true, false, false),
     MAX_ZOOM("options.worldmap.maxZoom", true, false, false),
     CACHE_SIZE("options.worldmap.cacheSize", true, false, false),
-    MOVE_MAP_DOWN_WHILE_STATUS_EFFECT("options.minimap.moveMapBelowStatusEffectIcons", false, true, false),
-    MOVE_SCOREBOARD_DOWN("options.minimap.moveScoreboardBelowMap", false, true, false),
+    TELEPORT_COMMAND("Teleport Command", false, false, false),
     DISTANCE_UNIT_CONVERSION("options.minimap.waypoints.distanceUnitConversion", false, false, true),
     WAYPOINT_SIGN_SCALE("options.minimap.waypoints.waypointSignScale", true, false, false),
     SHOW_IN_GAME_WAYPOINT_NAMES("options.minimap.waypoints.showWaypointNames", false, false, true),

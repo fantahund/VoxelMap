@@ -1,20 +1,18 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -32,11 +30,8 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disableTooltip");
     static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlightTooltip");
     static final Component TOOLTIP_UNHIGHLIGHT = Component.translatable("minimap.waypoints.removeHighlightTooltip");
-    final Identifier visibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
-    final Identifier invisibleIconIdentifier = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
     protected long lastClicked;
     public boolean doubleClicked;
-    private final Identifier targetIconLocation = Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/target.png");
     private final TextureAtlas textureAtlas;
 
     GuiSlotWaypoints(GuiWaypoints par1GuiWaypoints) {
@@ -53,14 +48,7 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         this.waypointsFiltered = new ArrayList<>(this.waypoints);
         this.waypointsFiltered.forEach(x -> this.addEntry((WaypointItem) x));
 
-        try {
-            DynamicTexture targetIcon = new DynamicTexture(() -> "Waypoint Target Icon", TextureContents.load(VoxelConstants.getMinecraft().getResourceManager(), targetIconLocation).image());
-            targetIcon.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            minecraft.getTextureManager().register(targetIconLocation, targetIcon);
-        } catch (Exception e) {
-        }
-
-        this.textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlasChooser();
+        this.textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
     }
 
     @Override
@@ -141,43 +129,43 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
     public class WaypointItem extends AbstractSelectionList.Entry<WaypointItem> implements Comparable<WaypointItem> {
         private final GuiWaypoints parentGui;
         private final Waypoint waypoint;
+        private final GuiIconElement waypointIcon;
+        private final GuiIconElement waypointToggle;
 
         protected WaypointItem(GuiWaypoints waypointScreen, Waypoint waypoint) {
             this.parentGui = waypointScreen;
             this.waypoint = waypoint;
+            this.waypointIcon = new GuiIconElement(this.getX() + 2, this.getY(), 18, 18, true, (element) -> this.parentGui.setHighlightedWaypoint());
+            this.waypointToggle = new GuiIconElement(this.getX() + this.getWidth() - 20, this.getY(), 18, 18, true, (element) -> this.parentGui.toggleWaypointVisibility());
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            int x = getX();
-            int y = getY();
-            int entryHeight = getHeight();
-            drawContext.drawCenteredString(this.parentGui.getFont(), this.waypoint.name, this.parentGui.getWidth() / 2, y + 5, this.waypoint.getUnifiedColor());
-            byte padding = 3;
-            byte iconWidth = 16;
-            if (mouseX >= x - padding && mouseY >= y && mouseX <= x + 215 + padding && mouseY <= y + entryHeight) {
-                Component tooltip;
-                if (mouseX >= x + 215 - iconWidth - padding && mouseX <= x + 215 + padding) {
-                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
-                    tooltip = this.waypoint.enabled ? GuiSlotWaypoints.TOOLTIP_DISABLE : GuiSlotWaypoints.TOOLTIP_ENABLE;
-                } else if (mouseX >= x + padding && mouseX <= x + iconWidth + padding) {
-                    drawContext.requestCursor(CursorTypes.POINTING_HAND);
-                    tooltip = this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT;
-                } else {
-                    String tooltipText = "X: " + this.waypoint.getX() + ", Y: " + this.waypoint.getY() + ", Z: " + this.waypoint.getZ();
+            drawContext.drawCenteredString(this.parentGui.getFont(), this.waypoint.name, this.parentGui.getWidth() / 2, this.getY() + 5, this.waypoint.getUnifiedColor());
 
-                    tooltip = Component.literal(tooltipText);
-                }
-
-                if (mouseX >= GuiSlotWaypoints.this.getX() && mouseX <= GuiSlotWaypoints.this.getRight() && mouseY >= GuiSlotWaypoints.this.getY() && mouseY <= GuiSlotWaypoints.this.getBottom()) {
-                    GuiWaypoints.setTooltip(GuiSlotWaypoints.this.parentGui, tooltip);
-                }
+            Sprite icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
+            if (icon == textureAtlas.getMissingImage()) {
+                icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
-            drawContext.blit(RenderPipelines.GUI_TEXTURED, this.waypoint.enabled ? GuiSlotWaypoints.this.visibleIconIdentifier : GuiSlotWaypoints.this.invisibleIconIdentifier, x + 198, y, 0.0F, 0.0F, 18, 18, 18, 18);
-            textureAtlas.getAtlasSprite("voxelmap:images/waypoints/waypoint" + waypoint.imageSuffix + ".png").blit(drawContext, RenderPipelines.GUI_TEXTURED, x, y, 18, 18, waypoint.getUnifiedColor());
-
+            this.waypointIcon.setPosition(this.getX() + 2, this.getY());
+            this.waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, icon, this.waypoint.getUnifiedColor());
+            this.waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
             if (this.waypoint == this.parentGui.highlightedWaypoint) {
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, targetIconLocation, x, y, 0.0F, 1.0F, 18, 18, 18, 18, 0xFFFF0000);
+                this.waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
+                this.waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
+            }
+
+            Identifier toggleIcon = this.waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
+            this.waypointToggle.setPosition(this.getX() + this.getWidth() - 20, this.getY());
+            this.waypointToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
+            this.waypointToggle.render(drawContext, mouseX, mouseY, tickDelta);
+
+            if (this.waypointIcon.isMouseOver(mouseX, mouseY)) {
+                GuiWaypoints.setTooltip(this.parentGui, this.waypoint == this.parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT);
+            } else if (this.waypointToggle.isMouseOver(mouseX, mouseY)) {
+                GuiWaypoints.setTooltip(this.parentGui, this.waypoint.enabled ? GuiSlotWaypoints.TOOLTIP_DISABLE : GuiSlotWaypoints.TOOLTIP_ENABLE);
+            } else if (mouseX >= this.getX() && mouseX <= this.getX() + this.getWidth() && mouseY >= this.getY() && mouseY <= this.getY() + this.getHeight()) {
+                GuiWaypoints.setTooltip(this.parentGui, Component.literal("X: " + this.waypoint.getX() + ", Y: " + this.waypoint.getY() + ", Z: " + this.waypoint.getZ()));
             }
         }
 
@@ -185,21 +173,15 @@ class GuiSlotWaypoints extends AbstractSelectionList<GuiSlotWaypoints.WaypointIt
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
             double mouseX = mouseButtonEvent.x();
             double mouseY = mouseButtonEvent.y();
-
             if (mouseY < GuiSlotWaypoints.this.getY() || mouseY > GuiSlotWaypoints.this.getBottom()) {
                 return false;
             }
 
             GuiSlotWaypoints.this.setSelected(this);
-            int leftEdge = this.parentGui.getWidth() / 2 - 92 - 16;
-            byte padding = 3;
-            byte iconWidth = 16;
-            int width = 215;
-            if (mouseX >= (leftEdge + width - iconWidth - padding) && mouseX <= (leftEdge + width + padding)) {
-                this.parentGui.toggleWaypointVisibility();
-            } else if (mouseX >= (leftEdge + padding) && mouseX <= (leftEdge + iconWidth + padding)) {
-                this.parentGui.setHighlightedWaypoint();
-            } else if (GuiSlotWaypoints.this.doubleClicked) {
+
+            boolean clicked = this.waypointIcon.mouseClicked(mouseButtonEvent, doubleClick) || this.waypointToggle.mouseClicked(mouseButtonEvent, doubleClick);
+
+            if (!clicked && GuiSlotWaypoints.this.doubleClicked) {
                 this.parentGui.editWaypoint(this.parentGui.selectedWaypoint);
             }
 

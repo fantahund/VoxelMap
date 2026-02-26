@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
-public class ScaledDynamicMutableTexture extends DynamicMoveableTexture {
+public class ScaledDynamicMutableTexture extends DynamicMutableTexture {
     private final int scale;
 
     public ScaledDynamicMutableTexture(String label, int width, int height, boolean clear) {

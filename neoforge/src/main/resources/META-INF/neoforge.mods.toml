@@ -6,7 +6,7 @@ issueTrackerURL = "https://github.com/fantahund/Voxelmap/issues"
 [[mods]]
 modId = "voxelmap"
 version = "${version}"
-displayName = "Voxelmap"
+displayName = "VoxelMap"
 logoFile = "icon.png"
 authors = "Lahwran, Zaneris, MamiyaOtaru, fantahund, Brokkonaut, TheAlgorithm476"
 description = "Minimap and world map"
@@ -22,7 +22,7 @@ side = "CLIENT"
 [[dependencies.voxelmap]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.5]"
+versionRange = "[1.21.11]"
 ordering = "NONE"
 side = "CLIENT"
 

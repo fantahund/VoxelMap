@@ -4,7 +4,6 @@ import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
@@ -17,20 +16,28 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public final class VoxelConstants {
+    //TODO 1.21.11: use VoxelConstants.MOD_ID for identifier namespace
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
-    private static int elapsedTicks;
-    private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.parse("textures/block/dirt.png");
+    public static final String MOD_ID = "voxelmap";
     public static final boolean DEBUG = false;
-    private static boolean initialized;
+
+    private static final Identifier OPTIONS_BACKGROUND_TEXTURE = Identifier.parse("textures/block/dirt.png");
+    private static final Identifier CHECK_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
+    private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
+
+    private static String modVersion = null;
+    private static int elapsedTicks;
     private static Events events;
     private static PacketBridge packetBridge;
     private static ModApiBridge modApiBridge;
@@ -90,27 +97,20 @@ public final class VoxelConstants {
         return OPTIONS_BACKGROUND_TEXTURE;
     }
 
-    public static void lateInit() {
-        initialized = true;
-        VoxelConstants.getVoxelMapInstance().lateInit(true, false);
+    public static Identifier getCheckMarkerTexture() {
+        return CHECK_MARKER_TEXTURE;
+    }
+
+    public static Identifier getCrossMarkerTexture() {
+        return CROSS_MARKER_TEXTURE;
     }
 
     public static void clientTick() {
-        if (!initialized) {
-            lateInit();
-        }
-
-        if (initialized) {
-            VoxelConstants.getVoxelMapInstance().onTick();
-        }
+        VoxelConstants.getVoxelMapInstance().onTick();
 
     }
 
     public static void renderOverlay(GuiGraphics guiGraphics) {
-        if (!initialized) {
-            lateInit();
-        }
-
         try {
             VoxelConstants.getVoxelMapInstance().onTickInGame(guiGraphics);
         } catch (RuntimeException e) {
@@ -162,8 +162,9 @@ public final class VoxelConstants {
     }
 
     public static int moveScoreboard(int bottomX, int entriesHeight) {
+        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (VoxelMap.mapOptions.hide || !VoxelMap.mapOptions.minimapAllowed || VoxelMap.mapOptions.mapCorner != 1 || !VoxelMap.mapOptions.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
+        if (mapSettingsManager.hide || !mapSettingsManager.minimapAllowed || mapSettingsManager.mapCorner != 1 || !mapSettingsManager.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...
@@ -179,18 +180,19 @@ public final class VoxelConstants {
 
     public static void setEvents(Events events) {
         VoxelConstants.events = events;
+        VoxelConstants.getVoxelMapInstance().onEventsSet(events);
     }
 
     public static Events getEvents() {
         return events;
     }
 
-    public static PacketBridge getPacketBridge() {
-        return packetBridge;
-    }
-
     public static void setPacketBridge(PacketBridge packetBridge) {
         VoxelConstants.packetBridge = packetBridge;
+    }
+
+    public static PacketBridge getPacketBridge() {
+        return packetBridge;
     }
 
     public static void setModApiBride(ModApiBridge modApiBridge) {
@@ -199,5 +201,13 @@ public final class VoxelConstants {
 
     public static ModApiBridge getModApiBridge() {
         return modApiBridge;
+    }
+
+    public static void setModVersion(String modVersion) {
+        VoxelConstants.modVersion = modVersion;
+    }
+
+    public static String getModVersion() {
+        return modVersion;
     }
 }
