@@ -253,7 +253,7 @@ public class WaypointContainer {
             }
         }
 
-        double maxDistance = minecraft.gameRenderer.getDepthFar() - 8.0;
+        double maxDistance = minecraft.gameRenderer.getMainCamera().depthFar - 8.0;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;

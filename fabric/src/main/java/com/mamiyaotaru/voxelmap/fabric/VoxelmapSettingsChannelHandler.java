@@ -8,8 +8,8 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class VoxelmapSettingsChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<VoxelmapSettingsS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<VoxelmapSettingsS2C> {
     public VoxelmapSettingsChannelHandler() {
-        PayloadTypeRegistry.playS2C().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
-        PayloadTypeRegistry.configurationS2C().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, this);
         ClientConfigurationNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, this);

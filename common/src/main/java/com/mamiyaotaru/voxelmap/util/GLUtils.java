@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -16,6 +17,8 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.util.ARGB;
 
 import java.awt.image.BufferedImage;
@@ -24,6 +27,10 @@ import java.util.function.Consumer;
 
 public class GLUtils {
     private static final Tesselator TESSELATOR = new Tesselator(4096);
+
+    private static final Projection BLIT_PROJECTION = new Projection();
+    private static final ProjectionMatrixBuffer BLIT_PROJECTION_BUFFER = new ProjectionMatrixBuffer("VoxelMap Blit Matrix Buffer");
+    static { BLIT_PROJECTION.setupOrtho(1000.0F, 3000.0F, 1.0F, 1.0F, true); }
 
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
         RenderSystem.assertOnRenderThread();
@@ -63,8 +70,10 @@ public class GLUtils {
         bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setUv(u1, v0).setColor(0xFFFFFFFF);
 
         try (MeshData meshData = bufferBuilder.build()) {
+            GpuBufferSlice projection = BLIT_PROJECTION_BUFFER.getBuffer(BLIT_PROJECTION);
             GpuSampler nearest = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
-            RenderUtils.drawMeshWithTexture(dst, meshData, pipeline, TextureSetup.singleTexture(src, nearest), 1.0F, 1.0F);
+
+            RenderUtils.drawMeshWithTexture(dst, projection, meshData, pipeline, TextureSetup.singleTexture(src, nearest));
         }
 
         TESSELATOR.clear();

@@ -1,13 +1,13 @@
 plugins {
     id("java")
-    id("net.fabricmc.fabric-loom") version ("1.14-SNAPSHOT") apply (false)
+    id("net.fabricmc.fabric-loom") version ("1.15-SNAPSHOT") apply (false)
 }
 
-val MINECRAFT_VERSION by extra { "26.1-snapshot-1" }
+val MINECRAFT_VERSION by extra { "26.1-snapshot-10" }
 val NEOFORGE_VERSION by extra { "21.5.47-beta" }
-val FABRIC_LOADER_VERSION by extra { "0.18.3" }
-val FABRIC_API_VERSION by extra { "0.140.1+26.1" }
-val VOXELMAP_VERSION by extra { "1.15.11" }
+val FABRIC_LOADER_VERSION by extra { "0.18.4" }
+val FABRIC_API_VERSION by extra { "0.143.7+26.1" }
+val VOXELMAP_VERSION by extra { "1.15.13" }
 
 val MOD_VERSION by extra { "$MINECRAFT_VERSION-$VOXELMAP_VERSION" }
 

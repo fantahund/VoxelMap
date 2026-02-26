@@ -37,21 +37,21 @@ public class MapChunkCache {
 
             int middleX = this.width / 2;
             int middleZ = this.height / 2;
-            int movedX = currentChunk.getPos().x - this.lastCenterChunk.getPos().x;
-            int movedZ = currentChunk.getPos().z - this.lastCenterChunk.getPos().z;
+            int movedX = currentChunk.getPos().x() - this.lastCenterChunk.getPos().x();
+            int movedZ = currentChunk.getPos().z() - this.lastCenterChunk.getPos().z();
             if (Math.abs(movedX) < this.width && Math.abs(movedZ) < this.height && currentChunk.getLevel().equals(this.lastCenterChunk.getLevel())) {
                 this.moveX(movedX);
                 this.moveZ(movedZ);
 
                 for (int z = movedZ > 0 ? this.height - movedZ : 0; z < (movedZ > 0 ? this.height : -movedZ); ++z) {
                     for (int x = 0; x < this.width; ++x) {
-                        this.mapChunks[x + z * this.width] = new MapChunk(currentChunk.getPos().x - (middleX - x), currentChunk.getPos().z - (middleZ - z));
+                        this.mapChunks[x + z * this.width] = new MapChunk(currentChunk.getPos().x() - (middleX - x), currentChunk.getPos().z() - (middleZ - z));
                     }
                 }
 
                 for (int z = 0; z < this.height; ++z) {
                     for (int x = movedX > 0 ? this.width - movedX : 0; x < (movedX > 0 ? this.width : -movedX); ++x) {
-                        this.mapChunks[x + z * this.width] = new MapChunk(currentChunk.getPos().x - (middleX - x), currentChunk.getPos().z - (middleZ - z));
+                        this.mapChunks[x + z * this.width] = new MapChunk(currentChunk.getPos().x() - (middleX - x), currentChunk.getPos().z() - (middleZ - z));
                     }
                 }
             } else {
@@ -74,7 +74,7 @@ public class MapChunkCache {
 
         for (int z = 0; z < this.height; ++z) {
             for (int x = 0; x < this.width; ++x) {
-                this.mapChunks[x + z * this.width] = new MapChunk(currentChunk.getPos().x - (middleX - x), currentChunk.getPos().z - (middleZ - z));
+                this.mapChunks[x + z * this.width] = new MapChunk(currentChunk.getPos().x() - (middleX - x), currentChunk.getPos().z() - (middleZ - z));
             }
         }
 

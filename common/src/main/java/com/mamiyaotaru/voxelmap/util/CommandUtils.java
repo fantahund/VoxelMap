@@ -4,14 +4,8 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer;
 import com.mojang.blaze3d.platform.InputConstants;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.GuiMessageTag;
+import net.minecraft.client.multiplayer.chat.GuiMessageTag;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
@@ -25,6 +19,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class CommandUtils {
     private static final int NEW_WAYPOINT_COMMAND_LENGTH = "newWaypoint ".length();
@@ -76,7 +77,7 @@ public final class CommandUtils {
                 finalTextComponent.append(textComponent);
             }
 
-            VoxelConstants.getMinecraft().gui.getChat().addMessage(finalTextComponent, null, new GuiMessageTag(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
+            VoxelConstants.getMinecraft().gui.getChat().addPlayerMessage(finalTextComponent, null, new GuiMessageTag(Color.MAGENTA.getRGB(), null, null, "ModifiedbyVoxelMap"));
             return false;
         }
     }

@@ -38,6 +38,7 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.thread.BlockableEventLoop;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -114,7 +115,7 @@ public class CachedRegion {
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
         boolean knownUnderground;
         knownUnderground = dimensionName.toLowerCase().contains("erebus");
-        this.underground = world.dimensionType().cardinalLightType() != DimensionType.CardinalLightType.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
+        this.underground = world.dimensionType().cardinalLightType() != CardinalLighting.Type.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
         this.remoteWorld = !VoxelConstants.getMinecraft().hasSingleplayerServer();
         persistentMap.getSettingsAndLightingChangeNotifier().addObserver(this);
         this.x = x;
@@ -189,8 +190,8 @@ public class CachedRegion {
     }
 
     public void handleChangedChunk(LevelChunk chunk) {
-        int chunkX = chunk.getPos().x - this.x * CHUNKS_WIDTH;
-        int chunkZ = chunk.getPos().z - this.z * CHUNKS_WIDTH;
+        int chunkX = chunk.getPos().x() - this.x * CHUNKS_WIDTH;
+        int chunkZ = chunk.getPos().z() - this.z * CHUNKS_WIDTH;
         int index = chunkZ * CHUNKS_WIDTH + chunkX;
         if (!this.chunkUpdateQueued[index]) {
             this.chunkUpdateQueued[index] = true;
@@ -277,8 +278,8 @@ public class CachedRegion {
     }
 
     public boolean isSurroundedByLoaded(LevelChunk chunk) {
-        int chunkX = chunk.getPos().x;
-        int chunkZ = chunk.getPos().z;
+        int chunkX = chunk.getPos().x();
+        int chunkZ = chunk.getPos().z();
         boolean neighborsLoaded = !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(chunkX, chunkZ);
 
         for (int t = chunkX - 1; t <= chunkX + 1 && neighborsLoaded; ++t) {
@@ -334,7 +335,7 @@ public class CachedRegion {
                                                 CompoundTag level = nbt.getCompound("Level").get();
                                                 int chunkX = level.getInt("xPos").get();
                                                 int chunkZ = level.getInt("zPos").get();
-                                                if (chunkPos.x == chunkX && chunkPos.z == chunkZ && level.contains("Status") && ChunkStatus.byName(level.getString("Status").get()).isOrAfter(ChunkStatus.SPAWN) && level.contains("Sections")) {
+                                                if (chunkPos.x() == chunkX && chunkPos.z() == chunkZ && level.contains("Status") && ChunkStatus.byName(level.getString("Status").get()).isOrAfter(ChunkStatus.SPAWN) && level.contains("Sections")) {
                                                     ListTag sections = level.getListOrEmpty("Sections");
                                                     if (!sections.isEmpty()) {
                                                         boolean hasInfo = false;
@@ -347,7 +348,7 @@ public class CachedRegion {
                                                         }
 
                                                         if (hasInfo) {
-                                                            chunks[index] = this.worldServer.getChunk(chunkPos.x, chunkPos.z);
+                                                            chunks[index] = this.worldServer.getChunk(chunkPos.x(), chunkPos.z());
                                                         }
                                                     }
                                                 }
@@ -384,7 +385,7 @@ public class CachedRegion {
                                     if (chunks[index] instanceof LevelChunk) {
                                         loadedChunk = (LevelChunk) chunks[index];
                                     } else {
-                                        VoxelConstants.getLogger().warn("non world chunk at " + chunks[index].getPos().x + "," + chunks[index].getPos().z);
+                                        VoxelConstants.getLogger().warn("non world chunk at " + chunks[index].getPos().x() + "," + chunks[index].getPos().z());
                                     }
 
                                     if (!this.closed && loadedChunk != null && loadedChunk.getPersistedStatus().isOrAfter(ChunkStatus.FULL)) {
@@ -770,8 +771,8 @@ public class CachedRegion {
 
         private FillChunkRunnable(LevelChunk chunk) {
             this.chunk = chunk;
-            int chunkX = chunk.getPos().x - CachedRegion.this.x * CHUNKS_WIDTH;
-            int chunkZ = chunk.getPos().z - CachedRegion.this.z * CHUNKS_WIDTH;
+            int chunkX = chunk.getPos().x() - CachedRegion.this.x * CHUNKS_WIDTH;
+            int chunkZ = chunk.getPos().z() - CachedRegion.this.z * CHUNKS_WIDTH;
             this.index = chunkZ * CHUNKS_WIDTH + chunkX;
         }
 
@@ -784,8 +785,8 @@ public class CachedRegion {
                     CachedRegion.this.load();
                 }
 
-                int chunkX = this.chunk.getPos().x - CachedRegion.this.x * CHUNKS_WIDTH;
-                int chunkZ = this.chunk.getPos().z - CachedRegion.this.z * CHUNKS_WIDTH;
+                int chunkX = this.chunk.getPos().x() - CachedRegion.this.x * CHUNKS_WIDTH;
+                int chunkZ = this.chunk.getPos().z() - CachedRegion.this.z * CHUNKS_WIDTH;
                 CachedRegion.this.loadChunkData(this.chunk, chunkX, chunkZ);
             } catch (Exception ex) {
                 VoxelConstants.getLogger().log(Level.ERROR, "Error in FillChunkRunnable", ex);

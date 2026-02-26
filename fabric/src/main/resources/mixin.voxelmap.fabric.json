@@ -1,7 +1,7 @@
 {
   "package": "com.mamiyaotaru.voxelmap.fabric.mixins",
   "required": true,
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "refmap": "voxelmap.fabric.refmap.json",
   "injectors": {
     "defaultRequire": 1

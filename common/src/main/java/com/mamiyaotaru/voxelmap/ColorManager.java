@@ -14,8 +14,8 @@ import net.minecraft.IdentifierException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
@@ -80,8 +80,8 @@ public class ColorManager {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
-    private Identifier hueColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue.png");
-    private Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue_sat.png");
+    private final Identifier hueColorWheel = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/color_wheel_hue.png");
+    private final Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/color_wheel_hue_sat.png");
     private int sizeOfBiomeArray;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
@@ -384,9 +384,9 @@ public class ColorManager {
     }
 
     private int getColorForTerrainSprite(BlockState blockState, BlockRenderDispatcher blockRendererDispatcher) {
-        BlockModelShaper blockModelShapes = blockRendererDispatcher.getBlockModelShaper();
-        TextureAtlasSprite icon = blockModelShapes.getParticleIcon(blockState);
-        if (icon == blockModelShapes.getModelManager().getMissingBlockStateModel().particleIcon()) {
+        BlockStateModelSet blockStateModelSet = blockRendererDispatcher.getModelSet();
+        TextureAtlasSprite icon = blockStateModelSet.getParticleMaterial(blockState).sprite();
+        if (icon == blockStateModelSet.missingModel().particleMaterial().sprite()) {
             Block block = blockState.getBlock();
             Block material = blockState.getBlock();
             if (block instanceof LiquidBlock) {
@@ -555,7 +555,8 @@ public class ColorManager {
                     DebugRenderState.blockX = blockPos.x;
                     DebugRenderState.blockY = blockPos.y;
                     DebugRenderState.blockZ = blockPos.z;
-                    tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
+                    // TODO 26.1: get block color from server level
+//                    tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, VoxelConstants.getClientWorld(), blockPos, 0) | 0xFF000000;
                 } catch (Exception ignored) {
                 }
             }
@@ -704,7 +705,6 @@ public class ColorManager {
     private void loadCTM(Identifier propertiesFile) {
         if (propertiesFile != null) {
             BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
-            BlockModelShaper blockModelShapes = blockRendererDispatcher.getBlockModelShaper();
             Properties properties = new Properties();
 
             try {
@@ -778,7 +778,7 @@ public class ColorManager {
 
                             for (BlockState blockState : testBlock.getStateDefinition().getPossibleStates()) {
                                 try {
-                                    BlockStateModel bakedModel = blockModelShapes.getBlockModel(blockState);
+                                    BlockStateModel bakedModel = blockRendererDispatcher.getBlockModel(blockState);
                                     List<BakedQuad> quads = new ArrayList<>();
                                     for (BlockModelPart modelPart : bakedModel.collectParts(this.random)) {
                                         quads.addAll(modelPart.getQuads(Direction.UP));

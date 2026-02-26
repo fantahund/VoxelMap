@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
@@ -11,8 +12,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
-import java.util.UUID;
-import java.util.zip.DataFormatException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
@@ -20,6 +19,9 @@ import net.minecraft.client.renderer.texture.MipmapStrategy;
 import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.system.MemoryUtil;
+
+import java.util.UUID;
+import java.util.zip.DataFormatException;
 
 public class CompressibleMapRegionTexture extends AbstractTexture {
     private final static int MIP_LEVELS = 7;
@@ -129,7 +131,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
 
     public void generateMipmaps() {
         clearMipmaps();
-        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[] { pixels }, MIP_LEVELS, MipmapStrategy.MEAN, 0.0f);
+        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[] { pixels }, MIP_LEVELS, MipmapStrategy.MEAN, 0.0F, Transparency.TRANSPARENT_AND_TRANSLUCENT);
     }
 
     private synchronized void decompress() {

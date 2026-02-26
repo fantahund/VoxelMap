@@ -15,6 +15,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
@@ -43,7 +44,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         this.lastScreen = parent;
 
         this.thePlayer = VoxelConstants.getPlayer();
-        this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), Input.EMPTY, false);
+        this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), Input.EMPTY, false, ChatAbilities.NO_RESTRICTIONS);
         this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
         this.camera.moveOrInterpolateTo(new Vec3(this.thePlayer.getX(), this.thePlayer.getY() + 0.35, this.thePlayer.getZ()), this.thePlayer.getYRot(), 0.0F);
         this.yaw = this.thePlayer.getYRot();
@@ -151,13 +152,14 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     public boolean charTyped(CharacterEvent characterEvent) {
         if (this.newNameField.isFocused()) {
             this.newNameField.charTyped(characterEvent);
-            int modifiers = characterEvent.modifiers();
-            if (modifiers == 28) {
-                String newName = this.newNameField.getValue();
-                if (newName != null && !newName.isEmpty()) {
-                    this.worldSelected(newName);
-                }
-            }
+            // FIXME 26.1
+//            int modifiers = characterEvent.modifiers();
+//            if (modifiers == 28) {
+//                String newName = this.newNameField.getValue();
+//                if (newName != null && !newName.isEmpty()) {
+//                    this.worldSelected(newName);
+//                }
+//            }
         }
 
         return super.charTyped(characterEvent);

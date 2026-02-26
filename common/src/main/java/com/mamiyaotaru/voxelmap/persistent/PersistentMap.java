@@ -855,8 +855,8 @@ public class PersistentMap implements IChangeObserver {
                 return;
             }
 
-            int chunkX = chunk.getPos().x;
-            int chunkZ = chunk.getPos().z;
+            int chunkX = chunk.getPos().x();
+            int chunkZ = chunk.getPos().z();
             int regionX = (int) Math.floor(chunkX / 16.0);
             int regionZ = (int) Math.floor(chunkZ / 16.0);
             String key = regionX + "," + regionZ;
@@ -893,7 +893,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
-        return this.chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x, chunk.getPos().z);
+        return this.chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x(), chunk.getPos().z());
     }
 
     public boolean isRegionLoaded(int blockX, int blockZ) {
