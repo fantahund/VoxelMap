@@ -31,10 +31,10 @@ import java.util.concurrent.Executor;
 public class VoxelMap implements PreparableReloadListener {
     private static final boolean SHOW_UNDER_MENUS = true;
     private static final boolean IS_FAIR = false;
-    private static MapSettingsManager mapOptions;
-    private static RadarSettingsManager radarOptions;
-    private static PersistentMapSettingsManager persistentMapOptions;
-    private boolean fullyInitialized = false;
+    private MapSettingsManager mapOptions;
+    private RadarSettingsManager radarOptions;
+    private PersistentMapSettingsManager persistentMapOptions;
+    private boolean initialized = false;
     private Map map;
     private Radar radar;
     private RadarSimple radarSimple;
@@ -46,13 +46,14 @@ public class VoxelMap implements PreparableReloadListener {
     private DimensionManager dimensionManager;
     private ClientLevel world;
     private String worldName = "";
-    private static String passMessage;
-    private ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque<>();
+    private String passMessage;
     private Properties imageProperties;
+    private final ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque<>();
+    private final ArrayDeque<Runnable> runOnInitialized = new ArrayDeque<>();
 
     VoxelMap() {}
 
-    private void earlyInit(boolean showUnderMenus, boolean isFair) {
+    private void lateInit(boolean showUnderMenus, boolean isFair) {
         mapOptions = new MapSettingsManager();
         radarOptions = new RadarSettingsManager();
         persistentMapOptions = new PersistentMapSettingsManager();
@@ -66,13 +67,10 @@ public class VoxelMap implements PreparableReloadListener {
         mapOptions.addSecondaryOptionsManager(persistentMapOptions);
         mapOptions.loadAll();
 
-    }
-
-    private void lateInit() {
-        this.colorManager = new ColorManager();
-        this.waypointManager = new WaypointManager();
-        this.dimensionManager = new DimensionManager();
-        this.persistentMap = new PersistentMap();
+        colorManager = new ColorManager();
+        waypointManager = new WaypointManager();
+        dimensionManager = new DimensionManager();
+        persistentMap = new PersistentMap();
 
         try {
             boolean radarAllowed = radarOptions.radarAllowed;
@@ -80,54 +78,68 @@ public class VoxelMap implements PreparableReloadListener {
             boolean playersAllowed = radarOptions.radarPlayersAllowed;
 
             if (radarAllowed || mobsAllowed || playersAllowed) {
-                this.radar = new Radar();
-                this.radarSimple = new RadarSimple();
+                radar = new Radar();
+                radarSimple = new RadarSimple();
             }
         } catch (RuntimeException var4) {
             VoxelConstants.getLogger().error("Failed creating radar " + var4.getLocalizedMessage(), var4);
             radarOptions.radarAllowed = false;
             radarOptions.radarMobsAllowed = false;
             radarOptions.radarPlayersAllowed = false;
-            this.radar = null;
-            this.radarSimple = null;
+            radar = null;
+            radarSimple = null;
         }
 
-        this.map = new Map();
-        this.settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
-        this.worldUpdateListener = new WorldUpdateListener();
-        this.worldUpdateListener.addListener(this.map);
-        this.worldUpdateListener.addListener(this.persistentMap);
+        map = new Map();
+        settingsAndLightingChangeNotifier = new SettingsAndLightingChangeNotifier();
+        worldUpdateListener = new WorldUpdateListener();
+        worldUpdateListener.addListener(map);
+        worldUpdateListener.addListener(persistentMap);
 
-        this.fullyInitialized = true;
+        initialized = true;
+    }
+
+    public synchronized void runAfterWorldSet(Runnable task) {
+        if (world == null) {
+            runOnWorldSet.addLast(task);
+        } else {
+            task.run();
+        }
+    }
+
+    public synchronized void runAfterInitialized(Runnable task) {
+        if (!initialized) {
+            runOnInitialized.addLast(task);
+        } else {
+            task.run();
+        }
     }
 
     @Override
     public CompletableFuture<Void> reload(SharedState sharedState, Executor executor, PreparationBarrier preparationBarrier, Executor executor2) {
-        return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> this.apply(sharedState.resourceManager()), executor2);
+        return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> apply(sharedState.resourceManager()), executor2);
     }
 
     public void applyResourceManager(ResourceManager resourceManager) {
-        this.apply(resourceManager);
+        apply(resourceManager);
     }
 
     protected void apply(ResourceManager resourceManager) {
-        if (!this.fullyInitialized) {
-            this.lateInit();
-        }
+        runAfterInitialized(() -> {
+            loadImageProperties();
 
-        this.loadImageProperties();
+            waypointManager.onResourceManagerReload(resourceManager);
+            if (radar != null) {
+                radar.onResourceManagerReload(resourceManager);
+            }
 
-        this.waypointManager.onResourceManagerReload(resourceManager);
-        if (this.radar != null) {
-            this.radar.onResourceManagerReload(resourceManager);
-        }
+            colorManager.onResourceManagerReload(resourceManager);
+            BiomeRepository.loadBiomeColors();
 
-        this.colorManager.onResourceManagerReload(resourceManager);
-        BiomeRepository.loadBiomeColors();
-
-        if (this.map != null) {
-            this.map.onResourceManagerReload(resourceManager);
-        }
+            if (map != null) {
+                map.onResourceManagerReload(resourceManager);
+            }
+        });
     }
 
     public void onEventsSet(Events events) {
@@ -135,9 +147,9 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onTickInGame(GuiGraphics guiGraphics) {
-        if (!this.fullyInitialized) return;
+        if (!initialized) return;
 
-        this.map.onTickInGame(guiGraphics);
+        map.onTickInGame(guiGraphics);
         if (passMessage != null) {
             VoxelConstants.getMinecraft().gui.getChat().addMessage(Component.literal(passMessage));
             passMessage = null;
@@ -146,24 +158,31 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onTick() {
-        if (!this.fullyInitialized) return;
+        if (!initialized) {
+            lateInit(SHOW_UNDER_MENUS, IS_FAIR);
+            return;
+        }
+
+        while (!runOnInitialized.isEmpty()) {
+            runOnInitialized.removeFirst().run();
+        }
 
         ClientLevel newWorld = GameVariableAccessShim.getWorld();
-        if (this.world != newWorld) {
-            this.world = newWorld;
-            this.waypointManager.newWorld(this.world);
-            this.persistentMap.newWorld(this.world);
-            if (this.world != null) {
+        if (world != newWorld) {
+            world = newWorld;
+            waypointManager.newWorld(world);
+            persistentMap.newWorld(world);
+            if (world != null) {
                 MapUtils.reset();
                 // send "new" world_id packet
 
                 VoxelConstants.getPacketBridge().sendWorldIDPacket();
 
-                if (!this.worldName.equals(this.waypointManager.getCurrentWorldName())) {
-                    this.worldName = this.waypointManager.getCurrentWorldName();
+                if (!worldName.equals(waypointManager.getCurrentWorldName())) {
+                    worldName = waypointManager.getCurrentWorldName();
                 }
 
-                this.map.newWorld(this.world);
+                map.newWorld(world);
                 while (!runOnWorldSet.isEmpty()) {
                     runOnWorldSet.removeFirst().run();
                 }
@@ -171,37 +190,37 @@ public class VoxelMap implements PreparableReloadListener {
         }
 
         VoxelConstants.tick();
-        this.persistentMap.onTick();
+        persistentMap.onTick();
     }
 
-    public static void checkPermissionMessages(Component message) {
-        String msg = message.getString();
-        msg = msg.replaceAll("§r", "");
+    public void checkPermissionMessages(Component message) {
+        String msg = message.getString().replaceAll("§r", "");
 
-        if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
-            mapOptions.cavesAllowed = false;
-            VoxelConstants.getLogger().info("Server disabled cavemapping.");
-        }
+        runAfterInitialized(() -> {
+            if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
+                mapOptions.cavesAllowed = false;
+                VoxelConstants.getLogger().info("Server disabled cavemapping.");
+            }
 
-        if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
-            radarOptions.radarAllowed = false;
-            radarOptions.radarPlayersAllowed = false;
-            radarOptions.radarMobsAllowed = false;
-            VoxelConstants.getLogger().info("Server disabled radar.");
-        }
+            if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
+                radarOptions.radarAllowed = false;
+                radarOptions.radarPlayersAllowed = false;
+                radarOptions.radarMobsAllowed = false;
+                VoxelConstants.getLogger().info("Server disabled radar.");
+            }
 
-        if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
-            mapOptions.cavesAllowed = true;
-            VoxelConstants.getLogger().info("Server enabled cavemapping.");
-        }
+            if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
+                mapOptions.cavesAllowed = true;
+                VoxelConstants.getLogger().info("Server enabled cavemapping.");
+            }
 
-        if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
-            radarOptions.radarAllowed = true;
-            radarOptions.radarPlayersAllowed = true;
-            radarOptions.radarMobsAllowed = true;
-            VoxelConstants.getLogger().info("Server enabled radar.");
-        }
-
+            if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
+                radarOptions.radarAllowed = true;
+                radarOptions.radarPlayersAllowed = true;
+                radarOptions.radarMobsAllowed = true;
+                VoxelConstants.getLogger().info("Server enabled radar.");
+            }
+        });
     }
 
     public MapSettingsManager getMapOptions() {
@@ -217,21 +236,21 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public Map getMap() {
-        return this.map;
+        return map;
     }
 
     public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
-        return this.settingsAndLightingChangeNotifier;
+        return settingsAndLightingChangeNotifier;
     }
 
     public AbstractRadar getRadar() {
         if (radarOptions.showRadar) {
             if (radarOptions.radarMode == 1) {
-                return this.radarSimple;
+                return radarSimple;
             }
 
             if (radarOptions.radarMode == 2) {
-                return this.radar;
+                return radar;
             }
         }
 
@@ -243,48 +262,44 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public ColorManager getColorManager() {
-        return this.colorManager;
+        return colorManager;
     }
 
     public WaypointManager getWaypointManager() {
-        return this.waypointManager;
+        return waypointManager;
     }
 
     public DimensionManager getDimensionManager() {
-        return this.dimensionManager;
+        return dimensionManager;
     }
 
     public PersistentMap getPersistentMap() {
-        return this.persistentMap;
+        return persistentMap;
     }
 
     public void setPermissions(boolean hasFullRadarPermission, boolean hasPlayersOnRadarPermission, boolean hasMobsOnRadarPermission, boolean hasCavemodePermission) {
-        radarOptions.radarAllowed = hasFullRadarPermission;
-        radarOptions.radarPlayersAllowed = hasPlayersOnRadarPermission;
-        radarOptions.radarMobsAllowed = hasMobsOnRadarPermission;
-        mapOptions.cavesAllowed = hasCavemodePermission;
+        runAfterInitialized(() -> {
+            radarOptions.radarAllowed = hasFullRadarPermission;
+            radarOptions.radarPlayersAllowed = hasPlayersOnRadarPermission;
+            radarOptions.radarMobsAllowed = hasMobsOnRadarPermission;
+            mapOptions.cavesAllowed = hasCavemodePermission;
+        });
     }
 
     public synchronized void newSubWorldName(String name, boolean fromServer) {
-        Runnable run = new Runnable() {
-            @Override
-            public void run() {
-                VoxelMap.this.waypointManager.setSubworldName(name, fromServer);
-                VoxelMap.this.map.newWorldName();
-            }
-        };
-        if (world == null) {
-            runOnWorldSet.addLast(run);
-        } else {
-            run.run();
-        }
+        runAfterWorldSet(() -> {
+            waypointManager.setSubworldName(name, fromServer);
+            map.newWorldName();
+        });
     }
 
     public String getWorldSeed() {
+        if (!initialized) return "";
         return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(Level.OVERWORLD).map(value -> Long.toString(((ServerLevel) value).getSeed())).orElse("") : waypointManager.getWorldSeed();
     }
 
     public void setWorldSeed(String newSeed) {
+        if (!initialized) return;
         waypointManager.setWorldSeed(newSeed);
     }
 
@@ -293,20 +308,22 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public WorldUpdateListener getWorldUpdateListener() {
-        return this.worldUpdateListener;
+        return worldUpdateListener;
     }
 
     public void clearServerSettings() {
-        radarOptions.radarAllowed = true;
-        radarOptions.radarPlayersAllowed = true;
-        radarOptions.radarMobsAllowed = true;
-        mapOptions.cavesAllowed = true;
-        mapOptions.serverTeleportCommand = null;
+        runAfterInitialized(() -> {
+            radarOptions.radarAllowed = true;
+            radarOptions.radarPlayersAllowed = true;
+            radarOptions.radarMobsAllowed = true;
+            mapOptions.cavesAllowed = true;
+            mapOptions.serverTeleportCommand = null;
 
-        mapOptions.worldmapAllowed = true;
-        mapOptions.minimapAllowed = true;
-        mapOptions.waypointsAllowed = true;
-        mapOptions.deathWaypointAllowed = true;
+            mapOptions.worldmapAllowed = true;
+            mapOptions.minimapAllowed = true;
+            mapOptions.waypointsAllowed = true;
+            mapOptions.deathWaypointAllowed = true;
+        });
     }
 
     public void onPlayInit() {
@@ -314,8 +331,8 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onJoinServer() {
-        if (this.getRadar() != null) {
-            this.getRadar().onJoinServer();
+        if (getRadar() != null) {
+            getRadar().onJoinServer();
         }
         ModrinthUpdateChecker.checkUpdates();
     }
@@ -329,7 +346,6 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onClientStarted() {
-        earlyInit(SHOW_UNDER_MENUS, IS_FAIR);
     }
 
     public void onClientStopping() {
@@ -338,21 +354,21 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public Properties getImageProperties() {
-        if (this.imageProperties == null) {
-            this.loadImageProperties();
+        if (imageProperties == null) {
+            loadImageProperties();
         }
-        return this.imageProperties;
+        return imageProperties;
     }
 
     private void loadImageProperties() {
-        this.imageProperties = new Properties();
+        imageProperties = new Properties();
         Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "configs/images.properties");
         Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(location);
         if (resource.isEmpty()) {
             VoxelConstants.getLogger().warn("Image properties file at {} is missing!", location);
         } else {
             try (InputStream inputStream = resource.get().open()) {
-                this.imageProperties.load(inputStream);
+                imageProperties.load(inputStream);
             } catch (Exception e) {
                 VoxelConstants.getLogger().warn("Failed to read image properties from {}. {}", location, e);
             }

@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.mixins;
 
-import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +13,6 @@ public class MixinChatHud {
 
     @Inject(method = "addMessage(Lnet/minecraft/network/chat/Component;)V", at = @At("HEAD"))
     private void addMessage(Component message, CallbackInfo ci) {
-        VoxelMap.checkPermissionMessages(message);
+        VoxelConstants.getVoxelMapInstance().checkPermissionMessages(message);
     }
 }
