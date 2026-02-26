@@ -53,8 +53,6 @@ import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -86,7 +84,6 @@ import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
@@ -101,7 +98,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -568,14 +564,15 @@ public class EntityMapImageManager {
             part.zRot = 0;
             part.render(pose, bufferBuilder, LIGHT, OVERLAY, 0xFFFFFFFF);
         } else if (block != null) {
-            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
-            pose.scale(0.65F, 0.65F, 0.65F);
-
-            BlockState blockState = block.defaultBlockState();
-            BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
-            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.randomSource);
-
-            // FIXME 21.6: tessellate block
+            // FIXME 26.1: tessellate block
+//
+//            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
+//            pose.scale(0.65F, 0.65F, 0.65F);
+//
+//            BlockState blockState = block.defaultBlockState();
+//            BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
+//            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.randomSource);
+//
 //            blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, OVERLAY);
         }
 
