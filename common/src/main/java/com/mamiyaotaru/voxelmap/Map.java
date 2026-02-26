@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -23,7 +24,6 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
@@ -44,7 +44,6 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -157,7 +156,6 @@ public class Map implements Runnable, IChangeObserver {
     // Map Light Calculation
     private boolean needLightmapRefresh = true;
     private int tickWithLightChange;
-    private LightTexture lightmapTexture;
     private final int[] lightmapColors = new int[256];
     private final int[] lastLightmapValues = new int[16];
     private boolean needSkyColor;
@@ -317,7 +315,6 @@ public class Map implements Runnable, IChangeObserver {
 
     public void newWorld(ClientLevel world) {
         this.world = world;
-        this.lightmapTexture = this.getLightmapTexture();
         this.mapData[this.zoom].blank();
         this.doFullRender = true;
         VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
@@ -337,10 +334,6 @@ public class Map implements Runnable, IChangeObserver {
 
     public void onTickInGame(GuiGraphics drawContext) {
         this.rotationFactor = this.options.oldNorth ? 90 : 0;
-
-        if (this.lightmapTexture == null) {
-            this.lightmapTexture = this.getLightmapTexture();
-        }
 
         if (minecraft.screen == null && this.options.welcome) {
             minecraft.setScreen(new GuiWelcomeScreen(null));
@@ -489,10 +482,6 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    private LightTexture getLightmapTexture() {
-        return minecraft.gameRenderer.lightTexture();
-    }
-
     public void calculateCurrentLightAndSkyColor() {
         try {
             if (this.world != null) {
@@ -578,15 +567,13 @@ public class Map implements Runnable, IChangeObserver {
     private int getSkyColor() {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
-        Vector4f color = minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getDarkenWorldAmount(0.0F));
+        Vector4f color = minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getBossOverlayWorldDarkening(0.0F));
         int r = (int) (color.x * 255.0F);
         int g = (int) (color.y * 255.0F);
         int b = (int) (color.z * 255.0F);
         if (!aboveHorizon) {
             return 0x0A000000 | (r << 16) | (g << 8) | b;
         } else {
-//            int sunsetColor = minecraft.gameRenderer.getMainCamera().attributeProbe().getValue(EnvironmentAttributes.SUNRISE_SUNSET_COLOR, 0.0F);
-//            return ColorUtils.colorAdder(sunsetColor, backgroundColor);
             return 0xFF000000 | (r << 16) | (g << 8) | b;
         }
     }
