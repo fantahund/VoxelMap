@@ -555,8 +555,10 @@ public class ColorManager {
                     DebugRenderState.blockX = blockPos.x;
                     DebugRenderState.blockY = blockPos.y;
                     DebugRenderState.blockZ = blockPos.z;
-                    // TODO 26.1: get block color from server level
-//                    tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, VoxelConstants.getClientWorld(), blockPos, 0) | 0xFF000000;
+
+                    // TODO 26.1: get block color from non-client world
+                    ClientLevel clientWorld = VoxelConstants.getClientWorld();
+                    tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, clientWorld, blockPos, 0) | 0xFF000000;
                 } catch (Exception ignored) {
                 }
             }
