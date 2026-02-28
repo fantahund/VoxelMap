@@ -83,7 +83,7 @@ public class WaypointContainer {
         Vec3 cameraPos = camera.position();
         double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - cameraPos.y;
 
-        if (!this.options.showBeacons) return;
+        if (!this.options.showWaypointBeacons) return;
         for (ExtendedWaypoint pt : this.wayPts) {
             boolean isHighlighted = pt.waypoint == this.highlightedWaypoint;
             boolean isEffectivelyActive = pt.waypoint.isActive();
@@ -100,7 +100,7 @@ public class WaypointContainer {
     }
 
     public void renderWaypointsLabels(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        if (!this.options.showWaypoints) return;
+        if (!this.options.showWaypointSigns) return;
         if (minecraft.options.hideGui) return;
 
         Vec3 cameraPos = camera.position();
@@ -306,7 +306,7 @@ public class WaypointContainer {
             boolean moveLabelsDown = options.waypointNamesLocation == 2;
             String subLabel = "";
             if (options.waypointDistancesLocation != 0) {
-                boolean shouldConvert = (options.distanceUnitConversionMode == 1 && distance > 1000.0) || (options.distanceUnitConversionMode == 2 && distance > 10000.0);
+                boolean shouldConvert = (options.waypointDistanceConversion == 1 && distance > 1000.0) || (options.waypointDistanceConversion == 2 && distance > 10000.0);
                 if (shouldConvert) {
                     double converted = distance / 1000.0;
                     subLabel = (int) converted + "." + (int) ((converted - (int) converted) * 10) + "km";

@@ -65,7 +65,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
 
         Component closeThisMessage = Component.translatable("minimap.ui.welcome5").withStyle(ChatFormatting.GRAY);
         this.addRenderableWidget(this.closeButton = new PlainTextButton(0, 0, 100, 10, closeThisMessage, button -> {
-            this.options.setOptionValue(EnumOptionsMinimap.WELCOME_SCREEN);
+            this.options.toggleBooleanValue(EnumOptionsMinimap.WELCOME_SCREEN);
             this.options.saveAll();
 
             this.onClose();
@@ -138,7 +138,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         if (keyEvent.key() == GLFW.GLFW_KEY_ESCAPE) {
-            this.options.setOptionValue(EnumOptionsMinimap.WELCOME_SCREEN);
+            this.options.toggleBooleanValue(EnumOptionsMinimap.WELCOME_SCREEN);
             this.options.saveAll();
         }
 

@@ -63,8 +63,8 @@ public class VoxelMap implements PreparableReloadListener {
         radarOptions.radarMobsAllowed = !isFair;
         radarOptions.radarPlayersAllowed = !isFair;
 
-        mapOptions.addSecondaryOptionsManager(radarOptions);
-        mapOptions.addSecondaryOptionsManager(persistentMapOptions);
+        mapOptions.addSubSettingsManager(radarOptions);
+        mapOptions.addSubSettingsManager(persistentMapOptions);
         mapOptions.loadAll();
 
         colorManager = new ColorManager();

@@ -484,7 +484,7 @@ public class PersistentMap implements IChangeObserver {
                 int light = mapData.getLight(imageX, imageY);
                 if (solid) {
                     surfaceColor = 0;
-                } else if (mapOptions.lightmap) {
+                } else if (mapOptions.dynamicLighting) {
                     int lightValue = this.getLight(light);
                     surfaceColor = ColorUtils.colorMultiplier(surfaceColor, lightValue);
                 }
@@ -510,7 +510,7 @@ public class PersistentMap implements IChangeObserver {
                             seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0);
                             int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
-                            if (mapOptions.lightmap) {
+                            if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(seafloorLight);
                                 seafloorColor = ColorUtils.colorMultiplier(seafloorColor, lightValue);
                             }
@@ -539,7 +539,7 @@ public class PersistentMap implements IChangeObserver {
                             transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3);
                             int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
-                            if (mapOptions.lightmap) {
+                            if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(transparentLight);
                                 transparentColor = ColorUtils.colorMultiplier(transparentColor, lightValue);
                             }
@@ -566,7 +566,7 @@ public class PersistentMap implements IChangeObserver {
                             foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2);
                             int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
-                            if (mapOptions.lightmap) {
+                            if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(foliageLight);
                                 foliageColor = ColorUtils.colorMultiplier(foliageColor, lightValue);
                             }

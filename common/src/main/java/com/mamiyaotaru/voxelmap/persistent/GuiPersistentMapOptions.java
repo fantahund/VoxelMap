@@ -50,7 +50,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         for (EnumOptionsMinimap option : relevantOptions2) {
             if (option.isFloat()) {
-                float sValue = this.options.getOptionFloatValue(option);
+                float sValue = this.options.getFloatValue(option);
 
                 this.addRenderableWidget(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, switch (option) {
                     case MIN_ZOOM, MAX_ZOOM -> (sValue + 3.0F) / (5 + 3);
@@ -79,7 +79,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     protected void optionClicked(Button par1GuiButton) {
         EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
-        this.options.setOptionValue(option);
+        MapSettingsManager.updateBooleanOrListValue(this.options, option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
 
         for (Object buttonObj : this.children()) {
@@ -97,7 +97,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
-                float sValue = this.options.getOptionFloatValue(option);
+                float sValue = this.options.getFloatValue(option);
                 float fValue;
 
                 fValue = switch (option) {

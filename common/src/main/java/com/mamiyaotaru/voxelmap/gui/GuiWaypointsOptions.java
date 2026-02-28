@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
+    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.WAYPOINT_DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
     private final MapSettingsManager options;
     protected Component screenTitle;
 
@@ -30,7 +30,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
         for (EnumOptionsMinimap option : relevantOptions) {
             if (option.isFloat()) {
-                float value = this.options.getOptionFloatValue(option);
+                float value = this.options.getFloatValue(option);
                 switch (option) {
                     case WAYPOINT_DISTANCE -> {
                         if (value < 0.0F) {
@@ -47,7 +47,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
                 switch (option) {
                     case DEATHPOINTS -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.deathpoints.tooltip")));
-                    case DISTANCE_UNIT_CONVERSION -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.distanceUnitConversion.tooltip")));
+                    case WAYPOINT_DISTANCE_UNIT_CONVERSION -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.distanceUnitConversion.tooltip")));
                 }
 
                 this.addRenderableWidget(optionButton);
@@ -61,7 +61,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
     protected void optionClicked(Button par1GuiButton) {
         EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
-        this.options.setOptionValue(option);
+        MapSettingsManager.updateBooleanOrListValue(this.options, option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
 
         for (GuiEventListener item : children()) {
@@ -70,10 +70,10 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
             }
 
             switch (button.returnEnumOptions()) {
-                case SHOW_IN_GAME_WAYPOINT_NAMES -> button.active = this.options.showWaypoints;
+                case SHOW_IN_GAME_WAYPOINT_NAMES -> button.active = this.options.showWaypointSigns;
                 case SHOW_IN_GAME_WAYPOINT_DISTANCES -> {
                     button.setMessage(Component.literal(this.options.getKeyText(EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES)));
-                    button.active = this.options.showWaypoints;
+                    button.active = this.options.showWaypointSigns;
                 }
             }
         }
@@ -84,7 +84,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
             }
 
             if (slider.returnEnumOptions() == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
-                slider.active = this.options.showWaypoints;
+                slider.active = this.options.showWaypointSigns;
             }
         }
     }

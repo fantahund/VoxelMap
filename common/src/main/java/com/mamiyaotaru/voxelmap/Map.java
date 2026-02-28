@@ -381,7 +381,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (minecraft.screen == null && this.options.keyBindMobToggle.consumeClick()) {
-            VoxelConstants.getVoxelMapInstance().getRadarOptions().setOptionValue(EnumOptionsMinimap.SHOW_RADAR);
+            VoxelConstants.getVoxelMapInstance().getRadarOptions().toggleBooleanValue(EnumOptionsMinimap.SHOW_RADAR);
             this.options.saveAll();
         }
 
@@ -399,7 +399,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (minecraft.screen == null && this.options.keyBindMinimapToggle.consumeClick()) {
-            this.options.setOptionValue(EnumOptionsMinimap.HIDE_MINIMAP);
+            this.options.toggleBooleanValue(EnumOptionsMinimap.HIDE_MINIMAP);
         }
 
         this.checkForChanges();
@@ -631,7 +631,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         float statusIconOffset = 0.0F;
-        if (options.moveMapDownWhileStatusEffect) {
+        if (options.moveMapBelowStatusEffectIcons) {
             if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getActiveEffects().isEmpty()) {
 
                 for (MobEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getActiveEffects()) {
@@ -728,7 +728,7 @@ public class Map implements Runnable, IChangeObserver {
             this.lastSkyColor = skyColor;
         }
 
-        if (this.options.lightmap) {
+        if (this.options.dynamicLighting) {
             int torchOffset = this.options.realTimeTorches ? 8 : 0;
             for (int t = 0; t < 16; ++t) {
                 int newValue = getLightmapColor(t, torchOffset);
@@ -818,7 +818,7 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        if (full || this.options.heightmap && needHeightMap || needHeightAndID || this.options.lightmap && needLight || skyColorChanged) {
+        if (full || this.options.heightmap && needHeightMap || needHeightAndID || this.options.dynamicLighting && needLight || skyColorChanged) {
             for (int imageY = 32 * multi - 1; imageY >= 0; --imageY) {
                 for (int imageX = 0; imageX < 32 * multi; ++imageX) {
                     color24 = this.getPixelColor(full, full || needHeightAndID, full, full || needLight || needHeightAndID, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY);
@@ -1164,7 +1164,7 @@ public class Map implements Runnable, IChangeObserver {
                     blockPos.setXYZ(startX + imageX, seafloorHeight, startZ + imageY);
                     BlockState blockStateAbove = world.getBlockState(blockPos);
                     Block materialAbove = blockStateAbove.getBlock();
-                    if (this.options.lightmap && materialAbove == Blocks.ICE) {
+                    if (this.options.dynamicLighting && materialAbove == Blocks.ICE) {
                         int multiplier = minecraft.options.ambientOcclusion().get() ? 200 : 120;
                         seafloorLight = ColorUtils.colorMultiplier(seafloorLight, 0xFF000000 | multiplier << 16 | multiplier << 8 | multiplier);
                     }
@@ -1490,7 +1490,7 @@ public class Map implements Runnable, IChangeObserver {
         int combinedLight = 0xffffffff;
         if (solid) {
             combinedLight = 0;
-        } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.lightmap) {
+        } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.dynamicLighting) {
             MutableBlockPos blockPos = MutableBlockPosCache.get();
             blockPos.setXYZ(x, Math.max(Math.min(height, world.getMaxY()), world.getMinY()), z);
             int blockLight = world.getBrightness(LightLayer.BLOCK, blockPos);

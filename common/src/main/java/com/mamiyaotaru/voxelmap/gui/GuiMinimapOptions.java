@@ -47,8 +47,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private Button nextPageButton;
     private Button prevPageButton;
 
-    private static final EnumOptionsMinimap[] generalOptions = { EnumOptionsMinimap.HIDE_MINIMAP, EnumOptionsMinimap.UPDATE_NOTIFIER, EnumOptionsMinimap.SHOW_BIOME, EnumOptionsMinimap.SHOW_COORDS, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE_MAP, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.IN_GAME_WAYPOINTS, EnumOptionsMinimap.CAVE_MODE, EnumOptionsMinimap.MOVE_MAP_DOWN_WHILE_STATUS_EFFECT, EnumOptionsMinimap.MOVE_SCOREBOARD_DOWN };
-    private static final EnumOptionsMinimap[] performanceOptions = { EnumOptionsMinimap.DYNAMIC_LIGHTING, EnumOptionsMinimap.TERRAIN_DEPTH, EnumOptionsMinimap.WATER_TRANSPARENCY, EnumOptionsMinimap.BLOCK_TRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNK_GRID, EnumOptionsMinimap.BIOME_OVERLAY, EnumOptionsMinimap.SLIME_CHUNKS, EnumOptionsMinimap.WORLD_BORDER, EnumOptionsMinimap.TELEPORT_COMMAND };
+    private static final EnumOptionsMinimap[] generalOptions = { EnumOptionsMinimap.HIDE_MINIMAP, EnumOptionsMinimap.UPDATE_NOTIFIER, EnumOptionsMinimap.SHOW_BIOME, EnumOptionsMinimap.SHOW_COORDS, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE_MAP, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.IN_GAME_WAYPOINTS, EnumOptionsMinimap.CAVE_MODE, EnumOptionsMinimap.MOVE_MAP_BELOW_STATUS_EFFECT_ICONS, EnumOptionsMinimap.MOVE_SCOREBOARD_BELOW_MAP};
+    private static final EnumOptionsMinimap[] performanceOptions = { EnumOptionsMinimap.DYNAMIC_LIGHTING, EnumOptionsMinimap.TERRAIN_DEPTH, EnumOptionsMinimap.WATER_TRANSPARENCY, EnumOptionsMinimap.BLOCK_TRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.BIOME_OVERLAY, EnumOptionsMinimap.CHUNK_GRID, EnumOptionsMinimap.SLIME_CHUNKS, EnumOptionsMinimap.WORLD_BORDER,  EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.TELEPORT_COMMAND };
     private static final EnumOptionsMinimap[] radarFullOptions = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES };
     private static final EnumOptionsMinimap[] radarSimpleOptions = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING };
 
@@ -169,7 +169,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             // List / Toggle
             if (option.isBoolean() || option.isList()) {
                 StringBuilder text = new StringBuilder().append(this.getKeyText(option));
-                if ((option == EnumOptionsMinimap.WATER_TRANSPARENCY || option == EnumOptionsMinimap.BLOCK_TRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !this.options.multicore && this.getOptionBooleanValue(option)) {
+                if ((option == EnumOptionsMinimap.WATER_TRANSPARENCY || option == EnumOptionsMinimap.BLOCK_TRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !this.options.multicore && this.getBooleanValue(option)) {
                     text.append("§c").append(text);
                 }
 
@@ -227,13 +227,13 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             return;
         }
         EnumOptionsMinimap option = button2.returnEnumOptions();
-        this.setOptionValue(option);
+        updateBooleanOrListValue(option);
 
         String prefix = "";
         switch (option) {
             case OLD_NORTH -> VoxelConstants.getVoxelMapInstance().getWaypointManager().setOldNorth(this.options.oldNorth);
             case WATER_TRANSPARENCY, BLOCK_TRANSPARENCY, BIOMES -> {
-                if (!this.options.multicore && option.isBoolean() && this.getOptionBooleanValue(option)) {
+                if (!this.options.multicore && option.isBoolean() && this.getBooleanValue(option)) {
                     prefix = "§c";
                 }
             }
@@ -379,28 +379,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     }
 
-    private void setOptionValue(EnumOptionsMinimap option) {
-        try {
-            this.options.setOptionValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            this.radarOptions.setOptionValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-    }
-
-    private void setOptionFloatValue(EnumOptionsMinimap option, float value) {
-        try {
-            this.options.setOptionFloatValue(option, value);
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            this.radarOptions.setOptionFloatValue(option, value);
-        } catch (IllegalArgumentException ignored) {
-        }
-    }
-
     private String getKeyText(EnumOptionsMinimap option) {
         try {
             return this.options.getKeyText(option);
@@ -411,45 +389,89 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         } catch (IllegalArgumentException ignored) {
         }
 
-        return "error";
+        return MapSettingsManager.ERROR_STRING;
     }
 
-    private boolean getOptionBooleanValue(EnumOptionsMinimap option) {
+    private boolean getBooleanValue(EnumOptionsMinimap option) {
         try {
-            return this.options.getOptionBooleanValue(option);
+            return this.options.getBooleanValue(option);
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            return this.radarOptions.getOptionBooleanValue(option);
+            return this.radarOptions.getBooleanValue(option);
         } catch (IllegalArgumentException ignored) {
         }
 
         return false;
     }
 
-    private String getOptionListValue(EnumOptionsMinimap option) {
+    private void toggleBooleanValue(EnumOptionsMinimap option) {
         try {
-            return this.options.getOptionListValue(option);
+            this.options.toggleBooleanValue(option);
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            return this.options.getOptionListValue(option);
+            this.radarOptions.toggleBooleanValue(option);
         } catch (IllegalArgumentException ignored) {
         }
-
-        return "error";
     }
 
-    private float getOptionFloatValue(EnumOptionsMinimap option) {
+    private String getListValue(EnumOptionsMinimap option) {
         try {
-            return this.options.getOptionFloatValue(option);
+            return this.options.getListValue(option);
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            return this.radarOptions.getOptionFloatValue(option);
+            return this.radarOptions.getListValue(option);
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        return MapSettingsManager.ERROR_STRING;
+    }
+
+    private void cycleListValue(EnumOptionsMinimap option) {
+        try {
+            this.options.cycleListValue(option);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            this.radarOptions.cycleListValue(option);
+        } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    private float getFloatValue(EnumOptionsMinimap option) {
+        try {
+            return this.options.getFloatValue(option);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            return this.radarOptions.getFloatValue(option);
         } catch (IllegalArgumentException ignored) {
         }
 
         return 0.0F;
+    }
+
+    private void setFloatValue(EnumOptionsMinimap option, float value) {
+        try {
+            this.options.setFloatValue(option, value);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            this.radarOptions.setFloatValue(option, value);
+        } catch (IllegalArgumentException ignored) {
+        }
+    }
+
+    private void updateBooleanOrListValue(EnumOptionsMinimap option) {
+        try {
+            MapSettingsManager.updateBooleanOrListValue(this.options, option);
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            MapSettingsManager.updateBooleanOrListValue(this.radarOptions, option);
+        } catch (IllegalArgumentException ignored) {
+        }
     }
 }
