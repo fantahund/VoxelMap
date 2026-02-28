@@ -345,19 +345,19 @@ public class WaypointContainer {
             VertexConsumer vertexTextBackground = bufferSource.getBuffer(renderType);
 
             if (renderMainLabel) {
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 3, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 3, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
 
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                 vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
                 vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
             }
 
             if (renderSubLabel) {
-                float left = (-halfWidthSubLabel - 3) * subLabelScale;
+                float left = (-halfWidthSubLabel - 2) * subLabelScale;
                 float right = (halfWidthSubLabel + 2) * subLabelScale;
                 float top = (yPosSubLabel - 2) * subLabelScale;
                 float bottom = (yPosSubLabel + 9) * subLabelScale;
@@ -366,7 +366,7 @@ public class WaypointContainer {
                 vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
                 vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
 
-                left = (-halfWidthSubLabel - 2) * subLabelScale;
+                left = (-halfWidthSubLabel - 1) * subLabelScale;
                 right = (halfWidthSubLabel + 1) * subLabelScale;
                 top = (yPosSubLabel - 1) * subLabelScale;
                 bottom = (yPosSubLabel + 8) * subLabelScale;
