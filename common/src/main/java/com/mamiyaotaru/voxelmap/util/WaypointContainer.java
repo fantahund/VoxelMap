@@ -11,14 +11,12 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.Font.DisplayMode;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -244,10 +242,10 @@ public class WaypointContainer {
     }
 
     private void renderLabel(PoseStack poseStack, BufferSource bufferSource, Waypoint pt, double distance, boolean isPointedAt, boolean target, double baseX, double baseY, double baseZ/* , boolean withDepth, boolean withoutDepth */) {
-        String name = pt.name;
+        String mainLabel = pt.name;
         if (target) {
             if (pt.red == 2.0F && pt.green == 0.0F && pt.blue == 0.0F) {
-                name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
+                mainLabel = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
             } else {
                 isPointedAt = false;
             }
@@ -304,85 +302,97 @@ public class WaypointContainer {
         vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
         bufferSource.endBatch(renderType);
 
-        Font fontRenderer = minecraft.font;
         if (isPointedAt) {
-            boolean moveLabelDown = this.options.waypointNamesLocation == 1;
-            String distanceString = "";
-            if (this.options.waypointNamesLocation == 0) {
-                name = "";
-            }
-            if (this.options.waypointDistancesLocation != 0) {
-                boolean shouldConvertUnit = this.options.distanceUnitConversionMode != 0
-                        && ((this.options.distanceUnitConversionMode == 1 && distance > 1000.0) || (this.options.distanceUnitConversionMode == 2 && distance > 10000.0));
-
-                if (shouldConvertUnit) {
+            boolean moveLabelsDown = options.waypointNamesLocation == 2;
+            String subLabel = "";
+            if (options.waypointDistancesLocation != 0) {
+                boolean shouldConvert = (options.distanceUnitConversionMode == 1 && distance > 1000.0) || (options.distanceUnitConversionMode == 2 && distance > 10000.0);
+                if (shouldConvert) {
                     double converted = distance / 1000.0;
-                    distanceString = (int) converted + "." + (int) ((converted - (int) converted) * 10) + "km";
+                    subLabel = (int) converted + "." + (int) ((converted - (int) converted) * 10) + "km";
                 } else {
-                    distanceString = (int) distance + "." + (int) ((distance - (int) distance) * 10) + "m";
-                }
-
-                if (name.isEmpty()) {
-                    moveLabelDown = this.options.waypointDistancesLocation == 1;
-                    name = distanceString;
-                    distanceString = "";
-                } else if (this.options.waypointDistancesLocation == 1) {
-                    name += " (" + distanceString + ")";
-                    distanceString = "";
+                    subLabel = (int) distance + "." + (int) ((distance - (int) distance) * 10) + "m";
                 }
             }
 
+            if (options.waypointNamesLocation == 0) {
+                mainLabel = "";
+            }
+
+            if (!subLabel.isEmpty()) {
+                if (mainLabel.isEmpty()) {
+                    moveLabelsDown = options.waypointDistancesLocation == 2;
+                    mainLabel = subLabel;
+                    subLabel = "";
+                } else if (options.waypointDistancesLocation == 1) {
+                    mainLabel += " (" + subLabel + ")";
+                    subLabel = "";
+                }
+            }
+
+            boolean renderMainLabel = !mainLabel.isEmpty();
+            boolean renderSubLabel = !subLabel.isEmpty();
+
+            int halfWidthMainLabel = minecraft.font.width(mainLabel) / 2;
+            int yPosMainLabel = moveLabelsDown ? 10 : (renderSubLabel ? -24 : -18);
+
+            float subLabelScale = 0.75F;
+            int halfWidthSubLabel = minecraft.font.width(subLabel) / 2;
+            int yPosSubLabel = moveLabelsDown ? 26 : -20;
+
+            // Render label backgrounds
+            renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
+            VertexConsumer vertexTextBackground = bufferSource.getBuffer(renderType);
+
+            if (renderMainLabel) {
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 3, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 3, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+            }
+
+            if (renderSubLabel) {
+                float left = (-halfWidthSubLabel - 3) * subLabelScale;
+                float right = (halfWidthSubLabel + 2) * subLabelScale;
+                float top = (yPosSubLabel - 2) * subLabelScale;
+                float bottom = (yPosSubLabel + 9) * subLabelScale;
+                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+
+                left = (-halfWidthSubLabel - 2) * subLabelScale;
+                right = (halfWidthSubLabel + 1) * subLabelScale;
+                top = (yPosSubLabel - 1) * subLabelScale;
+                bottom = (yPosSubLabel + 8) * subLabelScale;
+                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+            }
+
+            bufferSource.endBatch(renderType);
+
+            // Render labels
             int textColor = (int) (255.0F * fade) << 24 | 0x00FFFFFF;
-            byte elevateBy;
-            int halfLabelWidth;
 
-            if (!name.isEmpty()) {
-                elevateBy = moveLabelDown ? (distanceString.isEmpty() ? (byte) -18 : (byte) -24) : (byte) 10;
-                halfLabelWidth = fontRenderer.width(name) / 2;
-
-                renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-                VertexConsumer vertexBackground = bufferSource.getBuffer(renderType);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                bufferSource.endBatch(renderType);
-
-                fontRenderer.drawInBatch(Component.literal(name), (-fontRenderer.width(name) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
-                bufferSource.endLastBatch();
+            if (renderMainLabel) {
+                minecraft.font.drawInBatch(mainLabel, -halfWidthMainLabel, yPosMainLabel, textColor, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0x00000000, LightTexture.FULL_BRIGHT);
             }
 
-            if (!distanceString.isEmpty()) {
-                float labelScale = 0.75F;
-
-                elevateBy = moveLabelDown ? (byte) -20 : (byte) 26;
-                halfLabelWidth = fontRenderer.width(distanceString) / 2;
-
+            if (renderSubLabel) {
                 poseStack.pushPose();
-                poseStack.scale(labelScale, labelScale, 1.0F);
-
-//                renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-                VertexConsumer vertexBackground = bufferSource.getBuffer(renderType);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (9 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 2), (-2 + elevateBy), 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (-halfLabelWidth - 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (8 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexBackground.addVertex(poseStack.last(), (halfLabelWidth + 1), (-1 + elevateBy), 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                bufferSource.endBatch(renderType);
-
-                fontRenderer.drawInBatch(Component.literal(distanceString), (-fontRenderer.width(distanceString) / 2f), elevateBy, textColor, false, poseStack.last().pose(), bufferSource, DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
-                bufferSource.endLastBatch();
-
+                poseStack.scale(subLabelScale, subLabelScale, 1.0F);
+                minecraft.font.drawInBatch(subLabel, -halfWidthSubLabel, yPosSubLabel, textColor, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0x00000000, LightTexture.FULL_BRIGHT);
                 poseStack.popPose();
             }
 
+            bufferSource.endLastBatch();
         }
         poseStack.popPose();
     }
