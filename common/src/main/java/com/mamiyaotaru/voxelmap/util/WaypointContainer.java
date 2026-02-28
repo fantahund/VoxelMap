@@ -267,13 +267,13 @@ public class WaypointContainer {
         poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.xRot()));
         poseStack.scale(-scale, -scale, -scale);
 
-        float fade = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
-        if (!pt.enabled && !target) {
-            fade *= 0.5F;
-        }
-        float fadeNoDepth = fade;
+        float alpha = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
+        float alphaBehindWall = alpha;
         if (!isPointedAt) {
-            fadeNoDepth *= 0.5F;
+            if (!pt.enabled && !target) {
+                alpha *= 0.3F;
+            }
+            alphaBehindWall *= 0.3F;
         }
 
         float width = 10.0F;
@@ -288,18 +288,18 @@ public class WaypointContainer {
 
         RenderType renderType = VoxelMapRenderTypes.WAYPOINT_ICON_DEPTH_TEST.apply(icon.getIdentifier());
         VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(renderType);
-        vertexIconDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fade);
-        vertexIconDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fade);
-        vertexIconDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, fade);
-        vertexIconDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fade);
+        vertexIconDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, alpha);
+        vertexIconDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, alpha);
+        vertexIconDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, alpha);
+        vertexIconDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, alpha);
         bufferSource.endBatch(renderType);
 
         renderType = VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTH_TEST.apply(icon.getIdentifier());
         VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(renderType);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, fadeNoDepth);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, fadeNoDepth);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, fadeNoDepth);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, alphaBehindWall);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, alphaBehindWall);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, alphaBehindWall);
+        vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, alphaBehindWall);
         bufferSource.endBatch(renderType);
 
         if (isPointedAt) {
@@ -345,15 +345,15 @@ public class WaypointContainer {
             VertexConsumer vertexTextBackground = bufferSource.getBuffer(renderType);
 
             if (renderMainLabel) {
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel + 9, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel - 2, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
 
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
             }
 
             if (renderSubLabel) {
@@ -361,25 +361,25 @@ public class WaypointContainer {
                 float right = (halfWidthSubLabel + 2) * subLabelScale;
                 float top = (yPosSubLabel - 2) * subLabelScale;
                 float bottom = (yPosSubLabel + 9) * subLabelScale;
-                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(pt.red, pt.green, pt.blue, 0.6F * alpha);
 
                 left = (-halfWidthSubLabel - 1) * subLabelScale;
                 right = (halfWidthSubLabel + 1) * subLabelScale;
                 top = (yPosSubLabel - 1) * subLabelScale;
                 bottom = (yPosSubLabel + 8) * subLabelScale;
-                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
-                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * fade);
+                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
+                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
             }
 
             bufferSource.endBatch(renderType);
 
             // Render labels
-            int textColor = (int) (255.0F * fade) << 24 | 0x00FFFFFF;
+            int textColor = (int) (255.0F * alpha) << 24 | 0x00FFFFFF;
 
             if (renderMainLabel) {
                 minecraft.font.drawInBatch(mainLabel, -halfWidthMainLabel, yPosMainLabel, textColor, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0x00000000, LightTexture.FULL_BRIGHT);
