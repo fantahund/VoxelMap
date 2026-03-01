@@ -14,10 +14,10 @@ import java.awt.Color;
 
 public class GuiColorPickerSimple extends AbstractColorPicker {
     private static final int SLIDER_WIDTH = 14;
-    private final Identifier roundHandle = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/round_handle.png");
-    private final Identifier roundHandleTint = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/round_handle_tint.png");
-    private final Identifier verticalHandle = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/vertical_handle.png");
-    private final Identifier verticalHandleTint = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/vertical_handle_tint.png");
+    private final Identifier roundHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/round_handle.png");
+    private final Identifier roundHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/round_handle_tint.png");
+    private final Identifier verticalHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle.png");
+    private final Identifier verticalHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle_tint.png");
     private float h;
     private float s;
     private float v;

@@ -35,12 +35,6 @@ public class VoxelMapRenderTypes {
             )
     );
 
-    public static final RenderType WAYPOINT_BEAM = RenderType.create(
-            "voxelmap_waypoint_beam",
-            RenderSetup.builder(VoxelMapPipelines.WAYPOINT_BEAM)
-                    .createRenderSetup()
-    );
-
     public static final Function<Identifier, RenderType> WAYPOINT_ICON_DEPTH_TEST = Util.memoize(
             identifier -> RenderType.create(
                     "voxelmap_waypoint_icon_depth_test",

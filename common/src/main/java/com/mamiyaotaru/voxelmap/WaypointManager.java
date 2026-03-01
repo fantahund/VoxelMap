@@ -83,8 +83,8 @@ public class WaypointManager {
     private Long lastNewWorldNameTime = 0L;
     private final Object waypointLock = new Object();
     public static final String fallbackIconLocation = "selectable/point";
-    public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath("voxelmap", "atlas/waypoints");
-    public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath("voxelmap", "atlas/waypoint-chooser");
+    public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints");
+    public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser");
     public final Minecraft minecraft = Minecraft.getInstance();
 
     public WaypointManager() {
@@ -102,7 +102,7 @@ public class WaypointManager {
 
             Map<Identifier, Resource> resourceMap = VoxelConstants.getMinecraft().getResourceManager().listResources("images/waypoints", asset -> asset.getPath().endsWith(".png"));
             for (Identifier candidate : resourceMap.keySet()) {
-                if (candidate.getNamespace().equals("voxelmap")) {
+                if (candidate.getNamespace().equals(VoxelConstants.MOD_ID)) {
                     images.add(candidate);
                 }
             }
@@ -113,10 +113,10 @@ public class WaypointManager {
                 textureAtlas.registerMaskedIcon(toSimpleName(name), icon);
             }
 
-            Sprite markerIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/marker/arrow.png"));
+            Sprite markerIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/waypoints/marker/arrow.png"));
             textureAtlas.registerMaskedIcon(toSimpleName(markerIcon.getIconName().toString()), markerIcon);
 
-            Sprite targetIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath("voxelmap", "images/waypoints/marker/target.png"));
+            Sprite targetIcon = textureAtlas.registerIconForResource(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/waypoints/marker/target.png"));
             textureAtlas.registerMaskedIcon(toSimpleName(targetIcon.getIconName().toString()), markerIcon);
 
         };
@@ -790,7 +790,7 @@ public class WaypointManager {
             }
             path = path + "/" + this.currentDimension.getStorageName();
             String tempPath = "images/backgroundmaps/" + path + "/map.png";
-            Identifier identifier = Identifier.fromNamespaceAndPath("voxelmap", tempPath);
+            Identifier identifier = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, tempPath);
 
             Minecraft.getInstance().getResourceManager().getResourceOrThrow(identifier); // check if it exists
 
@@ -801,7 +801,7 @@ public class WaypointManager {
             Graphics gfx = mapImage.createGraphics();
             gfx.drawImage(image, 0, 0, null);
             gfx.dispose();
-            is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath("voxelmap", "images/backgroundmaps/" + path + "/map.txt")).get().open();
+            is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/backgroundmaps/" + path + "/map.txt")).get().open();
             InputStreamReader isr = new InputStreamReader(is);
             Properties mapProperties = new Properties();
             mapProperties.load(isr);

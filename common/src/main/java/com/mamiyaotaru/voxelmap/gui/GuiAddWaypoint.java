@@ -123,7 +123,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         boolean simpleMode = this.mapOptions.colorPickerMode == 0;
         this.colorPicker = new GuiColorPickerContainer(this.getWidth() / 2, this.getHeight() / 2, 200, 140, simpleMode, picker -> {});
         this.colorPicker.setColor(ARGB.colorFromFloat(1.0F, this.red, this.green, this.blue));
-        this.colorPickerModeButton = new PopupGuiButton(0, 0, 50, 15, Component.literal(this.mapOptions.getOptionListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)), this::updateColorPickerMode, this);
+        this.colorPickerModeButton = new PopupGuiButton(0, 0, 50, 15, Component.literal(this.mapOptions.getListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)), this::updateColorPickerMode, this);
         this.colorPickerModeButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.colorPickerMode")));
     }
 
@@ -132,10 +132,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     private void updateColorPickerMode(Button button) {
-        this.mapOptions.setOptionValue(EnumOptionsMinimap.COLOR_PICKER_MODE);
+        this.mapOptions.cycleListValue(EnumOptionsMinimap.COLOR_PICKER_MODE);
         this.colorPicker.updateMode(this.mapOptions.colorPickerMode == 0);
 
-        button.setMessage(Component.literal(this.mapOptions.getOptionListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)));
+        button.setMessage(Component.literal(this.mapOptions.getListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)));
     }
 
     protected void cancelWaypoint() {

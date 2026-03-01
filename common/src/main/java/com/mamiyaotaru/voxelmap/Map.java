@@ -95,11 +95,11 @@ public class Map implements Runnable, IChangeObserver {
     private static final float MAP_IMAGE_DEPTH = 0.0F;
     private static final float MAP_OVERLAY_DEPTH = 100.0F;
     private static final float MAP_TEXT_DEPTH = 200.0F;
-    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/minimap_arrow.png");
-    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_frame.png");
-    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_stencil.png");
-    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_frame.png");
-    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_stencil.png");
+    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/minimap_arrow.png");
+    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_frame.png");
+    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_stencil.png");
+    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_frame.png");
+    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_stencil.png");
     private int scWidth;
     private int scHeight;
     private String message = "";
@@ -172,12 +172,12 @@ public class Map implements Runnable, IChangeObserver {
     // Map Rendering
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
-    private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "gui_fbo_texture");
+    private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "gui_fbo_texture");
     private final DynamicAllocatedTexture guiFboTexture;
     private final DynamicAllocatedTexture guiFboDepthTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
-    private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "map_fbo_texture");
-    private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "maksed_map_fbo_texture");
+    private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "map_fbo_texture");
+    private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "maksed_map_fbo_texture");
     private final DynamicAllocatedTexture mapFboTexture;
     private final DynamicAllocatedTexture maskedMapFboTexture;
     private final DynamicAllocatedTexture mapFboDepthTexture;
@@ -196,8 +196,8 @@ public class Map implements Runnable, IChangeObserver {
         this.zCalc.start();
 
         for (int i = 0; i < this.mapDataCount; i++) {
-            resourceMapImageFiltered[i] = Identifier.fromNamespaceAndPath("voxelmap", String.format("map/filtered/%s", i));
-            resourceMapImageUnfiltered[i] = Identifier.fromNamespaceAndPath("voxelmap", String.format("map/unfiltered/%s", i));
+            resourceMapImageFiltered[i] = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, String.format("map/filtered/%s", i));
+            resourceMapImageUnfiltered[i] = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, String.format("map/unfiltered/%s", i));
 
             int resolution = 1 << (i + 5); // 32, 64, ...
             int chunks = (1 << (i + 1)) + 1; //3, 5, ...
@@ -375,7 +375,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (minecraft.screen == null && this.options.keyBindMobToggle.consumeClick()) {
-            VoxelConstants.getVoxelMapInstance().getRadarOptions().setOptionValue(EnumOptionsMinimap.SHOW_RADAR);
+            VoxelConstants.getVoxelMapInstance().getRadarOptions().toggleBooleanValue(EnumOptionsMinimap.SHOW_RADAR);
             this.options.saveAll();
         }
 
@@ -393,7 +393,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (minecraft.screen == null && this.options.keyBindMinimapToggle.consumeClick()) {
-            this.options.setOptionValue(EnumOptionsMinimap.HIDE_MINIMAP);
+            this.options.toggleBooleanValue(EnumOptionsMinimap.HIDE_MINIMAP);
         }
 
         this.checkForChanges();
@@ -620,7 +620,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         float statusIconOffset = 0.0F;
-        if (options.moveMapDownWhileStatusEffect) {
+        if (options.moveMapBelowStatusEffectIcons) {
             if (this.options.mapCorner == 1 && !VoxelConstants.getPlayer().getActiveEffects().isEmpty()) {
 
                 for (MobEffectInstance statusEffectInstance : VoxelConstants.getPlayer().getActiveEffects()) {
@@ -717,7 +717,7 @@ public class Map implements Runnable, IChangeObserver {
             this.lastSkyColor = skyColor;
         }
 
-        if (this.options.lightmap) {
+        if (this.options.dynamicLighting) {
             int torchOffset = this.options.realTimeTorches ? 8 : 0;
             for (int t = 0; t < 16; ++t) {
                 int newValue = getLightmapColor(t, torchOffset);
@@ -807,7 +807,7 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        if (full || this.options.heightmap && needHeightMap || needHeightAndID || this.options.lightmap && needLight || skyColorChanged) {
+        if (full || this.options.heightmap && needHeightMap || needHeightAndID || this.options.dynamicLighting && needLight || skyColorChanged) {
             for (int imageY = 32 * multi - 1; imageY >= 0; --imageY) {
                 for (int imageX = 0; imageX < 32 * multi; ++imageX) {
                     color24 = this.getPixelColor(full, full || needHeightAndID, full, full || needLight || needHeightAndID, nether, caves, world, zoom, multi, startX, startZ, imageX, imageY);
@@ -1153,7 +1153,7 @@ public class Map implements Runnable, IChangeObserver {
                     blockPos.setXYZ(startX + imageX, seafloorHeight, startZ + imageY);
                     BlockState blockStateAbove = world.getBlockState(blockPos);
                     Block materialAbove = blockStateAbove.getBlock();
-                    if (this.options.lightmap && materialAbove == Blocks.ICE) {
+                    if (this.options.dynamicLighting && materialAbove == Blocks.ICE) {
                         int multiplier = minecraft.options.ambientOcclusion().get() ? 200 : 120;
                         seafloorLight = ColorUtils.colorMultiplier(seafloorLight, 0xFF000000 | multiplier << 16 | multiplier << 8 | multiplier);
                     }
@@ -1479,7 +1479,7 @@ public class Map implements Runnable, IChangeObserver {
         int combinedLight = 0xffffffff;
         if (solid) {
             combinedLight = 0;
-        } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.lightmap) {
+        } else if (color24 != this.colorManager.getAirColor() && color24 != 0 && this.options.dynamicLighting) {
             MutableBlockPos blockPos = MutableBlockPosCache.get();
             blockPos.setXYZ(x, Math.max(Math.min(height, world.getMaxY()), world.getMinY()), z);
             int blockLight = world.getBrightness(LightLayer.BLOCK, blockPos);

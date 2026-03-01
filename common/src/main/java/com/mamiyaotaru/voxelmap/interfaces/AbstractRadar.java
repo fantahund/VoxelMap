@@ -12,6 +12,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4fStack;
 
 import java.util.ArrayList;
@@ -110,7 +111,9 @@ public abstract class AbstractRadar {
         double wayZ = minimapContext.playerZ - contact.z;
         double wayY = minimapContext.playerY - contact.y;
 
-        if (!isInRange(contact.entity, wayX, wayY, wayZ, 0.0F)) {
+        boolean isInRange = isInRange(contact.entity, wayX, wayY, wayZ, 0.0F);
+        boolean isSneaking = (contact.entity instanceof Player player) && player.isCrouching();
+        if (!isInRange || (isSneaking && radarOptions.hideSneakingPlayers)) {
             contact.displayState = Contact.DisplayState.HIDDEN;
             return;
         } else {
@@ -122,10 +125,14 @@ public abstract class AbstractRadar {
 
         contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
 
-        double maxHeight = getEntityMaxHeight(contact.entity) * minimapContext.zoomScaleAdjusted;
-        double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
-        contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
-        contact.brightness *= contact.brightness;
+        if (!radarOptions.showEntityElevation) {
+            contact.brightness = 1.0F;
+        } else {
+            double maxHeight = getEntityMaxHeight(contact.entity) * minimapContext.zoomScaleAdjusted;
+            double adjustedDiff = maxHeight - Math.max(Math.abs(wayY), 0);
+            contact.brightness = (float) Math.max(adjustedDiff / maxHeight, 0.0);
+            contact.brightness *= contact.brightness;
+        }
     }
 
     protected boolean isEntityShown(Entity entity) {
@@ -157,7 +164,8 @@ public abstract class AbstractRadar {
         dy /= scale;
         dz /= scale;
 
-        if (Math.abs(dy) > getEntityMaxHeight(entity) + cullDist) {
+        double maxHeight =  getEntityMaxHeight(entity) + cullDist;
+        if (radarOptions.showEntityElevation && Math.abs(dy) > maxHeight) {
             return false;
         }
 

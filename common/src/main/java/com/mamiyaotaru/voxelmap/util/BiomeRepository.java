@@ -62,7 +62,7 @@ public final class BiomeRepository {
         }
 
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath("voxelmap", "configs/biomecolors.txt")).get().open();
+            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/biomecolors.txt")).get().open();
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
             String sCurrentLine;

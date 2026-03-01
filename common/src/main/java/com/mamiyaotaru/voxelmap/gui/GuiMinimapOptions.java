@@ -3,10 +3,12 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiButtonText;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -24,7 +26,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -32,7 +33,8 @@ import java.util.function.Consumer;
 
 public class GuiMinimapOptions extends GuiScreenMinimap {
     protected String screenTitle = "Minimap Options";
-    private final MapSettingsManager options;
+    private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
+    private final MapSettingsManager mapOptions;
     private final RadarSettingsManager radarOptions;
 
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
@@ -41,16 +43,16 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     private final ArrayList<AbstractWidget> optionButtons = new ArrayList<>();
     private int pageIndex = 0;
-    private String pageState = "";
+    private String pageInfo = "";
     private int tabIndex = 0;
     private int lastTabIndex = 0;
     private Button nextPageButton;
     private Button prevPageButton;
 
-    private static final EnumOptionsMinimap[] generalOptions = { EnumOptionsMinimap.HIDE_MINIMAP, EnumOptionsMinimap.UPDATE_NOTIFIER, EnumOptionsMinimap.SHOW_BIOME, EnumOptionsMinimap.SHOW_COORDS, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE_MAP, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.IN_GAME_WAYPOINTS, EnumOptionsMinimap.CAVE_MODE, EnumOptionsMinimap.MOVE_MAP_DOWN_WHILE_STATUS_EFFECT, EnumOptionsMinimap.MOVE_SCOREBOARD_DOWN };
-    private static final EnumOptionsMinimap[] performanceOptions = { EnumOptionsMinimap.DYNAMIC_LIGHTING, EnumOptionsMinimap.TERRAIN_DEPTH, EnumOptionsMinimap.WATER_TRANSPARENCY, EnumOptionsMinimap.BLOCK_TRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.CHUNK_GRID, EnumOptionsMinimap.BIOME_OVERLAY, EnumOptionsMinimap.SLIME_CHUNKS, EnumOptionsMinimap.WORLD_BORDER, EnumOptionsMinimap.TELEPORT_COMMAND };
-    private static final EnumOptionsMinimap[] radarFullOptions = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES };
-    private static final EnumOptionsMinimap[] radarSimpleOptions = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING };
+    private static final EnumOptionsMinimap[] GENERAL_OPTIONS = { EnumOptionsMinimap.HIDE_MINIMAP, EnumOptionsMinimap.UPDATE_NOTIFIER, EnumOptionsMinimap.SHOW_BIOME, EnumOptionsMinimap.SHOW_COORDS, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE_MAP, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.IN_GAME_WAYPOINTS, EnumOptionsMinimap.CAVE_MODE, EnumOptionsMinimap.MOVE_MAP_BELOW_STATUS_EFFECT_ICONS, EnumOptionsMinimap.MOVE_SCOREBOARD_BELOW_MAP};
+    private static final EnumOptionsMinimap[] PERFORMANCE_OPTIONS = { EnumOptionsMinimap.DYNAMIC_LIGHTING, EnumOptionsMinimap.TERRAIN_DEPTH, EnumOptionsMinimap.WATER_TRANSPARENCY, EnumOptionsMinimap.BLOCK_TRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.BIOME_OVERLAY, EnumOptionsMinimap.CHUNK_GRID, EnumOptionsMinimap.SLIME_CHUNKS, EnumOptionsMinimap.WORLD_BORDER,  EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.TELEPORT_COMMAND };
+    private static final EnumOptionsMinimap[] RADAR_FULL_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES, EnumOptionsMinimap.SHOW_ENTITY_ELEVATION, EnumOptionsMinimap.HIDE_SNEAKING_PLAYERS };
+    private static final EnumOptionsMinimap[] RADAR_SIMPLE_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING, EnumOptionsMinimap.SHOW_ENTITY_ELEVATION, EnumOptionsMinimap.HIDE_SNEAKING_PLAYERS };
 
     // Performance Tab
     private GuiButtonText worldSeedButton;
@@ -61,75 +63,74 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private Button mobListButton;
 
     public GuiMinimapOptions(Screen parent) {
-        this.lastScreen = parent;
-
-        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        this.radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
+        lastScreen = parent;
+        mapOptions = voxelMap.getMapOptions();
+        radarOptions = voxelMap.getRadarOptions();
     }
 
     @Override
     public void init() {
-        this.screenTitle = I18n.get("options.minimap.title");
+        screenTitle = I18n.get("options.minimap.title");
 
-        this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new Tab[] {
+        tabNavigationBar = TabNavigationBar.builder(tabManager, width).addTabs(
                 new OptionsTab(Component.translatable("stat.generalButton"), 0),
                 new OptionsTab(Component.translatable("options.minimap.tab.detailsPerformance"), 1),
                 new OptionsTab(Component.translatable("options.minimap.tab.radar"), 2),
                 new OptionsTab(Component.translatable("controls.title"), 3),
-                new OptionsTab(Component.translatable("options.minimap.tab.worldmap"), 4)}).build();
+                new OptionsTab(Component.translatable("options.minimap.tab.worldmap"), 4)).build();
 
-        this.tabNavigationBar.selectTab(this.tabIndex, false);
-        this.tabNavigationBar.arrangeElements();
-        this.setFocused(this.tabNavigationBar);
-        this.addRenderableWidget(this.tabNavigationBar);
+        tabNavigationBar.selectTab(tabIndex, false);
+        tabNavigationBar.arrangeElements();
+        setFocused(tabNavigationBar);
+        addRenderableWidget(tabNavigationBar);
 
-        int tabBottom = this.tabNavigationBar.getRectangle().bottom();
-        ScreenRectangle screenRect = new ScreenRectangle(0, tabBottom, this.width, this.height - this.layout.getFooterHeight() - tabBottom);
-        this.tabManager.setTabArea(screenRect);
-        this.layout.setHeaderHeight(tabBottom);
-        this.layout.addToFooter(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).width(200).build());
-        this.layout.visitWidgets(this::addRenderableWidget);
-        this.layout.arrangeElements();
+        int tabBottom = tabNavigationBar.getRectangle().bottom();
+        ScreenRectangle screenRect = new ScreenRectangle(0, tabBottom, width, height - layout.getFooterHeight() - tabBottom);
+        tabManager.setTabArea(screenRect);
+        layout.setHeaderHeight(tabBottom);
+        layout.addToFooter(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).width(200).build());
+        layout.visitWidgets(this::addRenderableWidget);
+        layout.arrangeElements();
 
-        this.nextPageButton = new Button.Builder(Component.literal(">"), button -> {
-            this.pageIndex++;
-            this.replaceButtons();
-        }).bounds(this.width / 2 + 140, this.height / 6 + 120, 40, 20).build();
-        this.addRenderableWidget(this.nextPageButton);
+        nextPageButton = new Button.Builder(Component.literal(">"), button -> {
+            pageIndex++;
+            replaceButtons();
+        }).bounds(width / 2 + 140, height / 6 + 120, 40, 20).build();
+        addRenderableWidget(nextPageButton);
 
-        this.prevPageButton = new Button.Builder(Component.literal("<"), button -> {
-            this.pageIndex--;
-            this.replaceButtons();
-        }).bounds(this.width / 2 - 180, this.height / 6 + 120, 40, 20).build();
-        this.addRenderableWidget(this.prevPageButton);
+        prevPageButton = new Button.Builder(Component.literal("<"), button -> {
+            pageIndex--;
+            replaceButtons();
+        }).bounds(width / 2 - 180, height / 6 + 120, 40, 20).build();
+        addRenderableWidget(prevPageButton);
 
-        this.replaceButtons();
+        replaceButtons();
     }
 
     private void handleTabChange() {
-        if (this.tabManager.getCurrentTab() instanceof OptionsTab tab) {
-            if (tab.index() != this.tabIndex) {
-                this.tabIndex = tab.index();
-                this.replaceButtons();
+        if (tabManager.getCurrentTab() instanceof OptionsTab tab) {
+            if (tab.index() != tabIndex) {
+                tabIndex = tab.index();
+                replaceButtons();
             }
         }
     }
 
     public void replaceButtons() {
-        for (GuiEventListener widget : this.optionButtons) {
-            this.removeWidget(widget);
+        for (GuiEventListener widget : optionButtons) {
+            removeWidget(widget);
         }
-        this.optionButtons.clear();
+        optionButtons.clear();
 
         EnumOptionsMinimap[] relevantOptions = null;
-        switch (this.tabIndex) {
-            case 0 -> relevantOptions = generalOptions;
-            case 1 -> relevantOptions = performanceOptions;
+        switch (tabIndex) {
+            case 0 -> relevantOptions = GENERAL_OPTIONS;
+            case 1 -> relevantOptions = PERFORMANCE_OPTIONS;
             case 2 -> {
-                if (this.radarOptions.radarMode == 2) {
-                    relevantOptions = radarFullOptions;
+                if (radarOptions.radarMode == 2) {
+                    relevantOptions = RADAR_FULL_OPTIONS;
                 } else {
-                    relevantOptions = radarSimpleOptions;
+                    relevantOptions = RADAR_SIMPLE_OPTIONS;
                 }
             }
             case 3 -> minecraft.setScreen(new GuiMinimapControls(this));
@@ -137,89 +138,93 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
 
         if (relevantOptions == null) {
-            this.tabIndex = this.lastTabIndex;
+            tabIndex = lastTabIndex;
             return;
         }
-        if (this.tabIndex != this.lastTabIndex) {
-            this.pageIndex = 0;
+        if (tabIndex != lastTabIndex) {
+            pageIndex = 0;
         }
-        this.lastTabIndex = this.tabIndex;
+        lastTabIndex = tabIndex;
 
         int itemCount = 10;
         int pageCount = (relevantOptions.length - 1) / itemCount;
-        if (this.pageIndex > pageCount) {
-            this.pageIndex = 0;
+        if (pageIndex > pageCount) {
+            pageIndex = 0;
         }
-        if (this.pageIndex < 0) {
-            this.pageIndex = pageCount;
+        if (pageIndex < 0) {
+            pageIndex = pageCount;
         }
-        this.pageState = "[ " + (this.pageIndex + 1) + " / " + (pageCount + 1) + " ]";
-        int pageStart = itemCount * this.pageIndex;
-        int pageEnd = Math.min(itemCount * (this.pageIndex + 1), relevantOptions.length);
+        pageInfo = "[ " + (pageIndex + 1) + " / " + (pageCount + 1) + " ]";
+        int pageStart = itemCount * pageIndex;
+        int pageEnd = Math.min(itemCount * (pageIndex + 1), relevantOptions.length);
 
-        this.nextPageButton.active = pageCount > 0;
-        this.prevPageButton.active = pageCount > 0;
+        nextPageButton.active = pageCount > 0;
+        prevPageButton.active = pageCount > 0;
 
         // Menu Buttons
         for (int i = pageStart; i < pageEnd; i++) {
             EnumOptionsMinimap option = relevantOptions[i];
-            int buttonX = this.getWidth() / 2 - 155 + (i - pageStart) % 2 * 160;
-            int buttonY = this.getHeight() / 6 + 24 * ((i - pageStart) >> 1);
+
+            ISettingsManager settingsManager = getSettingsManager(option);
+            if (settingsManager == null) continue;
+
+            int buttonX = getWidth() / 2 - 155 + (i - pageStart) % 2 * 160;
+            int buttonY = getHeight() / 6 + 24 * ((i - pageStart) >> 1);
 
             // List / Toggle
             if (option.isBoolean() || option.isList()) {
-                StringBuilder text = new StringBuilder().append(this.getKeyText(option));
-                if ((option == EnumOptionsMinimap.WATER_TRANSPARENCY || option == EnumOptionsMinimap.BLOCK_TRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !this.options.multicore && this.getOptionBooleanValue(option)) {
+                StringBuilder text = new StringBuilder().append(settingsManager.getKeyText(option));
+                if ((option == EnumOptionsMinimap.WATER_TRANSPARENCY || option == EnumOptionsMinimap.BLOCK_TRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !mapOptions.multicore && settingsManager.getBooleanValue(option)) {
                     text.append("§c").append(text);
                 }
 
                 GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(buttonX, buttonY, option, Component.literal(text.toString()), this::optionClicked);
-                this.addOptionButton(optionButton);
+                addOptionButton(optionButton);
 
                 if (option == EnumOptionsMinimap.SLIME_CHUNKS) {
-                    this.slimeChunksButton = optionButton;
+                    slimeChunksButton = optionButton;
                 }
             }
 
             // Text Field
             if (option == EnumOptionsMinimap.TELEPORT_COMMAND) {
-                String buttonTeleportText = I18n.get("options.minimap.teleportCommand") + ": " + VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand;
-                this.teleportCommandButton = new GuiButtonText(this.getFont(), buttonX, buttonY, 150, 20, Component.literal(buttonTeleportText), button -> this.teleportCommandButton.setEditing(true));
-                this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
-                this.teleportCommandButton.active = VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand == null;
-                this.addOptionButton(teleportCommandButton);
+                String buttonTeleportText = I18n.get("options.minimap.teleportCommand") + ": " + mapOptions.teleportCommand;
+                teleportCommandButton = new GuiButtonText(getFont(), buttonX, buttonY, 150, 20, Component.literal(buttonTeleportText), button -> teleportCommandButton.setEditing(true));
+                teleportCommandButton.setText(mapOptions.teleportCommand);
+                teleportCommandButton.active = mapOptions.serverTeleportCommand == null;
+                addOptionButton(teleportCommandButton);
             }
         }
 
-        int additionalButtonX = this.width / 2 - 75;
-        int additionalButtonY = this.height / 6 + 144;
+        int additionalButtonX = width / 2 - 75;
+        int additionalButtonY = height / 6 + 144;
 
         // Additional Buttons
-        if (relevantOptions == performanceOptions) {
-            String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
+        if (relevantOptions == PERFORMANCE_OPTIONS) {
+            String worldSeedDisplay = voxelMap.getWorldSeed();
             if (worldSeedDisplay.isEmpty()) {
                 worldSeedDisplay = I18n.get("selectWorld.versionUnknown");
             }
 
             String buttonSeedText = I18n.get("options.minimap.worldSeed") + ": " + worldSeedDisplay;
-            this.worldSeedButton = new GuiButtonText(this.getFont(), additionalButtonX, additionalButtonY, 150, 20, Component.literal(buttonSeedText), button -> this.worldSeedButton.setEditing(true));
-            this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
-            this.worldSeedButton.active = !VoxelConstants.getMinecraft().hasSingleplayerServer();
-            this.addOptionButton(this.worldSeedButton);
+            worldSeedButton = new GuiButtonText(getFont(), additionalButtonX, additionalButtonY, 150, 20, Component.literal(buttonSeedText), button -> worldSeedButton.setEditing(true));
+            worldSeedButton.setText(voxelMap.getWorldSeed());
+            worldSeedButton.active = !minecraft.hasSingleplayerServer();
+            addOptionButton(worldSeedButton);
         }
 
-        if (relevantOptions == radarFullOptions) {
-            this.mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> VoxelConstants.getMinecraft().setScreen(new GuiMobs(this, this.radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
-            this.addOptionButton(this.mobListButton);
+        if (relevantOptions == RADAR_FULL_OPTIONS) {
+            mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this, radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
+            addOptionButton(mobListButton);
         }
 
-        this.setButtonsActive();
+        setButtonsActive();
 
     }
 
     private void addOptionButton(AbstractWidget widget) {
-        this.optionButtons.add(widget);
-        this.addRenderableWidget(widget);
+        optionButtons.add(widget);
+        addRenderableWidget(widget);
     }
 
     private void optionClicked(Button button) {
@@ -227,48 +232,53 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             return;
         }
         EnumOptionsMinimap option = button2.returnEnumOptions();
-        this.setOptionValue(option);
+
+        ISettingsManager settingsManager = getSettingsManager(option);
+        if (settingsManager == null) return;
+
+        MapSettingsManager.updateBooleanOrListValue(settingsManager, option);
 
         String prefix = "";
         switch (option) {
-            case OLD_NORTH -> VoxelConstants.getVoxelMapInstance().getWaypointManager().setOldNorth(this.options.oldNorth);
+            case OLD_NORTH -> voxelMap.getWaypointManager().setOldNorth(mapOptions.oldNorth);
             case WATER_TRANSPARENCY, BLOCK_TRANSPARENCY, BIOMES -> {
-                if (!this.options.multicore && option.isBoolean() && this.getOptionBooleanValue(option)) {
+                if (!mapOptions.multicore && option.isBoolean() && settingsManager.getBooleanValue(option)) {
                     prefix = "§c";
                 }
             }
-            case RADAR_MODE -> this.replaceButtons();
+            case RADAR_MODE -> replaceButtons();
         }
 
-        button2.setMessage(Component.literal(prefix + this.getKeyText(option)));
-        this.setButtonsActive();
+        button2.setMessage(Component.literal(prefix + settingsManager.getKeyText(option)));
+        setButtonsActive();
     }
 
     private void setButtonsActive() {
-        for (GuiEventListener button : this.children()) {
+        for (GuiEventListener button : children()) {
             if (!(button instanceof GuiOptionButtonMinimap button2)){
                 continue;
             }
             EnumOptionsMinimap option = button2.returnEnumOptions();
 
-            boolean radarBlocked = !this.radarOptions.radarAllowed && !this.radarOptions.radarPlayersAllowed && !this.radarOptions.radarMobsAllowed;
-            if (ArrayUtils.contains(radarFullOptions, option) || ArrayUtils.contains(radarSimpleOptions, option)) {
-                button2.active = this.radarOptions.showRadar && !radarBlocked;
-                if (this.mobListButton != null) {
-                    this.mobListButton.active = this.radarOptions.showRadar && !radarBlocked;
+            boolean radarBlocked = !radarOptions.radarAllowed && !radarOptions.radarPlayersAllowed && !radarOptions.radarMobsAllowed;
+
+            if (containsOption(option, RADAR_FULL_OPTIONS) || containsOption(option, RADAR_SIMPLE_OPTIONS)) {
+                button2.active = radarOptions.showRadar && !radarBlocked;
+                if (mobListButton != null) {
+                    mobListButton.active = radarOptions.showRadar && !radarBlocked;
                 }
             }
 
             switch (option) {
-                case HIDE_MINIMAP -> button2.active = this.options.minimapAllowed;
-                case IN_GAME_WAYPOINTS -> button2.active = this.options.waypointsAllowed;
-                case CAVE_MODE -> button2.active = this.options.cavesAllowed;
-                case SLIME_CHUNKS -> button2.active = VoxelConstants.getMinecraft().hasSingleplayerServer() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
+                case HIDE_MINIMAP -> button2.active = mapOptions.minimapAllowed;
+                case IN_GAME_WAYPOINTS -> button2.active = mapOptions.waypointsAllowed;
+                case CAVE_MODE -> button2.active = mapOptions.cavesAllowed;
+                case SLIME_CHUNKS -> button2.active = minecraft.hasSingleplayerServer() || !voxelMap.getWorldSeed().isEmpty();
                 case SHOW_RADAR -> button2.active = !radarBlocked;
-                case SHOW_PLAYERS -> button2.active = button2.active && this.radarOptions.radarPlayersAllowed;
-                case SHOW_MOBS -> button2.active = button2.active && this.radarOptions.radarMobsAllowed;
-                case SHOW_PLAYER_HELMETS, SHOW_PLAYER_NAMES -> button2.active = button2.active && this.radarOptions.showPlayers && this.radarOptions.radarPlayersAllowed;
-                case SHOW_MOB_HELMETS, SHOW_MOB_NAMES -> button2.active = button2.active && (this.radarOptions.showNeutrals || this.radarOptions.showHostiles) && this.radarOptions.radarMobsAllowed;
+                case SHOW_PLAYERS -> button2.active = button2.active && radarOptions.radarPlayersAllowed;
+                case SHOW_MOBS -> button2.active = button2.active && radarOptions.radarMobsAllowed;
+                case SHOW_PLAYER_HELMETS, SHOW_PLAYER_NAMES -> button2.active = button2.active && radarOptions.showPlayers && radarOptions.radarPlayersAllowed;
+                case SHOW_MOB_HELMETS, SHOW_MOB_NAMES -> button2.active = button2.active && (radarOptions.showNeutrals || radarOptions.showHostiles) && radarOptions.radarMobsAllowed;
             }
         }
     }
@@ -276,34 +286,34 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-        drawContext.drawCenteredString(this.font, this.pageState, this.width / 2, this.height / 6 + 126, 0xFFFFFFFF);
-        this.handleTabChange();
+        drawContext.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, height - layout.getFooterHeight() - 2, 0.0F, 0.0F, width, 2, 32, 2);
+        drawContext.drawCenteredString(font, pageInfo, width / 2, height / 6 + 126, 0xFFFFFFFF);
+        handleTabChange();
     }
 
     @Override
     public void renderMenuBackground(GuiGraphics drawContext) {
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
-        this.renderMenuBackground(drawContext, 0, this.layout.getHeaderHeight(), this.width, this.height);
+        drawContext.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, width, layout.getHeaderHeight(), 16, 16);
+        renderMenuBackground(drawContext, 0, layout.getHeaderHeight(), width, height);
     }
 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
         if (keyCode == GLFW.GLFW_KEY_TAB) {
-            if (this.worldSeedButton != null) {
-                this.worldSeedButton.keyPressed(keyEvent);
+            if (worldSeedButton != null) {
+                worldSeedButton.keyPressed(keyEvent);
             }
-            if (this.teleportCommandButton != null) {
-                this.teleportCommandButton.keyPressed(keyEvent);
+            if (teleportCommandButton != null) {
+                teleportCommandButton.keyPressed(keyEvent);
             }
         }
 
         if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
-            if (this.worldSeedButton != null && this.worldSeedButton.isEditing()) {
-                this.newSeed();
-            } else if (this.teleportCommandButton != null && this.teleportCommandButton.isEditing()) {
-                this.newTeleportCommand();
+            if (worldSeedButton != null && worldSeedButton.isEditing()) {
+                newSeed();
+            } else if (teleportCommandButton != null && teleportCommandButton.isEditing()) {
+                newTeleportCommand();
             }
 
         }
@@ -315,10 +325,10 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     public boolean charTyped(CharacterEvent characterEvent) {
         boolean OK = super.charTyped(characterEvent);
         if (characterEvent.codepoint() == '\r') {
-            if (this.worldSeedButton != null && this.worldSeedButton.isEditing()) {
-                this.newSeed();
-            } else if (this.teleportCommandButton != null && this.teleportCommandButton.isEditing()) {
-                this.newTeleportCommand();
+            if (worldSeedButton != null && worldSeedButton.isEditing()) {
+                newSeed();
+            } else if (teleportCommandButton != null && teleportCommandButton.isEditing()) {
+                newTeleportCommand();
             }
 
         }
@@ -329,7 +339,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private record OptionsTab(Component title, int index) implements Tab {
         @Override
         public Component getTabTitle() {
-            return this.title;
+            return title;
         }
 
         @Override
@@ -348,108 +358,52 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     private void newSeed() {
-        if (this.worldSeedButton != null) {
-            String newSeed = this.worldSeedButton.getText();
-            VoxelConstants.getVoxelMapInstance().setWorldSeed(newSeed);
-            String worldSeedDisplay = VoxelConstants.getVoxelMapInstance().getWorldSeed();
+        if (worldSeedButton != null) {
+            String newSeed = worldSeedButton.getText();
+            voxelMap.setWorldSeed(newSeed);
+            String worldSeedDisplay = voxelMap.getWorldSeed();
             if (worldSeedDisplay.isEmpty()) {
                 worldSeedDisplay = I18n.get("selectWorld.versionUnknown");
             }
 
             String buttonText = I18n.get("options.minimap.worldSeed") + ": " + worldSeedDisplay;
-            this.worldSeedButton.setMessage(Component.literal(buttonText));
-            this.worldSeedButton.setText(VoxelConstants.getVoxelMapInstance().getWorldSeed());
-            VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
+            worldSeedButton.setMessage(Component.literal(buttonText));
+            worldSeedButton.setText(voxelMap.getWorldSeed());
+            voxelMap.getMap().forceFullRender(true);
         }
-        if (this.slimeChunksButton != null) {
-            this.slimeChunksButton.active = VoxelConstants.getMinecraft().hasSingleplayerServer() || !VoxelConstants.getVoxelMapInstance().getWorldSeed().isEmpty();
+        if (slimeChunksButton != null) {
+            slimeChunksButton.active = minecraft.hasSingleplayerServer() || !voxelMap.getWorldSeed().isEmpty();
         }
 
     }
 
     private void newTeleportCommand() {
         if (teleportCommandButton != null) {
-            String newTeleportCommand = this.teleportCommandButton.getText().isEmpty() ? "tp %p %x %y %z" : this.teleportCommandButton.getText();
-            VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand = newTeleportCommand;
+            String newTeleportCommand = teleportCommandButton.getText().isEmpty() ? "tp %p %x %y %z" : teleportCommandButton.getText();
+            mapOptions.teleportCommand = newTeleportCommand;
 
             String buttonText = I18n.get("options.minimap.teleportCommand") + ": " + newTeleportCommand;
-            this.teleportCommandButton.setMessage(Component.literal(buttonText));
-            this.teleportCommandButton.setText(VoxelConstants.getVoxelMapInstance().getMapOptions().teleportCommand);
+            teleportCommandButton.setMessage(Component.literal(buttonText));
+            teleportCommandButton.setText(mapOptions.teleportCommand);
         }
 
     }
 
-    private void setOptionValue(EnumOptionsMinimap option) {
-        try {
-            this.options.setOptionValue(option);
-        } catch (IllegalArgumentException ignored) {
+    private ISettingsManager getSettingsManager(EnumOptionsMinimap option) {
+        if (containsOption(option, GENERAL_OPTIONS) || containsOption(option, PERFORMANCE_OPTIONS)) {
+            return mapOptions;
         }
-        try {
-            this.radarOptions.setOptionValue(option);
-        } catch (IllegalArgumentException ignored) {
+        if (containsOption(option, RADAR_SIMPLE_OPTIONS) || containsOption(option, RADAR_FULL_OPTIONS)) {
+            return radarOptions;
         }
+
+        return null;
     }
 
-    private void setOptionFloatValue(EnumOptionsMinimap option, float value) {
-        try {
-            this.options.setOptionFloatValue(option, value);
-        } catch (IllegalArgumentException ignored) {
+    private boolean containsOption(EnumOptionsMinimap option, EnumOptionsMinimap[] optionArray) {
+        for (EnumOptionsMinimap x : optionArray) {
+            if (x == option) return true;
         }
-        try {
-            this.radarOptions.setOptionFloatValue(option, value);
-        } catch (IllegalArgumentException ignored) {
-        }
-    }
-
-    private String getKeyText(EnumOptionsMinimap option) {
-        try {
-            return this.options.getKeyText(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            return this.radarOptions.getKeyText(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-
-        return "error";
-    }
-
-    private boolean getOptionBooleanValue(EnumOptionsMinimap option) {
-        try {
-            return this.options.getOptionBooleanValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            return this.radarOptions.getOptionBooleanValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-
         return false;
-    }
-
-    private String getOptionListValue(EnumOptionsMinimap option) {
-        try {
-            return this.options.getOptionListValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            return this.options.getOptionListValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-
-        return "error";
-    }
-
-    private float getOptionFloatValue(EnumOptionsMinimap option) {
-        try {
-            return this.options.getOptionFloatValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            return this.radarOptions.getOptionFloatValue(option);
-        } catch (IllegalArgumentException ignored) {
-        }
-
-        return 0.0F;
     }
 }

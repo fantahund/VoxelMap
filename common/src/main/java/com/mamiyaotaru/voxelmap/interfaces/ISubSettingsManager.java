@@ -4,7 +4,15 @@ import java.io.File;
 import java.io.PrintWriter;
 
 public interface ISubSettingsManager extends ISettingsManager {
-    void loadSettings(File settingsFile);
+    @Override
+    default void loadAll() {
+    }
+
+    @Override
+    default void saveAll() {
+    }
+
+    void loadAll(File settingsFile);
 
     void saveAll(PrintWriter out);
 }

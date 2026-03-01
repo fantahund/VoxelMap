@@ -58,7 +58,7 @@ public class Radar extends AbstractRadar {
             contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, radarOptions.outlines);
         }
 
-        if (radarOptions.showHelmetsPlayers && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showHelmetsMobs && contact.category != VoxelMapMobCategory.PLAYER) {
+        if (radarOptions.showPlayerHelmets && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobHelmets && contact.category != VoxelMapMobCategory.PLAYER) {
             contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, radarOptions.outlines);
         }
     }

@@ -2,15 +2,16 @@ package com.mamiyaotaru.voxelmap.packets;
 
 import com.google.gson.Gson;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
+import java.util.Map;
+
 public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<VoxelmapSettingsS2C> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("voxelmap", "settings"));
+    public static final CustomPacketPayload.Type<VoxelmapSettingsS2C> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "settings"));
     public static final StreamCodec<FriendlyByteBuf, VoxelmapSettingsS2C> PACKET_CODEC = StreamCodec.ofMember(VoxelmapSettingsS2C::write, VoxelmapSettingsS2C::new);
 
     public VoxelmapSettingsS2C(FriendlyByteBuf buf) {

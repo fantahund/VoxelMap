@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
+import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
@@ -25,7 +26,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     public boolean showWaypointNames = true;
 
     @Override
-    public void loadSettings(File settingsFile) {
+    public void loadAll(File settingsFile) {
         try {
             BufferedReader in = new BufferedReader(new FileReader(settingsFile));
 
@@ -71,101 +72,120 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     }
 
     @Override
-    public String getKeyText(EnumOptionsMinimap options) {
-        String s = I18n.get(options.getName()) + ": ";
-        if (options.isFloat()) {
-            float f = this.getOptionFloatValue(options);
-            if (options == EnumOptionsMinimap.MIN_ZOOM) {
-                return s + (float) Math.pow(2.0, f) + "x";
-            }
+    public String getKeyText(EnumOptionsMinimap option) {
+        String s = I18n.get(option.getName()) + ": ";
+        if (option.isBoolean()) {
+            boolean flag = getBooleanValue(option);
+            return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
+        } else if (option.isList()) {
+            String state = getListValue(option);
+            return s + state;
+        } else if (option.isFloat()) {
+            float value = getFloatValue(option);
+            return switch (option) {
+                case MIN_ZOOM, MAX_ZOOM -> s + (float) Math.pow(2.0, value) + "x";
+                case CACHE_SIZE -> s + (int) value;
 
-            if (options == EnumOptionsMinimap.MAX_ZOOM) {
-                return s + (float) Math.pow(2.0, f) + "x";
-            }
-
-            if (options == EnumOptionsMinimap.CACHE_SIZE) {
-                return s + (int) f;
-            }
-        }
-
-        if (options.isBoolean()) {
-            boolean flag = this.getOptionBooleanValue(options);
-            return flag ? s + I18n.get("options.on") : s + I18n.get("options.off");
+                default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
+            };
         } else {
-            return s;
+            return s + MapSettingsManager.ERROR_STRING;
         }
     }
 
     @Override
-    public float getOptionFloatValue(EnumOptionsMinimap options) {
-        if (options == EnumOptionsMinimap.MIN_ZOOM) {
-            return this.minZoomPower;
-        } else if (options == EnumOptionsMinimap.MAX_ZOOM) {
-            return this.maxZoomPower;
-        } else {
-            return options == EnumOptionsMinimap.CACHE_SIZE ? this.cacheSize : 0.0F;
-        }
-    }
+    public boolean getBooleanValue(EnumOptionsMinimap option) {
+        return switch (option) {
+            case SHOW_WAYPOINTS -> showWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
+            case SHOW_WAYPOINT_NAMES -> showWaypointNames && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
 
-    public boolean getOptionBooleanValue(EnumOptionsMinimap par1EnumOptions) {
-        return switch (par1EnumOptions) {
-            case SHOW_WAYPOINTS -> this.showWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
-            case SHOW_WAYPOINT_NAMES -> this.showWaypointNames && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
-            default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName() + ". (possibly not a boolean)");
+            default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
     }
 
     @Override
-    public void setOptionFloatValue(EnumOptionsMinimap options, float value) {
-        if (options == EnumOptionsMinimap.MIN_ZOOM) {
-            this.minZoomPower = ((int) (value * 8.0F) - 3);
-            this.minZoom = (float) Math.pow(2.0, this.minZoomPower);
-            if (this.maxZoom < this.minZoom) {
-                this.maxZoom = this.minZoom;
-                this.maxZoomPower = this.minZoomPower;
-            }
-        } else if (options == EnumOptionsMinimap.MAX_ZOOM) {
-            this.maxZoomPower = ((int) (value * 8.0F) - 3);
-            this.maxZoom = (float) Math.pow(2.0, this.maxZoomPower);
-            if (this.minZoom > this.maxZoom) {
-                this.minZoom = this.maxZoom;
-                this.minZoomPower = this.maxZoomPower;
-            }
-        } else if (options == EnumOptionsMinimap.CACHE_SIZE) {
-            this.cacheSize = (int) (value * 5000.0F);
-            this.cacheSize = Math.max(this.cacheSize, 30);
+    public void toggleBooleanValue(EnumOptionsMinimap option) {
+        switch (option) {
+            case SHOW_WAYPOINTS -> showWaypoints = !showWaypoints;
+            case SHOW_WAYPOINT_NAMES -> showWaypointNames = !showWaypointNames;
 
-            for (int minCacheSize = (int) ((1600.0F / this.minZoom / 256.0F + 4.0F) * (1100.0F / this.minZoom / 256.0F + 3.0F) * 1.35F); this.cacheSize < minCacheSize; minCacheSize = (int) ((1600.0F / this.minZoom / 256.0F + 4.0F) * (1100.0F / this.minZoom / 256.0F + 3.0F) * 1.35F)) {
-                ++this.minZoomPower;
-                this.minZoom = (float) Math.pow(2.0, this.minZoomPower);
-            }
-
-            if (this.maxZoom < this.minZoom) {
-                this.maxZoom = this.minZoom;
-                this.maxZoomPower = this.minZoomPower;
-            }
+            default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         }
-
-        this.bindZoom();
-        this.bindCacheSize();
     }
 
-    public void setOptionValue(EnumOptionsMinimap par1EnumOptions) {
-        switch (par1EnumOptions) {
-            case SHOW_WAYPOINTS -> this.showWaypoints = !this.showWaypoints;
-            case SHOW_WAYPOINT_NAMES -> this.showWaypointNames = !this.showWaypointNames;
-            default -> throw new IllegalArgumentException("Add code to handle EnumOptionMinimap: " + par1EnumOptions.getName());
+    @Override
+    public String getListValue(EnumOptionsMinimap option) {
+        throw new IllegalArgumentException("Invalid list value! Add code to handle EnumOptionMinimap: " + option.getName());
+    }
+
+    @Override
+    public void cycleListValue(EnumOptionsMinimap option) {
+        throw new IllegalArgumentException("Invalid list value! Add code to handle EnumOptionMinimap: " + option.getName());
+    }
+
+    @Override
+    public float getFloatValue(EnumOptionsMinimap option) {
+        return switch (option) {
+            case MIN_ZOOM -> minZoomPower;
+            case MAX_ZOOM -> maxZoomPower;
+            case CACHE_SIZE -> cacheSize;
+
+            default -> throw new IllegalArgumentException("Invalid float value! Add code to handle EnumOptionMinimap: " + option.getName());
+        };
+    }
+
+    @Override
+    public void setFloatValue(EnumOptionsMinimap option, float value) {
+        switch (option) {
+            case MIN_ZOOM -> {
+                minZoomPower = ((int) (value * 8.0F) - 3);
+                minZoom = (float) Math.pow(2.0, minZoomPower);
+                if (maxZoom < minZoom) {
+                    maxZoom = minZoom;
+                    maxZoomPower = minZoomPower;
+                }
+            }
+            case MAX_ZOOM -> {
+                maxZoomPower = ((int) (value * 8.0F) - 3);
+                maxZoom = (float) Math.pow(2.0, maxZoomPower);
+                if (minZoom > maxZoom) {
+                    minZoom = maxZoom;
+                    minZoomPower = maxZoomPower;
+                }
+            }
+            case CACHE_SIZE -> {
+                cacheSize = (int) (value * 5000.0F);
+                cacheSize = Math.max(cacheSize, 30);
+
+                while (cacheSize < calculateMinCacheSize()) {
+                    ++minZoomPower;
+                    minZoom = (float) Math.pow(2.0, minZoomPower);
+                }
+
+                if (maxZoom < minZoom) {
+                    maxZoom = minZoom;
+                    maxZoomPower = minZoomPower;
+                }
+            }
+
+            default -> throw new IllegalArgumentException("Invalid float value! Add code to handle EnumOptionMinimap: " + option.getName());
         }
 
+        bindZoom();
+        bindCacheSize();
+    }
+
+    private int calculateMinCacheSize() {
+        return (int) ((1600.0F / minZoom / 256.0F + 4.0F) * (1100.0F / minZoom / 256.0F + 3.0F) * 1.35F);
     }
 
     private void bindCacheSize() {
-        int minCacheSize = (int) ((1600.0F / this.minZoom / 256.0F + 4.0F) * (1100.0F / this.minZoom / 256.0F + 3.0F) * 1.35F);
-        this.cacheSize = Math.max(this.cacheSize, minCacheSize);
+        int minCacheSize = calculateMinCacheSize();
+        cacheSize = Math.max(cacheSize, minCacheSize);
     }
 
     private void bindZoom() {
-        this.zoom = Math.max(this.zoom, this.minZoom);
-        this.zoom = Math.min(this.zoom, this.maxZoom);
+        zoom = Math.max(zoom, minZoom);
+        zoom = Math.min(zoom, maxZoom);
     }
 }

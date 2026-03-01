@@ -105,7 +105,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityMapImageManager {
-    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath("voxelmap", "atlas/mobs");
+    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
 
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
@@ -128,7 +128,7 @@ public class EntityMapImageManager {
     private final GpuBuffer lightingBuffer;
 
     private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
-    private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath("voxelmap", "entityimagemanager/fbo");
+    private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "entityimagemanager/fbo");
     private final Tesselator fboTessellator = new Tesselator(4096);
     private final GpuTexture fboTexture;
     private final GpuTexture fboDepthTexture;
@@ -169,9 +169,9 @@ public class EntityMapImageManager {
         debugInfo("EntityMapImageManager: Resetting");
 
         this.textureAtlas.reset();
-        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath("voxelmap", "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
+        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
 
         reloadConfigurations();

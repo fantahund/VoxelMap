@@ -93,8 +93,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void sort() {
-        int sortKey = Math.abs(this.options.sort);
-        boolean ascending = this.options.sort > 0;
+        int sortKey = Math.abs(this.options.waypointSort);
+        boolean ascending = this.options.waypointSort > 0;
         this.waypointList.sortBy(sortKey, ascending);
         String arrow = ascending ? "↑" : "↓";
         if (sortKey == 2) {
@@ -144,7 +144,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     protected void sortClicked(int id) {
-        this.options.setSort(id);
+        this.options.setWaypointSort(id);
         this.changedSort = true;
         this.sort();
     }

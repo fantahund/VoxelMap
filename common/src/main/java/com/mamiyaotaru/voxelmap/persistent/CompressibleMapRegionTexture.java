@@ -30,7 +30,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private NativeImage[] pixelsMipmapped;
 
     private final boolean compressNotDelete;
-    private final Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "mapimage/" + UUID.randomUUID());
+    private final Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "mapimage/" + UUID.randomUUID());
 
     private final GpuSampler samplerSmall;
     private final GpuSampler samplerLarge;

@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public final class VoxelConstants {
-    //TODO 1.21.11: use VoxelConstants.MOD_ID for identifier namespace
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     public static final String MOD_ID = "voxelmap";
@@ -164,7 +163,7 @@ public final class VoxelConstants {
     public static int moveScoreboard(int bottomX, int entriesHeight) {
         MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (mapSettingsManager.hide || !mapSettingsManager.minimapAllowed || mapSettingsManager.mapCorner != 1 || !mapSettingsManager.moveScoreBoardDown || !Double.isFinite(unscaledHeight)) {
+        if (mapSettingsManager.hide || !mapSettingsManager.minimapAllowed || mapSettingsManager.mapCorner != 1 || !mapSettingsManager.moveScoreboardBelowMap || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...
