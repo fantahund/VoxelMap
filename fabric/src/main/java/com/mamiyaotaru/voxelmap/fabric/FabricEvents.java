@@ -25,7 +25,7 @@ public class FabricEvents implements Events {
 
     @Override
     public void initEvents(VoxelMap map) {
-        Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath("voxelmap", "minimap");
+        Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
         HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, voxelMapMinimapLayer, new HudElement() {
             @Override
             public void render(GuiGraphics context, DeltaTracker tickCounter) {
@@ -40,11 +40,11 @@ public class FabricEvents implements Events {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> map.onJoinServer());
         ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.onConfigurationInit());
 
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath("voxelmap", "reload_listener"), (sharedState, executor, preparationBarrier, executor2) -> preparationBarrier.wait(Unit.INSTANCE).thenRunAsync(() -> map.applyResourceManager(sharedState.resourceManager()), executor2));
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), (sharedState, executor, preparationBarrier, executor2) -> preparationBarrier.wait(Unit.INSTANCE).thenRunAsync(() -> map.applyResourceManager(sharedState.resourceManager()), executor2));
 
-        FabricLoader.getInstance().getModContainer("voxelmap").ifPresent(container -> {
-            // 1. namespace:pack_name, 2. mod container, 3. pack title, 4. pack activation type
-            ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath("voxelmap", "voxelmap_legacy"), container, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackActivationType.NORMAL);
+        FabricLoader.getInstance().getModContainer(VoxelConstants.MOD_ID).ifPresent(container -> {
+            // 1. pack location, 2. mod container, 3. pack title, 4. pack activation type
+            ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "voxelmap_legacy"), container, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackActivationType.NORMAL);
         });
     }
 }

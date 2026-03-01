@@ -95,11 +95,11 @@ public class Map implements Runnable, IChangeObserver {
     private static final float MAP_IMAGE_DEPTH = 0.0F;
     private static final float MAP_OVERLAY_DEPTH = 100.0F;
     private static final float MAP_TEXT_DEPTH = 200.0F;
-    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/minimap_arrow.png");
-    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_frame.png");
-    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/square_map_stencil.png");
-    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_frame.png");
-    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath("voxelmap", "images/minimap/round_map_stencil.png");
+    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/minimap_arrow.png");
+    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_frame.png");
+    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_stencil.png");
+    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_frame.png");
+    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_stencil.png");
     private int scWidth;
     private int scHeight;
     private String message = "";
@@ -173,12 +173,12 @@ public class Map implements Runnable, IChangeObserver {
     // Map Rendering
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
-    private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "gui_fbo_texture");
+    private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "gui_fbo_texture");
     private final DynamicAllocatedTexture guiFboTexture;
     private final DynamicAllocatedTexture guiFboDepthTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
-    private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "map_fbo_texture");
-    private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath("voxelmap", "maksed_map_fbo_texture");
+    private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "map_fbo_texture");
+    private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "maksed_map_fbo_texture");
     private final DynamicAllocatedTexture mapFboTexture;
     private final DynamicAllocatedTexture maskedMapFboTexture;
     private final DynamicAllocatedTexture mapFboDepthTexture;
@@ -197,8 +197,8 @@ public class Map implements Runnable, IChangeObserver {
         this.zCalc.start();
 
         for (int i = 0; i < this.mapDataCount; i++) {
-            resourceMapImageFiltered[i] = Identifier.fromNamespaceAndPath("voxelmap", String.format("map/filtered/%s", i));
-            resourceMapImageUnfiltered[i] = Identifier.fromNamespaceAndPath("voxelmap", String.format("map/unfiltered/%s", i));
+            resourceMapImageFiltered[i] = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, String.format("map/filtered/%s", i));
+            resourceMapImageUnfiltered[i] = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, String.format("map/unfiltered/%s", i));
 
             int resolution = 1 << (i + 5); // 32, 64, ...
             int chunks = (1 << (i + 1)) + 1; //3, 5, ...

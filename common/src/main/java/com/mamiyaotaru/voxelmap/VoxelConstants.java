@@ -26,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public final class VoxelConstants {
-    //TODO 1.21.11: use VoxelConstants.MOD_ID for identifier namespace
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private static final VoxelMap VOXELMAP_INSTANCE = new VoxelMap();
     public static final String MOD_ID = "voxelmap";

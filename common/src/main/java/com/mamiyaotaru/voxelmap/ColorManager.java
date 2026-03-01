@@ -80,8 +80,8 @@ public class ColorManager {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
-    private Identifier hueColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue.png");
-    private Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath("voxelmap", "images/color_picker/color_wheel_hue_sat.png");
+    private final Identifier hueColorWheel = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/color_wheel_hue.png");
+    private final Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/color_wheel_hue_sat.png");
     private int sizeOfBiomeArray;
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
@@ -667,7 +667,7 @@ public class ColorManager {
     private void processCTM() {
         this.renderPassThreeBlendMode = "alpha";
         Properties properties = new Properties();
-        Identifier propertiesFile = Identifier.fromNamespaceAndPath("minecraft", "optifine/renderpass.properties");
+        Identifier propertiesFile = Identifier.withDefaultNamespace("optifine/renderpass.properties");
 
         try {
             InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile).get().open();

@@ -124,7 +124,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean passEvents;
     private PopupGuiButton buttonWaypoints;
     private final Minecraft minecraft = Minecraft.getInstance();
-    private final Identifier voxelmapSkinLocation = Identifier.fromNamespaceAndPath("voxelmap", "persistentmap/playerskin");
+    private final Identifier voxelmapSkinLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "persistentmap/playerskin");
     private final Identifier crosshairResource = Identifier.parse("textures/gui/sprites/hud/crosshair.png");
     private boolean currentDragging;
     private boolean keySprintPressed;

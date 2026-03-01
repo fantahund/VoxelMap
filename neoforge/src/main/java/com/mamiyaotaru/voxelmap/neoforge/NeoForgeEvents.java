@@ -56,11 +56,11 @@ public class NeoForgeEvents implements Events {
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {
-        event.addPackFinders(Identifier.fromNamespaceAndPath("voxelmap", "resourcepacks/voxelmap_legacy"), PackType.CLIENT_RESOURCES, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackSource.BUILT_IN, false, Pack.Position.TOP);
+        event.addPackFinders(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "resourcepacks/voxelmap_legacy"), PackType.CLIENT_RESOURCES, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackSource.BUILT_IN, false, Pack.Position.TOP);
     }
 
     private void registerReloadListener(final AddClientReloadListenersEvent event) {
-        event.addListener(Identifier.fromNamespaceAndPath("voxelmap", "reload_listener"), map);
+        event.addListener(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
     }
 
     private static class NeoForgeEventListener {

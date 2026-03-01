@@ -362,7 +362,7 @@ public class VoxelMap implements PreparableReloadListener {
 
     private void loadImageProperties() {
         imageProperties = new Properties();
-        Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "configs/images.properties");
+        Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/images.properties");
         Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(location);
         if (resource.isEmpty()) {
             VoxelConstants.getLogger().warn("Image properties file at {} is missing!", location);

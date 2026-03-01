@@ -11,8 +11,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
-import java.util.UUID;
-import java.util.zip.DataFormatException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
@@ -21,6 +19,9 @@ import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.system.MemoryUtil;
 
+import java.util.UUID;
+import java.util.zip.DataFormatException;
+
 public class CompressibleMapRegionTexture extends AbstractTexture {
     private final static int MIP_LEVELS = 7;
 
@@ -28,7 +29,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private NativeImage[] pixelsMipmapped;
 
     private final boolean compressNotDelete;
-    private final Identifier location = Identifier.fromNamespaceAndPath("voxelmap", "mapimage/" + UUID.randomUUID());
+    private final Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "mapimage/" + UUID.randomUUID());
 
     private final GpuSampler samplerSmall;
     private final GpuSampler samplerLarge;

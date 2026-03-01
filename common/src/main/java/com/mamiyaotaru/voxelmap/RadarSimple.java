@@ -21,7 +21,7 @@ import org.joml.Matrix4fStack;
 
 public class RadarSimple extends AbstractRadar {
     private final TextureAtlas textureAtlas;
-    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath("voxelmap", "atlas/radarsimple/marker");
+    public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/radarsimple/marker");
 
     public RadarSimple() {
         super();
@@ -38,9 +38,9 @@ public class RadarSimple extends AbstractRadar {
     private void loadTexturePackIcons() {
         try {
             textureAtlas.reset();
-            NativeImage contact = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath("voxelmap", "images/radar/contact.png")).image();
+            NativeImage contact = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/contact.png")).image();
             textureAtlas.registerIconForBufferedImage("contact", contact);
-            NativeImage facing = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath("voxelmap", "images/radar/contact_facing.png")).image();
+            NativeImage facing = TextureContents.load(Minecraft.getInstance().getResourceManager(), Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/contact_facing.png")).image();
             textureAtlas.registerIconForBufferedImage("facing", facing);
             textureAtlas.stitch();
         } catch (Exception var4) {
