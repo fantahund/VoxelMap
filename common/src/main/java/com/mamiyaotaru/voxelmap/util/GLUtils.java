@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -16,6 +17,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.util.ARGB;
 
 import java.awt.image.BufferedImage;
@@ -24,6 +26,7 @@ import java.util.function.Consumer;
 
 public class GLUtils {
     private static final Tesselator TESSELATOR = new Tesselator(4096);
+    private static final CachedOrthoProjectionMatrixBuffer BLIT_PROJECTION = new CachedOrthoProjectionMatrixBuffer("VoxelMap Blit Projection", 1000.0F, 3000.0F, true);
 
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
         RenderSystem.assertOnRenderThread();
@@ -64,10 +67,15 @@ public class GLUtils {
 
         try (MeshData meshData = bufferBuilder.build()) {
             GpuSampler nearest = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
-            RenderUtils.drawMeshWithTexture(dst, meshData, pipeline, TextureSetup.singleTexture(src, nearest), 1.0F, 1.0F);
+            GpuBufferSlice projection = getBlitProjection();
+            RenderUtils.drawMeshWithTexture(dst, null, projection, -2000.0F, meshData, pipeline, TextureSetup.singleTexture(src, nearest));
         }
 
         TESSELATOR.clear();
+    }
+
+    private static GpuBufferSlice getBlitProjection() {
+        return BLIT_PROJECTION.getBuffer(1.0F, 1.0F);
     }
 
     public static class PostProcess {

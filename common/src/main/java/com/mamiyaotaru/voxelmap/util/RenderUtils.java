@@ -24,12 +24,12 @@ import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
     private static final CachedOrthoProjectionMatrixBuffer FULLSCREEN_PROJECTION = new CachedOrthoProjectionMatrixBuffer("VoxelMap Fullscreen GUI Projection", 1000.0F, 3000.0F, true);
-    private static final CachedOrthoProjectionMatrixBuffer IMMEDIATE_DRAW_PROJECTION = new CachedOrthoProjectionMatrixBuffer("VoxelMap Immediate Draw Projection", 1000.0F, 3000.0F, true);
 
     public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, int color) {
         drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
@@ -149,7 +149,7 @@ public class RenderUtils {
         });
     }
 
-    public static void drawMeshWithTexture(GpuTextureView colorTexture, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup, float projWidth, float projHeight) {
+    public static void drawMeshWithTexture(GpuTextureView colorTexture, GpuTextureView depthTexture, GpuBufferSlice projection, float initialDepth, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup) {
         if (meshData == null) {
             return;
         }
@@ -157,10 +157,10 @@ public class RenderUtils {
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
         try {
-            RenderSystem.setProjectionMatrix(IMMEDIATE_DRAW_PROJECTION.getBuffer(projWidth, projHeight), ProjectionType.ORTHOGRAPHIC);
+            RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
-            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
+            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
             GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms().writeTransform(
                     RenderSystem.getModelViewMatrix(),
                     new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
@@ -177,7 +177,9 @@ public class RenderUtils {
                 indexBuffer = pipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Immediate Draw", colorTexture, OptionalInt.of(0x00000000))) {
+            OptionalInt colorClear = OptionalInt.of(0x00000000);
+            OptionalDouble depthClear = depthTexture == null ? OptionalDouble.empty() : OptionalDouble.of(1.0);
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Immediate Draw", colorTexture, colorClear, depthTexture, depthClear)) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
