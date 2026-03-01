@@ -12,7 +12,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.IdentifierException;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -59,7 +58,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -86,7 +84,7 @@ public class ColorManager {
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
     private final HashSet<Integer> biomeTintsAvailable = new HashSet<>();
-    private boolean optifineInstalled;
+    private final boolean useConnectedTextures;
     private final HashMap<Integer, int[][]> blockTintTables = new HashMap<>();
     private final HashSet<Integer> biomeTextureAvailable = new HashSet<>();
     private final HashMap<String, Integer> blockBiomeSpecificColors = new HashMap<>();
@@ -107,18 +105,8 @@ public class ColorManager {
     private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
 
     public ColorManager() {
-        this.optifineInstalled = false;
-        Field ofProfiler = null;
-
-        try {
-            ofProfiler = Options.class.getDeclaredField("ofProfiler");
-        } catch (SecurityException | NoSuchFieldException ignored) {
-        } finally {
-            if (ofProfiler != null) {
-                this.optifineInstalled = true;
-            }
-
-        }
+        this.useConnectedTextures = VoxelConstants.getModApiBridge().isModEnabled("optifine") || VoxelConstants.getModApiBridge().isModEnabled("continuity");
+        if (useConnectedTextures) System.out.println("CTM IS USED FOR OPTIFINE / CONTINUITY");
 
         ++this.sizeOfBiomeArray;
     }
@@ -187,7 +175,7 @@ public class ColorManager {
             this.biomeTextureAvailable.clear();
             this.blockBiomeSpecificColors.clear();
             this.blockTintTables.clear();
-            if (this.optifineInstalled) {
+            if (this.useConnectedTextures) {
                 try {
                     this.processCTM();
                 } catch (Exception var4) {
@@ -267,7 +255,7 @@ public class ColorManager {
 
     public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, Biome biomeID) {
         if (this.loaded && loadedTerrainImage) {
-            if (this.optifineInstalled && this.biomeTextureAvailable.contains(blockStateID)) {
+            if (this.useConnectedTextures && this.biomeTextureAvailable.contains(blockStateID)) {
                 Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
                 if (col != null) {
                     return ARGB.toABGR(col);
@@ -499,7 +487,7 @@ public class ColorManager {
         ChunkAccess chunk = world.getChunk(blockPos);
         boolean live = chunk != null && !((LevelChunk) chunk).isEmpty() && VoxelConstants.getPlayer().level().hasChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4);
         int tint = -2;
-        if (this.optifineInstalled || !live && this.biomeTintsAvailable.contains(blockStateID)) {
+        if (this.useConnectedTextures || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
                 int[][] tints = this.blockTintTables.get(blockStateID);
                 if (tints != null) {
