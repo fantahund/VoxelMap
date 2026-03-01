@@ -30,6 +30,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean showPlayerHelmets = true;
     public boolean filtering = true;
     public boolean outlines = true;
+    public boolean showEntityElevation = true;
+    public boolean hideSneakingPlayers = true;
     public boolean showFacing = true;
     float fontScale = 1.0F;
     public final HashSet<Identifier> hiddenMobs = new HashSet<>();
@@ -60,6 +62,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     case "Show Mob Names" -> showMobNames = Boolean.parseBoolean(curLine[1]);
                     case "Font Scale" -> fontScale = Float.parseFloat(curLine[1]);
                     case "Show Facing" -> showFacing = Boolean.parseBoolean(curLine[1]);
+                    case "Show Entity Elevation" -> showEntityElevation = Boolean.parseBoolean(curLine[1]);
+                    case "Hide Sneaking Players" -> hideSneakingPlayers = Boolean.parseBoolean(curLine[1]);
                     case "Hidden Mobs" -> applyHiddenMobSettings(curLine[1]);
                 }
             }
@@ -97,6 +101,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Show Mob Names:" + showMobNames);
         out.println("Font Scale:" + fontScale);
         out.println("Show Facing:" + showFacing);
+        out.println("Show Entity Elevation:" + showEntityElevation);
+        out.println("Hide Sneaking Players:" + hideSneakingPlayers);
         out.print("Hidden Mobs:");
         for (Identifier mob : hiddenMobs) {
             out.print(mob.toString() + ",");
@@ -133,6 +139,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case RADAR_FILTERING -> filtering;
             case RADAR_OUTLINES -> outlines;
             case SHOW_FACING -> showFacing;
+            case SHOW_ENTITY_ELEVATION -> showEntityElevation;
+            case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
@@ -150,6 +158,8 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case RADAR_FILTERING -> filtering = !filtering;
             case RADAR_OUTLINES -> outlines = !outlines;
             case SHOW_FACING -> showFacing = !showFacing;
+            case SHOW_ENTITY_ELEVATION -> showEntityElevation = !showEntityElevation;
+            case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers = !hideSneakingPlayers;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         }

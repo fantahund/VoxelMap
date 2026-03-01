@@ -106,7 +106,6 @@ public class ColorManager {
 
     public ColorManager() {
         this.useConnectedTextures = VoxelConstants.getModApiBridge().isModEnabled("optifine") || VoxelConstants.getModApiBridge().isModEnabled("continuity");
-        if (useConnectedTextures) System.out.println("CTM IS USED FOR OPTIFINE / CONTINUITY");
 
         ++this.sizeOfBiomeArray;
     }
