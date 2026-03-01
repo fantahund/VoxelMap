@@ -22,7 +22,6 @@ import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
-import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -642,7 +641,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             for (CachedRegion region : this.regions) {
                 Identifier resource = region.getTextureLocation(this.zoom);
                 if (resource != null) {
-                    guiGraphics.blit(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, resource, region.getX() * 256, region.getZ() * 256, 0, 0, region.getWidth(), region.getWidth(), region.getWidth(), region.getWidth());
+                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resource, region.getX() * 256, region.getZ() * 256, 0, 0, region.getWidth(), region.getWidth(), region.getWidth(), region.getWidth());
                 }
             }
 
@@ -805,7 +804,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.pose().rotate(locate);
             guiGraphics.pose().translate(-x, -y);
 
-            VoxelMapGuiGraphics.blitFloat(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, voxelmapSkinLocation, x - width / 2.0F, y - height / 2.0F, width, height, 0, 1, 0, 1, 0xFFFFFFFF);
+            VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, voxelmapSkinLocation, x - width / 2.0F, y - height / 2.0F, width, height, 0, 1, 0, 1, 0xFFFFFFFF);
 
             guiGraphics.pose().popMatrix();
         }
@@ -911,7 +910,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target && !hover ? 0.3F : 1.0F);
 
-        icon.blit(guiGraphics, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, color);
+        icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, color);
 
         if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
             float fontScale = 1.0F;
@@ -923,26 +922,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         guiGraphics.pose().popMatrix();
     }
-
-    //private boolean isOnScreen(int x, int z) {
-    //    int left;
-    //    int right;
-    //    int top;
-    //    int bottom;
-    //    if (this.oldNorth) {
-    //        left = (int) Math.floor(this.mapCenterZ - (this.centerY * this.guiToMap) * 1.1);
-    //        right = (int) Math.floor(this.mapCenterZ + (this.centerY * this.guiToMap) * 1.1);
-    //        top = (int) Math.floor((-this.mapCenterX) - (this.centerX * this.guiToMap) * 1.1);
-    //        bottom = (int) Math.floor((-this.mapCenterX) + (this.centerX * this.guiToMap) * 1.1);
-    //    } else {
-    //        left = (int) Math.floor(this.mapCenterX - (this.centerX * this.guiToMap) * 1.1);
-    //        right = (int) Math.floor(this.mapCenterX + (this.centerX * this.guiToMap) * 1.1);
-    //        top = (int) Math.floor(this.mapCenterZ - (this.centerY * this.guiToMap) * 1.1);
-    //        bottom = (int) Math.floor(this.mapCenterZ + (this.centerY * this.guiToMap) * 1.1);
-    //    }
-    //
-    //    return x > left && x < right && z > top && z < bottom;
-    //}
 
     public void renderBackground(GuiGraphics drawContext) {
         drawContext.fill(0, 0, this.getWidth(), this.getHeight(), 0xff000000);
