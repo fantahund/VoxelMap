@@ -16,6 +16,7 @@ public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPa
 
     public VoxelmapSettingsS2C(FriendlyByteBuf buf) {
         this(parse(buf));
+        System.out.println("DECODE");
     }
 
     private static String parse(FriendlyByteBuf buf) {
@@ -26,6 +27,8 @@ public record VoxelmapSettingsS2C(String settingsJson) implements CustomPacketPa
     public void write(FriendlyByteBuf buf) {
         buf.writeByte(0);
         buf.writeUtf(settingsJson);
+
+        System.out.println("ENCODE");
     }
 
     @Override

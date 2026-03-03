@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom") version ("1.14-SNAPSHOT")
+    id("fabric-loom")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
@@ -9,7 +9,7 @@ val FABRIC_LOADER_VERSION: String by rootProject.extra
 val FABRIC_API_VERSION: String by rootProject.extra
 
 repositories {
-    maven { url = uri("https://api.modrinth.com/maven") }
+
 }
 
 dependencies {

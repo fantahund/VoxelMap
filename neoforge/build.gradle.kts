@@ -1,8 +1,7 @@
 plugins {
     id("idea")
-    id("net.neoforged.moddev") version "2.0.137"
+    id("net.neoforged.moddev")
     id("java-library")
-    id("maven-publish")
 }
 
 val MINECRAFT_VERSION: String by rootProject.extra
@@ -22,18 +21,6 @@ repositories {
     mavenLocal()
     maven("https://maven.su5ed.dev/releases")
     maven("https://maven.neoforged.net/releases/")
-
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = uri("https://api.modrinth.com/maven")
-            }
-        }
-        filter {
-            includeGroup("maven.modrinth")
-        }
-    }
 }
 
 val serviceJar: Jar by tasks.creating(Jar::class) {
