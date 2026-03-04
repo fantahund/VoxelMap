@@ -34,7 +34,11 @@ public class ForgeEvents implements Events {
     private void preInitClient(final FMLCommonSetupEvent event) {
         map.onClientStarted();
         map.onConfigurationInit();
-        map.onConfigurationInit();
+
+        event.enqueueWork(() -> {
+            ForgeSettingsPacketHandler.register();
+            ForgeWorldIdPacketHandler.register();
+        });
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {

@@ -57,7 +57,31 @@ minecraft {
 }
 
 tasks {
+    // This is very BAD, I need to clean up this Gradle uhh
+
+    withType<JavaCompile> {
+        val commonMain = project(":common").sourceSets.main.get()
+        source(commonMain.java.srcDirs)
+    }
+
+    named("classes") {
+        doFirst {
+            val commonMain = project(":common").sourceSets.main.get()
+            commonMain.resources.srcDirs.forEach { srcDir ->
+                copy {
+                    from(srcDir)
+                    into(layout.buildDirectory.dir("resources/main"))
+                }
+            }
+        }
+    }
+
     processResources {
+        val commonMain = project(":common").sourceSets.main.get()
+        from(commonMain.resources.srcDirs) {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+
         inputs.property("version", project.version)
         filesMatching("META-INF/mods.toml") {
             expand(mapOf("version" to MOD_VERSION))
