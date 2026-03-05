@@ -6,18 +6,14 @@ import com.mamiyaotaru.voxelmap.VoxelMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.util.Unit;
 
 public class FabricEvents implements Events {
     FabricEvents() {
@@ -31,7 +27,6 @@ public class FabricEvents implements Events {
         ClientLifecycleEvents.CLIENT_STARTED.register((client) -> map.onClientStarted());
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> map.onClientStopping());
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> map.onDisconnect());
-        ClientPlayConnectionEvents.INIT.register((handler, client) -> map.onPlayInit());
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> map.onJoinServer());
         ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.onConfigurationInit());
 

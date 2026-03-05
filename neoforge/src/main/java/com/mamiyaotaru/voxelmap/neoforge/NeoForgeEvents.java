@@ -79,7 +79,7 @@ public class NeoForgeEvents implements Events {
 
         @SubscribeEvent
         public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
-            map.onPlayInit();
+            map.onJoinServer();
         }
 
         @SubscribeEvent

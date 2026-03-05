@@ -106,7 +106,7 @@ public class ForgeEvents implements Events {
     }
 
     private void onJoin(final ClientPlayerNetworkEvent.LoggingIn event) {
-        map.onPlayInit();
+        map.onJoinServer();
     }
 
     private void onQuit(final ClientPlayerNetworkEvent.LoggingOut event) {

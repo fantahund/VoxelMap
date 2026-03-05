@@ -322,10 +322,6 @@ public class VoxelMap implements PreparableReloadListener {
         });
     }
 
-    public void onPlayInit() {
-        // registries are ready, but no world
-    }
-
     public void onJoinServer() {
         if (getRadar() != null) {
             getRadar().onJoinServer();
