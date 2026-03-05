@@ -26,12 +26,7 @@ public class FabricEvents implements Events {
     @Override
     public void initEvents(VoxelMap map) {
         Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
-        HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, voxelMapMinimapLayer, new HudElement() {
-            @Override
-            public void render(GuiGraphics context, DeltaTracker tickCounter) {
-                VoxelConstants.renderOverlay(context);
-            }
-        });
+        HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, voxelMapMinimapLayer, (context, tickCounter) -> VoxelConstants.renderOverlay(context));
 
         ClientLifecycleEvents.CLIENT_STARTED.register((client) -> map.onClientStarted());
         ClientLifecycleEvents.CLIENT_STOPPING.register((client) -> map.onClientStopping());
@@ -40,7 +35,7 @@ public class FabricEvents implements Events {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> map.onJoinServer());
         ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.onConfigurationInit());
 
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), (sharedState, executor, preparationBarrier, executor2) -> preparationBarrier.wait(Unit.INSTANCE).thenRunAsync(() -> map.applyResourceManager(sharedState.resourceManager()), executor2));
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
 
         FabricLoader.getInstance().getModContainer(VoxelConstants.MOD_ID).ifPresent(container -> {
             // 1. pack location, 2. mod container, 3. pack title, 4. pack activation type

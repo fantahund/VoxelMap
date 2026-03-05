@@ -8,7 +8,7 @@ modId = "voxelmap"
 version = "${version}"
 displayName = "VoxelMap"
 logoFile = "icon.png"
-authors = "Lahwran, Zaneris, MamiyaOtaru, fantahund, Brokkonaut, TheAlgorithm476"
+authors = "Lahwran, Zaneris, MamiyaOtaru, fantahund, Brokkonaut, TheAlgorithm476, Algamja11"
 description = "Minimap and world map"
 displayURL = "https://github.com/fantahund/Voxelmap"
 

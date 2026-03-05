@@ -34,7 +34,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     public void init() {
         this.clearWidgets();
 
-        String maintainers = "Fantahund, Brokkonaut, Gamja";
+        String maintainers = "Fantahund, Brokkonaut, Algamja11";
         this.welcomeTexts.clear();
         this.welcomeTexts.add(Component.literal("VoxelMap!").withStyle(ChatFormatting.RED));
         this.welcomeTexts.add(Component.translatable("minimap.ui.welcome1", maintainers));

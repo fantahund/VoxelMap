@@ -120,10 +120,6 @@ public class VoxelMap implements PreparableReloadListener {
         return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> apply(sharedState.resourceManager()), executor2);
     }
 
-    public void applyResourceManager(ResourceManager resourceManager) {
-        apply(resourceManager);
-    }
-
     protected void apply(ResourceManager resourceManager) {
         runAfterInitialized(() -> {
             loadImageProperties();
