@@ -3,6 +3,7 @@ name: VoxelMap Build and Release
 on:
   push:
     branches: [ master, snapshot ]
+  workflow_dispatch:
 
 jobs:
   build:
