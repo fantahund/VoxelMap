@@ -47,12 +47,7 @@ public class ForgeEvents implements Events {
 
     private void registerGuiLayer(AddGuiOverlayLayersEvent event) {
         Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
-        event.getLayeredDraw().add(voxelMapMinimapLayer, new ForgeLayer() {
-            @Override
-            public void render(GuiGraphics graphics, DeltaTracker dt) {
-                map.onTickInGame(graphics);
-            }
-        });
+        event.getLayeredDraw().add(voxelMapMinimapLayer, (graphics, dt) -> VoxelConstants.renderOverlay(graphics));
     }
 
     private void registerResourcePacks(AddPackFindersEvent event) {
