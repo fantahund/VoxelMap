@@ -3,14 +3,16 @@ package com.mamiyaotaru.voxelmap.forge;
 import com.mamiyaotaru.voxelmap.Events;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.Identifier;
+import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.client.gui.overlay.ForgeLayer;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 public class ForgeEvents implements Events {
@@ -26,53 +28,49 @@ public class ForgeEvents implements Events {
 
         BusGroup modBusGroup = VoxelMapForgeMod.getModBusGroup();
         FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::preInitClient);
+        AddGuiOverlayLayersEvent.BUS.addListener(this::registerGuiLayer);
         AddPackFindersEvent.BUS.addListener(this::registerResourcePacks);
         AddReloadListenerEvent.BUS.addListener(this::registerReloadListener);
-        MinecraftForge.EVENT_BUS.register(new ForgeEventListener(map));
+        ClientPlayerNetworkEvent.LoggingIn.BUS.addListener(this::onJoin);
+        ClientPlayerNetworkEvent.LoggingOut.BUS.addListener(this::onQuit);
+        GameShuttingDownEvent.BUS.addListener(this::onClientShutdown);
     }
 
-    private void preInitClient(final FMLCommonSetupEvent event) {
-        map.onClientStarted();
-        map.onConfigurationInit();
-
+    private void preInitClient(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ForgeSettingsPacketHandler.register();
             ForgeWorldIdPacketHandler.register();
+            map.onClientStarted();
+            map.onConfigurationInit();
         });
     }
 
-    private void registerResourcePacks(final AddPackFindersEvent event) {
+    private void registerGuiLayer(AddGuiOverlayLayersEvent event) {
+        Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
+        event.getLayeredDraw().add(voxelMapMinimapLayer, new ForgeLayer() {
+            @Override
+            public void render(GuiGraphics graphics, DeltaTracker dt) {
+                map.onTickInGame(graphics);
+            }
+        });
     }
 
-    private void registerReloadListener(final AddReloadListenerEvent event) {
+    private void registerResourcePacks(AddPackFindersEvent event) {
+    }
+
+    private void registerReloadListener(AddReloadListenerEvent event) {
         event.addListener(map);
     }
 
-    private static class ForgeEventListener {
-        private final VoxelMap map;
+    private void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+        map.onPlayInit();
+    }
 
-        public ForgeEventListener(VoxelMap map) {
-            this.map = map;
-        }
+    private void onQuit(ClientPlayerNetworkEvent.LoggingOut event) {
+        map.onDisconnect();
+    }
 
-        @SubscribeEvent
-        public void onRenderGui(CustomizeGuiOverlayEvent.Chat event) {
-            VoxelConstants.renderOverlay(event.getGuiGraphics());
-        }
-
-        @SubscribeEvent
-        public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
-            map.onPlayInit();
-        }
-
-        @SubscribeEvent
-        public void onQuit(ClientPlayerNetworkEvent.LoggingOut event) {
-            map.onDisconnect();
-        }
-
-        @SubscribeEvent
-        public void onClientShutdown(GameShuttingDownEvent event) {
-            map.onClientStopping();
-        }
+    private void onClientShutdown(GameShuttingDownEvent event) {
+        map.onClientStopping();
     }
 }
