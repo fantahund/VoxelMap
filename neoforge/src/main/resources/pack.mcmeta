@@ -1,6 +1,6 @@
 {
   "pack": {
-    "description": "VoxelMap for Forge",
+    "description": "VoxelMap for NeoForge",
     "min_format": [82, 0],
     "max_format": [999, 0]
   }

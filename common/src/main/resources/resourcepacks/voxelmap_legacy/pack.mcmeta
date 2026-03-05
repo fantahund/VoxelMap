@@ -1,9 +1,11 @@
 {
   "pack": {
-    "min_format": 75,
-    "max_format": 999,
+    "min_format": [65, 0],
+    "max_format": [999, 0],
     "description": {
-      "translate": "resourcePack.minimap.voxelmapLegacy.description"
+      "type": "translatable",
+      "translate": "resourcePack.minimap.voxelmapLegacy.description",
+      "color": "gray"
     }
   }
 }
