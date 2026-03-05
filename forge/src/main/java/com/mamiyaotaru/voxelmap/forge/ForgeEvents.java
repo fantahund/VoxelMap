@@ -3,25 +3,19 @@ package com.mamiyaotaru.voxelmap.forge;
 import com.mamiyaotaru.voxelmap.Events;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
-import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.server.packs.repository.RepositorySource;
 import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.gui.overlay.ForgeLayer;
 import net.minecraftforge.event.AddPackFindersEvent;
-import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.ModList;
@@ -32,7 +26,6 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class ForgeEvents implements Events {
 
@@ -55,7 +48,7 @@ public class ForgeEvents implements Events {
         GameShuttingDownEvent.BUS.addListener(this::onClientShutdown);
     }
 
-    private void preInitClient(FMLCommonSetupEvent event) {
+    private void preInitClient(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ForgeSettingsPacketHandler.register();
             ForgeWorldIdPacketHandler.register();
@@ -64,7 +57,7 @@ public class ForgeEvents implements Events {
         });
     }
 
-    private void registerGuiLayer(AddGuiOverlayLayersEvent event) {
+    private void registerGuiLayer(final AddGuiOverlayLayersEvent event) {
         Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
         event.getLayeredDraw().add(voxelMapMinimapLayer, (graphics, dt) -> VoxelConstants.renderOverlay(graphics));
     }
@@ -108,19 +101,19 @@ public class ForgeEvents implements Events {
         }
     }
 
-    private void registerReloadListener(RegisterClientReloadListenersEvent event) {
+    private void registerReloadListener(final RegisterClientReloadListenersEvent event) {
         event.registerReloadListener(map);
     }
 
-    private void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+    private void onJoin(final ClientPlayerNetworkEvent.LoggingIn event) {
         map.onPlayInit();
     }
 
-    private void onQuit(ClientPlayerNetworkEvent.LoggingOut event) {
+    private void onQuit(final ClientPlayerNetworkEvent.LoggingOut event) {
         map.onDisconnect();
     }
 
-    private void onClientShutdown(GameShuttingDownEvent event) {
+    private void onClientShutdown(final GameShuttingDownEvent event) {
         map.onClientStopping();
     }
 }
