@@ -15,9 +15,11 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddPackFindersEvent;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.forgespi.language.IModFileInfo;
@@ -40,12 +42,9 @@ public class ForgeEvents implements Events {
 
         BusGroup modBusGroup = VoxelMapForgeMod.getModBusGroup();
         FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::preInitClient);
-        AddGuiOverlayLayersEvent.BUS.addListener(this::registerGuiLayer);
         AddPackFindersEvent.BUS.addListener(this::registerResourcePacks);
         RegisterClientReloadListenersEvent.BUS.addListener(this::registerReloadListener);
-        ClientPlayerNetworkEvent.LoggingIn.BUS.addListener(this::onJoin);
-        ClientPlayerNetworkEvent.LoggingOut.BUS.addListener(this::onQuit);
-        GameShuttingDownEvent.BUS.addListener(this::onClientShutdown);
+        MinecraftForge.EVENT_BUS.register(new ForgeEventListener(map));
     }
 
     private void preInitClient(final FMLCommonSetupEvent event) {
@@ -55,11 +54,6 @@ public class ForgeEvents implements Events {
             map.onClientStarted();
             map.onConfigurationInit();
         });
-    }
-
-    private void registerGuiLayer(final AddGuiOverlayLayersEvent event) {
-        Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
-        event.getLayeredDraw().add(voxelMapMinimapLayer, (graphics, dt) -> VoxelConstants.renderOverlay(graphics));
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {
@@ -105,15 +99,32 @@ public class ForgeEvents implements Events {
         event.registerReloadListener(map);
     }
 
-    private void onJoin(final ClientPlayerNetworkEvent.LoggingIn event) {
-        map.onJoinServer();
-    }
+    private static class ForgeEventListener {
+        private final VoxelMap map;
 
-    private void onQuit(final ClientPlayerNetworkEvent.LoggingOut event) {
-        map.onDisconnect();
-    }
+        public ForgeEventListener(VoxelMap map) {
+            this.map = map;
+        }
 
-    private void onClientShutdown(final GameShuttingDownEvent event) {
-        map.onClientStopping();
+        @SubscribeEvent
+        public void onRenderGui(AddGuiOverlayLayersEvent event) {
+            Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
+            event.getLayeredDraw().add(voxelMapMinimapLayer, (graphics, deltaTracker) -> VoxelConstants.renderOverlay(graphics));
+        }
+
+        @SubscribeEvent
+        public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+            map.onJoinServer();
+        }
+
+        @SubscribeEvent
+        public void onQuit(ClientPlayerNetworkEvent.LoggingOut event) {
+            map.onDisconnect();
+        }
+
+        @SubscribeEvent
+        public void onClientShutdown(GameShuttingDownEvent event) {
+            map.onClientStopping();
+        }
     }
 }
