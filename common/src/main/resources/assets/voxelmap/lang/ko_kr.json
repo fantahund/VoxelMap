@@ -212,6 +212,7 @@
   "options.worldmap.warning": "(사용자의 책임 하에 수정하세요!)",
   "options.worldmap.showWaypoints": "경유지 보이기",
   "options.worldmap.showWaypointNames": "경유지 이름 보이기",
+  "options.worldmap.showCoordinates": "좌표 표시",
   "options.worldmap.minZoom": "최소 줌 배율",
   "options.worldmap.maxZoom": "최대 줌 배율",
   "options.worldmap.cacheSize": "지역 캐시 크기",

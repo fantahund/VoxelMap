@@ -786,7 +786,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     && cursorCoordZ >= playerZ - height / 2.0F * guiToMap && cursorCoordZ <= playerZ + height / 2.0F * guiToMap;
             if (hover) {
                 guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-                renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
+                if (options.showCoordinates) {
+                    renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
+                }
             }
 
             int x = this.width / 2;
@@ -823,8 +825,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 16, 0xFFFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
             int z = (int) Math.floor(cursorCoordZ);
-            // TODO 1.21.11: create a separate coords option for the worldmap
-            if (VoxelConstants.getVoxelMapInstance().getMapOptions().coordsMode != 0) {
+            if (options.showCoordinates) {
                 if (!this.editingCoordinates) {
                     guiGraphics.drawString(this.getFont(), "X: " + x, this.sideMargin, 16, 0xFFFFFFFF);
                     guiGraphics.drawString(this.getFont(), "Z: " + z, this.sideMargin + 64, 16, 0xFFFFFFFF);
@@ -876,7 +877,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
         if (hover) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-            renderTooltip(guiGraphics, Component.literal("X: " + pt.getX() + ", Y: " + pt.getY() + ", Z: " + pt.getZ()), this.mouseX, this.mouseY);
+            if (options.showCoordinates) {
+                renderTooltip(guiGraphics, Component.literal("X: " + pt.getX() + ", Y: " + pt.getY() + ", Z: " + pt.getZ()), this.mouseX, this.mouseY);
+            }
         }
 
         boolean target = false;

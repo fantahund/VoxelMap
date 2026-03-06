@@ -212,6 +212,7 @@
   "options.worldmap.warning": "(Edit at your own risk)",
   "options.worldmap.showWaypoints": "Show Waypoints",
   "options.worldmap.showWaypointNames": "Show Waypoint Names",
+  "options.worldmap.showCoordinates": "Display Coordinates",
   "options.worldmap.minZoom": "Min Zoom",
   "options.worldmap.maxZoom": "Max Zoom",
   "options.worldmap.cacheSize": "Regions Cache Size",

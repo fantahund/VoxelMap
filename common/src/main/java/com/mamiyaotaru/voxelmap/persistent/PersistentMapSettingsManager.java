@@ -24,6 +24,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     protected boolean outputImages;
     public boolean showWaypoints = true;
     public boolean showWaypointNames = true;
+    public boolean showCoordinates = true;
 
     @Override
     public void loadAll(File settingsFile) {
@@ -34,13 +35,14 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
             while ((sCurrentLine = in.readLine()) != null) {
                 String[] curLine = sCurrentLine.split(":");
                 switch (curLine[0]) {
-                    case "Worldmap Zoom" -> this.zoom = Float.parseFloat(curLine[1]);
-                    case "Worldmap Minimum Zoom" -> this.minZoom = Float.parseFloat(curLine[1]);
-                    case "Worldmap Maximum Zoom" -> this.maxZoom = Float.parseFloat(curLine[1]);
-                    case "Worldmap Cache Size" -> this.cacheSize = Integer.parseInt(curLine[1]);
-                    case "Show Worldmap Waypoints" -> this.showWaypoints = Boolean.parseBoolean(curLine[1]);
-                    case "Show Worldmap Waypoint Names" -> this.showWaypointNames = Boolean.parseBoolean(curLine[1]);
-                    case "Output Images" -> this.outputImages = Boolean.parseBoolean(curLine[1]);
+                    case "Worldmap Zoom" -> zoom = Float.parseFloat(curLine[1]);
+                    case "Worldmap Minimum Zoom" -> minZoom = Float.parseFloat(curLine[1]);
+                    case "Worldmap Maximum Zoom" -> maxZoom = Float.parseFloat(curLine[1]);
+                    case "Worldmap Cache Size" -> cacheSize = Integer.parseInt(curLine[1]);
+                    case "Show Worldmap Waypoints" -> showWaypoints = Boolean.parseBoolean(curLine[1]);
+                    case "Show Worldmap Waypoint Names" -> showWaypointNames = Boolean.parseBoolean(curLine[1]);
+                    case "Show Worldmap Coordinates" -> showCoordinates = Boolean.parseBoolean(curLine[1]);
+                    case "Output Images" -> outputImages = Boolean.parseBoolean(curLine[1]);
                 }
             }
 
@@ -48,27 +50,28 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         } catch (IOException ignored) {}
 
         for (int power = -3; power <= 5; ++power) {
-            if (Math.pow(2.0, power) == this.minZoom) {
-                this.minZoomPower = power;
+            if (Math.pow(2.0, power) == minZoom) {
+                minZoomPower = power;
             }
 
-            if (Math.pow(2.0, power) == this.maxZoom) {
-                this.maxZoomPower = power;
+            if (Math.pow(2.0, power) == maxZoom) {
+                maxZoomPower = power;
             }
         }
 
-        this.bindCacheSize();
-        this.bindZoom();
+        bindCacheSize();
+        bindZoom();
     }
 
     @Override
     public void saveAll(PrintWriter out) {
-        out.println("Worldmap Zoom:" + this.zoom);
-        out.println("Worldmap Minimum Zoom:" + this.minZoom);
-        out.println("Worldmap Maximum Zoom:" + this.maxZoom);
-        out.println("Worldmap Cache Size:" + this.cacheSize);
-        out.println("Show Worldmap Waypoints:" + this.showWaypoints);
-        out.println("Show Worldmap Waypoint Names:" + this.showWaypointNames);
+        out.println("Worldmap Zoom:" + zoom);
+        out.println("Worldmap Minimum Zoom:" + minZoom);
+        out.println("Worldmap Maximum Zoom:" + maxZoom);
+        out.println("Worldmap Cache Size:" + cacheSize);
+        out.println("Show Worldmap Waypoints:" + showWaypoints);
+        out.println("Show Worldmap Waypoint Names:" + showWaypointNames);
+        out.println("Show Worldmap Coordinates:" + showCoordinates);
     }
 
     @Override
@@ -98,6 +101,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         return switch (option) {
             case SHOW_WAYPOINTS -> showWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
             case SHOW_WAYPOINT_NAMES -> showWaypointNames && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
+            case SHOW_WORLDMAP_COORDS -> showCoordinates;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
@@ -108,6 +112,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         switch (option) {
             case SHOW_WAYPOINTS -> showWaypoints = !showWaypoints;
             case SHOW_WAYPOINT_NAMES -> showWaypointNames = !showWaypointNames;
+            case SHOW_WORLDMAP_COORDS -> showCoordinates = !showCoordinates;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         }

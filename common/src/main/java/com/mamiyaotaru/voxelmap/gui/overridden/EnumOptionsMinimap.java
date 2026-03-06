@@ -60,6 +60,7 @@ public enum EnumOptionsMinimap {
     // World Map
     SHOW_WAYPOINTS("options.worldmap.showWaypoints", false, true, false),
     SHOW_WAYPOINT_NAMES("options.worldmap.showWaypointNames", false, true, false),
+    SHOW_WORLDMAP_COORDS("options.worldmap.showCoordinates", false, true, false),
     MIN_ZOOM("options.worldmap.minZoom", true, false, false),
     MAX_ZOOM("options.worldmap.maxZoom", true, false, false),
     CACHE_SIZE("options.worldmap.cacheSize", true, false, false);

@@ -28,7 +28,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES};
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_WORLDMAP_COORDS };
 
         int counter = 0;
 
@@ -45,8 +45,8 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             counter++;
         }
 
-        EnumOptionsMinimap[] relevantOptions2 = { EnumOptionsMinimap.MIN_ZOOM, EnumOptionsMinimap.MAX_ZOOM, EnumOptionsMinimap.CACHE_SIZE};
-        counter += 2;
+        EnumOptionsMinimap[] relevantOptions2 = { EnumOptionsMinimap.MIN_ZOOM, EnumOptionsMinimap.MAX_ZOOM, EnumOptionsMinimap.CACHE_SIZE };
+        counter += (counter % 2 == 0 ? 2 : 3);
 
         for (EnumOptionsMinimap option : relevantOptions2) {
             if (option.isFloat()) {
@@ -112,8 +112,8 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         }
 
         drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFont(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 24, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFont(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 34, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFont(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 49, 0xFFFFFFFF);
+        drawContext.drawCenteredString(this.getFont(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 59, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
     }
 }
