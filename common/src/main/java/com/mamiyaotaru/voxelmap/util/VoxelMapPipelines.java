@@ -63,7 +63,6 @@ public class VoxelMapPipelines {
             .withSampler("Sampler1")
             .withVertexFormat(ENTITY_VERTEX, VertexFormat.Mode.QUADS)
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withShaderDefine("PER_FACE_LIGHTING")
             .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(false)
             .build();
@@ -73,7 +72,6 @@ public class VoxelMapPipelines {
             .withSampler("Sampler1")
             .withVertexFormat(ENTITY_VERTEX, VertexFormat.Mode.QUADS)
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withShaderDefine("PER_FACE_LIGHTING")
             .withBlend(BlendFunction.TRANSLUCENT)
             .withCull(true)
             .build();

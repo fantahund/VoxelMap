@@ -173,20 +173,15 @@ public class Radar extends AbstractRadar {
     }
 
     private int getBaseColor(Contact contact) {
-        if (contact.entity instanceof TropicalFish tropicalFish) {
-            return tropicalFish.getBaseColor().getMapColor().col | 0xFF000000;
-        }
-
         return 0xFFFFFFFF;
     }
 
     private int getArmorColor(Contact contact) {
-        return switch (contact.entity) {
-            case Sheep sheep -> sheep.getColor().getMapColor().col | 0xFF000000;
-            case TropicalFish tropicalFish -> tropicalFish.getPatternColor().getMapColor().col | 0xFF000000;
+        if (contact.entity instanceof Sheep sheep) {
+            return sheep.getColor().getMapColor().col | 0xFF000000;
+        }
 
-            default -> 0xFFFFFFFF;
-        };
+        return 0xFFFFFFFF;
     }
 
     private MobIconConfig getIconConfig(Contact contact) {

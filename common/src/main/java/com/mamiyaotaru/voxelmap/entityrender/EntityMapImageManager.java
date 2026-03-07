@@ -5,11 +5,11 @@ import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EntityArmorData;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EquippableArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.SheepOverlayHandler;
-import com.mamiyaotaru.voxelmap.entityrender.armors.TropicalFishOverlayHandler;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -68,6 +68,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -119,7 +120,6 @@ public class EntityMapImageManager {
 
     private final EquippableArmorHandler equippableArmorHandler = new EquippableArmorHandler();
     private final SheepOverlayHandler sheepOverlayHandler = new SheepOverlayHandler();
-    private final TropicalFishOverlayHandler tropicalFishOverlayHandler = new TropicalFishOverlayHandler();
 
     private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
     private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "entityimagemanager/fbo");
@@ -176,6 +176,7 @@ public class EntityMapImageManager {
         addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
         addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
         addVariantDataFactory(new VillagerVariantDataFactory(EntityType.ZOMBIE_VILLAGER));
+        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityType.TROPICAL_FISH));
 
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
@@ -342,6 +343,16 @@ public class EntityMapImageManager {
         Identifier tertiaryTexture = variant.getTertiaryTexture();
         Identifier quaternaryTexture = variant.getQuaternaryTexture();
 
+        int primaryColor = getPrimaryTextureColor(entity);
+        int secondaryColor = getSecondaryTextureColor(entity);
+        int tertiaryColor = getTertiaryTextureColor(entity);
+        int quaternaryColor = getQuaternaryTextureColor(entity);
+
+        TextureWithColor primaryData = new TextureWithColor(primaryTexture, primaryColor);
+        TextureWithColor secondaryData = secondaryTexture == null ? null : new TextureWithColor(secondaryTexture, secondaryColor);
+        TextureWithColor tertiaryData = tertiaryTexture == null ? null : new TextureWithColor(tertiaryTexture, tertiaryColor);
+        TextureWithColor quaternaryData = quaternaryTexture == null ? null : new TextureWithColor(quaternaryTexture, quaternaryColor);
+
         CaptureContext context = setupCapture(entity, VoxelMapPipelines.ENTITY_ICON);
         PoseStack pose = context.poseStack();
         BufferBuilder bufferBuilder = context.bufferBuilder();
@@ -368,7 +379,7 @@ public class EntityMapImageManager {
             slimeOuter.model.root().render(pose, bufferBuilder, LIGHT, OVERLAY, 0xffffffff); // light, overlay, color
         }
 
-        boolean success = this.flushCapture(context, primaryTexture, secondaryTexture, tertiaryTexture, quaternaryTexture);
+        boolean success = this.flushCapture(context, primaryData, secondaryData, tertiaryData, quaternaryData);
         if (!success) {
             return null;
         }
@@ -391,17 +402,51 @@ public class EntityMapImageManager {
         return sprite;
     }
 
+    private int getPrimaryTextureColor(Entity entity) {
+        if (entity instanceof TropicalFish tropicalFish) {
+            return tropicalFish.getBaseColor().getMapColor().col | 0xFF000000;
+        }
+
+        return 0xFFFFFFFF;
+    }
+
+    private int getSecondaryTextureColor(Entity entity) {
+        if (entity instanceof TropicalFish tropicalFish) {
+            return tropicalFish.getPatternColor().getMapColor().col | 0xFF000000;
+        }
+
+        return 0xFFFFFFFF;
+    }
+
+    private int getTertiaryTextureColor(Entity entity) {
+        return 0xFFFFFFFF;
+    }
+
+    private int getQuaternaryTextureColor(Entity entity) {
+        return 0xFFFFFFFF;
+    }
+
     private int getMobIdentifier(Entity entity) {
         int id = 0;
 
         // Unique properties
-        if (entity instanceof Pufferfish pufferfish) {
-            id = pufferfish.getPuffState();
+        switch (entity) {
+            case Pufferfish pufferfish -> id = pufferfish.getPuffState();
+            case TropicalFish tropicalFish -> {
+                id = tropicalFish.getBaseColor().getId() & 0xF;
+                id |= (tropicalFish.getPatternColor().getId() & 0xF) << 4;
+            }
+            default -> {}
         }
 
         // Common properties
-        if (entity instanceof LivingEntity livingEntity && livingEntity.isBaby()) {
-            id |= (1 << 9);
+        if (entity instanceof LivingEntity livingEntity) {
+            if (livingEntity.isBaby()) {
+                id |= (1 << 9);
+            }
+
+            int intScale = (int) (livingEntity.getScale() * 10.0F);
+            id |= (intScale & 0x3F) << 10;
         }
 
         return id;
@@ -417,8 +462,6 @@ public class EntityMapImageManager {
             // e.printStackTrace();
             // }
 
-            boolean skipTrimming = false;
-            boolean useFixedScale = false;
             switch (model) {
                 case CamelModel camelModel -> {
                     Graphics2D g = image.createGraphics();
@@ -438,25 +481,10 @@ public class EntityMapImageManager {
                     g.fillRect(0,  352, image.getWidth(), image.getHeight());
                     g.dispose();
                 }
-                case SalmonModel salmonModel -> useFixedScale = true;
-                case TropicalFishSmallModel tropicalFishSmallModel -> {
-                    image = TropicalFishOverlayHandler.customTrim(image);
-                    skipTrimming = true;
-                }
-                case TropicalFishLargeModel tropicalFishLargeModel -> {
-                    image = TropicalFishOverlayHandler.customTrim(image);
-                    skipTrimming = true;
-                }
                 default -> {}
             }
 
-            if (!skipTrimming) {
-                image = ImageUtils.trim(image);
-            }
-            if (useFixedScale) {
-                int maxSize = Math.max(image.getWidth(), image.getHeight());
-                image = ImageUtils.scaleImage(image, 64.0F / maxSize);
-            }
+            image = ImageUtils.trim(image);
             image = ImageUtils.scaleImage(image, scale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
@@ -468,12 +496,12 @@ public class EntityMapImageManager {
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
 
-        AbstractArmorHandler armorHandler = switch (entity) {
-            case Sheep sheep -> sheepOverlayHandler;
-            case TropicalFish tropicalFish -> tropicalFishOverlayHandler;
-
-            default -> equippableArmorHandler;
-        };
+        AbstractArmorHandler armorHandler;
+        if (entity instanceof Sheep) {
+            armorHandler = sheepOverlayHandler;
+        } else {
+            armorHandler = equippableArmorHandler;
+        }
         armorHandler.setupForEntity(entity, entityRenderer, size, addBorder);
 
         EntityArmorData armorData = armorHandler.getArmorData();
@@ -490,7 +518,7 @@ public class EntityMapImageManager {
         CaptureContext context = setupCapture(entity, VoxelMapPipelines.ENTITY_ICON_CULLED);
         armorHandler.renderArmorModel(context);
 
-        flushCapture(context, armorData.getTexture(), null, null, null);
+        flushCapture(context, new TextureWithColor(armorData.getTexture(), 0xFFFFFFFF), null, null, null);
 
         Properties mobProperties = getCustomMobProperties(entity.getType());
         float iconScale = 1.0F;
@@ -626,29 +654,26 @@ public class EntityMapImageManager {
         return new CaptureContext(poseStack, renderPipeline, bufferBuilder);
     }
 
-    private boolean flushCapture(CaptureContext context, Identifier primary, Identifier secondary, Identifier tertiary, Identifier quaternary) {
+    private boolean flushCapture(CaptureContext context, TextureWithColor primary, TextureWithColor secondary, TextureWithColor tertiary, TextureWithColor quaternary) {
         RenderPipeline renderPipeline = context.renderPipeline();
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
-        AbstractTexture primaryTexture = minecraft.getTextureManager().getTexture(primary);
-        AbstractTexture secondaryTexture = secondary == null ? null : minecraft.getTextureManager().getTexture(secondary);
-        AbstractTexture tertiaryTexture = tertiary == null ? null : minecraft.getTextureManager().getTexture(tertiary);
-        AbstractTexture quaternaryTexture = quaternary  == null ? null : minecraft.getTextureManager().getTexture(quaternary);
-
-        RenderSystem.setShaderLights(lightingBuffer.slice());
+        AbstractTexture primaryTexture = minecraft.getTextureManager().getTexture(primary.texture());
+        AbstractTexture secondaryTexture = secondary == null ? null : minecraft.getTextureManager().getTexture(secondary.texture());
+        AbstractTexture tertiaryTexture = tertiary == null ? null : minecraft.getTextureManager().getTexture(tertiary.texture());
+        AbstractTexture quaternaryTexture = quaternary  == null ? null : minecraft.getTextureManager().getTexture(quaternary.texture());
 		
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
-
+        RenderSystem.setShaderLights(lightingBuffer.slice());
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
-        GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms()
-                .writeTransform(
-                        RenderSystem.getModelViewMatrix(),
-                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                        new Vector3f(),
-                        new Matrix4f());
+
+        GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(primary.color());
+        GpuBufferSlice secondaryTransforms = secondary == null ? null : dynamicTransformsWithColor(secondary.color());
+        GpuBufferSlice tertiaryTransforms = tertiary == null ? null : dynamicTransformsWithColor(tertiary.color());
+        GpuBufferSlice quaternaryTransforms = quaternary == null ? null : dynamicTransformsWithColor(quaternary.color());
 
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
@@ -670,7 +695,7 @@ public class EntityMapImageManager {
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", fboTextureView, OptionalInt.of(0x00000000), fboDepthTextureView, OptionalDouble.of(1.0))) {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
-                renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
+                renderPass.setUniform("DynamicTransforms", primaryTransforms);
                 renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
@@ -678,14 +703,17 @@ public class EntityMapImageManager {
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 if (secondaryTexture != null) {
+                    renderPass.setUniform("DynamicTransforms", secondaryTransforms);
                     renderPass.bindTexture("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
                 if (tertiaryTexture != null) {
+                    renderPass.setUniform("DynamicTransforms", tertiaryTransforms);
                     renderPass.bindTexture("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
                 if (quaternaryTexture != null) {
+                    renderPass.setUniform("DynamicTransforms", quaternaryTransforms);
                     renderPass.bindTexture("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
@@ -696,6 +724,18 @@ public class EntityMapImageManager {
         }
 
         return true;
+    }
+
+    private GpuBufferSlice dynamicTransformsWithColor(int color) {
+        float r = ARGB.redFloat(color);
+        float g = ARGB.greenFloat(color);
+        float b = ARGB.blueFloat(color);
+        float a = ARGB.alphaFloat(color);
+        return dynamicTransformsWithColor(r, g, b, a);
+    }
+
+    private GpuBufferSlice dynamicTransformsWithColor(float r, float g, float b, float a) {
+        return RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(r, g, b, a), new Vector3f(), new Matrix4f());
     }
 
     public void onRenderTick(Matrix4fStack matrixStack) {
@@ -712,4 +752,6 @@ public class EntityMapImageManager {
     }
 
     public record CaptureContext(PoseStack poseStack, RenderPipeline renderPipeline, BufferBuilder bufferBuilder) {}
+
+    public record TextureWithColor(Identifier texture, int color) {}
 }
