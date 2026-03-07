@@ -5,19 +5,15 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 public abstract class AbstractArmorHandler {
-    protected final EntityMapImageManager imageManager;
     protected final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
     protected Entity entity;
     protected EntityRenderer renderer;
     protected int size;
     protected boolean addBorder;
-
-    public AbstractArmorHandler(EntityMapImageManager imageManager) {
-        this.imageManager = imageManager;
-    }
 
     protected EntityArmorData getArmorData(Identifier material, int size, boolean addBorder) {
         EntityArmorDataFactory factory = armorDataFactories.get(material);
@@ -47,5 +43,7 @@ public abstract class AbstractArmorHandler {
     public abstract EntityArmorData getArmorData();
 
     public abstract void renderArmorModel(EntityMapImageManager.CaptureContext context);
+
+    public abstract BufferedImage postProcessTexture(BufferedImage image);
 
 }

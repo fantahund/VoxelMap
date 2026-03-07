@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
+import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,9 +41,7 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
     private Equippable equippable;
     private Block block;
 
-    public EquippableArmorHandler(EntityMapImageManager imageManager) {
-        super(imageManager);
-
+    public EquippableArmorHandler() {
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
         LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
         this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
@@ -109,5 +109,16 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
 
             blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
         }
+    }
+
+    @Override
+    public BufferedImage postProcessTexture(BufferedImage image) {
+        image = ImageUtils.trim(image);
+
+        BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), image.getType());
+        newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
+        newImage = ImageUtils.fillOutline(ImageUtils.pad(newImage), addBorder, true, 37.5F, 37.5F, 2);
+
+        return newImage;
     }
 }

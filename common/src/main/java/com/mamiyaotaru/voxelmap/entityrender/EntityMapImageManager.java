@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EntityArmorData;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EquippableArmorHandler;
+import com.mamiyaotaru.voxelmap.entityrender.armors.SheepOverlayHandler;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
@@ -113,8 +114,8 @@ public class EntityMapImageManager {
     public static final int OVERLAY = OverlayTexture.NO_OVERLAY;
     private final GpuBuffer lightingBuffer;
 
-    private final EquippableArmorHandler equippableArmorHandler;
-    private final AbstractArmorHandler[] armorHandlers;
+    private final EquippableArmorHandler equippableArmorHandler = new EquippableArmorHandler();
+    private final SheepOverlayHandler sheepOverlayHandler = new SheepOverlayHandler();
 
     private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
     private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "entityimagemanager/fbo");
@@ -137,10 +138,6 @@ public class EntityMapImageManager {
             ByteBuffer byteBuffer = Std140Builder.onStack(memoryStack, Lighting.UBO_SIZE).putVec3(fullBright).putVec3(fullBright2).get();
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.lightingBuffer.slice(), byteBuffer);
         }
-
-        armorHandlers = new AbstractArmorHandler[] {
-                equippableArmorHandler = new EquippableArmorHandler(this)
-        };
 
         final int fboTextureSize = 512;
         this.fboTexture = RenderSystem.getDevice().createTexture("voxelmap-radarfbotexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1);
@@ -410,7 +407,7 @@ public class EntityMapImageManager {
         int id = 0;
         switch (entity) {
             case Pufferfish pufferfish -> id = pufferfish.getPuffState();
-            case Sheep sheep -> id = (sheep.isSheared() ? (1 << 8) : sheep.getColor().getId());
+            case Sheep sheep -> id = (sheep.isSheared() ? (1 << 8) : 0);
             default -> {}
         }
 
@@ -437,27 +434,21 @@ public class EntityMapImageManager {
                     Graphics2D g = image.createGraphics();
                     g.setComposite(AlphaComposite.Clear);
                     g.fillRect(0, 192, image.getWidth(), image.getHeight());
+                    g.dispose();
                 }
                 case LlamaModel llamaModel -> {
                     Graphics2D g = image.createGraphics();
                     g.setComposite(AlphaComposite.Clear);
                     g.fillRect(0, 248, image.getWidth(), image.getHeight());
+                    g.dispose();
                 }
                 case HappyGhastModel happyGhastModel -> {
                     Graphics2D g = image.createGraphics();
                     g.setComposite(AlphaComposite.Clear);
                     g.fillRect(0,  352, image.getWidth(), image.getHeight());
+                    g.dispose();
                 }
                 case SalmonModel salmonModel -> useFixedScale = true;
-                case SheepModel sheepModel -> {
-                    Sheep sheepEntity = (Sheep) entity;
-                    if (!sheepEntity.isSheared()) {
-                        Graphics2D g = image.createGraphics();
-                        g.setComposite(AlphaComposite.DstOver);
-                        g.setColor(new Color(sheepEntity.getColor().getTextureDiffuseColor()));
-                        g.fillRect(242, 262, image.getWidth() - 484, image.getHeight() - 484);
-                    }
-                }
                 default -> {}
             }
 
@@ -478,11 +469,11 @@ public class EntityMapImageManager {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
 
         AbstractArmorHandler armorHandler;
-//if (entity.getType() == EntityType.TROPICAL_FISH) {
-//armorHandler = equippableArmorHandler;
-//} else {
-        armorHandler = equippableArmorHandler;
-//}
+        if (entity.getType() == EntityType.SHEEP) {
+            armorHandler = sheepOverlayHandler;
+        } else {
+            armorHandler = equippableArmorHandler;
+        }
         armorHandler.setupForEntity(entity, entityRenderer, size, addBorder);
 
         EntityArmorData armorData = armorHandler.getArmorData();
@@ -503,24 +494,20 @@ public class EntityMapImageManager {
 
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
-            postProcessRenderedArmorImage(sprite, image2, addBorder);
+            postProcessRenderedArmorImage(sprite, image2, armorHandler);
         });
 
         return sprite;
     }
 
-    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, boolean addBorder) {
+    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
+
             image = ImageUtils.flipHorizontal(image);
-            image = ImageUtils.trim(image);
+            image = armorHandler.postProcessTexture(image);
 
-            // make the image square and align it at the top
-            BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), image.getType());
-            newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
-            newImage = ImageUtils.fillOutline(ImageUtils.pad(newImage), addBorder, true, 37.5F, 37.5F, 2);
-
-            addToCreationTask(sprite, newImage, sprite.getIconName().toString());
+            addToCreationTask(sprite, image, sprite.getIconName().toString());
         });
     }
 

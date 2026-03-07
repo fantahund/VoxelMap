@@ -16,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.joml.Matrix4fStack;
@@ -60,6 +61,7 @@ public class Radar extends AbstractRadar {
 
         if (radarOptions.showPlayerHelmets && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobHelmets && contact.category != VoxelMapMobCategory.PLAYER) {
             contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, radarOptions.outlines);
+            contact.armorColor = getArmorColor(contact);
         }
     }
 
@@ -123,11 +125,12 @@ public class Radar extends AbstractRadar {
                 RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
 
                 if (contact.armorIcon != null) {
+                    int armorColor = ARGB.multiply(color, contact.armorColor);
                     MobIconConfig iconConfig = getIconConfig(contact);
                     float armorOffset = iconConfig.armorOffset();
                     float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
                     float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, color);
+                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
                 }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
@@ -164,6 +167,14 @@ public class Radar extends AbstractRadar {
         }
 
         matrixStack.popMatrix();
+    }
+
+    private int getArmorColor(Contact contact) {
+        if (contact.entity instanceof Sheep sheep) {
+            return sheep.getColor().getMapColor().col | 0xFF000000;
+        }
+
+        return 0xFFFFFFFF;
     }
 
     private MobIconConfig getIconConfig(Contact contact) {
