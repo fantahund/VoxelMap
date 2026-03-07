@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EntityArmorData;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EquippableArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.SheepOverlayHandler;
+import com.mamiyaotaru.voxelmap.entityrender.armors.TropicalFishOverlayHandler;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
@@ -16,6 +17,7 @@ import com.mamiyaotaru.voxelmap.util.AllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.PropertyParser;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.ProjectionType;
@@ -46,7 +48,6 @@ import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
 import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
 import net.minecraft.client.model.animal.ghast.HappyGhastModel;
 import net.minecraft.client.model.animal.llama.LlamaModel;
-import net.minecraft.client.model.animal.sheep.SheepModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.model.monster.slime.SlimeModel;
@@ -63,6 +64,7 @@ import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -72,6 +74,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.fish.Pufferfish;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import org.joml.Matrix4f;
@@ -81,13 +84,13 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -116,6 +119,7 @@ public class EntityMapImageManager {
 
     private final EquippableArmorHandler equippableArmorHandler = new EquippableArmorHandler();
     private final SheepOverlayHandler sheepOverlayHandler = new SheepOverlayHandler();
+    private final TropicalFishOverlayHandler tropicalFishOverlayHandler = new TropicalFishOverlayHandler();
 
     private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
     private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "entityimagemanager/fbo");
@@ -168,7 +172,6 @@ public class EntityMapImageManager {
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), null, null));
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), null, null));
-//        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.TROPICAL_FISH, null, null, null));
         addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
         addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
         addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
@@ -339,31 +342,9 @@ public class EntityMapImageManager {
         Identifier tertiaryTexture = variant.getTertiaryTexture();
         Identifier quaternaryTexture = variant.getQuaternaryTexture();
 
-        CaptureContext context = setupCapture(VoxelMapPipelines.ENTITY_ICON);
+        CaptureContext context = setupCapture(entity, VoxelMapPipelines.ENTITY_ICON);
         PoseStack pose = context.poseStack();
         BufferBuilder bufferBuilder = context.bufferBuilder();
-
-        Properties mobProperties = getCustomMobProperties(entity.getType());
-        float iconScale = 1.0F;
-        if (mobProperties != null) {
-            iconScale = Float.parseFloat(mobProperties.getProperty("scale", "1.0"));
-
-            String rotation = mobProperties.getProperty("rotation", "");
-            if (rotation.startsWith("{") && rotation.endsWith("}")) {
-                for (String entry : rotation.substring(1, rotation.length() - 1).split(",")) {
-                    String[] keyValue = entry.split(":");
-                    if (keyValue.length != 2) continue;
-
-                    float value = Float.parseFloat(keyValue[1].trim());
-                    switch (keyValue[0].trim()) {
-                        case "x" -> pose.mulPose(Axis.XP.rotationDegrees(value));
-                        case "y" -> pose.mulPose(Axis.YP.rotationDegrees(value));
-                        case "z" -> pose.mulPose(Axis.ZP.rotationDegrees(value));
-                    }
-                }
-            }
-        }
-        float iconScale2 = iconScale;
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
         ((EntityRenderer) baseRenderer).submit(renderState, pose, emptySubmitNodeCollector, minecraft.gameRenderer.getLevelRenderState().cameraRenderState);
@@ -392,6 +373,13 @@ public class EntityMapImageManager {
             return null;
         }
 
+        Properties mobProperties = getCustomMobProperties(entity.getType());
+        float iconScale = 1.0F;
+        if (mobProperties != null) {
+            iconScale = Float.parseFloat(mobProperties.getProperty("scale", "1.0"));
+        }
+        float iconScale2 = iconScale;
+
         // if (VoxelConstants.DEBUG) {
         // ImageUtils.saveImage("mob_" + entity.getType().getDescriptionId(), fboTexture, 0, fboTexture.getWidth(0), fboTexture.getHeight(0));
         // }
@@ -405,12 +393,13 @@ public class EntityMapImageManager {
 
     private int getMobIdentifier(Entity entity) {
         int id = 0;
-        switch (entity) {
-            case Pufferfish pufferfish -> id = pufferfish.getPuffState();
-            case Sheep sheep -> id = (sheep.isSheared() ? (1 << 8) : 0);
-            default -> {}
+
+        // Unique properties
+        if (entity instanceof Pufferfish pufferfish) {
+            id = pufferfish.getPuffState();
         }
 
+        // Common properties
         if (entity instanceof LivingEntity livingEntity && livingEntity.isBaby()) {
             id |= (1 << 9);
         }
@@ -428,6 +417,7 @@ public class EntityMapImageManager {
             // e.printStackTrace();
             // }
 
+            boolean skipTrimming = false;
             boolean useFixedScale = false;
             switch (model) {
                 case CamelModel camelModel -> {
@@ -449,10 +439,20 @@ public class EntityMapImageManager {
                     g.dispose();
                 }
                 case SalmonModel salmonModel -> useFixedScale = true;
+                case TropicalFishSmallModel tropicalFishSmallModel -> {
+                    image = TropicalFishOverlayHandler.customTrim(image);
+                    skipTrimming = true;
+                }
+                case TropicalFishLargeModel tropicalFishLargeModel -> {
+                    image = TropicalFishOverlayHandler.customTrim(image);
+                    skipTrimming = true;
+                }
                 default -> {}
             }
 
-            image = ImageUtils.trim(image);
+            if (!skipTrimming) {
+                image = ImageUtils.trim(image);
+            }
             if (useFixedScale) {
                 int maxSize = Math.max(image.getWidth(), image.getHeight());
                 image = ImageUtils.scaleImage(image, 64.0F / maxSize);
@@ -468,12 +468,12 @@ public class EntityMapImageManager {
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
 
-        AbstractArmorHandler armorHandler;
-        if (entity.getType() == EntityType.SHEEP) {
-            armorHandler = sheepOverlayHandler;
-        } else {
-            armorHandler = equippableArmorHandler;
-        }
+        AbstractArmorHandler armorHandler = switch (entity) {
+            case Sheep sheep -> sheepOverlayHandler;
+            case TropicalFish tropicalFish -> tropicalFishOverlayHandler;
+
+            default -> equippableArmorHandler;
+        };
         armorHandler.setupForEntity(entity, entityRenderer, size, addBorder);
 
         EntityArmorData armorData = armorHandler.getArmorData();
@@ -487,25 +487,33 @@ public class EntityMapImageManager {
         }
         Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
 
-        CaptureContext context = setupCapture(VoxelMapPipelines.ENTITY_ICON_CULLED);
+        CaptureContext context = setupCapture(entity, VoxelMapPipelines.ENTITY_ICON_CULLED);
         armorHandler.renderArmorModel(context);
 
         flushCapture(context, armorData.getTexture(), null, null, null);
 
+        Properties mobProperties = getCustomMobProperties(entity.getType());
+        float iconScale = 1.0F;
+        if (mobProperties != null) {
+            iconScale = Float.parseFloat(mobProperties.getProperty("scale", "1.0"));
+        }
+        float iconScale2 = iconScale;
+
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
-            postProcessRenderedArmorImage(sprite, image2, armorHandler);
+            postProcessRenderedArmorImage(sprite, image2, armorHandler, iconScale2);
         });
 
         return sprite;
     }
 
-    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler) {
+    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler, float scale) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
 
             image = ImageUtils.flipHorizontal(image);
             image = armorHandler.postProcessTexture(image);
+            image = ImageUtils.scaleImage(image, scale);
 
             addToCreationTask(sprite, image, sprite.getIconName().toString());
         });
@@ -591,11 +599,27 @@ public class EntityMapImageManager {
         return new ModelPart[] { model.root() };
     }
 
-    private CaptureContext setupCapture(RenderPipeline renderPipeline) {
+    private CaptureContext setupCapture(Entity entity, RenderPipeline renderPipeline) {
         PoseStack poseStack = new PoseStack();
         poseStack.translate(0.0f, 0.0f, -3000.0f);
         float scale = 64;
         poseStack.scale(scale, scale, -scale);
+
+        Properties mobProperties = getCustomMobProperties(entity.getType());
+        LinkedHashMap<Direction.Axis, Float> rotation = null;
+        if (mobProperties != null) {
+            rotation = PropertyParser.parseVector(mobProperties.getProperty("rotation", ""));
+        }
+
+        if (rotation != null) {
+            rotation.forEach((axis, value) -> {
+                switch (axis) {
+                    case Direction.Axis.X -> poseStack.mulPose(Axis.XP.rotationDegrees(value));
+                    case Direction.Axis.Y -> poseStack.mulPose(Axis.YP.rotationDegrees(value));
+                    case Direction.Axis.Z -> poseStack.mulPose(Axis.ZP.rotationDegrees(value));
+                }
+            });
+        }
 
         BufferBuilder bufferBuilder = fboTessellator.begin(Mode.QUADS, renderPipeline.getVertexFormat());
 

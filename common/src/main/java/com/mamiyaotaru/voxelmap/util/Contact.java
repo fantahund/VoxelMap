@@ -31,6 +31,7 @@ public class Contact {
 
     public Sprite icon;
     public Sprite armorIcon;
+    public int baseColor = -1;
     public int armorColor = -1;
 
     public Contact(LivingEntity entity, VoxelMapMobCategory category) {

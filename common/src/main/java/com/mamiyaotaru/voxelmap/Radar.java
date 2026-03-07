@@ -16,6 +16,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -57,6 +58,7 @@ public class Radar extends AbstractRadar {
 
         if (contact.icon == null) {
             contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, radarOptions.outlines);
+            contact.baseColor = getBaseColor(contact);
         }
 
         if (radarOptions.showPlayerHelmets && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobHelmets && contact.category != VoxelMapMobCategory.PLAYER) {
@@ -106,12 +108,12 @@ public class Radar extends AbstractRadar {
                 matrixStack.pushMatrix();
                 applyContactTransform(matrixStack, contact, x, y, scScale);
 
-                int color;
+                int colorMult;
                 if (minimapContext.playerY - contact.y < 0) {
-                    color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+                    colorMult = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
                 } else {
                     float brightness = Math.max(0.3F, contact.brightness);
-                    color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
+                    colorMult = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
                 }
 
                 float zOffset = i * 0.01F;
@@ -120,12 +122,13 @@ public class Radar extends AbstractRadar {
                     yOffset = -4.0F;
                 }
 
+                int baseColor = ARGB.multiply(colorMult, contact.baseColor);
                 float imageWidth = contact.icon.getIconWidth() / 8.0F;
                 float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
+                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
 
                 if (contact.armorIcon != null) {
-                    int armorColor = ARGB.multiply(color, contact.armorColor);
+                    int armorColor = ARGB.multiply(colorMult, contact.armorColor);
                     MobIconConfig iconConfig = getIconConfig(contact);
                     float armorOffset = iconConfig.armorOffset();
                     float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
@@ -169,12 +172,21 @@ public class Radar extends AbstractRadar {
         matrixStack.popMatrix();
     }
 
-    private int getArmorColor(Contact contact) {
-        if (contact.entity instanceof Sheep sheep) {
-            return sheep.getColor().getMapColor().col | 0xFF000000;
+    private int getBaseColor(Contact contact) {
+        if (contact.entity instanceof TropicalFish tropicalFish) {
+            return tropicalFish.getBaseColor().getMapColor().col | 0xFF000000;
         }
 
         return 0xFFFFFFFF;
+    }
+
+    private int getArmorColor(Contact contact) {
+        return switch (contact.entity) {
+            case Sheep sheep -> sheep.getColor().getMapColor().col | 0xFF000000;
+            case TropicalFish tropicalFish -> tropicalFish.getPatternColor().getMapColor().col | 0xFF000000;
+
+            default -> 0xFFFFFFFF;
+        };
     }
 
     private MobIconConfig getIconConfig(Contact contact) {
