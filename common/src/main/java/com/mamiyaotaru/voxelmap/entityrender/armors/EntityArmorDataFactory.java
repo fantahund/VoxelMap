@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.entityrender;
+package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import net.minecraft.resources.Identifier;
 
