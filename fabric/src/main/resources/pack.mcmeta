@@ -1,6 +1,7 @@
 {
-    "pack": {
-        "pack_format": 10,
-        "description": "§6VoxelMap 1.19.2"
-    }
+  "pack": {
+    "description": "VoxelMap for Fabric",
+    "min_format": [82, 0],
+    "max_format": [999, 0]
+  }
 }

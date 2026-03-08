@@ -14,6 +14,7 @@ public class VoxelMapForgeMod {
         VoxelConstants.setModVersion(context.getContainer().getModInfo().getVersion().toString());
         VoxelConstants.setEvents(new ForgeEvents());
         VoxelConstants.setPacketBridge(new ForgePacketBridge());
+        VoxelConstants.setModApiBride(new ForgeModApiBridge());
     }
 
     public static BusGroup getModBusGroup() {

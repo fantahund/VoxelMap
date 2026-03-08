@@ -7,8 +7,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworkin
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
-public class VoxelmapWorldIdChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<WorldIdS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<WorldIdS2C> {
-    public VoxelmapWorldIdChannelHandler() {
+public class FabricWorldIdChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<WorldIdS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<WorldIdS2C> {
+    public FabricWorldIdChannelHandler() {
         PayloadTypeRegistry.playC2S().register(WorldIdC2S.PACKET_ID, WorldIdC2S.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC);
         PayloadTypeRegistry.configurationC2S().register(WorldIdC2S.PACKET_ID, WorldIdC2S.PACKET_CODEC);

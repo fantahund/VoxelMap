@@ -19,16 +19,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LevelRenderer.class)
 public abstract class MixinWorldRenderer {
 
-    @Unique private final PoseStack voxelmap_poseStack = new PoseStack();
+    @Unique private final PoseStack voxelmap$poseStack = new PoseStack();
 
     @Inject(method = "renderLevel", at = @At("RETURN"))
     private void renderLevel(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f matrix4f2, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci) {
-        voxelmap_poseStack.pushPose();
-        voxelmap_poseStack.last().pose().mul(matrix4f);
+        voxelmap$poseStack.pushPose();
+        voxelmap$poseStack.last().pose().mul(matrix4f);
         BufferSource bufferSource = VoxelConstants.getMinecraft().renderBuffers().bufferSource();
-        VoxelConstants.onRenderWaypoints(deltaTracker.getGameTimeDeltaPartialTick(false), voxelmap_poseStack, bufferSource, camera);
+        VoxelConstants.onRenderWaypoints(deltaTracker.getGameTimeDeltaPartialTick(false), voxelmap$poseStack, bufferSource, camera);
 
-        voxelmap_poseStack.popPose();
+        voxelmap$poseStack.popPose();
     }
 
     @Inject(method = "setSectionDirty(IIIZ)V", at = @At("RETURN"))

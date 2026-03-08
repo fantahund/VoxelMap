@@ -8,8 +8,8 @@ public class VoxelmapFabricMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        new VoxelmapSettingsChannelHandler();
-        new VoxelmapWorldIdChannelHandler();
+        new FabricSettingsChannelHandler();
+        new FabricWorldIdChannelHandler();
         VoxelConstants.setModVersion(FabricLoader.getInstance().getModContainer(VoxelConstants.MOD_ID).map(container -> container.getMetadata().getVersion().getFriendlyString()).orElse(null));
         VoxelConstants.setEvents(new FabricEvents());
         VoxelConstants.setPacketBridge(new FabricPacketBridge());

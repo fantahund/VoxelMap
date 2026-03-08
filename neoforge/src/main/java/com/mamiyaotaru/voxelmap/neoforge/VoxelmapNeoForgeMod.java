@@ -16,6 +16,7 @@ public class VoxelmapNeoForgeMod {
         VoxelConstants.setModVersion(container.getModInfo().getVersion().toString());
         VoxelConstants.setEvents(new NeoForgeEvents());
         VoxelConstants.setPacketBridge(new NeoForgePacketBridge());
+        VoxelConstants.setModApiBride(new NeoForgeModApiBridge());
     }
 
     public static IEventBus getModEventBus() {

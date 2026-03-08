@@ -47,12 +47,12 @@ public class NeoForgeEvents implements Events {
 
     public void registerPackets(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
-        registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, VoxelmapSettingsChannelHandlerNeoForge::handleDataOnMain);
-        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+        registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, NeoForgeSettingsPacketHandler::handleDataOnMain);
+        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, NeoForgeWorldIdPacketHandler::handleDataOnMain);
     }
 
     public void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
-        event.register(WorldIdS2C.PACKET_ID, VoxelmapWorldIdChannelHandlerNeoForge::handleDataOnMain);
+        event.register(WorldIdS2C.PACKET_ID, NeoForgeWorldIdPacketHandler::handleDataOnMain);
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {
