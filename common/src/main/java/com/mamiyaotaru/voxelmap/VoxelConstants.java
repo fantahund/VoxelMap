@@ -117,7 +117,7 @@ public final class VoxelConstants {
         }
     }
 
-    public static boolean onChat(Component chat, GuiMessageTag indicator) {
+    public static Component getModifiedChatMessage(Component chat, GuiMessageTag indicator) {
         return CommandUtils.checkForWaypoints(chat, indicator);
     }
 
