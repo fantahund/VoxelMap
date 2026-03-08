@@ -69,12 +69,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.fish.Pufferfish;
+import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -431,7 +433,7 @@ public class EntityMapImageManager {
 
         // Unique properties
         switch (entity) {
-            case Pufferfish pufferfish -> id = pufferfish.getPuffState();
+            case Pufferfish pufferfish -> id = pufferfish.getPuffState() & 0x7;
             case TropicalFish tropicalFish -> {
                 id = tropicalFish.getBaseColor().getId() & 0xF;
                 id |= (tropicalFish.getPatternColor().getId() & 0xF) << 4;
@@ -440,16 +442,23 @@ public class EntityMapImageManager {
         }
 
         // Common properties
-        if (entity instanceof LivingEntity livingEntity) {
-            if (livingEntity.isBaby()) {
-                id |= (1 << 9);
-            }
-
-            int intScale = (int) (livingEntity.getScale() * 10.0F);
-            id |= (intScale & 0x3F) << 10;
+        if (entity instanceof LivingEntity livingEntity && livingEntity.isBaby()) {
+            id |= (1 << 8);
         }
 
+        int intScale = (int) Mth.clamp(getUniqueMobScale(entity) * 10.0F, 0.0F, 100.0F);
+        id |= (intScale & 0x3FF) << 9;
+
         return id;
+    }
+
+    private float getUniqueMobScale(Entity entity) {
+        float scale = 1.0F;
+        if (entity instanceof Salmon salmon) {
+            scale *= salmon.getSalmonScale();
+        }
+
+        return scale;
     }
 
     private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder, float scale) {
@@ -484,8 +493,9 @@ public class EntityMapImageManager {
                 default -> {}
             }
 
+            float uniqueMobScale = getUniqueMobScale(entity);
             image = ImageUtils.trim(image);
-            image = ImageUtils.scaleImage(image, scale);
+            image = ImageUtils.scaleImage(image, scale / uniqueMobScale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
             addToCreationTask(sprite, image, entity.getType().getDescriptionId().toString());
