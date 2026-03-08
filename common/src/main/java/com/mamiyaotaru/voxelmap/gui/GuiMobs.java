@@ -6,9 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -16,7 +13,7 @@ import net.minecraft.resources.Identifier;
 public class GuiMobs extends GuiScreenMinimap {
     protected final RadarSettingsManager options;
     protected Component screenTitle;
-    private GuiSlotMobs mobsList;
+    private GuiListMobs mobsList;
     private Button buttonEnable;
     private Button buttonDisable;
     protected EditBox filter;
@@ -25,7 +22,6 @@ public class GuiMobs extends GuiScreenMinimap {
 
     public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
         this.lastScreen = parentScreen;
-
         this.options = options;
     }
 
@@ -35,79 +31,32 @@ public class GuiMobs extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        this.screenTitle = Component.translatable("options.minimap.mobs.title");
-        this.mobsList = new GuiSlotMobs(this);
-        int filterStringWidth = this.getFont().width(I18n.get("minimap.waypoints.filter") + ":");
-        this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
-        this.filter.setMaxLength(35);
-        this.addRenderableWidget(this.filter);
-        this.addRenderableWidget(this.buttonEnable = new Button.Builder(Component.translatable("options.minimap.mobs.enable"), button -> this.setMobEnabled(this.selectedMobId, true)).bounds(this.getWidth() / 2 - 154, this.getHeight() - 26, 100, 20).build());
-        this.addRenderableWidget(this.buttonDisable = new Button.Builder(Component.translatable("options.minimap.mobs.disable"), button -> this.setMobEnabled(this.selectedMobId, false)).bounds(this.getWidth() / 2 - 50, this.getHeight() - 26, 100, 20).build());
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 + 4 + 50, this.getHeight() - 26, 100, 20).build());
-        this.setFocused(this.filter);
-        this.filter.setFocused(true);
-        boolean isSomethingSelected = this.selectedMobId != null;
-        this.buttonEnable.active = isSomethingSelected;
-        this.buttonDisable.active = isSomethingSelected;
+        screenTitle = Component.translatable("options.minimap.mobs.title");
+
+        mobsList = new GuiListMobs(this);
+        int filterStringWidth = getFont().width(I18n.get("minimap.waypoints.filter") + ":");
+        filter = new EditBox(getFont(), getWidth() / 2 - 153 + filterStringWidth + 5, getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
+        filter.setMaxLength(35);
+        filter.setResponder(this::filterUpdated);
+
+        addRenderableWidget(mobsList);
+        addRenderableWidget(filter);
+        setFocused(filter);
+        addRenderableWidget(buttonEnable = new Button.Builder(Component.translatable("options.minimap.mobs.enable"), button -> setMobEnabled(selectedMobId, true)).bounds(getWidth() / 2 - 154, getHeight() - 26, 100, 20).build());
+        addRenderableWidget(buttonDisable = new Button.Builder(Component.translatable("options.minimap.mobs.disable"), button -> setMobEnabled(selectedMobId, false)).bounds(getWidth() / 2 - 50, getHeight() - 26, 100, 20).build());
+        addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 + 4 + 50, getHeight() - 26, 100, 20).build());
+
+        boolean isSomethingSelected = selectedMobId != null;
+        buttonEnable.active = isSomethingSelected;
+        buttonDisable.active = isSomethingSelected;
     }
 
-    @Override
-    public boolean keyPressed(KeyEvent keyEvent) {
-        boolean OK = super.keyPressed(keyEvent);
-        if (this.filter.isFocused()) {
-            this.mobsList.updateFilter(this.filter.getValue().toLowerCase());
-        }
-
-        return OK;
-    }
-
-    @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        boolean OK = super.charTyped(characterEvent);
-        if (this.filter.isFocused()) {
-            this.mobsList.updateFilter(this.filter.getValue().toLowerCase());
-        }
-
-        return OK;
-    }
-
-    @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
-        double mouseY = mouseButtonEvent.y();
-        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            this.mobsList.mouseClicked(mouseButtonEvent, bl);
-        }
-        return super.mouseClicked(mouseButtonEvent, bl);
-    }
-
-    @Override
-    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        double mouseY = mouseButtonEvent.y();
-        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            this.mobsList.mouseReleased(mouseButtonEvent);
-        }
-        return super.mouseReleased(mouseButtonEvent);
-    }
-
-    @Override
-    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double d, double e) {
-        double mouseY = mouseButtonEvent.y();
-        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            return this.mobsList.mouseDragged(mouseButtonEvent, d, e);
-        }
-        return super.mouseDragged(mouseButtonEvent, d, e);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        if (mouseY >= this.mobsList.getY() && mouseY < this.mobsList.getBottom()) {
-            return this.mobsList.mouseScrolled(mouseX, mouseY, 0, amount);
-        }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
+    private void filterUpdated(String string) {
+        mobsList.updateFilter(string.toLowerCase());
     }
 
     protected void setSelectedMob(Identifier id) {
-        this.selectedMobId = id;
+        selectedMobId = id;
     }
 
     private boolean isMobEnabled(Identifier mobId) {
@@ -128,22 +77,23 @@ public class GuiMobs extends GuiScreenMinimap {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.tooltip = null;
-        this.mobsList.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
-        boolean isSomethingSelected = this.selectedMobId != null;
-        this.buttonEnable.active = isSomethingSelected && !this.isMobEnabled(this.selectedMobId);
-        this.buttonDisable.active = isSomethingSelected && this.isMobEnabled(this.selectedMobId);
-        super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawString(this.getFont(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 49, 0xFFA0A0A0);
-        this.filter.render(drawContext, mouseX, mouseY, delta);
-        if (this.tooltip != null) {
-            this.renderTooltip(drawContext, this.tooltip, mouseX, mouseY);
-        }
+        tooltip = null;
 
+        super.render(drawContext, mouseX, mouseY, delta);
+
+        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
+        drawContext.drawString(getFont(), I18n.get("minimap.waypoints.filter") + ":", getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
+
+        boolean isSomethingSelected = selectedMobId != null;
+        buttonEnable.active = isSomethingSelected && !isMobEnabled(selectedMobId);
+        buttonDisable.active = isSomethingSelected && isMobEnabled(selectedMobId);
+
+        if (tooltip != null) {
+            renderTooltip(drawContext, tooltip, mouseX, mouseY);
+        }
     }
 
-    static void setTooltip(GuiMobs par0GuiWaypoints, Component par1Str) {
-        par0GuiWaypoints.tooltip = par1Str;
+    protected void setTooltip(Component tooltip) {
+        this.tooltip = tooltip;
     }
 }

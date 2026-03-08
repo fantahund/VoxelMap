@@ -17,7 +17,7 @@ import net.minecraft.network.chat.MutableComponent;
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
     protected Component screenTitle = Component.literal("players");
     private final boolean sharingWaypoint;
-    private GuiButtonRowListPlayers playerList;
+    private GuiListPlayers playerList;
     protected boolean allClicked;
     protected EditBox message;
     protected EditBox filter;
@@ -41,7 +41,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     @Override
     public void init() {
         this.screenTitle = this.sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
-        this.playerList = new GuiButtonRowListPlayers(this);
+        this.playerList = new GuiListPlayers(this);
         int messageStringWidth = this.getFont().width(I18n.get("minimap.waypointShare.shareMessage") + ":");
         this.message = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, Component.empty());
         this.message.setMaxLength(78);

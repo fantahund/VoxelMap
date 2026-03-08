@@ -21,14 +21,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowListKeys.RowItem> {
+public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
     private final MapSettingsManager options;
     private final GuiMinimapControls parentGui;
     private final ArrayList<RowItem> rowItems = new ArrayList<>();
     private KeyMapping keyForEdit;
     private final HashMap<KeyMapping, Component> duplicateKeys = new HashMap<>();
 
-    public GuiButtonRowListKeys(GuiMinimapControls parentScreen) {
+    public GuiListKeys(GuiMinimapControls parentScreen) {
         super(VoxelConstants.getMinecraft(), parentScreen.getWidth(), parentScreen.getHeight() - 114, 40, 20);
         this.parentGui = parentScreen;
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -140,19 +140,19 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
                 Component tooltip = null;
 
                 MutableComponent keyText = this.keyMapping.getTranslatedKeyMessage().copy();
-                if (GuiButtonRowListKeys.this.keyForEdit != null && GuiButtonRowListKeys.this.keyForEdit == this.keyMapping) {
+                if (GuiListKeys.this.keyForEdit != null && GuiListKeys.this.keyForEdit == this.keyMapping) {
                     keyText = Component.empty()
                             .append(Component.literal("> ").withStyle(ChatFormatting.YELLOW))
                             .append(keyText.copy().withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(" <").withStyle(ChatFormatting.YELLOW));
 
-                } else if (GuiButtonRowListKeys.this.duplicateKeys.containsKey(this.keyMapping)) {
+                } else if (GuiListKeys.this.duplicateKeys.containsKey(this.keyMapping)) {
                     keyText = Component.empty()
                             .append(Component.literal("[ ").withStyle(ChatFormatting.YELLOW))
                             .append(keyText.copy().withStyle(ChatFormatting.WHITE))
                             .append(Component.literal(" ]").withStyle(ChatFormatting.YELLOW));
 
-                    tooltip = GuiButtonRowListKeys.this.duplicateKeys.get(this.keyMapping);
+                    tooltip = GuiListKeys.this.duplicateKeys.get(this.keyMapping);
                 }
 
                 if (tooltip != null) {
@@ -175,7 +175,7 @@ public class GuiButtonRowListKeys extends AbstractSelectionList<GuiButtonRowList
 
         @Override
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            GuiButtonRowListKeys.this.setSelected(this);
+            GuiListKeys.this.setSelected(this);
             boolean clicked = false;
             if (this.button != null && this.button.mouseClicked(mouseButtonEvent, doubleClick)) {
                 clicked = true;

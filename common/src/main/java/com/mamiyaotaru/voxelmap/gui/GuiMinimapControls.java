@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 
 public class GuiMinimapControls extends GuiScreenMinimap {
     protected String screenTitle = "Controls";
-    private GuiButtonRowListKeys keymapList;
+    private GuiListKeys keymapList;
 
     public GuiMinimapControls(Screen parent) {
         this.lastScreen = parent;
@@ -20,7 +20,7 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
         this.screenTitle = I18n.get("key.category.voxelmap.controls.title");
 
-        this.keymapList = new GuiButtonRowListKeys(this);
+        this.keymapList = new GuiListKeys(this);
         this.addRenderableWidget(this.keymapList);
     }
 

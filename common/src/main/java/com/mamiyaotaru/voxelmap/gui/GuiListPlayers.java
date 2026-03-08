@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Optional;
 
-public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowListPlayers.Row> {
+public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
     private final ArrayList<PlayerInfo> players;
     private ArrayList<PlayerInfo> playersFiltered;
     final GuiSelectPlayer parentGui;
@@ -34,7 +34,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
     static final Component CONFIRM_AFFIRM = Component.translatable("gui.yes");
     static final Component CONFIRM_DENY = Component.translatable("gui.cancel");
 
-    public GuiButtonRowListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
+    public GuiListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
         super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight() - 65 + 4 - 89, 89, 25);
         this.parentGui = par1GuiSelectPlayer;
         ClientPacketListener netHandlerPlayClient = VoxelConstants.getPlayer().connection;
@@ -77,8 +77,8 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
 
     protected void sort() {
         this.players.sort((player1, player2) -> {
-            String name1 = GuiButtonRowListPlayers.this.getPlayerName(player1).getString();
-            String name2 = GuiButtonRowListPlayers.this.getPlayerName(player2).getString();
+            String name1 = GuiListPlayers.this.getPlayerName(player1).getString();
+            String name2 = GuiListPlayers.this.getPlayerName(player2).getString();
             return String.CASE_INSENSITIVE_ORDER.compare(name1, name2);
         });
     }
@@ -163,7 +163,7 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         }
 
         private void drawIconForButton(GuiGraphics drawContext, Button button, int id) {
-            PlayerInfo networkPlayerInfo = GuiButtonRowListPlayers.this.playersFiltered.get(id);
+            PlayerInfo networkPlayerInfo = GuiListPlayers.this.playersFiltered.get(id);
             GameProfile gameProfile = networkPlayerInfo.getProfile();
             Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
             Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).getNow(Optional.empty());
@@ -179,13 +179,13 @@ public class GuiButtonRowListPlayers extends AbstractSelectionList<GuiButtonRowL
         @Override
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
             if (this.button != null && this.button.mouseClicked(mouseButtonEvent, doubleClick)) {
-                GuiButtonRowListPlayers.this.buttonClicked(this.id);
+                GuiListPlayers.this.buttonClicked(this.id);
                 return true;
             } else if (this.button1 != null && this.button1.mouseClicked(mouseButtonEvent, doubleClick)) {
-                GuiButtonRowListPlayers.this.buttonClicked(this.id1);
+                GuiListPlayers.this.buttonClicked(this.id1);
                 return true;
             } else if (this.button2 != null && this.button2.mouseClicked(mouseButtonEvent, doubleClick)) {
-                GuiButtonRowListPlayers.this.buttonClicked(this.id2);
+                GuiListPlayers.this.buttonClicked(this.id2);
                 return true;
             } else {
                 return false;
