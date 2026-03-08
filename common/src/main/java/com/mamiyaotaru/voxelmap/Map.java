@@ -1807,7 +1807,6 @@ public class Map implements Runnable, IChangeObserver {
     }
 
     private void showCoords(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
-
         if (!this.options.hide && !this.fullscreenMap) {
             int textStart;
             if (y > this.scHeight - 37 - 32 - 4 - 15) {
@@ -1850,28 +1849,36 @@ public class Map implements Runnable, IChangeObserver {
 
             matrixStack.popMatrix();
         } else {
-            int heading = (int) (this.direction + this.rotationFactor);
-            if (heading > 360) {
-                heading -= 360;
-            }
-            String ns = "";
-            String ew = "";
-            if (heading > 360 - 67.5 || heading <= 67.5) {
-                ns = "north";
-            } else if (heading > 180 - 67.5 && heading <= 180 + 67.5) {
-                ns = "south";
-            }
-            if (heading > 90 - 67.5 && heading <= 90 + 67.5) {
-                ew = "east";
-            } else if (heading > 270 - 67.5 && heading <= 270 + 67.5) {
-                ew = "west";
-            }
+            int textStart = 5;
+            int lineCount = 0;
+            int lineHeight = 10;
 
-            String direction = I18n.get("minimap.ui." + ns + ew);
-            String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.yCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + direction;
-            RenderUtils.drawCenteredString(matrixStack, renderBufferSource, stats, (this.scWidth * scaleProj / 2.0F), 5.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+            if (this.options.coordsMode != 0) {
+                int heading = (int) (this.direction + this.rotationFactor);
+                if (heading > 360) {
+                    heading -= 360;
+                }
+                String ns = "";
+                String ew = "";
+                if (heading > 360 - 67.5 || heading <= 67.5) {
+                    ns = "north";
+                } else if (heading > 180 - 67.5 && heading <= 180 + 67.5) {
+                    ns = "south";
+                }
+                if (heading > 90 - 67.5 && heading <= 90 + 67.5) {
+                    ew = "east";
+                } else if (heading > 270 - 67.5 && heading <= 270 + 67.5) {
+                    ew = "west";
+                }
+
+                String direction = I18n.get("minimap.ui." + ns + ew);
+                String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.yCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + direction;
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, stats, (this.scWidth * scaleProj / 2.0F), textStart + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                lineCount++;
+            }
             if (!this.message.isEmpty()) {
-                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, this.message, (this.scWidth * scaleProj / 2.0F), 15.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                RenderUtils.drawCenteredString(matrixStack, renderBufferSource, this.message, (this.scWidth * scaleProj / 2.0F), textStart + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                lineCount++;
             }
         }
     }
