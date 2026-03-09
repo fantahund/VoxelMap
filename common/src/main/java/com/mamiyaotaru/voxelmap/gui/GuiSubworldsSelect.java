@@ -30,25 +30,15 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private boolean multiworld;
     private EditBox newNameField;
     private boolean newWorld;
-    private float yaw;
-    private final CameraType thirdPersonViewOrig;
     private String[] worlds;
-    final LocalPlayer thePlayer;
-    final LocalPlayer camera;
     private final WaypointManager waypointManager;
+    private final CameraType lastCameraType;
 
     public GuiSubworldsSelect(Screen parent) {
-        ClientLevel clientWorld = VoxelConstants.getClientWorld();
-
-        this.lastScreen = parent;
-
-        this.thePlayer = VoxelConstants.getPlayer();
-        this.camera = new LocalPlayer(VoxelConstants.getMinecraft(), clientWorld, VoxelConstants.getMinecraft().getConnection(), this.thePlayer.getStats(), new ClientRecipeBook(), Input.EMPTY, false);
-        this.camera.input = new KeyboardInput(VoxelConstants.getMinecraft().options);
-        this.camera.moveOrInterpolateTo(new Vec3(this.thePlayer.getX(), this.thePlayer.getY() + 0.35, this.thePlayer.getZ()), this.thePlayer.getYRot(), 0.0F);
-        this.yaw = this.thePlayer.getYRot();
-        this.thirdPersonViewOrig = VoxelConstants.getMinecraft().options.getCameraType();
-        this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+        lastScreen = parent;
+        waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+        lastCameraType = VoxelConstants.getMinecraft().options.getCameraType();
+        VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
     }
 
     @Override
@@ -57,9 +47,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isThisMultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
             VoxelConstants.getMinecraft().setScreen(confirmScreen);
-        } else {
-            VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
-            VoxelConstants.getMinecraft().setCameraEntity(this.camera);
         }
 
         this.title = Component.translatable("worldmap.multiworld.title");
@@ -175,17 +162,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         drawContext.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
         drawContext.drawCenteredString(this.getFont(), this.title, this.width / 2, 5, 0xFFFFFFFF);
         drawContext.drawCenteredString(this.getFont(), this.select, this.width / 2, 15, 0xFFFF0000);
-        this.camera.xRotO = 0.0F;
-        this.camera.setXRot(0.0F);
-        this.camera.yRotO = this.yaw;
-        this.camera.setYRot(this.yaw);
-        float var4 = 0.475F;
-        this.camera.yOld = this.camera.yo = this.thePlayer.getY();
-        this.camera.xOld = this.camera.xo = this.thePlayer.getX() - var4 * Math.sin(this.yaw / 180.0 * Math.PI);
-        this.camera.zOld = this.camera.zo = this.thePlayer.getZ() + var4 * Math.cos(this.yaw / 180.0 * Math.PI);
-        this.camera.setPosRaw(this.camera.xo, this.camera.yo, this.camera.zo);
-        float var5 = delta * 5.0F;
-        this.yaw = (float) (this.yaw + var5 * (1.0 + 0.7F * Math.cos((this.yaw + 45.0F) / 45.0 * Math.PI)));
+
         super.render(drawContext, mouseX, mouseY, delta);
         if (this.newWorld) {
             this.newNameField.render(drawContext, mouseX, mouseY, delta);
@@ -199,9 +176,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     @Override
     public void removed() {
-        super.removed();
-        VoxelConstants.getMinecraft().options.setCameraType(this.thirdPersonViewOrig);
-        VoxelConstants.getMinecraft().setCameraEntity(this.thePlayer);
+        VoxelConstants.getMinecraft().options.setCameraType(lastCameraType);
     }
 
     private void worldSelected(String selectedSubworldName) {

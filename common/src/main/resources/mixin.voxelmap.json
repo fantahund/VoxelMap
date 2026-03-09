@@ -13,6 +13,7 @@
     "APIMixinChatListenerHud",
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
+    "MixinCamera",
     "MixinChatHud",
     "MixinInGameHud",
     "MixinWorldRenderer"
