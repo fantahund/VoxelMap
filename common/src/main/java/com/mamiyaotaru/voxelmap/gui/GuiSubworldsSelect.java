@@ -38,7 +38,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         lastScreen = parent;
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         lastCameraType = VoxelConstants.getMinecraft().options.getCameraType();
-        VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
     }
 
     @Override
@@ -47,6 +46,8 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isThisMultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
             VoxelConstants.getMinecraft().setScreen(confirmScreen);
+        } else {
+            VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
         }
 
         this.title = Component.translatable("worldmap.multiworld.title");
