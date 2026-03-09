@@ -22,13 +22,16 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     protected EditBox message;
     protected EditBox filter;
     private final String locInfo;
-    static final MutableComponent SHARE_MESSAGE = (Component.translatable("minimap.waypointShare.shareMessage")).append(":");
-    static final Component SHARE_WITH = Component.translatable("minimap.waypointShare.shareWith");
-    static final Component SHARE_WAYPOINT = Component.translatable("minimap.waypointShare.title");
-    static final Component SHARE_COORDINATES = Component.translatable("minimap.waypointShare.titleCoordinate");
+
+    private static final Component SHARE_MESSAGE = Component.translatable("minimap.waypointShare.shareMessage").append(":");
+    private static final Component FILTER_MESSAGE = Component.translatable("minimap.waypoints.filter").append(":");
+
+    private static final Component SHARE_WITH = Component.translatable("minimap.waypointShare.shareWith");
+    private static final Component SHARE_WAYPOINT = Component.translatable("minimap.waypointShare.title");
+    private static final Component SHARE_COORDINATES = Component.translatable("minimap.waypointShare.titleCoordinate");
 
     public GuiSelectPlayer(Screen parentScreen, String locInfo, boolean sharingWaypoint) {
-        this.lastScreen = parentScreen;
+        lastScreen = parentScreen;
 
         this.locInfo = locInfo;
         this.sharingWaypoint = sharingWaypoint;
@@ -40,76 +43,44 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     @Override
     public void init() {
-        this.screenTitle = this.sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
-        this.playerList = new GuiListPlayers(this);
-        int messageStringWidth = this.getFont().width(I18n.get("minimap.waypointShare.shareMessage") + ":");
-        this.message = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, Component.empty());
-        this.message.setMaxLength(78);
-        this.addRenderableWidget(this.message);
-        int filterStringWidth = this.getFont().width(I18n.get("minimap.waypoints.filter") + ":");
-        this.filter = new EditBox(this.getFont(), this.getWidth() / 2 - 153 + filterStringWidth + 5, this.getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
-        this.filter.setMaxLength(35);
-        this.addRenderableWidget(this.filter);
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> this.onClose()).bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
-        this.setFocused(this.filter);
+        screenTitle = sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
+
+        playerList = new GuiListPlayers(this);
+
+        int messageStringWidth = getFont().width(SHARE_MESSAGE);
+        message = new EditBox(getFont(), getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, Component.empty());
+        message.setMaxLength(78);
+
+        int filterStringWidth = getFont().width(FILTER_MESSAGE);
+        filter = new EditBox(getFont(), getWidth() / 2 - 153 + filterStringWidth + 5, getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
+        filter.setMaxLength(35);
+        filter.setResponder(this::filterUpdated);
+
+        addRenderableWidget(playerList);
+        addRenderableWidget(message);
+        addRenderableWidget(filter);
+        setFocused(filter);
+        addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> onClose()).bounds(getWidth() / 2 - 100, getHeight() - 28, 200, 20).build());
     }
 
-    @Override
-    public boolean keyPressed(KeyEvent keyEvent) {
-        boolean OK = super.keyPressed(keyEvent);
-        if (this.filter.isFocused()) {
-            this.playerList.updateFilter(this.filter.getValue().toLowerCase());
-        }
-
-        return OK;
-    }
-
-    @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        boolean OK = super.charTyped(characterEvent);
-        if (this.filter.isFocused()) {
-            this.playerList.updateFilter(this.filter.getValue().toLowerCase());
-        }
-
-        return OK;
-    }
-
-    @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        this.playerList.mouseClicked(mouseButtonEvent, doubleClick);
-        return super.mouseClicked(mouseButtonEvent, doubleClick);
-    }
-
-    @Override
-    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        this.playerList.mouseReleased(mouseButtonEvent);
-        return super.mouseReleased(mouseButtonEvent);
-    }
-
-    @Override
-    public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        return this.playerList.mouseDragged(mouseButtonEvent, deltaX, deltaY);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        return this.playerList.mouseScrolled(mouseX, mouseY, 0, amount);
+    private void filterUpdated(String string) {
+        playerList.updateFilter(string.toLowerCase());
     }
 
     @Override
     public void accept(boolean b) {
-        if (this.allClicked) {
-            this.allClicked = false;
+        if (allClicked) {
+            allClicked = false;
             if (b) {
-                String combined = this.message.getValue() + " " + this.locInfo;
+                String combined = message.getValue() + " " + locInfo;
                 if (combined.length() > 256) {
-                    VoxelConstants.getPlayer().connection.sendChat(this.message.getValue());
-                    VoxelConstants.getPlayer().connection.sendChat(this.locInfo);
+                    VoxelConstants.getPlayer().connection.sendChat(message.getValue());
+                    VoxelConstants.getPlayer().connection.sendChat(locInfo);
                 } else {
                     VoxelConstants.getPlayer().connection.sendChat(combined);
                 }
 
-                this.onClose();
+                onClose();
             } else {
                 VoxelConstants.getMinecraft().setScreen(this);
             }
@@ -118,28 +89,25 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     protected void sendMessageToPlayer(String name) {
-        String combined = "msg " + name + " " + this.message.getValue() + " " + this.locInfo;
+        String combined = "msg " + name + " " + message.getValue() + " " + locInfo;
         if (combined.length() > 256) {
-            VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + this.message.getValue());
-            VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + this.locInfo);
+            VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + message.getValue());
+            VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + locInfo);
         } else {
             VoxelConstants.getPlayer().connection.sendCommand(combined);
         }
 
-        this.onClose();
+        onClose();
     }
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.playerList.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
         super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawString(this.getFont(), SHARE_MESSAGE, this.getWidth() / 2 - 153, 39, 0xFFA0A0A0);
-        this.message.render(drawContext, mouseX, mouseY, delta);
-        drawContext.drawCenteredString(this.getFont(), SHARE_WITH, this.getWidth() / 2, 75, 0xFFFFFFFF);
-        drawContext.drawString(this.getFont(), I18n.get("minimap.waypoints.filter") + ":", this.getWidth() / 2 - 153, this.getHeight() - 49, 0xFFA0A0A0);
-        this.filter.render(drawContext, mouseX, mouseY, delta);
 
+        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
+        drawContext.drawString(getFont(), SHARE_MESSAGE, getWidth() / 2 - 153, 39, 0xFFA0A0A0);
+        drawContext.drawCenteredString(getFont(), SHARE_WITH, getWidth() / 2, 75, 0xFFFFFFFF);
+        drawContext.drawString(getFont(), FILTER_MESSAGE, getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
     }
 
     @Override

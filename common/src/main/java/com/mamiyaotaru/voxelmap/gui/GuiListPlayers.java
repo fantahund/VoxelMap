@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -21,33 +20,35 @@ import net.minecraft.world.entity.player.PlayerSkin;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
     private final ArrayList<PlayerInfo> players;
     private ArrayList<PlayerInfo> playersFiltered;
-    final GuiSelectPlayer parentGui;
-    final Row everyoneRow;
+    private final GuiSelectPlayer parentGui;
+    private final Row everyoneRow;
+
     static final Component EVERYONE = Component.translatable("minimap.waypointShare.all");
     static final Component CONFIRM_TITLE = Component.translatable("minimap.waypointShare.shareWithEveryone");
     static final Component CONFIRM_EXPLANATION = Component.translatable("minimap.waypointShare.shareWithEveryone2");
     static final Component CONFIRM_AFFIRM = Component.translatable("gui.yes");
     static final Component CONFIRM_DENY = Component.translatable("gui.cancel");
 
-    public GuiListPlayers(GuiSelectPlayer par1GuiSelectPlayer) {
-        super(VoxelConstants.getMinecraft(), par1GuiSelectPlayer.getWidth(), par1GuiSelectPlayer.getHeight() - 65 + 4 - 89, 89, 25);
-        this.parentGui = par1GuiSelectPlayer;
-        ClientPacketListener netHandlerPlayClient = VoxelConstants.getPlayer().connection;
-        this.players = new ArrayList<>(netHandlerPlayClient.getOnlinePlayers());
-        this.sort();
-        Button everyoneButton = new Button.Plain(this.parentGui.getWidth() / 2 - 75, 0, 150, 20, EVERYONE, null, null) {
-            @Override
-            public void onPress(InputWithModifiers inputWithModifiers) {
-            }
-        };
+    public GuiListPlayers(GuiSelectPlayer parentGui) {
+        super(VoxelConstants.getMinecraft(), parentGui.getWidth(), parentGui.getHeight() - 65 + 4 - 89, 89, 25);
+        this.parentGui = parentGui;
+
+        ClientPacketListener connection = VoxelConstants.getPlayer().connection;
+        players = new ArrayList<>(connection.getOnlinePlayers());
+        sort();
+
+        Button everyoneButton = new Button.Builder(EVERYONE, button -> {}).bounds(parentGui.getWidth() / 2 - 75, 0, 150, 20).build();
         everyoneButton.setTooltip(Tooltip.create(Component.translatable("minimap.waypointShare.shareWithName", EVERYONE)));
-        this.everyoneRow = new Row(everyoneButton, -1);
-        this.updateFilter("");
+        everyoneRow = new Row(everyoneButton, -1, null, -1);
+
+        updateFilter("");
     }
 
     private Component getPlayerName(PlayerInfo ScoreboardEntryIn) {
@@ -58,7 +59,7 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
         if (ScoreboardEntry == null) {
             return null;
         } else {
-            Component name = this.getPlayerName(ScoreboardEntry);
+            Component name = getPlayerName(ScoreboardEntry);
             Button btn = new Button.Builder(name, button -> {}).bounds(x, y, 150, 20).build();
             btn.setTooltip(Tooltip.create(Component.translatable("minimap.waypointShare.shareWithName", name)));
             return btn;
@@ -76,46 +77,49 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
     }
 
     protected void sort() {
-        this.players.sort((player1, player2) -> {
-            String name1 = GuiListPlayers.this.getPlayerName(player1).getString();
-            String name2 = GuiListPlayers.this.getPlayerName(player2).getString();
+        players.sort((player1, player2) -> {
+            String name1 = getPlayerName(player1).getString();
+            String name2 = getPlayerName(player2).getString();
             return String.CASE_INSENSITIVE_ORDER.compare(name1, name2);
         });
     }
 
     protected void updateFilter(String filterString) {
-        this.playersFiltered = new ArrayList<>(this.players);
-        Iterator<?> iterator = this.playersFiltered.iterator();
+        playersFiltered = new ArrayList<>(players);
+        Iterator<?> iterator = playersFiltered.iterator();
 
         while (iterator.hasNext()) {
             PlayerInfo ScoreboardEntry = (PlayerInfo) iterator.next();
-            String name = this.getPlayerName(ScoreboardEntry).getString();
+            String name = getPlayerName(ScoreboardEntry).getString();
             if (!name.toLowerCase().contains(filterString)) {
                 iterator.remove();
             }
         }
 
-        this.clearEntries();
-        this.addEntry(this.everyoneRow);
+        setScrollAmount(0.0);
+        clearEntries();
+        addEntry(everyoneRow);
 
-        for (int i = 0; i < this.playersFiltered.size(); i += 2) {
-            PlayerInfo ScoreboardEntry1 = this.playersFiltered.get(i);
-            PlayerInfo ScoreboardEntry2 = i < this.playersFiltered.size() - 1 ? this.playersFiltered.get(i + 1) : null;
-            Button guibutton1 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
-            Button guibutton2 = this.createButtonFor(this.parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
-            this.addEntry(new Row(guibutton1, i, guibutton2, i + 1));
+        for (int i = 0; i < playersFiltered.size(); i += 2) {
+            PlayerInfo ScoreboardEntry1 = playersFiltered.get(i);
+            PlayerInfo ScoreboardEntry2 = i < playersFiltered.size() - 1 ? playersFiltered.get(i + 1) : null;
+
+            Button button1 = createButtonFor(parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
+            Button button2 = createButtonFor(parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
+
+            addEntry(new Row(button1, i, button2, i + 1));
         }
     }
 
     public void buttonClicked(int id) {
         if (id == -1) {
-            this.parentGui.allClicked = true;
-            ConfirmScreen confirmScreen = new ConfirmScreen(this.parentGui, CONFIRM_TITLE, CONFIRM_EXPLANATION, CONFIRM_AFFIRM, CONFIRM_DENY);
-            this.minecraft.setScreen(confirmScreen);
+            parentGui.allClicked = true;
+            ConfirmScreen confirmScreen = new ConfirmScreen(parentGui, CONFIRM_TITLE, CONFIRM_EXPLANATION, CONFIRM_AFFIRM, CONFIRM_DENY);
+            minecraft.setScreen(confirmScreen);
         } else {
-            PlayerInfo ScoreboardEntry = this.playersFiltered.get(id);
-            String name = this.getPlayerName(ScoreboardEntry).getString();
-            this.parentGui.sendMessageToPlayer(name);
+            PlayerInfo ScoreboardEntry = playersFiltered.get(id);
+            String name = getPlayerName(ScoreboardEntry).getString();
+            parentGui.sendMessageToPlayer(name);
         }
 
     }
@@ -125,52 +129,34 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
     }
 
     public class Row extends AbstractSelectionList.Entry<Row> {
-        private Button button;
-        private Button button1;
-        private Button button2;
-        private int id;
-        private int id1;
-        private int id2;
+        private final LinkedHashMap<Button, Integer> buttonAndIds = new LinkedHashMap<>();;
 
-        public Row(Button button, int id) {
-            this.button = button;
-            this.id = id;
-        }
-
-        public Row(Button button1, int id1, Button button2, int id2) {
-            this.button1 = button1;
-            this.id1 = id1;
-            this.button2 = button2;
-            this.id2 = id2;
+        public Row(Button primaryButton, int primaryId, Button secondaryButton, int secondaryId) {
+            buttonAndIds.put(primaryButton, primaryId);
+            buttonAndIds.put(secondaryButton, secondaryId);
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            this.drawButton(drawContext, this.button, this.id, 0, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(drawContext, this.button1, this.id1, 0, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
-            this.drawButton(drawContext, this.button2, this.id2, 0, getX(), getY(), getRowWidth(), defaultEntryHeight, mouseX, mouseY, hovered, tickDelta);
-        }
-
-        private void drawButton(GuiGraphics drawContext, Button button, int id, int slotIndex, int x, int y, int listWidth, int slotHeight, int mouseX, int mouseY, boolean isSelected, float partialTicks) {
-            if (button != null) {
-                button.setY(y);
-                button.render(drawContext, mouseX, mouseY, partialTicks);
-                if (id != -1) {
-                    this.drawIconForButton(drawContext, button, id);
+            buttonAndIds.forEach((button, id) -> {
+                if (button != null) {
+                    button.setY(getY());
+                    button.render(drawContext, mouseX, mouseY, tickDelta);
+                    if (id != -1) {
+                        drawIconForButton(drawContext, button, id);
+                    }
                 }
-            }
-
+            });
         }
 
         private void drawIconForButton(GuiGraphics drawContext, Button button, int id) {
-            PlayerInfo networkPlayerInfo = GuiListPlayers.this.playersFiltered.get(id);
-            GameProfile gameProfile = networkPlayerInfo.getProfile();
-            Player entityPlayer = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
+            GameProfile gameProfile = playersFiltered.get(id).getProfile();
+            Player player = VoxelConstants.getPlayer().level().getPlayerByUUID(gameProfile.id());
             Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).getNow(Optional.empty());
             if (optionalSkin.isPresent()) {
                 Identifier skinIdentifier = optionalSkin.get().body().texturePath();
                 drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 8.0F, 8.0F, 8, 8, 8, 8, 64, 64);
-                if (entityPlayer != null && entityPlayer.isModelPartShown(PlayerModelPart.HAT)) {
+                if (player != null && player.isModelPartShown(PlayerModelPart.HAT)) {
                     drawContext.blit(RenderPipelines.GUI_TEXTURED, skinIdentifier, button.getX() + 6, button.getY() + 6, 40.0F, 8.0F, 8, 8, 8, 8, 64, 64);
                 }
             }
@@ -178,34 +164,28 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
 
         @Override
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            if (this.button != null && this.button.mouseClicked(mouseButtonEvent, doubleClick)) {
-                GuiListPlayers.this.buttonClicked(this.id);
-                return true;
-            } else if (this.button1 != null && this.button1.mouseClicked(mouseButtonEvent, doubleClick)) {
-                GuiListPlayers.this.buttonClicked(this.id1);
-                return true;
-            } else if (this.button2 != null && this.button2.mouseClicked(mouseButtonEvent, doubleClick)) {
-                GuiListPlayers.this.buttonClicked(this.id2);
-                return true;
-            } else {
-                return false;
+            for (Map.Entry<Button, Integer> entry : buttonAndIds.entrySet()) {
+                Button button = entry.getKey();
+                Integer id = entry.getValue();
+                if (button != null && button.mouseClicked(mouseButtonEvent, doubleClick)) {
+                    buttonClicked(id);
+                    return true;
+                }
             }
+
+            return false;
         }
 
         @Override
         public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-            if (this.button != null) {
-                this.button.mouseReleased(mouseButtonEvent);
-                return true;
-            } else if (this.button1 != null) {
-                this.button1.mouseReleased(mouseButtonEvent);
-                return true;
-            } else if (this.button2 != null) {
-                this.button2.mouseReleased(mouseButtonEvent);
-                return true;
-            } else {
-                return false;
+            for (Map.Entry<Button, Integer> entry : buttonAndIds.entrySet()) {
+                Button button = entry.getKey();
+                if (button != null && button.mouseReleased(mouseButtonEvent)) {
+                    return true;
+                }
             }
+
+            return false;
         }
     }
 }
