@@ -32,6 +32,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean outlines = true;
     public boolean showEntityElevation = true;
     public boolean hideSneakingPlayers = true;
+    public boolean hideInvisibleEntities = true;
     public boolean showFacing = true;
     float fontScale = 1.0F;
     public final HashSet<Identifier> hiddenMobs = new HashSet<>();
@@ -64,6 +65,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     case "Show Facing" -> showFacing = Boolean.parseBoolean(curLine[1]);
                     case "Show Entity Elevation" -> showEntityElevation = Boolean.parseBoolean(curLine[1]);
                     case "Hide Sneaking Players" -> hideSneakingPlayers = Boolean.parseBoolean(curLine[1]);
+                    case "Hide Invisible Entities" -> hideInvisibleEntities = Boolean.parseBoolean(curLine[1]);
                     case "Hidden Mobs" -> applyHiddenMobSettings(curLine[1]);
                 }
             }
@@ -103,6 +105,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Show Facing:" + showFacing);
         out.println("Show Entity Elevation:" + showEntityElevation);
         out.println("Hide Sneaking Players:" + hideSneakingPlayers);
+        out.println("Hide Invisible Entities:" + hideInvisibleEntities);
         out.print("Hidden Mobs:");
         for (Identifier mob : hiddenMobs) {
             out.print(mob.toString() + ",");
@@ -141,6 +144,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case SHOW_FACING -> showFacing;
             case SHOW_ENTITY_ELEVATION -> showEntityElevation;
             case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers;
+            case HIDE_INVISIBLE_ENTITIES -> hideInvisibleEntities;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
@@ -160,6 +164,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case SHOW_FACING -> showFacing = !showFacing;
             case SHOW_ENTITY_ELEVATION -> showEntityElevation = !showEntityElevation;
             case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers = !hideSneakingPlayers;
+            case HIDE_INVISIBLE_ENTITIES -> hideInvisibleEntities = !hideInvisibleEntities;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         }
