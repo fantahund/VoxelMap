@@ -67,6 +67,7 @@
   "options.minimap.radar.showFacing": "Look Direction",
   "options.minimap.radar.showEntityElevation": "Show Entity Elevation",
   "options.minimap.radar.hideSneakingPlayers": "Hide Sneaking Players",
+  "options.minimap.radar.hideInvisibleEntities": "Hide Invisible Entities",
   "options.minimap.radar.selectMobs": "Mobs to Display...",
   "options.minimap.detailsPerformance": "Details/Performance...",
   "options.minimap.terrain.height": "Height",

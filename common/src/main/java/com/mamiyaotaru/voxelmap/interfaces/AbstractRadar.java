@@ -111,12 +111,14 @@ public abstract class AbstractRadar {
         double wayZ = minimapContext.playerZ - contact.z;
         double wayY = minimapContext.playerY - contact.y;
 
-        boolean isInRange = isInRange(contact.entity, wayX, wayY, wayZ, 0.0F);
-        boolean isSneaking = (contact.entity instanceof Player player) && player.isCrouching();
-        if (!isInRange || (isSneaking && radarOptions.hideSneakingPlayers)) {
+        if (!isInRange(contact.entity, wayX, wayY, wayZ, 0.0F)
+            || (radarOptions.hideSneakingPlayers && contact.entity instanceof Player player && player.isCrouching())
+            || (radarOptions.hideInvisibleEntities && contact.entity.isInvisible())
+        ) {
             contact.displayState = Contact.DisplayState.HIDDEN;
             return;
-        } else {
+        }
+        else {
             contact.displayState = Contact.DisplayState.BELOW_FRAME;
         }
 
