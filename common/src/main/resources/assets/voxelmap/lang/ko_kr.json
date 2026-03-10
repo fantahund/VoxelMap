@@ -68,6 +68,7 @@
   "options.minimap.radar.selectMobs": "표시할 몹...",
   "options.minimap.radar.showEntityElevation": "엔티티 고도 표시",
   "options.minimap.radar.hideSneakingPlayers": "웅크린 플레이어 숨기기",
+  "options.minimap.radar.hideInvisibleEntities": "투명화된 엔티티 숨기기",
   "options.minimap.detailsPerformance": "세부사항 및 성능...",
   "options.minimap.terrain.height": "높이 표시",
   "options.minimap.terrain.slope": "경사 표시",

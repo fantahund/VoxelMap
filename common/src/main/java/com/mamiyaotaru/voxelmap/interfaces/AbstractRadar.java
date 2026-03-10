@@ -113,14 +113,13 @@ public abstract class AbstractRadar {
 
         if (!isInRange(contact.entity, wayX, wayY, wayZ, 0.0F)
             || (radarOptions.hideSneakingPlayers && contact.entity instanceof Player player && player.isCrouching())
-            || (radarOptions.hideInvisibleEntities && contact.entity.isInvisible())
+            || (radarOptions.hideInvisibleEntities && contact.entity.isInvisibleTo(VoxelConstants.getPlayer()))
         ) {
             contact.displayState = Contact.DisplayState.HIDDEN;
             return;
         }
-        else {
-            contact.displayState = Contact.DisplayState.BELOW_FRAME;
-        }
+
+        contact.displayState = Contact.DisplayState.BELOW_FRAME;
 
         contact.angle = (float) Math.toDegrees(Math.atan2(wayX, wayZ));
         contact.angle += minimapContext.direction;
@@ -138,7 +137,7 @@ public abstract class AbstractRadar {
     }
 
     protected boolean isEntityShown(Entity entity) {
-        if (entity.isInvisibleTo(VoxelConstants.getPlayer()) || entity.equals(VoxelConstants.getPlayer()) || !(entity instanceof LivingEntity)) {
+        if (!(entity instanceof LivingEntity) || entity.equals(VoxelConstants.getPlayer())) {
             return false;
         }
 
@@ -166,7 +165,7 @@ public abstract class AbstractRadar {
         dy /= scale;
         dz /= scale;
 
-        double maxHeight =  getEntityMaxHeight(entity) + cullDist;
+        double maxHeight = getEntityMaxHeight(entity) + cullDist;
         if (radarOptions.showEntityElevation && Math.abs(dy) > maxHeight) {
             return false;
         }
