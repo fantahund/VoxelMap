@@ -49,7 +49,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         counter += (counter % 2 == 0 ? 2 : 3);
 
         for (EnumOptionsMinimap option : relevantOptions2) {
-            if (option.isFloat()) {
+            if (option.getType() == EnumOptionsMinimap.Type.FLOAT) {
                 float sValue = this.options.getFloatValue(option);
 
                 this.addRenderableWidget(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, switch (option) {

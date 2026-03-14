@@ -29,7 +29,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         this.screenTitle = Component.translatable("options.minimap.waypoints.title");
 
         for (EnumOptionsMinimap option : relevantOptions) {
-            if (option.isFloat()) {
+            if (option.getType() == EnumOptionsMinimap.Type.FLOAT) {
                 float value = this.options.getFloatValue(option);
                 switch (option) {
                     case WAYPOINT_DISTANCE -> {

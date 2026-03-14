@@ -270,25 +270,30 @@ public class MapSettingsManager implements ISettingsManager {
     @Override
     public String getKeyText(EnumOptionsMinimap option) {
         String s = I18n.get(option.getName()) + ": ";
-        if (option.isBoolean()) {
-            boolean flag = getBooleanValue(option);
-            return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
-        } else if (option.isList()) {
-            String state = getListValue(option);
-            return s + state;
-        } else if (option.isFloat()) {
-            float value = getFloatValue(option);
-            return switch (option) {
-                case ZOOM -> s + (int) value;
 
-                case WAYPOINT_DISTANCE -> s + (value < 0.0F ? I18n.get("options.minimap.waypoints.infinite") : (int) value);
-                case WAYPOINT_SIGN_SCALE -> s + String.format("%.2fx", value);
+        switch (option.getType()) {
+            case BOOLEAN -> {
+                boolean flag = getBooleanValue(option);
+                return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
+            }
+            case LIST -> {
+                String state = getListValue(option);
+                return s + state;
+            }
+            case FLOAT -> {
+                float value = getFloatValue(option);
+                return switch (option) {
+                    case ZOOM -> s + (int) value;
 
-                default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
-            };
-        } else {
-            return s + ERROR_STRING;
+                    case WAYPOINT_DISTANCE -> s + (value < 0.0F ? I18n.get("options.minimap.waypoints.infinite") : (int) value);
+                    case WAYPOINT_SIGN_SCALE -> s + String.format("%.2fx", value);
+
+                    default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
+                };
+            }
         }
+
+        return s + ERROR_STRING;
     }
 
     @Override
@@ -521,10 +526,9 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public static void updateBooleanOrListValue(ISettingsManager settingsManager, EnumOptionsMinimap option) {
-        if (option.isBoolean()) {
-            settingsManager.toggleBooleanValue(option);
-        } else if (option.isList()) {
-            settingsManager.cycleListValue(option);
+        switch (option.getType()) {
+            case BOOLEAN -> settingsManager.toggleBooleanValue(option);
+            case LIST -> settingsManager.cycleListValue(option);
         }
     }
 

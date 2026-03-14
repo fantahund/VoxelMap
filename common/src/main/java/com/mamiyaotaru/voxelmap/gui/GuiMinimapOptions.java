@@ -172,7 +172,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             int buttonY = getHeight() / 6 + 24 * ((i - pageStart) >> 1);
 
             // List / Toggle
-            if (option.isBoolean() || option.isList()) {
+            if (option.getType() == EnumOptionsMinimap.Type.BOOLEAN || option.getType() == EnumOptionsMinimap.Type.LIST) {
                 StringBuilder text = new StringBuilder().append(settingsManager.getKeyText(option));
                 if ((option == EnumOptionsMinimap.WATER_TRANSPARENCY || option == EnumOptionsMinimap.BLOCK_TRANSPARENCY || option == EnumOptionsMinimap.BIOMES) && !mapOptions.multicore && settingsManager.getBooleanValue(option)) {
                     text.append("§c").append(text);
@@ -242,7 +242,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         switch (option) {
             case OLD_NORTH -> voxelMap.getWaypointManager().setOldNorth(mapOptions.oldNorth);
             case WATER_TRANSPARENCY, BLOCK_TRANSPARENCY, BIOMES -> {
-                if (!mapOptions.multicore && option.isBoolean() && settingsManager.getBooleanValue(option)) {
+                if (!mapOptions.multicore && option.getType() == EnumOptionsMinimap.Type.BOOLEAN && settingsManager.getBooleanValue(option)) {
                     prefix = "§c";
                 }
             }

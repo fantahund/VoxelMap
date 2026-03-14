@@ -77,23 +77,28 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     @Override
     public String getKeyText(EnumOptionsMinimap option) {
         String s = I18n.get(option.getName()) + ": ";
-        if (option.isBoolean()) {
-            boolean flag = getBooleanValue(option);
-            return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
-        } else if (option.isList()) {
-            String state = getListValue(option);
-            return s + state;
-        } else if (option.isFloat()) {
-            float value = getFloatValue(option);
-            return switch (option) {
-                case MIN_ZOOM, MAX_ZOOM -> s + (float) Math.pow(2.0, value) + "x";
-                case CACHE_SIZE -> s + (int) value;
 
-                default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
-            };
-        } else {
-            return s + MapSettingsManager.ERROR_STRING;
+        switch (option.getType()) {
+            case BOOLEAN -> {
+                boolean flag = getBooleanValue(option);
+                return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
+            }
+            case LIST -> {
+                String state = getListValue(option);
+                return s + state;
+            }
+            case FLOAT -> {
+                float value = getFloatValue(option);
+                return switch (option) {
+                    case MIN_ZOOM, MAX_ZOOM -> s + (float) Math.pow(2.0, value) + "x";
+                    case CACHE_SIZE -> s + (int) value;
+
+                    default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
+                };
+            }
         }
+
+        return s + MapSettingsManager.ERROR_STRING;
     }
 
     @Override

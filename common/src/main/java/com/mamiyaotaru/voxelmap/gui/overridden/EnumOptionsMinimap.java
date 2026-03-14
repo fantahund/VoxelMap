@@ -2,96 +2,86 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 public enum EnumOptionsMinimap {
     // Misc / Internal
-    WELCOME_SCREEN("Welcome Screen", false, true, false),
-    ZOOM("Minimap Zoom", false, true, false),
-    OLD_NORTH("options.minimap.oldNorth", false, true, false),
-    COLOR_PICKER_MODE("options.minimap.colorPickerMode", false, false, true),
+    WELCOME_SCREEN("Welcome Screen", Type.BOOLEAN),
+    ZOOM("Minimap Zoom", Type.FLOAT),
+    OLD_NORTH("options.minimap.oldNorth", Type.BOOLEAN),
+    COLOR_PICKER_MODE("options.minimap.colorPickerMode", Type.LIST),
 
     // Minimap - General
-    HIDE_MINIMAP("options.minimap.hideMinimap", false, true, false),
-    UPDATE_NOTIFIER("options.minimap.updateNotifier", false, true, false),
-    SHOW_BIOME("options.minimap.showBiome", false, true, false),
-    SHOW_COORDS("options.minimap.showCoordinates", false, false, true),
-    LOCATION("options.minimap.location", false, false, true),
-    SIZE("options.minimap.size", false, false, true),
-    SQUARE_MAP("options.minimap.squareMap", false, true, false),
-    ROTATES("options.minimap.rotation", false, true, false),
-    IN_GAME_WAYPOINTS("options.minimap.inGameWaypoints", false, false, true),
-    CAVE_MODE("options.minimap.caveMode", false, true, false),
-    MOVE_MAP_BELOW_STATUS_EFFECT_ICONS("options.minimap.moveMapBelowStatusEffectIcons", false, true, false),
-    MOVE_SCOREBOARD_BELOW_MAP("options.minimap.moveScoreboardBelowMap", false, true, false),
+    HIDE_MINIMAP("options.minimap.hideMinimap", Type.BOOLEAN),
+    UPDATE_NOTIFIER("options.minimap.updateNotifier", Type.BOOLEAN),
+    SHOW_BIOME("options.minimap.showBiome", Type.BOOLEAN),
+    SHOW_COORDS("options.minimap.showCoordinates", Type.LIST),
+    LOCATION("options.minimap.location", Type.LIST),
+    SIZE("options.minimap.size", Type.LIST),
+    SQUARE_MAP("options.minimap.squareMap", Type.BOOLEAN),
+    ROTATES("options.minimap.rotation", Type.BOOLEAN),
+    IN_GAME_WAYPOINTS("options.minimap.inGameWaypoints", Type.LIST),
+    CAVE_MODE("options.minimap.caveMode", Type.BOOLEAN),
+    MOVE_MAP_BELOW_STATUS_EFFECT_ICONS("options.minimap.moveMapBelowStatusEffectIcons", Type.BOOLEAN),
+    MOVE_SCOREBOARD_BELOW_MAP("options.minimap.moveScoreboardBelowMap", Type.BOOLEAN),
 
     // Minimap - Details / Performance
-    DYNAMIC_LIGHTING("options.minimap.dynamicLighting", false, true, false),
-    TERRAIN_DEPTH("options.minimap.terrainDepth", false, false, true),
-    WATER_TRANSPARENCY("options.minimap.waterTransparency", false, true, false),
-    BLOCK_TRANSPARENCY("options.minimap.blockTransparency", false, true, false),
-    BIOMES("options.minimap.biomes", false, true, false),
-    BIOME_OVERLAY("options.minimap.biomeOverlay", false, false, true),
-    CHUNK_GRID("options.minimap.chunkGrid", false, true, false),
-    SLIME_CHUNKS("options.minimap.slimeChunks", false, true, false),
-    WORLD_BORDER("options.minimap.worldBorder", false, true, false),
-    FILTERING("options.minimap.filtering", false, true, false),
-    TELEPORT_COMMAND("Teleport Command", false, false, false),
+    DYNAMIC_LIGHTING("options.minimap.dynamicLighting", Type.BOOLEAN),
+    TERRAIN_DEPTH("options.minimap.terrainDepth", Type.LIST),
+    WATER_TRANSPARENCY("options.minimap.waterTransparency", Type.BOOLEAN),
+    BLOCK_TRANSPARENCY("options.minimap.blockTransparency", Type.BOOLEAN),
+    BIOMES("options.minimap.biomes", Type.BOOLEAN),
+    BIOME_OVERLAY("options.minimap.biomeOverlay", Type.LIST),
+    CHUNK_GRID("options.minimap.chunkGrid", Type.BOOLEAN),
+    SLIME_CHUNKS("options.minimap.slimeChunks", Type.BOOLEAN),
+    WORLD_BORDER("options.minimap.worldBorder", Type.BOOLEAN),
+    FILTERING("options.minimap.filtering", Type.BOOLEAN),
+    TELEPORT_COMMAND("Teleport Command", Type.NONE),
 
     // Waypoint
-    WAYPOINT_DISTANCE("options.minimap.waypoints.distance", true, false, false),
-    WAYPOINT_SIGN_SCALE("options.minimap.waypoints.waypointSignScale", true, false, false),
-    DEATHPOINTS("options.minimap.waypoints.deathpoints", false, false, true),
-    WAYPOINT_DISTANCE_UNIT_CONVERSION("options.minimap.waypoints.distanceUnitConversion", false, false, true),
-    SHOW_IN_GAME_WAYPOINT_NAMES("options.minimap.waypoints.showWaypointNames", false, false, true),
-    SHOW_IN_GAME_WAYPOINT_DISTANCES("options.minimap.waypoints.showWaypointDistances", false, false, true),
+    WAYPOINT_DISTANCE("options.minimap.waypoints.distance", Type.FLOAT),
+    WAYPOINT_SIGN_SCALE("options.minimap.waypoints.waypointSignScale", Type.FLOAT),
+    DEATHPOINTS("options.minimap.waypoints.deathpoints", Type.LIST),
+    WAYPOINT_DISTANCE_UNIT_CONVERSION("options.minimap.waypoints.distanceUnitConversion", Type.LIST),
+    SHOW_IN_GAME_WAYPOINT_NAMES("options.minimap.waypoints.showWaypointNames", Type.LIST),
+    SHOW_IN_GAME_WAYPOINT_DISTANCES("options.minimap.waypoints.showWaypointDistances", Type.LIST),
 
     // Radar
-    SHOW_RADAR("options.minimap.radar.showRadar", false, true, false),
-    RADAR_MODE("options.minimap.radar.radarMode", false, false, true),
-    SHOW_MOBS("options.minimap.radar.showMobs", false, false, true),
-    SHOW_MOB_NAMES("options.minimap.radar.showMobNames", false, true, false),
-    SHOW_MOB_HELMETS("options.minimap.radar.showMobHelmets", false, true, false),
-    SHOW_PLAYERS("options.minimap.radar.showPlayers", false, true, false),
-    SHOW_PLAYER_NAMES("options.minimap.radar.showPlayerNames", false, true, false),
-    SHOW_PLAYER_HELMETS("options.minimap.radar.showPlayerHelmets", false, true, false),
-    RADAR_FILTERING("options.minimap.radar.iconFiltering", false, true, false),
-    RADAR_OUTLINES("options.minimap.radar.iconOutlines", false, true, false),
-    SHOW_FACING("options.minimap.radar.showFacing", false, true, false),
-    SHOW_FULL_ENTITY_NAMES("options.minimap.radar.showFullEntityNames", false, true, false),
-    SHOW_ENTITY_ELEVATION("options.minimap.radar.showEntityElevation", false, true, false),
-    HIDE_SNEAKING_PLAYERS("options.minimap.radar.hideSneakingPlayers", false, true, false),
-    HIDE_INVISIBLE_ENTITIES("options.minimap.radar.hideInvisibleEntities", false, true, false),
+    SHOW_RADAR("options.minimap.radar.showRadar", Type.BOOLEAN),
+    RADAR_MODE("options.minimap.radar.radarMode", Type.LIST),
+    SHOW_MOBS("options.minimap.radar.showMobs", Type.LIST),
+    SHOW_MOB_NAMES("options.minimap.radar.showMobNames", Type.BOOLEAN),
+    SHOW_MOB_HELMETS("options.minimap.radar.showMobHelmets", Type.BOOLEAN),
+    SHOW_PLAYERS("options.minimap.radar.showPlayers", Type.BOOLEAN),
+    SHOW_PLAYER_NAMES("options.minimap.radar.showPlayerNames", Type.BOOLEAN),
+    SHOW_PLAYER_HELMETS("options.minimap.radar.showPlayerHelmets", Type.BOOLEAN),
+    RADAR_FILTERING("options.minimap.radar.iconFiltering", Type.BOOLEAN),
+    RADAR_OUTLINES("options.minimap.radar.iconOutlines", Type.BOOLEAN),
+    SHOW_FACING("options.minimap.radar.showFacing", Type.BOOLEAN),
+    SHOW_FULL_ENTITY_NAMES("options.minimap.radar.showFullEntityNames", Type.BOOLEAN),
+    SHOW_ENTITY_ELEVATION("options.minimap.radar.showEntityElevation", Type.BOOLEAN),
+    HIDE_SNEAKING_PLAYERS("options.minimap.radar.hideSneakingPlayers", Type.BOOLEAN),
+    HIDE_INVISIBLE_ENTITIES("options.minimap.radar.hideInvisibleEntities", Type.BOOLEAN),
 
     // World Map
-    SHOW_WAYPOINTS("options.worldmap.showWaypoints", false, true, false),
-    SHOW_WAYPOINT_NAMES("options.worldmap.showWaypointNames", false, true, false),
-    SHOW_WORLDMAP_COORDS("options.worldmap.showCoordinates", false, true, false),
-    MIN_ZOOM("options.worldmap.minZoom", true, false, false),
-    MAX_ZOOM("options.worldmap.maxZoom", true, false, false),
-    CACHE_SIZE("options.worldmap.cacheSize", true, false, false);
+    SHOW_WAYPOINTS("options.worldmap.showWaypoints", Type.BOOLEAN),
+    SHOW_WAYPOINT_NAMES("options.worldmap.showWaypointNames", Type.BOOLEAN),
+    SHOW_WORLDMAP_COORDS("options.worldmap.showCoordinates", Type.BOOLEAN),
+    MIN_ZOOM("options.worldmap.minZoom", Type.FLOAT),
+    MAX_ZOOM("options.worldmap.maxZoom", Type.FLOAT),
+    CACHE_SIZE("options.worldmap.cacheSize", Type.FLOAT);
 
-    private final boolean isFloat;
-    private final boolean isBoolean;
-    private final boolean isList;
+    public enum Type { NONE, BOOLEAN, LIST, FLOAT }
+
     private final String name;
+    private final Type type;
 
-    EnumOptionsMinimap(String name, boolean isFloat, boolean isBoolean, boolean isList) {
+    EnumOptionsMinimap(String name, Type type) {
         this.name = name;
-        this.isFloat = isFloat;
-        this.isBoolean = isBoolean;
-        this.isList = isList;
-    }
-
-    public boolean isFloat() {
-        return this.isFloat;
-    }
-
-    public boolean isBoolean() {
-        return this.isBoolean;
-    }
-
-    public boolean isList() {
-        return this.isList;
+        this.type = type;
     }
 
     public String getName() {
         return this.name;
+    }
+
+    public Type getType() {
+        return this.type;
     }
 }
