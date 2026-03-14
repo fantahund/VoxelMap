@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Добро пожаловать в VoxelMap!",
   "minimap.ui.welcome4": "Доступные команды и настройки:",
   "minimap.ui.welcome5": "Спрятать это сообщение",
-  "minimap.ui.zoomLevel": "Масштаб",
+  "minimap.ui.zoomLevel": "Масштаб: (%sx)",
   "minimap.ui.otherOptions": "Другие настройки",
   "options.minimap.title": "Настройки карты",
   "options.minimap.showCoordinates": "Вкл. координаты",

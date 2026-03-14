@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Velkommen til VoxelMap, der er et",
   "minimap.ui.welcome4": "antal af features og commands tilgængelig.",
   "minimap.ui.welcome5": "Skjul denne besked",
-  "minimap.ui.zoomLevel": "Zoom Niveau:",
+  "minimap.ui.zoomLevel": "Zoom Niveau: (%sx)",
   "minimap.ui.otherOptions": "Andre Indstillinger",
   "options.minimap.title": "Minimap Indstillinger",
   "options.minimap.showCoordinates": "Vis Koordinater",

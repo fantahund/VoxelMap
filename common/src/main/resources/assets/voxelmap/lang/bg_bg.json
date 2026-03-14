@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Добре Дошли във VoxelMap тук ",
   "minimap.ui.welcome4": "редица функции и команди, достъпни за Вас.",
   "minimap.ui.welcome5": "Скрий това съобщение",
-  "minimap.ui.zoomLevel": "Ниво на zoom:",
+  "minimap.ui.zoomLevel": "Ниво на zoom: (%sx)",
   "minimap.ui.otherOptions": "Други опции",
   "options.minimap.title": "Опции на минимапа",
   "options.minimap.showCoordinates": "Показвай координати",

@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "歡迎使用 VoxelMap",
   "minimap.ui.welcome4": "此模組還有一些功能供您使用.",
   "minimap.ui.welcome5": "隱藏此訊息",
-  "minimap.ui.zoomLevel": "縮放等級：",
+  "minimap.ui.zoomLevel": "縮放等級： (%sx)",
   "minimap.ui.otherOptions": "其他選項",
   "options.minimap.title": "小地圖選項",
   "options.minimap.showCoordinates": "顯示座標",

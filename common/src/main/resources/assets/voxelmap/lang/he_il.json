@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "ישנם .VoxelMap-ברוכים הבאים ל",
   "minimap.ui.welcome4": "ישנן מספר תוכנות ופקודות האפשריות בשבילך.",
   "minimap.ui.welcome5": "הסתר הודעה זו.",
-  "minimap.ui.zoomLevel": "רמת זום:",
+  "minimap.ui.zoomLevel": "רמת זום: (%sx)",
   "minimap.ui.otherOptions": "אפשרויות אחרות",
   "options.minimap.title": "אפשרויות מפה",
   "options.minimap.showCoordinates": "הצג קואורדינטות",

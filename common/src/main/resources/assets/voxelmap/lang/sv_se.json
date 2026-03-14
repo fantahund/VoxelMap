@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Välkommen till VoxelMap, det finns ",
   "minimap.ui.welcome4": "ett antal funktioner och kommandon tillgängliga för dig. ",
   "minimap.ui.welcome5": "Dölj det här meddelandet",
-  "minimap.ui.zoomLevel": "Zoom nivå:",
+  "minimap.ui.zoomLevel": "Zoom nivå: (%sx)",
   "minimap.ui.otherOptions": "Andra Inställningar",
   "options.minimap.title": "Minimap Inställningar",
   "options.minimap.showCoordinates": "Visa Koordinater",

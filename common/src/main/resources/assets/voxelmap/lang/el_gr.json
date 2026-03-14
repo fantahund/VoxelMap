@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Καλώς ήρθατε στο VoxelMap, υπάρχουν",
   "minimap.ui.welcome4": "αριθμός δυνατότητες και εντολές στη διάθεσή σας.",
   "minimap.ui.welcome5": "Απόκρυψη αυτού του μηνύματος",
-  "minimap.ui.zoomLevel": "Επίπεδο Ζουμ:",
+  "minimap.ui.zoomLevel": "Επίπεδο Ζουμ: (%sx)",
   "minimap.ui.otherOptions": "Άλλες επιλογές",
   "options.minimap.title": "Μικρός Επιλογές",
   "options.minimap.showCoordinates": "Display Συντεταγμένες",

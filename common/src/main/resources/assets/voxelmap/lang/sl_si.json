@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Dobrodošel pri VoxelMapu, tukaj je",
   "minimap.ui.welcome4": "zelo veliko funkcij in komand, ki jih lahko uporabljaš.",
   "minimap.ui.welcome5": "Skrij to sporočilo",
-  "minimap.ui.zoomLevel": "Velikost zooma:",
+  "minimap.ui.zoomLevel": "Velikost zooma: (%sx)",
   "minimap.ui.otherOptions": "Ostale nastavitve",
   "options.minimap.title": "Nastavitve Mini-zemljevida",
   "options.minimap.showCoordinates": "Pokaži koordinate",

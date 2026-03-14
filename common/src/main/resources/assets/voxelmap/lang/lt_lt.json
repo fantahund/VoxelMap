@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Sveiki Atvyke į VoxelMap, cia yra",
   "minimap.ui.welcome4": "pilna funkciju ir komandu galimų tau.",
   "minimap.ui.welcome5": "Slėpti šita žinutę",
-  "minimap.ui.zoomLevel": "Pritraukimo Lygis:",
+  "minimap.ui.zoomLevel": "Pritraukimo Lygis: (%sx)",
   "minimap.ui.otherOptions": "Kitos Parinktys",
   "options.minimap.title": "Žemėlapio Parinktys",
   "options.minimap.showCoordinates": "Rodyti Koordinates",

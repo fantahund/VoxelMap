@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Velkomin VoxelMap, það eru",
   "minimap.ui.welcome4": "fjöldi af lögun og skipanir í boði fyrir þig.",
   "minimap.ui.welcome5": "Fela þessi skilaboð",
-  "minimap.ui.zoomLevel": "Zoom Level:",
+  "minimap.ui.zoomLevel": "Zoom Level: (%sx)",
   "minimap.ui.otherOptions": "Annað Valkostir",
   "options.minimap.title": "minimap Valkostir",
   "options.minimap.showCoordinates": "Display Hnit",

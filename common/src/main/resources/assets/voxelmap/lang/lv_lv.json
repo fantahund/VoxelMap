@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Apsveicu Tevi ar VoxelMap ieinstalēšanu, šīs ir  ",
   "minimap.ui.welcome4": "tev pieejamas komandas. ",
   "minimap.ui.welcome5": "Paslēpt šo ziņu ",
-  "minimap.ui.zoomLevel": "Pietuvināšanas līmenis: ",
+  "minimap.ui.zoomLevel": "Pietuvināšanas līmenis: (%sx)",
   "minimap.ui.otherOptions": "Citi uzstādijumi",
   "options.minimap.title": "Minimapes uzstādijumi ",
   "options.minimap.showCoordinates": "Rādīt koordinātes ",

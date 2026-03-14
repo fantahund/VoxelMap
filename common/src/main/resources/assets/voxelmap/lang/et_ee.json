@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Tere tulemast VoxelMap'i, see pakub sulle",
   "minimap.ui.welcome4": "mitmeid funktsioone ja käskluseid.",
   "minimap.ui.welcome5": "Peida see sõnum",
-  "minimap.ui.zoomLevel": "Suurendustase:",
+  "minimap.ui.zoomLevel": "Suurendustase: (%sx)",
   "minimap.ui.otherOptions": "Lisavalikud",
   "options.minimap.title": "Minikaardi valikud",
   "options.minimap.showCoordinates": "Koordinaatide kuva",

@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Добродошли у VoxelMap, постоји",
   "minimap.ui.welcome4": "велики број команди које су вам доступне.",
   "minimap.ui.welcome5": "Сакриј ову поруку",
-  "minimap.ui.zoomLevel": "Ниво зумирања:",
+  "minimap.ui.zoomLevel": "Ниво зумирања: (%sx)",
   "minimap.ui.otherOptions": "Остала Подешавања",
   "options.minimap.title": "Подешавања Минимапе",
   "options.minimap.showCoordinates": "Приказ путања",

@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Benvenuto in VoxelMap, ci sono",
   "minimap.ui.welcome4": "varie caratteristiche e comandi a tua disposizione.",
   "minimap.ui.welcome5": "Nascondi questo messaggio",
-  "minimap.ui.zoomLevel": "Livello di zoom:",
+  "minimap.ui.zoomLevel": "Livello di zoom: (%sx)",
   "minimap.ui.otherOptions": "Altre opzioni",
   "options.minimap.title": "Opzioni della minimappa",
   "options.minimap.showCoordinates": "Mostra coordinate",

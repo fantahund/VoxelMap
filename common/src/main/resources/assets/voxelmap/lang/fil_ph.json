@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Kamusta sa VoxelMap, mayroong mga",
   "minimap.ui.welcome4": "mga tampok at commands na magagamit mo.",
   "minimap.ui.welcome5": "Itago ang mensaheng ito",
-  "minimap.ui.zoomLevel": "Antas ng zoom:",
+  "minimap.ui.zoomLevel": "Antas ng zoom: (%sx)",
   "minimap.ui.otherOptions": "Iba pang options",
   "options.minimap.title": "I-edit ang mapa",
   "options.minimap.showCoordinates": "Ipakita kung nasaan ka",

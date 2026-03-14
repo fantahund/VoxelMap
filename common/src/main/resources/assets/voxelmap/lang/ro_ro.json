@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Bine ai venit pe VoxelMap, aici sunt",
   "minimap.ui.welcome4": "multe facilitati si comenzi pentru tine.",
   "minimap.ui.welcome5": "Ascunde acest mesaj.",
-  "minimap.ui.zoomLevel": "Nivelul maririi:",
+  "minimap.ui.zoomLevel": "Nivelul maririi: (%sx)",
   "minimap.ui.otherOptions": "Alte optiuni",
   "options.minimap.title": "Optiunile Minihartii",
   "options.minimap.showCoordinates": "Arata coordonatele",

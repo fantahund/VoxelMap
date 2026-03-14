@@ -395,7 +395,7 @@ public class Map implements Runnable, IChangeObserver {
 
         if (minecraft.screen == null && this.options.keyBindFullscreen.consumeClick()) {
             this.fullscreenMap = !this.fullscreenMap;
-            this.showMessage(I18n.get("minimap.ui.zoomLevel") + String.format(" (%sx)", 2.0 / this.zoomScale));
+            this.showMessage(I18n.get("minimap.ui.zoomLevel", 2.0 / this.zoomScale));
         }
 
         if (minecraft.screen == null && this.options.keyBindMinimapToggle.consumeClick()) {
@@ -475,7 +475,7 @@ public class Map implements Runnable, IChangeObserver {
         this.zoomChanged = true;
         this.setZoomScale();
         this.doFullRender = true;
-        this.showMessage(I18n.get("minimap.ui.zoomLevel") + String.format(" (%sx)", 2.0 / this.zoomScale));
+        this.showMessage(I18n.get("minimap.ui.zoomLevel", 2.0 / this.zoomScale));
 
     }
 

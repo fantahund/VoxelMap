@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Welkom bij VoxelMap, er zijn",
   "minimap.ui.welcome4": "een aantal functies en commando's beschikbaar voor u.",
   "minimap.ui.welcome5": "Verberg dit bericht",
-  "minimap.ui.zoomLevel": "Zoomniveau:",
+  "minimap.ui.zoomLevel": "Zoomniveau: (%sx)",
   "minimap.ui.otherOptions": "Andere Opties",
   "options.minimap.title": "Minimap Opties",
   "options.minimap.showCoordinates": "Toon coordinaten",

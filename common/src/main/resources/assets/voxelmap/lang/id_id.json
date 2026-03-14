@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Selamat datang di VoxelMap, ada beberapa",
   "minimap.ui.welcome4": "fitur dan perintah yang tersedia untuk anda.",
   "minimap.ui.welcome5": "Semunyikan pesan ini",
-  "minimap.ui.zoomLevel": "Tingkat Perbesaran:",
+  "minimap.ui.zoomLevel": "Tingkat Perbesaran: (%sx)",
   "minimap.ui.otherOptions": "Pengaturan Lainnya",
   "options.minimap.title": "Pengaturan Minimap",
   "options.minimap.showCoordinates": "Tampilkan Koordinat",

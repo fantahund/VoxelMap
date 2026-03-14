@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Chào mừng tới VoxelMap, đây là ",
   "minimap.ui.welcome4": "một số tính năng và câu lệnh có sẵn cho bạn.",
   "minimap.ui.welcome5": "Ẩn tin nhắn này",
-  "minimap.ui.zoomLevel": "Mức độ phóng đại:",
+  "minimap.ui.zoomLevel": "Mức độ phóng đại: (%sx)",
   "minimap.ui.otherOptions": "Tùy chọn khác",
   "options.minimap.title": "Tùy chọn cho bản đồ",
   "options.minimap.showCoordinates": "Hiển thị tọa độ",

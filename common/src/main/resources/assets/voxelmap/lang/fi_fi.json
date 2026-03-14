@@ -4,7 +4,7 @@
   "minimap.ui.welcome3": "Tervetuloa VoxelMapiin, jossa on",
   "minimap.ui.welcome4": "monia toimintoja ja komentoja sinun käytössäsi.",
   "minimap.ui.welcome5": "Piilota tämä viesti",
-  "minimap.ui.zoomLevel": "Zoomin taso:",
+  "minimap.ui.zoomLevel": "Zoomin taso: (%sx)",
   "minimap.ui.otherOptions": "Muut asetukset",
   "options.minimap.title": "Kartan asetukset",
   "options.minimap.showCoordinates": "Näytä koordinaatit",
