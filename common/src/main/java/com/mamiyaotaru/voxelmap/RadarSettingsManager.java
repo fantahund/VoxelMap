@@ -30,7 +30,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean showPlayerHelmets = true;
     public boolean filtering = true;
     public boolean outlines = true;
-    public boolean showFullNames = false;
+    public boolean showFullEntityNames = false;
     public boolean showEntityElevation = true;
     public boolean hideSneakingPlayers = true;
     public boolean hideInvisibleEntities = true;
@@ -64,7 +64,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     case "Show Mob Names" -> showMobNames = Boolean.parseBoolean(curLine[1]);
                     case "Font Scale" -> fontScale = Float.parseFloat(curLine[1]);
                     case "Show Facing" -> showFacing = Boolean.parseBoolean(curLine[1]);
-                    case "Show Full Names" -> showFullNames = Boolean.parseBoolean(curLine[1]);
+                    case "Show Full Entity Names" -> showFullEntityNames = Boolean.parseBoolean(curLine[1]);
                     case "Show Entity Elevation" -> showEntityElevation = Boolean.parseBoolean(curLine[1]);
                     case "Hide Sneaking Players" -> hideSneakingPlayers = Boolean.parseBoolean(curLine[1]);
                     case "Hide Invisible Entities" -> hideInvisibleEntities = Boolean.parseBoolean(curLine[1]);
@@ -105,7 +105,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Show Mob Names:" + showMobNames);
         out.println("Font Scale:" + fontScale);
         out.println("Show Facing:" + showFacing);
-        out.println("Show Full Names:" + showFullNames);
+        out.println("Show Full Entity Names:" + showFullEntityNames);
         out.println("Show Entity Elevation:" + showEntityElevation);
         out.println("Hide Sneaking Players:" + hideSneakingPlayers);
         out.println("Hide Invisible Entities:" + hideInvisibleEntities);
@@ -150,7 +150,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case RADAR_FILTERING -> filtering;
             case RADAR_OUTLINES -> outlines;
             case SHOW_FACING -> showFacing;
-            case SHOW_FULL_ENTITY_NAMES -> showFullNames;
+            case SHOW_FULL_ENTITY_NAMES -> showFullEntityNames;
             case SHOW_ENTITY_ELEVATION -> showEntityElevation;
             case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers;
             case HIDE_INVISIBLE_ENTITIES -> hideInvisibleEntities;
@@ -171,7 +171,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case RADAR_FILTERING -> filtering = !filtering;
             case RADAR_OUTLINES -> outlines = !outlines;
             case SHOW_FACING -> showFacing = !showFacing;
-            case SHOW_FULL_ENTITY_NAMES -> showFullNames = !showFullNames;
+            case SHOW_FULL_ENTITY_NAMES -> showFullEntityNames = !showFullEntityNames;
             case SHOW_ENTITY_ELEVATION -> showEntityElevation = !showEntityElevation;
             case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers = !hideSneakingPlayers;
             case HIDE_INVISIBLE_ENTITIES -> hideInvisibleEntities = !hideInvisibleEntities;
