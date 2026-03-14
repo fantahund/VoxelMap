@@ -81,6 +81,7 @@ public class PersistentMap implements IChangeObserver {
     };
     private boolean queuedChangedChunks;
     private MapChunkCache chunkCache;
+    private int lastRenderDistance;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
 
     public PersistentMap() {
@@ -143,7 +144,12 @@ public class PersistentMap implements IChangeObserver {
             this.worldMatcher.findMatch();
         }
 
-        this.chunkCache = new MapChunkCache(33, 33, this);
+        this.createChunkCache(VoxelConstants.getMinecraft().options.renderDistance().get());
+    }
+
+    public void createChunkCache(int renderDistance) {
+        int totalChunks = renderDistance * 2 + 1;
+        this.chunkCache = new MapChunkCache(totalChunks, totalChunks, this);
     }
 
     public void onTick() {
@@ -170,6 +176,12 @@ public class PersistentMap implements IChangeObserver {
         }
 
         if (this.world != null) {
+            int renderDistance = VoxelConstants.getMinecraft().options.renderDistance().get();
+            if (renderDistance != this.lastRenderDistance) {
+                this.lastRenderDistance = renderDistance;
+                this.createChunkCache(renderDistance);
+            }
+
             this.chunkCache.centerChunks(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), 0, GameVariableAccessShim.zCoord()));
             this.chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
