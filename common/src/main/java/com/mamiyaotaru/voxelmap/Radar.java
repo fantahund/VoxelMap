@@ -13,10 +13,11 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -47,6 +48,10 @@ public class Radar extends AbstractRadar {
 
     @Override
     protected void initContact(Contact contact) {
+        if (contact.category == VoxelMapMobCategory.PLAYER || contact.entity.hasCustomName()) {
+            contact.name = radarOptions.showFullNames ? contact.entity.getDisplayName() : getSimplifiedName(contact);
+        }
+
         if (contact.entity.getVehicle() != null && isEntityShown(contact.entity.getVehicle())) {
             contact.yFudge = 1;
         }
@@ -170,6 +175,13 @@ public class Radar extends AbstractRadar {
         }
 
         matrixStack.popMatrix();
+    }
+
+    private Component getSimplifiedName(Contact contact) {
+        MutableComponent copy = contact.entity.getName().copy();
+        copy.withColor(contact.entity.getTeamColor());
+
+        return copy;
     }
 
     private int getBaseColor(Contact contact) {

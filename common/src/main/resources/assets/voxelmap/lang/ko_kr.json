@@ -66,6 +66,7 @@
   "options.minimap.radar.randomobs": "랜덤 몹",
   "options.minimap.radar.showFacing": "방향 표시",
   "options.minimap.radar.selectMobs": "표시할 몹...",
+  "options.minimap.radar.showFullEntityNames" : "엔티티 전체 이름 표시",
   "options.minimap.radar.showEntityElevation": "엔티티 고도 표시",
   "options.minimap.radar.hideSneakingPlayers": "웅크린 플레이어 숨기기",
   "options.minimap.radar.hideInvisibleEntities": "투명화된 엔티티 숨기기",

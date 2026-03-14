@@ -16,10 +16,10 @@ public class Contact {
     public final LivingEntity entity;
     public final VoxelMapMobCategory category;
     public final UUID uuid;
-    public final Component name;
 
     public DisplayState displayState = DisplayState.HIDDEN;
 
+    public Component name;
     public double x;
     public double z;
     public double y;
@@ -38,7 +38,6 @@ public class Contact {
         this.entity = entity;
         this.category = category;
         this.uuid = entity.getUUID();
-        this.name = entity.hasCustomName() || category == VoxelMapMobCategory.PLAYER ? entity.getDisplayName() : null;
         updateLocation();
     }
 

@@ -65,6 +65,7 @@
   "options.minimap.radar.showMobNames": "Show Mob Names",
   "options.minimap.radar.randomobs": "Randomobs",
   "options.minimap.radar.showFacing": "Look Direction",
+  "options.minimap.radar.showFullEntityNames" : "Show Full Entity Names",
   "options.minimap.radar.showEntityElevation": "Show Entity Elevation",
   "options.minimap.radar.hideSneakingPlayers": "Hide Sneaking Players",
   "options.minimap.radar.hideInvisibleEntities": "Hide Invisible Entities",

@@ -54,6 +54,7 @@ public enum EnumOptionsMinimap {
     RADAR_FILTERING("options.minimap.radar.iconFiltering", false, true, false),
     RADAR_OUTLINES("options.minimap.radar.iconOutlines", false, true, false),
     SHOW_FACING("options.minimap.radar.showFacing", false, true, false),
+    SHOW_FULL_ENTITY_NAMES("options.minimap.radar.showFullEntityNames", false, true, false),
     SHOW_ENTITY_ELEVATION("options.minimap.radar.showEntityElevation", false, true, false),
     HIDE_SNEAKING_PLAYERS("options.minimap.radar.hideSneakingPlayers", false, true, false),
     HIDE_INVISIBLE_ENTITIES("options.minimap.radar.hideInvisibleEntities", false, true, false),
