@@ -904,6 +904,33 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float locate = (float) Math.atan2(wayX, wayY);
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
+        float screenX = x - (float)Math.sin(locate) * hypot;
+        float screenY = y - (float)Math.cos(locate) * hypot;
+
+        float waypointBorderLeft = screenX - ICON_WIDTH / 2.0f;
+        float waypointBorderRight = screenX + ICON_WIDTH / 2.0f;
+
+        float waypointBorderTop = screenY - ICON_WIDTH / 2.0f;
+        float waypointBorderBottom = screenY + ICON_WIDTH / 2.0f;
+
+        boolean renderWaypointName = mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover;
+        float fontScale = 1.0F;
+
+        if (renderWaypointName) {
+            waypointBorderLeft = Math.min(waypointBorderLeft, screenX - this.textWidth(name) / 2.0f * fontScale);
+            waypointBorderRight = Math.max(waypointBorderRight, screenX + this.textWidth(name) / 2.0f * fontScale);
+
+            waypointBorderBottom = screenY + ICON_WIDTH / 2.0f + this.getFont().lineHeight * fontScale;
+        }
+
+        boolean horizontalNotVisible = waypointBorderRight < 0 || waypointBorderLeft > this.width;
+        boolean verticalNotVisible = waypointBorderBottom < this.top || waypointBorderTop > this.bottom;
+
+        // skip rendering if the waypoint is not visible
+        if (horizontalNotVisible || verticalNotVisible) {
+            return;
+        }
+
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().translate(x, y);
         guiGraphics.pose().rotate(-locate);
@@ -915,8 +942,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, color);
 
-        if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
-            float fontScale = 1.0F;
+        if (renderWaypointName) {
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().scale(fontScale, fontScale);
             this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + ICON_HEIGHT / 2.0F, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
