@@ -69,7 +69,6 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -958,7 +957,7 @@ public class Map implements Runnable, IChangeObserver {
                     surfaceHeight = transparentHeight;
                     this.surfaceBlockState = this.transparentBlockState;
                     VoxelShape voxelShape;
-                    boolean hasOpacity = this.surfaceBlockState.getLightBlock() > 0;
+                    boolean hasOpacity = this.surfaceBlockState.getLightDampening() > 0;
                     if (!hasOpacity && this.surfaceBlockState.canOcclude() && this.surfaceBlockState.useShapeForLightOcclusion()) {
                         voxelShape = this.surfaceBlockState.getFaceOcclusionShape(Direction.DOWN);
                         hasOpacity = Shapes.faceShapeOccludes(voxelShape, Shapes.empty());
@@ -975,7 +974,7 @@ public class Map implements Runnable, IChangeObserver {
                             this.surfaceBlockState = fluidState.createLegacyBlock();
                         }
 
-                        hasOpacity = this.surfaceBlockState.getLightBlock() > 0;
+                        hasOpacity = this.surfaceBlockState.getLightDampening() > 0;
                         if (!hasOpacity && this.surfaceBlockState.canOcclude() && this.surfaceBlockState.useShapeForLightOcclusion()) {
                             voxelShape = this.surfaceBlockState.getFaceOcclusionShape(Direction.DOWN);
                             hasOpacity = Shapes.faceShapeOccludes(voxelShape, Shapes.empty());
@@ -1009,7 +1008,7 @@ public class Map implements Runnable, IChangeObserver {
                     if (material == Blocks.WATER || material == Blocks.ICE) {
                         seafloorHeight = surfaceHeight;
 
-                        for (seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getLightBlock() < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
+                        for (seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY)); seafloorBlockState.getLightDampening() < 5 && !(seafloorBlockState.getBlock() instanceof LeavesBlock)
                                 && seafloorHeight > world.getMinY() + 1; seafloorBlockState = world.getBlockState(blockPos.withXYZ(startX + imageX, seafloorHeight - 1, startZ + imageY))) {
                             material = seafloorBlockState.getBlock();
                             if (transparentHeight == Short.MIN_VALUE && material != Blocks.ICE && material != Blocks.WATER && Heightmap.Types.MOTION_BLOCKING.isOpaque().test(seafloorBlockState)) {
@@ -1291,7 +1290,7 @@ public class Map implements Runnable, IChangeObserver {
             blockState = fluidState.createLegacyBlock();
         }
 
-        while (blockState.getLightBlock() == 0 && height > world.getMinY()) {
+        while (blockState.getLightDampening() == 0 && height > world.getMinY()) {
             --height;
             blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z));
             fluidState = this.surfaceBlockState.getFluidState();
@@ -1308,12 +1307,12 @@ public class Map implements Runnable, IChangeObserver {
         int y = this.lastY;
         blockPos.setXYZ(x, y, z);
         BlockState blockState = this.world.getBlockState(blockPos);
-        if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
+        if (blockState.getLightDampening() == 0 && blockState.getBlock() != Blocks.LAVA) {
             while (y > world.getMinY()) {
                 --y;
                 blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(blockPos);
-                if (blockState.getLightBlock() > 0 || blockState.getBlock() == Blocks.LAVA) {
+                if (blockState.getLightDampening() > 0 || blockState.getBlock() == Blocks.LAVA) {
                     MutableBlockPosCache.release(blockPos);
                     return y + 1;
                 }
@@ -1325,7 +1324,7 @@ public class Map implements Runnable, IChangeObserver {
                 ++y;
                 blockPos.setXYZ(x, y, z);
                 blockState = this.world.getBlockState(blockPos);
-                if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
+                if (blockState.getLightDampening() == 0 && blockState.getBlock() != Blocks.LAVA) {
                     MutableBlockPosCache.release(blockPos);
                     return y;
                 }
@@ -1337,7 +1336,7 @@ public class Map implements Runnable, IChangeObserver {
 
     private int getSeafloorHeight(Level world, int x, int z, int height) {
         MutableBlockPos blockPos = MutableBlockPosCache.get();
-        for (BlockState blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z)); blockState.getLightBlock() < 5 && !(blockState.getBlock() instanceof LeavesBlock) && height > world.getMinY() + 1; blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z))) {
+        for (BlockState blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z)); blockState.getLightDampening() < 5 && !(blockState.getBlock() instanceof LeavesBlock) && height > world.getMinY() + 1; blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z))) {
             --height;
         }
         MutableBlockPosCache.release(blockPos);

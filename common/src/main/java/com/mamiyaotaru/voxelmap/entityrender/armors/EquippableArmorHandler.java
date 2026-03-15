@@ -5,15 +5,11 @@ import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
@@ -28,10 +24,8 @@ import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
-import java.util.List;
 import java.util.Optional;
 
 public class EquippableArmorHandler extends AbstractArmorHandler {
@@ -99,17 +93,17 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             part.zRot = 0;
             part.render(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
         }
-        if (block != null) {
-            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
-            pose.scale(0.65F, 0.65F, 0.65F);
-
-            BlockState blockState = block.defaultBlockState();
-            BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
-            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.random);
-
-//            TODO 26.1: render block as item
+//        FIXME 26.1: blocks on radar
+//        if (block != null) {
+//            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
+//            pose.scale(0.65F, 0.65F, 0.65F);
+//
+//            BlockState blockState = block.defaultBlockState();
+//            BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
+//            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.random);
+//
 //            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
-        }
+//        }
     }
 
     @Override

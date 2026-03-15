@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 
 public class BlockModel {
     final ArrayList<BlockFace> faces;
