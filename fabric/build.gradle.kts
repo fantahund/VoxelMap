@@ -59,6 +59,8 @@ tasks {
 
         from(zipTree(project.project(":common").tasks.jar.get().archiveFile))
     }
+
+    jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 }
 
 publishing {
