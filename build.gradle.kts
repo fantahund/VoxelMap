@@ -11,7 +11,7 @@ val FORGE_VERSION by extra { "61.0.1" }
 val NEOFORGE_VERSION by extra { "21.11.21-beta" }
 val FABRIC_LOADER_VERSION by extra { "0.18.2" }
 val FABRIC_API_VERSION by extra { "0.140.0+1.21.11" }
-val VOXELMAP_VERSION by extra { "1.16.1" }
+val VOXELMAP_VERSION by extra { "1.16.2" }
 
 val MOD_VERSION by extra { "$MINECRAFT_VERSION-$VOXELMAP_VERSION" }
 
