@@ -81,8 +81,8 @@ public class GLUtils {
         private static final Long2ObjectOpenHashMap<GpuTextureView> POST_PROCESS_CACHE = new Long2ObjectOpenHashMap<>();
         private static final int MAX_CACHE_COUNT = 32;
         private static final int CACHE_USAGE = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
-        private static int lastWindowWidth;
-        private static int lastWindowHeight;
+        private static int lastGuiWidth;
+        private static int lastGuiHeight;
 
         public static void postProcessTexture(GpuTextureView src, BiConsumer<GpuTextureView, GpuTextureView> consumer) {
             RenderSystem.assertOnRenderThread();
@@ -111,10 +111,10 @@ public class GLUtils {
             RenderSystem.assertOnRenderThread();
 
             boolean overCapacity = POST_PROCESS_CACHE.size() > MAX_CACHE_COUNT;
-            int windowWidth = VoxelConstants.getMinecraft().getWindow().getWidth();
-            int windowHeight = VoxelConstants.getMinecraft().getWindow().getHeight();
+            int guiWidth = (int) RenderUtils.getScaledWidth();
+            int guiHeight = (int) RenderUtils.getScaledHeight();
 
-            if (overCapacity || windowWidth != lastWindowWidth || windowHeight != lastWindowHeight) {
+            if (overCapacity || lastGuiWidth != guiWidth || lastGuiHeight != guiHeight) {
                 for (GpuTextureView cache : POST_PROCESS_CACHE.values()) {
                     if (cache != null && !cache.isClosed()) {
                         cache.close();
@@ -122,10 +122,10 @@ public class GLUtils {
                     }
                 }
                 POST_PROCESS_CACHE.clear();
-            }
 
-            lastWindowWidth = windowWidth;
-            lastWindowHeight = windowHeight;
+                lastGuiWidth = guiWidth;
+                lastGuiHeight = guiHeight;
+            }
         }
     }
 }
