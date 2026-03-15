@@ -107,7 +107,7 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
             List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.random);
 
-//            TODO 1.21.11: render block as item9
+//            TODO 26.1: render block as item
 //            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
         }
     }
