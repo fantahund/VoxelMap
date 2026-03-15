@@ -12,8 +12,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.IdentifierException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -284,6 +288,24 @@ public class ColorManager {
         return col;
     }
 
+    private int getBlockTint(BlockState state, int layer) {
+        BlockTintSource tintSource = VoxelConstants.getMinecraft().getBlockColors().getTintSource(state, layer);
+        if (tintSource == null) {
+            return 0xFFFFFFFF;
+        }
+
+        return tintSource.color(state);
+    }
+
+    private int getBlockTint(BlockState state, BlockAndTintGetter world, BlockPos pos, int layer) {
+        BlockTintSource tintSource = VoxelConstants.getMinecraft().getBlockColors().getTintSource(state, layer);
+        if (tintSource == null) {
+            return 0xFFFFFFFF;
+        }
+
+        return tintSource.colorInWorld(state, world, pos);
+    }
+
     private synchronized void resizeColorArrays(int queriedID) {
         if (queriedID >= this.blockColors.length) {
             int[] newBlockColors = new int[this.blockColors.length * 2];
@@ -302,8 +324,7 @@ public class ColorManager {
         try {
             int color = this.getColorForBlockPosBlockStateAndFacing(blockPos, state, Direction.UP);
             if (color == 0x1B000000) {
-                BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
-                color = this.getColorForTerrainSprite(state, blockRendererDispatcher);
+                color = this.getColorForTerrainSprite(state);
             }
 
             Block block = state.getBlock();
@@ -312,7 +333,7 @@ public class ColorManager {
             }
 
             if (block == BlockRepository.redstone) {
-                color = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(state, null, null, 0) | 0xFF000000);
+                color = ColorUtils.colorMultiplier(color, this.getBlockTint(state, 0) | 0xFF000000);
             }
 
             if (BlockRepository.biomeBlocks.contains(block)) {
@@ -341,11 +362,13 @@ public class ColorManager {
 
         try {
             RenderShape blockRenderType = blockState.getRenderShape();
-            BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
+            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
             if (blockRenderType == RenderShape.MODEL) {
-                BlockStateModel iBakedModel = blockRendererDispatcher.getBlockModel(blockState);
+                List<BlockStateModelPart> allQuads =  new ArrayList<>();
+                blockModelSet.get(blockState).collectParts(this.random, allQuads);
+
                 List<BakedQuad> quads = new ArrayList<>();
-                for (BlockModelPart modelPart : iBakedModel.collectParts(this.random)) {
+                for (BlockStateModelPart modelPart : allQuads) {
                     quads.addAll(modelPart.getQuads(facing));
                     quads.addAll(modelPart.getQuads(null));
                 }
@@ -366,8 +389,8 @@ public class ColorManager {
         return color;
     }
 
-    private int getColorForTerrainSprite(BlockState blockState, BlockRenderDispatcher blockRendererDispatcher) {
-        BlockStateModelSet blockModelSet = blockRendererDispatcher.getModelSet();
+    private int getColorForTerrainSprite(BlockState blockState) {
+        BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
         TextureAtlasSprite icon = blockModelSet.getParticleMaterial(blockState).sprite();
         if (icon == blockModelSet.missingModel().particleMaterial().sprite()) {
             Block block = blockState.getBlock();
@@ -433,7 +456,7 @@ public class ColorManager {
             if (block == BlockRepository.water) {
                 this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, 0xFF3F76E4);
             } else {
-                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, null, null, 0) | 0xFF000000);
+                this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, this.getBlockTint(blockState, 0) | 0xFF000000);
             }
         } else {
             this.blockColorsWithDefaultTint[blockStateID] = ColorUtils.colorMultiplier(color, GrassColor.get(0.7, 0.8) | 0xFF000000);
@@ -455,7 +478,7 @@ public class ColorManager {
 
                     ChunkAccess chunk = clientWorld.getChunk(blockPos);
                     if (chunk != null && !((LevelChunk) chunk).isEmpty() && clientWorld.hasChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
-                        tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, clientWorld, blockPos, 1) | 0xFF000000;
+                        tint = this.getBlockTint(blockState, clientWorld, blockPos, 1) | 0xFF000000;
                     } else {
                         tint = this.tintFromFakePlacedBlock(blockState, tempBlockPos, null); // Biome 4?
                     }
@@ -538,7 +561,7 @@ public class ColorManager {
                     DebugRenderState.blockX = blockPos.x;
                     DebugRenderState.blockY = blockPos.y;
                     DebugRenderState.blockZ = blockPos.z;
-                    tint = VoxelConstants.getMinecraft().getBlockColors().getColor(blockState, world, blockPos, 0) | 0xFF000000;
+                    tint = this.getBlockTint(blockState, world, blockPos, 0) | 0xFF000000;
                 } catch (Exception ignored) {
                 }
             }
@@ -584,12 +607,9 @@ public class ColorManager {
 
             for (int t = blockPos.getX() - 1; t <= blockPos.getX() + 1; ++t) {
                 for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
-                    int dataX = t - startX;
-                    int dataZ = s - startZ;
-                    dataX = Math.max(dataX, 0);
-                    dataX = Math.min(dataX, 255);
-                    dataZ = Math.max(dataZ, 0);
-                    dataZ = Math.min(dataZ, 255);
+                    int dataX = Mth.clamp(t - startX, 0, mapData.getWidth() - 1);
+                    int dataZ = Mth.clamp( s - startZ, 0, mapData.getHeight() - 1);
+
                     Biome biome = mapData.getBiome(dataX, dataZ);
                     if (biome == null) {
                         MessageUtils.printDebug("Null biome ID! " + " at " + t + "," + s);
@@ -686,7 +706,7 @@ public class ColorManager {
 
     private void loadCTM(Identifier propertiesFile) {
         if (propertiesFile != null) {
-            BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
+            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
             Properties properties = new Properties();
 
             try {
@@ -760,9 +780,11 @@ public class ColorManager {
 
                             for (BlockState blockState : testBlock.getStateDefinition().getPossibleStates()) {
                                 try {
-                                    BlockStateModel bakedModel = blockRendererDispatcher.getBlockModel(blockState);
+                                    List<BlockStateModelPart> allQuads = new ArrayList<>();
+                                    blockModelSet.get(blockState).collectParts(this.random, allQuads);
+
                                     List<BakedQuad> quads = new ArrayList<>();
-                                    for (BlockModelPart modelPart : bakedModel.collectParts(this.random)) {
+                                    for (BlockStateModelPart modelPart : allQuads) {
                                         quads.addAll(modelPart.getQuads(Direction.UP));
                                         quads.addAll(modelPart.getQuads(null));
                                     }
