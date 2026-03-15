@@ -5,7 +5,6 @@ import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
-import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.InputQuirks;
@@ -117,8 +116,8 @@ public final class VoxelConstants {
         }
     }
 
-    public static Component getModifiedChatMessage(Component chat, GuiMessageTag indicator) {
-        return CommandUtils.checkForWaypoints(chat, indicator);
+    public static Component getModifiedChatMessage(Component chat) {
+        return CommandUtils.checkForWaypoints(chat);
     }
 
     public static boolean onSendChatMessage(String message) {

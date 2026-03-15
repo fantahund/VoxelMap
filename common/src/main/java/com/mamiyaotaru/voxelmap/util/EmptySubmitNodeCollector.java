@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -31,19 +32,19 @@ public class EmptySubmitNodeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public void submitShadow(PoseStack poseStack, float f, List<EntityRenderState.ShadowPiece> list) {
+    public void submitShadow(PoseStack poseStack, float radius, List<EntityRenderState.ShadowPiece> pieces) {
     }
 
     @Override
-    public void submitNameTag(PoseStack poseStack, Vec3 vec3, int i, Component component, boolean bl, int j, double d, CameraRenderState cameraRenderState) {
+    public void submitNameTag(PoseStack poseStack, @Nullable Vec3 nameTagAttachment, int offset, Component name, boolean seeThrough, int lightCoords, double distanceToCameraSq, CameraRenderState camera) {
     }
 
     @Override
-    public void submitText(PoseStack poseStack, float f, float g, FormattedCharSequence formattedCharSequence, boolean bl, Font.DisplayMode displayMode, int i, int j, int k, int l) {
+    public void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence string, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
     }
 
     @Override
-    public void submitFlame(PoseStack poseStack, EntityRenderState entityRenderState, Quaternionf quaternionf) {
+    public void submitFlame(PoseStack poseStack, EntityRenderState renderState, Quaternionf rotation) {
     }
 
     @Override
@@ -51,15 +52,11 @@ public class EmptySubmitNodeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public <S> void submitModel(Model<? super S> model, S object, PoseStack poseStack, RenderType renderType, int i, int j, int k, TextureAtlasSprite textureAtlasSprite, int l, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public <S> void submitModel(Model<? super S> model, S state, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, int tintedColor, @Nullable TextureAtlasSprite sprite, int outlineColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay) {
     }
 
     @Override
-    public void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int i, int j, TextureAtlasSprite textureAtlasSprite, boolean bl, boolean bl2, int k, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay, int l) {
-    }
-
-    @Override
-    public void submitBlock(PoseStack poseStack, BlockState blockState, int i, int j, int k) {
+    public void submitModelPart(ModelPart modelPart, PoseStack poseStack, RenderType renderType, int lightCoords, int overlayCoords, @Nullable TextureAtlasSprite sprite, boolean sheeted, boolean hasFoil, int tintedColor, ModelFeatureRenderer.@Nullable CrumblingOverlay crumblingOverlay, int outlineColor) {
     }
 
     @Override
@@ -67,11 +64,11 @@ public class EmptySubmitNodeCollector implements SubmitNodeCollector {
     }
 
     @Override
-    public void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel blockStateModel, float f, float g, float h, int i, int j, int k) {
+    public void submitBlockModel(PoseStack poseStack, RenderType renderType, BlockStateModel model, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
     }
 
     @Override
-    public void submitItem(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int j, int k, int[] is, List<BakedQuad> list, RenderType renderType, ItemStackRenderState.FoilType foilType) {
+    public void submitItem(PoseStack poseStack, ItemDisplayContext displayContext, int lightCoords, int overlayCoords, int outlineColor, int[] tintLayers, List<BakedQuad> quads, ItemStackRenderState.FoilType foilType) {
     }
 
     @Override

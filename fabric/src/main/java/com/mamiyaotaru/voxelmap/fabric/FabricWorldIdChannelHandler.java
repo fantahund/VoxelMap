@@ -9,10 +9,10 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class FabricWorldIdChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<WorldIdS2C>, ClientConfigurationNetworking.ConfigurationPayloadHandler<WorldIdS2C> {
     public FabricWorldIdChannelHandler() {
-        PayloadTypeRegistry.playC2S().register(WorldIdC2S.PACKET_ID, WorldIdC2S.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC);
-        PayloadTypeRegistry.configurationC2S().register(WorldIdC2S.PACKET_ID, WorldIdC2S.PACKET_CODEC);
-        PayloadTypeRegistry.configurationS2C().register(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(WorldIdC2S.PACKET_ID, WorldIdC2S.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC);
+        PayloadTypeRegistry.serverboundConfiguration().register(WorldIdC2S.PACKET_ID, WorldIdC2S.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(WorldIdS2C.PACKET_ID, this);
         ClientConfigurationNetworking.registerGlobalReceiver(WorldIdS2C.PACKET_ID, this);

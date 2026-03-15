@@ -16,8 +16,9 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -29,7 +30,9 @@ import java.util.OptionalInt;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
-    private static final CachedOrthoProjectionMatrixBuffer FULLSCREEN_PROJECTION = new CachedOrthoProjectionMatrixBuffer("VoxelMap Fullscreen GUI Projection", 1000.0F, 3000.0F, true);
+    private static final Projection FULLSCREEN_PROJECTION  = new Projection();
+    private static final ProjectionMatrixBuffer FULLSCREEN_PROJECTION_MATRIX = new ProjectionMatrixBuffer("VoxelMap Fullscreen Projection Matrix");
+    static { FULLSCREEN_PROJECTION.setupOrtho(1000.0F, 3000.0F, 0.0F, 0.0F, true); }
 
     public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, int color) {
         drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
@@ -127,7 +130,8 @@ public class RenderUtils {
         GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
 
         try {
-            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(guiWidth, guiHeight), ProjectionType.ORTHOGRAPHIC);
+            FULLSCREEN_PROJECTION.setSize(guiWidth, guiHeight);
+            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION_MATRIX.getBuffer(FULLSCREEN_PROJECTION), ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);

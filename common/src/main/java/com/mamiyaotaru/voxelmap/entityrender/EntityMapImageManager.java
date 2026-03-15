@@ -55,7 +55,6 @@ import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -69,6 +68,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
@@ -116,7 +116,7 @@ public class EntityMapImageManager {
     private int fulfilledImageCreationRequests;
     private final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
 
-    public static final int LIGHT = LightTexture.FULL_BRIGHT;
+    public static final int LIGHT = LightCoordsUtil.FULL_BRIGHT;
     public static final int OVERLAY = OverlayTexture.NO_OVERLAY;
     private final GpuBuffer lightingBuffer;
 
@@ -708,7 +708,7 @@ public class EntityMapImageManager {
                 renderPass.setUniform("DynamicTransforms", primaryTransforms);
                 renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);

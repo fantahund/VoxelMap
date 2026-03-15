@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,11 +23,12 @@ public abstract class MixinCamera {
 
     @Shadow protected abstract void setRotation(float yaw, float pitch);
     @Shadow protected abstract void move(float x, float y, float z);
+    @Shadow public abstract @Nullable Entity entity();
 
-    @Inject(method = "setup", at = @At("TAIL"))
-    private void afterCameraSetup(Level level, Entity entity, boolean bl, boolean bl2, float tickDelta, CallbackInfo ci) {
+    @Inject(method = "alignWithEntity", at = @At("TAIL"))
+    private void afterCameraSetup(float partialTicks, CallbackInfo ci) {
         if (!(minecraft.screen instanceof GuiSubworldsSelect)) {
-            yaw = entity.getViewYRot(tickDelta);
+            yaw = entity().getViewYRot(partialTicks);
         } else {
             float frameDelta = minecraft.getDeltaTracker().getRealtimeDeltaTicks();
             float speed = 5.0F * frameDelta;

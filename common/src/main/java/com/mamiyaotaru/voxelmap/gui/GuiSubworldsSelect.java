@@ -21,6 +21,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec3;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
@@ -124,7 +125,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         if (this.newNameField.isFocused()) {
             this.newNameField.keyPressed(keyEvent);
             int keyCode = keyEvent.key(); //TODO 1.21.9
-            if ((keyCode == 257 || keyCode == 335) && this.newNameField.isFocused()) {
+            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && this.newNameField.isFocused()) {
                 String newName = this.newNameField.getValue();
                 if (newName != null && !newName.isEmpty()) {
                     this.worldSelected(newName);
@@ -133,22 +134,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         }
 
         return super.keyPressed(keyEvent);
-    }
-
-    @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        if (this.newNameField.isFocused()) {
-            this.newNameField.charTyped(characterEvent);
-            int modifiers = characterEvent.modifiers();
-            if (modifiers == 28) {
-                String newName = this.newNameField.getValue();
-                if (newName != null && !newName.isEmpty()) {
-                    this.worldSelected(newName);
-                }
-            }
-        }
-
-        return super.charTyped(characterEvent);
     }
 
     @Override

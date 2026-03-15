@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.blaze3d.systems.GpuDevice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.AddressMode;
@@ -130,7 +131,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
 
     public void generateMipmaps() {
         clearMipmaps();
-        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[] { pixels }, MIP_LEVELS, MipmapStrategy.MEAN, 0.0f);
+        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[] { pixels }, MIP_LEVELS, MipmapStrategy.MEAN, 0.0F, Transparency.TRANSPARENT_AND_TRANSLUCENT);
     }
 
     private synchronized void decompress() {

@@ -13,8 +13,8 @@ import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.IdentifierException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
@@ -36,7 +36,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Block;
@@ -95,14 +94,14 @@ public class ColorManager {
     private boolean loaded;
     private boolean loadedTerrainImage;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
-    private final ColorResolver spruceColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
-    private final ColorResolver birchColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
-    private final ColorResolver mangroveColorResolver = (blockState, biomex, blockPos) -> FoliageColor.FOLIAGE_MANGROVE;
-    private final ColorResolver grassColorResolver = (blockState, biomex, blockPos) -> biomex.getGrassColor(blockPos.getX(), blockPos.getZ());
-    private final ColorResolver foliageColorResolver = (blockState, biomex, blockPos) -> biomex.getFoliageColor();
-    private final ColorResolver dryFoliageColorResolver = (blockState, biomex, blockPos) -> biomex.getDryFoliageColor();
-    private final ColorResolver waterColorResolver = (blockState, biomex, blockPos) -> biomex.getWaterColor();
-    private final ColorResolver redstoneColorResolver = (blockState, biomex, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
+    private final ColorResolver spruceColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
+    private final ColorResolver birchColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
+    private final ColorResolver mangroveColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_MANGROVE;
+    private final ColorResolver grassColorResolver = (blockState, biome, blockPos) -> biome.getGrassColor(blockPos.getX(), blockPos.getZ());
+    private final ColorResolver foliageColorResolver = (blockState, biome, blockPos) -> biome.getFoliageColor();
+    private final ColorResolver dryFoliageColorResolver = (blockState, biome, blockPos) -> biome.getDryFoliageColor();
+    private final ColorResolver waterColorResolver = (blockState, biome, blockPos) -> biome.getWaterColor();
+    private final ColorResolver redstoneColorResolver = (blockState, biome, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
 
     public ColorManager() {
         this.useConnectedTextures = VoxelConstants.getModApiBridge().isModEnabled("optifine") || VoxelConstants.getModApiBridge().isModEnabled("continuity");
@@ -359,7 +358,7 @@ public class ColorManager {
                     if (modelImage != null) {
                         color = this.getColorForCoordinatesAndImage(new float[]{0.0F, 1.0F, 0.0F, 1.0F}, modelImage);
                     } else {
-                        VoxelConstants.getLogger().warn(String.format("Block texture for block %s is missing!", blockState.getBlockHolder().getRegisteredName()));
+                        VoxelConstants.getLogger().warn(String.format("Block texture for block %s is missing!", blockState.typeHolder().getRegisteredName()));
                     }
                 }
             }
@@ -371,9 +370,9 @@ public class ColorManager {
     }
 
     private int getColorForTerrainSprite(BlockState blockState, BlockRenderDispatcher blockRendererDispatcher) {
-        BlockModelShaper blockModelShapes = blockRendererDispatcher.getBlockModelShaper();
-        TextureAtlasSprite icon = blockModelShapes.getParticleIcon(blockState);
-        if (icon == blockModelShapes.getModelManager().getMissingBlockStateModel().particleIcon()) {
+        BlockStateModelSet blockModelSet = blockRendererDispatcher.getModelSet();
+        TextureAtlasSprite icon = blockModelSet.getParticleMaterial(blockState).sprite();
+        if (icon == blockModelSet.missingModel().particleMaterial().sprite()) {
             Block block = blockState.getBlock();
             Block material = blockState.getBlock();
             if (block instanceof LiquidBlock) {
@@ -482,7 +481,7 @@ public class ColorManager {
         return -1;
     }
 
-    public int getBiomeTint(AbstractMapData mapData, Level world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
+    public int getBiomeTint(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         ChunkAccess chunk = world.getChunk(blockPos);
         boolean live = chunk != null && !((LevelChunk) chunk).isEmpty() && VoxelConstants.getPlayer().level().hasChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4);
         int tint = -2;
@@ -533,7 +532,7 @@ public class ColorManager {
         return ARGB.toABGR(tint);
     }
 
-    private int getBuiltInBiomeTint(AbstractMapData mapData, Level world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, boolean live) {
+    private int getBuiltInBiomeTint(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, boolean live) {
         int tint = -1;
         Block block = blockState.getBlock();
         if (BlockRepository.biomeBlocks.contains(block) || this.biomeTintsAvailable.contains(blockStateID)) {
@@ -555,7 +554,7 @@ public class ColorManager {
         return tint;
     }
 
-    private int getBuiltInBiomeTintFromUnloadedChunk(AbstractMapData mapData, Level world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
+    private int getBuiltInBiomeTintFromUnloadedChunk(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         int tint = -1;
         Block block = blockState.getBlock();
         ColorResolver colorResolver = null;
@@ -616,7 +615,7 @@ public class ColorManager {
         return tint;
     }
 
-    private int getCustomBlockBiomeTintFromUnloadedChunk(AbstractMapData mapData, Level world, BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
+    private int getCustomBlockBiomeTintFromUnloadedChunk(AbstractMapData mapData, ClientLevel world, BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
         int tint;
 
         try {
@@ -691,7 +690,6 @@ public class ColorManager {
     private void loadCTM(Identifier propertiesFile) {
         if (propertiesFile != null) {
             BlockRenderDispatcher blockRendererDispatcher = VoxelConstants.getMinecraft().getBlockRenderer();
-            BlockModelShaper blockModelShapes = blockRendererDispatcher.getBlockModelShaper();
             Properties properties = new Properties();
 
             try {
@@ -765,7 +763,7 @@ public class ColorManager {
 
                             for (BlockState blockState : testBlock.getStateDefinition().getPossibleStates()) {
                                 try {
-                                    BlockStateModel bakedModel = blockModelShapes.getBlockModel(blockState);
+                                    BlockStateModel bakedModel = blockRendererDispatcher.getBlockModel(blockState);
                                     List<BakedQuad> quads = new ArrayList<>();
                                     for (BlockModelPart modelPart : bakedModel.collectParts(this.random)) {
                                         quads.addAll(modelPart.getQuads(Direction.UP));

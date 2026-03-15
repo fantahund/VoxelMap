@@ -30,7 +30,7 @@ public class FabricEvents implements Events {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> map.onJoinServer());
         ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.onConfigurationInit());
 
-        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
 
         FabricLoader.getInstance().getModContainer(VoxelConstants.MOD_ID).ifPresent(container -> {
             // 1. pack location, 2. mod container, 3. pack title, 4. pack activation type

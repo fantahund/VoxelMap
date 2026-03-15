@@ -35,24 +35,6 @@ public class VoxelMapRenderTypes {
             )
     );
 
-    public static final Function<Identifier, RenderType> WAYPOINT_ICON_DEPTH_TEST = Util.memoize(
-            identifier -> RenderType.create(
-                    "voxelmap_waypoint_icon_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.WAYPOINT_ICON_DEPTH_TEST)
-                            .withTexture("Sampler0", identifier)
-                            .createRenderSetup()
-            )
-    );
-
-    public static final Function<Identifier, RenderType> WAYPOINT_ICON_NO_DEPTH_TEST = Util.memoize(
-            identifier -> RenderType.create(
-                    "voxelmap_waypoint_icon_no_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTH_TEST)
-                            .withTexture("Sampler0", identifier)
-                            .createRenderSetup()
-            )
-    );
-
     public static final RenderType WAYPOINT_TEXT_BACKGROUND = RenderType.create(
             "voxelmap_waypoint_text_background",
             RenderSetup.builder(VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND)
