@@ -2,7 +2,6 @@ accessWidener v1 official
 
 # classes
 accessible class net/minecraft/client/gui/components/AbstractSelectionList$Entry
-accessible class net/minecraft/client/gui/GuiGraphics$ScissorStack
 accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 
 # fields
@@ -14,8 +13,6 @@ accessible field net/minecraft/client/renderer/entity/layers/SlimeOuterLayer mod
 accessible field net/minecraft/client/renderer/entity/EnderDragonRenderer model Lnet/minecraft/client/model/monster/dragon/EnderDragonModel;
 accessible field net/minecraft/client/renderer/entity/LivingEntityRenderer layers Ljava/util/List;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
-accessible field net/minecraft/client/gui/GuiGraphics guiRenderState Lnet/minecraft/client/gui/render/state/GuiRenderState;
-accessible field net/minecraft/client/gui/GuiGraphics scissorStack Lnet/minecraft/client/gui/GuiGraphics$ScissorStack;
 accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
 accessible field net/minecraft/client/renderer/texture/AbstractTexture sampler Lcom/mojang/blaze3d/textures/GpuSampler;
 accessible field net/minecraft/server/level/ServerChunkCache mainThreadProcessor Lnet/minecraft/server/level/ServerChunkCache$MainThreadExecutor;
