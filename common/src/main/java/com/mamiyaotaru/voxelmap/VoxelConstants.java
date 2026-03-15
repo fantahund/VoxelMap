@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.multiplayer.ClientLevel;

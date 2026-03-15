@@ -360,7 +360,7 @@ public class EntityMapImageManager {
         BufferBuilder bufferBuilder = context.bufferBuilder();
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
-        ((EntityRenderer) baseRenderer).submit(renderState, pose, emptySubmitNodeCollector, minecraft.gameRenderer.getLevelRenderState().cameraRenderState);
+        ((EntityRenderer) baseRenderer).submit(renderState, pose, emptySubmitNodeCollector, minecraft.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState);
 
         EntityModel model = getEntityModel(baseRenderer);
         if (model == null) {

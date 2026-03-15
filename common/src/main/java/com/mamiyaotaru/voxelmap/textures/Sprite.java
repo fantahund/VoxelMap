@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.textures;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 
