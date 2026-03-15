@@ -679,7 +679,7 @@ public class Map implements Runnable, IChangeObserver {
             renderMatrixStack.popMatrix();
         });
 
-        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, drawContext.guiWidth(), drawContext.guiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTextureLocation, 0.0F, 0.0F, RenderUtils.getScaledWidth(), RenderUtils.getScaledHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {

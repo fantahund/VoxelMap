@@ -31,6 +31,14 @@ public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
     private static final CachedOrthoProjectionMatrixBuffer FULLSCREEN_PROJECTION = new CachedOrthoProjectionMatrixBuffer("VoxelMap Fullscreen GUI Projection", 1000.0F, 3000.0F, true);
 
+    public static float getScaledWidth() {
+        return (float) MINECRAFT.getWindow().getWidth() / MINECRAFT.getWindow().getGuiScale();
+    }
+
+    public static float getScaledHeight() {
+        return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
+    }
+
     public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, int color) {
         drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
     }
@@ -105,8 +113,6 @@ public class RenderUtils {
 
         int windowWidth = MINECRAFT.getWindow().getWidth();
         int windowHeight = MINECRAFT.getWindow().getHeight();
-        int guiWidth = MINECRAFT.getWindow().getGuiScaledWidth();
-        int guiHeight = MINECRAFT.getWindow().getGuiScaledHeight();
 
         if (colorTexture.getWidth(0) != windowWidth || colorTexture.getHeight(0) != windowHeight) {
             GpuTexture texture = colorTexture.getTexture();
@@ -127,7 +133,7 @@ public class RenderUtils {
         GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
 
         try {
-            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(guiWidth, guiHeight), ProjectionType.ORTHOGRAPHIC);
+            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(getScaledWidth(), getScaledHeight()), ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
