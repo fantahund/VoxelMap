@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -33,10 +33,11 @@ public class GuiMinimapControls extends GuiScreenMinimap {
         }
     }
 
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        super.render(guiGraphics, mouseX, mouseY, delta);
-        guiGraphics.drawCenteredString(this.getFont(), I18n.get("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() - 62, 0xFFFFFFFF);
-        guiGraphics.drawCenteredString(this.getFont(), "§e" + I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() - 46, 0xFFFFFFFF);
-        guiGraphics.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        graphics.centeredText(this.getFont(), I18n.get("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() - 62, 0xFFFFFFFF);
+        graphics.centeredText(this.getFont(), "§e" + I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() - 46, 0xFFFFFFFF);
+        graphics.centeredText(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
     }
 }

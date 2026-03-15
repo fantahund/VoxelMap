@@ -8,7 +8,7 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -134,9 +134,9 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
         }
 
         @Override
-        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             int color = waypoint.getUnifiedColor();
-            drawContext.drawCenteredString(parentGui.getFont(), waypoint.name, parentGui.getWidth() / 2, getY() + 5, color);
+            graphics.centeredText(parentGui.getFont(), waypoint.name, parentGui.getWidth() / 2, getY() + 5, color);
 
             Sprite icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
             if (icon == textureAtlas.getMissingImage()) {
@@ -144,16 +144,16 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
             }
             waypointIcon.setPosition(getX() + 2, getY());
             waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, icon, color);
-            waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
+            waypointIcon.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             if (waypoint == parentGui.highlightedWaypoint) {
                 waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
-                waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
+                waypointIcon.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             }
 
             Identifier toggleIcon = waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             waypointToggle.setPosition(getX() + getWidth() - 20, getY());
             waypointToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
-            waypointToggle.render(drawContext, mouseX, mouseY, tickDelta);
+            waypointToggle.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
             if (waypointIcon.isMouseOver(mouseX, mouseY)) {
                 parentGui.setTooltip(waypoint == parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT);

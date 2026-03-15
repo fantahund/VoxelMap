@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -34,7 +34,7 @@ public abstract class AbstractColorPicker implements Renderable, GuiEventListene
     }
 
     @Override
-    public abstract void render(GuiGraphics graphics, int mouseX, int mouseY, float delta);
+    public abstract void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta);
 
     @Override
     public abstract boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick);

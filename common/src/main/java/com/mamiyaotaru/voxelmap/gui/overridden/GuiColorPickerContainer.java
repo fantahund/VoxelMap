@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 
 public class GuiColorPickerContainer extends AbstractColorPicker {
@@ -36,8 +36,8 @@ public class GuiColorPickerContainer extends AbstractColorPicker {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        this.getColorPicker().render(graphics, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        this.getColorPicker().extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     @Override

@@ -40,6 +40,7 @@ import com.mojang.math.Axis;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -333,7 +334,7 @@ public class Map implements Runnable, IChangeObserver {
         this.showMessage(subworldNameBuilder.toString());
     }
 
-    public void onTickInGame(GuiGraphics drawContext) {
+    public void onTickInGame(GuiGraphicsExtractor graphics) {
         this.rotationFactor = this.options.oldNorth ? 90 : 0;
 
         if (minecraft.screen == null && this.options.welcome) {
@@ -454,7 +455,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         if (enabled && options.minimapAllowed) {
-            this.drawMinimap(drawContext);
+            this.drawMinimap(graphics);
         }
 
         this.updateTimer = this.updateTimer > 5000 ? 0 : this.updateTimer + 1;
@@ -591,7 +592,7 @@ public class Map implements Runnable, IChangeObserver {
         return ARGB.toABGR(this.lightmapColors[blockLight + skyLight * 16]);
     }
 
-    public void drawMinimap(GuiGraphics drawContext) {
+    public void drawMinimap(GuiGraphicsExtractor graphics) {
         int scScaleOrig = 1;
 
         while (minecraft.getWindow().getWidth() / (scScaleOrig + 1) >= 320 && minecraft.getWindow().getHeight() / (scScaleOrig + 1) >= 240) {
@@ -668,7 +669,7 @@ public class Map implements Runnable, IChangeObserver {
             renderMatrixStack.popMatrix();
         });
 
-        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, drawContext.guiWidth(), drawContext.guiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {

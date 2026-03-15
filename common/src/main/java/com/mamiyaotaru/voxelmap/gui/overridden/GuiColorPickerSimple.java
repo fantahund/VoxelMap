@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -80,7 +80,7 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         int fullColor = this.color;
         int hsColor = Color.getHSBColor(this.h, this.s, 1.0F).getRGB();
         int wheelRadius = this.getHueSatWheelRadius();
@@ -88,18 +88,18 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
         // render v picker
         int sliderX = this.getValueSliderX();
         int sliderY = this.getValueSliderY();
-        guiGraphics.fillGradient(sliderX - (SLIDER_WIDTH / 2), sliderY - wheelRadius, sliderX + (SLIDER_WIDTH / 2), sliderY + wheelRadius, hsColor, 0xFF000000);
+        graphics.fillGradient(sliderX - (SLIDER_WIDTH / 2), sliderY - wheelRadius, sliderX + (SLIDER_WIDTH / 2), sliderY + wheelRadius, hsColor, 0xFF000000);
 
         float sliderHandleX = sliderX;
         float sliderHandleY = sliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - this.v));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render h, s picker
         int wheelX = this.getHueSatWheelX();
         int wheelY = this.getHueSatWheelY();
         Identifier colorWheelImage = VoxelConstants.getVoxelMapInstance().getColorManager().getHueSatColorWheel();
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, colorWheelImage, wheelX - wheelRadius, wheelY - wheelRadius, 0.0F, 0.0F, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, 0xFFFFFFFF);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, colorWheelImage, wheelX - wheelRadius, wheelY - wheelRadius, 0.0F, 0.0F, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, 0xFFFFFFFF);
 
         float radians = this.h * 360.0F * Mth.DEG_TO_RAD;
         float dirX = Mth.cos(radians);
@@ -107,13 +107,13 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
         float distance = this.s * wheelRadius;
         float wheelHandleX = wheelX + (dirX * distance);
         float wheelHandleY = wheelY + (dirY * distance);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.roundHandle, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.roundHandleTint, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, hsColor);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.roundHandle, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.roundHandleTint, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, hsColor);
 
         // render texts
         Font font = VoxelConstants.getMinecraft().font;
-        guiGraphics.drawString(font, "H/S", wheelX - wheelRadius, wheelY + wheelRadius - 9, 0xFFFFFFFF);
-        guiGraphics.drawString(font, "V", sliderX - (SLIDER_WIDTH / 2) - font.width("V") - 4, sliderY + wheelRadius - 9, 0xFFFFFFFF);
+        graphics.text(font, "H/S", wheelX - wheelRadius, wheelY + wheelRadius - 9, 0xFFFFFFFF);
+        graphics.text(font, "V", sliderX - (SLIDER_WIDTH / 2) - font.width("V") - 4, sliderY + wheelRadius - 9, 0xFFFFFFFF);
 
     }
 

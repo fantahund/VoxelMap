@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -85,12 +85,12 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
         }
 
         @Override
-        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawContext.drawCenteredString(parentGui.getFont(), dim.getDisplayName(), (parentGui.getWidth() + getWidth()) / 2, getY() + 3, 0xFFFFFFFF);
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            graphics.centeredText(parentGui.getFont(), dim.getDisplayName(), (parentGui.getWidth() + getWidth()) / 2, getY() + 3, 0xFFFFFFFF);
 
             dimToggle.setPosition(getX() + getWidth() - 20, getY());
             dimToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, parentGui.dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
-            dimToggle.render(drawContext, mouseX, mouseY, tickDelta);
+            dimToggle.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
             if (dimToggle.isMouseOver(mouseX, mouseY)) {
                 parentGui.setTooltip(parentGui.dimensions.contains(dim) ? APPLIES : NOT_APPLIES);

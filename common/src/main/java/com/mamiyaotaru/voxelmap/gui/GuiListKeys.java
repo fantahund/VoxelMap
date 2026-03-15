@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
@@ -133,9 +133,9 @@ public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
         }
 
         @Override
-        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             if (this.button != null && this.buttonReset != null) {
-                guiGraphics.drawString(this.parentGui.getFont(), Component.translatable(this.keyMapping.getName()), getX() + 5, getY() + 5, 0xFFFFFFFF);
+                graphics.text(this.parentGui.getFont(), Component.translatable(this.keyMapping.getName()), getX() + 5, getY() + 5, 0xFFFFFFFF);
 
                 Component tooltip = null;
 
@@ -164,12 +164,12 @@ public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
                 this.button.setMessage(keyText);
                 this.button.setX(getX() + getWidth() - 135);
                 this.button.setY(getY());
-                this.button.render(guiGraphics, mouseX, mouseY, tickDelta);
+                this.button.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
                 this.buttonReset.active = !this.keyMapping.isDefault();
                 this.buttonReset.setX(getX() + getWidth() - 55);
                 this.buttonReset.setY(getY());
-                this.buttonReset.render(guiGraphics, mouseX, mouseY, tickDelta);
+                this.buttonReset.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             }
         }
 

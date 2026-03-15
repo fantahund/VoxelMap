@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 
 import java.util.ArrayList;
@@ -85,31 +85,31 @@ public class Popup {
         return this.shouldClose;
     }
 
-    public void drawPopup(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.pose().pushMatrix();
+    public void drawPopup(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.pose().pushMatrix();
         // background
         float renderedTextureSize = 32.0F;
         float umin = this.x / renderedTextureSize;
         float umax = (this.x + this.w) / renderedTextureSize;
         float vmin = this.y / renderedTextureSize;
         float vmax = (this.y + this.h) / renderedTextureSize;
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xff404040);
-        VoxelMapGuiGraphics.fillGradient(guiGraphics, x, y, x + w, y + 4, 0xff000000, 0xff000000, 0x00000000, 0x00000000);
-        VoxelMapGuiGraphics.fillGradient(guiGraphics, x, y + h - 4, x + w, y + h, 0x00000000, 0x00000000, 0xff000000, 0xff000000);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), x, y, w, h, umin, umax, vmin, vmax, 0xff404040);
+        VoxelMapGuiGraphics.fillGradient(graphics, x, y, x + w, y + 4, 0xff000000, 0xff000000, 0x00000000, 0x00000000);
+        VoxelMapGuiGraphics.fillGradient(graphics, x, y + h - 4, x + w, y + h, 0x00000000, 0x00000000, 0xff000000, 0xff000000);
 
-        VoxelMapGuiGraphics.fillGradient(guiGraphics, x, y, x + 4, y + h, 0xff000000, 0x00000000, 0xff000000, 0x00000000);
-        VoxelMapGuiGraphics.fillGradient(guiGraphics, x + w - 4, y, x + w, y + h, 0x00000000, 0xff000000, 0x00000000, 0xff000000);
+        VoxelMapGuiGraphics.fillGradient(graphics, x, y, x + 4, y + h, 0xff000000, 0x00000000, 0xff000000, 0x00000000);
+        VoxelMapGuiGraphics.fillGradient(graphics, x + w - 4, y, x + w, y + h, 0x00000000, 0xff000000, 0x00000000, 0xff000000);
 
 
         for (int t = 0; t < this.entries.length; ++t) {
             boolean hover = mouseX >= this.x && mouseX <= this.x + this.w && mouseY >= this.y + t * 20 && mouseY < this.y + (t + 1) * 20;
             if (hover) {
-                guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
+                graphics.requestCursor(CursorTypes.POINTING_HAND);
             }
             int color = !this.entries[t].enabled ? 0xFFA0A0A0 : (hover ? 0xFFFFFFA0 : 0xFFE0E0E0);
-            guiGraphics.drawString(this.fontRendererObj, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);
+            graphics.text(this.fontRendererObj, this.entries[t].name, (this.x + this.padding), (this.y + this.padding + t * 20), color);
         }
-        guiGraphics.pose().popMatrix();
+        graphics.pose().popMatrix();
     }
 
     public static class PopupEntry {

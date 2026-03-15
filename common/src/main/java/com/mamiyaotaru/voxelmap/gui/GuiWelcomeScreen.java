@@ -6,7 +6,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -76,9 +76,11 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        int centerX = minecraft.getWindow().getGuiScaledWidth() / 2;
-        int centerY = minecraft.getWindow().getGuiScaledHeight() / 2;
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+
+        int centerX = graphics.guiWidth() / 2;
+        int centerY = graphics.guiHeight() / 2;
 
         int lineHeight = getFont().lineHeight;
 
@@ -90,39 +92,37 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         for (int i = 1; i < this.welcomeTexts.size(); ++i) {
             boxWidth = Math.max(boxWidth, getFont().width(this.welcomeTexts.get(i)));
         }
-        this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1), 4, 1, boxColor);
+        this.drawBox(graphics, centerX - (boxWidth / 2), boxTop, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1), 4, 1, boxColor);
 
         // Title Box
-        this.drawBox(guiGraphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1) + 22, 6, 1, boxColor);
+        this.drawBox(graphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1) + 22, 6, 1, boxColor);
 
         // Main Text
         for (int i = 1; i < this.welcomeTexts.size(); ++i) {
-            guiGraphics.drawString(getFont(), this.welcomeTexts.get(i), centerX - (boxWidth / 2), boxTop + lineHeight * (i - 1), 0xFFFFFFFF);
+            graphics.text(getFont(), this.welcomeTexts.get(i), centerX - (boxWidth / 2), boxTop + lineHeight * (i - 1), 0xFFFFFFFF);
         }
 
         //  Title Text
-        guiGraphics.drawCenteredString(getFont(), this.welcomeTexts.getFirst(), centerX, boxTop - lineHeight - 3, 0xFFFFFFFF);
+        graphics.centeredText(getFont(), this.welcomeTexts.getFirst(), centerX, boxTop - lineHeight - 3, 0xFFFFFFFF);
         boxTop += lineHeight * this.welcomeTexts.size();
 
 
         // Buttons
         this.closeButton.setWidth((boxWidth / 2) - 8);
         this.closeButton.setPosition(getWidth() / 2 + 8, boxTop);
-        this.drawBox(guiGraphics, this.closeButton.getX(), boxTop, this.closeButton.getX() + this.closeButton.getWidth(), boxTop + this.closeButton.getHeight(), 4, 1, boxColor);
+        this.drawBox(graphics, this.closeButton.getX(), boxTop, this.closeButton.getX() + this.closeButton.getWidth(), boxTop + this.closeButton.getHeight(), 4, 1, boxColor);
 
         this.controlsButton.setWidth((boxWidth / 2) - 8);
         this.controlsButton.setPosition((getWidth() / 2) - (boxWidth / 2), boxTop);
-        this.drawBox(guiGraphics, this.controlsButton.getX(), boxTop, this.controlsButton.getX() + this.controlsButton.getWidth(), boxTop + this.controlsButton.getHeight(), 4, 1, boxColor);
-
-        super.render(guiGraphics, mouseX, mouseY, delta);
+        this.drawBox(graphics, this.controlsButton.getX(), boxTop, this.controlsButton.getX() + this.controlsButton.getWidth(), boxTop + this.controlsButton.getHeight(), 4, 1, boxColor);
     }
 
-    private void drawBox(GuiGraphics guiGraphics, int x1, int y1, int x2, int y2, int inflateX, int inflateY, int color) {
-        guiGraphics.fill(x1 - inflateX, y1 - inflateY, x2 + inflateX, y2 + inflateY, color);
+    private void drawBox(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int inflateX, int inflateY, int color) {
+        graphics.fill(x1 - inflateX, y1 - inflateY, x2 + inflateX, y2 + inflateY, color);
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractMenuBackground(GuiGraphicsExtractor guiGraphics) {
     }
 
     @Override

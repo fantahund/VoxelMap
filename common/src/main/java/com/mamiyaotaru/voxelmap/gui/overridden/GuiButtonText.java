@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.CharacterEvent;
@@ -21,12 +21,12 @@ public class GuiButtonText extends Button.Plain {
 
 
     @Override
-    public void renderContents(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         if (editing) {
-            textField.render(drawContext, mouseX, mouseY, delta);
+            textField.extractRenderState(graphics, mouseX, mouseY, delta);
             return;
         }
-        super.renderContents(drawContext, mouseX, mouseY, delta);
+        super.extractContents(graphics, mouseX, mouseY, delta);
     }
 
     @Override

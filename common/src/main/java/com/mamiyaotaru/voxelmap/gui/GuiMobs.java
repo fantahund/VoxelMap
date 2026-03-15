@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -76,20 +76,20 @@ public class GuiMobs extends GuiScreenMinimap {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         tooltip = null;
 
-        super.render(drawContext, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
 
-        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), I18n.get("minimap.waypoints.filter") + ":", getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
+        graphics.centeredText(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
+        graphics.text(getFont(), I18n.get("minimap.waypoints.filter") + ":", getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
 
         boolean isSomethingSelected = selectedMobId != null;
         buttonEnable.active = isSomethingSelected && !isMobEnabled(selectedMobId);
         buttonDisable.active = isSomethingSelected && isMobEnabled(selectedMobId);
 
         if (tooltip != null) {
-            renderTooltip(drawContext, tooltip, mouseX, mouseY);
+            renderTooltip(graphics, tooltip, mouseX, mouseY);
         }
     }
 

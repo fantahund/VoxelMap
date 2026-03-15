@@ -1,8 +1,9 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import java.util.ArrayList;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
+
+import java.util.ArrayList;
 
 public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupGuiScreen {
     private final ArrayList<Popup> popups = new ArrayList<>();
@@ -56,11 +57,11 @@ public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupG
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        super.render(guiGraphics, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
 
         for (Popup popup : this.popups) {
-            popup.drawPopup(guiGraphics, mouseX, mouseY);
+            popup.drawPopup(graphics, mouseX, mouseY);
         }
     }
 

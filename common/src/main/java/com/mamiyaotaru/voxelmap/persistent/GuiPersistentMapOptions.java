@@ -7,7 +7,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -93,7 +93,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
@@ -111,9 +111,10 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             }
         }
 
-        drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFont(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 49, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFont(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 59, 0xFFFFFFFF);
-        super.render(drawContext, mouseX, mouseY, delta);
+        graphics.centeredText(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+        graphics.centeredText(this.getFont(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 49, 0xFFFFFFFF);
+        graphics.centeredText(this.getFont(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 59, 0xFFFFFFFF);
+
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 }

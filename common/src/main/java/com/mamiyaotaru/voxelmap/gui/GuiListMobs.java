@@ -7,7 +7,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -122,7 +122,7 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
         }
 
         @Override
-        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             boolean isHostile = category == VoxelMapMobCategory.HOSTILE;
             boolean isNeutral = !isHostile;
             boolean isEnabled = parentGui.options.isMobEnabled(type);
@@ -130,7 +130,7 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
             int color = 0xFF000000 + (red << 16) + (green << 8);
-            drawContext.drawCenteredString(parentGui.getFont(), name, parentGui.getWidth() / 2, getY() + 5, color);
+            graphics.centeredText(parentGui.getFont(), name, parentGui.getWidth() / 2, getY() + 5, color);
 
             if (mobIconSprite == null) {
                 Radar radar = VoxelConstants.getVoxelMapInstance().getFullRadar();
@@ -142,12 +142,12 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
                 int iconHeight = Math.min(18, mobIconSprite.getIconHeight() / 3);
                 mobIcon.setPosition(getX() + 2, getY());
                 mobIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, mobIconSprite, iconWidth, iconHeight, 0xFFFFFFFF);
-                mobIcon.render(drawContext, mouseX, mouseY, tickDelta);
+                mobIcon.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             }
 
             mobToggle.setPosition(getX() + getWidth() - 20, getY());
             mobToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
-            mobToggle.render(drawContext, mouseX, mouseY, tickDelta);
+            mobToggle.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
             if (mobIcon.isMouseOver(mouseX, mouseY)) {
                 parentGui.setTooltip(isEnabled ? GuiListMobs.ENABLED : GuiListMobs.DISABLED);

@@ -14,7 +14,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
@@ -336,57 +336,57 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    protected void renderBlurredBackground(GuiGraphics guiGraphics) {
+    protected void extractBlurredBackground(GuiGraphicsExtractor graphics) {
         if (!popupOpen()) {
-            super.renderBlurredBackground(guiGraphics);
+            super.extractBlurredBackground(graphics);
         }
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         tooltip = null;
 
-        super.render(drawContext, popupOpen() ? 0 : mouseX, popupOpen() ? 0 : mouseY, delta);
+        super.extractRenderState(graphics, popupOpen() ? 0 : mouseX, popupOpen() ? 0 : mouseY, delta);
 
-        drawContext.drawCenteredString(getFont(), (parentGui == null || !parentGui.isEditing()) && !editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), I18n.get("minimap.waypoints.name"), getWidth() / 2 - 100, getHeight() / 6, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), "X", getWidth() / 2 - 100, getHeight() / 6 + 41, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), "Y", getWidth() / 2 - 28, getHeight() / 6 + 41, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), "Z", getWidth() / 2 + 44, getHeight() / 6 + 41, 0xFFFFFFFF);
+        graphics.centeredText(getFont(), (parentGui == null || !parentGui.isEditing()) && !editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), getWidth() / 2, 20, 0xFFFFFFFF);
+        graphics.text(getFont(), I18n.get("minimap.waypoints.name"), getWidth() / 2 - 100, getHeight() / 6, 0xFFFFFFFF);
+        graphics.text(getFont(), "X", getWidth() / 2 - 100, getHeight() / 6 + 41, 0xFFFFFFFF);
+        graphics.text(getFont(), "Y", getWidth() / 2 - 28, getHeight() / 6 + 41, 0xFFFFFFFF);
+        graphics.text(getFont(), "Z", getWidth() / 2 + 44, getHeight() / 6 + 41, 0xFFFFFFFF);
 
         buttonEnabled.setMessage(Component.literal(I18n.get("minimap.waypoints.enabled") + " " + (enabled ? I18n.get("options.on") : I18n.get("options.off"))));
 
         int buttonListY = getHeight() / 6 + 88;
         int color = ARGB.colorFromFloat(1.0F, red, green, blue);
 
-        drawContext.fill(getWidth() / 2 - 25, buttonListY + 24 + 5, getWidth() / 2 - 25 + 16, buttonListY + 24 + 5 + 10, color);
+        graphics.fill(getWidth() / 2 - 25, buttonListY + 24 + 5, getWidth() / 2 - 25 + 16, buttonListY + 24 + 5 + 10, color);
 
         TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
         Sprite icon = chooser.getAtlasSprite("selectable/" + suffix);
         if (icon == chooser.getMissingImage()) {
             icon = chooser.getAtlasSprite(WaypointManager.fallbackIconLocation);
         }
-        icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
+        icon.blit(graphics, RenderPipelines.GUI_TEXTURED, getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 
         if (popupOpen()) {
-            drawContext.nextStratum();
-            drawContext.blurBeforeThisStratum();
+            graphics.nextStratum();
+            graphics.blurBeforeThisStratum();
 
-            renderTransparentBackground(drawContext);
+            extractTransparentBackground(graphics);
 
             if (choosingColor) {
                 // render title
-                drawContext.drawCenteredString(getFont(), I18n.get("minimap.waypoints.colorPicker.title"), getWidth() / 2, 20, 0xFFFFFFFF);
+                graphics.centeredText(getFont(), I18n.get("minimap.waypoints.colorPicker.title"), getWidth() / 2, 20, 0xFFFFFFFF);
 
                 // render color picker background
                 int x0 = colorPicker.getX() - (colorPicker.getWidth() / 2) - 30;
                 int y0 = colorPicker.getY() - (colorPicker.getHeight() / 2) - 10;
                 int x1 = colorPicker.getWidth() + 60;
                 int y1 = colorPicker.getHeight() + 30;
-                TooltipRenderUtil.renderTooltipBackground(drawContext, x0, y0, x1, y1, null);
+                TooltipRenderUtil.extractTooltipBackground(graphics, x0, y0, x1, y1, null);
 
                 // render color picker
-                colorPicker.render(drawContext, mouseX, mouseY, delta);
+                colorPicker.extractRenderState(graphics, mouseX, mouseY, delta);
                 int pickerColor = colorPicker.getColor();
                 int red = ARGB.red(pickerColor);
                 int green = ARGB.green(pickerColor);
@@ -397,25 +397,25 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 int textX = (getWidth() - colorPicker.getWidth()) / 2;
                 int textY = (getHeight() + colorPicker.getHeight()) / 2 + 10;
                 int textWidth = getFont().width(text);
-                drawContext.fill(textX - 2, textY - 1, textX + textWidth + 2, textY + 9, pickerColor);
-                drawContext.fill(textX - 1, textY, textX + textWidth + 1, textY + 8, ARGB.black(0.15F));
-                drawContext.drawString(getFont(), text, textX, textY, 0xFFFFFFFF, false);
+                graphics.fill(textX - 2, textY - 1, textX + textWidth + 2, textY + 9, pickerColor);
+                graphics.fill(textX - 1, textY, textX + textWidth + 1, textY + 8, ARGB.black(0.15F));
+                graphics.text(getFont(), text, textX, textY, 0xFFFFFFFF, false);
 
                 // render color picker mode button
                 int buttonX = (getWidth() + colorPicker.getWidth()) / 2 - colorPickerModeButton.getWidth() + 18;
                 int buttonY = (getHeight() + colorPicker.getHeight()) / 2 + 6;
                 colorPickerModeButton.setPosition(buttonX, buttonY);
-                colorPickerModeButton.render(drawContext, mouseX, mouseY, delta);
+                colorPickerModeButton.extractRenderState(graphics, mouseX, mouseY, delta);
             }
 
             if (choosingIcon) {
                 // render title
-                drawContext.drawCenteredString(getFont(), I18n.get("minimap.waypoints.iconPicker.title"), getWidth() / 2, 20, 0xFFFFFFFF);
+                graphics.centeredText(getFont(), I18n.get("minimap.waypoints.iconPicker.title"), getWidth() / 2, 20, 0xFFFFFFFF);
 
                 // render icon picker
                 int pickerX = (getWidth() - chooser.getWidth()) / 2;
                 int pickerY = (getHeight() - chooser.getHeight()) / 2;
-                drawContext.blit(RenderPipelines.GUI_TEXTURED, chooser.getIdentifier(), pickerX, pickerY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xBFFFFFFF);
+                graphics.blit(RenderPipelines.GUI_TEXTURED, chooser.getIdentifier(), pickerX, pickerY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xBFFFFFFF);
 
                 // render selected icon
                 Sprite currentIcon = chooser.getAtlasSprite("selectable/" + pickedSuffix);
@@ -424,7 +424,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 }
                 int iconX = currentIcon.getOriginX() + pickerX;
                 int iconY = currentIcon.getOriginY() + pickerY;
-                currentIcon.blit(drawContext, RenderPipelines.GUI_TEXTURED, iconX, iconY, currentIcon.getIconWidth(), currentIcon.getIconHeight(), color);
+                currentIcon.blit(graphics, RenderPipelines.GUI_TEXTURED, iconX, iconY, currentIcon.getIconWidth(), currentIcon.getIconHeight(), color);
 
                 // render hovered icon
                 Sprite hoveredIcon = pickIcon(mouseX, mouseY);
@@ -435,18 +435,18 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                     iconX = (hoveredIcon.getOriginX() + pickerX) - ((iconWidth - hoveredIcon.getIconWidth()) / 2);
                     iconY = (hoveredIcon.getOriginY() + pickerY) - ((iconHeight - hoveredIcon.getIconHeight()) / 2);
 
-                    hoveredIcon.blit(drawContext, RenderPipelines.GUI_TEXTURED, iconX, iconY, iconWidth, iconHeight, iconColor);
+                    hoveredIcon.blit(graphics, RenderPipelines.GUI_TEXTURED, iconX, iconY, iconWidth, iconHeight, iconColor);
 
                     tooltip = Component.translatable("minimap.waypoints.icon." + WaypointManager.toSimpleName(hoveredIcon.getIconName().toString()).replace("selectable/", ""));
                 }
             }
 
-            popupDoneButton.render(drawContext, mouseX, mouseY, delta);
-            popupCancelButton.render(drawContext, mouseX, mouseY, delta);
+            popupDoneButton.extractRenderState(graphics, mouseX, mouseY, delta);
+            popupCancelButton.extractRenderState(graphics, mouseX, mouseY, delta);
         }
 
         if (tooltip != null) {
-            renderTooltip(drawContext, tooltip, mouseX, mouseY);
+            renderTooltip(graphics, tooltip, mouseX, mouseY);
         }
     }
 

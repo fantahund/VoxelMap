@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.ModrinthUpdateChecker;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -142,10 +143,10 @@ public class VoxelMap implements PreparableReloadListener {
         events.initEvents(this);
     }
 
-    public void onTickInGame(GuiGraphics guiGraphics) {
+    public void onTickInGame(GuiGraphicsExtractor graphics) {
         if (!initialized) return;
 
-        map.onTickInGame(guiGraphics);
+        map.onTickInGame(graphics);
         if (passMessage != null) {
             VoxelConstants.getMinecraft().gui.getChat().addClientSystemMessage(Component.literal(passMessage));
             passMessage = null;

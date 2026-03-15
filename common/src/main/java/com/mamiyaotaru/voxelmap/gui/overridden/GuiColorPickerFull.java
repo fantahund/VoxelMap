@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -81,50 +81,50 @@ public class GuiColorPickerFull extends AbstractColorPicker {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         int fullColor = this.color;
         int wheelRadius = this.getHueWheelRadius();
 
         // render s picker
         int sSliderX = this.getSatSliderX();
         int sSliderY = this.getSatSliderY();
-        guiGraphics.fillGradient(sSliderX - (SLIDER_WIDTH / 2), sSliderY - wheelRadius, sSliderX + (SLIDER_WIDTH / 2), sSliderY + wheelRadius, Color.getHSBColor(this.h, 1.0F, this.v).getRGB(), Color.getHSBColor(this.h, 0.0F, this.v).getRGB());
+        graphics.fillGradient(sSliderX - (SLIDER_WIDTH / 2), sSliderY - wheelRadius, sSliderX + (SLIDER_WIDTH / 2), sSliderY + wheelRadius, Color.getHSBColor(this.h, 1.0F, this.v).getRGB(), Color.getHSBColor(this.h, 0.0F, this.v).getRGB());
 
         float sSliderHandleX = sSliderX;
         float sSliderHandleY = sSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - this.s));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render v picker
         int vSliderX = this.getValueSliderX();
         int vSliderY = this.getValueSliderY();
-        guiGraphics.fillGradient(vSliderX - (SLIDER_WIDTH / 2), vSliderY - wheelRadius, vSliderX + (SLIDER_WIDTH / 2), vSliderY + wheelRadius, Color.getHSBColor(this.h, this.s, 1.0F).getRGB(), 0xFF000000);
+        graphics.fillGradient(vSliderX - (SLIDER_WIDTH / 2), vSliderY - wheelRadius, vSliderX + (SLIDER_WIDTH / 2), vSliderY + wheelRadius, Color.getHSBColor(this.h, this.s, 1.0F).getRGB(), 0xFF000000);
 
         float vSliderHandleX = vSliderX;
         float vSliderHandleY = vSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - this.v));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render h, s picker
         int wheelX = this.getHueWheelX();
         int wheelY = this.getHueWheelY();
         Identifier colorWheelImage = VoxelConstants.getVoxelMapInstance().getColorManager().getHueColorWheel();
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, colorWheelImage, wheelX - wheelRadius, wheelY - wheelRadius, 0.0F, 0.0F, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, 0xFFFFFFFF);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, colorWheelImage, wheelX - wheelRadius, wheelY - wheelRadius, 0.0F, 0.0F, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, 0xFFFFFFFF);
 
         float radians = this.h * 360.0F * Mth.DEG_TO_RAD;
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().translate(wheelX, wheelY);
-        guiGraphics.pose().rotate(radians);
-        guiGraphics.pose().translate(wheelRadius, 0.0F);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, Color.getHSBColor(this.h, 1.0F, 1.0F).getRGB());
-        guiGraphics.pose().popMatrix();
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(wheelX, wheelY);
+        graphics.pose().rotate(radians);
+        graphics.pose().translate(wheelRadius, 0.0F);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, Color.getHSBColor(this.h, 1.0F, 1.0F).getRGB());
+        graphics.pose().popMatrix();
 
         // render texts
         Font font = VoxelConstants.getMinecraft().font;
-        guiGraphics.drawString(font, "H", wheelX - wheelRadius, wheelY + wheelRadius - 9, 0xFFFFFFFF);
-        guiGraphics.drawString(font, "S", sSliderX - (SLIDER_WIDTH / 2) - font.width("S") - 4, sSliderY + wheelRadius - 9, 0xFFFFFFFF);
-        guiGraphics.drawString(font, "V", vSliderX - (SLIDER_WIDTH / 2) - font.width("V") - 4, vSliderY + wheelRadius - 9, 0xFFFFFFFF);
+        graphics.text(font, "H", wheelX - wheelRadius, wheelY + wheelRadius - 9, 0xFFFFFFFF);
+        graphics.text(font, "S", sSliderX - (SLIDER_WIDTH / 2) - font.width("S") - 4, sSliderY + wheelRadius - 9, 0xFFFFFFFF);
+        graphics.text(font, "V", vSliderX - (SLIDER_WIDTH / 2) - font.width("V") - 4, vSliderY + wheelRadius - 9, 0xFFFFFFFF);
 
     }
 

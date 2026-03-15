@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -73,17 +73,17 @@ public class GuiIconElement implements Renderable, GuiEventListener {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         if (!this.canRender()) {
             return;
         }
 
         float iconX = this.x + ((this.width - this.iconWidth) / 2.0F);
         float iconY = this.y + ((this.height - this.iconHeight) / 2.0F);
-        this.blitIcon(guiGraphics, this.pipeline, this.icon, iconX, iconY, this.iconWidth, this.iconHeight, this.iconColor);
+        this.blitIcon(graphics, this.pipeline, this.icon, iconX, iconY, this.iconWidth, this.iconHeight, this.iconColor);
 
         if (this.cursorEvent && this.isMouseOver(mouseX, mouseY)) {
-            guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
+            graphics.requestCursor(CursorTypes.POINTING_HAND);
         }
     }
 
@@ -91,12 +91,12 @@ public class GuiIconElement implements Renderable, GuiEventListener {
         return this.pipeline != null && this.icon != null && this.iconWidth > 0 && this.iconHeight > 0;
     }
 
-    private void blitIcon(GuiGraphics guiGraphics, RenderPipeline pipeline, Object icon, float x, float y, int width, int height, int color) {
+    private void blitIcon(GuiGraphicsExtractor graphics, RenderPipeline pipeline, Object icon, float x, float y, int width, int height, int color) {
         if (icon instanceof Sprite sprite) {
-            sprite.blit(guiGraphics, pipeline, x, y, width, height, color);
+            sprite.blit(graphics, pipeline, x, y, width, height, color);
         }
         if (icon instanceof Identifier identifier) {
-            VoxelMapGuiGraphics.blitFloat(guiGraphics, pipeline, identifier, x, y, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+            VoxelMapGuiGraphics.blitFloat(graphics, pipeline, identifier, x, y, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
         }
     }
 

@@ -10,7 +10,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -284,17 +284,18 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        super.render(drawContext, mouseX, mouseY, delta);
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, height - layout.getFooterHeight() - 2, 0.0F, 0.0F, width, 2, 32, 2);
-        drawContext.drawCenteredString(font, pageInfo, width / 2, height / 6 + 126, 0xFFFFFFFF);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, height - layout.getFooterHeight() - 2, 0.0F, 0.0F, width, 2, 32, 2);
+        graphics.centeredText(font, pageInfo, width / 2, height / 6 + 126, 0xFFFFFFFF);
+
         handleTabChange();
     }
 
     @Override
-    public void renderMenuBackground(GuiGraphics drawContext) {
-        drawContext.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, width, layout.getHeaderHeight(), 16, 16);
-        renderMenuBackground(drawContext, 0, layout.getHeaderHeight(), width, height);
+    public void extractMenuBackground(GuiGraphicsExtractor graphics) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, width, layout.getHeaderHeight(), 16, 16);
+        extractMenuBackground(graphics, 0, layout.getHeaderHeight(), width, height);
     }
 
     @Override

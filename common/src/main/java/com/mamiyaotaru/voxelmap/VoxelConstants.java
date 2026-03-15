@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -108,9 +109,9 @@ public final class VoxelConstants {
 
     }
 
-    public static void renderOverlay(GuiGraphics guiGraphics) {
+    public static void renderOverlay(GuiGraphicsExtractor graphics) {
         try {
-            VoxelConstants.getVoxelMapInstance().onTickInGame(guiGraphics);
+            VoxelConstants.getVoxelMapInstance().onTickInGame(graphics);
         } catch (RuntimeException e) {
             VoxelConstants.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Error while render overlay", e);
         }

@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
@@ -124,11 +124,11 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        drawContext.drawCenteredString(this.getFont(), Component.translatable("worldmap.subworld.edit"), this.getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawString(this.getFont(), Component.translatable("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 0xFFA0A0A0);
-        this.subworldNameField.render(drawContext, mouseX, mouseY, delta);
-        super.render(drawContext, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        graphics.centeredText(this.getFont(), Component.translatable("worldmap.subworld.edit"), this.getWidth() / 2, 20, 0xFFFFFFFF);
+        graphics.text(this.getFont(), Component.translatable("worldmap.subworld.name"), this.getWidth() / 2 - 100, this.getHeight() / 6, 0xFFA0A0A0);
+        this.subworldNameField.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
     private boolean isNameAcceptable() {

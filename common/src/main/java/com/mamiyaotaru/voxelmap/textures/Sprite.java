@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 
 public class Sprite {
@@ -119,12 +120,12 @@ public class Sprite {
         return "Sprite{name='" + this.iconName + "', x=" + this.originX + ", y=" + this.originY + ", height=" + this.height + ", width=" + this.width + ", u0=" + this.minU + ", u1=" + this.maxU + ", v0=" + this.minV + ", v1=" + this.maxV + "}";
     }
 
-    public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h) {
-        blit(guiGraphics, renderTypeMap, x, y, w, h, 0xffffffff);
+    public void blit(GuiGraphicsExtractor graphics, RenderPipeline renderTypeMap, float x, float y, float w, float h) {
+        blit(graphics, renderTypeMap, x, y, w, h, 0xffffffff);
     }
 
-    public void blit(GuiGraphics guiGraphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, minU, maxU, minV, maxV, color);
+    public void blit(GuiGraphicsExtractor graphics, RenderPipeline renderTypeMap, float x, float y, float w, float h, int color) {
+        VoxelMapGuiGraphics.blitFloat(graphics, renderTypeMap, getIdentifier(), x, y, w, h, minU, maxU, minV, maxV, color);
         // VoxelmapGuiGraphics.blitFloat(guiGraphics, renderTypeMap, getIdentifier(), x, y, w, h, 0, 1, 0, 1, color);
     }
 

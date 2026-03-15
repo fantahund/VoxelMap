@@ -3,16 +3,11 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 
 public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer {
     protected Component screenTitle = Component.literal("players");
@@ -101,13 +96,13 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        super.render(drawContext, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
 
-        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), SHARE_MESSAGE, getWidth() / 2 - 153, 39, 0xFFA0A0A0);
-        drawContext.drawCenteredString(getFont(), SHARE_WITH, getWidth() / 2, 75, 0xFFFFFFFF);
-        drawContext.drawString(getFont(), FILTER_MESSAGE, getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
+        graphics.centeredText(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
+        graphics.text(getFont(), SHARE_MESSAGE, getWidth() / 2 - 153, 39, 0xFFA0A0A0);
+        graphics.centeredText(getFont(), SHARE_WITH, getWidth() / 2, 75, 0xFFFFFFFF);
+        graphics.text(getFont(), FILTER_MESSAGE, getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
     }
 
     @Override

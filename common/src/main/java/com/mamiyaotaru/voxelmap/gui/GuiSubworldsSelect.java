@@ -5,22 +5,15 @@ import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.ClientRecipeBook;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.KeyboardInput;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -142,22 +135,22 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         int titleStringWidth = this.getFont().width(this.title);
         titleStringWidth = Math.max(titleStringWidth, this.getFont().width(this.select));
-        drawContext.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
-        drawContext.drawCenteredString(this.getFont(), this.title, this.width / 2, 5, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFont(), this.select, this.width / 2, 15, 0xFFFF0000);
+        graphics.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
+        graphics.text(this.getFont(), this.title, this.width / 2, 5, 0xFFFFFFFF);
+        graphics.text(this.getFont(), this.select, this.width / 2, 15, 0xFFFF0000);
 
-        super.render(drawContext, mouseX, mouseY, delta);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
         if (this.newWorld) {
-            this.newNameField.render(drawContext, mouseX, mouseY, delta);
+            this.newNameField.extractRenderState(graphics, mouseX, mouseY, delta);
         }
 
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+    public void extractMenuBackground(GuiGraphicsExtractor graphics) {
     }
 
     @Override
