@@ -5,11 +5,17 @@ import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
+import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.AtlasIds;
@@ -26,11 +32,13 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class EquippableArmorHandler extends AbstractArmorHandler {
     private final RandomSource random = RandomSource.create();
     private final HumanoidModel<?> humanoidModel;
+    private final Direction[] allDirections;
 
     private Equippable equippable;
     private Block block;
@@ -38,7 +46,13 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
     public EquippableArmorHandler() {
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
         LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
-        this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
+        humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
+
+        allDirections = new Direction[Direction.values().length + 1];
+        int i = 1;
+        for (Direction direction : Direction.values()) {
+            allDirections[i++] = direction;
+        }
     }
 
     @Override
@@ -93,17 +107,27 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             part.zRot = 0;
             part.render(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
         }
-//        FIXME 26.1: blocks on radar
-//        if (block != null) {
-//            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
-//            pose.scale(0.65F, 0.65F, 0.65F);
-//
-//            BlockState blockState = block.defaultBlockState();
-//            BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
-//            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.random);
-//
-//            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
-//        }
+        if (block != null) {
+            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
+            pose.scale(0.65F, 0.65F, 0.65F);
+
+            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
+            ArrayList<BlockStateModelPart> allQuads = new ArrayList<>();
+            blockModelSet.get(block.defaultBlockState()).collectParts(random, allQuads);
+
+            QuadInstance quadInstance = new QuadInstance();
+            quadInstance.setLightCoords(EntityMapImageManager.LIGHT);
+            quadInstance.setOverlayCoords(EntityMapImageManager.OVERLAY);
+            quadInstance.setColor(0xFFFFFFFF);
+
+            for (BlockStateModelPart modelPart : allQuads) {
+                for (Direction direction : allDirections) {
+                    for (BakedQuad quad : modelPart.getQuads(direction)) {
+                        bufferBuilder.putBakedQuad(pose.last(), quad, quadInstance);
+                    }
+                }
+            }
+        }
     }
 
     @Override
