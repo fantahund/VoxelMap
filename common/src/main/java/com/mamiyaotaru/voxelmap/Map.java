@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -23,11 +24,9 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -81,6 +80,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 public class Map implements Runnable, IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
@@ -172,15 +172,15 @@ public class Map implements Runnable, IChangeObserver {
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
     private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "gui_fbo_texture");
-    private final DynamicAllocatedTexture guiFboTexture;
-    private final DynamicAllocatedTexture guiFboDepthTexture;
+    private DynamicAllocatedTexture guiFboTexture;
+    private DynamicAllocatedTexture guiFboDepthTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
     private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "map_fbo_texture");
     private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "maksed_map_fbo_texture");
-    private final DynamicAllocatedTexture mapFboTexture;
-    private final DynamicAllocatedTexture maskedMapFboTexture;
-    private final DynamicAllocatedTexture mapFboDepthTexture;
-    private final DynamicAllocatedTexture maskedMapFboDepthTexture;
+    private DynamicAllocatedTexture mapFboTexture;
+    private DynamicAllocatedTexture maskedMapFboTexture;
+    private DynamicAllocatedTexture mapFboDepthTexture;
+    private DynamicAllocatedTexture maskedMapFboDepthTexture;
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -229,19 +229,36 @@ public class Map implements Runnable, IChangeObserver {
         final int fboTextureSize = 512;
         final int fboTextureUsage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
 
-        this.guiFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.guiFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
+        createMinimapFboTextures("VoxelMap Fullscreen FBO", fboTextureUsage, fboTextureSize, fboTextureSize, FilterMode.NEAREST,
+                (color) -> this.guiFboTexture = color,
+                (depth) -> this.guiFboDepthTexture = depth
+        );
         minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
 
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
-        this.mapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.mapFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMapFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map Depth  FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
+        createMinimapFboTextures("VoxelMap Minimap FBO", fboTextureUsage, fboTextureSize, fboTextureSize, FilterMode.LINEAR,
+                (color) -> this.mapFboTexture = color,
+                (depth) -> this.mapFboDepthTexture = depth
+        );
+        createMinimapFboTextures("VoxelMap Masked Minimap FBO", fboTextureUsage, fboTextureSize, fboTextureSize, FilterMode.LINEAR,
+                (color) -> this.maskedMapFboTexture = color,
+                (depth) -> this.maskedMapFboDepthTexture = depth
+        );
         minecraft.getTextureManager().register(this.mapFboTextureLocation, this.mapFboTexture);
         minecraft.getTextureManager().register(this.maskedMapFboTextureLocation, this.maskedMapFboTexture);
 
         this.loadMapTextures();
+    }
+
+    private static void createMinimapFboTextures(String label, int usage, int width, int height, FilterMode filterMode, Consumer<DynamicAllocatedTexture> colorTexture, Consumer<DynamicAllocatedTexture> depthTexture) {
+        DynamicAllocatedTexture colorTex = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture(label + " Color", usage, TextureFormat.RGBA8, width, height, 1, 1));
+        colorTex.sampler = RenderSystem.getSamplerCache().getClampToEdge(filterMode);
+
+        DynamicAllocatedTexture depthTex = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture(label + " Depth", usage, TextureFormat.DEPTH32, width, height, 1, 1));
+        depthTex.sampler = RenderSystem.getSamplerCache().getClampToEdge(filterMode);
+
+        colorTexture.accept(colorTex);
+        depthTexture.accept(depthTex);
     }
 
     public void onResourceManagerReload(ResourceManager resourceManager) {
@@ -667,7 +684,8 @@ public class Map implements Runnable, IChangeObserver {
             renderMatrixStack.popMatrix();
         });
 
-        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, guiFboTextureLocation, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), 0xFFFFFFFF);
+//        VoxelMapGuiGraphics.blitFloatGradient(graphics, RenderPipelines.GUI_TEXTURED, guiFboTexture.getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST), 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {
