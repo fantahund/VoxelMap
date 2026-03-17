@@ -10,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.npc.villager.VillagerDataHolder;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.npc.villager.VillagerType;
@@ -69,9 +70,11 @@ public class VillagerVariantDataFactory extends DefaultEntityVariantDataFactory 
             secondaryTexture = TYPE_TEXTURES.get(typeOptional.get());
         }
 
-        Optional<ResourceKey<VillagerProfession>> professionOptional = villager.getVillagerData().profession().unwrapKey();
-        if (professionOptional.isPresent()) {
-            tertiaryTexture = PROFESSION_TEXTURES.get(professionOptional.get());
+        if (!((LivingEntity) entity).isBaby()) {
+            Optional<ResourceKey<VillagerProfession>> professionOptional = villager.getVillagerData().profession().unwrapKey();
+            if (professionOptional.isPresent()) {
+                tertiaryTexture = PROFESSION_TEXTURES.get(professionOptional.get());
+            }
         }
 
         return new DefaultEntityVariantData(getType(), identifier, size, addBorder, primaryTexture, secondaryTexture, tertiaryTexture == INVISIBLE_TEXTURE ? null : tertiaryTexture, null);
