@@ -4,19 +4,20 @@ import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
 
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 
 public abstract class AbstractArmorHandler {
-    protected final HashMap<Identifier, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
+    protected final HashMap<Item, EntityArmorDataFactory> armorDataFactories = new HashMap<>();
     protected Entity entity;
     protected EntityRenderer renderer;
     protected int size;
     protected boolean addBorder;
 
-    protected EntityArmorData getArmorData(Identifier material, int size, boolean addBorder) {
-        EntityArmorDataFactory factory = armorDataFactories.get(material);
+    protected EntityArmorData getArmorData(Item item, int size, boolean addBorder) {
+        EntityArmorDataFactory factory = armorDataFactories.get(item);
         if (factory != null) {
             return factory.createArmorData(size, addBorder);
         }
@@ -24,13 +25,13 @@ public abstract class AbstractArmorHandler {
         return null;
     }
 
-    protected EntityArmorData getOrCreateArmorData(Identifier material, Identifier texture, int size, boolean addBorder) {
-        if (!armorDataFactories.containsKey(material)) {
-            EntityArmorDataFactory factory = new EntityArmorDataFactory(material, texture);
-            armorDataFactories.put(material, factory);
+    protected EntityArmorData getOrCreateArmorData(Item item, Identifier texture, int size, boolean addBorder) {
+        if (!armorDataFactories.containsKey(item)) {
+            EntityArmorDataFactory factory = new EntityArmorDataFactory(item, texture);
+            armorDataFactories.put(item, factory);
         }
 
-        return getArmorData(material, size, addBorder);
+        return getArmorData(item, size, addBorder);
     }
 
     public void setupForEntity(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {

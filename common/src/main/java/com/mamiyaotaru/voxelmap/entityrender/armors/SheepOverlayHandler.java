@@ -8,6 +8,7 @@ import net.minecraft.client.model.animal.sheep.SheepFurModel;
 import net.minecraft.client.renderer.entity.SheepRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.item.Items;
 
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
@@ -27,7 +28,7 @@ public class SheepOverlayHandler extends AbstractArmorHandler {
             return null;
         }
 
-        return getOrCreateArmorData(SHEEP_FUR, SHEEP_FUR, size, addBorder);
+        return getOrCreateArmorData(Items.AIR, SHEEP_FUR, size, addBorder);
     }
 
     @Override
