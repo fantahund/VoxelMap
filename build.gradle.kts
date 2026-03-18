@@ -6,7 +6,7 @@ plugins {
     id("org.spongepowered.mixin") version ("0.7-SNAPSHOT") apply (false)
 }
 
-val MINECRAFT_VERSION by extra { "26.1-pre-2" }
+val MINECRAFT_VERSION by extra { "26.1-pre-3" }
 val FORGE_VERSION by extra { "61.0.1" }
 val NEOFORGE_VERSION by extra { "21.11.21-beta" }
 val FABRIC_LOADER_VERSION by extra { "0.18.4" }
