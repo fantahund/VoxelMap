@@ -18,6 +18,7 @@ accessible field net/minecraft/client/renderer/texture/AbstractTexture sampler L
 accessible field net/minecraft/server/level/ServerChunkCache mainThreadProcessor Lnet/minecraft/server/level/ServerChunkCache$MainThreadExecutor;
 accessible field net/minecraft/world/level/biome/Biome climateSettings Lnet/minecraft/world/level/biome/Biome$ClimateSettings;
 accessible field net/minecraft/client/Camera depthFar F
+accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher equipmentAssets Lnet/minecraft/client/resources/model/EquipmentAssetManager;
 
 # methods
 accessible method net/minecraft/client/renderer/fog/FogRenderer computeFogColor (Lnet/minecraft/client/Camera;FLnet/minecraft/client/multiplayer/ClientLevel;IFLorg/joml/Vector4f;)V

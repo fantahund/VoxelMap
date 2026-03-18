@@ -10,8 +10,8 @@ val MINECRAFT_VERSION by extra { "26.1-pre-2" }
 val FORGE_VERSION by extra { "61.0.1" }
 val NEOFORGE_VERSION by extra { "21.11.21-beta" }
 val FABRIC_LOADER_VERSION by extra { "0.18.4" }
-val FABRIC_API_VERSION by extra { "0.143.13+26.1" }
-val VOXELMAP_VERSION by extra { "1.16.1" }
+val FABRIC_API_VERSION by extra { "0.143.14+26.1" }
+val VOXELMAP_VERSION by extra { "1.16.2" }
 
 val MOD_VERSION by extra { "${MINECRAFT_VERSION}-${VOXELMAP_VERSION}" }
 

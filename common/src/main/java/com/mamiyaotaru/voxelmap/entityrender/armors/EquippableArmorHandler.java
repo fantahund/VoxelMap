@@ -4,9 +4,9 @@ import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -14,23 +14,21 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.object.skull.SkullModelBase;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -38,17 +36,16 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SkullBlock;
-import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class EquippableArmorHandler extends AbstractArmorHandler {
     private final RandomSource random = RandomSource.create();
     private final HumanoidModel<?> humanoidModel;
+    private final Direction[] allDirections;
 
     private Equippable armor;
     private Block block;
@@ -68,7 +65,13 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
     public EquippableArmorHandler() {
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
         LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
-        this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
+        humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
+
+        allDirections = new Direction[Direction.values().length + 1];
+        int i = 1;
+        for (Direction direction : Direction.values()) {
+            allDirections[i++] = direction;
+        }
     }
 
     @Override
@@ -173,11 +176,22 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
             pose.scale(0.625F, 0.625F, 0.625F);
 
-            BlockState blockState = block.defaultBlockState();
-            BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
-            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.random);
+            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
+            ArrayList<BlockStateModelPart> allQuads = new ArrayList<>();
+            blockModelSet.get(block.defaultBlockState()).collectParts(random, allQuads);
 
-            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
+            QuadInstance quadInstance = new QuadInstance();
+            quadInstance.setLightCoords(EntityMapImageManager.LIGHT);
+            quadInstance.setOverlayCoords(EntityMapImageManager.OVERLAY);
+            quadInstance.setColor(0xFFFFFFFF);
+
+            for (BlockStateModelPart modelPart : allQuads) {
+                for (Direction direction : allDirections) {
+                    for (BakedQuad quad : modelPart.getQuads(direction)) {
+                        bufferBuilder.putBakedQuad(pose.last(), quad, quadInstance);
+                    }
+                }
+            }
         }
         if (skull != null) {
             pose.scale(1.1875F, 1.1875F, 1.1875F);
