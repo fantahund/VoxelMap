@@ -199,10 +199,7 @@ public class Radar extends AbstractRadar {
     private MobIconConfig getIconConfig(Contact contact) {
         return iconConfigs.computeIfAbsent(contact.entity.getType(), key -> {
             Properties properties = entityMapImageManager.getCustomMobProperties(key);
-            float armorOffset = 0.0F;
-            if (properties != null) {
-                armorOffset = Float.parseFloat(properties.getProperty("helmetOffset", "0.0"));
-            }
+            float armorOffset = Float.parseFloat(properties.getProperty("helmetOffset", "0.0"));
 
             return new MobIconConfig(armorOffset);
         });
