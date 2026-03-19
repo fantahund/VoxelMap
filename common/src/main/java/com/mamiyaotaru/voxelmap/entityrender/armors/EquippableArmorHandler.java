@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -18,7 +17,6 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
@@ -26,11 +24,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.PlayerSkin;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -44,7 +40,6 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class EquippableArmorHandler extends AbstractArmorHandler {
     private final RandomSource random = RandomSource.create();
@@ -143,15 +138,9 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             ResolvableProfile profileItem = itemStack.get(DataComponents.PROFILE);
             if (profileItem == null) {
                 texture = SKULL_TEXTURES.get(skull.getType());
-            } else {
-//                FIXME 1.21.11: handle player skull texture
-//                This does not work properly.
-//
-//                GameProfile profile = profileItem.resolveProfile(VoxelConstants.getMinecraft().services().profileResolver()).getNow(profileItem.partialProfile());
-//                Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(profile).getNow(Optional.empty());
-//
-//                texture = optionalSkin.map(playerSkin -> playerSkin.body().texturePath()).orElseGet(DefaultPlayerSkin::getDefaultTexture);
             }
+
+//          TODO 1.21.11: handle player head texture
         }
 
         return texture;
