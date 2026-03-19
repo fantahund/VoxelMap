@@ -4,20 +4,20 @@ plugins {
     id("fabric-loom")
 }
 
-val MINECRAFT_VERSION: String by rootProject.extra
-val FABRIC_LOADER_VERSION: String by rootProject.extra
-val FABRIC_API_VERSION: String by rootProject.extra
+val minecraftVersion: String by rootProject.extra
+val fabricVersion: String by rootProject.extra
+val fabricApiVersion: String by rootProject.extra
 
 repositories {
 
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${MINECRAFT_VERSION}")
+    minecraft("com.mojang:minecraft:${minecraftVersion}")
     mappings(loom.officialMojangMappings())
 
-    modCompileOnly("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
+    modCompileOnly("net.fabricmc:fabric-loader:${fabricVersion}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
 
     compileOnly("net.fabricmc:sponge-mixin:0.16.4+mixin.0.8.7")
     compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")

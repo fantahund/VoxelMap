@@ -5,10 +5,10 @@ plugins {
     id("java-library")
 }
 
-val MINECRAFT_VERSION: String by rootProject.extra
-val FORGE_VERSION: String by rootProject.extra
+val minecraftVersion: String by rootProject.extra
+val forgeVersion: String by rootProject.extra
 
-val MOD_VERSION: String by rootProject.extra
+val fullVersion: String by rootProject.extra
 
 base {
     archivesName.set("voxelmap-forge")
@@ -28,12 +28,12 @@ sourceSets {
 }
 
 dependencies {
-    minecraft ("net.minecraftforge:forge:${MINECRAFT_VERSION}-${FORGE_VERSION}")
+    minecraft ("net.minecraftforge:forge:${minecraftVersion}-${forgeVersion}")
     compileOnly(project.project(":common").sourceSets.main.get().output)
 }
 
 minecraft {
-    mappings("official", MINECRAFT_VERSION)
+    mappings("official", minecraftVersion)
 
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
 
@@ -68,9 +68,9 @@ tasks {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
 
-        inputs.property("version", project.version)
+        inputs.property("version", fullVersion)
         filesMatching("META-INF/mods.toml") {
-            expand(mapOf("version" to MOD_VERSION))
+            expand(mapOf("version" to fullVersion))
         }
     }
 

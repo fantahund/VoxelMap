@@ -6,14 +6,14 @@ plugins {
     id("org.spongepowered.mixin") version ("0.7-SNAPSHOT") apply (false)
 }
 
-val MINECRAFT_VERSION by extra { "1.21.11" }
-val FORGE_VERSION by extra { "61.0.1" }
-val NEOFORGE_VERSION by extra { "21.11.21-beta" }
-val FABRIC_LOADER_VERSION by extra { "0.18.2" }
-val FABRIC_API_VERSION by extra { "0.140.0+1.21.11" }
-val VOXELMAP_VERSION by extra { "1.16.3" }
+val minecraftVersion by extra { "1.21.11" }
+val forgeVersion by extra { "61.0.1" }
+val neoForgeVersion by extra { "21.11.21-beta" }
+val fabricVersion by extra { "0.18.2" }
+val fabricApiVersion by extra { "0.140.0+1.21.11" }
+val voxelMapVersion by extra { "1.16.3" }
 
-val MOD_VERSION by extra { "${MINECRAFT_VERSION}-${VOXELMAP_VERSION}" }
+val fullVersion by extra { "${minecraftVersion}-${voxelMapVersion}" }
 
 allprojects {
     apply(plugin = "java")
@@ -39,11 +39,11 @@ subprojects {
 
     tasks.processResources {
         filesMatching("META-INF/neoforge.mods.toml") {
-            expand(mapOf("version" to MOD_VERSION))
+            expand(mapOf("version" to fullVersion))
         }
     }
 
-    version = MOD_VERSION
+    version = fullVersion
     group = "com.mamiyaotaru"
 
     tasks.withType<JavaCompile> {
