@@ -15,12 +15,11 @@ base {
 
 dependencies {
     minecraft("com.mojang:minecraft:${MINECRAFT_VERSION}")
-    mappings(loom.layered {
-        officialMojangMappings()
-    })
-    modImplementation("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
+    mappings(loom.officialMojangMappings())
 
+    modImplementation("net.fabricmc:fabric-loader:$FABRIC_LOADER_VERSION")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
+
     implementation(project.project(":common").sourceSets.getByName("main").output)
 }
 
