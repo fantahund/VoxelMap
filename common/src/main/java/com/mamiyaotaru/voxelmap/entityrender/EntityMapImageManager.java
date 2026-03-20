@@ -2,8 +2,8 @@ package com.mamiyaotaru.voxelmap.entityrender;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
+import com.mamiyaotaru.voxelmap.entityrender.armors.DefaultArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.EntityArmorData;
-import com.mamiyaotaru.voxelmap.entityrender.armors.EquippableArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.SheepOverlayHandler;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
 import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
@@ -108,6 +108,8 @@ public class EntityMapImageManager {
     private final Minecraft minecraft = Minecraft.getInstance();
 
     private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
+    private final HashMap<EntityType<?>, AbstractArmorHandler> armorHandlers = new HashMap<>();
+    private final DefaultArmorHandler defaultArmorHandler = new DefaultArmorHandler();
     private final EmptySubmitNodeCollector emptySubmitNodeCollector = new EmptySubmitNodeCollector();
     private final Class<?>[] fullRenderModels;
     private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
@@ -119,10 +121,6 @@ public class EntityMapImageManager {
     public static final int LIGHT = LightTexture.FULL_BRIGHT;
     public static final int OVERLAY = OverlayTexture.NO_OVERLAY;
     private final GpuBuffer lightingBuffer;
-
-    private final EquippableArmorHandler equippableArmorHandler = new EquippableArmorHandler();
-    private final SheepOverlayHandler sheepOverlayHandler = new SheepOverlayHandler();
-
     private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
     private final Identifier resourceFboTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "entityimagemanager/fbo");
     private final Tesselator fboTessellator = new Tesselator(4096);
@@ -178,6 +176,8 @@ public class EntityMapImageManager {
         addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
         addVariantDataFactory(new VillagerVariantDataFactory(EntityType.ZOMBIE_VILLAGER));
         addVariantDataFactory(new TropicalFishVariantDataFactory(EntityType.TROPICAL_FISH));
+
+        addArmorHandler(EntityType.SHEEP, new SheepOverlayHandler());
 
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
@@ -478,18 +478,30 @@ public class EntityMapImageManager {
         });
     }
 
+    private void addArmorHandler(EntityType<?> type, AbstractArmorHandler handler) {
+        armorHandlers.put(type, handler);
+    }
+
+    private AbstractArmorHandler getArmorHandler(EntityType<?> type) {
+        AbstractArmorHandler armorHandler = armorHandlers.get(type);
+        if (armorHandler != null) {
+            return armorHandler;
+        }
+
+        return defaultArmorHandler;
+    }
+
+    private AbstractArmorHandler getAndSetupArmorHandler(Entity entity, EntityRenderer<?, ?> renderer, int size, boolean addBorder) {
+        AbstractArmorHandler armorHandler = getArmorHandler(entity.getType());
+        armorHandler.setupForEntity(entity, renderer, size, addBorder);
+
+        return armorHandler;
+    }
 
     public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
         EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
 
-        AbstractArmorHandler armorHandler;
-        if (entity instanceof Sheep) {
-            armorHandler = sheepOverlayHandler;
-        } else {
-            armorHandler = equippableArmorHandler;
-        }
-        armorHandler.setupForEntity(entity, entityRenderer, size, addBorder);
-
+        AbstractArmorHandler armorHandler = getAndSetupArmorHandler(entity, entityRenderer, size, addBorder);
         EntityArmorData armorData = armorHandler.getArmorData();
         if (armorData == null) {
             return null;
@@ -511,18 +523,18 @@ public class EntityMapImageManager {
 
         imageCreationRequests++;
         GLUtils.readTextureContentsToBufferedImage(fboTexture, image2 -> {
-            postProcessRenderedArmorImage(sprite, image2, armorHandler, iconScale);
+            postProcessRenderedArmorImage(sprite, image2, armorHandler, armorData, iconScale);
         });
 
         return sprite;
     }
 
-    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler, float scale) {
+    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler, EntityArmorData armorData, float scale) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
 
             image = ImageUtils.flipHorizontal(image);
-            image = armorHandler.postProcessTexture(image);
+            image = armorHandler.postProcessTexture(image, armorData);
             image = ImageUtils.scaleImage(image, scale);
 
             addToCreationTask(sprite, image, sprite.getIconName().toString());

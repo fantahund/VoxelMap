@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EquippableArmorHandler extends AbstractArmorHandler {
+public class DefaultArmorHandler extends AbstractArmorHandler {
     private final RandomSource random = RandomSource.create();
     private final HumanoidModel<?> humanoidModel;
 
@@ -60,7 +60,7 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             )
     );
 
-    public EquippableArmorHandler() {
+    public DefaultArmorHandler() {
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
         LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
         this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
@@ -79,11 +79,13 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             return null;
         }
 
-        EntityArmorData armorData = getArmorData(itemStack.getItem(), size, addBorder);
+        int identifier = resolveIdentifier(itemStack);
+
+        EntityArmorData armorData = getArmorData(itemStack.getItem(), identifier);
         if (armorData == null) {
             Identifier texture = resolveTexture(itemStack);
             if (texture != null) {
-                armorData = getOrCreateArmorData(itemStack.getItem(), texture, size, addBorder);
+                armorData = getOrCreateArmorData(itemStack.getItem(), texture, identifier);
             }
         }
 
@@ -146,6 +148,21 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
         return texture;
     }
 
+    private int resolveIdentifier(ItemStack itemStack) {
+        int identifier = 0;
+        if (armor != null) {
+            identifier = 1;
+        }
+        if (block != null) {
+            identifier = 2;
+        }
+        if (skull != null) {
+            identifier = 3;
+        }
+
+        return identifier;
+    }
+
     @Override
     public void renderArmorModel(EntityMapImageManager.CaptureContext context) {
         PoseStack pose = context.poseStack();
@@ -164,7 +181,7 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
 
             BlockState blockState = block.defaultBlockState();
             BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
-            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(this.random);
+            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(random);
 
             blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
         }
@@ -176,10 +193,11 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public BufferedImage postProcessTexture(BufferedImage image) {
+    public BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData) {
         image = ImageUtils.trim(image);
 
-        if (armor != null) {
+        boolean isHelmet = armorData.getIdentifier() == 1;
+        if (isHelmet) {
             BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), image.getType());
             newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
 

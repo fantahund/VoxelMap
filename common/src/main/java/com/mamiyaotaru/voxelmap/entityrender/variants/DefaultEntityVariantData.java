@@ -33,6 +33,11 @@ public class DefaultEntityVariantData implements EntityVariantData {
     }
 
     @Override
+    public int getIdentifier() {
+        return identifier;
+    }
+
+    @Override
     public Identifier getPrimaryTexture() {
         return primaryTexture;
     }

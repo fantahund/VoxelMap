@@ -7,6 +7,8 @@ public interface EntityVariantData {
 
     public EntityType<?> getType();
 
+    public int getIdentifier();
+
     public Identifier getPrimaryTexture();
 
     public Identifier getSecondaryTexture();

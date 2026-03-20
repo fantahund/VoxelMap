@@ -8,12 +8,14 @@ import java.util.Objects;
 public class EntityArmorData {
     private final Item item;
     private final Identifier texture;
+    private final int identifier;
     private final int size;
     private final boolean addOutline;
 
-    public EntityArmorData(Item item, Identifier texture, int size, boolean addOutline) {
+    public EntityArmorData(Item item, Identifier texture, int identifier, int size, boolean addOutline) {
         this.item = item;
         this.texture = texture;
+        this.identifier = identifier;
         this.size = size;
         this.addOutline = addOutline;
     }
@@ -26,6 +28,10 @@ public class EntityArmorData {
         return texture;
     }
 
+    public int getIdentifier() {
+        return identifier;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {
@@ -35,15 +41,16 @@ public class EntityArmorData {
             return false;
         }
         EntityArmorData other = (EntityArmorData) obj;
-        return Objects.equals(item, other.item) && size == other.size && addOutline == other.addOutline && Objects.equals(texture, other.texture);
+        return Objects.equals(item, other.item) && identifier == other.identifier && size == other.size && addOutline == other.addOutline && Objects.equals(texture, other.texture);
     }
 
     @Override
     public int hashCode() {
         int code = Objects.hashCode(item);
-        code = code * 3 + size;
-        code = code * 3 + (addOutline ? 1 : 0);
-        code = code * 3 + Objects.hashCode(texture);
+        code = code * 31 + identifier;
+        code = code * 31 + size;
+        code = code * 31 + (addOutline ? 1 : 0);
+        code = code * 31 + Objects.hashCode(texture);
         return code;
     }
 }
