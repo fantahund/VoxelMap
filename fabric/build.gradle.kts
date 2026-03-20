@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("idea")
-    id("fabric-loom")
+    id("net.fabricmc.fabric-loom")
 }
 
 val minecraftVersion: String by rootProject.extra
@@ -16,10 +16,9 @@ base {
 
 dependencies {
     minecraft("com.mojang:minecraft:${minecraftVersion}")
-    mappings(loom.officialMojangMappings())
 
-    modImplementation("net.fabricmc:fabric-loader:${fabricVersion}")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+    implementation("net.fabricmc:fabric-loader:${fabricVersion}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
 
     implementation(project.project(":common").sourceSets.getByName("main").output)
 }
@@ -62,7 +61,7 @@ tasks {
         from(zipTree(project.project(":common").tasks.jar.get().archiveFile))
     }
 
-    remapJar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
+    jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 }
 
 publishing {

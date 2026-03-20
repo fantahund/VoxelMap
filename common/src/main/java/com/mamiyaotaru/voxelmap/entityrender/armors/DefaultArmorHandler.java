@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -13,14 +14,15 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.object.skull.SkullModelBase;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
@@ -34,11 +36,10 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SkullBlock;
-import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class DefaultArmorHandler extends AbstractArmorHandler {
@@ -49,6 +50,7 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
     private Block block;
     private SkullBlock skull;
 
+    private static final Direction[] ALL_DIRECTIONS = new Direction[] { null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
     private static final HashMap<SkullBlock.Type, Identifier> SKULL_TEXTURES = Maps.newHashMap(
             Map.ofEntries(
                     Map.entry(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png")),
@@ -179,11 +181,22 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
             pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
             pose.scale(0.625F, 0.625F, 0.625F);
 
-            BlockState blockState = block.defaultBlockState();
-            BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
-            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(random);
+            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
+            ArrayList<BlockStateModelPart> allQuads = new ArrayList<>();
+            blockModelSet.get(block.defaultBlockState()).collectParts(random, allQuads);
 
-            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
+            QuadInstance quadInstance = new QuadInstance();
+            quadInstance.setLightCoords(EntityMapImageManager.LIGHT);
+            quadInstance.setOverlayCoords(EntityMapImageManager.OVERLAY);
+            quadInstance.setColor(0xFFFFFFFF);
+
+            for (BlockStateModelPart modelPart : allQuads) {
+                for (Direction direction : ALL_DIRECTIONS) {
+                    for (BakedQuad quad : modelPart.getQuads(direction)) {
+                        bufferBuilder.putBakedQuad(pose.last(), quad, quadInstance);
+                    }
+                }
+            }
         }
         if (skull != null) {
             pose.scale(1.1875F, 1.1875F, 1.1875F);

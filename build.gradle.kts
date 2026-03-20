@@ -1,16 +1,16 @@
 plugins {
     id("java")
-    id("fabric-loom") version ("1.13-SNAPSHOT") apply (false)
+    id("net.fabricmc.fabric-loom") version ("1.15-SNAPSHOT") apply (false)
     id("net.minecraftforge.gradle") version ("6.0.47") apply (false)
     id("net.neoforged.moddev") version ("2.0.137") apply (false)
     id("org.spongepowered.mixin") version ("0.7-SNAPSHOT") apply (false)
 }
 
-val minecraftVersion by extra { "1.21.11" }
+val minecraftVersion by extra { "26.1-rc-2" }
 val forgeVersion by extra { "61.0.1" }
 val neoForgeVersion by extra { "21.11.21-beta" }
-val fabricVersion by extra { "0.18.2" }
-val fabricApiVersion by extra { "0.140.0+1.21.11" }
+val fabricVersion by extra { "0.18.4" }
+val fabricApiVersion by extra { "0.143.15+26.1" }
 val voxelMapVersion by extra { "1.16.4" }
 
 val fullVersion by extra { "${minecraftVersion}-${voxelMapVersion}" }
@@ -35,7 +35,7 @@ subprojects {
         maven { url = uri("https://api.modrinth.com/maven") }
     }
 
-    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+    java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
     tasks.processResources {
         filesMatching("META-INF/neoforge.mods.toml") {
@@ -48,7 +48,7 @@ subprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release.set(25)
     }
 
     tasks.withType<GenerateModuleMetadata>().configureEach {
