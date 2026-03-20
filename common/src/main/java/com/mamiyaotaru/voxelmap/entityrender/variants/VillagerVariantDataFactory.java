@@ -33,6 +33,18 @@ public class VillagerVariantDataFactory extends DefaultEntityVariantDataFactory 
             )
     );
 
+    private static final Map<ResourceKey<VillagerType>, Identifier> TYPE_TEXTURES_BABY = Maps.newHashMap(
+            Map.ofEntries(
+                    Map.entry(VillagerType.DESERT, Identifier.withDefaultNamespace("textures/entity/villager/baby/desert.png")),
+                    Map.entry(VillagerType.JUNGLE, Identifier.withDefaultNamespace("textures/entity/villager/baby/jungle.png")),
+                    Map.entry(VillagerType.PLAINS, Identifier.withDefaultNamespace("textures/entity/villager/baby/plains.png")),
+                    Map.entry(VillagerType.SAVANNA, Identifier.withDefaultNamespace("textures/entity/villager/baby/savanna.png")),
+                    Map.entry(VillagerType.SNOW, Identifier.withDefaultNamespace("textures/entity/villager/baby/snow.png")),
+                    Map.entry(VillagerType.SWAMP, Identifier.withDefaultNamespace("textures/entity/villager/baby/swamp.png")),
+                    Map.entry(VillagerType.TAIGA, Identifier.withDefaultNamespace("textures/entity/villager/baby/taiga.png"))
+            )
+    );
+
     private static final Map<ResourceKey<VillagerProfession>, Identifier> PROFESSION_TEXTURES = Maps.newHashMap(
             Map.ofEntries(
                     Map.entry(VillagerProfession.NONE, INVISIBLE_TEXTURE),
@@ -66,12 +78,16 @@ public class VillagerVariantDataFactory extends DefaultEntityVariantDataFactory 
         Identifier tertiaryTexture = null;
 
         Optional<ResourceKey<VillagerType>> typeOptional = villager.getVillagerData().type().unwrapKey();
-        if (typeOptional.isPresent()) {
-            secondaryTexture = TYPE_TEXTURES.get(typeOptional.get());
-        }
+        Optional<ResourceKey<VillagerProfession>> professionOptional = villager.getVillagerData().profession().unwrapKey();
 
-        if (!((LivingEntity) entity).isBaby()) {
-            Optional<ResourceKey<VillagerProfession>> professionOptional = villager.getVillagerData().profession().unwrapKey();
+        if (((LivingEntity) entity).isBaby()) {
+            if (typeOptional.isPresent()) {
+                secondaryTexture = TYPE_TEXTURES_BABY.get(typeOptional.get());
+            }
+        } else {
+            if (typeOptional.isPresent()) {
+                secondaryTexture = TYPE_TEXTURES.get(typeOptional.get());
+            }
             if (professionOptional.isPresent()) {
                 tertiaryTexture = PROFESSION_TEXTURES.get(professionOptional.get());
             }
