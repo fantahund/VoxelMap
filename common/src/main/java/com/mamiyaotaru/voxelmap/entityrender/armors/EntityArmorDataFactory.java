@@ -16,7 +16,7 @@ public class EntityArmorDataFactory {
         return item;
     }
 
-    public EntityArmorData createArmorData(int size, boolean addBorder) {
-        return new EntityArmorData(item, texture, size, addBorder);
+    public EntityArmorData createArmorData(int identifier, int size, boolean addBorder) {
+        return new EntityArmorData(item, texture, identifier, size, addBorder);
     }
 }

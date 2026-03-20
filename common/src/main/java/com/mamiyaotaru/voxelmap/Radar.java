@@ -165,7 +165,7 @@ public class Radar extends AbstractRadar {
                     applyContactTransform(matrixStack, contact, x, y, scScale);
                     matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
 
-                    RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, false);
+                    RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob name! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
                 } finally {

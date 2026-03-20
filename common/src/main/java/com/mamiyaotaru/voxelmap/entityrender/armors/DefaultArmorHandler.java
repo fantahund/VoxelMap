@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -14,15 +13,14 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.object.skull.SkullModelBase;
-import net.minecraft.client.renderer.block.BlockStateModelSet;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
-import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
@@ -36,16 +34,16 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SkullBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class EquippableArmorHandler extends AbstractArmorHandler {
+public class DefaultArmorHandler extends AbstractArmorHandler {
     private final RandomSource random = RandomSource.create();
     private final HumanoidModel<?> humanoidModel;
-    private final Direction[] allDirections;
 
     private Equippable armor;
     private Block block;
@@ -62,16 +60,10 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             )
     );
 
-    public EquippableArmorHandler() {
+    public DefaultArmorHandler() {
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
         LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
-        humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
-
-        allDirections = new Direction[Direction.values().length + 1];
-        int i = 1;
-        for (Direction direction : Direction.values()) {
-            allDirections[i++] = direction;
-        }
+        this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
     }
 
     @Override
@@ -87,11 +79,13 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             return null;
         }
 
-        EntityArmorData armorData = getArmorData(itemStack.getItem(), size, addBorder);
+        int identifier = resolveIdentifier(itemStack);
+
+        EntityArmorData armorData = getArmorData(itemStack.getItem(), identifier);
         if (armorData == null) {
             Identifier texture = resolveTexture(itemStack);
             if (texture != null) {
-                armorData = getOrCreateArmorData(itemStack.getItem(), texture, size, addBorder);
+                armorData = getOrCreateArmorData(itemStack.getItem(), texture, identifier);
             }
         }
 
@@ -146,18 +140,27 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             ResolvableProfile profileItem = itemStack.get(DataComponents.PROFILE);
             if (profileItem == null) {
                 texture = SKULL_TEXTURES.get(skull.getType());
-            } else {
-//                FIXME 1.21.11: handle player skull texture
-//                This does not work properly.
-//
-//                GameProfile profile = profileItem.resolveProfile(VoxelConstants.getMinecraft().services().profileResolver()).getNow(profileItem.partialProfile());
-//                Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(profile).getNow(Optional.empty());
-//
-//                texture = optionalSkin.map(playerSkin -> playerSkin.body().texturePath()).orElseGet(DefaultPlayerSkin::getDefaultTexture);
             }
+
+//          TODO 1.21.11: handle player head texture
         }
 
         return texture;
+    }
+
+    private int resolveIdentifier(ItemStack itemStack) {
+        int identifier = 0;
+        if (armor != null) {
+            identifier = 1;
+        }
+        if (block != null) {
+            identifier = 2;
+        }
+        if (skull != null) {
+            identifier = 3;
+        }
+
+        return identifier;
     }
 
     @Override
@@ -176,22 +179,11 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
             pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
             pose.scale(0.625F, 0.625F, 0.625F);
 
-            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
-            ArrayList<BlockStateModelPart> allQuads = new ArrayList<>();
-            blockModelSet.get(block.defaultBlockState()).collectParts(random, allQuads);
+            BlockState blockState = block.defaultBlockState();
+            BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
+            List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(random);
 
-            QuadInstance quadInstance = new QuadInstance();
-            quadInstance.setLightCoords(EntityMapImageManager.LIGHT);
-            quadInstance.setOverlayCoords(EntityMapImageManager.OVERLAY);
-            quadInstance.setColor(0xFFFFFFFF);
-
-            for (BlockStateModelPart modelPart : allQuads) {
-                for (Direction direction : allDirections) {
-                    for (BakedQuad quad : modelPart.getQuads(direction)) {
-                        bufferBuilder.putBakedQuad(pose.last(), quad, quadInstance);
-                    }
-                }
-            }
+            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
         }
         if (skull != null) {
             pose.scale(1.1875F, 1.1875F, 1.1875F);
@@ -201,10 +193,11 @@ public class EquippableArmorHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public BufferedImage postProcessTexture(BufferedImage image) {
+    public BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData) {
         image = ImageUtils.trim(image);
 
-        if (armor != null) {
+        boolean isHelmet = armorData.getIdentifier() == 1;
+        if (isHelmet) {
             BufferedImage newImage = new BufferedImage(image.getWidth(), image.getWidth(), image.getType());
             newImage = ImageUtils.addImages(newImage, image, 0, 0, image.getWidth(), image.getHeight());
 

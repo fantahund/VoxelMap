@@ -28,7 +28,7 @@ public class SheepOverlayHandler extends AbstractArmorHandler {
             return null;
         }
 
-        return getOrCreateArmorData(Items.AIR, SHEEP_FUR, size, addBorder);
+        return getOrCreateArmorData(Items.AIR, SHEEP_FUR, 0);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class SheepOverlayHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public BufferedImage postProcessTexture(BufferedImage image) {
+    public BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData) {
         image = ImageUtils.trim(image);
 
         Graphics2D g = image.createGraphics();

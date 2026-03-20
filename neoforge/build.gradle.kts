@@ -4,10 +4,10 @@ plugins {
     id("java-library")
 }
 
-val MINECRAFT_VERSION: String by rootProject.extra
-val PARCHMENT_VERSION: String? by rootProject.extra
-val NEOFORGE_VERSION: String by rootProject.extra
-val MOD_VERSION: String by rootProject.extra
+val minecraftVersion: String by rootProject.extra
+val neoForgeVersion: String by rootProject.extra
+
+val fullVersion: String by rootProject.extra
 
 base {
     archivesName = "voxelmap-neoforge"
@@ -53,7 +53,7 @@ tasks.jar {
     from(rootDir.resolve("LICENSE.md"))
 
     filesMatching("neoforge.mods.toml") {
-        expand(mapOf("version" to MOD_VERSION))
+        expand(mapOf("version" to fullVersion))
     }
 }
 
@@ -61,7 +61,7 @@ tasks.jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 
 neoForge {
     // Specify the version of NeoForge to use.
-    version = NEOFORGE_VERSION
+    version = neoForgeVersion
 
     runs {
         create("client") {

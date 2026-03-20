@@ -16,22 +16,22 @@ public abstract class AbstractArmorHandler {
     protected int size;
     protected boolean addBorder;
 
-    protected EntityArmorData getArmorData(Item item, int size, boolean addBorder) {
+    protected EntityArmorData getArmorData(Item item, int identifier) {
         EntityArmorDataFactory factory = armorDataFactories.get(item);
         if (factory != null) {
-            return factory.createArmorData(size, addBorder);
+            return factory.createArmorData(identifier, size, addBorder);
         }
 
         return null;
     }
 
-    protected EntityArmorData getOrCreateArmorData(Item item, Identifier texture, int size, boolean addBorder) {
+    protected EntityArmorData getOrCreateArmorData(Item item, Identifier texture, int identifier) {
         if (!armorDataFactories.containsKey(item)) {
             EntityArmorDataFactory factory = new EntityArmorDataFactory(item, texture);
             armorDataFactories.put(item, factory);
         }
 
-        return getArmorData(item, size, addBorder);
+        return getArmorData(item, identifier);
     }
 
     public void setupForEntity(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
@@ -45,6 +45,6 @@ public abstract class AbstractArmorHandler {
 
     public abstract void renderArmorModel(EntityMapImageManager.CaptureContext context);
 
-    public abstract BufferedImage postProcessTexture(BufferedImage image);
+    public abstract BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData);
 
 }

@@ -21,9 +21,8 @@ jobs:
       - name: Extract Versions from build.gradle.kts
         id: versions
         run: |
-          MINECRAFT_VERSION=$(grep -oP 'val MINECRAFT_VERSION by extra { "\K[^"]+' build.gradle.kts)
-          VOXELMAP_VERSION=$(grep -oP 'val VOXELMAP_VERSION by extra { "\K[^"]+' build.gradle.kts)
-          
+          MINECRAFT_VERSION=$(grep -oP 'val minecraftVersion by extra { "\K[^"]+' build.gradle.kts)
+          VOXELMAP_VERSION=$(grep -oP 'val voxelMapVersion by extra { "\K[^"]+' build.gradle.kts)
           FULL_VERSION="${MINECRAFT_VERSION}-${VOXELMAP_VERSION}"
           
           echo "minecraft_version=$MINECRAFT_VERSION" >> $GITHUB_OUTPUT

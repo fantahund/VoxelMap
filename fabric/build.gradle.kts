@@ -1,23 +1,25 @@
 plugins {
     id("java")
     id("idea")
-    id("net.fabricmc.fabric-loom")
+    id("fabric-loom")
 }
 
-val MINECRAFT_VERSION: String by rootProject.extra
-val FABRIC_LOADER_VERSION: String by rootProject.extra
-val FABRIC_API_VERSION: String by rootProject.extra
-val MOD_VERSION: String by rootProject.extra
+val minecraftVersion: String by rootProject.extra
+val fabricVersion: String by rootProject.extra
+val fabricApiVersion: String by rootProject.extra
+
+val fullVersion: String by rootProject.extra
 
 base {
     archivesName.set("voxelmap-fabric")
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:${MINECRAFT_VERSION}")
+    minecraft("com.mojang:minecraft:${minecraftVersion}")
+    mappings(loom.officialMojangMappings())
 
-    implementation("net.fabricmc:fabric-loader:${FABRIC_LOADER_VERSION}")
-    implementation("net.fabricmc.fabric-api:fabric-api:${FABRIC_API_VERSION}")
+    modImplementation("net.fabricmc:fabric-loader:${fabricVersion}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
 
     implementation(project.project(":common").sourceSets.getByName("main").output)
 }
@@ -47,10 +49,10 @@ loom {
 tasks {
     processResources {
         from(project.project(":common").sourceSets.main.get().resources)
-        inputs.property("version", project.version)
+        inputs.property("version", fullVersion)
 
         filesMatching("fabric.mod.json") {
-            expand(mapOf("version" to project.version))
+            expand(mapOf("version" to fullVersion))
         }
     }
 
@@ -60,7 +62,7 @@ tasks {
         from(zipTree(project.project(":common").tasks.jar.get().archiveFile))
     }
 
-    jar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
+    remapJar.get().destinationDirectory = rootDir.resolve("build").resolve("libs")
 }
 
 publishing {
