@@ -60,6 +60,9 @@ public class WaypointContainer {
     }
 
     public void renderWaypoints(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+        if (waypointManager == null) return;
+        if (renderables.isEmpty()) return;
+
         if (options.showWaypointBeacons) {
             renderWaypointBeams(partialTick, poseStack, bufferSource, camera);
         }
