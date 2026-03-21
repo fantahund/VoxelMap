@@ -86,6 +86,7 @@ public class WaypointManager {
     public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints");
     public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser");
     public final Minecraft minecraft = Minecraft.getInstance();
+    public static final String coordinateHighlightName = "§t§a§r§g§e§t";
 
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -308,15 +309,12 @@ public class WaypointManager {
 
         this.currentDimension = dimension;
         synchronized (this.waypointLock) {
-            this.waypointContainer = new WaypointContainer(this.options);
-
             for (Waypoint pt : this.wayPts) {
                 pt.inDimension = pt.dimensions.isEmpty() || pt.dimensions.contains(dimension);
-
-                this.waypointContainer.addWaypoint(pt);
             }
 
-            this.waypointContainer.setHighlightedWaypoint(this.highlightedWaypoint);
+            this.waypointContainer = new WaypointContainer(this.options);
+            this.waypointContainer.refreshRenderables();
         }
 
         this.loadBackgroundMapImage();
@@ -724,23 +722,23 @@ public class WaypointManager {
     }
 
     public void deleteWaypoint(Waypoint point) {
-        this.waypointContainer.removeWaypoint(point);
         this.wayPts.remove(point);
         this.saveWaypoints();
         if (point == this.highlightedWaypoint) {
             this.setHighlightedWaypoint(null, false);
         }
 
+        this.waypointContainer.refreshRenderables();
     }
 
     public void addWaypoint(Waypoint newWaypoint) {
         this.wayPts.add(newWaypoint);
-        this.waypointContainer.addWaypoint(newWaypoint);
         this.saveWaypoints();
         if (this.highlightedWaypoint != null && this.highlightedWaypoint.getX() == newWaypoint.getX() && this.highlightedWaypoint.getZ() == newWaypoint.getZ()) {
             this.setHighlightedWaypoint(newWaypoint, false);
         }
 
+        this.waypointContainer.refreshRenderables();
     }
 
     public void setHighlightedWaypoint(Waypoint waypoint, boolean toggle) {
@@ -748,7 +746,8 @@ public class WaypointManager {
             this.highlightedWaypoint = null;
         } else {
             if (waypoint != null && !this.wayPts.contains(waypoint)) {
-                waypoint.red = 2.0F;
+                waypoint.name = coordinateHighlightName;
+                waypoint.red = 1.0F;
                 waypoint.blue = 0.0F;
                 waypoint.green = 0.0F;
             }
@@ -756,19 +755,32 @@ public class WaypointManager {
             this.highlightedWaypoint = waypoint;
         }
 
-        this.waypointContainer.setHighlightedWaypoint(this.highlightedWaypoint);
+        this.waypointContainer.refreshRenderables();
     }
 
     public Waypoint getHighlightedWaypoint() {
         return this.highlightedWaypoint;
     }
 
-    // public void renderWaypoints(float partialTicks, Matrix4fStack matrixStack, boolean beacons, boolean signs, boolean withDepth, boolean withoutDepth) {
-    // if (VoxelMap.mapOptions.waypointsAllowed && this.waypointContainer != null) {
-    // this.waypointContainer.renderWaypoints(partialTicks, matrixStack, beacons, signs, withDepth, withoutDepth);
-    // }
-    //
-    // }
+    public boolean isHighlightedWaypoint(Waypoint waypoint) {
+        return waypoint == highlightedWaypoint;
+    }
+
+    public boolean isWaypointHighlight(Waypoint waypoint) {
+        if (isHighlightedWaypoint(waypoint)) {
+            return wayPts.contains(waypoint);
+        }
+
+        return false;
+    }
+
+    public boolean isCoordinateHighlight(Waypoint waypoint) {
+        if (isHighlightedWaypoint(waypoint)) {
+            return waypoint.name.equals(coordinateHighlightName);
+        }
+
+        return false;
+    }
 
     public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
         if (options.waypointsAllowed && this.waypointContainer != null) {

@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -23,7 +24,6 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
@@ -1590,31 +1590,34 @@ public class Map implements Runnable, IChangeObserver {
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         if (options.waypointsAllowed) {
-            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
+            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
 
-            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                if (pt.isActive() || pt == highlightedPoint) {
-                    double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
-                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                        this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
+            for (Waypoint waypoint : waypointManager.getWaypoints()) {
+                if (waypoint.isActive() || waypoint == highlightedPoint) {
+                    double distanceSq = waypoint.getDistanceSqToEntity(minecraft.getCameraEntity());
+                    boolean isOutOfRange = options.maxWaypointDisplayDistance >= 0 && distanceSq >= (options.maxWaypointDisplayDistance * options.maxWaypointDisplayDistance);
+
+                    if (!isOutOfRange || waypoint == highlightedPoint) {
+                        drawWaypoint(matrixStack, x, y, waypoint, textureAtlas, null, false, lastXDouble, lastZDouble);
                     }
                 }
             }
 
             if (highlightedPoint != null) {
-                this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
+                drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, lastXDouble, lastZDouble);
             }
         }
         matrixStack.popMatrix();
     }
 
-    private void drawWaypoint(Matrix4fStack matrixStack, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
+    private void drawWaypoint(Matrix4fStack matrixStack, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean highlight, double baseX, double baseZ) {
+        boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
         boolean uprightIcon = icon != null;
 
-        double wayX = lastXDouble - pt.getX() - 0.5;
-        double wayY = lastZDouble - pt.getZ() - 0.5;
+        double wayX = baseX - waypoint.getX() - 0.5;
+        double wayY = baseZ - waypoint.getZ() - 0.5;
         float locate = (float) Math.toDegrees(Math.atan2(wayX, wayY));
-        float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY);
+        float hypot = (float) (Math.sqrt(wayX * wayX + wayY * wayY) / zoomScaleAdjusted);
         boolean far;
         if (this.options.rotates) {
             locate += this.direction;
@@ -1622,7 +1625,6 @@ public class Map implements Runnable, IChangeObserver {
             locate -= this.rotationFactor;
         }
 
-        hypot /= this.zoomScaleAdjusted;
         if (this.options.squareMap) {
             double radLocate = Math.toRadians(locate);
             double dispX = hypot * Math.cos(radLocate);
@@ -1638,21 +1640,17 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        RenderType waypointRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(waypointManager.getTextureAtlas().getIdentifier());
+        RenderType waypointRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(textureAtlas.getIdentifier());
         VertexConsumer waypointBuffer = renderBufferSource.getBuffer(waypointRenderType);
 
-        boolean target = false;
         if (far) {
             if (icon == null) {
-                icon = textureAtlas.getAtlasSprite("marker/" + pt.imageSuffix);
-
+                icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
                 if (icon == textureAtlas.getMissingImage()) {
                     icon = textureAtlas.getAtlasSprite("marker/arrow");
                 }
-            } else {
-                target = true;
             }
-            int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
+            int color = highlight ? 0xFFFF0000 : waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F);
 
             try {
                 matrixStack.pushMatrix();
@@ -1675,15 +1673,12 @@ public class Map implements Runnable, IChangeObserver {
             }
         } else {
             if (icon == null) {
-                icon = textureAtlas.getAtlasSprite("selectable/" + pt.imageSuffix);
-
+                icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
                 if (icon == textureAtlas.getMissingImage()) {
                     icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
                 }
-            } else {
-                target = true;
             }
-            int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
+            int color = highlight ? 0xFFFF0000 : waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F);
 
             try {
                 matrixStack.pushMatrix();

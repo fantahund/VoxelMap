@@ -870,8 +870,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float ptX = pt.getX() + 0.5F;
         float ptZ = pt.getZ() + 0.5F;
 
-        String name = pt.name;
-
         boolean hover = pt.inWorld && pt.inDimension
                 && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
                 && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
@@ -882,18 +880,18 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        boolean target = false;
+        boolean isHighlighted = waypointManager.isHighlightedWaypoint(pt);
+        String name = pt.name;
+        if (waypointManager.isCoordinateHighlight(pt)) {
+            name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
+        }
+
         TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         if (icon == null) {
             icon = atlas.getAtlasSprite("selectable/" + pt.imageSuffix);
             if (icon == atlas.getMissingImage()) {
                 icon = atlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
-        } else {
-            if (name.isEmpty()) {
-                name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
-            }
-            target = true;
         }
 
         int x = this.width / 2;
@@ -911,15 +909,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         guiGraphics.pose().rotate(locate);
         guiGraphics.pose().translate(-x, -y);
 
-        int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target && !hover ? 0.3F : 1.0F);
+        int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !isHighlighted && !hover ? 0.3F : 1.0F);
 
         icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, color);
 
-        if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || target || hover) {
+        if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || isHighlighted || hover) {
             float fontScale = 1.0F;
             guiGraphics.pose().pushMatrix();
             guiGraphics.pose().scale(fontScale, fontScale);
-            this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + ICON_HEIGHT / 2.0F, !pt.enabled && !target && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
+            this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + ICON_HEIGHT / 2.0F, !pt.enabled && !isHighlighted && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
             guiGraphics.pose().popMatrix();
         }
 
