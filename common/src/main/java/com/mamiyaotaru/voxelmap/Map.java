@@ -1590,21 +1590,18 @@ public class Map implements Runnable, IChangeObserver {
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         if (options.waypointsAllowed) {
-            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
-
             for (Waypoint waypoint : waypointManager.getWaypoints()) {
-                boolean isHighlighted = waypoint == highlightedPoint;
-
+                boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
                 if (waypoint.isActive() || isHighlighted) {
                     double distanceSq = waypoint.getDistanceSqToEntity(minecraft.getCameraEntity());
                     boolean isOutOfRange = options.maxWaypointDisplayDistance >= 0 && distanceSq >= (options.maxWaypointDisplayDistance * options.maxWaypointDisplayDistance);
-
                     if (!isOutOfRange || isHighlighted) {
                         drawWaypoint(matrixStack, x, y, waypoint, textureAtlas, null, isHighlighted, -1, lastXDouble, lastZDouble);
                     }
                 }
             }
 
+            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
             if (highlightedPoint != null) {
                 drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
             }

@@ -122,7 +122,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     public boolean addClicked;
     Waypoint newWaypoint;
     Waypoint selectedWaypoint;
-    public boolean passEvents;
+    Waypoint hoverdWaypoint;
     private PopupGuiButton buttonWaypoints;
     private final Minecraft minecraft = Minecraft.getInstance();
     private final Identifier voxelmapSkinLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "persistentmap/playerskin");
@@ -182,7 +182,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void init() {
-        this.passEvents = true;
         this.oldNorth = mapOptions.oldNorth;
         this.centerAt(this.options.mapX, this.options.mapZ);
         if (minecraft.screen == this) {
@@ -760,22 +759,29 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
         guiGraphics.pose().popMatrix();
 
-        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+        Waypoint currentlyHovered = null;
         if (mapOptions.waypointsAllowed && options.showWaypoints) {
-            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
+            TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
 
             for (Waypoint waypoint : waypointManager.getWaypoints()) {
-                boolean isHighlighted = waypoint == highlightedPoint;
+                if (!waypoint.inWorld || !waypoint.inDimension) continue;
 
-                if (waypoint.inWorld && waypoint.inDimension) {
-                    drawWaypoint(guiGraphics, waypoint, textureAtlas, null, isHighlighted, -1, cursorCoordX, cursorCoordZ);
+                boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
+                boolean isHovered = drawWaypoint(guiGraphics, waypoint, textureAtlas, null, isHighlighted, -1, cursorCoordX, cursorCoordZ);
+                if (isHovered) {
+                    currentlyHovered = waypoint;
                 }
             }
 
+            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
             if (highlightedPoint != null) {
-                drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, cursorCoordX, cursorCoordZ);
+                boolean isHovered = drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, cursorCoordX, cursorCoordZ);
+                if (isHovered) {
+                    currentlyHovered = highlightedPoint;
+                }
             }
         }
+        hoverdWaypoint = currentlyHovered;
 
         if (gotSkin) {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
@@ -834,7 +840,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         // nothing
     }
 
-    private void drawPlayer(GuiGraphics guiGraphics, Identifier skin, float playerX, float playerZ, float cursorCoordX, float cursorCoordZ) {
+    private boolean drawPlayer(GuiGraphics guiGraphics, Identifier skin, float playerX, float playerZ, float cursorCoordX, float cursorCoordZ) {
         float headWidth = ICON_WIDTH * 0.75F;
         float headHeight = ICON_HEIGHT * 0.75F;
 
@@ -869,9 +875,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
 
-        boolean hover = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
+        boolean isHovered = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
                 && mouseY >= guiVector.y() - ICON_HEIGHT / 2.0F && mouseY <= guiVector.y() + ICON_HEIGHT / 2.0F;
-        if (hover) {
+        if (isHovered) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
                 renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
@@ -881,9 +887,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, skin, x - headWidth / 2.0F, y - headHeight / 2.0F, headWidth, headHeight, 0, 1, 0, 1, 0xFFFFFFFF);
 
         guiGraphics.pose().popMatrix();
+
+        return isHovered;
     }
 
-    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, float cursorCoordX, float cursorCoordZ) {
+    private boolean drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, float cursorCoordX, float cursorCoordZ) {
         float ptX = waypoint.getX() + 0.5F;
         float ptZ = waypoint.getZ() + 0.5F;
 
@@ -916,7 +924,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         guiGraphics.pose().pushMatrix();
 
         if (farX || farY) {
-            if (!options.showDistantWaypoints) return;
+            if (!options.showDistantWaypoints) return false;
 
             if (icon == null) {
                 icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
@@ -951,17 +959,17 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
 
-        boolean hover = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
+        boolean isHovered = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
                 && mouseY >= guiVector.y() - ICON_HEIGHT / 2.0F && mouseY <= guiVector.y() + ICON_HEIGHT / 2.0F;
-        if (hover) {
+        if (isHovered) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
                 renderTooltip(guiGraphics, Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ()), this.mouseX, this.mouseY);
             }
         }
 
-        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !hover ? 0.3F : 1.0F) : color;
-        int textColor = !waypoint.enabled && !isHighlighted && !hover ? 0x55FFFFFF : 0xFFFFFFFF;
+        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !isHovered ? 0.3F : 1.0F) : color;
+        int textColor = !waypoint.enabled && !isHighlighted && !isHovered ? 0x55FFFFFF : 0xFFFFFFFF;
 
         icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
 
@@ -974,6 +982,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         guiGraphics.pose().popMatrix();
+
+        return isHovered;
     }
 
     public void renderBackground(GuiGraphics drawContext) {
@@ -1015,18 +1025,18 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
         }
 
-        Waypoint hovered = this.getHovered(cursorCoordX, cursorCoordZ);
+        selectedWaypoint = this.getHoveredWaypoint();
         Popup.PopupEntry entry;
-        if (hovered != null && this.waypointManager.getWaypoints().contains(hovered)) {
+        if (selectedWaypoint != null && this.waypointManager.getWaypoints().contains(selectedWaypoint)) {
             entry = new Popup.PopupEntry(I18n.get("selectServer.edit"), 4, true, true);
             entries.add(entry);
             entry = new Popup.PopupEntry(I18n.get("selectServer.delete"), 5, true, true);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.get(hovered != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, true);
+            entry = new Popup.PopupEntry(I18n.get(selectedWaypoint != this.waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, true);
         } else {
             entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newWaypoint"), 0, true, mapOptions.waypointsAllowed);
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.get(hovered == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, mapOptions.waypointsAllowed);
+            entry = new Popup.PopupEntry(I18n.get(selectedWaypoint == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, mapOptions.waypointsAllowed);
         }
         entries.add(entry);
         entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.teleportTo"), 3, true, true);
@@ -1040,38 +1050,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
     }
 
-    private Waypoint getHovered(float cursorCoordX, float cursorCoordZ) {
+    private Waypoint getHoveredWaypoint() {
         if (!mapOptions.waypointsAllowed) {
             return null;
         }
-        Waypoint waypoint = null;
 
-        for (Waypoint pt : this.waypointManager.getWaypoints()) {
-            float ptX = pt.getX() + 0.5F;
-            float ptZ = pt.getZ() + 0.5F;
-            boolean hover = pt.inWorld && pt.inDimension
-                    && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
-                    && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
-            if (hover) {
-                waypoint = pt;
-            }
-        }
-
-        if (waypoint == null) {
-            Waypoint pt = this.waypointManager.getHighlightedWaypoint();
-            if (pt != null) {
-                float ptX = pt.getX() + 0.5F;
-                float ptZ = pt.getZ() + 0.5F;
-                boolean hover = pt.inWorld && pt.inDimension
-                        && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
-                        && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
-                if (hover) {
-                    waypoint = pt;
-                }
-            }
-        }
-
-        return waypoint;
+        return hoverdWaypoint;
     }
 
     @Override
@@ -1093,16 +1077,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         int x = (int) Math.floor(cursorCoordX);
         int z = (int) Math.floor(cursorCoordZ);
         int y = this.persistentMap.getHeightAt(x, z);
-        Waypoint hovered = this.getHovered(cursorCoordX, cursorCoordZ);
         this.editClicked = false;
         this.addClicked = false;
         this.deleteClicked = false;
         double dimensionScale = VoxelConstants.getPlayer().level().dimensionType().coordinateScale();
         switch (action) {
             case 0 -> {
-                if (hovered != null) {
-                    x = hovered.getX();
-                    z = hovered.getZ();
+                if (selectedWaypoint != null) {
+                    x = selectedWaypoint.getX();
+                    z = selectedWaypoint.getZ();
                 }
                 this.addClicked = true;
                 float r;
@@ -1124,8 +1107,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 minecraft.setScreen(new GuiAddWaypoint(this, this.newWaypoint, false));
             }
             case 1 -> {
-                if (hovered != null) {
-                    this.waypointManager.setHighlightedWaypoint(hovered, true);
+                if (selectedWaypoint != null) {
+                    this.waypointManager.setHighlightedWaypoint(selectedWaypoint, true);
                 } else {
                     y = y > VoxelConstants.getPlayer().level().getMinY() ? y : 64;
                     TreeSet<DimensionContainer> dimensions2 = new TreeSet<>();
@@ -1135,15 +1118,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
             case 2 -> {
-                if (hovered != null) {
-                    CommandUtils.sendWaypoint(hovered);
+                if (selectedWaypoint != null) {
+                    CommandUtils.sendWaypoint(selectedWaypoint);
                 } else {
                     y = y > VoxelConstants.getPlayer().level().getMinY() ? y : 64;
                     CommandUtils.sendCoordinate(x, y, z);
                 }
             }
             case 3 -> {
-                if (hovered == null) {
+                if (selectedWaypoint == null) {
                     if (y < VoxelConstants.getPlayer().level().getMinY()) {
                         y = (!(VoxelConstants.getPlayer().level().dimensionType().hasCeiling()) ? VoxelConstants.getPlayer().level().getMaxY() : 64);
                     }
@@ -1151,23 +1134,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     break;
                 }
 
-                this.selectedWaypoint = hovered;
                 y = selectedWaypoint.getY() > VoxelConstants.getPlayer().level().getMinY() ? selectedWaypoint.getY() : (!(VoxelConstants.getPlayer().level().dimensionType().hasCeiling()) ? VoxelConstants.getPlayer().level().getMaxY() : 64);
                 VoxelConstants.playerRunTeleportCommand(selectedWaypoint.getX(), y, selectedWaypoint.getZ());
             }
             case 4 -> {
-                if (hovered != null) {
+                if (selectedWaypoint != null) {
                     this.editClicked = true;
-                    this.selectedWaypoint = hovered;
-                    minecraft.setScreen(new GuiAddWaypoint(this, hovered, true));
+                    minecraft.setScreen(new GuiAddWaypoint(this, selectedWaypoint, true));
                 }
             }
             case 5 -> {
-                if (hovered != null) {
+                if (selectedWaypoint != null) {
                     this.deleteClicked = true;
-                    this.selectedWaypoint = hovered;
                     Component title = Component.translatable("minimap.waypoints.deleteConfirm");
-                    Component explanation = Component.translatable("selectServer.deleteWarning", this.selectedWaypoint.name);
+                    Component explanation = Component.translatable("selectServer.deleteWarning", selectedWaypoint.name);
                     Component affirm = Component.translatable("selectServer.deleteButton");
                     Component deny = Component.translatable("gui.cancel");
                     ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
