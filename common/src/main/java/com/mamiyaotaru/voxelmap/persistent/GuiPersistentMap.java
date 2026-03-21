@@ -46,6 +46,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
+import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.image.BufferedImage;
@@ -837,15 +838,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float headWidth = ICON_WIDTH * 0.75F;
         float headHeight = ICON_HEIGHT * 0.75F;
 
-        boolean hover = cursorCoordX >= playerX - headWidth / 2.0F * guiToMap && cursorCoordX <= playerX + headWidth / 2.0F * guiToMap
-                && cursorCoordZ >= playerZ - headHeight / 2.0F * guiToMap && cursorCoordZ <= playerZ + headHeight / 2.0F * guiToMap;
-        if (hover) {
-            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-            if (options.showCoordinates) {
-                renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
-            }
-        }
-
         double wayX = this.mapCenterX - (this.oldNorth ? -playerZ : playerX);
         double wayY = this.mapCenterZ - (this.oldNorth ? playerX : playerZ);
         float locate = (float) Math.atan2(wayX, wayY);
@@ -875,6 +867,17 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.pose().rotate(locate);
         }
 
+        Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
+
+        boolean hover = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
+                && mouseY >= guiVector.y() - ICON_HEIGHT / 2.0F && mouseY <= guiVector.y() + ICON_HEIGHT / 2.0F;
+        if (hover) {
+            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
+            if (options.showCoordinates) {
+                renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
+            }
+        }
+
         VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, skin, x - headWidth / 2.0F, y - headHeight / 2.0F, headWidth, headHeight, 0, 1, 0, 1, 0xFFFFFFFF);
 
         guiGraphics.pose().popMatrix();
@@ -883,15 +886,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, float cursorCoordX, float cursorCoordZ) {
         float ptX = waypoint.getX() + 0.5F;
         float ptZ = waypoint.getZ() + 0.5F;
-
-        boolean hover = cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
-                && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
-        if (hover) {
-            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-            if (options.showCoordinates) {
-                renderTooltip(guiGraphics, Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ()), this.mouseX, this.mouseY);
-            }
-        }
 
         boolean uprightIcon = icon != null;
 
@@ -919,8 +913,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         boolean farY = Math.abs(dispY) > maxY;
         hypot *= (float) Math.min(farX ? maxX / Math.abs(dispX) : 1.0, farY ? maxY / Math.abs(dispY) : 1.0);
 
-        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !hover ? 0.3F : 1.0F) : color;
-        int textColor = !waypoint.enabled && !isHighlighted && !hover ? 0x55FFFFFF : 0xFFFFFFFF;
+        guiGraphics.pose().pushMatrix();
+
         if (farX || farY) {
             if (!options.showDistantWaypoints) return;
 
@@ -931,23 +925,15 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
 
-            try {
-                guiGraphics.pose().pushMatrix();
-                guiGraphics.pose().translate(x, y);
-                guiGraphics.pose().rotate(-locate);
-                if (uprightIcon) {
-                    guiGraphics.pose().translate(0.0F, -hypot);
-                    guiGraphics.pose().rotate(locate);
-                    guiGraphics.pose().translate(-x, -y);
-                } else {
-                    guiGraphics.pose().translate(-x, -y);
-                    guiGraphics.pose().translate(0.0F, -hypot);
-                }
-
-                icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
-            } catch (Exception ignored) {
-            } finally {
-                guiGraphics.pose().popMatrix();
+            guiGraphics.pose().translate(x, y);
+            guiGraphics.pose().rotate(-locate);
+            if (uprightIcon) {
+                guiGraphics.pose().translate(0.0F, -hypot);
+                guiGraphics.pose().rotate(locate);
+                guiGraphics.pose().translate(-x, -y);
+            } else {
+                guiGraphics.pose().translate(-x, -y);
+                guiGraphics.pose().translate(0.0F, -hypot);
             }
         } else {
             if (icon == null) {
@@ -957,26 +943,37 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 }
             }
 
-            try {
-                guiGraphics.pose().pushMatrix();
-                guiGraphics.pose().rotate(-locate);
-                guiGraphics.pose().translate(0.0F, -hypot);
-                guiGraphics.pose().rotate(locate);
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().rotate(-locate);
+            guiGraphics.pose().translate(0.0F, -hypot);
+            guiGraphics.pose().rotate(locate);
+        }
 
-                icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
+        Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
 
-                if (mapOptions.biomeOverlay == 0 && options.showWaypointNames || isHighlighted || hover) {
-                    guiGraphics.pose().pushMatrix();
-                    float fontScale = 1.0F;
-                    guiGraphics.pose().scale(fontScale, fontScale);
-                    writeCentered(guiGraphics, name, x / fontScale, (y + ICON_HEIGHT / 2.0F) / fontScale, textColor, true);
-                    guiGraphics.pose().popMatrix();
-                }
-            } catch (Exception ignored) {
-            } finally {
-                guiGraphics.pose().popMatrix();
+        boolean hover = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
+                && mouseY >= guiVector.y() - ICON_HEIGHT / 2.0F && mouseY <= guiVector.y() + ICON_HEIGHT / 2.0F;
+        if (hover) {
+            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
+            if (options.showCoordinates) {
+                renderTooltip(guiGraphics, Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ()), this.mouseX, this.mouseY);
             }
         }
+
+        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !hover ? 0.3F : 1.0F) : color;
+        int textColor = !waypoint.enabled && !isHighlighted && !hover ? 0x55FFFFFF : 0xFFFFFFFF;
+
+        icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
+
+        if (options.showWaypointNames && !farX && !farY) {
+            guiGraphics.pose().pushMatrix();
+            float fontScale = 1.0F;
+            guiGraphics.pose().scale(fontScale, fontScale);
+            writeCentered(guiGraphics, name, x / fontScale, (y + ICON_HEIGHT / 2.0F) / fontScale, textColor, true);
+            guiGraphics.pose().popMatrix();
+        }
+
+        guiGraphics.pose().popMatrix();
     }
 
     public void renderBackground(GuiGraphics drawContext) {
