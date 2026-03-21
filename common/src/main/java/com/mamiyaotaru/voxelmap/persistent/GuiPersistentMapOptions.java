@@ -28,7 +28,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_WORLDMAP_COORDS };
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WORLDMAP_COORDS, EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_DISTANT_WAYPOINTS };
 
         int counter = 0;
 

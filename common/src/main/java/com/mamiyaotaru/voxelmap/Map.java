@@ -1593,25 +1593,26 @@ public class Map implements Runnable, IChangeObserver {
             Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
 
             for (Waypoint waypoint : waypointManager.getWaypoints()) {
-                if (waypoint.isActive() || waypoint == highlightedPoint) {
+                boolean isHighlighted = waypoint == highlightedPoint;
+
+                if (waypoint.isActive() || isHighlighted) {
                     double distanceSq = waypoint.getDistanceSqToEntity(minecraft.getCameraEntity());
                     boolean isOutOfRange = options.maxWaypointDisplayDistance >= 0 && distanceSq >= (options.maxWaypointDisplayDistance * options.maxWaypointDisplayDistance);
 
-                    if (!isOutOfRange || waypoint == highlightedPoint) {
-                        drawWaypoint(matrixStack, x, y, waypoint, textureAtlas, null, false, lastXDouble, lastZDouble);
+                    if (!isOutOfRange || isHighlighted) {
+                        drawWaypoint(matrixStack, x, y, waypoint, textureAtlas, null, isHighlighted, -1, lastXDouble, lastZDouble);
                     }
                 }
             }
 
             if (highlightedPoint != null) {
-                drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, lastXDouble, lastZDouble);
+                drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
             }
         }
         matrixStack.popMatrix();
     }
 
-    private void drawWaypoint(Matrix4fStack matrixStack, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean highlight, double baseX, double baseZ) {
-        boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
+    private void drawWaypoint(Matrix4fStack matrixStack, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, double baseX, double baseZ) {
         boolean uprightIcon = icon != null;
 
         double wayX = baseX - waypoint.getX() - 0.5;
@@ -1643,6 +1644,7 @@ public class Map implements Runnable, IChangeObserver {
         RenderType waypointRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(textureAtlas.getIdentifier());
         VertexConsumer waypointBuffer = renderBufferSource.getBuffer(waypointRenderType);
 
+        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F) : color;
         if (far) {
             if (icon == null) {
                 icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
@@ -1650,7 +1652,6 @@ public class Map implements Runnable, IChangeObserver {
                     icon = textureAtlas.getAtlasSprite("marker/arrow");
                 }
             }
-            int color = highlight ? 0xFFFF0000 : waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F);
 
             try {
                 matrixStack.pushMatrix();
@@ -1665,7 +1666,7 @@ public class Map implements Runnable, IChangeObserver {
                     matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, color);
+                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1678,7 +1679,6 @@ public class Map implements Runnable, IChangeObserver {
                     icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
                 }
             }
-            int color = highlight ? 0xFFFF0000 : waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F);
 
             try {
                 matrixStack.pushMatrix();
@@ -1686,7 +1686,7 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
 
-                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, color);
+                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {

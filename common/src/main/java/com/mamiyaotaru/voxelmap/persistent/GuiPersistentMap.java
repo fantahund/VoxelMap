@@ -446,11 +446,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        // FIXME 1.21.9
-        // if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(modifiers, -1)) {
-        // super.keyPressed(new KeyEvent(GLFW.GLFW_KEY_ESCAPE, -1, -1));
-        // }
-
         return super.charTyped(characterEvent);
     }
 
@@ -764,51 +759,27 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
         guiGraphics.pose().popMatrix();
 
-        if (mapOptions.waypointsAllowed && this.options.showWaypoints) {
-            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                this.drawWaypoint(guiGraphics, pt, cursorCoordX, cursorCoordZ, null, false);
+        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+        if (mapOptions.waypointsAllowed && options.showWaypoints) {
+            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
+
+            for (Waypoint waypoint : waypointManager.getWaypoints()) {
+                boolean isHighlighted = waypoint == highlightedPoint;
+
+                if (waypoint.inWorld && waypoint.inDimension) {
+                    drawWaypoint(guiGraphics, waypoint, textureAtlas, null, isHighlighted, -1, cursorCoordX, cursorCoordZ);
+                }
             }
 
-            if (this.waypointManager.getHighlightedWaypoint() != null) {
-                TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-                this.drawWaypoint(guiGraphics, this.waypointManager.getHighlightedWaypoint(), cursorCoordX, cursorCoordZ, atlas.getAtlasSprite("marker/target"), true);
+            if (highlightedPoint != null) {
+                drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, cursorCoordX, cursorCoordZ);
             }
         }
 
         if (gotSkin) {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
-
-            float width = ICON_WIDTH * 0.75F;
-            float height = ICON_HEIGHT * 0.75F;
-
-            boolean hover = cursorCoordX >= playerX - width / 2.0F * guiToMap && cursorCoordX <= playerX + width / 2.0F * guiToMap
-                    && cursorCoordZ >= playerZ - height / 2.0F * guiToMap && cursorCoordZ <= playerZ + height / 2.0F * guiToMap;
-            if (hover) {
-                guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-                if (options.showCoordinates) {
-                    renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
-                }
-            }
-
-            int x = this.width / 2;
-            int y = this.height / 2;
-
-            double wayX = this.mapCenterX - (this.oldNorth ? -playerZ : playerX);
-            double wayY = this.mapCenterZ - (this.oldNorth ? playerX : playerZ);
-            float locate = (float) Math.atan2(wayX, wayY);
-            float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
-
-            guiGraphics.pose().pushMatrix();
-            guiGraphics.pose().translate(x, y);
-            guiGraphics.pose().rotate(-locate);
-            guiGraphics.pose().translate(0.0F, -hypot);
-            guiGraphics.pose().rotate(locate);
-            guiGraphics.pose().translate(-x, -y);
-
-            VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, voxelmapSkinLocation, x - width / 2.0F, y - height / 2.0F, width, height, 0, 1, 0, 1, 0xFFFFFFFF);
-
-            guiGraphics.pose().popMatrix();
+            drawPlayer(guiGraphics, voxelmapSkinLocation, playerX, playerZ, cursorCoordX, cursorCoordZ);
         }
 
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
@@ -862,66 +833,150 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         // nothing
     }
 
-    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint pt, float cursorCoordX, float cursorCoordZ, Sprite icon, boolean highlight) {
-        if (!pt.inWorld || !pt.inDimension) {
-            return;
+    private void drawPlayer(GuiGraphics guiGraphics, Identifier skin, float playerX, float playerZ, float cursorCoordX, float cursorCoordZ) {
+        float headWidth = ICON_WIDTH * 0.75F;
+        float headHeight = ICON_HEIGHT * 0.75F;
+
+        boolean hover = cursorCoordX >= playerX - headWidth / 2.0F * guiToMap && cursorCoordX <= playerX + headWidth / 2.0F * guiToMap
+                && cursorCoordZ >= playerZ - headHeight / 2.0F * guiToMap && cursorCoordZ <= playerZ + headHeight / 2.0F * guiToMap;
+        if (hover) {
+            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
+            if (options.showCoordinates) {
+                renderTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), this.mouseX, this.mouseY);
+            }
         }
 
-        float ptX = pt.getX() + 0.5F;
-        float ptZ = pt.getZ() + 0.5F;
+        double wayX = this.mapCenterX - (this.oldNorth ? -playerZ : playerX);
+        double wayY = this.mapCenterZ - (this.oldNorth ? playerX : playerZ);
+        float locate = (float) Math.atan2(wayX, wayY);
+        float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
-        boolean hover = pt.inWorld && pt.inDimension
-                && cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
+        int x = this.width / 2;
+        int y = this.height / 2;
+        int maxX = x - 6;
+        int maxY = y - this.top - 6;
+
+        double dispX = hypot * Math.sin(locate);
+        double dispY = hypot * Math.cos(locate);
+        boolean farX = Math.abs(dispX) > maxX;
+        boolean farY = Math.abs(dispY) > maxY;
+        hypot *= (float) Math.min(farX ? maxX / Math.abs(dispX) : 1.0, farY ? maxY / Math.abs(dispY) : 1.0);
+
+        guiGraphics.pose().pushMatrix();
+        if (farX || farY) {
+            guiGraphics.pose().translate(x, y);
+            guiGraphics.pose().rotate(-locate);
+            guiGraphics.pose().translate(0.0F, -hypot);
+            guiGraphics.pose().rotate(locate);
+            guiGraphics.pose().translate(-x, -y);
+        } else {
+            guiGraphics.pose().rotate(-locate);
+            guiGraphics.pose().translate(0.0F, -hypot);
+            guiGraphics.pose().rotate(locate);
+        }
+
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, skin, x - headWidth / 2.0F, y - headHeight / 2.0F, headWidth, headHeight, 0, 1, 0, 1, 0xFFFFFFFF);
+
+        guiGraphics.pose().popMatrix();
+    }
+
+    private void drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, float cursorCoordX, float cursorCoordZ) {
+        float ptX = waypoint.getX() + 0.5F;
+        float ptZ = waypoint.getZ() + 0.5F;
+
+        boolean hover = cursorCoordX >= ptX - ICON_WIDTH / 2.0F * guiToMap && cursorCoordX <= ptX + ICON_WIDTH / 2.0F * guiToMap
                 && cursorCoordZ >= ptZ - ICON_HEIGHT / 2.0F * guiToMap && cursorCoordZ <= ptZ + ICON_HEIGHT / 2.0F * guiToMap;
         if (hover) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
-                renderTooltip(guiGraphics, Component.literal("X: " + pt.getX() + ", Y: " + pt.getY() + ", Z: " + pt.getZ()), this.mouseX, this.mouseY);
+                renderTooltip(guiGraphics, Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ()), this.mouseX, this.mouseY);
             }
         }
 
-        boolean isHighlighted = waypointManager.isHighlightedWaypoint(pt);
-        String name = pt.name;
-        if (waypointManager.isCoordinateHighlight(pt)) {
-            name = "X:" + pt.getX() + ", Y:" + pt.getY() + ", Z:" + pt.getZ();
-        }
-
-        TextureAtlas atlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-        if (icon == null) {
-            icon = atlas.getAtlasSprite("selectable/" + pt.imageSuffix);
-            if (icon == atlas.getMissingImage()) {
-                icon = atlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
-            }
-        }
+        boolean uprightIcon = icon != null;
 
         int x = this.width / 2;
         int y = this.height / 2;
+
+        String name = waypoint.name;
+        if (waypointManager.isCoordinateHighlight(waypoint)) {
+            name = "X:" + waypoint.getX() + ", Y:" + waypoint.getY() + ", Z:" + waypoint.getZ();
+        }
 
         double wayX = this.mapCenterX - (this.oldNorth ? -ptZ : ptX);
         double wayY = this.mapCenterZ - (this.oldNorth ? ptX : ptZ);
         float locate = (float) Math.atan2(wayX, wayY);
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().translate(x, y);
-        guiGraphics.pose().rotate(-locate);
-        guiGraphics.pose().translate(0.0F, -hypot);
-        guiGraphics.pose().rotate(locate);
-        guiGraphics.pose().translate(-x, -y);
+        int borderOffsetX = options.showDistantWaypoints ? -4 : ICON_WIDTH / 2;
+        int borderOffsetY = options.showDistantWaypoints ? -4 : ICON_HEIGHT / 2;
+        int maxX = x + borderOffsetX;
+        int maxY = y - this.top + borderOffsetY;
 
-        int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !isHighlighted && !hover ? 0.3F : 1.0F);
+        double dispX = hypot * Math.sin(locate);
+        double dispY = hypot * Math.cos(locate);
+        boolean farX = Math.abs(dispX) > maxX;
+        boolean farY = Math.abs(dispY) > maxY;
+        hypot *= (float) Math.min(farX ? maxX / Math.abs(dispX) : 1.0, farY ? maxY / Math.abs(dispY) : 1.0);
 
-        icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, color);
+        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !hover ? 0.3F : 1.0F) : color;
+        int textColor = !waypoint.enabled && !isHighlighted && !hover ? 0x55FFFFFF : 0xFFFFFFFF;
+        if (farX || farY) {
+            if (!options.showDistantWaypoints) return;
 
-        if (mapOptions.biomeOverlay == 0 && this.options.showWaypointNames || isHighlighted || hover) {
-            float fontScale = 1.0F;
-            guiGraphics.pose().pushMatrix();
-            guiGraphics.pose().scale(fontScale, fontScale);
-            this.writeCentered(guiGraphics, name, x / fontScale, y / fontScale + ICON_HEIGHT / 2.0F, !pt.enabled && !isHighlighted && !hover ? 0x55FFFFFF : 0xFFFFFFFF, true);
-            guiGraphics.pose().popMatrix();
+            if (icon == null) {
+                icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
+                if (icon == textureAtlas.getMissingImage()) {
+                    icon = textureAtlas.getAtlasSprite("marker/arrow");
+                }
+            }
+
+            try {
+                guiGraphics.pose().pushMatrix();
+                guiGraphics.pose().translate(x, y);
+                guiGraphics.pose().rotate(-locate);
+                if (uprightIcon) {
+                    guiGraphics.pose().translate(0.0F, -hypot);
+                    guiGraphics.pose().rotate(locate);
+                    guiGraphics.pose().translate(-x, -y);
+                } else {
+                    guiGraphics.pose().translate(-x, -y);
+                    guiGraphics.pose().translate(0.0F, -hypot);
+                }
+
+                icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
+            } catch (Exception ignored) {
+            } finally {
+                guiGraphics.pose().popMatrix();
+            }
+        } else {
+            if (icon == null) {
+                icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
+                if (icon == textureAtlas.getMissingImage()) {
+                    icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
+                }
+            }
+
+            try {
+                guiGraphics.pose().pushMatrix();
+                guiGraphics.pose().rotate(-locate);
+                guiGraphics.pose().translate(0.0F, -hypot);
+                guiGraphics.pose().rotate(locate);
+
+                icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
+
+                if (mapOptions.biomeOverlay == 0 && options.showWaypointNames || isHighlighted || hover) {
+                    guiGraphics.pose().pushMatrix();
+                    float fontScale = 1.0F;
+                    guiGraphics.pose().scale(fontScale, fontScale);
+                    writeCentered(guiGraphics, name, x / fontScale, (y + ICON_HEIGHT / 2.0F) / fontScale, textColor, true);
+                    guiGraphics.pose().popMatrix();
+                }
+            } catch (Exception ignored) {
+            } finally {
+                guiGraphics.pose().popMatrix();
+            }
         }
-
-        guiGraphics.pose().popMatrix();
     }
 
     public void renderBackground(GuiGraphics drawContext) {
