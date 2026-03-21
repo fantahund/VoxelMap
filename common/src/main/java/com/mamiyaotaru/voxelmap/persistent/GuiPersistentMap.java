@@ -327,7 +327,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
         currentDragging = false;
-        if (mouseY > this.top && mouseY < this.bottom && mouseButtonEvent.button() == 1) {
+
+        selectedWaypoint = getHoveredWaypoint();
+        if (mouseButtonEvent.button() == 1 && (selectedWaypoint != null || (mouseY > this.top && mouseY < this.bottom))) {
             this.timeOfLastKBInput = 0L;
             int mouseDirectX = (int) minecraft.mouseHandler.xpos();
             int mouseDirectY = (int) minecraft.mouseHandler.ypos();
@@ -759,6 +761,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
         guiGraphics.pose().popMatrix();
 
+        if (options.showDistantWaypoints) {
+            this.overlayBackground(guiGraphics, 0, this.top, 255, 255);
+            this.overlayBackground(guiGraphics, this.bottom, this.getHeight(), 255, 255);
+        }
+
         Waypoint currentlyHovered = null;
         if (mapOptions.waypointsAllowed && options.showWaypoints) {
             TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
@@ -783,6 +790,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
         hoverdWaypoint = currentlyHovered;
 
+        if (!options.showDistantWaypoints) {
+            this.overlayBackground(guiGraphics, 0, this.top, 255, 255);
+            this.overlayBackground(guiGraphics, this.bottom, this.getHeight(), 255, 255);
+        }
+
         if (gotSkin) {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
@@ -797,8 +809,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.switchToMouseInput();
         }
 
-        this.overlayBackground(guiGraphics, 0, this.top, 255, 255);
-        this.overlayBackground(guiGraphics, this.bottom, this.getHeight(), 255, 255);
         if (mapOptions.worldmapAllowed) {
             guiGraphics.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 16, 0xFFFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
@@ -851,8 +861,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         int x = this.width / 2;
         int y = this.height / 2;
-        int maxX = x - 6;
-        int maxY = y - this.top - 6;
+        int maxX = x - 4;
+        int maxY = y - this.top;
 
         double dispX = hypot * Math.sin(locate);
         double dispY = hypot * Math.cos(locate);
@@ -911,7 +921,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
         int borderOffsetX = options.showDistantWaypoints ? -4 : ICON_WIDTH / 2;
-        int borderOffsetY = options.showDistantWaypoints ? -4 : ICON_HEIGHT / 2;
+        int borderOffsetY = options.showDistantWaypoints ? 0 : ICON_HEIGHT / 2;
         int maxX = x + borderOffsetX;
         int maxY = y - this.top + borderOffsetY;
 
@@ -973,7 +983,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
 
-        if (options.showWaypointNames && !farX && !farY) {
+        boolean textOverFrame = guiVector.y() + ICON_HEIGHT > this.bottom;
+        if (options.showWaypointNames && !farX && !farY && !textOverFrame) {
             guiGraphics.pose().pushMatrix();
             float fontScale = 1.0F;
             guiGraphics.pose().scale(fontScale, fontScale);
@@ -1025,7 +1036,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             cursorCoordZ = cursorY * this.mouseDirectToMap + (this.mapCenterZ - this.centerY * this.guiToMap);
         }
 
-        selectedWaypoint = this.getHoveredWaypoint();
         Popup.PopupEntry entry;
         if (selectedWaypoint != null && this.waypointManager.getWaypoints().contains(selectedWaypoint)) {
             entry = new Popup.PopupEntry(I18n.get("selectServer.edit"), 4, true, true);
