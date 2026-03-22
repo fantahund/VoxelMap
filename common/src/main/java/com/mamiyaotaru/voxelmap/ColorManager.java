@@ -591,9 +591,9 @@ public class ColorManager {
                     int dataX = t - startX;
                     int dataZ = s - startZ;
                     dataX = Math.max(dataX, 0);
-                    dataX = Math.min(dataX, 255);
+                    dataX = Math.min(dataX, mapData.getWidth() - 1);
                     dataZ = Math.max(dataZ, 0);
-                    dataZ = Math.min(dataZ, 255);
+                    dataZ = Math.min(dataZ, mapData.getHeight() - 1);
                     Biome biome = mapData.getBiome(dataX, dataZ);
                     if (biome == null) {
                         MessageUtils.printDebug("Null biome ID! " + " at " + t + "," + s);
