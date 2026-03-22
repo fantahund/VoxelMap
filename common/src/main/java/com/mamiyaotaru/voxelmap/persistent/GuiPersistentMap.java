@@ -774,7 +774,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 if (!waypoint.inWorld || !waypoint.inDimension) continue;
 
                 boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
-                boolean isHovered = drawWaypoint(guiGraphics, waypoint, textureAtlas, null, isHighlighted, -1, cursorCoordX, cursorCoordZ);
+                boolean isHovered = drawWaypoint(guiGraphics, waypoint, textureAtlas, null, isHighlighted, -1, mouseX, mouseY);
                 if (isHovered) {
                     currentlyHovered = waypoint;
                 }
@@ -782,7 +782,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
             Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
             if (highlightedPoint != null) {
-                boolean isHovered = drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, cursorCoordX, cursorCoordZ);
+                boolean isHovered = drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, mouseX, mouseY);
                 if (isHovered) {
                     currentlyHovered = highlightedPoint;
                 }
@@ -798,7 +798,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (gotSkin) {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
-            drawPlayer(guiGraphics, voxelmapSkinLocation, playerX, playerZ, cursorCoordX, cursorCoordZ);
+            drawPlayer(guiGraphics, voxelmapSkinLocation, playerX, playerZ, mouseX, mouseY);
         }
 
         if (System.currentTimeMillis() - this.timeOfLastKBInput < 2000L) {
@@ -850,28 +850,30 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         // nothing
     }
 
-    private boolean drawPlayer(GuiGraphics guiGraphics, Identifier skin, float playerX, float playerZ, float cursorCoordX, float cursorCoordZ) {
+    private boolean drawPlayer(GuiGraphics guiGraphics, Identifier skin, float playerX, float playerZ, int mouseX, int mouseY) {
         float headWidth = ICON_WIDTH * 0.75F;
         float headHeight = ICON_HEIGHT * 0.75F;
+
+        int x = this.width / 2;
+        int y = this.height / 2;
+        int borderX = x - 4;
+        int borderY = y - this.top;
 
         double wayX = this.mapCenterX - (this.oldNorth ? -playerZ : playerX);
         double wayY = this.mapCenterZ - (this.oldNorth ? playerX : playerZ);
         float locate = (float) Math.atan2(wayX, wayY);
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
-        int x = this.width / 2;
-        int y = this.height / 2;
-        int maxX = x - 4;
-        int maxY = y - this.top;
-
         double dispX = hypot * Math.sin(locate);
         double dispY = hypot * Math.cos(locate);
-        boolean farX = Math.abs(dispX) > maxX;
-        boolean farY = Math.abs(dispY) > maxY;
-        hypot *= (float) Math.min(farX ? maxX / Math.abs(dispX) : 1.0, farY ? maxY / Math.abs(dispY) : 1.0);
+        boolean far = Math.abs(dispX) > borderX || Math.abs(dispY) > borderY;
+        if (far) {
+            hypot *= (float) Math.min(borderX / Math.abs(dispX), borderY / Math.abs(dispY));
+        }
 
         guiGraphics.pose().pushMatrix();
-        if (farX || farY) {
+
+        if (far) {
             guiGraphics.pose().translate(x, y);
             guiGraphics.pose().rotate(-locate);
             guiGraphics.pose().translate(0.0F, -hypot);
@@ -884,9 +886,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
+        float screenX = guiVector.x();
+        float screenY = guiVector.y();
 
-        boolean isHovered = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
-                && mouseY >= guiVector.y() - ICON_HEIGHT / 2.0F && mouseY <= guiVector.y() + ICON_HEIGHT / 2.0F;
+        boolean isHovered = mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F
+                && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
         if (isHovered) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
@@ -901,48 +905,54 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return isHovered;
     }
 
-    private boolean drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, float cursorCoordX, float cursorCoordZ) {
+    private boolean drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, int mouseX, int mouseY) {
         float ptX = waypoint.getX() + 0.5F;
         float ptZ = waypoint.getZ() + 0.5F;
-
-        boolean uprightIcon = icon != null;
 
         int x = this.width / 2;
         int y = this.height / 2;
 
-        String name = waypoint.name;
-        if (waypointManager.isCoordinateHighlight(waypoint)) {
-            name = "X:" + waypoint.getX() + ", Y:" + waypoint.getY() + ", Z:" + waypoint.getZ();
-        }
+        int borderOffsetX = options.showDistantWaypoints ? -4 : ICON_WIDTH / 2;
+        int borderOffsetY = options.showDistantWaypoints ? 0 : ICON_HEIGHT / 2;
+        int borderX = x + borderOffsetX;
+        int borderY = y - this.top + borderOffsetY;
 
         double wayX = this.mapCenterX - (this.oldNorth ? -ptZ : ptX);
         double wayY = this.mapCenterZ - (this.oldNorth ? ptX : ptZ);
         float locate = (float) Math.atan2(wayX, wayY);
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
-        int borderOffsetX = options.showDistantWaypoints ? -4 : ICON_WIDTH / 2;
-        int borderOffsetY = options.showDistantWaypoints ? 0 : ICON_HEIGHT / 2;
-        int maxX = x + borderOffsetX;
-        int maxY = y - this.top + borderOffsetY;
-
         double dispX = hypot * Math.sin(locate);
         double dispY = hypot * Math.cos(locate);
-        boolean farX = Math.abs(dispX) > maxX;
-        boolean farY = Math.abs(dispY) > maxY;
-        hypot *= (float) Math.min(farX ? maxX / Math.abs(dispX) : 1.0, farY ? maxY / Math.abs(dispY) : 1.0);
+        boolean far = Math.abs(dispX) > borderX || Math.abs(dispY) > borderY;
+        if (far) {
+            if (!options.showDistantWaypoints) {
+                return false;
+            }
+
+            hypot *= (float) Math.min(borderX / Math.abs(dispX), borderY / Math.abs(dispY));
+        }
+
+        boolean uprightIcon = icon != null;
+
+        String name = waypoint.name;
+        if (waypointManager.isCoordinateHighlight(waypoint)) {
+            name = "X:" + waypoint.getX() + ", Y:" + waypoint.getY() + ", Z:" + waypoint.getZ();
+        }
+
+        if (icon == null) {
+            String iconLocation = (far ? "marker/" : "selectable/") + waypoint.imageSuffix;
+            String fallbackLocation = far ? "marker/arrow" : WaypointManager.fallbackIconLocation;
+
+            icon = textureAtlas.getAtlasSprite(iconLocation);
+            if (icon == textureAtlas.getMissingImage()) {
+                icon = textureAtlas.getAtlasSprite(fallbackLocation);
+            }
+        }
 
         guiGraphics.pose().pushMatrix();
 
-        if (farX || farY) {
-            if (!options.showDistantWaypoints) return false;
-
-            if (icon == null) {
-                icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
-                if (icon == textureAtlas.getMissingImage()) {
-                    icon = textureAtlas.getAtlasSprite("marker/arrow");
-                }
-            }
-
+        if (far) {
             guiGraphics.pose().translate(x, y);
             guiGraphics.pose().rotate(-locate);
             if (uprightIcon) {
@@ -954,23 +964,17 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 guiGraphics.pose().translate(0.0F, -hypot);
             }
         } else {
-            if (icon == null) {
-                icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
-                if (icon == textureAtlas.getMissingImage()) {
-                    icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
-                }
-            }
-
-            guiGraphics.pose().pushMatrix();
             guiGraphics.pose().rotate(-locate);
             guiGraphics.pose().translate(0.0F, -hypot);
             guiGraphics.pose().rotate(locate);
         }
 
         Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
+        float screenX = guiVector.x();
+        float screenY = guiVector.y();
 
-        boolean isHovered = mouseX >= guiVector.x() - ICON_WIDTH / 2.0F && mouseX <= guiVector.x() + ICON_WIDTH / 2.0F
-                && mouseY >= guiVector.y() - ICON_HEIGHT / 2.0F && mouseY <= guiVector.y() + ICON_HEIGHT / 2.0F;
+        boolean isHovered = mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F
+                && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
         if (isHovered) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
@@ -983,8 +987,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
 
-        boolean textOverFrame = guiVector.y() + ICON_HEIGHT > this.bottom;
-        if (options.showWaypointNames && !farX && !farY && !textOverFrame) {
+        boolean textOverFrame = screenY + ICON_HEIGHT > this.bottom;
+        if (options.showWaypointNames && !far && !textOverFrame) {
             guiGraphics.pose().pushMatrix();
             float fontScale = 1.0F;
             guiGraphics.pose().scale(fontScale, fontScale);
