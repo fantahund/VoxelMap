@@ -15,7 +15,6 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -28,12 +27,11 @@ import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -173,16 +171,10 @@ public class Map implements Runnable, IChangeObserver {
     // Map Rendering
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
-    private final Identifier guiFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "gui_fbo_texture");
-    private final DynamicAllocatedTexture guiFboTexture;
-    private final DynamicAllocatedTexture guiFboDepthTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
-    private final Identifier mapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "map_fbo_texture");
-    private final Identifier maskedMapFboTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "maksed_map_fbo_texture");
-    private final DynamicAllocatedTexture mapFboTexture;
-    private final DynamicAllocatedTexture maskedMapFboTexture;
-    private final DynamicAllocatedTexture mapFboDepthTexture;
-    private final DynamicAllocatedTexture maskedMapFboDepthTexture;
+    private final VoxelMapRenderTarget hudRenderTarget; // Used for entire VoxelMap HUD rendering
+    private final VoxelMapRenderTarget baseMapRenderTarget; // Used for minimap rendering before masking
+    private final VoxelMapRenderTarget finalMapRenderTarget; // Used for minimap rendering after masking
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -228,20 +220,18 @@ public class Map implements Runnable, IChangeObserver {
         this.setZoomScale();
 
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
-        final int fboTextureSize = 512;
-        final int fboTextureUsage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
-
-        this.guiFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.guiFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        minecraft.getTextureManager().register(this.guiFboTextureLocation, this.guiFboTexture);
-
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
-        this.mapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMapFboTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.mapFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Map Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMapFboDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Map Depth  FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        minecraft.getTextureManager().register(this.mapFboTextureLocation, this.mapFboTexture);
-        minecraft.getTextureManager().register(this.maskedMapFboTextureLocation, this.maskedMapFboTexture);
+
+        final int fboTextureSize = 512;
+
+        this.hudRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_gui"));
+        this.hudRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
+
+        this.baseMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_base_map"));
+        this.baseMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
+
+        this.finalMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_final_map"));
+        this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
         this.loadMapTextures();
     }
@@ -660,7 +650,7 @@ public class Map implements Runnable, IChangeObserver {
         );
 
         int mapY2 = mapY;
-        RenderUtils.renderWithFullscreenProjection(guiFboTexture, guiFboDepthTexture, () -> {
+        RenderUtils.renderWithFullscreenProjection(hudRenderTarget, () -> {
             renderMatrixStack.pushMatrix();
 
             if (!this.options.hide) {
@@ -675,11 +665,11 @@ public class Map implements Runnable, IChangeObserver {
             }
             this.showCoords(renderMatrixStack, mapX, mapY2, scaleProj);
 
-            renderBufferSource.endBatch(); // Build all vertices in buffer
             renderMatrixStack.popMatrix();
+            renderBufferSource.endBatch();
         });
 
-        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, guiFboTextureLocation, 0.0F, 0.0F, RenderUtils.getScaledWidth(), RenderUtils.getScaledHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, hudRenderTarget.colorTextureId, 0.0F, 0.0F, RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {
@@ -1522,7 +1512,7 @@ public class Map implements Runnable, IChangeObserver {
         renderBufferSource.endBatch(); // Flush previous batches
 
         // Draw map, radar, etc.
-        RenderUtils.renderWithCustomProjection(mapFboTexture, mapFboDepthTexture, mapProjection.getBuffer(), -2000.0F, () -> {
+        RenderUtils.renderWithCustomProjection(baseMapRenderTarget, mapProjection.getBuffer(), -2000.0F, () -> {
             float scale = 1.0F;
             if (this.options.squareMap && this.options.rotates) {
                 scale = 1.4142F;
@@ -1554,12 +1544,11 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             matrixStack.popMatrix();
-
             renderBufferSource.endBatch();
         });
 
         // Masking the drawn map
-        RenderUtils.renderWithCustomProjection(maskedMapFboTexture, maskedMapFboDepthTexture, mapProjection.getBuffer(), -2000.0F, () -> {
+        RenderUtils.renderWithCustomProjection(finalMapRenderTarget, mapProjection.getBuffer(), -2000.0F, () -> {
             matrixStack.pushMatrix();
             matrixStack.identity();
 
@@ -1567,7 +1556,7 @@ public class Map implements Runnable, IChangeObserver {
             VertexConsumer stencilBuffer = renderBufferSource.getBuffer(stencilRenderType);
             RenderUtils.drawTexturedModalRect(matrixStack, stencilBuffer, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F,0xFFFFFFFF);
 
-            RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_MASKED_NO_DEPTH_TEST.apply(mapFboTextureLocation);
+            RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_MASKED_NO_DEPTH_TEST.apply(baseMapRenderTarget.colorTextureId);
             VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
             RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
 
@@ -1578,7 +1567,7 @@ public class Map implements Runnable, IChangeObserver {
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
 
-        RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(maskedMapFboTextureLocation);
+        RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(finalMapRenderTarget.colorTextureId);
         VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
         RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
 
