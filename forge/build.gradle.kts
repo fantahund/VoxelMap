@@ -1,7 +1,6 @@
 plugins {
     id("idea")
     id("net.minecraftforge.gradle")
-    id("org.spongepowered.mixin")
     id("java-library")
 }
 
@@ -14,11 +13,6 @@ base {
     archivesName.set("voxelmap-forge")
 }
 
-mixin {
-    config("mixin.voxelmap.json")
-    config("mixin.voxelmap.forge.json")
-}
-
 sourceSets {
     all {
         val buildDir = layout.buildDirectory.dir("sourcesSets/${this.name}")
@@ -27,24 +21,26 @@ sourceSets {
     }
 }
 
+repositories {
+    minecraft.mavenizer(this)
+    maven(fg.forgeMaven)
+    maven(fg.minecraftLibsMaven)
+    mavenCentral()
+    maven { url = uri("https://maven.minecraftforge.net/") }
+}
+
 dependencies {
-    minecraft ("net.minecraftforge:forge:${minecraftVersion}-${forgeVersion}")
+    implementation(minecraft.dependency("net.minecraftforge:forge:${minecraftVersion}-${forgeVersion}"))
     compileOnly(project.project(":common").sourceSets.main.get().output)
 }
 
 minecraft {
-    mappings("official", minecraftVersion)
-
-    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
-
-    reobf = false
-    copyIdeResources = true
+    accessTransformers = files("src/main/resources/META-INF/accesstransformer.cfg")
 
     runs {
-        create("client") {
-            workingDirectory(file("run"))
-            ideaModule = "${rootProject.name}.${project.name}.main"
-            taskName = "Client"
+        register("client") {
+            workingDir.set(file("run"))
+            args("--mixin.config=mixin.voxelmap.json", "--mixin.config=mixin.voxelmap.forge.json")
 
             mods {
                 create("voxelmap") {

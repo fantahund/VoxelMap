@@ -62,7 +62,7 @@ public class ForgeEvents implements Events {
         Identifier packLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "resourcepacks/voxelmap_legacy");
         Component packNameDisplay = Component.translatable("resourcePack.minimap.voxelmapLegacy.title");
 
-        IModFileInfo modFileInfo = ModList.get().getModFileById(packLocation.getNamespace());
+        IModFileInfo modFileInfo = ModList.getModFileById(packLocation.getNamespace());
         if (modFileInfo == null || modFileInfo.getMods().isEmpty()) {
             return;
         }
