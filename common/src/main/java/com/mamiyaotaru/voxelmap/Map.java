@@ -15,7 +15,6 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.util.DynamicAllocatedTexture;
 import com.mamiyaotaru.voxelmap.util.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -28,12 +27,11 @@ import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -69,6 +67,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -171,16 +170,10 @@ public class Map implements Runnable, IChangeObserver {
     // Map Rendering
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
-    private final Identifier fullscreenTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "gui_fbo_texture");
-    private final DynamicAllocatedTexture fullscreenColorTexture;
-    private final DynamicAllocatedTexture fullscreenDepthTexture;
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
-    private final Identifier baseMinimapTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "map_fbo_texture");
-    private final Identifier maskedMinimapTextureLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "maksed_map_fbo_texture");
-    private final DynamicAllocatedTexture baseMinimapColorTexture;
-    private final DynamicAllocatedTexture maskedMinimapColorTexture;
-    private final DynamicAllocatedTexture baseMinimapDepthTexture;
-    private final DynamicAllocatedTexture maskedMinimapDepthTexture;
+    private final VoxelMapRenderTarget hudRenderTarget; // Used for entire VoxelMap HUD rendering
+    private final VoxelMapRenderTarget baseMapRenderTarget; // Used for minimap rendering before masking
+    private final VoxelMapRenderTarget finalMapRenderTarget; // Used for minimap rendering after masking
 
     public Map() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
@@ -226,20 +219,18 @@ public class Map implements Runnable, IChangeObserver {
         this.setZoomScale();
 
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
-        final int fboTextureSize = 512;
-        final int fboTextureUsage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_TEXTURE_BINDING | GpuTexture.USAGE_RENDER_ATTACHMENT;
-
-        this.fullscreenColorTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen Color FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.fullscreenDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Fullscreen Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        minecraft.getTextureManager().register(this.fullscreenTextureLocation, this.fullscreenColorTexture);
-
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
-        this.baseMinimapColorTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Base Minimap Color FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.baseMinimapDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Base Minimap Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMinimapColorTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Minimap Color FBO", fboTextureUsage, TextureFormat.RGBA8, fboTextureSize, fboTextureSize, 1, 1));
-        this.maskedMinimapDepthTexture = new DynamicAllocatedTexture(RenderSystem.getDevice().createTexture("VoxelMap Masked Minimap Depth FBO", fboTextureUsage, TextureFormat.DEPTH32, fboTextureSize, fboTextureSize, 1, 1));
-        minecraft.getTextureManager().register(this.baseMinimapTextureLocation, this.baseMinimapColorTexture);
-        minecraft.getTextureManager().register(this.maskedMinimapTextureLocation, this.maskedMinimapColorTexture);
+
+        final int fboTextureSize = 512;
+
+        this.hudRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_gui"));
+        this.hudRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
+
+        this.baseMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_base_map"));
+        this.baseMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
+
+        this.finalMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_final_map"));
+        this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
         this.loadMapTextures();
     }
@@ -648,7 +639,7 @@ public class Map implements Runnable, IChangeObserver {
         );
 
         int mapY2 = mapY;
-        RenderUtils.renderWithFullscreenProjection(fullscreenColorTexture, fullscreenDepthTexture, () -> {
+        RenderUtils.renderWithFullscreenProjection(hudRenderTarget, () -> {
             renderMatrixStack.pushMatrix();
 
             if (!this.options.hide) {
@@ -663,11 +654,11 @@ public class Map implements Runnable, IChangeObserver {
             }
             this.showCoords(renderMatrixStack, mapX, mapY2, scaleProj);
 
-            renderBufferSource.endBatch(); // Build all vertices in buffer
             renderMatrixStack.popMatrix();
+            renderBufferSource.endBatch();
         });
 
-        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, fullscreenTextureLocation, 0.0F, 0.0F, RenderUtils.getScaledWidth(), RenderUtils.getScaledHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, hudRenderTarget.colorTextureId, 0.0F, 0.0F, RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
     }
 
     private void checkForChanges() {
@@ -1510,7 +1501,7 @@ public class Map implements Runnable, IChangeObserver {
         renderBufferSource.endBatch(); // Flush previous batches
 
         // Draw map, radar, etc.
-        RenderUtils.renderWithCustomProjection(baseMinimapColorTexture, baseMinimapDepthTexture, mapProjection.getBuffer(), -2000.0F, () -> {
+        RenderUtils.renderWithCustomProjection(baseMapRenderTarget, mapProjection.getBuffer(), -2000.0F, () -> {
             float scale = 1.0F;
             if (this.options.squareMap && this.options.rotates) {
                 scale = 1.4142F;
@@ -1542,12 +1533,11 @@ public class Map implements Runnable, IChangeObserver {
             }
 
             matrixStack.popMatrix();
-
             renderBufferSource.endBatch();
         });
 
         // Masking the drawn map
-        RenderUtils.renderWithCustomProjection(maskedMinimapColorTexture, maskedMinimapDepthTexture, mapProjection.getBuffer(), -2000.0F, () -> {
+        RenderUtils.renderWithCustomProjection(finalMapRenderTarget, mapProjection.getBuffer(), -2000.0F, () -> {
             matrixStack.pushMatrix();
             matrixStack.identity();
 
@@ -1555,7 +1545,7 @@ public class Map implements Runnable, IChangeObserver {
             VertexConsumer stencilBuffer = renderBufferSource.getBuffer(stencilRenderType);
             RenderUtils.drawTexturedModalRect(matrixStack, stencilBuffer, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F,0xFFFFFFFF);
 
-            RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_MASKED_NO_DEPTH_TEST.apply(baseMinimapTextureLocation);
+            RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_MASKED_NO_DEPTH_TEST.apply(baseMapRenderTarget.colorTextureId);
             VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
             RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
 
@@ -1566,7 +1556,7 @@ public class Map implements Runnable, IChangeObserver {
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
 
-        RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(maskedMinimapTextureLocation);
+        RenderType mapRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(finalMapRenderTarget.colorTextureId);
         VertexConsumer mapBuffer = renderBufferSource.getBuffer(mapRenderType);
         RenderUtils.drawTexturedModalRect(matrixStack, mapBuffer, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
 
@@ -1578,31 +1568,32 @@ public class Map implements Runnable, IChangeObserver {
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
         TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
         if (options.waypointsAllowed) {
-            Waypoint highlightedPoint = this.waypointManager.getHighlightedWaypoint();
-
-            for (Waypoint pt : this.waypointManager.getWaypoints()) {
-                if (pt.isActive() || pt == highlightedPoint) {
-                    double distanceSq = pt.getDistanceSqToEntity(minecraft.getCameraEntity());
-                    if (distanceSq < (this.options.maxWaypointDisplayDistance * this.options.maxWaypointDisplayDistance) || this.options.maxWaypointDisplayDistance < 0 || pt == highlightedPoint) {
-                        this.drawWaypoint(matrixStack, pt, textureAtlas, x, y, lastXDouble, lastZDouble, null, false);
+            for (Waypoint waypoint : waypointManager.getWaypoints()) {
+                boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
+                if (waypoint.isActive() || isHighlighted) {
+                    double distanceSq = waypoint.getDistanceSqToEntity(minecraft.getCameraEntity());
+                    boolean isOutOfRange = options.maxWaypointDisplayDistance >= 0 && distanceSq >= (options.maxWaypointDisplayDistance * options.maxWaypointDisplayDistance);
+                    if (!isOutOfRange || isHighlighted) {
+                        drawWaypoint(matrixStack, x, y, waypoint, textureAtlas, null, isHighlighted, -1, lastXDouble, lastZDouble);
                     }
                 }
             }
 
+            Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
             if (highlightedPoint != null) {
-                this.drawWaypoint(matrixStack, highlightedPoint, textureAtlas, x, y, lastXDouble, lastZDouble, textureAtlas.getAtlasSprite("marker/target"), true);
+                drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
             }
         }
         matrixStack.popMatrix();
     }
 
-    private void drawWaypoint(Matrix4fStack matrixStack, Waypoint pt, TextureAtlas textureAtlas, int x, int y, double lastXDouble, double lastZDouble, Sprite icon, boolean highlight) {
+    private void drawWaypoint(Matrix4fStack matrixStack, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, double baseX, double baseZ) {
         boolean uprightIcon = icon != null;
 
-        double wayX = lastXDouble - pt.getX() - 0.5;
-        double wayY = lastZDouble - pt.getZ() - 0.5;
+        double wayX = baseX - waypoint.getX() - 0.5;
+        double wayY = baseZ - waypoint.getZ() - 0.5;
         float locate = (float) Math.toDegrees(Math.atan2(wayX, wayY));
-        float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY);
+        float hypot = (float) (Math.sqrt(wayX * wayX + wayY * wayY) / zoomScaleAdjusted);
         boolean far;
         if (this.options.rotates) {
             locate += this.direction;
@@ -1610,7 +1601,6 @@ public class Map implements Runnable, IChangeObserver {
             locate -= this.rotationFactor;
         }
 
-        hypot /= this.zoomScaleAdjusted;
         if (this.options.squareMap) {
             double radLocate = Math.toRadians(locate);
             double dispX = hypot * Math.cos(radLocate);
@@ -1626,21 +1616,17 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        RenderType waypointRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(waypointManager.getTextureAtlas().getIdentifier());
+        RenderType waypointRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(textureAtlas.getIdentifier());
         VertexConsumer waypointBuffer = renderBufferSource.getBuffer(waypointRenderType);
 
-        boolean target = false;
+        int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F) : color;
         if (far) {
             if (icon == null) {
-                icon = textureAtlas.getAtlasSprite("marker/" + pt.imageSuffix);
-
+                icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
                 if (icon == textureAtlas.getMissingImage()) {
                     icon = textureAtlas.getAtlasSprite("marker/arrow");
                 }
-            } else {
-                target = true;
             }
-            int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
                 matrixStack.pushMatrix();
@@ -1655,7 +1641,7 @@ public class Map implements Runnable, IChangeObserver {
                     matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, color);
+                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1663,15 +1649,11 @@ public class Map implements Runnable, IChangeObserver {
             }
         } else {
             if (icon == null) {
-                icon = textureAtlas.getAtlasSprite("selectable/" + pt.imageSuffix);
-
+                icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
                 if (icon == textureAtlas.getMissingImage()) {
                     icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
                 }
-            } else {
-                target = true;
             }
-            int color = highlight ? 0xFFFF0000 : pt.getUnifiedColor(!pt.enabled && !target ? 0.3F : 1.0F);
 
             try {
                 matrixStack.pushMatrix();
@@ -1679,7 +1661,7 @@ public class Map implements Runnable, IChangeObserver {
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
 
-                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, color);
+                RenderUtils.drawTexturedModalRect(matrixStack, waypointBuffer, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {

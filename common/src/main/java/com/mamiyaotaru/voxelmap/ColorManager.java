@@ -607,8 +607,12 @@ public class ColorManager {
 
             for (int t = blockPos.getX() - 1; t <= blockPos.getX() + 1; ++t) {
                 for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
-                    int dataX = Mth.clamp(t - startX, 0, mapData.getWidth() - 1);
-                    int dataZ = Mth.clamp( s - startZ, 0, mapData.getHeight() - 1);
+                    int dataX = blockPos.getX() - startX;
+                    int dataZ = blockPos.getZ() - startZ;
+                    dataX = Math.max(dataX, 0);
+                    dataX = Math.min(dataX, mapData.getWidth() - 1);
+                    dataZ = Math.max(dataZ, 0);
+                    dataZ = Math.min(dataZ, mapData.getHeight() - 1);
 
                     Biome biome = mapData.getBiome(dataX, dataZ);
                     if (biome == null) {

@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -28,7 +29,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_WORLDMAP_COORDS };
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WORLDMAP_COORDS, EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_DISTANT_WAYPOINTS };
 
         int counter = 0;
 
@@ -67,14 +68,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), buttonx -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
 
-        for (Object buttonObj : this.children()) {
-            if (buttonObj instanceof GuiOptionButtonMinimap button) {
-                if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_WAYPOINT_NAMES) {
-                    button.active = this.options.showWaypoints && mapOptions.waypointsAllowed;
-                }
-            }
-        }
-
+        setButtonsActive();
     }
 
     protected void optionClicked(Button par1GuiButton) {
@@ -82,14 +76,17 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         MapSettingsManager.updateBooleanOrListValue(this.options, option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
 
-        for (Object buttonObj : this.children()) {
-            if (buttonObj instanceof GuiOptionButtonMinimap button) {
-                if (button.returnEnumOptions() == EnumOptionsMinimap.SHOW_WAYPOINT_NAMES) {
-                    button.active = this.options.showWaypoints && mapOptions.waypointsAllowed;
-                }
+        setButtonsActive();
+    }
+
+    private void setButtonsActive() {
+        for (GuiEventListener renderable : this.children()) {
+            if (!(renderable instanceof GuiOptionButtonMinimap button)) continue;
+
+            switch (button.returnEnumOptions()) {
+                case SHOW_WAYPOINT_NAMES, SHOW_DISTANT_WAYPOINTS -> button.active = options.showWaypoints && mapOptions.waypointsAllowed;
             }
         }
-
     }
 
     @Override

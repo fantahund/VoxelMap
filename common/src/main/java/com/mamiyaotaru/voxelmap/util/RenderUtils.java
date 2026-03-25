@@ -6,9 +6,9 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -34,11 +34,11 @@ public class RenderUtils {
     private static final ProjectionMatrixBuffer FULLSCREEN_PROJECTION_MATRIX = new ProjectionMatrixBuffer("VoxelMap Fullscreen Projection Matrix");
     static { FULLSCREEN_PROJECTION.setupOrtho(1000.0F, 3000.0F, 0.0F, 0.0F, true); }
 
-    public static float getScaledWidth() {
+    public static float getGuiWidth() {
         return (float) MINECRAFT.getWindow().getWidth() / MINECRAFT.getWindow().getGuiScale();
     }
 
-    public static float getScaledHeight() {
+    public static float getGuiHeight() {
         return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
     }
 
@@ -77,11 +77,15 @@ public class RenderUtils {
         drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
 
-    public static void renderWithCustomProjection(DynamicAllocatedTexture colorTexture, DynamicAllocatedTexture depthTexture, GpuBufferSlice projection, float initialDepth, Runnable runnable) {
+    public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Runnable runnable) {
         RenderSystem.assertOnRenderThread();
 
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(colorTexture.getTexture(), 0x00000000);
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture.getTexture(), 1.0);
+        if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
+            return;
+        }
+
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
@@ -93,8 +97,8 @@ public class RenderUtils {
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-            RenderSystem.outputColorTextureOverride = colorTexture.getTextureView();
-            RenderSystem.outputDepthTextureOverride = depthTexture.getTextureView();
+            RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
+            RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
 
             runnable.run();
         } catch (Exception e) {
@@ -106,29 +110,25 @@ public class RenderUtils {
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
 
-        GLUtils.PostProcess.postProcessTexture(colorTexture.getTextureView(), (src, dst) -> {
-            GLUtils.flipTexture(src, dst, false, true);
-        });
+        GLUtils.flipTexture(renderTarget.getColorTextureView(), false, true);
     }
 
-    public static void renderWithFullscreenProjection(DynamicAllocatedTexture colorTexture, DynamicAllocatedTexture depthTexture, Runnable runnable) {
+    public static void renderWithFullscreenProjection(RenderTarget renderTarget, Runnable runnable) {
         RenderSystem.assertOnRenderThread();
+
+        if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
+            return;
+        }
 
         int windowWidth = MINECRAFT.getWindow().getWidth();
         int windowHeight = MINECRAFT.getWindow().getHeight();
 
-        if (colorTexture.getWidth(0) != windowWidth || colorTexture.getHeight(0) != windowHeight) {
-            GpuTexture texture = colorTexture.getTexture();
-            colorTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
+        if (renderTarget.width != windowWidth || renderTarget.height != windowHeight) {
+            renderTarget.resize(windowWidth, windowHeight);
         }
 
-        if (depthTexture.getWidth(0) != windowWidth || depthTexture.getHeight(0) != windowHeight) {
-            GpuTexture texture = depthTexture.getTexture();
-            depthTexture.setTexture(RenderSystem.getDevice().createTexture(texture.getLabel(), texture.usage(), texture.getFormat(), windowWidth, windowHeight, 1, 1));
-        }
-
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(colorTexture.getTexture(), 0x00000000);
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture.getTexture(), 1.0);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
@@ -136,13 +136,13 @@ public class RenderUtils {
         GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
 
         try {
-            FULLSCREEN_PROJECTION.setSize(getScaledWidth(), getScaledHeight());
+            FULLSCREEN_PROJECTION.setSize(getGuiWidth(), getGuiHeight());
             RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION_MATRIX.getBuffer(FULLSCREEN_PROJECTION), ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-            RenderSystem.outputColorTextureOverride = colorTexture.getTextureView();
-            RenderSystem.outputDepthTextureOverride = depthTexture.getTextureView();
+            RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
+            RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
 
             runnable.run();
         } catch (Exception e) {
@@ -154,9 +154,7 @@ public class RenderUtils {
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
 
-        GLUtils.PostProcess.postProcessTexture(colorTexture.getTextureView(), (src, dst) -> {
-            GLUtils.flipTexture(src, dst, false, true);
-        });
+        GLUtils.flipTexture(renderTarget.getColorTextureView(), false, true);
     }
 
     public static void drawMeshWithTexture(GpuTextureView colorTexture, GpuTextureView depthTexture, GpuBufferSlice projection, float initialDepth, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup) {
