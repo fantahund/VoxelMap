@@ -25,7 +25,7 @@ repositories {
     minecraft.mavenizer(this)
     maven(fg.forgeMaven)
     maven(fg.minecraftLibsMaven)
-    mavenCentral()
+
     maven { url = uri("https://maven.minecraftforge.net/") }
 }
 
