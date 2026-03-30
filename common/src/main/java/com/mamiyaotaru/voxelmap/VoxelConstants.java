@@ -46,16 +46,15 @@ public final class VoxelConstants {
     @NotNull
     public static Minecraft getMinecraft() { return Minecraft.getInstance(); }
 
-    public static boolean isSystemMacOS() { return InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY; }
-
-    public static boolean isFabulousGraphicsOrBetter() { return Minecraft.useShaderTransparency(); }
-
     public static boolean isSinglePlayer() { return getMinecraft().isLocalServer(); }
+
     public static boolean isRealmServer() {
         ClientPacketListener playNetworkHandler = getMinecraft().getConnection();
         ServerData serverInfo = playNetworkHandler != null ? getMinecraft().getConnection().getServerData() : null;
         return serverInfo != null && serverInfo.isRealm();
     }
+
+    public static boolean hasVulkanMod() { return modApiBridge.isModEnabled("vulkanmod"); }
 
     @NotNull
     public static Logger getLogger() { return LOGGER; }

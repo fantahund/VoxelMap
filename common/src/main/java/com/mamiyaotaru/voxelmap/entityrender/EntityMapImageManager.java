@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
+import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.DefaultArmorHandler;
@@ -66,7 +67,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityMapImageManager {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
-
+    private final RadarSettingsManager radarOptions;
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
 
@@ -84,8 +85,12 @@ public class EntityMapImageManager {
 
     private final EntityGPURenderer gpuRenderer = new EntityGPURenderer();
     private final EntityCPURenderer cpuRenderer = new EntityCPURenderer();
+    private boolean cpuRendering = false;
+    private boolean lastCpuRendering = false;
 
     public EntityMapImageManager() {
+        this.radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
+
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(true, false);
 
@@ -174,7 +179,7 @@ public class EntityMapImageManager {
     }
 
     private AbstractEntityRenderer getEntityRenderer() {
-        return cpuRenderer;
+        return cpuRendering ? cpuRenderer : gpuRenderer;
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {
@@ -545,6 +550,11 @@ public class EntityMapImageManager {
         Runnable task;
         while ((task = taskQueue.poll()) != null) {
             task.run();
+        }
+
+        if ((cpuRendering = radarOptions.cpuRendering || radarOptions.forceCpuRendering) != lastCpuRendering) {
+            reset();
+            lastCpuRendering = cpuRendering;
         }
     }
 
