@@ -2,9 +2,8 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
+import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
@@ -20,7 +19,6 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
@@ -164,16 +162,16 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public void renderArmorModel(EntityMapImageManager.CaptureContext context) {
-        PoseStack pose = context.poseStack();
-        BufferBuilder bufferBuilder = context.bufferBuilder();
+    public void renderArmorModel(AbstractEntityRenderer renderer) {
+        PoseStack pose = renderer.poseStack;
 
         if (armor != null) {
             ModelPart part = humanoidModel.root().getChild("head");
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
-            part.render(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
+
+            renderer.addMesh(part);
         }
         if (block != null) {
             pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
@@ -183,12 +181,14 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
             BlockRenderDispatcher blockRenderer = VoxelConstants.getMinecraft().getBlockRenderer();
             List<BlockModelPart> blockMesh = blockRenderer.getBlockModel(blockState).collectParts(random);
 
-            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
+//            TODO VkDev: Tessellate Block
+//            blockRenderer.getModelRenderer().tesselateBlock(VoxelConstants.getMinecraft().level, blockMesh, blockState, BlockPos.ZERO, pose, bufferBuilder, true, EntityMapImageManager.OVERLAY);
         }
         if (skull != null) {
             pose.scale(1.1875F, 1.1875F, 1.1875F);
             SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skull.getType());
-            skullModel.renderToBuffer(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
+
+            renderer.addMesh(skullModel.root());
         }
     }
 
