@@ -5,19 +5,26 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 public abstract class AbstractEntityRenderer {
     protected final Minecraft minecraft = Minecraft.getInstance();
     protected final ArrayList<ModelPart> modelParts = new ArrayList<>();
-    public final PoseStack poseStack = new PoseStack();
+    protected final HashMap<BlockState, List<BlockModelPart>> blockModelParts = new HashMap<>();
+    protected final PoseStack poseStack = new PoseStack();
+    protected final RandomSource random = RandomSource.create();
     protected boolean cullEnabled = false;
 
     public static final int TEXTURE_SIZE = 512;
@@ -38,12 +45,21 @@ public abstract class AbstractEntityRenderer {
         clearMesh();
     }
 
+    public PoseStack getPoseStack() {
+        return poseStack;
+    }
+
     public void addMesh(ModelPart modelPart) {
         modelParts.add(modelPart);
     }
 
+    public void addBlock(BlockState blockState) {
+        blockModelParts.put(blockState, minecraft.getBlockRenderer().getBlockModel(blockState).collectParts(random));
+    }
+
     public void clearMesh() {
         modelParts.clear();
+        blockModelParts.clear();
     }
 
     public void enableCull(boolean flag) {
@@ -52,7 +68,6 @@ public abstract class AbstractEntityRenderer {
 
     protected abstract void setupMatrix();
 
-    @SuppressWarnings("rawtypes")
     public abstract void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer);
 
     public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) { }

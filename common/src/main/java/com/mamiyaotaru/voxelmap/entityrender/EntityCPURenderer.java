@@ -5,6 +5,8 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.Identifier;
 import org.joml.Vector2f;
@@ -52,8 +54,14 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
         try {
             return TextureContents.load(minecraft.getResourceManager(), identifier).image();
         } catch (IOException ignored) {
-            return null;
+            AbstractTexture texture = minecraft.getTextureManager().getTexture(identifier);
+
+            if (texture instanceof DynamicTexture dynamicTexture) {
+                return dynamicTexture.getPixels();
+            }
         }
+
+        return null;
     }
 
     private void drawModel(NativeImage target, ModelPart modelPart, NativeImage texture, int color) {

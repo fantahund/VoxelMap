@@ -23,8 +23,10 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -41,8 +43,6 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
     private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
     private final Tesselator tessellator = new Tesselator(4096);
     private final VoxelMapRenderTarget renderTarget;
-
-    private boolean cullEnabled = false;
 
     public EntityGPURenderer() {
         Vector3f fullBright = new Vector3f(1.0F, -1.0F, 1.0F).normalize();
@@ -71,6 +71,10 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
 
         for (ModelPart modelPart : modelParts) {
             modelPart.render(poseStack, bufferBuilder, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+        }
+
+        for (BlockState blockState : blockModelParts.keySet()) {
+            minecraft.getBlockRenderer().getModelRenderer().tesselateBlock(minecraft.level, blockModelParts.get(blockState), blockState, BlockPos.ZERO, poseStack, bufferBuilder, true, OverlayTexture.NO_OVERLAY);
         }
 
         AbstractTexture primaryTexture = textureSet.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.primaryTexture());
