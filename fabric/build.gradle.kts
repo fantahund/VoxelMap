@@ -31,6 +31,10 @@ tasks.named("test").configure {
     enabled = false
 }
 
+tasks.named("validateAccessWidener") {
+    mustRunAfter(project(":common").tasks.named("genSourcesWithVineflower"))
+}
+
 loom {
     if (project(":common").file("src/main/resources/voxelmap.accesswidener").exists())
         accessWidenerPath.set(project(":common").file("src/main/resources/voxelmap.accesswidener"))
