@@ -13,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
@@ -22,7 +21,7 @@ import java.util.function.Consumer;
 public abstract class AbstractEntityRenderer {
     protected final Minecraft minecraft = Minecraft.getInstance();
     protected final ArrayList<ModelPart> modelParts = new ArrayList<>();
-    protected final HashMap<BlockState, List<BlockModelPart>> blockModelParts = new HashMap<>();
+    protected final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     protected final PoseStack poseStack = new PoseStack();
     protected final RandomSource random = RandomSource.create();
     protected boolean cullEnabled = false;
@@ -54,12 +53,12 @@ public abstract class AbstractEntityRenderer {
     }
 
     public void addBlock(BlockState blockState) {
-        blockModelParts.put(blockState, minecraft.getBlockRenderer().getBlockModel(blockState).collectParts(random));
+        blockModels.add(new BlockModelSet(blockState, minecraft.getBlockRenderer().getBlockModel(blockState).collectParts(random)));
     }
 
     public void clearMesh() {
         modelParts.clear();
-        blockModelParts.clear();
+        blockModels.clear();
     }
 
     public void enableCull(boolean flag) {
@@ -70,5 +69,9 @@ public abstract class AbstractEntityRenderer {
 
     public abstract void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer);
 
-    public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) { }
+    public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
+    }
+
+    public record BlockModelSet(BlockState blockState, List<BlockModelPart> modelParts) {
+    }
 }

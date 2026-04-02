@@ -21,12 +21,12 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -73,8 +73,9 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             modelPart.render(poseStack, bufferBuilder, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
         }
 
-        for (BlockState blockState : blockModelParts.keySet()) {
-            minecraft.getBlockRenderer().getModelRenderer().tesselateBlock(minecraft.level, blockModelParts.get(blockState), blockState, BlockPos.ZERO, poseStack, bufferBuilder, true, OverlayTexture.NO_OVERLAY);
+        ModelBlockRenderer blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
+        for (BlockModelSet blockModel : blockModels) {
+            blockRenderer.tesselateBlock(minecraft.level, blockModel.modelParts(), blockModel.blockState(), BlockPos.ZERO, poseStack, bufferBuilder, true, OverlayTexture.NO_OVERLAY);
         }
 
         AbstractTexture primaryTexture = textureSet.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.primaryTexture());

@@ -1,24 +1,33 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.joml.Vector4f;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class EntityCPURenderer extends AbstractEntityRenderer {
+    private static final Direction[] ALL_DIRECTIONS = new Direction[] { null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
+
     @Override
     protected void setupMatrix() {
     }
@@ -28,22 +37,39 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
         NativeImage primaryTexture = textureSet.primaryTexture() == null ? null : getTextureFromIdentifier(textureSet.primaryTexture());
         NativeImage secondaryTexture = textureSet.secondaryTexture() == null ? null : getTextureFromIdentifier(textureSet.secondaryTexture());
         NativeImage tertiaryTexture = textureSet.tertiaryTexture() == null ? null : getTextureFromIdentifier(textureSet.tertiaryTexture());
-        NativeImage quaternaryTexture =  textureSet.quaternaryTexture() == null ? null : getTextureFromIdentifier(textureSet.quaternaryTexture());
+        NativeImage quaternaryTexture = textureSet.quaternaryTexture() == null ? null : getTextureFromIdentifier(textureSet.quaternaryTexture());
 
         NativeImage output = new NativeImage(TEXTURE_SIZE, TEXTURE_SIZE, true);
 
         for (ModelPart modelPart : modelParts) {
             if (primaryTexture != null) {
-                drawModel(output, modelPart, primaryTexture, textureSet.primaryColor());
+                drawModelPart(output, modelPart, primaryTexture, textureSet.primaryColor());
             }
             if (secondaryTexture != null) {
-                drawModel(output, modelPart, secondaryTexture, textureSet.secondaryColor());
+                drawModelPart(output, modelPart, secondaryTexture, textureSet.secondaryColor());
             }
             if (tertiaryTexture != null) {
-                drawModel(output, modelPart, tertiaryTexture, textureSet.tertiaryColor());
+                drawModelPart(output, modelPart, tertiaryTexture, textureSet.tertiaryColor());
             }
             if (quaternaryTexture != null) {
-                drawModel(output, modelPart, quaternaryTexture, textureSet.quaternaryColor());
+                drawModelPart(output, modelPart, quaternaryTexture, textureSet.quaternaryColor());
+            }
+        }
+
+        for (BlockModelSet blockModel : blockModels) {
+            for (BlockModelPart modelPart : blockModel.modelParts()) {
+                if (primaryTexture != null) {
+                    drawBlockModelPart(output, modelPart, primaryTexture, textureSet.primaryColor());
+                }
+                if (secondaryTexture != null) {
+                    drawBlockModelPart(output, modelPart, secondaryTexture, textureSet.secondaryColor());
+                }
+                if (tertiaryTexture != null) {
+                    drawBlockModelPart(output, modelPart, tertiaryTexture, textureSet.tertiaryColor());
+                }
+                if (quaternaryTexture != null) {
+                    drawBlockModelPart(output, modelPart, quaternaryTexture, textureSet.quaternaryColor());
+                }
             }
         }
 
@@ -51,20 +77,25 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
     }
 
     private NativeImage getTextureFromIdentifier(Identifier identifier) {
+        if (identifier.equals(TextureAtlas.LOCATION_BLOCKS)) {
+            BufferedImage terrain = VoxelConstants.getVoxelMapInstance().getColorManager().getTerrainImage();
+            return terrain == null ? null : ImageUtils.nativeImageFromBufferedImage(terrain);
+        }
+
+        AbstractTexture texture = minecraft.getTextureManager().getTexture(identifier);
+        if (texture instanceof DynamicTexture dynamicTexture) {
+            return dynamicTexture.getPixels();
+        }
+
         try {
             return TextureContents.load(minecraft.getResourceManager(), identifier).image();
         } catch (IOException ignored) {
-            AbstractTexture texture = minecraft.getTextureManager().getTexture(identifier);
-
-            if (texture instanceof DynamicTexture dynamicTexture) {
-                return dynamicTexture.getPixels();
-            }
         }
 
         return null;
     }
 
-    private void drawModel(NativeImage target, ModelPart modelPart, NativeImage texture, int color) {
+    private void drawModelPart(NativeImage target, ModelPart modelPart, NativeImage texture, int color) {
         ArrayList<RenderPolygon> polygons = new ArrayList<>();
 
         float centerX = target.getWidth() / 2.0F;
@@ -72,14 +103,46 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
 
         modelPart.visit(poseStack, (pose, id, i, cube) -> {
             for (ModelPart.Polygon polygon : cube.polygons) {
-                RenderPolygon renderPoly = new RenderPolygon(polygon, pose, centerX, centerY, 0.0F, 4.0F);
-                if (!cullEnabled || renderPoly.normal.z <= 0) {
-                    polygons.add(renderPoly);
-                }
+                polygons.add(new RenderPolygon(polygon, pose, centerX, centerY, 0.0F, 4.0F));
             }
         });
 
-        polygons.sort((a, b) -> Float.compare(-a.getAverageDepth(), -b.getAverageDepth()));
+        drawPolygons(target, polygons, texture, color);
+    }
+
+    private void drawBlockModelPart(NativeImage target, BlockModelPart modelPart, NativeImage texture, int color) {
+        ArrayList<RenderPolygon> polygons = new ArrayList<>();
+
+        float centerX = target.getWidth() / 2.0F;
+        float centerY = target.getHeight() / 2.0F;
+
+        for (Direction direction : ALL_DIRECTIONS) {
+            for (BakedQuad quad : modelPart.getQuads(direction)) {
+                ModelPart.Vertex[] vertices = new ModelPart.Vertex[4];
+                vertices[0] = createVertex(quad.position0(), quad.packedUV0());
+                vertices[1] = createVertex(quad.position1(), quad.packedUV1());
+                vertices[2] = createVertex(quad.position2(), quad.packedUV2());
+                vertices[3] = createVertex(quad.position3(), quad.packedUV3());
+
+                ModelPart.Polygon polygon = new ModelPart.Polygon(vertices, quad.direction().getUnitVec3f());
+
+                polygons.add(new RenderPolygon(polygon, poseStack.last(), centerX, centerY, 0.0F, 64.0F));
+            }
+        }
+
+        drawPolygons(target, polygons, texture, color);
+    }
+
+    private ModelPart.Vertex createVertex(Vector3fc pos, long packedUV) {
+        float u = Float.intBitsToFloat((int) (packedUV >> 32));
+        float v = Float.intBitsToFloat((int) (packedUV & 0xFFFFFFFFL));
+
+        return new ModelPart.Vertex(pos.x(), pos.y(), pos.z(), u, v);
+    }
+
+    private void drawPolygons(NativeImage target, List<RenderPolygon> polygons, NativeImage texture, int color) {
+        polygons.removeIf(x -> cullEnabled && x.normal.z() > 0.0F);
+        polygons.sort((x, y) -> Float.compare(-x.getAverageDepth(), -y.getAverageDepth()));
 
         int targetWidth = target.getWidth();
         int targetHeight = target.getHeight();
