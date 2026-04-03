@@ -122,7 +122,11 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     }
 
     @Override
-    public void extractMenuBackground(GuiGraphicsExtractor guiGraphics) {
+    public void extractMenuBackground(GuiGraphicsExtractor graphics) {
+    }
+
+    @Override
+    public void extractBlurredBackground(GuiGraphicsExtractor graphics) {
     }
 
     @Override

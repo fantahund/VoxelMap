@@ -154,6 +154,10 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
+    public void extractBlurredBackground(GuiGraphicsExtractor graphics) {
+    }
+
+    @Override
     public void removed() {
         VoxelConstants.getMinecraft().options.setCameraType(lastCameraType);
     }
