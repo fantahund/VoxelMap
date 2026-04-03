@@ -12,5 +12,5 @@ pluginManagement {
 
 include("common")
 include("fabric")
-include("forge")
-include("neoforge")
+//include("forge")
+//include("neoforge")
