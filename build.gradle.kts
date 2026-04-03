@@ -31,8 +31,7 @@ subprojects {
     apply(plugin = "maven-publish")
 
     repositories {
-//          TODO: ENABLE IT AGAIN
-//        maven { url = uri("https://api.modrinth.com/maven") }
+        maven { url = uri("https://api.modrinth.com/maven") }
     }
 
     java.toolchain.languageVersion = JavaLanguageVersion.of(25)
