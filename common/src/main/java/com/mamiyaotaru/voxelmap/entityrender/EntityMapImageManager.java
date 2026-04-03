@@ -456,7 +456,6 @@ public class EntityMapImageManager {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
 
-            image = ImageUtils.flipHorizontal(image);
             image = armorHandler.postProcessTexture(image, armorData);
             image = ImageUtils.scaleImage(image, scale);
 
