@@ -54,6 +54,7 @@ public enum EnumOptionsMinimap {
     RADAR_FILTERING("options.minimap.radar.iconFiltering", Type.BOOLEAN),
     RADAR_OUTLINES("options.minimap.radar.iconOutlines", Type.BOOLEAN),
     SHOW_FACING("options.minimap.radar.showFacing", Type.BOOLEAN),
+    RADAR_CPU_RENDERING("options.minimap.radar.cpuRendering", Type.BOOLEAN),
     SHOW_FULL_ENTITY_NAMES("options.minimap.radar.showFullEntityNames", Type.BOOLEAN),
     SHOW_ENTITY_ELEVATION("options.minimap.radar.showEntityElevation", Type.BOOLEAN),
     HIDE_SNEAKING_PLAYERS("options.minimap.radar.hideSneakingPlayers", Type.BOOLEAN),

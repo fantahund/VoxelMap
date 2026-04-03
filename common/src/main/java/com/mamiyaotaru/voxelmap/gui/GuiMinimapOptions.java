@@ -10,9 +10,11 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
@@ -26,6 +28,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -51,7 +54,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
     private static final EnumOptionsMinimap[] GENERAL_OPTIONS = { EnumOptionsMinimap.HIDE_MINIMAP, EnumOptionsMinimap.UPDATE_NOTIFIER, EnumOptionsMinimap.SHOW_BIOME, EnumOptionsMinimap.SHOW_COORDS, EnumOptionsMinimap.LOCATION, EnumOptionsMinimap.SIZE, EnumOptionsMinimap.SQUARE_MAP, EnumOptionsMinimap.ROTATES, EnumOptionsMinimap.IN_GAME_WAYPOINTS, EnumOptionsMinimap.CAVE_MODE, EnumOptionsMinimap.MOVE_MAP_BELOW_STATUS_EFFECT_ICONS, EnumOptionsMinimap.MOVE_SCOREBOARD_BELOW_MAP};
     private static final EnumOptionsMinimap[] PERFORMANCE_OPTIONS = { EnumOptionsMinimap.DYNAMIC_LIGHTING, EnumOptionsMinimap.TERRAIN_DEPTH, EnumOptionsMinimap.WATER_TRANSPARENCY, EnumOptionsMinimap.BLOCK_TRANSPARENCY, EnumOptionsMinimap.BIOMES, EnumOptionsMinimap.BIOME_OVERLAY, EnumOptionsMinimap.CHUNK_GRID, EnumOptionsMinimap.SLIME_CHUNKS, EnumOptionsMinimap.WORLD_BORDER,  EnumOptionsMinimap.FILTERING, EnumOptionsMinimap.TELEPORT_COMMAND };
-    private static final EnumOptionsMinimap[] RADAR_FULL_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES, EnumOptionsMinimap.SHOW_FULL_ENTITY_NAMES, EnumOptionsMinimap.SHOW_ENTITY_ELEVATION, EnumOptionsMinimap.HIDE_SNEAKING_PLAYERS, EnumOptionsMinimap.HIDE_INVISIBLE_ENTITIES };
+    private static final EnumOptionsMinimap[] RADAR_FULL_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_MOB_NAMES, EnumOptionsMinimap.SHOW_PLAYER_NAMES, EnumOptionsMinimap.SHOW_MOB_HELMETS, EnumOptionsMinimap.SHOW_PLAYER_HELMETS, EnumOptionsMinimap.RADAR_FILTERING, EnumOptionsMinimap.RADAR_OUTLINES, EnumOptionsMinimap.RADAR_CPU_RENDERING, EnumOptionsMinimap.SHOW_FULL_ENTITY_NAMES, EnumOptionsMinimap.SHOW_ENTITY_ELEVATION, EnumOptionsMinimap.HIDE_SNEAKING_PLAYERS, EnumOptionsMinimap.HIDE_INVISIBLE_ENTITIES };
     private static final EnumOptionsMinimap[] RADAR_SIMPLE_OPTIONS = { EnumOptionsMinimap.SHOW_RADAR, EnumOptionsMinimap.RADAR_MODE, EnumOptionsMinimap.SHOW_MOBS, EnumOptionsMinimap.SHOW_PLAYERS, EnumOptionsMinimap.SHOW_FACING, EnumOptionsMinimap.SHOW_ENTITY_ELEVATION, EnumOptionsMinimap.HIDE_SNEAKING_PLAYERS, EnumOptionsMinimap.HIDE_INVISIBLE_ENTITIES };
 
     // Performance Tab
@@ -179,6 +182,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                 }
 
                 GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(buttonX, buttonY, option, Component.literal(text.toString()), this::optionClicked);
+                optionButton.setTooltip(createButtonTooltip(option));
                 addOptionButton(optionButton);
 
                 if (option == EnumOptionsMinimap.SLIME_CHUNKS) {
@@ -279,8 +283,25 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                 case SHOW_MOBS -> button2.active = button2.active && radarOptions.radarMobsAllowed;
                 case SHOW_PLAYER_HELMETS, SHOW_PLAYER_NAMES -> button2.active = button2.active && radarOptions.showPlayers && radarOptions.radarPlayersAllowed;
                 case SHOW_MOB_HELMETS, SHOW_MOB_NAMES -> button2.active = button2.active && (radarOptions.showNeutrals || radarOptions.showHostiles) && radarOptions.radarMobsAllowed;
+                case RADAR_CPU_RENDERING -> button2.active = button2.active && !radarOptions.forceCpuRendering;
             }
         }
+    }
+
+    private Tooltip createButtonTooltip(EnumOptionsMinimap option) {
+        MutableComponent tooltip = Component.empty();
+
+        if (option == EnumOptionsMinimap.RADAR_CPU_RENDERING) {
+            if (VoxelConstants.hasVulkanMod()) {
+                tooltip.append(Component.translatable("options.minimap.radar.cpuRendering.tooltipVk").withStyle(ChatFormatting.RED));
+                tooltip.append("\n");
+            }
+            tooltip.append(Component.translatable("options.minimap.radar.cpuRendering.tooltip"));
+        } else {
+            return null;
+        }
+
+        return Tooltip.create(tooltip);
     }
 
     @Override
@@ -288,7 +309,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, height - layout.getFooterHeight() - 2, 0.0F, 0.0F, width, 2, 32, 2);
         graphics.centeredText(font, pageInfo, width / 2, height / 6 + 126, 0xFFFFFFFF);
-
         handleTabChange();
     }
 

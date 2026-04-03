@@ -30,14 +30,16 @@ public class RadarSettingsManager implements ISubSettingsManager {
     public boolean showPlayerHelmets = true;
     public boolean filtering = true;
     public boolean outlines = true;
+    public boolean showFacing = true;
+    public boolean cpuRendering = false;
     public boolean showFullEntityNames = false;
     public boolean showEntityElevation = true;
     public boolean hideSneakingPlayers = true;
     public boolean hideInvisibleEntities = true;
-    public boolean showFacing = true;
     float fontScale = 1.0F;
     public final HashSet<Identifier> hiddenMobs = new HashSet<>();
 
+    public boolean forceCpuRendering = false;
     public boolean radarAllowed = true;
     public boolean radarPlayersAllowed = true;
     public boolean radarMobsAllowed = true;
@@ -64,6 +66,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
                     case "Show Mob Names" -> showMobNames = Boolean.parseBoolean(curLine[1]);
                     case "Font Scale" -> fontScale = Float.parseFloat(curLine[1]);
                     case "Show Facing" -> showFacing = Boolean.parseBoolean(curLine[1]);
+                    case "Radar CPU Rendering" -> cpuRendering = Boolean.parseBoolean(curLine[1]);
                     case "Show Full Entity Names" -> showFullEntityNames = Boolean.parseBoolean(curLine[1]);
                     case "Show Entity Elevation" -> showEntityElevation = Boolean.parseBoolean(curLine[1]);
                     case "Hide Sneaking Players" -> hideSneakingPlayers = Boolean.parseBoolean(curLine[1]);
@@ -105,6 +108,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
         out.println("Show Mob Names:" + showMobNames);
         out.println("Font Scale:" + fontScale);
         out.println("Show Facing:" + showFacing);
+        out.println("Radar CPU Rendering:" + cpuRendering);
         out.println("Show Full Entity Names:" + showFullEntityNames);
         out.println("Show Entity Elevation:" + showEntityElevation);
         out.println("Hide Sneaking Players:" + hideSneakingPlayers);
@@ -150,6 +154,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case RADAR_FILTERING -> filtering;
             case RADAR_OUTLINES -> outlines;
             case SHOW_FACING -> showFacing;
+            case RADAR_CPU_RENDERING -> cpuRendering || forceCpuRendering;
             case SHOW_FULL_ENTITY_NAMES -> showFullEntityNames;
             case SHOW_ENTITY_ELEVATION -> showEntityElevation;
             case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers;
@@ -171,6 +176,7 @@ public class RadarSettingsManager implements ISubSettingsManager {
             case RADAR_FILTERING -> filtering = !filtering;
             case RADAR_OUTLINES -> outlines = !outlines;
             case SHOW_FACING -> showFacing = !showFacing;
+            case RADAR_CPU_RENDERING -> cpuRendering = !cpuRendering || forceCpuRendering;
             case SHOW_FULL_ENTITY_NAMES -> showFullEntityNames = !showFullEntityNames;
             case SHOW_ENTITY_ELEVATION -> showEntityElevation = !showEntityElevation;
             case HIDE_SNEAKING_PLAYERS -> hideSneakingPlayers = !hideSneakingPlayers;

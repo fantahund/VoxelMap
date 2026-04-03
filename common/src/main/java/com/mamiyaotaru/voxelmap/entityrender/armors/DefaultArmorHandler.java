@@ -2,11 +2,9 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
+import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -14,14 +12,11 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.object.skull.SkullModelBase;
-import net.minecraft.client.renderer.block.BlockStateModelSet;
-import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
@@ -38,7 +33,6 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SkullBlock;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -166,42 +160,28 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public void renderArmorModel(EntityMapImageManager.CaptureContext context) {
-        PoseStack pose = context.poseStack();
-        BufferBuilder bufferBuilder = context.bufferBuilder();
+    public void renderArmorModel(AbstractEntityRenderer renderer) {
+        PoseStack pose = renderer.getPoseStack();
 
         if (armor != null) {
             ModelPart part = humanoidModel.root().getChild("head");
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
-            part.render(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
+
+            renderer.addMesh(part);
         }
         if (block != null) {
             pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
             pose.scale(0.625F, 0.625F, 0.625F);
 
-            BlockStateModelSet blockModelSet = VoxelConstants.getMinecraft().getModelManager().getBlockStateModelSet();
-            ArrayList<BlockStateModelPart> allQuads = new ArrayList<>();
-            blockModelSet.get(block.defaultBlockState()).collectParts(random, allQuads);
-
-            QuadInstance quadInstance = new QuadInstance();
-            quadInstance.setLightCoords(EntityMapImageManager.LIGHT);
-            quadInstance.setOverlayCoords(EntityMapImageManager.OVERLAY);
-            quadInstance.setColor(0xFFFFFFFF);
-
-            for (BlockStateModelPart modelPart : allQuads) {
-                for (Direction direction : ALL_DIRECTIONS) {
-                    for (BakedQuad quad : modelPart.getQuads(direction)) {
-                        bufferBuilder.putBakedQuad(pose.last(), quad, quadInstance);
-                    }
-                }
-            }
+            renderer.addBlock(block.defaultBlockState());
         }
         if (skull != null) {
             pose.scale(1.1875F, 1.1875F, 1.1875F);
             SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skull.getType());
-            skullModel.renderToBuffer(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
+
+            renderer.addMesh(skullModel.root());
         }
     }
 

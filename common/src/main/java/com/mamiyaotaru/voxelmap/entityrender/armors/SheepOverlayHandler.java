@@ -1,9 +1,7 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
-import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
+import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.animal.sheep.SheepFurModel;
 import net.minecraft.client.renderer.entity.SheepRenderer;
 import net.minecraft.resources.Identifier;
@@ -32,11 +30,8 @@ public class SheepOverlayHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public void renderArmorModel(EntityMapImageManager.CaptureContext context) {
-        PoseStack pose = context.poseStack();
-        BufferBuilder bufferBuilder = context.bufferBuilder();
-
-        sheepFurModel.root().getChild("head").render(pose, bufferBuilder, EntityMapImageManager.LIGHT, EntityMapImageManager.OVERLAY, 0xFFFFFFFF);
+    public void renderArmorModel(AbstractEntityRenderer renderer) {
+        renderer.addMesh(sheepFurModel.root().getChild("head"));
     }
 
     @Override

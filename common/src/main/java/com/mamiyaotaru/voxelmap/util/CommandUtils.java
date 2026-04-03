@@ -44,14 +44,25 @@ public final class CommandUtils {
             int lastEnd = 0;
 
             while (matcher.find()) {
+                String waypointPart = matcher.group();
+                String dataPart = waypointPart.substring(1, waypointPart.length() - 1);
+
+                if (createWaypointFromChat(dataPart) == null) {
+                    continue;
+                }
+
                 if (matcher.start() > lastEnd) {
                     String prefixPart = textPart.substring(lastEnd, matcher.start());
                     finalMessage.append(Component.literal(prefixPart).withStyle(style));
                 }
 
-                String waypointPart = matcher.group();
-                String command = "/newWaypoint " + waypointPart.substring(1, waypointPart.length() - 1);
-                Component tooltip = Component.literal(I18n.get("minimap.waypointShare.tooltip1") + "\n" + I18n.get("minimap.waypointShare.tooltip2"));
+                lastEnd = matcher.end();
+
+                String command = "/newWaypoint " + dataPart;
+                Component tooltip = Component.empty()
+                        .append(Component.translatable("minimap.waypointShare.tooltip1"))
+                        .append("\n")
+                        .append(Component.translatable("minimap.waypointShare.tooltip2"));
 
                 MutableComponent clickableWaypoint = Component.literal(waypointPart).withStyle(style2 -> style2
                         .withClickEvent(new ClickEvent.RunCommand(command))
@@ -59,8 +70,6 @@ public final class CommandUtils {
                         .withHoverEvent(new HoverEvent.ShowText(tooltip))
                 );
                 finalMessage.append(clickableWaypoint);
-
-                lastEnd = matcher.end();
             }
 
             if (lastEnd < textPart.length()) {
@@ -152,7 +161,7 @@ public final class CommandUtils {
 
                 waypoint = new Waypoint(name, x, z, y, enabled, red, green, blue, suffix, world, dimensions);
             }
-        } catch (NumberFormatException ignored) {
+        } catch (Exception ignored) {
         }
 
         return waypoint;

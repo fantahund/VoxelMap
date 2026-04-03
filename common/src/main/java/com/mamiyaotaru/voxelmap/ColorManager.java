@@ -126,6 +126,10 @@ public class ColorManager {
         this.resourcePacksChanged = true;
     }
 
+    public BufferedImage getTerrainImage() {
+        return this.terrainBuff;
+    }
+
     public boolean checkForChanges() {
         boolean biomesChanged = false;
 
