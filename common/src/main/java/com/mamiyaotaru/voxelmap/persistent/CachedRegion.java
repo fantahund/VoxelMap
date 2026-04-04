@@ -11,24 +11,6 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.blaze3d.platform.NativeImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -47,6 +29,25 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelResource;
 import org.apache.logging.log4j.Level;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 public class CachedRegion {
     private final static int CHUNKS_WIDTH = 16;
@@ -70,6 +71,7 @@ public class CachedRegion {
     private boolean underground;
     private int x;
     private int z;
+    private int yLayer;
     private boolean empty = true;
     private boolean liveChunksUpdated;
     boolean remoteWorld;
@@ -100,7 +102,7 @@ public class CachedRegion {
         this.persistentMap = null;
     }
 
-    public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
+    public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z, boolean underground, int yLayer) {
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;
@@ -112,13 +114,12 @@ public class CachedRegion {
 
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        boolean knownUnderground;
-        knownUnderground = dimensionName.toLowerCase().contains("erebus");
-        this.underground = world.dimensionType().cardinalLightType() != DimensionType.CardinalLightType.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
+        this.underground = underground;
         this.remoteWorld = !VoxelConstants.getMinecraft().hasSingleplayerServer();
         persistentMap.getSettingsAndLightingChangeNotifier().addObserver(this);
         this.x = x;
         this.z = z;
+        this.yLayer = yLayer;
         if (!this.remoteWorld) {
             Optional<net.minecraft.world.level.Level> optionalWorld = VoxelConstants.getWorldByKey(world.dimension());
 
@@ -137,6 +138,21 @@ public class CachedRegion {
 
         Arrays.fill(this.liveChunkUpdateQueued, false);
         Arrays.fill(this.chunkUpdateQueued, false);
+    }
+
+    public static String getCacheDirectory(String worldNamePath, String subWorldNamePath, String dimensionNamePath, boolean underground, int yLayer) {
+        return getWorldDirectory(worldNamePath) + "/" + getSubWorldDirectory(subWorldNamePath, dimensionNamePath, underground, yLayer);
+    }
+
+    public static String getWorldDirectory(String worldNamePath) {
+        return "/voxelmap/cache/" + worldNamePath;
+    }
+
+    public static String getSubWorldDirectory(String subWorldNamePath, String dimensionNamePath, boolean underground, int yLayer) {
+        if (underground) {
+            return subWorldNamePath + "/" + dimensionNamePath + "/" + yLayer;
+        }
+        return subWorldNamePath + "/" + dimensionNamePath;
     }
 
     public void renameSubworld(String oldName, String newName) {
@@ -259,7 +275,7 @@ public class CachedRegion {
     private void doLoadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
         for (int t = 0; t < CHUNK_BLOCKS; ++t) {
             for (int s = 0; s < CHUNK_BLOCKS; ++s) {
-                this.persistentMap.getAndStoreData(this.data, chunk.getLevel(), chunk, this.blockPos, this.underground, this.x * REGION_WIDTH, this.z * REGION_WIDTH, chunkX * CHUNK_BLOCKS + t, chunkZ * CHUNK_BLOCKS + s);
+                this.persistentMap.getAndStoreData(this.data, chunk.getLevel(), chunk, this.blockPos, this.underground, this.yLayer, this.x * REGION_WIDTH, this.z * REGION_WIDTH, chunkX * CHUNK_BLOCKS + t, chunkZ * CHUNK_BLOCKS + s);
             }
         }
 
@@ -451,7 +467,7 @@ public class CachedRegion {
 
     private void loadCachedData() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, getCacheDirectory(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.yLayer));
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
@@ -561,7 +577,7 @@ public class CachedRegion {
         BiMap<Biome, Integer> biomeToInt = this.data.getBiomeToInt();
         byte[] byteArray = this.data.getData();
         if (byteArray.length == this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION)) {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, getCacheDirectory(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.yLayer));
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             FileOutputStream fos = new FileOutputStream(cachedRegionFile);
@@ -624,7 +640,7 @@ public class CachedRegion {
     private void fillImage() {
         for (int t = 0; t < REGION_WIDTH; ++t) {
             for (int s = 0; s < REGION_WIDTH; ++s) {
-                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
+                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, this.yLayer, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
                 this.image.setRGB(t, s, color24);
             }
         }
@@ -634,7 +650,7 @@ public class CachedRegion {
     private void saveImage() {
         if (!this.empty && this.image != null) {
 
-            File imageFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart + "/images/z1");
+            File imageFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, getCacheDirectory(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.yLayer) + "/images/z1");
             imageFileDir.mkdirs();
             final File imageFile = new File(imageFileDir, this.key + ".png");
                        

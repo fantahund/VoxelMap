@@ -1,13 +1,20 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
+import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.LightLayer;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.resources.language.I18n;
 
 public class WorldMatcher {
     private final PersistentMap map;
@@ -21,118 +28,116 @@ public class WorldMatcher {
 
     public void findMatch() {
         Runnable runnable = new Runnable() {
+            final Minecraft minecraft = Minecraft.getInstance();
+            final Player player = VoxelConstants.getPlayer();
+            final WaypointManager waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+            final DimensionManager dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
+
+            final String worldName = waypointManager.getCurrentWorldName();
+            final String worldNamePathPart = TextUtils.scrubNameFile(worldName);
+            final String dimensionName = dimensionManager.getDimensionContainerByWorld(world).getStorageName();
+            final String dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
+            final File baseDirectory = new File(minecraft.gameDirectory,  CachedRegion.getWorldDirectory(worldNamePathPart) + "/");
+
+            final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
             int x;
             int z;
             final ArrayList<ComparisonCachedRegion> candidateRegions = new ArrayList<>();
-            ComparisonCachedRegion region;
-            final String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
-            final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
-            final String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
-            final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
-            final File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
+            ComparisonCachedRegion currentRegion;
 
             @Override
             public void run() {
                 try {
                     Thread.sleep(500L);
-                } catch (InterruptedException var8) {
-                    VoxelConstants.getLogger().error(var8);
-                }
 
-                this.cachedRegionFileDir.mkdirs();
-                ArrayList<String> knownSubworldNames = new ArrayList<>(VoxelConstants.getVoxelMapInstance().getWaypointManager().getKnownSubworldNames());
-                String[] subworldNamesArray = new String[knownSubworldNames.size()];
-                knownSubworldNames.toArray(subworldNamesArray);
-                MessageUtils.printDebug("player coords " + VoxelConstants.getPlayer().getX() + " " + VoxelConstants.getPlayer().getZ() + " in world " + VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName());
-                this.x = (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0);
-                this.z = (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0);
-                this.loadRegions(subworldNamesArray);
-                int attempts = 0;
+                    if (cancelled) return;
+                    if (!baseDirectory.exists()) baseDirectory.mkdirs();
 
-                while (!WorldMatcher.this.cancelled && (this.candidateRegions.isEmpty() || this.region.getLoadedChunks() < 5) && attempts < 5) {
-                    ++attempts;
+                    updateTargetCoords();
+                    loadCandidateRegions();
 
-                    try {
+                    int attempts = 0;
+                    while (!cancelled && (candidateRegions.isEmpty() || currentRegion.getLoadedChunks() < 5) && attempts < 5) {
                         Thread.sleep(1000L);
-                    } catch (InterruptedException var7) {
-                        VoxelConstants.getLogger().error(var7);
-                    }
+                        attempts++;
 
-                    if (this.x == (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0) && this.z == (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0)) {
-                        if (!this.candidateRegions.isEmpty()) {
-                            MessageUtils.printDebug("going to load current region");
-                            this.region.loadCurrent();
-                            MessageUtils.printDebug("loaded chunks in local region: " + this.region.getLoadedChunks());
-                        }
-                    } else {
-                        this.x = (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0);
-                        this.z = (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0);
-                        MessageUtils.printDebug("player coords changed to " + VoxelConstants.getPlayer().getX() + " " + VoxelConstants.getPlayer().getZ() + " in world " + VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName());
-                        this.loadRegions(subworldNamesArray);
-                    }
-
-                    if (attempts >= 5) {
-                        if (this.candidateRegions.isEmpty()) {
-                            MessageUtils.printDebug("no candidate regions at current coordinates, bailing");
+                        if (!isCoordsChanged()) {
+                            currentRegion.loadCurrent();
                         } else {
-                            MessageUtils.printDebug("took too long to load local region, bailing");
+                            updateTargetCoords();
+                            loadCandidateRegions();
                         }
                     }
-                }
 
-                Iterator<ComparisonCachedRegion> iterator = this.candidateRegions.iterator();
+                    if (cancelled || waypointManager.receivedAutoSubworldName()) return;
 
-                int lastSimilarity = 94;
-
-                while (!WorldMatcher.this.cancelled && iterator.hasNext()) {
-                    ComparisonCachedRegion candidateRegion = iterator.next();
-                    MessageUtils.printDebug("testing region " + candidateRegion.getSubworldName() + ": " + candidateRegion.getKey());
-                    int similarity = this.region.getSimilarityTo(candidateRegion);
-                    if (similarity <= lastSimilarity) {
-                        MessageUtils.printDebug("region failed");
-                        iterator.remove();
-                    } else {
-                        MessageUtils.printDebug("region succeeded");
-                        lastSimilarity = similarity;
+                    Iterator<ComparisonCachedRegion> candidates = candidateRegions.iterator();
+                    int minSimilarity = 94;
+                    while (!cancelled && candidates.hasNext()) {
+                        ComparisonCachedRegion candidate = candidates.next();
+                        int similarity = currentRegion.getSimilarityTo(candidate);
+                        if (similarity <= minSimilarity) {
+                            candidates.remove();
+                        } else {
+                            minSimilarity = similarity;
+                        }
                     }
-                }
 
-                MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
-                if (!WorldMatcher.this.cancelled && this.candidateRegions.size() == 1 && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
-                    VoxelConstants.getVoxelMapInstance().newSubWorldName(this.candidateRegions.get(0).getSubworldName(), false);
-                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundWorld1") + ":" + " §a" + this.candidateRegions.get(0).getSubworldName() + ".§r" + " " + I18n.get("worldmap.multiworld.foundWorld2"));
-                } else if (!WorldMatcher.this.cancelled && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
-                    MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
-                    MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18n.get("worldmap.multiworld.unknownSubworld"));
-                }
+                    if (!cancelled) handleMatchingResult();
 
+                } catch (InterruptedException e) {
+                    VoxelConstants.getLogger().error(e);
+                }
             }
 
-            private void loadRegions(String[] subworldNamesArray) {
-                for (String subworldName : subworldNamesArray) {
-                    if (!WorldMatcher.this.cancelled) {
-                        File subworldDir = new File(this.cachedRegionFileDir, subworldName + "/" + this.dimensionNamePathPart);
-                        if (subworldDir.isDirectory()) {
-                            ComparisonCachedRegion candidateRegion = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, WorldMatcher.this.world, this.worldName, subworldName, this.x, this.z);
-                            candidateRegion.loadStored();
-                            this.candidateRegions.add(candidateRegion);
-                            MessageUtils.printDebug("added candidate region " + candidateRegion.getSubworldName() + ": " + candidateRegion.getKey());
-                        } else {
-                            MessageUtils.printDebug(subworldName + " not found as a candidate region");
-                        }
+            private boolean isCoordsChanged() {
+                return x != (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0) || z != (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0);
+            }
+
+            private void updateTargetCoords() {
+                x = (int) Math.floor(VoxelConstants.getPlayer().getX() / 256.0);
+                z = (int) Math.floor(VoxelConstants.getPlayer().getZ() / 256.0);
+            }
+
+            private void loadCandidateRegions() {
+                candidateRegions.clear();
+
+                boolean underground = world.getBrightness(LightLayer.SKY, blockPos.withXYZ(player.getBlockX(), player.getBlockY(), player.getBlockZ())) <= 0;
+                int yLayer = Math.floorDiv(player.getBlockY(), PersistentMap.CAVE_LAYER_HEIGHT);
+
+                for (String subWorldName : waypointManager.getKnownSubworldNames()) {
+                    if (cancelled) break;
+
+                    File subWorldDirectory = new File(baseDirectory, CachedRegion.getSubWorldDirectory(subWorldName, dimensionNamePathPart, underground, yLayer));
+                    if (subWorldDirectory.isDirectory()) {
+                        ComparisonCachedRegion candidate = new ComparisonCachedRegion(map, x + "," + z, world, worldName, subWorldName, x, z, underground, yLayer);
+                        candidate.loadStored();
+                        candidateRegions.add(candidate);
                     }
                 }
 
-                this.region = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, VoxelConstants.getClientWorld(), this.worldName, "", this.x, this.z);
-                MessageUtils.printDebug("going to load current region");
-                this.region.loadCurrent();
-                MessageUtils.printDebug("loaded chunks in local region: " + this.region.getLoadedChunks());
+                currentRegion = new ComparisonCachedRegion(map, x + "," + z, world, worldName, "", x, z, underground, yLayer);
+                currentRegion.loadCurrent();
+            }
+
+            private void handleMatchingResult() {
+                if (waypointManager.receivedAutoSubworldName()) return;
+
+                if (candidateRegions.size() == 1) {
+                    String foundName = candidateRegions.getFirst().getSubworldName();
+                    VoxelConstants.getVoxelMapInstance().newSubWorldName(foundName, false);
+
+                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundWorld1") + ": §a" + foundName + ".§r " + I18n.get("worldmap.multiworld.foundWorld2"));
+                } else {
+                    MessageUtils.chatInfo("§4VoxelMap§r: " + I18n.get("worldmap.multiworld.unknownSubworld"));
+                }
             }
         };
+
         ThreadManager.executorService.execute(runnable);
     }
 
     public void cancel() {
-        this.cancelled = true;
+        cancelled = true;
     }
 }

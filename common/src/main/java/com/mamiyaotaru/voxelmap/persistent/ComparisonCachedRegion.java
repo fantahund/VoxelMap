@@ -9,6 +9,12 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,12 +25,6 @@ import java.util.Scanner;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ComparisonCachedRegion {
     private final PersistentMap persistentMap;
@@ -37,13 +37,14 @@ public class ComparisonCachedRegion {
     private final boolean underground;
     private final int x;
     private final int z;
+    private final int yLayer;
     private final CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     private int loadedChunks;
     private boolean loaded;
     private boolean empty = true;
 
-    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
+    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z, boolean underground, int yLayer) {
         this.data = new CompressibleMapData(world);
         this.persistentMap = persistentMap;
         this.key = key;
@@ -55,9 +56,10 @@ public class ComparisonCachedRegion {
         }
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        this.underground = world.dimensionType().cardinalLightType() != DimensionType.CardinalLightType.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling();
+        this.underground = underground;
         this.x = x;
         this.z = z;
+        this.yLayer = yLayer;
     }
 
     public void loadCurrent() {
@@ -83,7 +85,7 @@ public class ComparisonCachedRegion {
     private void loadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
         for (int t = 0; t < 16; ++t) {
             for (int s = 0; s < 16; ++s) {
-                this.persistentMap.getAndStoreData(this.data, this.world, chunk, this.blockPos, this.underground, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s);
+                this.persistentMap.getAndStoreData(this.data, this.world, chunk, this.blockPos, this.underground, this.yLayer, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s);
             }
         }
 
@@ -91,7 +93,7 @@ public class ComparisonCachedRegion {
 
     public void loadStored() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, CachedRegion.getCacheDirectory(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.yLayer));
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {
