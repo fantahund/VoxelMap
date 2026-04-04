@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -61,7 +62,7 @@ public class PersistentMap implements IChangeObserver {
     private final int[] lightmapColors;
     private ClientLevel world;
     private String subworldName = "";
-    private final RegionCacheLayer surfaceLayer = new RegionCacheLayer(0, false);
+    private RegionCacheLayer surfaceLayer = new RegionCacheLayer(0, false);
     private final HashMap<Integer, RegionCacheLayer> caveLayers = new HashMap<>();
 
     final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
@@ -105,6 +106,8 @@ public class PersistentMap implements IChangeObserver {
     public void newWorld(ClientLevel world) {
         this.subworldName = "";
         this.purgeCachedRegions();
+        this.surfaceLayer = new RegionCacheLayer(0, false);
+        this.caveLayers.clear();
         this.world = world;
         if (this.worldMatcher != null) {
             this.worldMatcher.cancel();
@@ -192,7 +195,14 @@ public class PersistentMap implements IChangeObserver {
             chunkCache.centerChunks(blockPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            isUnderground = world.getBrightness(LightLayer.SKY, blockPos.withXYZ(lastX, lastY, lastZ)) <= 0;
+            blockPos.setXYZ(lastX, lastY, lastZ);
+            isUnderground = false;
+            if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
+                isUnderground = lastY < world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+            } else {
+                isUnderground = world.getBrightness(LightLayer.SKY, blockPos) <= 0;
+            }
+
             caveLayer = Math.floorDiv(lastY, CAVE_LAYER_HEIGHT);
             caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
 
