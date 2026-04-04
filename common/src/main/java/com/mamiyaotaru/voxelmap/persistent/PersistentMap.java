@@ -775,7 +775,7 @@ public class PersistentMap implements IChangeObserver {
     @Override
     public void processChunk(LevelChunk chunk) {
         if (mapOptions.worldmapAllowed) {
-            forAllLayers(layer -> new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+            forAllLayers(layer -> layer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks())));
         }
     }
 
