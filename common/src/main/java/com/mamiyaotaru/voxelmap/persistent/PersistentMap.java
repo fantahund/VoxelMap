@@ -82,10 +82,9 @@ public class PersistentMap implements IChangeObserver {
         double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
         return Double.compare(distance1sq, distance2sq);
     };
-    private boolean queuedChangedChunks;
+
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
-    private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
 
     public static final int CAVE_LAYER_HEIGHT = 16;
     private boolean isUnderground;
@@ -106,8 +105,6 @@ public class PersistentMap implements IChangeObserver {
     public void newWorld(ClientLevel world) {
         this.subworldName = "";
         this.purgeCachedRegions();
-        this.queuedChangedChunks = false;
-        this.chunkUpdateQueue.clear();
         this.world = world;
         if (this.worldMatcher != null) {
             this.worldMatcher.cancel();
@@ -181,11 +178,6 @@ public class PersistentMap implements IChangeObserver {
             purgeCachedRegions();
         }
 
-        if (queuedChangedChunks) {
-            queuedChangedChunks = false;
-            prunePool();
-        }
-
         if (this.world != null) {
             int renderDistance = minecraft.options.renderDistance().get();
             if (renderDistance != lastRenderDistance) {
@@ -204,9 +196,7 @@ public class PersistentMap implements IChangeObserver {
             caveLayer = Math.floorDiv(lastY, CAVE_LAYER_HEIGHT);
             caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
 
-            while (!chunkUpdateQueue.isEmpty() && Math.abs(VoxelConstants.getElapsedTicks() - chunkUpdateQueue.peek().tick) >= 20) {
-                doProcessChunk(chunkUpdateQueue.remove().chunk);
-            }
+            getCurrentLayer().handleProcessingQueue();
         }
     }
 
@@ -766,10 +756,6 @@ public class PersistentMap implements IChangeObserver {
         return getCurrentLayer().getRegions(left, right, top, bottom);
     }
 
-    private void prunePool() {
-        forAllLayers(RegionCacheLayer::prunePool);
-    }
-
     public void compress() {
         forAllLayers(RegionCacheLayer::compress);
     }
@@ -789,13 +775,8 @@ public class PersistentMap implements IChangeObserver {
     @Override
     public void processChunk(LevelChunk chunk) {
         if (mapOptions.worldmapAllowed) {
-            this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+            forAllLayers(layer -> new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
         }
-    }
-
-    private void doProcessChunk(LevelChunk chunk) {
-        this.queuedChangedChunks = true;
-        getCurrentLayer().processChunk(chunk);
     }
 
     private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
@@ -826,12 +807,14 @@ public class PersistentMap implements IChangeObserver {
         private final boolean underground;
         private final ConcurrentHashMap<String, CachedRegion> cachedRegions = new ConcurrentHashMap<>(150, 0.9F, 2);
         private final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
+        private final ConcurrentLinkedQueue<ChunkWithAge> chunkProcessingQueue = new ConcurrentLinkedQueue<>();
         private int lastLeft;
         private int lastRight;
         private int lastTop;
         private int lastBottom;
         private CachedRegion[] lastVisibleRegions = new CachedRegion[0];
         private boolean gotRegions = false;
+        private boolean processingQueued = false;
 
         public RegionCacheLayer(int layerIndex, boolean underground) {
             this.layerIndex = layerIndex;
@@ -964,6 +947,22 @@ public class PersistentMap implements IChangeObserver {
                 gotRegions = true;
 
                 return visibleRegions;
+            }
+        }
+
+        public void addProcessingQueue(ChunkWithAge chunk) {
+            processingQueued = true;
+            chunkProcessingQueue.add(chunk);
+        }
+
+        public void handleProcessingQueue() {
+            if (processingQueued) {
+                processingQueued = false;
+                prunePool();
+            }
+
+            while (!chunkProcessingQueue.isEmpty() && Math.abs(VoxelConstants.getElapsedTicks() - chunkProcessingQueue.peek().tick) >= 20) {
+                processChunk(chunkProcessingQueue.remove().chunk);
             }
         }
 
