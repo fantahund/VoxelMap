@@ -37,14 +37,14 @@ public class ComparisonCachedRegion {
     private final boolean underground;
     private final int x;
     private final int z;
-    private final int yLayer;
+    private final int sectionY;
     private final CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     private int loadedChunks;
     private boolean loaded;
     private boolean empty = true;
 
-    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z, boolean underground, int yLayer) {
+    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z, boolean underground, int sectionY) {
         this.data = new CompressibleMapData(world);
         this.persistentMap = persistentMap;
         this.key = key;
@@ -59,7 +59,7 @@ public class ComparisonCachedRegion {
         this.underground = underground;
         this.x = x;
         this.z = z;
-        this.yLayer = yLayer;
+        this.sectionY = sectionY;
     }
 
     public void loadCurrent() {
@@ -85,7 +85,7 @@ public class ComparisonCachedRegion {
     private void loadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
         for (int t = 0; t < 16; ++t) {
             for (int s = 0; s < 16; ++s) {
-                this.persistentMap.getAndStoreData(this.data, this.world, chunk, this.blockPos, this.underground, this.yLayer, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s);
+                this.persistentMap.getAndStoreData(this.data, this.world, chunk, this.blockPos, this.underground, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s, this.sectionY);
             }
         }
 
@@ -93,7 +93,7 @@ public class ComparisonCachedRegion {
 
     public void loadStored() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, CachedRegion.getCacheDirectory(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.yLayer));
+            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, CachedRegion.buildFullPath(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.sectionY));
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
             if (cachedRegionFile.exists()) {

@@ -37,7 +37,7 @@ public class WorldMatcher {
             final String worldNamePathPart = TextUtils.scrubNameFile(worldName);
             final String dimensionName = dimensionManager.getDimensionContainerByWorld(world).getStorageName();
             final String dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-            final File baseDirectory = new File(minecraft.gameDirectory,  CachedRegion.getWorldDirectory(worldNamePathPart) + "/");
+            final File baseDirectory = new File(minecraft.gameDirectory,  CachedRegion.buildRootPath(worldNamePathPart) + "/");
 
             final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
             int x;
@@ -103,20 +103,20 @@ public class WorldMatcher {
                 candidateRegions.clear();
 
                 boolean underground = world.getBrightness(LightLayer.SKY, blockPos.withXYZ(player.getBlockX(), player.getBlockY(), player.getBlockZ())) <= 0;
-                int yLayer = Math.floorDiv(player.getBlockY(), PersistentMap.CAVE_LAYER_HEIGHT);
+                int sectionY = Math.floorDiv(player.getBlockY(), PersistentMap.CAVE_LAYER_HEIGHT);
 
                 for (String subWorldName : waypointManager.getKnownSubworldNames()) {
                     if (cancelled) break;
 
-                    File subWorldDirectory = new File(baseDirectory, CachedRegion.getSubWorldDirectory(subWorldName, dimensionNamePathPart, underground, yLayer));
+                    File subWorldDirectory = new File(baseDirectory, CachedRegion.buildLayerPath(subWorldName, dimensionNamePathPart, underground, sectionY));
                     if (subWorldDirectory.isDirectory()) {
-                        ComparisonCachedRegion candidate = new ComparisonCachedRegion(map, x + "," + z, world, worldName, subWorldName, x, z, underground, yLayer);
+                        ComparisonCachedRegion candidate = new ComparisonCachedRegion(map, x + "," + z, world, worldName, subWorldName, x, z, underground, sectionY);
                         candidate.loadStored();
                         candidateRegions.add(candidate);
                     }
                 }
 
-                currentRegion = new ComparisonCachedRegion(map, x + "," + z, world, worldName, "", x, z, underground, yLayer);
+                currentRegion = new ComparisonCachedRegion(map, x + "," + z, world, worldName, "", x, z, underground, sectionY);
                 currentRegion.loadCurrent();
             }
 

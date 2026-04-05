@@ -1868,7 +1868,7 @@ public class Map implements Runnable, IChangeObserver {
         if (paramInt1 < 0) {
             return "-" + Math.abs(paramInt1);
         } else {
-            return paramInt1 > 0 ? "+" + paramInt1 : Integer.toString(paramInt1);
+            return paramInt1 > 0 ? "+" + paramInt1 : String.valueOf(paramInt1);
         }
     }
 

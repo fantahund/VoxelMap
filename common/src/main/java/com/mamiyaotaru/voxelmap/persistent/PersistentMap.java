@@ -31,7 +31,6 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -43,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -63,7 +61,7 @@ public class PersistentMap implements IChangeObserver {
     private ClientLevel world;
     private String subworldName = "";
     private RegionCacheLayer surfaceLayer = new RegionCacheLayer(0, false);
-    private final HashMap<Integer, RegionCacheLayer> caveLayers = new HashMap<>();
+    private final ConcurrentHashMap<Integer, RegionCacheLayer> caveLayers = new ConcurrentHashMap<>();
 
     final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
         long mostRecentAccess1 = region1.getMostRecentView();
@@ -106,8 +104,6 @@ public class PersistentMap implements IChangeObserver {
     public void newWorld(ClientLevel world) {
         this.subworldName = "";
         this.purgeCachedRegions();
-        this.surfaceLayer = new RegionCacheLayer(0, false);
-        this.caveLayers.clear();
         this.world = world;
         if (this.worldMatcher != null) {
             this.worldMatcher.cancel();
@@ -195,7 +191,7 @@ public class PersistentMap implements IChangeObserver {
             chunkCache.centerChunks(blockPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            blockPos.setXYZ(lastX, lastY, lastZ);
+            blockPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
             isUnderground = false;
             if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
                 isUnderground = lastY < world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
@@ -211,16 +207,12 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private RegionCacheLayer getCurrentLayer() {
-        synchronized (caveLayers) {
-            return !isUnderground ? surfaceLayer : caveLayers.get(caveLayer);
-        }
+        return !isUnderground ? surfaceLayer : caveLayers.get(caveLayer);
     }
 
     private void forAllLayers(LayerVisitor visitor) {
-        synchronized (caveLayers) {
-            visitor.visit(surfaceLayer);
-            caveLayers.forEach((x, y) -> visitor.visit(y));
-        }
+        visitor.visit(surfaceLayer);
+        caveLayers.forEach((x, y) -> visitor.visit(y));
     }
 
     public PersistentMapSettingsManager getOptions() {
@@ -253,7 +245,7 @@ public class PersistentMap implements IChangeObserver {
 
     }
 
-    public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int yLayer, int startX, int startZ, int imageX, int imageY) {
+    public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY, int sectionY) {
         int bottomY = world.getMinY();
         int surfaceHeight;
         int seafloorHeight = bottomY;
@@ -275,7 +267,7 @@ public class PersistentMap implements IChangeObserver {
         if (biome != null) {
             boolean solid = false;
             if (underground) {
-                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY, yLayer);
+                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY, sectionY);
                 surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                 if (surfaceHeight != Short.MIN_VALUE) {
                     foliageHeight = surfaceHeight + 1;
@@ -413,9 +405,9 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int getNetherHeight(LevelChunk chunk, int x, int z, int yLayer) {
-        int lastY = yLayer * CAVE_LAYER_HEIGHT;
-        int y = lastY;
+    private int getNetherHeight(LevelChunk chunk, int x, int z, int sectionY) {
+        int baseY = sectionY * CAVE_LAYER_HEIGHT;
+        int y = baseY;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = chunk.getBlockState(this.blockPos);
         if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
@@ -430,7 +422,7 @@ public class PersistentMap implements IChangeObserver {
 
             return y;
         } else {
-            while (y <= lastY + CAVE_LAYER_HEIGHT && y < world.getMaxY()) {
+            while (y <= baseY + CAVE_LAYER_HEIGHT && y < world.getMaxY()) {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
                 blockState = chunk.getBlockState(this.blockPos);
@@ -461,7 +453,7 @@ public class PersistentMap implements IChangeObserver {
         return lightCombined;
     }
 
-    public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int yLayer, int multi, int startX, int startZ, int imageX, int imageY) {
+    public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY, int sectionY) {
         int bottomY = world.getMinY();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
@@ -510,7 +502,7 @@ public class PersistentMap implements IChangeObserver {
                     surfaceColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                 }
 
-                surfaceColor = this.applyHeight(mapData, surfaceColor, underground, yLayer, multi, imageX, imageY, surfaceHeight, solid, 1);
+                surfaceColor = this.applyHeight(mapData, surfaceColor, underground, multi, imageX, imageY, surfaceHeight, solid, 1, sectionY);
                 int light = mapData.getLight(imageX, imageY);
                 if (solid) {
                     surfaceColor = 0;
@@ -537,7 +529,7 @@ public class PersistentMap implements IChangeObserver {
                                 seafloorColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                             }
 
-                            seafloorColor = this.applyHeight(mapData, seafloorColor, underground, yLayer, multi, imageX, imageY, seafloorHeight, solid, 0);
+                            seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0, sectionY);
                             int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
                             if (mapOptions.dynamicLighting) {
@@ -566,7 +558,7 @@ public class PersistentMap implements IChangeObserver {
                                 transparentColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                             }
 
-                            transparentColor = this.applyHeight(mapData, transparentColor, underground, yLayer, multi, imageX, imageY, transparentHeight, solid, 3);
+                            transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3, sectionY);
                             int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
                             if (mapOptions.dynamicLighting) {
@@ -593,7 +585,7 @@ public class PersistentMap implements IChangeObserver {
                                 foliageColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                             }
 
-                            foliageColor = this.applyHeight(mapData, foliageColor, underground, yLayer, multi, imageX, imageY, foliageHeight, solid, 2);
+                            foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2, sectionY);
                             int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
                             if (mapOptions.dynamicLighting) {
@@ -644,15 +636,16 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int yLayer, int multi, int imageX, int imageY, int height, boolean solid, int layer) {
+    private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer, int sectionY) {
         if (color24 != this.colorManager.getAirColor() && color24 != 0) {
+            int baseY = !underground ? 80 : sectionY * CAVE_LAYER_HEIGHT;
             int heightComp = Short.MIN_VALUE;
             if ((mapOptions.heightmap || mapOptions.slopemap) && !solid) {
                 int diff;
                 double sc = 0.0;
                 boolean invert = false;
                 if (!mapOptions.slopemap) {
-                    diff = height - 80;
+                    diff = height - baseY;
                     sc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
                     if (diff < 0) {
                         sc = 0.0 - sc;
@@ -730,7 +723,7 @@ public class PersistentMap implements IChangeObserver {
                     }
 
                     if (mapOptions.heightmap) {
-                        diff = height - (!underground ? 80 : yLayer * CAVE_LAYER_HEIGHT);
+                        diff = height - baseY;
                         double heightsc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
                         sc = diff > 0 ? sc + heightsc : sc - heightsc;
                     }
@@ -839,7 +832,12 @@ public class PersistentMap implements IChangeObserver {
 
                 cachedRegions.clear();
                 cachedRegionsPool.clear();
+                chunkProcessingQueue.clear();
+
                 getRegions(0, -1, 0, -1);
+
+                gotRegions = false;
+                processingQueued = false;
             }
         }
 
@@ -930,17 +928,12 @@ public class PersistentMap implements IChangeObserver {
                 int z = regionCoordinates.z;
                 String key = x + "," + z;
 
-                CachedRegion cachedRegion;
-                synchronized (cachedRegions) {
-                    cachedRegion = cachedRegions.computeIfAbsent(key, k -> {
-                        CachedRegion newRegion = new CachedRegion(PersistentMap.this, key, world, worldName, subWorldName, x, z, underground, layerIndex);
-                        synchronized (cachedRegionsPool) {
-                            cachedRegionsPool.add(newRegion);
-                        }
+                CachedRegion cachedRegion = cachedRegions.computeIfAbsent(key, k -> {
+                    CachedRegion newRegion = new CachedRegion(PersistentMap.this, key, world, worldName, subWorldName, x, z, underground, layerIndex);
+                    cachedRegionsPool.add(newRegion);
 
-                        return newRegion;
-                    });
-                }
+                    return newRegion;
+                });
 
                 cachedRegion.refresh(true);
                 visibleRegions[(z - top) * regionWidth + (x - left)] = cachedRegion;
@@ -987,25 +980,19 @@ public class PersistentMap implements IChangeObserver {
             int regionZ = (int) Math.floor(chunkZ / 16.0);
             String key = regionX + "," + regionZ;
 
-            CachedRegion cachedRegion;
-            synchronized (cachedRegions) {
-                cachedRegion = cachedRegions.get(key);
+            CachedRegion cachedRegion = cachedRegions.get(key);
+            if (cachedRegion == null || cachedRegion == CachedRegion.EMPTY_REGION) {
+                String worldName = waypointManager.getCurrentWorldName();
+                String subWorldName = waypointManager.getCurrentSubworldDescriptor(false);
 
-                if (cachedRegion == null || cachedRegion == CachedRegion.EMPTY_REGION) {
-                    String worldName = waypointManager.getCurrentWorldName();
-                    String subWorldName = waypointManager.getCurrentSubworldDescriptor(false);
+                cachedRegion = new CachedRegion(PersistentMap.this, key, world, worldName, subWorldName, regionX, regionZ, underground, layerIndex);
+                cachedRegions.put(key, cachedRegion);
+                cachedRegionsPool.add(cachedRegion);
 
-                    cachedRegion = new CachedRegion(PersistentMap.this, key, world, worldName, subWorldName, regionX, regionZ, underground, layerIndex);
-                    cachedRegions.put(key, cachedRegion);
-                    synchronized (cachedRegionsPool) {
-                        cachedRegionsPool.add(cachedRegion);
-                    }
-
-                    synchronized (lastVisibleRegions) {
-                        int regionWidth = lastRight - lastLeft + 1;
-                        if (regionX >= lastLeft && regionX <= lastRight && regionZ >= lastTop && regionZ <= lastBottom) {
-                            lastVisibleRegions[(regionZ - lastTop) * regionWidth + (regionX - lastLeft)] = cachedRegion;
-                        }
+                synchronized (lastVisibleRegions) {
+                    int regionWidth = lastRight - lastLeft + 1;
+                    if (regionX >= lastLeft && regionX <= lastRight && regionZ >= lastTop && regionZ <= lastBottom) {
+                        lastVisibleRegions[(regionZ - lastTop) * regionWidth + (regionX - lastLeft)] = cachedRegion;
                     }
                 }
             }
