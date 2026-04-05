@@ -191,16 +191,20 @@ public class PersistentMap implements IChangeObserver {
             chunkCache.centerChunks(blockPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            blockPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
-            isUnderground = false;
-            if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
-                isUnderground = lastY < world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+            if (!mapOptions.cavesAllowed || !options.showCaves) {
+                isUnderground = false;
             } else {
-                isUnderground = world.getBrightness(LightLayer.SKY, blockPos) <= 0;
-            }
+                blockPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
+                isUnderground = false;
+                if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
+                    isUnderground = lastY < world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+                } else {
+                    isUnderground = world.getBrightness(LightLayer.SKY, blockPos) <= 0;
+                }
 
-            caveLayer = Math.floorDiv(lastY, CAVE_LAYER_HEIGHT);
-            caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
+                caveLayer = Math.floorDiv(lastY, CAVE_LAYER_HEIGHT);
+                caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
+            }
 
             getCurrentLayer().handleProcessingQueue();
         }

@@ -215,6 +215,7 @@
   "options.worldmap.cacheSettings": "Zoom/Cache Settings",
   "options.worldmap.warning": "(Edit at your own risk)",
   "options.worldmap.showCoordinates": "Display Coordinates",
+  "options.worldmap.caveMode": "Cave Mode",
   "options.worldmap.showWaypoints": "Show Waypoints",
   "options.worldmap.showWaypointNames": "Show Waypoint Names",
   "options.worldmap.showDistantWaypoints": "Show Distant Waypoints",

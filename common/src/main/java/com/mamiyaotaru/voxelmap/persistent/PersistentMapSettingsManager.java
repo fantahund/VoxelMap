@@ -23,6 +23,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     protected int cacheSize = 500;
     protected boolean outputImages;
     public boolean showCoordinates = true;
+    public boolean showCaves = true;
     public boolean showWaypoints = true;
     public boolean showWaypointNames = true;
     public boolean showDistantWaypoints = true;
@@ -41,6 +42,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
                     case "Worldmap Maximum Zoom" -> maxZoom = Float.parseFloat(curLine[1]);
                     case "Worldmap Cache Size" -> cacheSize = Integer.parseInt(curLine[1]);
                     case "Show Worldmap Coordinates" -> showCoordinates = Boolean.parseBoolean(curLine[1]);
+                    case "Worldmap Cave Mode" -> showCaves = Boolean.parseBoolean(curLine[1]);
                     case "Show Worldmap Waypoints" -> showWaypoints = Boolean.parseBoolean(curLine[1]);
                     case "Show Worldmap Waypoint Names" -> showWaypointNames = Boolean.parseBoolean(curLine[1]);
                     case "Show Worldmap Distant Waypoints" -> showDistantWaypoints = Boolean.parseBoolean(curLine[1]);
@@ -72,6 +74,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         out.println("Worldmap Maximum Zoom:" + maxZoom);
         out.println("Worldmap Cache Size:" + cacheSize);
         out.println("Show Worldmap Coordinates:" + showCoordinates);
+        out.println("Worldmap Cave Mode:" + showCaves);
         out.println("Show Worldmap Waypoints:" + showWaypoints);
         out.println("Show Worldmap Waypoint Names:" + showWaypointNames);
         out.println("Show Worldmap Distant Waypoints:" + showDistantWaypoints);
@@ -106,11 +109,13 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
 
     @Override
     public boolean getBooleanValue(EnumOptionsMinimap option) {
+        MapSettingsManager mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         return switch (option) {
             case SHOW_WORLDMAP_COORDS -> showCoordinates;
-            case SHOW_WORLDMAP_WAYPOINTS -> showWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
-            case SHOW_WORLDMAP_WAYPOINT_NAMES -> showWaypointNames && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
-            case SHOW_WORLDMAP_DISTANT_WAYPOINTS -> showDistantWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
+            case WORLDMAP_CAVE_MODE -> showCaves && mapOptions.cavesAllowed;
+            case SHOW_WORLDMAP_WAYPOINTS -> showWaypoints && mapOptions.waypointsAllowed;
+            case SHOW_WORLDMAP_WAYPOINT_NAMES -> showWaypointNames && mapOptions.waypointsAllowed;
+            case SHOW_WORLDMAP_DISTANT_WAYPOINTS -> showDistantWaypoints && mapOptions.waypointsAllowed;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
@@ -120,6 +125,7 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     public void toggleBooleanValue(EnumOptionsMinimap option) {
         switch (option) {
             case SHOW_WORLDMAP_COORDS -> showCoordinates = !showCoordinates;
+            case WORLDMAP_CAVE_MODE -> showCaves = !showCaves;
             case SHOW_WORLDMAP_WAYPOINTS -> showWaypoints = !showWaypoints;
             case SHOW_WORLDMAP_WAYPOINT_NAMES -> showWaypointNames = !showWaypointNames;
             case SHOW_WORLDMAP_DISTANT_WAYPOINTS -> showDistantWaypoints = !showDistantWaypoints;
