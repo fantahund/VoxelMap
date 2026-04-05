@@ -18,7 +18,8 @@ public class VoxelMapPipelines {
 
     public static final RenderPipeline GUI_TEXTURED_LEQUAL_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_lequal_depth_test"))
-            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST).build();
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .build();
 
     public static final RenderPipeline GUI_TEXTURED_MASKED_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_masked_no_depth_test"))
@@ -40,13 +41,22 @@ public class VoxelMapPipelines {
             .withDepthWrite(true)
             .build();
 
-    public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-            .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/waypoint_text_background"))
+    public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/waypoint_text_background_depth_test"))
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withDepthBias(1.0F, 7.0F)
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withDepthWrite(false)
+            .build();
+
+    public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/waypoint_text_background_no_depth_test"))
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .withDepthBias(1.0F, 7.0F)
             .withBlend(BlendFunction.TRANSLUCENT)
             .withDepthWrite(false)
             .build();
+
 
     public static final VertexFormat ENTITY_VERTEX = VertexFormat.builder()
             .add("Position", VertexFormatElement.POSITION)

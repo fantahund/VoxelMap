@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.WAYPOINT_DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
+    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.WAYPOINT_DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.WAYPOINT_LABEL_STYLE, EnumOptionsMinimap.HIGHLIGHT_FOCUSED_WAYPOINT };
     private final MapSettingsManager options;
     protected Component screenTitle;
 
@@ -56,6 +56,8 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
             ++var2;
         }
 
+        setButtonsActive();
+
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
     }
 
@@ -64,28 +66,27 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
         MapSettingsManager.updateBooleanOrListValue(this.options, option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
 
-        for (GuiEventListener item : children()) {
-            if (!(item instanceof GuiOptionButtonMinimap button)) {
-                continue;
-            }
+        setButtonsActive();
+    }
 
-            switch (button.returnEnumOptions()) {
-                case SHOW_IN_GAME_WAYPOINT_NAMES -> button.active = this.options.showWaypointSigns;
-                case SHOW_IN_GAME_WAYPOINT_DISTANCES -> {
-                    button.setMessage(Component.literal(this.options.getKeyText(EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES)));
-                    button.active = this.options.showWaypointSigns;
+    private void setButtonsActive() {
+        for (GuiEventListener item : children()) {
+            if (item instanceof GuiOptionButtonMinimap button) {
+                EnumOptionsMinimap option = button.returnEnumOptions();
+
+                switch (option) {
+                    case WAYPOINT_LABEL_STYLE, HIGHLIGHT_FOCUSED_WAYPOINT, WAYPOINT_DISTANCE_UNIT_CONVERSION -> {
+                        button.active = button.active && options.showWaypointSigns;
+                    }
+                }
+            } else if (item instanceof GuiOptionSliderMinimap slider) {
+                EnumOptionsMinimap option = slider.returnEnumOptions();
+
+                if (option == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
+                    slider.active = options.showWaypointSigns;
                 }
             }
-        }
 
-        for (GuiEventListener item : children()) {
-            if (!(item instanceof GuiOptionSliderMinimap slider)) {
-                continue;
-            }
-
-            if (slider.returnEnumOptions() == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
-                slider.active = this.options.showWaypointSigns;
-            }
         }
     }
 

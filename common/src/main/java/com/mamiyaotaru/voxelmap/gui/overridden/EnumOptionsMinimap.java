@@ -39,8 +39,8 @@ public enum EnumOptionsMinimap {
     WAYPOINT_SIGN_SCALE("options.minimap.waypoints.waypointSignScale", Type.FLOAT),
     DEATHPOINTS("options.minimap.waypoints.deathpoints", Type.LIST),
     WAYPOINT_DISTANCE_UNIT_CONVERSION("options.minimap.waypoints.distanceUnitConversion", Type.LIST),
-    SHOW_IN_GAME_WAYPOINT_NAMES("options.minimap.waypoints.showWaypointNames", Type.LIST),
-    SHOW_IN_GAME_WAYPOINT_DISTANCES("options.minimap.waypoints.showWaypointDistances", Type.LIST),
+    WAYPOINT_LABEL_STYLE("options.minimap.waypoints.waypointLabelStyle", Type.LIST),
+    HIGHLIGHT_FOCUSED_WAYPOINT("options.minimap.waypoints.highlightFocusedWaypoint", Type.BOOLEAN),
 
     // Radar
     SHOW_RADAR("options.minimap.radar.showRadar", Type.BOOLEAN),
