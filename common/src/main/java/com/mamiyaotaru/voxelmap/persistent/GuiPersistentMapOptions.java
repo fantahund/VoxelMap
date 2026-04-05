@@ -29,7 +29,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WORLDMAP_COORDS, EnumOptionsMinimap.SHOW_WAYPOINTS, EnumOptionsMinimap.SHOW_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_DISTANT_WAYPOINTS };
+        EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.SHOW_WORLDMAP_COORDS, EnumOptionsMinimap.SHOW_WORLDMAP_WAYPOINTS, EnumOptionsMinimap.SHOW_WORLDMAP_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_WORLDMAP_DISTANT_WAYPOINTS };
 
         int counter = 0;
 
@@ -37,10 +37,10 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + counter % 2 * 160, this.getHeight() / 6 + 24 * (counter >> 1), option, Component.literal(this.options.getKeyText(option)), this::optionClicked);
             this.addRenderableWidget(optionButton);
 
-            if (option == EnumOptionsMinimap.SHOW_WAYPOINTS) {
+            if (option == EnumOptionsMinimap.SHOW_WORLDMAP_WAYPOINTS) {
                 optionButton.active = mapOptions.waypointsAllowed;
             }
-            if (option == EnumOptionsMinimap.SHOW_WAYPOINT_NAMES) {
+            if (option == EnumOptionsMinimap.SHOW_WORLDMAP_WAYPOINT_NAMES) {
                 optionButton.active = mapOptions.waypointsAllowed;
             }
             counter++;
@@ -84,7 +84,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             if (!(renderable instanceof GuiOptionButtonMinimap button)) continue;
 
             switch (button.returnEnumOptions()) {
-                case SHOW_WAYPOINT_NAMES, SHOW_DISTANT_WAYPOINTS -> button.active = options.showWaypoints && mapOptions.waypointsAllowed;
+                case SHOW_WORLDMAP_WAYPOINT_NAMES, SHOW_WORLDMAP_DISTANT_WAYPOINTS -> button.active = options.showWaypoints && mapOptions.waypointsAllowed;
             }
         }
     }

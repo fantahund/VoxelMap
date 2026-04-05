@@ -62,9 +62,9 @@ public enum EnumOptionsMinimap {
 
     // World Map
     SHOW_WORLDMAP_COORDS("options.worldmap.showCoordinates", Type.BOOLEAN),
-    SHOW_WAYPOINTS("options.worldmap.showWaypoints", Type.BOOLEAN),
-    SHOW_WAYPOINT_NAMES("options.worldmap.showWaypointNames", Type.BOOLEAN),
-    SHOW_DISTANT_WAYPOINTS("options.worldmap.showDistantWaypoints", Type.BOOLEAN),
+    SHOW_WORLDMAP_WAYPOINTS("options.worldmap.showWaypoints", Type.BOOLEAN),
+    SHOW_WORLDMAP_WAYPOINT_NAMES("options.worldmap.showWaypointNames", Type.BOOLEAN),
+    SHOW_WORLDMAP_DISTANT_WAYPOINTS("options.worldmap.showDistantWaypoints", Type.BOOLEAN),
     MIN_ZOOM("options.worldmap.minZoom", Type.FLOAT),
     MAX_ZOOM("options.worldmap.maxZoom", Type.FLOAT),
     CACHE_SIZE("options.worldmap.cacheSize", Type.FLOAT);

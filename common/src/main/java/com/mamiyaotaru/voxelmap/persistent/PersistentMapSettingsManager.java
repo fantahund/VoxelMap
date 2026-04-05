@@ -108,9 +108,9 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     public boolean getBooleanValue(EnumOptionsMinimap option) {
         return switch (option) {
             case SHOW_WORLDMAP_COORDS -> showCoordinates;
-            case SHOW_WAYPOINTS -> showWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
-            case SHOW_WAYPOINT_NAMES -> showWaypointNames && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
-            case SHOW_DISTANT_WAYPOINTS -> showDistantWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
+            case SHOW_WORLDMAP_WAYPOINTS -> showWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
+            case SHOW_WORLDMAP_WAYPOINT_NAMES -> showWaypointNames && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
+            case SHOW_WORLDMAP_DISTANT_WAYPOINTS -> showDistantWaypoints && VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
@@ -120,9 +120,9 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
     public void toggleBooleanValue(EnumOptionsMinimap option) {
         switch (option) {
             case SHOW_WORLDMAP_COORDS -> showCoordinates = !showCoordinates;
-            case SHOW_WAYPOINTS -> showWaypoints = !showWaypoints;
-            case SHOW_WAYPOINT_NAMES -> showWaypointNames = !showWaypointNames;
-            case SHOW_DISTANT_WAYPOINTS -> showDistantWaypoints = !showDistantWaypoints;
+            case SHOW_WORLDMAP_WAYPOINTS -> showWaypoints = !showWaypoints;
+            case SHOW_WORLDMAP_WAYPOINT_NAMES -> showWaypointNames = !showWaypointNames;
+            case SHOW_WORLDMAP_DISTANT_WAYPOINTS -> showDistantWaypoints = !showDistantWaypoints;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         }
