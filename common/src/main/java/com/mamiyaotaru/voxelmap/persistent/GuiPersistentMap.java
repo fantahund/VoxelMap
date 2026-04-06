@@ -107,8 +107,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private float rawMouseToMap = 1.0F;
     private float guiToRawMouse = 2.0F;
 
-
     // Input & Navigation
+    private boolean skipMouseDetection;
     private boolean mouseCursorShown = true;
     private boolean leftMouseButtonDown;
     private long timeOfLastMouseInput;
@@ -305,7 +305,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 worldNameDisplayLength = getFont().width(worldNameDisplay);
             }
         }
-
     }
 
     private float clampZoom(float zoom) {
@@ -684,11 +683,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 guiGraphics.drawString(getFont(), "Z: " + z, SIDE_MARGIN + 64, 16, 0xFFFFFFFF);
             }
 
-            if (Objects.equals(subworldName, waypointManager.getCurrentSubworldDescriptor(true))) {
+            if (!Objects.equals(subworldName, waypointManager.getCurrentSubworldDescriptor(true))) {
                 buildWorldName();
             }
 
-            guiGraphics.drawString(getFont(), worldNameDisplay, getWidth() - SIDE_MARGIN - worldNameDisplayLength, 16, 0xFFFFFF);
+            guiGraphics.drawString(getFont(), worldNameDisplay, getWidth() - SIDE_MARGIN - worldNameDisplayLength, 16, 0xFFFFFFFF);
             if (buttonMultiworld != null) {
                 boolean warning = (subworldName == null || subworldName.isEmpty()) && waypointManager.isMultiworld();
                 Component message = (warning && (System.currentTimeMillis() / 1000L % 2L) == 0L) ? multiworldButtonNameRed : multiworldButtonName;
@@ -703,7 +702,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private boolean isMouseDown(int keyCode) {
-        return GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), keyCode) == GLFW.GLFW_TRUE;
+        return !skipMouseDetection && GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), keyCode) == GLFW.GLFW_TRUE;
     }
 
     private boolean isKeyDown(KeyMapping keyMapping) {
