@@ -150,7 +150,7 @@ public class CachedRegion {
 
     public static String buildLayerPath(String subWorldName, String dimensionName, boolean underground, int sectionY) {
         if (underground) {
-            return String.join("/", subWorldName, dimensionName, String.valueOf(sectionY));
+            return String.join("/", subWorldName, dimensionName, "caves_" + sectionY);
         }
         return String.join("/", subWorldName, dimensionName);
     }

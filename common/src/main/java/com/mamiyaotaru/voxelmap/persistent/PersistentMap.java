@@ -85,8 +85,9 @@ public class PersistentMap implements IChangeObserver {
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
 
-    public static final int CAVE_LAYER_HEIGHT = 16;
+    public static final int CAVE_LAYER_HEIGHT = 32;
     private boolean isUnderground;
+    private boolean skipProcessing;
     private int lastX;
     private int lastY;
     private int lastZ;
@@ -781,7 +782,7 @@ public class PersistentMap implements IChangeObserver {
 
     @Override
     public void processChunk(LevelChunk chunk) {
-        if (mapOptions.worldmapAllowed) {
+        if (mapOptions.worldmapAllowed && !skipProcessing) {
             forAllLayers(layer -> layer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks())));
         }
     }
