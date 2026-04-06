@@ -15,6 +15,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -72,6 +74,18 @@ public class RenderUtils {
 
     public static void drawCenteredString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
         drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
+    }
+
+    public static void drawTooltip(GuiGraphics guiGraphics, Component tooltip, int x, int y, boolean multilined) {
+        if (tooltip == null || tooltip.getString().isEmpty()) {
+            return;
+        }
+
+        if (multilined) {
+            guiGraphics.setTooltipForNextFrame(MINECRAFT.font, Tooltip.create(tooltip).toCharSequence(MINECRAFT), x, y);
+        } else {
+            guiGraphics.setTooltipForNextFrame(tooltip, x, y);
+        }
     }
 
     public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Runnable runnable) {

@@ -7,6 +7,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
+import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -265,7 +266,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         drawContext.drawString(getFont(), I18n.get("minimap.waypoints.filter") + ":", getWidth() / 2 - 153, getHeight() - 73, 0xFFA0A0A0);
 
         if (tooltip != null) {
-            renderTooltip(drawContext, tooltip, mouseX, mouseY);
+            RenderUtils.drawTooltip(drawContext, tooltip, mouseX, mouseY, true);
         }
     }
 

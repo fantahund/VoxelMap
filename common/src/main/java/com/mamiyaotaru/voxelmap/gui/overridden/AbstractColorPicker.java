@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 
-public abstract class AbstractColorPicker implements Renderable, GuiEventListener {
+public abstract class AbstractColorPicker implements Renderable, GuiEventListener, NarratableEntry {
     private final OnColorChange onColorChange;
     private boolean focused;
     protected int color;
@@ -32,18 +32,6 @@ public abstract class AbstractColorPicker implements Renderable, GuiEventListene
             this.onColorChange.onColorChange(this);
         }
     }
-
-    @Override
-    public abstract void render(GuiGraphics graphics, int mouseX, int mouseY, float delta);
-
-    @Override
-    public abstract boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick);
-
-    @Override
-    public abstract boolean mouseReleased(MouseButtonEvent mouseButtonEvent);
-
-    @Override
-    public abstract boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY);
 
     @Override
     public void setFocused(boolean bl) {
@@ -103,5 +91,14 @@ public abstract class AbstractColorPicker implements Renderable, GuiEventListene
 
     public interface OnColorChange {
         void onColorChange(AbstractColorPicker picker);
+    }
+
+    @Override
+    public NarrationPriority narrationPriority() {
+        return NarrationPriority.NONE;
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput narrationElementOutput) {
     }
 }

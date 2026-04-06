@@ -225,6 +225,8 @@
   "options.worldmap.multiworld": "Multiworld...",
   "options.worldmap.multiworld.auto": "Open Automatically",
   "worldmap.disabled": "The Worldmap is disabled on this server.",
+  "worldmap.util.caveLayer": "Cave Layer",
+  "worldmap.util.caveLayer.range" : "Y: %s-%s",
   "worldmap.multiworld.title": "VoxelMap - Multiworld Selection",
   "worldmap.multiworld.select": "Which world are you in?",
   "worldmap.multiworld.newName": "New Name",

@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -89,7 +90,7 @@ public class GuiMobs extends GuiScreenMinimap {
         buttonDisable.active = isSomethingSelected && isMobEnabled(selectedMobId);
 
         if (tooltip != null) {
-            renderTooltip(drawContext, tooltip, mouseX, mouseY);
+            RenderUtils.drawTooltip(drawContext, tooltip, mouseX, mouseY, true);
         }
     }
 

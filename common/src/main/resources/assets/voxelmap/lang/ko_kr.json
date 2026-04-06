@@ -225,6 +225,8 @@
   "options.worldmap.multiworld": "다중 세계...",
   "options.worldmap.multiworld.auto": "자동으로 열기",
   "worldmap.disabled": "이 서버에서 세계지도를 사용할 수 없습니다.",
+  "worldmap.util.caveLayer": "동굴 레이어",
+  "worldmap.util.caveLayer.range" : "Y: %s~%s",
   "worldmap.multiworld.title": "VoxelMap - 다중 세계 선택",
   "worldmap.multiworld.select": "접속한 세계를 선택해주세요.",
   "worldmap.multiworld.newName": "새로운 이름",

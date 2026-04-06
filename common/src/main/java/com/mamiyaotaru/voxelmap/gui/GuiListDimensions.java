@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -81,15 +80,15 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
         protected DimensionItem(GuiAddWaypoint waypointScreen, DimensionContainer dim) {
             parentGui = waypointScreen;
             this.dim = dim;
-            dimToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, true, element -> parentGui.toggleDimensionSelected());
+            dimToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, element -> parentGui.toggleDimensionSelected());
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            drawContext.drawCenteredString(parentGui.getFont(), dim.getDisplayName(), (parentGui.getWidth() + getWidth()) / 2, getY() + 3, 0xFFFFFFFF);
+            drawContext.drawCenteredString(parentGui.getFont(), dim.getDisplayName(), (parentGui.getWidth() + getWidth()) / 2, getY() + 5, 0xFFFFFFFF);
 
             dimToggle.setPosition(getX() + getWidth() - 20, getY());
-            dimToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, parentGui.dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            dimToggle.setIcon(parentGui.dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
             dimToggle.render(drawContext, mouseX, mouseY, tickDelta);
 
             if (dimToggle.isMouseOver(mouseX, mouseY)) {

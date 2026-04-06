@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -117,8 +116,8 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
             nameString = name.getString();
             category = VoxelMapMobCategory.forEntityType(type);
 
-            mobIcon = new GuiIconElement(getX() + 2, getY(), 18, 18, false, (element) -> {});
-            mobToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, true, (element) -> parentGui.toggleMobVisibility());
+            mobIcon = new GuiIconElement(getX() + 2, getY(), 18, 18, (element) -> {});
+            mobToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, (element) -> parentGui.toggleMobVisibility());
         }
 
         @Override
@@ -141,12 +140,12 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
                 int iconWidth = Math.min(18, mobIconSprite.getIconWidth() / 3);
                 int iconHeight = Math.min(18, mobIconSprite.getIconHeight() / 3);
                 mobIcon.setPosition(getX() + 2, getY());
-                mobIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, mobIconSprite, iconWidth, iconHeight, 0xFFFFFFFF);
+                mobIcon.setIcon(mobIconSprite, iconWidth, iconHeight, 0xFFFFFFFF);
                 mobIcon.render(drawContext, mouseX, mouseY, tickDelta);
             }
 
             mobToggle.setPosition(getX() + getWidth() - 20, getY());
-            mobToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            mobToggle.setIcon(isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
             mobToggle.render(drawContext, mouseX, mouseY, tickDelta);
 
             if (mobIcon.isMouseOver(mouseX, mouseY)) {
