@@ -320,21 +320,16 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return minecraft.getWindow().getHeight();
     }
 
-    private float getRawMouseX() {
-        return (float) minecraft.mouseHandler.xpos();
+    private double getUnscaledPos(double pos) {
+        return pos * minecraft.getWindow().getGuiScale();
     }
-
-    private float getRawMouseY() {
-        return (float) minecraft.mouseHandler.ypos();
-    }
-
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         timeOfLastMouseInput = System.currentTimeMillis();
         switchToMouseInput();
 
-        float rawMouseX = getRawMouseX();
-        float rawMouseY = getRawMouseY();
+        float rawMouseX = (float) getUnscaledPos(mouseX);
+        float rawMouseY = (float) getUnscaledPos(mouseY);
         if (amount != 0.0) {
             if (amount > 0.0) {
                 zoomGoal *= 1.26F;
@@ -358,10 +353,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (mouseButtonEvent.button() == 1 && (selectedWaypoint != null || (lastMouseY > top && lastMouseY < bottom))) {
             timeOfLastKeyboardInput = 0L;
 
-            float rawMouseX = getRawMouseX();
-            float rawMouseY = getRawMouseY();
+            double mouseX = mouseButtonEvent.x();
+            double mouseY = mouseButtonEvent.y();
             if (mapOptions.worldmapAllowed) {
-                createPopup((int) mouseButtonEvent.x(), (int) mouseButtonEvent.y(), (int) rawMouseX, (int) rawMouseY);
+                createPopup((int) mouseX, (int) mouseY, (int) getUnscaledPos(mouseX), (int) getUnscaledPos(mouseY));
             }
         }
 
@@ -531,8 +526,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         guiGraphics.fill(0, 0, getWidth(), getHeight(), 0xFF000000);
 
-        float rawMouseX = getRawMouseX();
-        float rawMouseY = getRawMouseY();
+        float rawMouseX = (float) getUnscaledPos(mouseX);
+        float rawMouseY = (float) getUnscaledPos(mouseY);
 
         handleInputAndNavigation(mouseX, mouseY, rawMouseX, rawMouseY);
 
