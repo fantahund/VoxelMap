@@ -54,6 +54,7 @@ public class PersistentMap implements IChangeObserver {
     private final PersistentMapSettingsManager options;
     private final ColorManager colorManager;
     private final WaypointManager waypointManager;
+    private final MutableBlockPos playerPos = new MutableBlockPos(0, 0, 0);
     private final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
 
     private WorldMatcher worldMatcher;
@@ -62,25 +63,6 @@ public class PersistentMap implements IChangeObserver {
     private String subworldName = "";
     private RegionCacheLayer surfaceLayer = new RegionCacheLayer(0, false);
     private final ConcurrentHashMap<Integer, RegionCacheLayer> caveLayers = new ConcurrentHashMap<>();
-
-    final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
-        long mostRecentAccess1 = region1.getMostRecentView();
-        long mostRecentAccess2 = region2.getMostRecentView();
-        if (mostRecentAccess1 < mostRecentAccess2) {
-            return 1;
-        } else if (mostRecentAccess1 > mostRecentAccess2) {
-            return -1;
-        } else {
-            double distance1sq = (region1.getX() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapX) * (region1.getX() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapX) + (region1.getZ() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapZ) * (region1.getZ() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapZ);
-            double distance2sq = (region2.getX() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapX) * (region2.getX() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapX) + (region2.getZ() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapZ) * (region2.getZ() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapZ);
-            return Double.compare(distance1sq, distance2sq);
-        }
-    };
-    final Comparator<RegionCoordinates> distanceSorter = (coordinates1, coordinates2) -> {
-        double distance1sq = (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ);
-        double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
-        return Double.compare(distance1sq, distance2sq);
-    };
 
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
@@ -92,6 +74,13 @@ public class PersistentMap implements IChangeObserver {
     private int lastY;
     private int lastZ;
     private int caveLayer;
+
+    private final Comparator<RegionCoordinates> distanceSorter = Comparator
+            .comparingDouble(coords -> getDistanceSq(coords.x, coords.z, 256));
+
+    private final Comparator<CachedRegion> ageThenDistanceSorter = Comparator
+            .comparingLong(CachedRegion::getMostRecentView).reversed()
+            .thenComparingDouble(region -> getDistanceSq(region.getX(), region.getZ(), region.getWidth()));
 
     public PersistentMap() {
         this.mapOptions = voxelMap.getMapOptions();
@@ -160,6 +149,15 @@ public class PersistentMap implements IChangeObserver {
         return new MapChunkCache(totalChunks, totalChunks, this);
     }
 
+    private double getDistanceSq(int x, int z, int width) {
+        double centerX =  x * 256.0 + width / 2.0;
+        double centerZ =  z * 256.0 + width / 2.0;
+        double dx = centerX - options.mapX;
+        double dz = centerZ - options.mapZ;
+
+        return dx * dx + dz * dz;
+    }
+
     public void onTick() {
         if (minecraft.getCameraEntity() == null) {
             return;
@@ -189,18 +187,18 @@ public class PersistentMap implements IChangeObserver {
             lastY = GameVariableAccessShim.yCoord();
             lastZ = GameVariableAccessShim.zCoord();
 
-            chunkCache.centerChunks(blockPos.withXYZ(lastX, 0, lastZ));
+            chunkCache.centerChunks(playerPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
             if (!mapOptions.cavesAllowed || !options.showCaves) {
                 isUnderground = false;
             } else {
-                blockPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
+                playerPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
                 isUnderground = false;
                 if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
-                    isUnderground = lastY < world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+                    isUnderground = lastY < world.getChunk(playerPos).getHeight(Heightmap.Types.MOTION_BLOCKING, playerPos.getX(), playerPos.getZ());
                 } else {
-                    isUnderground = world.getBrightness(LightLayer.SKY, blockPos) <= 0;
+                    isUnderground = world.getBrightness(LightLayer.SKY, playerPos) <= 0;
                 }
 
                 caveLayer = Math.floorDiv(lastY, CAVE_LAYER_HEIGHT);
