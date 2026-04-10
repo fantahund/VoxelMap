@@ -3,14 +3,14 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.Radar;
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -21,22 +21,22 @@ import net.minecraft.world.entity.LivingEntity;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
+public class GuiListMobs extends GuiListMinimap<GuiListMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
     private ArrayList<Entry<?>> mobsFiltered;
     private final GuiMobs parentGui;
     private final RadarSettingsManager options;
 
-    static final Component ENABLED = Component.translatable("options.minimap.mobs.enabled");
-    static final Component DISABLED = Component.translatable("options.minimap.mobs.disabled");
-    static final Component TOOLTIP_ENABLE = Component.translatable("options.minimap.mobs.enableTooltip");
-    static final Component TOOLTIP_DISABLE = Component.translatable("options.minimap.mobs.disableTooltip");
+    private static final Tooltip TOOLTIP_ENABLED = Tooltip.create(Component.translatable("options.minimap.mobs.enabled"));
+    private static final Tooltip TOOLTIP_DISABLED = Tooltip.create(Component.translatable("options.minimap.mobs.disabled"));
+    private static final Tooltip TOOLTIP_CLICK_TO_ENABLE = Tooltip.create(Component.translatable("options.minimap.mobs.enableTooltip"));
+    private static final Tooltip TOOLTIP_CLICK_TO_DISABLE = Tooltip.create(Component.translatable("options.minimap.mobs.disableTooltip"));
 
-    GuiListMobs(GuiMobs parentGui) {
-        super(VoxelConstants.getMinecraft(), parentGui.getWidth(), parentGui.getHeight() - 110, 40, 18);
+    GuiListMobs(GuiMobs parentGui, int x, int y, int width, int height) {
+        super(x, y, width, height, 18);
 
         this.parentGui = parentGui;
-        options = parentGui.options;
+        options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
 
         mobs = new ArrayList<>();
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
@@ -57,7 +57,7 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
         });
 
         mobsFiltered = new ArrayList<>(mobs);
-        mobsFiltered.forEach(x -> addEntry((MobItem) x));
+        mobsFiltered.forEach(entry -> addEntry((MobItem) entry));
     }
 
     @Override
@@ -96,35 +96,38 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 
-    public class MobItem extends AbstractSelectionList.Entry<MobItem> {
+    public class MobItem extends GuiListMinimap.Entry<MobItem> {
         private final GuiMobs parentGui;
         private final EntityType<?> type;
         private final Identifier id;
         private final Component name;
         private final String nameString;
         private final VoxelMapMobCategory category;
-        private final GuiIconElement mobIcon;
-        private final GuiIconElement mobToggle;
+        private final GuiIconButton mobIcon;
+        private final GuiIconButton mobToggle;
         private Sprite mobIconSprite;
 
         protected MobItem(GuiMobs mobsScreen, EntityType<?> type, Identifier id) {
-            parentGui = mobsScreen;
+            super(GuiListMobs.this);
 
+            parentGui = mobsScreen;
             this.type = type;
             this.id = id;
             name = type.getDescription();
             nameString = name.getString();
             category = VoxelMapMobCategory.forEntityType(type);
 
-            mobIcon = new GuiIconElement(getX() + 2, getY(), 18, 18, (element) -> {});
-            mobToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, (element) -> parentGui.toggleMobVisibility());
+            addWidget(mobIcon = new GuiIconButton(0, 0, 18, 18, element -> {}));
+            addWidget(mobToggle = new GuiIconButton(0, 0, 18, 18, element -> parentGui.toggleMobVisibility()));
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            super.renderContent(drawContext, mouseX, mouseY, hovered, tickDelta);
+
             boolean isHostile = category == VoxelMapMobCategory.HOSTILE;
             boolean isNeutral = !isHostile;
-            boolean isEnabled = parentGui.options.isMobEnabled(type);
+            boolean isEnabled = options.isMobEnabled(type);
 
             int red = isHostile ? 255 : 0;
             int green = isNeutral ? 255 : 0;
@@ -139,36 +142,14 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
             } else {
                 int iconWidth = Math.min(18, mobIconSprite.getIconWidth() / 3);
                 int iconHeight = Math.min(18, mobIconSprite.getIconHeight() / 3);
-                mobIcon.setPosition(getX() + 2, getY());
                 mobIcon.setIcon(mobIconSprite, iconWidth, iconHeight, 0xFFFFFFFF);
-                mobIcon.render(drawContext, mouseX, mouseY, tickDelta);
             }
+            mobIcon.setPosition(getX() + 2, getY());
+            mobIcon.setTooltip(isEnabled ? GuiListMobs.TOOLTIP_ENABLED : GuiListMobs.TOOLTIP_DISABLED);
 
             mobToggle.setPosition(getX() + getWidth() - 20, getY());
             mobToggle.setIcon(isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
-            mobToggle.render(drawContext, mouseX, mouseY, tickDelta);
-
-            if (mobIcon.isMouseOver(mouseX, mouseY)) {
-                parentGui.setTooltip(isEnabled ? GuiListMobs.ENABLED : GuiListMobs.DISABLED);
-            } else if (mobToggle.isMouseOver(mouseX, mouseY)) {
-                parentGui.setTooltip(isEnabled ? GuiListMobs.TOOLTIP_DISABLE : GuiListMobs.TOOLTIP_ENABLE);
-            }
-        }
-
-        @Override
-        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            double mouseX = mouseButtonEvent.x();
-            double mouseY = mouseButtonEvent.y();
-            if (mouseY < getY() || mouseY > getBottom()) {
-                return false;
-            }
-
-            setSelected(this);
-
-            mobIcon.mouseClicked(mouseButtonEvent, doubleClick);
-            mobToggle.mouseClicked(mouseButtonEvent, doubleClick);
-
-            return true;
+            mobToggle.setTooltip( isEnabled ? GuiListMobs.TOOLTIP_CLICK_TO_DISABLE : GuiListMobs.TOOLTIP_CLICK_TO_ENABLE);
         }
     }
 }

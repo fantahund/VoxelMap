@@ -34,9 +34,9 @@ public class GuiColorPickerFull extends AbstractColorPicker {
         int b = ARGB.blue(i);
 
         float[] hsv = Color.RGBtoHSB(r, g, b, null);
-        this.h = hsv[0];
-        this.s = hsv[1];
-        this.v = hsv[2];
+        h = hsv[0];
+        s = hsv[1];
+        v = hsv[2];
 
         super.setColor(i);
     }
@@ -47,11 +47,11 @@ public class GuiColorPickerFull extends AbstractColorPicker {
             return false;
         }
 
-        this.pickingHue = this.isHueWheelHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
-        this.pickingSat = this.isSatSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
-        this.pickingValue = this.isValueSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
-        if (this.isPicking()) {
-            this.pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
+        pickingHue = isHueWheelHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
+        pickingSat = isSatSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
+        pickingValue = isValueSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
+        if (isPicking()) {
+            pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
             return true;
         }
 
@@ -60,8 +60,8 @@ public class GuiColorPickerFull extends AbstractColorPicker {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        if (mouseButtonEvent.button() == 0 && this.isPicking()) {
-            this.pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
+        if (mouseButtonEvent.button() == 0 && isPicking()) {
+            pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
             return true;
         }
 
@@ -70,10 +70,10 @@ public class GuiColorPickerFull extends AbstractColorPicker {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (mouseButtonEvent.button() == 0 && this.isPicking()) {
-            this.pickingHue = false;
-            this.pickingSat = false;
-            this.pickingValue = false;
+        if (mouseButtonEvent.button() == 0 && isPicking()) {
+            pickingHue = false;
+            pickingSat = false;
+            pickingValue = false;
             return true;
         }
 
@@ -81,43 +81,43 @@ public class GuiColorPickerFull extends AbstractColorPicker {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        int fullColor = this.color;
-        int wheelRadius = this.getHueWheelRadius();
+    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        int fullColor = color;
+        int wheelRadius = getHueWheelRadius();
 
         // render s picker
-        int sSliderX = this.getSatSliderX();
-        int sSliderY = this.getSatSliderY();
-        guiGraphics.fillGradient(sSliderX - (SLIDER_WIDTH / 2), sSliderY - wheelRadius, sSliderX + (SLIDER_WIDTH / 2), sSliderY + wheelRadius, Color.getHSBColor(this.h, 1.0F, this.v).getRGB(), Color.getHSBColor(this.h, 0.0F, this.v).getRGB());
+        int sSliderX = getSatSliderX();
+        int sSliderY = getSatSliderY();
+        guiGraphics.fillGradient(sSliderX - (SLIDER_WIDTH / 2), sSliderY - wheelRadius, sSliderX + (SLIDER_WIDTH / 2), sSliderY + wheelRadius, Color.getHSBColor(h, 1.0F, v).getRGB(), Color.getHSBColor(h, 0.0F, v).getRGB());
 
         float sSliderHandleX = sSliderX;
-        float sSliderHandleY = sSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - this.s));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        float sSliderHandleY = sSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - s));
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render v picker
-        int vSliderX = this.getValueSliderX();
-        int vSliderY = this.getValueSliderY();
-        guiGraphics.fillGradient(vSliderX - (SLIDER_WIDTH / 2), vSliderY - wheelRadius, vSliderX + (SLIDER_WIDTH / 2), vSliderY + wheelRadius, Color.getHSBColor(this.h, this.s, 1.0F).getRGB(), 0xFF000000);
+        int vSliderX = getValueSliderX();
+        int vSliderY = getValueSliderY();
+        guiGraphics.fillGradient(vSliderX - (SLIDER_WIDTH / 2), vSliderY - wheelRadius, vSliderX + (SLIDER_WIDTH / 2), vSliderY + wheelRadius, Color.getHSBColor(h, s, 1.0F).getRGB(), 0xFF000000);
 
         float vSliderHandleX = vSliderX;
-        float vSliderHandleY = vSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - this.v));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        float vSliderHandleY = vSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - v));
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render h, s picker
-        int wheelX = this.getHueWheelX();
-        int wheelY = this.getHueWheelY();
+        int wheelX = getHueWheelX();
+        int wheelY = getHueWheelY();
         Identifier colorWheelImage = VoxelConstants.getVoxelMapInstance().getColorManager().getHueColorWheel();
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, colorWheelImage, wheelX - wheelRadius, wheelY - wheelRadius, 0.0F, 0.0F, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, 0xFFFFFFFF);
 
-        float radians = this.h * 360.0F * Mth.DEG_TO_RAD;
+        float radians = h * 360.0F * Mth.DEG_TO_RAD;
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().translate(wheelX, wheelY);
         guiGraphics.pose().rotate(radians);
         guiGraphics.pose().translate(wheelRadius, 0.0F);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, Color.getHSBColor(this.h, 1.0F, 1.0F).getRGB());
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, Color.getHSBColor(h, 1.0F, 1.0F).getRGB());
         guiGraphics.pose().popMatrix();
 
         // render texts
@@ -129,90 +129,90 @@ public class GuiColorPickerFull extends AbstractColorPicker {
     }
 
     private void pickColorAt(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueWheelRadius();
+        int wheelRadius = getHueWheelRadius();
 
-        if (this.pickingValue) {
+        if (pickingValue) {
             // calculate v
-            double dx = this.getValueSliderX() - mouseX;
-            double dy = this.getValueSliderY() - mouseY;
+            double dx = getValueSliderX() - mouseX;
+            double dy = getValueSliderY() - mouseY;
 
-            this.v = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
+            v = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
         }
 
-        if (this.pickingSat) {
+        if (pickingSat) {
             // calculate s
-            double dx = this.getSatSliderX() - mouseX;
-            double dy = this.getSatSliderY() - mouseY;
+            double dx = getSatSliderX() - mouseX;
+            double dy = getSatSliderY() - mouseY;
 
-            this.s = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
+            s = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
         }
 
-        if (this.pickingHue) {
+        if (pickingHue) {
             // calculate h
-            double dx = this.getHueWheelX() - mouseX;
-            double dy = this.getHueWheelY() - mouseY;
+            double dx = getHueWheelX() - mouseX;
+            double dy = getHueWheelY() - mouseY;
             double degrees = Math.toDegrees(Math.atan2(dy, dx)) + 180.0F;
 
-            this.h = (float) Mth.clamp((degrees / 360.0F), 0.0, 1.0);
+            h = (float) Mth.clamp((degrees / 360.0F), 0.0, 1.0);
         }
 
-        this.updateColor(Color.getHSBColor(this.h, this.s, this.v).getRGB());
+        updateColor(Color.getHSBColor(h, s, v).getRGB());
     }
 
     private int getHueWheelRadius() {
-        return this.height / 2;
+        return getHeight() / 2;
     }
 
     private int getHueWheelX() {
-        return this.x - (this.width / 2) + this.getHueWheelRadius();
+        return getX() - (getWidth() / 2) + getHueWheelRadius();
     }
 
     private int getHueWheelY() {
-        return this.y;
+        return getY();
     }
 
     private int getSatSliderX() {
-        return this.x + (this.width / 2) - SLIDER_WIDTH - 20;
+        return getX() + (getWidth() / 2) - SLIDER_WIDTH - 20;
     }
 
     private int getSatSliderY() {
-        return this.y;
+        return getY();
     }
 
     private int getValueSliderX() {
-        return this.x + (this.width / 2) - (SLIDER_WIDTH / 2);
+        return getX() + (getWidth() / 2) - (SLIDER_WIDTH / 2);
     }
 
     private int getValueSliderY() {
-        return this.y;
+        return getY();
     }
 
     private boolean isPicking() {
-        return this.pickingHue || this.pickingSat || this.pickingValue;
+        return pickingHue || pickingSat || pickingValue;
     }
 
     private boolean isHueWheelHovered(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueWheelRadius();
+        int wheelRadius = getHueWheelRadius();
         int wheelInnerRadius = wheelRadius - SLIDER_WIDTH;
-        double dx = this.getHueWheelX() - mouseX;
-        double dy = this.getHueWheelY() - mouseY;
+        double dx = getHueWheelX() - mouseX;
+        double dy = getHueWheelY() - mouseY;
         double sqDist = dx * dx + dy * dy;
 
         return sqDist >= (wheelInnerRadius * wheelInnerRadius) && sqDist <= (wheelRadius * wheelRadius);
     }
 
     private boolean isSatSliderHovered(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueWheelRadius();
-        double dx = this.getSatSliderX() - mouseX;
-        double dy = this.getSatSliderY() - mouseY;
+        int wheelRadius = getHueWheelRadius();
+        double dx = getSatSliderX() - mouseX;
+        double dy = getSatSliderY() - mouseY;
 
         return Math.abs(dx) <= (SLIDER_WIDTH / 2.0) && Math.abs(dy) <= wheelRadius;
     }
 
     private boolean isValueSliderHovered(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueWheelRadius();
-        double dx = this.getValueSliderX() - mouseX;
-        double dy = this.getValueSliderY() - mouseY;
+        int wheelRadius = getHueWheelRadius();
+        double dx = getValueSliderX() - mouseX;
+        double dy = getValueSliderY() - mouseY;
 
         return Math.abs(dx) <= (SLIDER_WIDTH / 2.0) && Math.abs(dy) <= wheelRadius;
     }

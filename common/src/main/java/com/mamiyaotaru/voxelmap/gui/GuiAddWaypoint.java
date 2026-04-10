@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
@@ -36,13 +35,11 @@ import java.util.function.Consumer;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
     private final MapSettingsManager mapOptions;
-    final WaypointManager waypointManager;
-    final ColorManager colorManager;
+    private final WaypointManager waypointManager;
     private final IGuiWaypoints parentGui;
+
     private PopupGuiButton doneButton;
     private GuiListDimensions dimensionList;
-    protected DimensionContainer selectedDimension;
-    private Component tooltip;
     private EditBox waypointName;
     private EditBox waypointX;
     private EditBox waypointY;
@@ -66,13 +63,14 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private boolean enabled;
     protected TreeSet<DimensionContainer> dimensions;
 
-    public GuiAddWaypoint(IGuiWaypoints parentGui, Waypoint waypoint, boolean editing) {
-        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        this.parentGui = parentGui;
-        lastScreen = (Screen) parentGui;
+    private DimensionContainer selectedDimension;
 
+    public GuiAddWaypoint(IGuiWaypoints parentGui, Waypoint waypoint, boolean editing) {
+        super((Screen) parentGui, Component.translatable(editing ? "minimap.waypoints.edit" : "minimap.waypoints.new"));
+        this.parentGui = parentGui;
+        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
-        colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
+
         this.waypoint = waypoint;
         this.editing = editing;
 
@@ -94,7 +92,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     public void init() {
         clearWidgets();
 
-        dimensionList = new GuiListDimensions(this);
+        dimensionList = new GuiListDimensions(this, getWidth() / 2, getHeight() / 6 + 90, 101, 64);
         waypointName = new EditBox(getFont(), getWidth() / 2 - 100, getHeight() / 6 + 13, 200, 20, Component.empty());
         waypointName.setValue(waypoint.name);
         waypointX = new EditBox(getFont(), getWidth() / 2 - 100, getHeight() / 6 + 41 + 13, 56, 20, Component.empty());
@@ -345,11 +343,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        tooltip = null;
-
         super.render(drawContext, popupOpen() ? 0 : mouseX, popupOpen() ? 0 : mouseY, delta);
 
-        drawContext.drawCenteredString(getFont(), (parentGui == null || !parentGui.isEditing()) && !editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), getWidth() / 2, 20, 0xFFFFFFFF);
         drawContext.drawString(getFont(), I18n.get("minimap.waypoints.name"), getWidth() / 2 - 100, getHeight() / 6, 0xFFFFFFFF);
         drawContext.drawString(getFont(), "X", getWidth() / 2 - 100, getHeight() / 6 + 41, 0xFFFFFFFF);
         drawContext.drawString(getFont(), "Y", getWidth() / 2 - 28, getHeight() / 6 + 41, 0xFFFFFFFF);
@@ -438,16 +433,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
                     hoveredIcon.blit(drawContext, RenderPipelines.GUI_TEXTURED, iconX, iconY, iconWidth, iconHeight, iconColor);
 
-                    tooltip = Component.translatable("minimap.waypoints.icon." + WaypointManager.toSimpleName(hoveredIcon.getIconName().toString()).replace("selectable/", ""));
+                    Component tooltip = Component.translatable("minimap.waypoints.icon." + WaypointManager.toSimpleName(hoveredIcon.getIconName().toString()).replace("selectable/", ""));
+                    RenderUtils.drawTooltip(drawContext, Tooltip.create(tooltip), mouseX, mouseY);
                 }
             }
 
             popupDoneButton.render(drawContext, mouseX, mouseY, delta);
             popupCancelButton.render(drawContext, mouseX, mouseY, delta);
-        }
-
-        if (tooltip != null) {
-            RenderUtils.drawTooltip(drawContext, tooltip, mouseX, mouseY, true);
         }
     }
 
@@ -477,9 +469,5 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
             dimensions.add(selectedDimension);
         }
 
-    }
-
-    protected void setTooltip(Component tooltip) {
-        this.tooltip = tooltip;
     }
 }

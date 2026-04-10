@@ -5,28 +5,22 @@ import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.CameraType;
-import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.KeyboardInput;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.phys.Vec3;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
 public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsumer {
     private Component title;
-    private Component select;
+    private Component subtitle;
     private boolean multiworld;
     private EditBox newNameField;
     private boolean newWorld;
@@ -34,35 +28,34 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private final WaypointManager waypointManager;
     private final CameraType lastCameraType;
 
-    public GuiSubworldsSelect(Screen parent) {
-        lastScreen = parent;
+    public GuiSubworldsSelect(Screen parentGui) {
+        super(parentGui, Component.empty());
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
-        lastCameraType = VoxelConstants.getMinecraft().options.getCameraType();
+        lastCameraType = minecraft.options.getCameraType();
     }
 
     @Override
     public void init() {
-        ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
-        if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
+        ArrayList<String> knownSubworldNames = new ArrayList<>(waypointManager.getKnownSubworldNames());
+        if (!multiworld && !waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isThisMultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
-            VoxelConstants.getMinecraft().setScreen(confirmScreen);
+            minecraft.setScreen(confirmScreen);
         } else {
-            VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
+            minecraft.options.setCameraType(CameraType.FIRST_PERSON);
         }
 
-        this.title = Component.translatable("worldmap.multiworld.title");
-        this.select = Component.translatable("worldmap.multiworld.select");
-        this.clearWidgets();
-        int centerX = this.width / 2;
-        int buttonsPerRow = this.width / 150;
-        if (buttonsPerRow == 0) {
-            buttonsPerRow = 1;
-        }
+        clearWidgets();
 
-        int buttonWidth = this.width / buttonsPerRow - 5;
-        int xSpacing = (this.width - buttonsPerRow * buttonWidth) / 2;
+        title = Component.translatable("worldmap.multiworld.title");
+        subtitle = Component.translatable("worldmap.multiworld.select");
+
+        int centerX = getWidth() / 2;
+        int buttonsPerRow = Math.max(1, getWidth() / 150);
+
+        int buttonWidth = getWidth() / buttonsPerRow - 5;
+        int xSpacing = (getWidth() - buttonsPerRow * buttonWidth) / 2;
         Button cancelBtn = new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(null)).bounds(centerX - 100, this.height - 30, 200, 20).build();
-        this.addRenderableWidget(cancelBtn);
+        addRenderableWidget(cancelBtn);
         knownSubworldNames.sort((name1, name2) -> -String.CASE_INSENSITIVE_ORDER.compare(name1, name2));
         int numKnownSubworlds = knownSubworldNames.size();
         int completeRows = (int) Math.floor((float) (numKnownSubworlds + 1) / buttonsPerRow);
@@ -100,20 +93,19 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
-    public void accept(boolean b) {
-        if (!b) {
-            this.onClose();
+    public void accept(boolean accept) {
+        if (accept) {
+            multiworld = true;
+            minecraft.setScreen(this);
         } else {
-            this.multiworld = true;
-            VoxelConstants.getMinecraft().setScreen(this);
+            onClose();
         }
-
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
-        if (this.newWorld) {
-            this.newNameField.mouseClicked(mouseButtonEvent, bl);
+        if (newWorld) {
+            newNameField.mouseClicked(mouseButtonEvent, bl);
         }
 
         return super.mouseClicked(mouseButtonEvent, bl);
@@ -121,13 +113,13 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        if (this.newNameField.isFocused()) {
-            this.newNameField.keyPressed(keyEvent);
-            int keyCode = keyEvent.key(); //TODO 1.21.9
-            if ((keyCode == 257 || keyCode == 335) && this.newNameField.isFocused()) {
-                String newName = this.newNameField.getValue();
-                if (newName != null && !newName.isEmpty()) {
-                    this.worldSelected(newName);
+        if (newNameField.isFocused()) {
+            newNameField.keyPressed(keyEvent);
+            int keyCode = keyEvent.key();
+            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
+                String newName = newNameField.getValue();
+                if (!newName.isEmpty()) {
+                    worldSelected(newName);
                 }
             }
         }
@@ -136,39 +128,17 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        if (this.newNameField.isFocused()) {
-            this.newNameField.charTyped(characterEvent);
-            int modifiers = characterEvent.modifiers();
-            if (modifiers == 28) {
-                String newName = this.newNameField.getValue();
-                if (newName != null && !newName.isEmpty()) {
-                    this.worldSelected(newName);
-                }
-            }
-        }
-
-        return super.charTyped(characterEvent);
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-    }
-
-    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        int titleStringWidth = this.getFont().width(this.title);
-        titleStringWidth = Math.max(titleStringWidth, this.getFont().width(this.select));
-        drawContext.fill(this.width / 2 - titleStringWidth / 2 - 5, 0, this.width / 2 + titleStringWidth / 2 + 5, 27, -1073741824);
-        drawContext.drawCenteredString(this.getFont(), this.title, this.width / 2, 5, 0xFFFFFFFF);
-        drawContext.drawCenteredString(this.getFont(), this.select, this.width / 2, 15, 0xFFFF0000);
-
         super.render(drawContext, mouseX, mouseY, delta);
-        if (this.newWorld) {
-            this.newNameField.render(drawContext, mouseX, mouseY, delta);
-        }
 
+        int titleWidth = Math.max(getFont().width(title), getFont().width(subtitle));
+        drawContext.fill(getWidth() / 2 - titleWidth / 2 - 5, 0, getWidth() / 2 + titleWidth / 2 + 5, 27, -1073741824);
+        drawContext.drawCenteredString(getFont(), title, getWidth() / 2, 5, 0xFFFFFFFF);
+        drawContext.drawCenteredString(getFont(), subtitle, getWidth() / 2, 15, 0xFFFF0000);
+
+        if (newWorld) {
+            newNameField.render(drawContext, mouseX, mouseY, delta);
+        }
     }
 
     @Override
@@ -177,15 +147,15 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     @Override
     public void removed() {
-        VoxelConstants.getMinecraft().options.setCameraType(lastCameraType);
+        minecraft.options.setCameraType(lastCameraType);
     }
 
     private void worldSelected(String selectedSubworldName) {
-        this.waypointManager.setSubworldName(selectedSubworldName, false);
-        this.onClose();
+        waypointManager.setSubworldName(selectedSubworldName, false);
+        onClose();
     }
 
     private void editWorld(String subworldNameToEdit) {
-        VoxelConstants.getMinecraft().setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
+        minecraft.setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
     }
 }

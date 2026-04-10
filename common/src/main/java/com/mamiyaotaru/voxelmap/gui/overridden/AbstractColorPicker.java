@@ -1,104 +1,43 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.network.chat.Component;
 
-public abstract class AbstractColorPicker implements Renderable, GuiEventListener, NarratableEntry {
+public abstract class AbstractColorPicker extends AbstractWidget {
     private final OnColorChange onColorChange;
-    private boolean focused;
     protected int color;
-    protected int x;
-    protected int y;
-    protected int width;
-    protected int height;
 
     public AbstractColorPicker(int x, int y, int width, int height, OnColorChange onColorChange) {
+        super(x, y, width, height, Component.empty());
         this.onColorChange = onColorChange;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
     }
 
     public void setColor(int i) {
-        this.updateColor(i);
+        updateColor(i);
     }
 
     protected void updateColor(int i) {
-        if (i != this.color) {
-            this.color = i;
-            this.onColorChange.onColorChange(this);
+        if (i != color) {
+            color = i;
+            onColorChange.onColorChange(this);
         }
     }
 
-    @Override
-    public void setFocused(boolean bl) {
-        this.focused = bl;
-    }
-
-    @Override
-    public boolean isFocused() {
-        return this.focused;
-    }
-
     public int getColor() {
-        return this.color;
+        return color;
     }
 
-    public int getX() {
-        return this.x;
+    @Override
+    public void playDownSound(SoundManager soundManager) {
     }
 
-    public int getY() {
-        return this.y;
-    }
-
-    public int getWidth() {
-        return this.width;
-    }
-
-    public int getHeight() {
-        return this.height;
-    }
-
-    public void setX(int i) {
-        this.x = i;
-    }
-
-    public void setY(int i) {
-        this.y = i;
-    }
-
-    public void setWidth(int i) {
-        this.width = i;
-    }
-
-    public void setHeight(int i) {
-        this.height = i;
-    }
-
-    public void setPosition(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
+    @Override
+    public void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 
     public interface OnColorChange {
         void onColorChange(AbstractColorPicker picker);
-    }
-
-    @Override
-    public NarrationPriority narrationPriority() {
-        return NarrationPriority.NONE;
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput narrationElementOutput) {
     }
 }

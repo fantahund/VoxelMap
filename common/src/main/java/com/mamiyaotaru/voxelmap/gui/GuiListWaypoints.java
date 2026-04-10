@@ -2,18 +2,19 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -21,22 +22,20 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointItem> {
+class GuiListWaypoints extends GuiListMinimap<GuiListWaypoints.WaypointItem> {
     private final ArrayList<WaypointItem> waypoints;
     private ArrayList<?> waypointsFiltered;
     private final GuiWaypoints parentGui;
-    protected long lastClicked;
-    private boolean doubleClicked;
     private String filterString = "";
     private final TextureAtlas textureAtlas;
 
-    private static final Component TOOLTIP_ENABLE = Component.translatable("minimap.waypoints.enableTooltip");
-    private static final Component TOOLTIP_DISABLE = Component.translatable("minimap.waypoints.disableTooltip");
-    private static final Component TOOLTIP_HIGHLIGHT = Component.translatable("minimap.waypoints.highlightTooltip");
-    private static final Component TOOLTIP_UNHIGHLIGHT = Component.translatable("minimap.waypoints.removeHighlightTooltip");
+    private static final Tooltip TOOLTIP_CLICK_TO_ENABLE = Tooltip.create(Component.translatable("minimap.waypoints.enableTooltip"));
+    private static final Tooltip TOOLTIP_CLICK_TO_DISABLE = Tooltip.create(Component.translatable("minimap.waypoints.disableTooltip"));
+    private static final Tooltip TOOLTIP_CLICK_TO_HIGHLIGHT = Tooltip.create(Component.translatable("minimap.waypoints.highlightTooltip"));
+    private static final Tooltip TOOLTIP_CLICK_TO_UNHIGHLIGHT = Tooltip.create(Component.translatable("minimap.waypoints.removeHighlightTooltip"));
 
-    GuiListWaypoints(GuiWaypoints parentGui) {
-        super(VoxelConstants.getMinecraft(), parentGui.getWidth(), parentGui.getHeight() - 140, 54, 18);
+    GuiListWaypoints(GuiWaypoints parentGui, int x, int y, int width, int height) {
+        super(x, y, width, height, 18);
         this.parentGui = parentGui;
 
         waypoints = new ArrayList<>();
@@ -47,7 +46,7 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
         }
 
         waypointsFiltered = new ArrayList<>(waypoints);
-        waypointsFiltered.forEach(x -> addEntry((WaypointItem) x));
+        waypointsFiltered.forEach(entry -> addEntry((WaypointItem) entry));
 
         textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
     }
@@ -56,7 +55,7 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
     public void setSelected(WaypointItem entry) {
         super.setSelected(entry);
         if (getSelected() != null) {
-            GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
+            GameNarrator narratorManager = new GameNarrator(minecraft);
             narratorManager.sayChatQueued(Component.translatable("narrator.select", getSelected().waypoint.name));
         }
 
@@ -111,31 +110,31 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 
-    @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        doubleClicked = System.currentTimeMillis() - lastClicked < 250L;
-        lastClicked = System.currentTimeMillis();
-
-        return super.mouseClicked(mouseButtonEvent, doubleClick);
-    }
-
-    public class WaypointItem extends AbstractSelectionList.Entry<WaypointItem> implements Comparable<WaypointItem> {
+    public class WaypointItem extends GuiListMinimap.Entry<WaypointItem> implements Comparable<WaypointItem> {
         private final GuiWaypoints parentGui;
         private final Waypoint waypoint;
-        private final GuiIconElement waypointIcon;
-        private final GuiIconElement waypointToggle;
+        private final GuiIconButton waypointIcon;
+        private final GuiIconButton waypointToggle;
 
-        protected WaypointItem(GuiWaypoints waypointScreen, Waypoint waypoint) {
-            parentGui = waypointScreen;
+        protected WaypointItem(GuiWaypoints parentGui, Waypoint waypoint) {
+            super(GuiListWaypoints.this);
+
+            this.parentGui = parentGui;
             this.waypoint = waypoint;
-            waypointIcon = new GuiIconElement(getX() + 2, getY(), 18, 18, (element) -> parentGui.setHighlightedWaypoint());
-            waypointToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, (element) -> parentGui.toggleWaypointVisibility());
+
+            setTooltip(Tooltip.create(Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ())));
+            addWidget(waypointIcon = new GuiIconButton(getX() + 2, getY(), 18, 18, button -> parentGui.setHighlightedWaypoint()));
+            addWidget(waypointToggle = new GuiIconButton(getX() + getWidth() - 20, getY(), 18, 18, button -> parentGui.toggleWaypointVisibility()));
         }
 
         @Override
         public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            super.renderContent(drawContext, mouseX, mouseY, hovered, tickDelta);
+
             int color = waypoint.getUnifiedColor();
             drawContext.drawCenteredString(parentGui.getFont(), waypoint.name, parentGui.getWidth() / 2, getY() + 5, color);
+
+            boolean isHighlighted = parentGui.waypointManager.isHighlightedWaypoint(waypoint);
 
             Sprite icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
             if (icon == textureAtlas.getMissingImage()) {
@@ -143,46 +142,27 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
             }
             waypointIcon.setPosition(getX() + 2, getY());
             waypointIcon.setIcon(icon, color);
-            waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
-            if (waypoint == parentGui.highlightedWaypoint) {
-                waypointIcon.setIcon(textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
-                waypointIcon.render(drawContext, mouseX, mouseY, tickDelta);
+            waypointIcon.setTooltip(isHighlighted ? TOOLTIP_CLICK_TO_UNHIGHLIGHT : TOOLTIP_CLICK_TO_HIGHLIGHT);
+
+            if (isHighlighted) {
+                textureAtlas.getAtlasSprite("marker/target").blit(drawContext, RenderPipelines.GUI_TEXTURED, waypointIcon.getX(), waypointIcon.getY(), waypointIcon.getWidth(), waypointIcon.getHeight(), 0xFFFF0000);
             }
 
-            Identifier toggleIcon = waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             waypointToggle.setPosition(getX() + getWidth() - 20, getY());
-            waypointToggle.setIcon(toggleIcon, 0xFFFFFFFF);
-            waypointToggle.render(drawContext, mouseX, mouseY, tickDelta);
-
-            if (waypointIcon.isMouseOver(mouseX, mouseY)) {
-                parentGui.setTooltip(waypoint == parentGui.highlightedWaypoint ? TOOLTIP_UNHIGHLIGHT : TOOLTIP_HIGHLIGHT);
-
-            } else if (waypointToggle.isMouseOver(mouseX, mouseY)) {
-                parentGui.setTooltip(waypoint.enabled ? GuiListWaypoints.TOOLTIP_DISABLE : GuiListWaypoints.TOOLTIP_ENABLE);
-
-            } else if (mouseX >= getX() && mouseX <= getX() + getWidth() && mouseY >= getY() && mouseY <= getY() + getHeight()) {
-                parentGui.setTooltip(Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ()));
-
-            }
+            waypointToggle.setIcon(waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            waypointToggle.setTooltip(waypoint.enabled ? GuiListWaypoints.TOOLTIP_CLICK_TO_DISABLE : GuiListWaypoints.TOOLTIP_CLICK_TO_ENABLE);
         }
 
         @Override
-        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            double mouseX = mouseButtonEvent.x();
-            double mouseY = mouseButtonEvent.y();
-            if (mouseY < getY() || mouseY > getBottom()) {
-                return false;
-            }
+        protected boolean canDisplayTooltip(int mouseX, int mouseY) {
+            return mouseX > getRowLeft() + 18 && mouseX < getRowRight() - 18 && super.canDisplayTooltip(mouseX, mouseY);
+        }
 
-            setSelected(this);
-
-            boolean clicked = waypointIcon.mouseClicked(mouseButtonEvent, doubleClick) || waypointToggle.mouseClicked(mouseButtonEvent, doubleClick);
-
-            if (!clicked && doubleClicked) {
+        @Override
+        public void onClick(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+            if (doubleClicked()) {
                 parentGui.editWaypoint(parentGui.selectedWaypoint);
             }
-
-            return true;
         }
 
         @Override

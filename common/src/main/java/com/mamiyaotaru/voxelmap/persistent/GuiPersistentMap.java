@@ -8,7 +8,6 @@ import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
 import com.mamiyaotaru.voxelmap.gui.GuiSubworldsSelect;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.IGuiWaypoints;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
 import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiScreen;
@@ -33,6 +32,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
@@ -149,8 +149,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Identifier voxelmapSkinLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "worldmap/player_skin");
     private final Identifier caveButtonTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/worldmap/cave_button.png");
 
-    public GuiPersistentMap(Screen parent) {
-        lastScreen = parent;
+    public GuiPersistentMap(Screen parentGui) {
+        super(parentGui, Component.empty());
 
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
@@ -220,8 +220,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 3 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("menu.options"), button -> minecraft.setScreen(new GuiMinimapOptions(this)), this));
         addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 4 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("gui.done"), button -> onClose(), this));
-
-        addRenderableWidget(new GuiIconElement(SIDE_MARGIN, bottom - 24, 16, 16, x -> {}).setIcon(caveButtonTexture, 0xFFFFFFFF).setTooltip(Component.translatable("worldmap.util.caveLayer")));
 
         oldNorth = mapOptions.oldNorth;
         centerX = getWidth() / 2;
@@ -632,8 +630,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         guiGraphics.pose().popMatrix();
 
         if (options.showDistantWaypoints) {
-            overlayBackground(guiGraphics, 0, top, 255, 255);
-            overlayBackground(guiGraphics, bottom, getHeight(), 255, 255);
+            overlayBackground(guiGraphics, 0, top);
+            overlayBackground(guiGraphics, bottom, getHeight());
         }
 
         Waypoint currentlyHovered = null;
@@ -661,8 +659,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         hoverdWaypoint = currentlyHovered;
 
         if (!options.showDistantWaypoints) {
-            overlayBackground(guiGraphics, 0, top, 255, 255);
-            overlayBackground(guiGraphics, bottom, getHeight(), 255, 255);
+            overlayBackground(guiGraphics, 0, top);
+            overlayBackground(guiGraphics, bottom, getHeight());
         }
 
         if (gotSkin) {
@@ -764,7 +762,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (isHovered) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
-                RenderUtils.drawTooltip(guiGraphics, Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord()), mouseX, mouseY, false);
+                Component tooltip = Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord());
+                RenderUtils.drawTooltip(guiGraphics, Tooltip.create(tooltip), mouseX, mouseY);
             }
         }
 
@@ -848,7 +847,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         if (isHovered) {
             guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
             if (options.showCoordinates) {
-                RenderUtils.drawTooltip(guiGraphics, Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ()), mouseX, mouseY, false);
+                Component tooltip = Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ());
+                RenderUtils.drawTooltip(guiGraphics, Tooltip.create(tooltip), mouseX, mouseY);
             }
         }
 
@@ -955,12 +955,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
     }
 
-    protected void overlayBackground(GuiGraphics guiGraphics, int startY, int endY, int startAlpha, int endAlpha) {
-        int colorBase = 0x404040;
-        int colorStart = (startAlpha << 24) | colorBase;
-        int colorEnd = (endAlpha << 24) | colorBase;
-        float renderedTextureSize = 32.0F;
-        VoxelMapGuiGraphics.blitFloatGradient(guiGraphics, RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), 0, startY, getWidth(), endY, 0, getWidth() / renderedTextureSize, 0, endY / renderedTextureSize, colorStart, colorEnd);
+    protected void overlayBackground(GuiGraphics guiGraphics, int startY, int endY) {
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), 0, startY, 0.0F, 0.0F, getWidth(), endY - startY, 32, 32, 0xFF404040);
+        if (startY > getHeight() / 2) {
+            guiGraphics.fillGradient(0, startY - 4, getWidth(), startY, 0x00000000, 0xFF000000);
+        } else {
+            guiGraphics.fillGradient(0, endY, getWidth(), endY + 4, 0xFF000000, 0x00000000);
+        }
     }
 
     @Override

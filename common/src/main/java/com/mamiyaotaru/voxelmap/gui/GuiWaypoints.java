@@ -7,7 +7,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -25,7 +24,6 @@ import java.util.TreeSet;
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     protected final MapSettingsManager options;
     protected final WaypointManager waypointManager;
-    protected Component screenTitle;
     private GuiListWaypoints waypointList;
     private Button buttonEdit;
     private boolean editClicked;
@@ -40,19 +38,15 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     private Button buttonSortColor;
     protected EditBox filter;
     private boolean addClicked;
-    private Component tooltip;
     protected Waypoint selectedWaypoint;
-    protected Waypoint highlightedWaypoint;
     protected Waypoint newWaypoint;
     private final Random generator = new Random();
     private boolean changedSort;
 
-    public GuiWaypoints(Screen parentScreen) {
-        lastScreen = parentScreen;
-
+    public GuiWaypoints(Screen parentGui) {
+        super(parentGui, Component.translatable("minimap.waypoints.title"));
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
-        highlightedWaypoint = waypointManager.getHighlightedWaypoint();
     }
 
     @Override
@@ -61,8 +55,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     @Override
     public void init() {
-        screenTitle = Component.translatable("minimap.waypoints.title");
-        waypointList = new GuiListWaypoints(this);
+        waypointList = new GuiListWaypoints(this, 0, 54, getWidth(), getHeight() - 140);
 
         addRenderableWidget(waypointList);
         addRenderableWidget(buttonSortName = new Button.Builder(Component.translatable("minimap.waypoints.sortByName"), button -> sortClicked(2)).bounds(getWidth() / 2 - 154, 34, 77, 20).build());
@@ -83,7 +76,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         addRenderableWidget(buttonHighlight = new Button.Builder(Component.translatable("minimap.waypoints.highlight"), button -> setHighlightedWaypoint()).bounds(getWidth() / 2 + 80, getHeight() - 50, 74, 20).build());
         addRenderableWidget(buttonTeleport = new Button.Builder(Component.translatable("minimap.waypoints.teleportTo"), button -> teleportClicked()).bounds(getWidth() / 2 - 154, getHeight() - 26, 74, 20).build());
         addRenderableWidget(buttonShare = new Button.Builder(Component.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(selectedWaypoint)).bounds(getWidth() / 2 - 76, getHeight() - 26, 74, 20).build());
-        addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this, options))).bounds(getWidth() / 2 + 2, getHeight() - 26, 74, 20).build());
+        addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this))).bounds(getWidth() / 2 + 2, getHeight() - 26, 74, 20).build());
         addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 + 80, getHeight() - 26, 74, 20).build());
 
         boolean isSomethingSelected = selectedWaypoint != null;
@@ -206,17 +199,16 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         buttonEdit.active = isSomethingSelected;
         buttonDelete.active = isSomethingSelected;
         buttonHighlight.active = isSomethingSelected;
-        buttonHighlight.setMessage(Component.translatable(isSomethingSelected && selectedWaypoint == highlightedWaypoint ? "minimap.waypoints.removeHighlight" : "minimap.waypoints.highlight"));
+        buttonHighlight.setMessage(Component.translatable(isSomethingSelected && waypointManager.isHighlightedWaypoint(selectedWaypoint) ? "minimap.waypoints.removeHighlight" : "minimap.waypoints.highlight"));
         buttonShare.active = isSomethingSelected;
         buttonTeleport.active = isSomethingSelected && canTeleport();
     }
 
     protected void setHighlightedWaypoint() {
         waypointManager.setHighlightedWaypoint(selectedWaypoint, true);
-        highlightedWaypoint = waypointManager.getHighlightedWaypoint();
 
         boolean isSomethingSelected = selectedWaypoint != null;
-        buttonHighlight.setMessage(Component.translatable(isSomethingSelected && selectedWaypoint == highlightedWaypoint ? "minimap.waypoints.removeHighlight" : "minimap.waypoints.highlight"));
+        buttonHighlight.setMessage(Component.translatable(isSomethingSelected && waypointManager.isHighlightedWaypoint(selectedWaypoint) ? "minimap.waypoints.removeHighlight" : "minimap.waypoints.highlight"));
     }
 
     protected void editWaypoint(Waypoint waypoint) {
@@ -258,22 +250,10 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        tooltip = null;
-
         super.render(drawContext, mouseX, mouseY, delta);
 
-        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
         drawContext.drawString(getFont(), I18n.get("minimap.waypoints.filter") + ":", getWidth() / 2 - 153, getHeight() - 73, 0xFFA0A0A0);
-
-        if (tooltip != null) {
-            RenderUtils.drawTooltip(drawContext, tooltip, mouseX, mouseY, true);
-        }
     }
-
-    protected void setTooltip(Component tooltip) {
-        this.tooltip = tooltip;
-    }
-
     public boolean canTeleport() {
         Optional<IntegratedServer> integratedServer = VoxelConstants.getIntegratedServer();
 

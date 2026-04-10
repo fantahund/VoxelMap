@@ -76,16 +76,12 @@ public class RenderUtils {
         drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
 
-    public static void drawTooltip(GuiGraphics guiGraphics, Component tooltip, int x, int y, boolean multilined) {
-        if (tooltip == null || tooltip.getString().isEmpty()) {
+    public static void drawTooltip(GuiGraphics guiGraphics, Tooltip tooltip, int x, int y) {
+        if (tooltip == null) {
             return;
         }
 
-        if (multilined) {
-            guiGraphics.setTooltipForNextFrame(MINECRAFT.font, Tooltip.create(tooltip).toCharSequence(MINECRAFT), x, y);
-        } else {
-            guiGraphics.setTooltipForNextFrame(tooltip, x, y);
-        }
+        guiGraphics.setTooltipForNextFrame(tooltip.toCharSequence(MINECRAFT), x, y);
     }
 
     public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Runnable runnable) {

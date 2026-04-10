@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class GuiMinimapOptions extends GuiScreenMinimap {
-    protected String screenTitle = "Minimap Options";
     private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
     private final MapSettingsManager mapOptions;
     private final RadarSettingsManager radarOptions;
@@ -65,16 +64,14 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     // Radar Tab
     private Button mobListButton;
 
-    public GuiMinimapOptions(Screen parent) {
-        lastScreen = parent;
+    public GuiMinimapOptions(Screen parentGui) {
+        super(parentGui, Component.empty());
         mapOptions = voxelMap.getMapOptions();
         radarOptions = voxelMap.getRadarOptions();
     }
 
     @Override
     public void init() {
-        screenTitle = I18n.get("options.minimap.title");
-
         tabNavigationBar = TabNavigationBar.builder(tabManager, width).addTabs(
                 new OptionsTab(Component.translatable("stat.generalButton"), 0),
                 new OptionsTab(Component.translatable("options.minimap.tab.detailsPerformance"), 1),
@@ -218,7 +215,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
 
         if (relevantOptions == RADAR_FULL_OPTIONS) {
-            mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this, radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
+            mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
             addOptionButton(mobListButton);
         }
 

@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -12,18 +12,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 public class GuiMobs extends GuiScreenMinimap {
-    protected final RadarSettingsManager options;
-    protected Component screenTitle;
+    private final RadarSettingsManager options;
     private GuiListMobs mobsList;
     private Button buttonEnable;
     private Button buttonDisable;
     protected EditBox filter;
-    private Component tooltip;
     protected Identifier selectedMobId;
 
-    public GuiMobs(Screen parentScreen, RadarSettingsManager options) {
-        this.lastScreen = parentScreen;
-        this.options = options;
+    public GuiMobs(Screen parentGui) {
+        super(parentGui, Component.translatable("options.minimap.mobs.title"));
+        options = VoxelConstants.getVoxelMapInstance().getRadarOptions();
     }
 
     @Override
@@ -32,9 +30,7 @@ public class GuiMobs extends GuiScreenMinimap {
 
     @Override
     public void init() {
-        screenTitle = Component.translatable("options.minimap.mobs.title");
-
-        mobsList = new GuiListMobs(this);
+        mobsList = new GuiListMobs(this, 0, 40, getWidth(), getHeight() - 110);
         int filterStringWidth = getFont().width(I18n.get("minimap.waypoints.filter") + ":");
         filter = new EditBox(getFont(), getWidth() / 2 - 153 + filterStringWidth + 5, getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
         filter.setMaxLength(35);
@@ -78,23 +74,12 @@ public class GuiMobs extends GuiScreenMinimap {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        tooltip = null;
-
         super.render(drawContext, mouseX, mouseY, delta);
 
-        drawContext.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 20, 0xFFFFFFFF);
         drawContext.drawString(getFont(), I18n.get("minimap.waypoints.filter") + ":", getWidth() / 2 - 153, getHeight() - 49, 0xFFA0A0A0);
 
         boolean isSomethingSelected = selectedMobId != null;
         buttonEnable.active = isSomethingSelected && !isMobEnabled(selectedMobId);
         buttonDisable.active = isSomethingSelected && isMobEnabled(selectedMobId);
-
-        if (tooltip != null) {
-            RenderUtils.drawTooltip(drawContext, tooltip, mouseX, mouseY, true);
-        }
-    }
-
-    protected void setTooltip(Component tooltip) {
-        this.tooltip = tooltip;
     }
 }

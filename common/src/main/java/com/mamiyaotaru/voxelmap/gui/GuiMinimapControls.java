@@ -9,34 +9,29 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 
 public class GuiMinimapControls extends GuiScreenMinimap {
-    protected String screenTitle = "Controls";
     private GuiListKeys keymapList;
 
-    public GuiMinimapControls(Screen parent) {
-        this.lastScreen = parent;
+    public GuiMinimapControls(Screen parentGui) {
+        super(parentGui, Component.translatable("key.category.voxelmap.controls.title"));
     }
 
     public void init() {
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
-        this.screenTitle = I18n.get("key.category.voxelmap.controls.title");
-
-        this.keymapList = new GuiListKeys(this);
-        this.addRenderableWidget(this.keymapList);
+        addRenderableWidget(keymapList = new GuiListKeys(this, 0, 40, getWidth(), getHeight() - 114));
+        addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 - 100, getHeight() - 26, 200, 20).build());
     }
 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        if (this.keymapList.keyEditing()) {
-            return this.keymapList.keyPressed(keyEvent);
-        } else {
-            return super.keyPressed(keyEvent);
+        if (keymapList.isEditing()) {
+            return keymapList.keyPressed(keyEvent);
         }
+
+        return super.keyPressed(keyEvent);
     }
 
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         super.render(guiGraphics, mouseX, mouseY, delta);
-        guiGraphics.drawCenteredString(this.getFont(), I18n.get("controls.minimap.unbind1"), this.getWidth() / 2, this.getHeight() - 62, 0xFFFFFFFF);
-        guiGraphics.drawCenteredString(this.getFont(), "§e" + I18n.get("controls.minimap.unbind2"), this.getWidth() / 2, this.getHeight() - 46, 0xFFFFFFFF);
-        guiGraphics.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+        guiGraphics.drawCenteredString(getFont(), I18n.get("controls.minimap.unbind1"), getWidth() / 2, getHeight() - 62, 0xFFFFFFFF);
+        guiGraphics.drawCenteredString(getFont(), "§e" + I18n.get("controls.minimap.unbind2"), getWidth() / 2, getHeight() - 46, 0xFFFFFFFF);
     }
 }

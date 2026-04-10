@@ -25,8 +25,8 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
 
     private final ArrayList<Component> welcomeTexts = new ArrayList<>();
 
-    public GuiWelcomeScreen(Screen parentScreen) {
-        this.lastScreen = parentScreen;
+    public GuiWelcomeScreen(Screen parentGui) {
+        super(parentGui, Component.empty());
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 

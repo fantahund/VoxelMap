@@ -1,31 +1,31 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 
-class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.DimensionItem> {
+public class GuiListDimensions extends GuiListMinimap<GuiListDimensions.DimensionItem> {
     private final GuiAddWaypoint parentGui;
     private final ArrayList<DimensionItem> dimensions;
     protected long lastClicked;
     public boolean doubleClicked;
 
-    private static final Component APPLIES = Component.translatable("minimap.waypoints.dimension.applies");
-    private static final Component NOT_APPLIES = Component.translatable("minimap.waypoints.dimension.notApplies");
+    private static final Tooltip TOOLTIP_APPLIES = Tooltip.create(Component.translatable("minimap.waypoints.dimension.applies"));
+    private static final Tooltip TOOLTIP_NOT_APPLIES = Tooltip.create(Component.translatable("minimap.waypoints.dimension.notApplies"));
 
-    GuiListDimensions(GuiAddWaypoint parentGui) {
-        super(VoxelConstants.getMinecraft(), 101, 64, parentGui.getHeight() / 6 + 90, 18);
+    GuiListDimensions(GuiAddWaypoint parentGui, int x, int y, int width, int height) {
+        super(x, y, width, height, 18);
         this.parentGui = parentGui;
-        setX(parentGui.getWidth() / 2);
 
         DimensionManager dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
         dimensions = new ArrayList<>();
@@ -72,15 +72,16 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
         return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
-    public class DimensionItem extends AbstractSelectionList.Entry<DimensionItem> {
+    public class DimensionItem extends GuiListMinimap.Entry<DimensionItem> {
         private final GuiAddWaypoint parentGui;
         private final DimensionContainer dim;
-        private final GuiIconElement dimToggle;
+        private final GuiIconButton dimToggle;
 
-        protected DimensionItem(GuiAddWaypoint waypointScreen, DimensionContainer dim) {
-            parentGui = waypointScreen;
+        protected DimensionItem(GuiAddWaypoint parentGui, DimensionContainer dim) {
+            super(GuiListDimensions.this);
+            this.parentGui = parentGui;
             this.dim = dim;
-            dimToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, element -> parentGui.toggleDimensionSelected());
+            dimToggle = new GuiIconButton(getX() + getWidth() - 20, getY(), 18, 18, element -> parentGui.toggleDimensionSelected());
         }
 
         @Override
@@ -89,11 +90,8 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
 
             dimToggle.setPosition(getX() + getWidth() - 20, getY());
             dimToggle.setIcon(parentGui.dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            dimToggle.setTooltip(parentGui.dimensions.contains(dim) ? TOOLTIP_APPLIES : TOOLTIP_NOT_APPLIES);
             dimToggle.render(drawContext, mouseX, mouseY, tickDelta);
-
-            if (dimToggle.isMouseOver(mouseX, mouseY)) {
-                parentGui.setTooltip(parentGui.dimensions.contains(dim) ? APPLIES : NOT_APPLIES);
-            }
         }
 
         @Override

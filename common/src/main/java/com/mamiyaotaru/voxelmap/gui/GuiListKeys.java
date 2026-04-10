@@ -2,11 +2,10 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -17,51 +16,59 @@ import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
+public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
     private final MapSettingsManager options;
     private final GuiMinimapControls parentGui;
     private final ArrayList<RowItem> rowItems = new ArrayList<>();
     private KeyMapping keyForEdit;
     private final HashMap<KeyMapping, Component> duplicateKeys = new HashMap<>();
 
-    public GuiListKeys(GuiMinimapControls parentScreen) {
-        super(VoxelConstants.getMinecraft(), parentScreen.getWidth(), parentScreen.getHeight() - 114, 40, 20);
-        this.parentGui = parentScreen;
-        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        for (int i = 0; i < this.options.keyBindings.length; ++i) {
+    public GuiListKeys(GuiMinimapControls parentGui, int x, int y, int width, int height) {
+        super(x, y, width, height, 20);
+
+        this.parentGui = parentGui;
+        options = VoxelConstants.getVoxelMapInstance().getMapOptions();
+
+        for (int i = 0; i < options.keyBindings.length; ++i) {
             int ii = i;
-            this.rowItems.add(new RowItem(this.parentGui,
-                    new Button.Builder(Component.empty(), button -> this.keyForEdit = this.options.keyBindings[ii]).bounds(0, 0, 75, 20).build(),
-                    new Button.Builder(Component.translatable("controls.reset"), button -> this.resetKeyMapping(ii)).bounds(0, 0, 50, 20).build(),
-                    this.options.keyBindings[i]));
+
+            Button editButton = new Button.Builder(Component.empty(), button -> startEditing(ii)).bounds(0, 0, 75, 20).build();
+            Button resetButton = new Button.Builder(Component.translatable("controls.reset"), button -> resetKeyMapping(ii)).bounds(0, 0, 50, 20).build();
+
+            rowItems.add(new RowItem(parentGui, editButton, resetButton, options.keyBindings[i]));
         }
-        this.rowItems.sort(Comparator.comparing(entry -> entry.keyMapping));
-        this.checkDuplicateKeys();
-        this.rowItems.forEach(this::addEntry);
+        rowItems.sort(Comparator.comparing(entry -> entry.keyMapping));
+        rowItems.forEach(this::addEntry);
+
+        checkDuplicateKeys();
     }
 
-    public boolean keyEditing() {
-        return this.keyForEdit != null;
+    public boolean isEditing() {
+        return keyForEdit != null;
+    }
+
+    private void startEditing(int index) {
+        keyForEdit = options.keyBindings[index];
     }
 
     private void resetKeyMapping(int index) {
-        KeyMapping key = this.options.keyBindings[index];
-        this.options.setKeyBinding(key, key.getDefaultKey());
-        this.checkDuplicateKeys();
+        KeyMapping key = options.keyBindings[index];
+        options.setKeyBinding(key, key.getDefaultKey());
+        checkDuplicateKeys();
         KeyMapping.resetMapping();
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        if (this.keyEditing()) {
-            this.options.setKeyBinding(this.keyForEdit, InputConstants.Type.MOUSE.getOrCreate(mouseButtonEvent.button()));
-            this.keyForEdit = null;
-            this.checkDuplicateKeys();
+        if (isEditing()) {
+            options.setKeyBinding(keyForEdit, InputConstants.Type.MOUSE.getOrCreate(mouseButtonEvent.button()));
+            keyForEdit = null;
+            checkDuplicateKeys();
             KeyMapping.resetMapping();
+
             return true;
         } else {
             return super.mouseClicked(mouseButtonEvent, doubleClick);
@@ -70,42 +77,49 @@ public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        if (this.keyEditing()) {
-            if (keyEvent.key() == GLFW.GLFW_KEY_ESCAPE) {
-                boolean isMenuKey = this.keyForEdit.same(this.options.keyBindMenu);
-                if (!isMenuKey) {
-                    this.options.setKeyBinding(this.keyForEdit, InputConstants.UNKNOWN);
-                }
-            } else {
-                this.options.setKeyBinding(this.keyForEdit, InputConstants.getKey(keyEvent));
+        if (isEditing()) {
+            if (keyEvent.key() != GLFW.GLFW_KEY_ESCAPE) {
+                options.setKeyBinding(keyForEdit, InputConstants.getKey(keyEvent));
+            } else if (keyForEdit.same(options.keyBindMenu)) {
+                options.setKeyBinding(keyForEdit, InputConstants.UNKNOWN);
             }
-            this.keyForEdit = null;
-            this.checkDuplicateKeys();
+            keyForEdit = null;
+            checkDuplicateKeys();
             KeyMapping.resetMapping();
+
             return true;
         } else {
             return super.keyPressed(keyEvent);
         }
     }
 
-    private void checkDuplicateKeys() {
-        this.duplicateKeys.clear();
-        for (KeyMapping key : this.options.keyBindings) {
-            if (!key.isUnbound()) {
-                KeyMapping[] duplicates = Arrays.stream(minecraft.options.keyMappings).filter(compare -> key != compare && key.same(compare)).toArray(KeyMapping[]::new);
-                if (duplicates.length > 0) {
-                    boolean bl = false;
-                    MutableComponent details = Component.empty();
-                    for (KeyMapping duplicate : duplicates) {
-                        if (bl) {
-                            details.append(", ");
-                        }
-                        bl = true;
-                        details.append(Component.translatable(duplicate.getName()));
-                    }
+    private boolean isDuplicated(KeyMapping key) {
+        return duplicateKeys.containsKey(key);
+    }
 
-                    this.duplicateKeys.put(key, Component.translatable("controls.keybinds.duplicateKeybinds", details));
+    private Component getDuplicateKeys(KeyMapping key) {
+        return duplicateKeys.get(key);
+    }
+
+    private void checkDuplicateKeys() {
+        duplicateKeys.clear();
+        for (KeyMapping key : options.keyBindings) {
+            if (key.isUnbound()) continue;
+
+            MutableComponent keyNames = null;
+            for (KeyMapping compare : minecraft.options.keyMappings) {
+                if (key != compare && key.same(compare)) {
+                    if (keyNames == null) {
+                        keyNames = Component.empty();
+                    } else {
+                        keyNames.append(",");
+                    }
+                    keyNames.append(Component.translatable(compare.getName()));
                 }
+            }
+
+            if (keyNames != null) {
+                duplicateKeys.put(key, Component.translatable("controls.keybinds.duplicateKeybinds", keyNames));
             }
         }
     }
@@ -119,70 +133,46 @@ public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 
-    public class RowItem extends AbstractSelectionList.Entry<RowItem> {
+    public class RowItem extends GuiListMinimap.Entry<RowItem> {
         private final GuiMinimapControls parentGui;
         private final Button button;
         private final Button buttonReset;
         private final KeyMapping keyMapping;
 
-        protected RowItem(GuiMinimapControls parentScreen, Button button, Button buttonReset, KeyMapping keyMapping) {
-            this.parentGui = parentScreen;
-            this.button = button;
-            this.buttonReset = buttonReset;
+        protected RowItem(GuiMinimapControls parentGui, Button button, Button buttonReset, KeyMapping keyMapping) {
+            super(GuiListKeys.this);
+
+            this.parentGui = parentGui;
             this.keyMapping = keyMapping;
+
+            addWidget(this.button = button);
+            addWidget(this.buttonReset = buttonReset);
         }
 
         @Override
         public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            if (this.button != null && this.buttonReset != null) {
-                guiGraphics.drawString(this.parentGui.getFont(), Component.translatable(this.keyMapping.getName()), getX() + 5, getY() + 5, 0xFFFFFFFF);
+            super.renderContent(guiGraphics, mouseX, mouseY, hovered, tickDelta);
 
-                Component tooltip = null;
+            guiGraphics.drawString(parentGui.getFont(), Component.translatable(keyMapping.getName()), getX() + 5, getY() + 5, 0xFFFFFFFF);
 
-                MutableComponent keyText = this.keyMapping.getTranslatedKeyMessage().copy();
-                if (GuiListKeys.this.keyForEdit != null && GuiListKeys.this.keyForEdit == this.keyMapping) {
-                    keyText = Component.empty()
-                            .append(Component.literal("> ").withStyle(ChatFormatting.YELLOW))
-                            .append(keyText.copy().withStyle(ChatFormatting.WHITE))
-                            .append(Component.literal(" <").withStyle(ChatFormatting.YELLOW));
+            Tooltip tooltip = null;
 
-                } else if (GuiListKeys.this.duplicateKeys.containsKey(this.keyMapping)) {
-                    keyText = Component.empty()
-                            .append(Component.literal("[ ").withStyle(ChatFormatting.YELLOW))
-                            .append(keyText.copy().withStyle(ChatFormatting.WHITE))
-                            .append(Component.literal(" ]").withStyle(ChatFormatting.YELLOW));
-
-                    tooltip = GuiListKeys.this.duplicateKeys.get(this.keyMapping);
-                }
-
-                if (tooltip != null) {
-                    this.button.setTooltip(Tooltip.create(tooltip));
-                } else {
-                    this.button.setTooltip(null);
-                }
-
-                this.button.setMessage(keyText);
-                this.button.setX(getX() + getWidth() - 135);
-                this.button.setY(getY());
-                this.button.render(guiGraphics, mouseX, mouseY, tickDelta);
-
-                this.buttonReset.active = !this.keyMapping.isDefault();
-                this.buttonReset.setX(getX() + getWidth() - 55);
-                this.buttonReset.setY(getY());
-                this.buttonReset.render(guiGraphics, mouseX, mouseY, tickDelta);
+            MutableComponent keyText = keyMapping.getTranslatedKeyMessage().copy();
+            if (isEditing() && keyForEdit == this.keyMapping) {
+                keyText = Component.empty().append("§e> §r").append(keyText).append("§e <");
+            } else if (isDuplicated(keyMapping)) {
+                keyText = Component.empty().append("§e[ §r").append(keyText).append("§e ]");
+                tooltip = Tooltip.create(getDuplicateKeys(keyMapping));
             }
-        }
 
-        @Override
-        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            GuiListKeys.this.setSelected(this);
-            boolean clicked = false;
-            if (this.button != null && this.button.mouseClicked(mouseButtonEvent, doubleClick)) {
-                clicked = true;
-            } else if (this.buttonReset != null && this.buttonReset.mouseClicked(mouseButtonEvent, doubleClick)) {
-                clicked = true;
-            }
-            return clicked;
+            button.setMessage(keyText);
+            button.setTooltip(tooltip);
+            button.setX(getX() + getWidth() - 135);
+            button.setY(getY());
+
+            buttonReset.active = !keyMapping.isDefault();
+            buttonReset.setX(getX() + getWidth() - 55);
+            buttonReset.setY(getY());
         }
     }
 

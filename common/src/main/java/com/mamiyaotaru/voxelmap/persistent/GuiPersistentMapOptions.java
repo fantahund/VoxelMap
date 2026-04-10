@@ -16,13 +16,11 @@ import net.minecraft.network.chat.Component;
 public class GuiPersistentMapOptions extends GuiScreenMinimap {
     private final PersistentMapSettingsManager options;
     private final MapSettingsManager mapOptions;
-    private final Component screenTitle = Component.translatable("options.worldmap.title");
     private final Component cacheSettings = Component.translatable("options.worldmap.cacheSettings");
     private final Component warning = Component.translatable("options.worldmap.warning").withStyle(ChatFormatting.RED);
 
-    public GuiPersistentMapOptions(Screen parent) {
-        this.lastScreen = parent;
-
+    public GuiPersistentMapOptions(Screen parentGui) {
+        super(parentGui, Component.translatable("options.worldmap.title"));
         this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
         this.mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
@@ -91,6 +89,8 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        super.render(drawContext, mouseX, mouseY, delta);
+
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
                 EnumOptionsMinimap option = slider.returnEnumOptions();
@@ -108,9 +108,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
             }
         }
 
-        drawContext.drawCenteredString(this.getFont(), this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
         drawContext.drawCenteredString(this.getFont(), this.cacheSettings, this.getWidth() / 2, this.getHeight() / 6 + 49, 0xFFFFFFFF);
         drawContext.drawCenteredString(this.getFont(), this.warning, this.getWidth() / 2, this.getHeight() / 6 + 59, 0xFFFFFFFF);
-        super.render(drawContext, mouseX, mouseY, delta);
     }
 }

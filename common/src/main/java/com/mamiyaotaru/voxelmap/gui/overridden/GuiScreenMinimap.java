@@ -1,37 +1,39 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-import java.util.List;
-
 public class GuiScreenMinimap extends Screen {
-    protected GuiScreenMinimap() { this (Component.literal("")); }
+    protected final Screen parentGui;
 
-    protected GuiScreenMinimap(Component title) {
-        super (title);
+    protected GuiScreenMinimap(Screen parentGui, Component title) {
+        super(title);
+        this.parentGui = parentGui;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     @Override
-    public void removed() { MapSettingsManager.instance.saveAll(); }
-
-    @Override
-    public Font getFont() { return super.getFont(); }
-
-    @Override
-    public List<? extends GuiEventListener> children() { return super.children(); }
-
-    public int getWidth() { return width; }
-
-    public int getHeight() { return height; }
-
-    protected Screen lastScreen;
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
+        super.render(guiGraphics, mouseX, mouseY, delta);
+        guiGraphics.drawCenteredString(getFont(), getTitle(), width / 2, 20, 0xFFFFFFFF);
+    }
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.lastScreen);
+        minecraft.setScreen(parentGui);
+    }
+
+    @Override
+    public void removed() {
+        MapSettingsManager.instance.saveAll();
     }
 }
