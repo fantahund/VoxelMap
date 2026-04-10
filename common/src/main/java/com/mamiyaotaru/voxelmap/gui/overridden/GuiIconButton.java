@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -23,7 +24,7 @@ public class GuiIconButton extends Button.Plain {
     }
 
     public void clearIcon() {
-        this.icon = null;
+        icon = null;
     }
 
     public void setIcon(Sprite icon, int color) {
@@ -67,5 +68,9 @@ public class GuiIconButton extends Button.Plain {
         float iconY = getY() + ((getHeight() - iconHeight) / 2.0F);
 
         VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, icon, iconX, iconY, width, height, u0, u1, v0, v1, color);
+    }
+
+    @Override
+    public void playDownSound(SoundManager soundManager) {
     }
 }

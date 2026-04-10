@@ -55,11 +55,11 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
 
         setButtonsActive();
 
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 - 100, getHeight() - 26, 200, 20).build());
+        addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 - 100, getHeight() - 26, 200, 20).build());
     }
 
     protected void optionClicked(Button par1GuiButton) {
-        EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
+        EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).getOption();
         MapSettingsManager.updateBooleanOrListValue(options, option);
         par1GuiButton.setMessage(Component.literal(options.getKeyText(option)));
 
@@ -69,7 +69,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
     private void setButtonsActive() {
         for (GuiEventListener item : children()) {
             if (item instanceof GuiOptionButtonMinimap button) {
-                EnumOptionsMinimap option = button.returnEnumOptions();
+                EnumOptionsMinimap option = button.getOption();
 
                 switch (option) {
                     case WAYPOINT_LABEL_STYLE, HIGHLIGHT_FOCUSED_WAYPOINT, WAYPOINT_DISTANCE_UNIT_CONVERSION -> {
@@ -77,7 +77,7 @@ public class GuiWaypointsOptions extends GuiScreenMinimap {
                     }
                 }
             } else if (item instanceof GuiOptionSliderMinimap slider) {
-                EnumOptionsMinimap option = slider.returnEnumOptions();
+                EnumOptionsMinimap option = slider.getOption();
 
                 if (option == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
                     slider.active = options.showWaypointSigns;

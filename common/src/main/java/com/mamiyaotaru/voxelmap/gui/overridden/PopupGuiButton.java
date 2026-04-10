@@ -6,16 +6,16 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 public class PopupGuiButton extends Button.Plain {
-    final IPopupGuiScreen parentScreen;
+    private final IPopupGuiScreen parentGui;
 
-    public PopupGuiButton(int x, int y, int width, int height, Component message, OnPress onPress, IPopupGuiScreen parentScreen) {
+    public PopupGuiButton(int x, int y, int width, int height, Component message, OnPress onPress, IPopupGuiScreen parentGui) {
         super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
-        this.parentScreen = parentScreen;
+        this.parentGui = parentGui;
     }
 
     @Override
     public void renderContents(@NotNull GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        boolean canHover = this.parentScreen.overPopup(mouseX, mouseY);
+        boolean canHover = parentGui.overPopup(mouseX, mouseY);
         if (!canHover) {
             mouseX = 0;
             mouseY = 0;

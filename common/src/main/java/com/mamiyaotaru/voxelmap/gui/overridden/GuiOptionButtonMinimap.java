@@ -4,12 +4,14 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
 public class GuiOptionButtonMinimap extends Button.Plain {
-    private final EnumOptionsMinimap enumOptions;
+    private final EnumOptionsMinimap option;
 
-    public GuiOptionButtonMinimap(int x, int y, EnumOptionsMinimap par4EnumOptions, Component message, OnPress onPress) {
+    public GuiOptionButtonMinimap(int x, int y, EnumOptionsMinimap option, Component message, OnPress onPress) {
         super (x, y, 150, 20, message, onPress, DEFAULT_NARRATION);
-        this.enumOptions = par4EnumOptions;
+        this.option = option;
     }
 
-    public EnumOptionsMinimap returnEnumOptions() { return this.enumOptions; }
+    public EnumOptionsMinimap getOption() {
+        return this.option;
+    }
 }

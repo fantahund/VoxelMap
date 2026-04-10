@@ -242,20 +242,6 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        boolean pressed = false;
-        if (!popupOpen()) {
-            pressed = super.charTyped(characterEvent);
-            doneButton.active = isWaypointAcceptable();
-        }
-
-        handlePopupEvents(widget -> widget.charTyped(characterEvent));
-
-        return pressed;
-    }
-
-
-    @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         double mouseX = mouseButtonEvent.x();
         double mouseY = mouseButtonEvent.y();

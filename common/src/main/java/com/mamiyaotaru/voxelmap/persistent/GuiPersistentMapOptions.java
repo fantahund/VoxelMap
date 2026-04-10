@@ -70,7 +70,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
     }
 
     protected void optionClicked(Button par1GuiButton) {
-        EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
+        EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).getOption();
         MapSettingsManager.updateBooleanOrListValue(this.options, option);
         par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
 
@@ -81,7 +81,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
         for (GuiEventListener renderable : this.children()) {
             if (!(renderable instanceof GuiOptionButtonMinimap button)) continue;
 
-            switch (button.returnEnumOptions()) {
+            switch (button.getOption()) {
                 case SHOW_WORLDMAP_WAYPOINT_NAMES, SHOW_WORLDMAP_DISTANT_WAYPOINTS -> button.active = options.showWaypoints && mapOptions.waypointsAllowed;
             }
         }
@@ -93,7 +93,7 @@ public class GuiPersistentMapOptions extends GuiScreenMinimap {
 
         for (Object buttonObj : this.children()) {
             if (buttonObj instanceof GuiOptionSliderMinimap slider) {
-                EnumOptionsMinimap option = slider.returnEnumOptions();
+                EnumOptionsMinimap option = slider.getOption();
                 float sValue = this.options.getFloatValue(option);
                 float fValue;
 

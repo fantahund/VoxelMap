@@ -23,7 +23,6 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
-import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
@@ -232,7 +231,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         if (!(button instanceof GuiOptionButtonMinimap button2)) {
             return;
         }
-        EnumOptionsMinimap option = button2.returnEnumOptions();
+        EnumOptionsMinimap option = button2.getOption();
 
         ISettingsManager settingsManager = getSettingsManager(option);
         if (settingsManager == null) return;
@@ -259,7 +258,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             if (!(button instanceof GuiOptionButtonMinimap button2)){
                 continue;
             }
-            EnumOptionsMinimap option = button2.returnEnumOptions();
+            EnumOptionsMinimap option = button2.getOption();
 
             boolean radarBlocked = !radarOptions.radarAllowed && !radarOptions.radarPlayersAllowed && !radarOptions.radarMobsAllowed;
 
@@ -337,21 +336,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
 
         return super.keyPressed(keyEvent);
-    }
-
-    @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        boolean OK = super.charTyped(characterEvent);
-        if (characterEvent.codepoint() == '\r') {
-            if (worldSeedButton != null && worldSeedButton.isEditing()) {
-                newSeed();
-            } else if (teleportCommandButton != null && teleportCommandButton.isEditing()) {
-                newTeleportCommand();
-            }
-
-        }
-
-        return OK;
     }
 
     private record OptionsTab(Component title, int index) implements Tab {

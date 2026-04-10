@@ -80,7 +80,7 @@ public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
         if (isEditing()) {
             if (keyEvent.key() != GLFW.GLFW_KEY_ESCAPE) {
                 options.setKeyBinding(keyForEdit, InputConstants.getKey(keyEvent));
-            } else if (keyForEdit.same(options.keyBindMenu)) {
+            } else if (!keyForEdit.same(options.keyBindMenu)) {
                 options.setKeyBinding(keyForEdit, InputConstants.UNKNOWN);
             }
             keyForEdit = null;

@@ -64,20 +64,6 @@ public class GuiButtonText extends Button.Plain {
         return false;
     }
 
-
-    @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        if (!(editing)) {
-            return super.charTyped(characterEvent);
-        }
-        if (characterEvent.codepoint() != '\r') {
-            return textField.charTyped(characterEvent);
-        }
-
-        setEditing(false);
-        return false;
-    }
-
     public boolean isEditing() { return editing; }
 
     public void setText(String text) { textField.setValue(text); }
