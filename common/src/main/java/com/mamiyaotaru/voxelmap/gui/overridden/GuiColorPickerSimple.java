@@ -16,8 +16,8 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
     private static final int SLIDER_WIDTH = 14;
     private final Identifier roundHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/round_handle.png");
     private final Identifier roundHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/round_handle_tint.png");
-    private final Identifier verticalHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle.png");
-    private final Identifier verticalHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle_tint.png");
+    private final Identifier sliderHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/slider_handle.png");
+    private final Identifier sliderHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/slider_handle_tint.png");
     private float h;
     private float s;
     private float v;
@@ -92,8 +92,8 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
         float sliderHandleX = sliderX;
         float sliderHandleY = sliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - v));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandle, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandleTint, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render h, s picker
         int wheelX = getHueSatWheelX();

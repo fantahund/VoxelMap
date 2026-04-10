@@ -320,16 +320,21 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return minecraft.getWindow().getHeight();
     }
 
-    private double getUnscaledPos(double pos) {
-        return pos * minecraft.getWindow().getGuiScale();
+    private double getRawMouseX() {
+        return minecraft.mouseHandler.getScaledXPos(minecraft.getWindow()) * minecraft.getWindow().getGuiScale();
     }
+
+    private double getRawMouseY() {
+        return minecraft.mouseHandler.getScaledYPos(minecraft.getWindow()) * minecraft.getWindow().getGuiScale();
+    }
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         timeOfLastMouseInput = System.currentTimeMillis();
         switchToMouseInput();
 
-        float rawMouseX = (float) getUnscaledPos(mouseX);
-        float rawMouseY = (float) getUnscaledPos(mouseY);
+        float rawMouseX = (float) getRawMouseX();
+        float rawMouseY = (float) getRawMouseY();
         if (amount != 0.0) {
             if (amount > 0.0) {
                 zoomGoal *= 1.26F;
@@ -356,7 +361,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             double mouseX = mouseButtonEvent.x();
             double mouseY = mouseButtonEvent.y();
             if (mapOptions.worldmapAllowed) {
-                createPopup((int) mouseX, (int) mouseY, (int) getUnscaledPos(mouseX), (int) getUnscaledPos(mouseY));
+                createPopup((int) mouseX, (int) mouseY, (int) getRawMouseX(), (int) getRawMouseY());
             }
         }
 
@@ -526,8 +531,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         guiGraphics.fill(0, 0, getWidth(), getHeight(), 0xFF000000);
 
-        float rawMouseX = (float) getUnscaledPos(mouseX);
-        float rawMouseY = (float) getUnscaledPos(mouseY);
+        float rawMouseX = (float) getRawMouseX();
+        float rawMouseY = (float) getRawMouseY();
 
         handleInputAndNavigation(mouseX, mouseY, rawMouseX, rawMouseY);
 

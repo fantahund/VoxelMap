@@ -14,8 +14,8 @@ import java.awt.Color;
 
 public class GuiColorPickerFull extends AbstractColorPicker {
     private static final int SLIDER_WIDTH = 14;
-    private final Identifier verticalHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle.png");
-    private final Identifier verticalHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle_tint.png");
+    private final Identifier sliderHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/slider_handle.png");
+    private final Identifier sliderHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/slider_handle_tint.png");
     private float h;
     private float s;
     private float v;
@@ -92,8 +92,8 @@ public class GuiColorPickerFull extends AbstractColorPicker {
 
         float sSliderHandleX = sSliderX;
         float sSliderHandleY = sSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - s));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandle, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandleTint, sSliderHandleX - 8, sSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render v picker
         int vSliderX = getValueSliderX();
@@ -102,8 +102,8 @@ public class GuiColorPickerFull extends AbstractColorPicker {
 
         float vSliderHandleX = vSliderX;
         float vSliderHandleY = vSliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - v));
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandle, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandleTint, vSliderHandleX - 8, vSliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render h, s picker
         int wheelX = getHueWheelX();
@@ -116,8 +116,8 @@ public class GuiColorPickerFull extends AbstractColorPicker {
         guiGraphics.pose().translate(wheelX, wheelY);
         guiGraphics.pose().rotate(radians);
         guiGraphics.pose().translate(wheelRadius, 0.0F);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandle, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, verticalHandleTint, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, Color.getHSBColor(h, 1.0F, 1.0F).getRGB());
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandle, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, sliderHandleTint, -SLIDER_WIDTH, -4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, Color.getHSBColor(h, 1.0F, 1.0F).getRGB());
         guiGraphics.pose().popMatrix();
 
         // render texts
