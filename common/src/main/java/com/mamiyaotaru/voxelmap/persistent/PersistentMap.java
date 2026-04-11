@@ -67,13 +67,13 @@ public class PersistentMap implements IChangeObserver {
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
 
-    public static final int CAVE_LAYER_HEIGHT = 32;
     private boolean isUnderground;
     private boolean skipProcessing;
     private int lastX;
     private int lastY;
     private int lastZ;
     private int caveLayer;
+    private static final int CAVE_LAYER_HEIGHT = 32;
 
     private final Comparator<RegionCoordinates> distanceSorter = Comparator
             .comparingDouble(coords -> getDistanceSq(coords.x, coords.z, 256));
@@ -201,12 +201,28 @@ public class PersistentMap implements IChangeObserver {
                     isUnderground = world.getBrightness(LightLayer.SKY, playerPos) <= 0;
                 }
 
-                caveLayer = Math.floorDiv(lastY, CAVE_LAYER_HEIGHT);
+                caveLayer = blockToCaveLayer(world, lastY);
                 caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
             }
 
             getCurrentLayer().handleProcessingQueue();
         }
+    }
+
+    public static int getMinCaveLayer(ClientLevel world) {
+        return Math.floorDiv(world.getMinY(), CAVE_LAYER_HEIGHT);
+    }
+
+    public static int getMaxCaveLayer(ClientLevel world) {
+        return Math.floorDiv(world.getMaxY(), CAVE_LAYER_HEIGHT);
+    }
+
+    public static int blockToCaveLayer(ClientLevel world, int blockY) {
+        return Math.min(Math.max(Math.floorDiv(blockY, CAVE_LAYER_HEIGHT), getMinCaveLayer(world)), getMaxCaveLayer(world));
+    }
+
+    public static int caveLayerToBlock(ClientLevel world, int sectionY) {
+        return Math.min(Math.max(sectionY * CAVE_LAYER_HEIGHT, world.getMinY()), world.getMaxY());
     }
 
     private RegionCacheLayer getCurrentLayer() {
@@ -409,7 +425,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private int getNetherHeight(LevelChunk chunk, int x, int z, int sectionY) {
-        int baseY = sectionY * CAVE_LAYER_HEIGHT;
+        int baseY = caveLayerToBlock(world, sectionY);
         int y = baseY;
         this.blockPos.setXYZ(x, y, z);
         BlockState blockState = chunk.getBlockState(this.blockPos);
@@ -641,7 +657,7 @@ public class PersistentMap implements IChangeObserver {
 
     private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer, int sectionY) {
         if (color24 != this.colorManager.getAirColor() && color24 != 0) {
-            int baseY = !underground ? 80 : sectionY * CAVE_LAYER_HEIGHT;
+            int baseY = !underground ? 80 : caveLayerToBlock(world, sectionY);
             int heightComp = Short.MIN_VALUE;
             if ((mapOptions.heightmap || mapOptions.slopemap) && !solid) {
                 int diff;

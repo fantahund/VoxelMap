@@ -103,7 +103,7 @@ public class WorldMatcher {
                 candidateRegions.clear();
 
                 boolean underground = world.getBrightness(LightLayer.SKY, blockPos.withXYZ(player.getBlockX(), player.getBlockY(), player.getBlockZ())) <= 0;
-                int sectionY = Math.floorDiv(player.getBlockY(), PersistentMap.CAVE_LAYER_HEIGHT);
+                int sectionY = PersistentMap.blockToCaveLayer(world, player.getBlockY());
 
                 for (String subWorldName : waypointManager.getKnownSubworldNames()) {
                     if (cancelled) break;

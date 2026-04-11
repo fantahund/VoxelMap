@@ -393,7 +393,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         clearPopups();
 
         if (mapOptions.keyBindMenu.matches(keyEvent)) {
-            onClose();
+            keyEvent = new KeyEvent(GLFW.GLFW_KEY_ESCAPE, -1, -1);
         }
 
         return super.keyPressed(keyEvent);
