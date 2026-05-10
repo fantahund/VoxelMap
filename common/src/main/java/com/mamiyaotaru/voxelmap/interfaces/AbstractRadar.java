@@ -1,14 +1,15 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumRadar;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,10 +18,11 @@ import org.joml.Matrix4fStack;
 
 import java.util.ArrayList;
 
-public abstract class AbstractRadar {
+public abstract class AbstractRadar implements IReloadListener {
     protected final Minecraft minecraft = Minecraft.getInstance();
-    protected final MapSettingsManager mapOptions;
-    protected final RadarSettingsManager radarOptions;
+    protected final MapPermissionsManager permissions;
+    protected final MapOptions mapOptions;
+    protected final RadarOptions radarOptions;
 
     protected MinimapContext minimapContext;
 
@@ -29,11 +31,12 @@ public abstract class AbstractRadar {
     private int calculateMobsPart;
 
     public AbstractRadar() {
+        permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-    }
 
-    public abstract void onResourceManagerReload(ResourceManager resourceManager);
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
+    }
 
     public abstract void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
 
@@ -42,11 +45,7 @@ public abstract class AbstractRadar {
     public void onTickInGame(Matrix4fStack matrixStack, MinimapContext minimapContext) {
         this.minimapContext = minimapContext;
 
-        if (radarOptions.radarAllowed || radarOptions.radarMobsAllowed || radarOptions.radarPlayersAllowed) {
-            if (radarOptions.isChanged()) {
-                timer = 500;
-            }
-
+        if (permissions.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED)) {
             if (timer > 15) {
                 calculateMobs();
                 timer = 0;
@@ -112,8 +111,8 @@ public abstract class AbstractRadar {
         double wayY = minimapContext.playerY - contact.y;
 
         if (!isInRange(contact.entity, wayX, wayY, wayZ, 0.0F)
-            || (radarOptions.hideSneakingPlayers && contact.entity instanceof Player player && player.isCrouching())
-            || (radarOptions.hideInvisibleEntities && contact.entity.isInvisibleTo(VoxelConstants.getPlayer()))
+            || (radarOptions.hideSneaking.get() && contact.entity instanceof Player player && player.isCrouching())
+            || (radarOptions.hideInvisible.get() && contact.entity.isInvisibleTo(VoxelConstants.getPlayer()))
         ) {
             contact.displayState = Contact.DisplayState.HIDDEN;
             return;
@@ -126,7 +125,7 @@ public abstract class AbstractRadar {
 
         contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
 
-        if (!radarOptions.showEntityElevation) {
+        if (!radarOptions.showElevation.get()) {
             contact.brightness = 1.0F;
         } else {
             double maxHeight = getEntityMaxHeight(contact.entity) * minimapContext.zoomScaleAdjusted;
@@ -136,18 +135,26 @@ public abstract class AbstractRadar {
         }
     }
 
+    protected boolean isHostilesShown() {
+        return radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.HOSTILES || radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.BOTH;
+    }
+
+    protected boolean isNeutralsShown() {
+        return radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.NEUTRALS || radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.BOTH;
+    }
+
     protected boolean isEntityShown(Entity entity) {
         if (!(entity instanceof LivingEntity) || entity.equals(VoxelConstants.getPlayer())) {
             return false;
         }
 
-        boolean playersAllowed = radarOptions.radarAllowed || radarOptions.radarPlayersAllowed;
-        boolean mobsAllowed = radarOptions.radarAllowed || radarOptions.radarMobsAllowed;
+        boolean playersAllowed = permissions.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED);
+        boolean mobsAllowed = permissions.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED);
 
         return switch (VoxelMapMobCategory.forEntity(entity)) {
             case PLAYER -> playersAllowed;
-            case HOSTILE -> mobsAllowed && radarOptions.showHostiles;
-            case NEUTRAL -> mobsAllowed && radarOptions.showNeutrals;
+            case HOSTILE -> mobsAllowed && isHostilesShown();
+            case NEUTRAL -> mobsAllowed && isNeutralsShown();
         };
     }
 
@@ -166,12 +173,12 @@ public abstract class AbstractRadar {
         dz /= scale;
 
         double maxHeight = getEntityMaxHeight(entity) + cullDist;
-        if (radarOptions.showEntityElevation && Math.abs(dy) > maxHeight) {
+        if (radarOptions.showElevation.get() && Math.abs(dy) > maxHeight) {
             return false;
         }
 
         double maxDist = 32.0 + cullDist;
-        if (!mapOptions.squareMap) {
+        if (!mapOptions.squareMap.get()) {
             return (dx * dx + dz * dz) <= (maxDist * maxDist);
         } else {
             return Math.abs(dx) <= maxDist && Math.abs(dz) <= maxDist;

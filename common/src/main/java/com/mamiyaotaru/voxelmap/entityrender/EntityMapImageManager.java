@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.DefaultArmorHandler;
@@ -12,6 +11,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFacto
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.EmptySubmitNodeCollector;
@@ -42,6 +42,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
@@ -65,9 +66,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class EntityMapImageManager {
+public class EntityMapImageManager implements IReloadListener {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
-    private final RadarSettingsManager radarOptions;
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
 
@@ -85,17 +85,16 @@ public class EntityMapImageManager {
 
     private final EntityGPURenderer gpuRenderer = new EntityGPURenderer();
     private final EntityCPURenderer cpuRenderer = new EntityCPURenderer();
-    private boolean cpuRendering = false;
-    private boolean lastCpuRendering = false;
+    private AbstractEntityRenderer renderer;
 
     public EntityMapImageManager() {
-        this.radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(true, false);
 
         this.fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
-        reset();
+        this.renderer = gpuRenderer;
+
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
     public void reset() {
@@ -128,6 +127,16 @@ public class EntityMapImageManager {
         }
     }
 
+    @Override
+    public void onResourceManagerReload(ResourceManager resourceManager) {
+        reset();
+    }
+
+    public void setCompatibilityMode(boolean flag) {
+        renderer = flag ? cpuRenderer : gpuRenderer;
+        reset();
+    }
+
     public Properties getCustomMobProperties(EntityType<?> type) {
         if (customMobProperties.containsKey(type)) {
             return customMobProperties.get(type);
@@ -151,7 +160,7 @@ public class EntityMapImageManager {
 
     private Sprite tryCustomMobIcon(EntityType<?> type, boolean addBorder) {
         String entityId = type.getDescriptionId();
-        String iconId = entityId + "-custom" + (addBorder ? "-outlined" : "");
+        String iconId = entityId + "_custom" + (addBorder ? "_outlined" : "");
         Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(iconId);
         if (existing != null && existing != textureAtlas.getMissingImage()) {
             return existing;
@@ -176,10 +185,6 @@ public class EntityMapImageManager {
         }
 
         return sprite;
-    }
-
-    private AbstractEntityRenderer getEntityRenderer() {
-        return cpuRendering ? cpuRenderer : gpuRenderer;
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {
@@ -267,7 +272,6 @@ public class EntityMapImageManager {
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
         Properties iconConfig = getCustomMobProperties(entity.getType());
 
-        AbstractEntityRenderer renderer = getEntityRenderer();
         renderer.setup(iconConfig);
         renderer.enableCull(false);
 
@@ -436,7 +440,6 @@ public class EntityMapImageManager {
         Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
         Properties iconConfig = getCustomMobProperties(entity.getType());
 
-        AbstractEntityRenderer renderer = getEntityRenderer();
         renderer.setup(iconConfig);
         renderer.enableCull(true);
 
@@ -545,15 +548,10 @@ public class EntityMapImageManager {
         return new ModelPart[] { model.root() };
     }
 
-    public void onRenderTick(Matrix4fStack matrixStack) {
+    public void onRenderTick() {
         Runnable task;
         while ((task = taskQueue.poll()) != null) {
             task.run();
-        }
-
-        if ((cpuRendering = radarOptions.cpuRendering || radarOptions.forceCpuRendering) != lastCpuRendering) {
-            reset();
-            lastCpuRendering = cpuRendering;
         }
     }
 

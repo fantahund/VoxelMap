@@ -13,7 +13,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import java.time.Duration;
 import java.util.ArrayList;
 
-public abstract class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractSelectionList<E> {
+public class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractSelectionList<E> {
     private boolean doubleClicked;
     private long lastClicked;
     private Entry<E> lastSelected;

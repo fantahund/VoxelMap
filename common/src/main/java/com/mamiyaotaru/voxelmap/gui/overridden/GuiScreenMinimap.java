@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -34,6 +34,6 @@ public class GuiScreenMinimap extends Screen {
 
     @Override
     public void removed() {
-        MapSettingsManager.instance.saveAll();
+        VoxelConstants.getVoxelMapInstance().getOptionsManager().saveAll();
     }
 }

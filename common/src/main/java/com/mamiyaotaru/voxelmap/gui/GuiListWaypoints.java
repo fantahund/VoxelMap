@@ -138,7 +138,7 @@ class GuiListWaypoints extends GuiListMinimap<GuiListWaypoints.WaypointItem> {
 
             Sprite icon = textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
             if (icon == textureAtlas.getMissingImage()) {
-                icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
+                icon = textureAtlas.getAtlasSprite(WaypointManager.FALLBACK_ICON_NAME);
             }
             waypointIcon.setPosition(getX() + 2, getY());
             waypointIcon.setIcon(icon, color);

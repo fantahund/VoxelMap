@@ -1,13 +1,16 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.ColorManager;
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
+import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
@@ -50,8 +53,9 @@ import java.util.stream.IntStream;
 public class PersistentMap implements IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
-    private final MapSettingsManager mapOptions;
-    private final PersistentMapSettingsManager options;
+    private final MapPermissionsManager permissions;
+    private final MapOptions mapOptions;
+    private final PersistentMapOptions options;
     private final ColorManager colorManager;
     private final WaypointManager waypointManager;
     private final MutableBlockPos playerPos = new MutableBlockPos(0, 0, 0);
@@ -83,12 +87,21 @@ public class PersistentMap implements IChangeObserver {
             .thenComparingDouble(region -> getDistanceSq(region.getX(), region.getZ(), region.getWidth()));
 
     public PersistentMap() {
+        this.permissions = voxelMap.getPermissionsManager();
         this.mapOptions = voxelMap.getMapOptions();
         this.options = voxelMap.getPersistentMapOptions();
         this.colorManager = voxelMap.getColorManager();
         this.waypointManager = voxelMap.getWaypointManager();
         this.lightmapColors = new int[256];
         Arrays.fill(this.lightmapColors, -16777216);
+    }
+
+    private boolean isSlopeEnabled() {
+        return mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.SLOPE_MAP || mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.BOTH;
+    }
+
+    private boolean isHeightEnabled() {
+        return mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.HEIGHT_MAP || mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.BOTH;
     }
 
     public void newWorld(ClientLevel world) {
@@ -190,16 +203,11 @@ public class PersistentMap implements IChangeObserver {
             chunkCache.centerChunks(playerPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            if (!mapOptions.cavesAllowed || !options.showCaves) {
+            if (!permissions.getBoolean(MapPermissionsManager.CAVES_ALLOWED) || !options.showCaves.get()) {
                 isUnderground = false;
             } else {
                 playerPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
-                isUnderground = false;
-                if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
-                    isUnderground = lastY < world.getChunk(playerPos).getHeight(Heightmap.Types.MOTION_BLOCKING, playerPos.getX(), playerPos.getZ());
-                } else {
-                    isUnderground = world.getBrightness(LightLayer.SKY, playerPos) <= 0;
-                }
+                isUnderground = MapUtils.isUnderground(world, playerPos, lastY);
 
                 caveLayer = blockToCaveLayer(world, lastY);
                 caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
@@ -234,8 +242,9 @@ public class PersistentMap implements IChangeObserver {
         caveLayers.forEach((x, y) -> visitor.visit(y));
     }
 
-    public PersistentMapSettingsManager getOptions() {
-        return this.options;
+
+    public PersistentMapOptions getOptions() {
+        return options;
     }
 
     public void purgeCachedRegions() {
@@ -493,7 +502,7 @@ public class PersistentMap implements IChangeObserver {
         Biome biome = mapData.getBiome(imageX, imageY);
         surfaceBlockState = mapData.getBlockstate(imageX, imageY);
         if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != Short.MIN_VALUE) && biome != null) {
-            if (mapOptions.biomeOverlay == 1) {
+            if (mapOptions.biomeOverlay.get() == OptionEnumMinimap.BiomeOverlay.SOLID) {
                 color24 = ARGB.toABGR(BiomeRepository.getBiomeColor(biome) | 0xFF000000);
             } else {
                 boolean solid = false;
@@ -510,7 +519,7 @@ public class PersistentMap implements IChangeObserver {
                     solid = false;
                 }
 
-                if (mapOptions.biomes) {
+                if (mapOptions.biomeShading.get()) {
                     surfaceColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                     int tint;
                     tint = this.colorManager.getBiomeTint(mapData, world, surfaceBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -525,19 +534,19 @@ public class PersistentMap implements IChangeObserver {
                 int light = mapData.getLight(imageX, imageY);
                 if (solid) {
                     surfaceColor = 0;
-                } else if (mapOptions.dynamicLighting) {
+                } else if (mapOptions.dynamicLighting.get()) {
                     int lightValue = this.getLight(light);
                     surfaceColor = ColorUtils.colorMultiplier(surfaceColor, lightValue);
                 }
 
-                if (mapOptions.waterTransparency && !solid) {
+                if (mapOptions.waterTransparency.get() && !solid) {
                     seafloorHeight = mapData.getOceanFloorHeight(imageX, imageY);
                     if (seafloorHeight > bottomY) {
                         blockPos.setXYZ(mcX, seafloorHeight - 1, mcZ);
                         seafloorBlockState = mapData.getOceanFloorBlockstate(imageX, imageY);
                         if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(seafloorBlockState);
-                            if (mapOptions.biomes) {
+                            if (mapOptions.biomeShading.get()) {
                                 seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, seafloorBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -551,7 +560,7 @@ public class PersistentMap implements IChangeObserver {
                             seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0, sectionY);
                             int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
-                            if (mapOptions.dynamicLighting) {
+                            if (mapOptions.dynamicLighting.get()) {
                                 int lightValue = this.getLight(seafloorLight);
                                 seafloorColor = ColorUtils.colorMultiplier(seafloorColor, lightValue);
                             }
@@ -559,14 +568,14 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                if (mapOptions.blockTransparency && !solid) {
+                if (mapOptions.blockTransparency.get() && !solid) {
                     transparentHeight = mapData.getTransparentHeight(imageX, imageY);
                     if (transparentHeight > bottomY) {
                         blockPos.setXYZ(mcX, transparentHeight - 1, mcZ);
                         transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                         if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(transparentBlockState);
-                            if (mapOptions.biomes) {
+                            if (mapOptions.biomeShading.get()) {
                                 transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, transparentBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -580,7 +589,7 @@ public class PersistentMap implements IChangeObserver {
                             transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3, sectionY);
                             int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
-                            if (mapOptions.dynamicLighting) {
+                            if (mapOptions.dynamicLighting.get()) {
                                 int lightValue = this.getLight(transparentLight);
                                 transparentColor = ColorUtils.colorMultiplier(transparentColor, lightValue);
                             }
@@ -593,7 +602,7 @@ public class PersistentMap implements IChangeObserver {
                         foliageBlockState = mapData.getFoliageBlockstate(imageX, imageY);
                         if (foliageBlockState != null && foliageBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(foliageBlockState);
-                            if (mapOptions.biomes) {
+                            if (mapOptions.biomeShading.get()) {
                                 foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, foliageBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -607,7 +616,7 @@ public class PersistentMap implements IChangeObserver {
                             foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2, sectionY);
                             int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
-                            if (mapOptions.dynamicLighting) {
+                            if (mapOptions.dynamicLighting.get()) {
                                 int lightValue = this.getLight(foliageLight);
                                 foliageColor = ColorUtils.colorMultiplier(foliageColor, lightValue);
                             }
@@ -615,7 +624,7 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                if (mapOptions.waterTransparency && seafloorHeight > bottomY) {
+                if (mapOptions.waterTransparency.get() && seafloorHeight > bottomY) {
                     color24 = seafloorColor;
                     if (foliageColor != 0 && foliageHeight <= surfaceHeight) {
                         color24 = ColorUtils.colorAdder(foliageColor, seafloorColor);
@@ -638,7 +647,7 @@ public class PersistentMap implements IChangeObserver {
                     color24 = ColorUtils.colorAdder(transparentColor, color24);
                 }
 
-                if (mapOptions.biomeOverlay == 2) {
+                if (mapOptions.biomeOverlay.get() == OptionEnumMinimap.BiomeOverlay.TRANSPARENT) {
                     int bc = 0;
                     if (biome != null) {
                         bc = ARGB.toABGR(BiomeRepository.getBiomeColor(biome));
@@ -659,11 +668,11 @@ public class PersistentMap implements IChangeObserver {
         if (color24 != this.colorManager.getAirColor() && color24 != 0) {
             int baseY = !underground ? 80 : caveLayerToBlock(world, sectionY);
             int heightComp = Short.MIN_VALUE;
-            if ((mapOptions.heightmap || mapOptions.slopemap) && !solid) {
+            if ((isHeightEnabled() || isSlopeEnabled()  ) && !solid) {
                 int diff;
                 double sc = 0.0;
                 boolean invert = false;
-                if (!mapOptions.slopemap) {
+                if (!isSlopeEnabled()) {
                     diff = height - baseY;
                     sc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
                     if (diff < 0) {
@@ -741,7 +750,7 @@ public class PersistentMap implements IChangeObserver {
                         sc /= 8.0;
                     }
 
-                    if (mapOptions.heightmap) {
+                    if (isHeightEnabled()) {
                         diff = height - baseY;
                         double heightsc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
                         sc = diff > 0 ? sc + heightsc : sc - heightsc;
@@ -796,7 +805,7 @@ public class PersistentMap implements IChangeObserver {
 
     @Override
     public void processChunk(LevelChunk chunk) {
-        if (mapOptions.worldmapAllowed && !skipProcessing) {
+        if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED) && !skipProcessing) {
             forAllLayers(layer -> layer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks())));
         }
     }
@@ -905,7 +914,7 @@ public class PersistentMap implements IChangeObserver {
                     return false;
                 });
 
-                int overSize = cachedRegionsPool.size() - options.cacheSize;
+                int overSize = cachedRegionsPool.size() - options.cacheSize.get();
                 if (overSize > 0) {
                     cachedRegionsPool.sort(ageThenDistanceSorter);
                     for (int i = 0; i < overSize; ++i) {

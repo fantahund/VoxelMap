@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
 import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
@@ -32,24 +31,17 @@ public class Radar extends AbstractRadar {
 
     public Radar() {
         super();
-        entityMapImageManager = new EntityMapImageManager();
+        entityMapImageManager = VoxelConstants.getVoxelMapInstance().getEntityMapImageManager();
     }
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
-        entityMapImageManager.reset();
-    }
-
-    @Override
-    public void onTickInGame(Matrix4fStack matrixStack, MinimapContext minimapContext) {
-        entityMapImageManager.onRenderTick(matrixStack);
-        super.onTickInGame(matrixStack, minimapContext);
     }
 
     @Override
     protected void initContact(Contact contact) {
         if (contact.category == VoxelMapMobCategory.PLAYER || contact.entity.hasCustomName()) {
-            contact.name = radarOptions.showFullEntityNames ? contact.entity.getDisplayName() : getSimplifiedName(contact);
+            contact.name = radarOptions.showFullNames.get() ? contact.entity.getDisplayName() : getSimplifiedName(contact);
         }
 
         if (contact.entity.getVehicle() != null && isEntityShown(contact.entity.getVehicle())) {
@@ -62,12 +54,12 @@ public class Radar extends AbstractRadar {
         }
 
         if (contact.icon == null) {
-            contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, radarOptions.outlines);
+            contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, radarOptions.outlines.get());
             contact.baseColor = getBaseColor(contact);
         }
 
-        if (radarOptions.showPlayerHelmets && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobHelmets && contact.category != VoxelMapMobCategory.PLAYER) {
-            contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, radarOptions.outlines);
+        if (radarOptions.showPlayerHelmets.get() && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobHelmets.get() && contact.category != VoxelMapMobCategory.PLAYER) {
+            contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, radarOptions.outlines.get());
             contact.armorColor = getArmorColor(contact);
         }
     }
@@ -81,7 +73,7 @@ public class Radar extends AbstractRadar {
 
     private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
         float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
-        if (radarOptions.filtering) {
+        if (radarOptions.filtering.get()) {
             matrixStack.translate(x, y, 0.0F);
             matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
             matrixStack.translate(0.0F, -distance, 0.0F);
@@ -156,9 +148,9 @@ public class Radar extends AbstractRadar {
                 continue;
             }
 
-            if (contact.name != null && ((radarOptions.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
+            if (contact.name != null && ((radarOptions.showPlayerNames.get() && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames.get() && contact.category != VoxelMapMobCategory.PLAYER))) {
                 try {
-                    float scaleFactor = radarOptions.fontScale / 4.0F;
+                    float scaleFactor = radarOptions.fontScale.get() / 4.0F;
                     float zOffset = i * 0.01F;
 
                     matrixStack.pushMatrix();

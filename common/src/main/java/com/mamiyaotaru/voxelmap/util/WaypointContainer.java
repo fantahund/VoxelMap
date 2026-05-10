@@ -1,8 +1,11 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,15 +31,16 @@ import java.util.Collections;
 
 public class WaypointContainer {
     private final Minecraft minecraft = Minecraft.getInstance();
-    private final MapSettingsManager options;
+    private final MapOptions mapOptions;
+    private final WaypointOptions options;
     private final WaypointManager waypointManager;
 
     private final ArrayList<RenderableWaypoint> renderables = new ArrayList<>();
     private static final float INVALID_OFFSET = -1.0F;
 
-
-    public WaypointContainer(MapSettingsManager options) {
-        this.options = options;
+    public WaypointContainer() {
+        this.mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        this.options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
         this.waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
     }
 
@@ -62,14 +66,22 @@ public class WaypointContainer {
         renderables.sort(Collections.reverseOrder());
     }
 
+    private boolean isBeaconsShown() {
+        return mapOptions.inGameWaypoints.get() == OptionEnumMinimap.InGameWaypoints.BEACONS || mapOptions.inGameWaypoints.get() == OptionEnumMinimap.InGameWaypoints.BOTH;
+    }
+
+    private boolean isSignsShown() {
+        return mapOptions.inGameWaypoints.get() == OptionEnumMinimap.InGameWaypoints.SIGNS || mapOptions.inGameWaypoints.get() == OptionEnumMinimap.InGameWaypoints.BOTH;
+    }
+
     public void renderWaypoints(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
         if (waypointManager == null) return;
         if (renderables.isEmpty()) return;
 
-        if (options.showWaypointBeacons) {
+        if (isBeaconsShown()) {
             renderWaypointBeams(partialTick, poseStack, bufferSource, camera);
         }
-        if (options.showWaypointSigns) {
+        if (isSignsShown()) {
             renderWaypointSigns(partialTick, poseStack, bufferSource, camera);
         }
     }
@@ -116,7 +128,7 @@ public class WaypointContainer {
             int y = waypoint.getY();
             double distance = Math.sqrt(waypoint.getDistanceSqToCamera(camera));
 
-            boolean isOutOfRange = options.maxWaypointDisplayDistance >= 0 && distance >= options.maxWaypointDisplayDistance;
+            boolean isOutOfRange = options.maxDistance.get() <= 10000 && distance >= options.maxDistance.get();
             isEffectivelyActive = !isOutOfRange || isHighlighted;
             if (!isEffectivelyActive) {
                 renderable.setOffset(INVALID_OFFSET);
@@ -152,7 +164,7 @@ public class WaypointContainer {
 
         double degrees = 5.0 + Math.min(5.0 / distance, 5.0);
         double angle = degrees * Mth.DEG_TO_RAD;
-        double size = Math.max(Math.sin(angle) * distance, 0.5) * options.waypointSignScale;
+        double size = Math.max(Math.sin(angle) * distance, 0.5) * options.signScale.get();
 
         if (centerOffset <= size * size) {
             return centerOffset;
@@ -240,7 +252,7 @@ public class WaypointContainer {
             adjustedDistance = maxDistance;
         }
 
-        float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F * options.waypointSignScale;
+        float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F * options.signScale.get();
         poseStack.pushPose();
         poseStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(-minecraft.getEntityRenderDispatcher().camera.yRot()));
@@ -251,7 +263,7 @@ public class WaypointContainer {
         if (!waypoint.enabled && !isHighlighted) {
             fade *= 0.3F;
         }
-        boolean focused = options.highlightFocusedWaypoint && isPointedAt;
+        boolean focused = options.highlightFocused.get() && isPointedAt;
 
         float width = 10.0F;
         float r = isHighlighted ? 1.0F : waypoint.red;
@@ -260,7 +272,7 @@ public class WaypointContainer {
 
         Sprite icon = isHighlighted ? textureAtlas.getAtlasSprite("marker/target") : textureAtlas.getAtlasSprite("selectable/" + waypoint.imageSuffix);
         if (icon == textureAtlas.getMissingImage()) {
-            icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
+            icon = textureAtlas.getAtlasSprite(WaypointManager.FALLBACK_ICON_NAME);
         }
 
         int iconColorDepthTest = ARGB.colorFromFloat(fade, r, g, b);
@@ -281,9 +293,9 @@ public class WaypointContainer {
         vertexIconNoDepthTest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(iconColorNoDepthTest);
         bufferSource.endBatch(renderType);
 
-        if (isPointedAt && !hideLabels && options.waypointLabelStyle != 0) {
-            boolean convertFromOneKilometer = options.waypointDistanceConversion == 1 && distance > 1000.0;
-            boolean convertFromTenKilometers = options.waypointDistanceConversion == 2 && distance > 10000.0;
+        if (isPointedAt && !hideLabels && options.labelStyle.get() != OptionEnumWaypoint.LabelStyle.OFF) {
+            boolean convertFromOneKilometer = options.unitConversion.get() == OptionEnumWaypoint.UnitConversion.FROM_1000M && distance > 1000.0;
+            boolean convertFromTenKilometers = options.unitConversion.get() == OptionEnumWaypoint.UnitConversion.FROM_10000M && distance > 10000.0;
 
             String distanceLabel;
             if (convertFromOneKilometer || convertFromTenKilometers) {
@@ -292,8 +304,8 @@ public class WaypointContainer {
                 distanceLabel = I18n.get("minimap.waypoints.distance.meters", getDistanceString(distance));
             }
 
-            boolean showSubLabel = options.waypointLabelStyle == 1;
-            boolean moveLabelDown = options.waypointLabelStyle != 2;
+            boolean showSubLabel = options.labelStyle.get() == OptionEnumWaypoint.LabelStyle.DEFAULT;
+            boolean moveLabelDown = options.labelStyle.get() != OptionEnumWaypoint.LabelStyle.CLASSIC_TOP;
 
             String subLabel = showSubLabel ? distanceLabel : "";
             if (!showSubLabel && !distanceLabel.isEmpty()) {

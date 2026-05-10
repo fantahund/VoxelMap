@@ -54,9 +54,9 @@ public class RadarSimple extends AbstractRadar {
 
     private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
         float facing = contact.entity.getYHeadRot();
-        if (mapOptions.rotates) {
+        if (mapOptions.rotates.get()) {
             facing -= minimapContext.direction;
-        } else if (mapOptions.oldNorth) {
+        } else if (mapOptions.oldNorth.get()) {
             facing += 90.0F;
         }
         float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
@@ -93,7 +93,7 @@ public class RadarSimple extends AbstractRadar {
                 Sprite contactIcon = textureAtlas.getAtlasSprite("contact");
                 RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
 
-                if (radarOptions.showFacing) {
+                if (radarOptions.showFacing.get()) {
                     Sprite facingIcon = textureAtlas.getAtlasSprite("facing");
                     RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
                 }

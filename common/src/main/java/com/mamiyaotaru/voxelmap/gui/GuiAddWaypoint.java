@@ -1,14 +1,15 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
-import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiColorPickerContainer;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.IPopupGuiScreen;
 import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
@@ -21,7 +22,6 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
-import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -34,7 +34,8 @@ import java.util.TreeSet;
 import java.util.function.Consumer;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    private final MapSettingsManager mapOptions;
+    private final MapOptions mapOptions;
+    private final WaypointOptions options;
     private final WaypointManager waypointManager;
     private final IGuiWaypoints parentGui;
 
@@ -69,6 +70,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         super((Screen) parentGui, Component.translatable(editing ? "minimap.waypoints.edit" : "minimap.waypoints.new"));
         this.parentGui = parentGui;
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
 
         this.waypoint = waypoint;
@@ -121,11 +123,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         addRenderableWidget(new PopupGuiButton(getWidth() / 2 + 5, getHeight() - 26, 150, 20, Component.translatable("gui.cancel"), button -> cancelWaypoint(), this));
         doneButton.active = !waypointName.getValue().isEmpty();
 
-        boolean simpleMode = mapOptions.colorPickerMode == 0;
+        boolean simpleMode = mapOptions.colorPickerMode.get() == OptionEnumMinimap.ColorPickerMode.SIMPLE;
         colorPicker = new GuiColorPickerContainer(getWidth() / 2, getHeight() / 2, 200, 140, simpleMode, picker -> {});
         colorPicker.setColor(ARGB.colorFromFloat(1.0F, red, green, blue));
-        colorPickerModeButton = new PopupGuiButton(0, 0, 50, 15, Component.literal(mapOptions.getListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)), this::updateColorPickerMode, this);
-        colorPickerModeButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.colorPickerMode")));
+        colorPickerModeButton = new PopupGuiButton(0, 0, 50, 15, Component.literal(mapOptions.colorPickerMode.getValueString()), this::updateColorPickerMode, this);
+        colorPickerModeButton.setTooltip(Tooltip.create(Component.translatable(mapOptions.colorPickerMode.getKey())));
         popupDoneButton = new PopupGuiButton(getWidth() / 2 - 155, getHeight() - 26, 150, 20, Component.translatable("gui.done"), button -> closePopupAndApplyChanges(), this);
         popupCancelButton = new PopupGuiButton(getWidth() / 2 + 5, getHeight() - 26, 150, 20, Component.translatable("gui.cancel"), button -> closePopupAndCancelChanges(), this);
     }
@@ -135,10 +137,10 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     private void updateColorPickerMode(Button button) {
-        mapOptions.cycleListValue(EnumOptionsMinimap.COLOR_PICKER_MODE);
-        colorPicker.updateMode(mapOptions.colorPickerMode == 0);
+        mapOptions.colorPickerMode.cycle();
+        colorPicker.updateMode(mapOptions.colorPickerMode.get() == OptionEnumMinimap.ColorPickerMode.SIMPLE);
 
-        button.setMessage(Component.literal(mapOptions.getListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)));
+        button.setMessage(Component.literal(mapOptions.colorPickerMode.getValueString()));
     }
 
     protected void cancelWaypoint() {
@@ -346,7 +348,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
         Sprite icon = chooser.getAtlasSprite("selectable/" + suffix);
         if (icon == chooser.getMissingImage()) {
-            icon = chooser.getAtlasSprite(WaypointManager.fallbackIconLocation);
+            icon = chooser.getAtlasSprite(WaypointManager.FALLBACK_ICON_NAME);
         }
         icon.blit(drawContext, RenderPipelines.GUI_TEXTURED, getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 
@@ -402,7 +404,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 // render selected icon
                 Sprite currentIcon = chooser.getAtlasSprite("selectable/" + pickedSuffix);
                 if (currentIcon == chooser.getMissingImage()) {
-                    currentIcon = chooser.getAtlasSprite(WaypointManager.fallbackIconLocation);
+                    currentIcon = chooser.getAtlasSprite(WaypointManager.FALLBACK_ICON_NAME);
                 }
                 int iconX = currentIcon.getOriginX() + pickerX;
                 int iconY = currentIcon.getOriginY() + pickerY;

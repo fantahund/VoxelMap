@@ -1,5 +1,8 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -8,7 +11,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
@@ -36,6 +38,7 @@ public final class VoxelConstants {
     private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
     private static String modVersion = null;
+    private static boolean initialized;
     private static int elapsedTicks;
     private static Events events;
     private static PacketBridge packetBridge;
@@ -103,7 +106,16 @@ public final class VoxelConstants {
         return CROSS_MARKER_TEXTURE;
     }
 
+    public static void lateInit() {
+        initialized = true;
+        VoxelConstants.getVoxelMapInstance().lateInit(true, false);
+    }
+
     public static void clientTick() {
+        if (!initialized) {
+            lateInit();
+        }
+
         VoxelConstants.getVoxelMapInstance().onTick();
 
     }
@@ -143,7 +155,7 @@ public final class VoxelConstants {
     public static void onShutDown() {
         VoxelConstants.getLogger().info("Saving all world maps");
         VoxelConstants.getVoxelMapInstance().getPersistentMap().purgeCachedRegions();
-        VoxelConstants.getVoxelMapInstance().getMapOptions().saveAll();
+        VoxelConstants.getVoxelMapInstance().getOptionsManager().saveAll();
         BiomeRepository.saveBiomeColors();
         long shutdownTime = System.currentTimeMillis();
 
@@ -153,16 +165,18 @@ public final class VoxelConstants {
     }
 
     public static void playerRunTeleportCommand(double x, double y, double z) {
-        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
+        MapPermissionsManager permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        String cmd = permissions.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND) == null ? mapOptions.teleportCommand.get() : permissions.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND);
         cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
         VoxelConstants.getPlayer().connection.sendCommand(cmd);
     }
 
     public static int moveScoreboard(int bottomX, int entriesHeight) {
-        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        MapPermissionsManager permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (mapSettingsManager.hide || !mapSettingsManager.minimapAllowed || mapSettingsManager.mapCorner != 1 || !mapSettingsManager.moveScoreboardBelowMap || !Double.isFinite(unscaledHeight)) {
+        if (!permissions.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED) || mapOptions.hide.get() || mapOptions.mapCorner.get() != OptionEnumMinimap.Location.TOP_LEFT || !mapOptions.moveScoreboardBelowMap.get() || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...

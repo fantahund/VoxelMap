@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -22,7 +22,7 @@ import java.util.Random;
 import java.util.TreeSet;
 
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
-    protected final MapSettingsManager options;
+    protected final WaypointOptions options;
     protected final WaypointManager waypointManager;
     private GuiListWaypoints waypointList;
     private Button buttonEdit;
@@ -45,7 +45,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     public GuiWaypoints(Screen parentGui) {
         super(parentGui, Component.translatable("minimap.waypoints.title"));
-        options = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
     }
 
@@ -90,8 +90,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     private void sort() {
-        int sortKey = Math.abs(options.waypointSort);
-        boolean ascending = options.waypointSort > 0;
+        int sortKey = Math.abs(options.waypointSort.get());
+        boolean ascending = options.waypointSort.get() > 0;
         waypointList.sortBy(sortKey, ascending);
         String arrow = ascending ? "↑" : "↓";
 
@@ -145,7 +145,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     }
 
     protected void sortClicked(int id) {
-        options.setWaypointSort(id);
+        options.setSort(id);
         changedSort = true;
         sort();
     }

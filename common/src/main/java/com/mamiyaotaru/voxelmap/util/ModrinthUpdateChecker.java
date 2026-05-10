@@ -225,7 +225,7 @@ public class ModrinthUpdateChecker {
     }
 
     public static void checkUpdates() {
-        if (!VoxelConstants.getVoxelMapInstance().getMapOptions().updateNotifier) {
+        if (!VoxelConstants.getVoxelMapInstance().getMapOptions().updateNotifier.get()) {
             return;
         }
         String modVersion = VoxelConstants.getModVersion();

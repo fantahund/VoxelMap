@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
@@ -109,6 +110,15 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         }
 
         return super.mouseClicked(mouseButtonEvent, bl);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent characterEvent) {
+        if (newNameField.isFocused()) {
+            newNameField.charTyped(characterEvent);
+        }
+
+        return super.charTyped(characterEvent);
     }
 
     @Override

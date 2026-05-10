@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
-    private final MapSettingsManager options;
+    private final MapOptions options;
     private final GuiMinimapControls parentGui;
     private final ArrayList<RowItem> rowItems = new ArrayList<>();
     private KeyMapping keyForEdit;
@@ -56,7 +56,7 @@ public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
 
     private void resetKeyMapping(int index) {
         KeyMapping key = options.keyBindings[index];
-        options.setKeyBinding(key, key.getDefaultKey());
+        key.setKey(key.getDefaultKey());
         checkDuplicateKeys();
         KeyMapping.resetMapping();
     }
@@ -64,7 +64,7 @@ public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         if (isEditing()) {
-            options.setKeyBinding(keyForEdit, InputConstants.Type.MOUSE.getOrCreate(mouseButtonEvent.button()));
+            keyForEdit.setKey(InputConstants.Type.MOUSE.getOrCreate(mouseButtonEvent.button()));
             keyForEdit = null;
             checkDuplicateKeys();
             KeyMapping.resetMapping();
@@ -79,9 +79,9 @@ public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
     public boolean keyPressed(KeyEvent keyEvent) {
         if (isEditing()) {
             if (keyEvent.key() != GLFW.GLFW_KEY_ESCAPE) {
-                options.setKeyBinding(keyForEdit, InputConstants.getKey(keyEvent));
+                keyForEdit.setKey(InputConstants.getKey(keyEvent));
             } else if (!keyForEdit.same(options.keyBindMenu)) {
-                options.setKeyBinding(keyForEdit, InputConstants.UNKNOWN);
+                keyForEdit.setKey(InputConstants.UNKNOWN);
             }
             keyForEdit = null;
             checkDuplicateKeys();
@@ -112,7 +112,7 @@ public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
                     if (keyNames == null) {
                         keyNames = Component.empty();
                     } else {
-                        keyNames.append(",");
+                        keyNames.append(", ");
                     }
                     keyNames.append(Component.translatable(compare.getName()));
                 }

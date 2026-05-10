@@ -1,5 +1,9 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -59,14 +63,24 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class WaypointManager {
-    public final MapSettingsManager options;
-    final TextureAtlas textureAtlas;
-    final TextureAtlas textureAtlasChooser;
+public class WaypointManager implements IReloadListener {
+    public static final String FALLBACK_ICON_NAME = "selectable/point";
+    public static final String COORDINATE_HIGHLIGHT_NAME = "§t§a§r§g§e§t";
+
+    private final Minecraft minecraft = Minecraft.getInstance();
+    private final WaypointOptions options;
+
+    private File settingsFile;
     private boolean loaded;
     private boolean needSave;
+
+    // Waypoint Management
+    private final Object waypointLock = new Object();
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint;
+    private WaypointContainer waypointContainer;
+
+    // World Management
     private String worldName = "";
     private String currentSubWorldName = "";
     private String currentSubworldDescriptor = "";
@@ -77,26 +91,26 @@ public class WaypointManager {
     private final TreeSet<String> knownSubworldNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final HashSet<String> oldNorthWorldNames = new HashSet<>();
     private final HashMap<String, String> worldSeeds = new HashMap<>();
-    private BackgroundImageInfo backgroundImageInfo;
-    private WaypointContainer waypointContainer;
-    private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
-    private final Object waypointLock = new Object();
-    public static final String fallbackIconLocation = "selectable/point";
-    public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints");
-    public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser");
-    public final Minecraft minecraft = Minecraft.getInstance();
-    public static final String coordinateHighlightName = "§t§a§r§g§e§t";
+    private boolean skipNextOldNorthUpdate;
+
+    // Texture Management
+    private BackgroundImageInfo backgroundImageInfo;
+    private final TextureAtlas textureAtlas;
+    private final TextureAtlas textureAtlasChooser;
 
     public WaypointManager() {
-        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        this.textureAtlas = new TextureAtlas("waypoints", resourceTextureAtlasWaypoints);
+        this.options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
+        this.textureAtlas = new TextureAtlas("waypoints", Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints"));
         this.textureAtlas.setFilter(true, false);
-        this.textureAtlasChooser = new TextureAtlas("chooser", resourceTextureAtlasWaypointChooser);
+        this.textureAtlasChooser = new TextureAtlas("chooser", Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser"));
         this.textureAtlasChooser.setFilter(true, false);
-        this.waypointContainer = new WaypointContainer(this.options);
+        this.waypointContainer = new WaypointContainer();
+
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {
@@ -126,7 +140,7 @@ public class WaypointManager {
         this.textureAtlasChooser.reset();
 
         images.sort(Comparator.comparingInt((Identifier id) -> {
-            if (toSimpleName(id.toString()).equals(fallbackIconLocation)) {
+            if (toSimpleName(id.toString()).equals(FALLBACK_ICON_NAME)) {
                 return 0;
             }
             return 1;
@@ -267,7 +281,7 @@ public class WaypointManager {
             }
 
             if (pt.name.startsWith("Previous Death")) {
-                if (this.options.deathpoints == 2) {
+                if (this.options.deathpoints.get() == OptionEnumWaypoint.Deathpoints.ALL) {
                     int num = 0;
 
                     try {
@@ -286,13 +300,13 @@ public class WaypointManager {
             }
         }
 
-        if (this.options.deathpoints != 2 && (!(toDel.isEmpty()))) {
+        if (this.options.deathpoints.get() != OptionEnumWaypoint.Deathpoints.ALL && !toDel.isEmpty()) {
             for (Waypoint pt : toDel) {
                 this.deleteWaypoint(pt);
             }
         }
 
-        if (this.options.deathpoints != 0) {
+        if (this.options.deathpoints.get() != OptionEnumWaypoint.Deathpoints.OFF) {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
             double dimensionScale = VoxelConstants.getPlayer().level().dimensionType().coordinateScale();
@@ -313,7 +327,7 @@ public class WaypointManager {
                 pt.inDimension = pt.dimensions.isEmpty() || pt.dimensions.contains(dimension);
             }
 
-            this.waypointContainer = new WaypointContainer(this.options);
+            this.waypointContainer = new WaypointContainer();
             this.waypointContainer.refreshRenderables();
         }
 
@@ -321,6 +335,10 @@ public class WaypointManager {
     }
 
     public void setOldNorth(boolean oldNorth) {
+        if (skipNextOldNorthUpdate) {
+            return;
+        }
+
         String oldNorthWorldName;
         if (this.knownSubworldNames.isEmpty()) {
             oldNorthWorldName = "all";
@@ -395,7 +413,10 @@ public class WaypointManager {
             }
         }
 
-        VoxelConstants.getVoxelMapInstance().getMapOptions().oldNorth = this.oldNorthWorldNames.contains(this.currentSubworldDescriptorNoCodes);
+        skipNextOldNorthUpdate = true;
+        VoxelConstants.getVoxelMapInstance().getMapOptions().oldNorth.set(oldNorthWorldNames.contains(currentSubworldDescriptorNoCodes));
+
+        skipNextOldNorthUpdate = false;
     }
 
     private void newSubworldName(String name) {
@@ -746,7 +767,7 @@ public class WaypointManager {
             this.highlightedWaypoint = null;
         } else {
             if (waypoint != null && !this.wayPts.contains(waypoint)) {
-                waypoint.name = coordinateHighlightName;
+                waypoint.name = COORDINATE_HIGHLIGHT_NAME;
                 waypoint.red = 1.0F;
                 waypoint.blue = 0.0F;
                 waypoint.green = 0.0F;
@@ -776,14 +797,14 @@ public class WaypointManager {
 
     public boolean isCoordinateHighlight(Waypoint waypoint) {
         if (isHighlightedWaypoint(waypoint)) {
-            return waypoint.name.equals(coordinateHighlightName);
+            return waypoint.name.equals(COORDINATE_HIGHLIGHT_NAME);
         }
 
         return false;
     }
 
     public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        if (options.waypointsAllowed && this.waypointContainer != null) {
+        if (VoxelConstants.getVoxelMapInstance().getPermissionsManager().getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED) && this.waypointContainer != null) {
             this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
         }
     }

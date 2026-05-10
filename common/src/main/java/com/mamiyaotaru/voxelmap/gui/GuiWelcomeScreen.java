@@ -1,24 +1,21 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GuiWelcomeScreen extends GuiScreenMinimap {
-    private MapSettingsManager options;
+    private final MapOptions options;
 
     private PlainTextButton closeButton;
     private PlainTextButton controlsButton;
@@ -48,7 +45,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         for (KeyMapping key : sortedKeys) {
             if (key.isUnbound()) continue;
 
-            Component keyText = Component.literal("§b").append(key.getTranslatedKeyMessage()).append("§r: ").append(Component.translatable(key.getName()));
+            Component keyText = Component.translatable("options.generic_value", key.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA), Component.translatable(key.getName()));
             if (count % 2 == 0) {
                 welcomeTexts.add(keyText);
             } else {
@@ -60,12 +57,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         }
 
         Component closeThisMessage = Component.translatable("minimap.ui.welcome5").withStyle(ChatFormatting.GRAY);
-        addRenderableWidget(closeButton = new PlainTextButton(0, 0, 100, 10, closeThisMessage, button -> {
-            options.toggleBooleanValue(EnumOptionsMinimap.WELCOME_SCREEN);
-            options.saveAll();
-
-            onClose();
-        }, getFont()));
+        addRenderableWidget(closeButton = new PlainTextButton(0, 0, 100, 10, closeThisMessage, button -> onClose(), getFont()));
 
         Component controls = Component.translatable("options.controls").withStyle(ChatFormatting.GRAY);
         addRenderableWidget(controlsButton = new PlainTextButton(0, 0, 100, 10, controls, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
@@ -132,12 +124,8 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent keyEvent) {
-        if (keyEvent.key() == GLFW.GLFW_KEY_ESCAPE) {
-            options.toggleBooleanValue(EnumOptionsMinimap.WELCOME_SCREEN);
-            options.saveAll();
-        }
-
-        return super.keyPressed(keyEvent);
+    public void onClose() {
+        super.onClose();
+        options.welcome.set(false);
     }
 }

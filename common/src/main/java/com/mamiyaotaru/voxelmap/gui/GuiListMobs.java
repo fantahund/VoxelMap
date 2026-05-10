@@ -1,10 +1,9 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.Radar;
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
+import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.GameNarrator;
@@ -25,7 +24,7 @@ public class GuiListMobs extends GuiListMinimap<GuiListMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
     private ArrayList<Entry<?>> mobsFiltered;
     private final GuiMobs parentGui;
-    private final RadarSettingsManager options;
+    private final RadarOptions options;
 
     private static final Tooltip TOOLTIP_ENABLED = Tooltip.create(Component.translatable("options.minimap.mobs.enabled"));
     private static final Tooltip TOOLTIP_DISABLED = Tooltip.create(Component.translatable("options.minimap.mobs.disabled"));
@@ -42,7 +41,7 @@ public class GuiListMobs extends GuiListMinimap<GuiListMobs.MobItem> {
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
             if (entry.getValue().create(VoxelConstants.getMinecraft().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
                 VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(entry.getValue());
-                if ((category == VoxelMapMobCategory.HOSTILE && options.showHostiles) || (category == VoxelMapMobCategory.NEUTRAL && options.showNeutrals)) {
+                if (matchesOption(category)) {
                     mobs.add(new MobItem(parentGui, entry.getValue(), entry.getKey().identifier()));
                 }
             }
@@ -58,6 +57,15 @@ public class GuiListMobs extends GuiListMinimap<GuiListMobs.MobItem> {
 
         mobsFiltered = new ArrayList<>(mobs);
         mobsFiltered.forEach(entry -> addEntry((MobItem) entry));
+    }
+
+    private boolean matchesOption(VoxelMapMobCategory category) {
+        return switch (options.showMobs.get()) {
+            case OFF -> false;
+            case NEUTRALS -> category == VoxelMapMobCategory.NEUTRAL;
+            case HOSTILES -> category == VoxelMapMobCategory.HOSTILE;
+            case BOTH -> category == VoxelMapMobCategory.NEUTRAL || category == VoxelMapMobCategory.HOSTILE;
+        };
     }
 
     @Override
@@ -135,10 +143,7 @@ public class GuiListMobs extends GuiListMinimap<GuiListMobs.MobItem> {
             drawContext.drawCenteredString(parentGui.getFont(), name, parentGui.getWidth() / 2, getY() + 5, color);
 
             if (mobIconSprite == null) {
-                Radar radar = VoxelConstants.getVoxelMapInstance().getFullRadar();
-                if (radar != null) {
-                    mobIconSprite = radar.getEntityMapImageManager().requestImageForMobType(type, true);
-                }
+                mobIconSprite = VoxelConstants.getVoxelMapInstance().getEntityMapImageManager().requestImageForMobType(type, true);
             } else {
                 int iconWidth = Math.min(18, mobIconSprite.getIconWidth() / 3);
                 int iconHeight = Math.min(18, mobIconSprite.getIconHeight() / 3);

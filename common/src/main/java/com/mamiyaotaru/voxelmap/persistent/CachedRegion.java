@@ -771,7 +771,7 @@ public class CachedRegion {
 
         this.persistentMap.getSettingsAndLightingChangeNotifier().removeObserver(this);
         if (this.image != null) {
-            if (this.persistentMap.getOptions().outputImages) {
+            if (this.persistentMap.getOptions().outputImages.get()) {
                 this.saveImage();
             }
             this.image.deleteTexture();
