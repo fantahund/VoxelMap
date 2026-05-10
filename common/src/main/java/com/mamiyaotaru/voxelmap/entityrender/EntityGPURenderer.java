@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
@@ -146,7 +146,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             tessellator.clear();
         }
 
-        GLUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (output) -> {
+        RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (output) -> {
             resultConsumer.accept(ImageUtils.flipHorizontal(output));
         });
     }
