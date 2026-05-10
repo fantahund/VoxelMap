@@ -130,6 +130,10 @@ public class GuiListKeys extends GuiListMinimap<GuiListKeys.RowItem> {
     }
 
     @Override
+    protected void renderSelection(GuiGraphics guiGraphics, RowItem entry, int color) {
+    }
+
+    @Override
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 

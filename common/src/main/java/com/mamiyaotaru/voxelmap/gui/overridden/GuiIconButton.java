@@ -67,7 +67,7 @@ public class GuiIconButton extends Button.Plain {
         float iconX = getX() + ((getWidth() - iconWidth) / 2.0F);
         float iconY = getY() + ((getHeight() - iconHeight) / 2.0F);
 
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, icon, iconX, iconY, width, height, u0, u1, v0, v1, color);
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, icon, iconX, iconY, iconWidth, iconHeight, u0, u1, v0, v1, color);
     }
 
     @Override

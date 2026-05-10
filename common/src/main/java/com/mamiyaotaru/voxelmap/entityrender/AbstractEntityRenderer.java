@@ -1,46 +1,52 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
-import com.mamiyaotaru.voxelmap.util.PropertyParser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 public abstract class AbstractEntityRenderer {
     protected final Minecraft minecraft = Minecraft.getInstance();
-    protected final ArrayList<ModelPart> modelParts = new ArrayList<>();
-    protected final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     protected final PoseStack poseStack = new PoseStack();
     protected final RandomSource random = RandomSource.create();
+    protected final ArrayList<ModelPart> modelParts = new ArrayList<>();
+    protected final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     protected boolean cullEnabled = false;
 
     public static final int TEXTURE_SIZE = 512;
 
-    public void setup(Properties iconConfig) {
+    public void setup(float baseScale, Properties iconConfig) {
         poseStack.setIdentity();
         setupMatrix();
-        LinkedHashMap<Direction.Axis, Float> rotation = PropertyParser.parseVector(iconConfig.getProperty("rotation", ""));
-        if (rotation != null && !rotation.isEmpty()) {
-            rotation.forEach((axis, value) -> {
-                switch (axis) {
-                    case Direction.Axis.X -> poseStack.mulPose(Axis.XP.rotationDegrees(value));
-                    case Direction.Axis.Y -> poseStack.mulPose(Axis.YP.rotationDegrees(value));
-                    case Direction.Axis.Z -> poseStack.mulPose(Axis.ZP.rotationDegrees(value));
+
+        // Apply Scale
+        float scale = Float.parseFloat(iconConfig.getProperty("scale", "1.0")) / baseScale;
+        poseStack.scale(scale, scale, scale);
+
+        // Apply Rotation
+        String rotation = iconConfig.getProperty("rotation", "");
+        if (rotation.startsWith("{") && rotation.endsWith("}")) {
+            for (String entry : rotation.substring(1, rotation.length() - 1).split(",")) {
+                String[] keyValue = entry.split(":", 2);
+                float value = Float.parseFloat(keyValue[1]);
+                switch (keyValue[0].trim().toLowerCase()) {
+                    case "x" -> poseStack.mulPose(Axis.XP.rotationDegrees(value));
+                    case "y" -> poseStack.mulPose(Axis.YP.rotationDegrees(value));
+                    case "z" -> poseStack.mulPose(Axis.ZP.rotationDegrees(value));
                 }
-            });
+            }
         }
+
         clearMesh();
     }
 

@@ -1,6 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiListMinimap;
+import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -19,12 +21,13 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.entity.player.PlayerSkin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
+public class GuiListPlayers extends GuiListMinimap<GuiListPlayers.Row> {
     private final ArrayList<PlayerInfo> players;
     private ArrayList<PlayerInfo> playersFiltered;
     private final GuiSelectPlayer parentGui;
@@ -36,15 +39,15 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
     static final Component CONFIRM_AFFIRM = Component.translatable("gui.yes");
     static final Component CONFIRM_DENY = Component.translatable("gui.cancel");
 
-    public GuiListPlayers(GuiSelectPlayer parentGui) {
-        super(VoxelConstants.getMinecraft(), parentGui.getWidth(), parentGui.getHeight() - 65 + 4 - 89, 89, 25);
+    public GuiListPlayers(GuiSelectPlayer parentGui, int x, int y, int width, int height) {
+        super(x, y, width, height, 25);
         this.parentGui = parentGui;
 
         ClientPacketListener connection = VoxelConstants.getPlayer().connection;
         players = new ArrayList<>(connection.getOnlinePlayers());
         sort();
 
-        Button everyoneButton = new Button.Builder(EVERYONE, button -> {}).bounds(parentGui.getWidth() / 2 - 75, 0, 150, 20).build();
+        Button everyoneButton = new Button.Builder(EVERYONE, button -> buttonClicked(-1)).bounds(parentGui.getWidth() / 2 - 75, 0, 150, 20).build();
         everyoneButton.setTooltip(Tooltip.create(Component.translatable("minimap.waypointShare.shareWithName", EVERYONE)));
         everyoneRow = new Row(everyoneButton, -1, null, -1);
 
@@ -55,12 +58,12 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
         return Component.literal(ScoreboardEntryIn.getProfile().name());
     }
 
-    private Button createButtonFor(int x, int y, PlayerInfo ScoreboardEntry) {
+    private Button createButtonFor(int x, int y, PlayerInfo ScoreboardEntry, int id) {
         if (ScoreboardEntry == null) {
             return null;
         } else {
             Component name = getPlayerName(ScoreboardEntry);
-            Button btn = new Button.Builder(name, button -> {}).bounds(x, y, 150, 20).build();
+            Button btn = new Button.Builder(name, button -> buttonClicked(id)).bounds(x, y, 150, 20).build();
             btn.setTooltip(Tooltip.create(Component.translatable("minimap.waypointShare.shareWithName", name)));
             return btn;
         }
@@ -104,8 +107,8 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
             PlayerInfo ScoreboardEntry1 = playersFiltered.get(i);
             PlayerInfo ScoreboardEntry2 = i < playersFiltered.size() - 1 ? playersFiltered.get(i + 1) : null;
 
-            Button button1 = createButtonFor(parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1);
-            Button button2 = createButtonFor(parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2);
+            Button button1 = createButtonFor(parentGui.getWidth() / 2 - 155, 0, ScoreboardEntry1, i);
+            Button button2 = createButtonFor(parentGui.getWidth() / 2 - 155 + 160, 0, ScoreboardEntry2, i + 1);
 
             addEntry(new Row(button1, i, button2, i + 1));
         }
@@ -125,28 +128,33 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
     }
 
     @Override
+    protected void renderSelection(GuiGraphics guiGraphics, Row entry, int color) {
+    }
+
+    @Override
     public void updateWidgetNarration(NarrationElementOutput builder) {
     }
 
-    public class Row extends AbstractSelectionList.Entry<Row> {
-        private final LinkedHashMap<Button, Integer> buttonAndIds = new LinkedHashMap<>();;
+    public class Row extends GuiListMinimap.Entry<Row> {
+        private final Button button1;
+        private final Button button2;
+        private final int id1;
+        private final int id2;
 
         public Row(Button primaryButton, int primaryId, Button secondaryButton, int secondaryId) {
-            buttonAndIds.put(primaryButton, primaryId);
-            buttonAndIds.put(secondaryButton, secondaryId);
-        }
+            super(GuiListPlayers.this);
 
-        @Override
-        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            buttonAndIds.forEach((button, id) -> {
-                if (button != null) {
-                    button.setY(getY());
-                    button.render(drawContext, mouseX, mouseY, tickDelta);
-                    if (id != -1) {
-                        drawIconForButton(drawContext, button, id);
-                    }
-                }
-            });
+            button1 = primaryButton;
+            button2 = secondaryButton;
+            id1 = primaryId;
+            id2 = secondaryId;
+
+            if (button1 != null) {
+                addWidget(button1);
+            }
+            if (button2 != null) {
+                addWidget(button2);
+            }
         }
 
         private void drawIconForButton(GuiGraphics drawContext, Button button, int id) {
@@ -163,29 +171,21 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
         }
 
         @Override
-        public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            for (Map.Entry<Button, Integer> entry : buttonAndIds.entrySet()) {
-                Button button = entry.getKey();
-                Integer id = entry.getValue();
-                if (button != null && button.mouseClicked(mouseButtonEvent, doubleClick)) {
-                    buttonClicked(id);
-                    return true;
+        public void renderContent(GuiGraphics drawContext, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            if (button1 != null) {
+                button1.setY(getY());
+                button1.render(drawContext, mouseX, mouseY, tickDelta);
+                if (id1 != -1) {
+                    drawIconForButton(drawContext, button1, id1);
                 }
             }
-
-            return false;
-        }
-
-        @Override
-        public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-            for (Map.Entry<Button, Integer> entry : buttonAndIds.entrySet()) {
-                Button button = entry.getKey();
-                if (button != null && button.mouseReleased(mouseButtonEvent)) {
-                    return true;
+            if (button2 != null) {
+                button2.setY(getY());
+                button2.render(drawContext, mouseX, mouseY, tickDelta);
+                if (id2 != -1) {
+                    drawIconForButton(drawContext, button2, id2);
                 }
             }
-
-            return false;
         }
     }
 }

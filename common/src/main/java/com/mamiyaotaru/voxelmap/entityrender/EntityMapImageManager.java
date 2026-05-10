@@ -53,7 +53,6 @@ import net.minecraft.world.entity.animal.fish.Pufferfish;
 import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import org.joml.Matrix4fStack;
 
 import javax.imageio.ImageIO;
 import java.awt.AlphaComposite;
@@ -270,9 +269,8 @@ public class EntityMapImageManager implements IReloadListener {
         debugInfo("EntityMapImageManager: Rendering Mob of type " + entity.getType().getDescriptionId());
 
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
-        Properties iconConfig = getCustomMobProperties(entity.getType());
 
-        renderer.setup(iconConfig);
+        renderer.setup(getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
         renderer.enableCull(false);
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
@@ -304,10 +302,7 @@ public class EntityMapImageManager implements IReloadListener {
                 variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
         );
 
-        float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedMobImage(entity, sprite, model, output, addBorder, iconScale);
-        });
+        renderer.render(textureSet, (output) -> postProcessRenderedMobImage(entity, sprite, model, output, addBorder));
 
         return sprite;
     }
@@ -369,7 +364,7 @@ public class EntityMapImageManager implements IReloadListener {
         return scale;
     }
 
-    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder, float scale) {
+    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
 
@@ -395,9 +390,7 @@ public class EntityMapImageManager implements IReloadListener {
                 default -> {}
             }
 
-            float uniqueMobScale = getUniqueMobScale(entity);
             image = ImageUtils.trim(image);
-            image = ImageUtils.scaleImage(image, scale / uniqueMobScale);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
             addToCreationTask(sprite, image, entity.getType().getDescriptionId());
@@ -438,29 +431,23 @@ public class EntityMapImageManager implements IReloadListener {
             return existing;
         }
         Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
-        Properties iconConfig = getCustomMobProperties(entity.getType());
 
-        renderer.setup(iconConfig);
+        renderer.setup(1.0F, getCustomMobProperties(entity.getType()));
         renderer.enableCull(true);
 
         armorHandler.renderArmorModel(renderer);
 
         AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
 
-        float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedArmorImage(sprite, output, armorHandler, armorData, iconScale);
-        });
+        renderer.render(textureSet, (output) -> postProcessRenderedArmorImage(sprite, output, armorHandler, armorData));
 
         return sprite;
     }
 
-    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler, EntityArmorData armorData, float scale) {
+    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler, EntityArmorData armorData) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
-
             image = armorHandler.postProcessTexture(image, armorData);
-            image = ImageUtils.scaleImage(image, scale);
 
             addToCreationTask(sprite, image, sprite.getIconName().toString());
         });

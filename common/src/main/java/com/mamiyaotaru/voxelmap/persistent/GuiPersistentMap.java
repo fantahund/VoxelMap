@@ -148,10 +148,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private Waypoint hoverdWaypoint;
 
     // Resources
-    private static boolean gotSkin;
     private final Identifier crosshairResource = Identifier.parse("textures/gui/sprites/hud/crosshair.png");
-    private final Identifier voxelmapSkinLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "worldmap/player_skin");
     private final Identifier caveButtonTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/worldmap/cave_button.png");
+    private Sprite playerSkin;
 
     public GuiPersistentMap(Screen parentGui) {
         super(parentGui, Component.empty());
@@ -163,37 +162,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         persistentMap = VoxelConstants.getVoxelMapInstance().getPersistentMap();
         persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
-
-        if (!gotSkin) {
-            getSkin();
-        }
-    }
-
-    private void getSkin() {
-        BufferedImage skinImage = ImageUtils.createBufferedImageFromIdentifier(VoxelConstants.getPlayer().getSkin().body().texturePath());
-
-        if (skinImage == null) {
-            if (VoxelConstants.DEBUG) {
-                VoxelConstants.getLogger().warn("Got no player skin!");
-            }
-            return;
-        }
-
-        gotSkin = true;
-
-        boolean showHat = VoxelConstants.getPlayer().isModelPartShown(PlayerModelPart.HAT);
-        if (showHat) {
-            skinImage = ImageUtils.addImages(ImageUtils.loadImage(skinImage, 8, 8, 8, 8), ImageUtils.loadImage(skinImage, 40, 8, 8, 8), 0.0F, 0.0F, 8, 8);
-        } else {
-            skinImage = ImageUtils.loadImage(skinImage, 8, 8, 8, 8);
-        }
-
-        float scale = skinImage.getWidth() / 8.0F;
-        skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
-
-        DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
-        texture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-        minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 
     @Override
@@ -667,10 +635,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             overlayBackground(guiGraphics, bottom, getHeight());
         }
 
-        if (gotSkin) {
+        if (playerSkin == null) {
+            playerSkin = VoxelConstants.getVoxelMapInstance().getEntityMapImageManager().requestImageForMob(VoxelConstants.getPlayer(), true);
+        } else {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
-            drawPlayer(guiGraphics, voxelmapSkinLocation, playerX, playerZ, mouseX, mouseY);
+            drawPlayer(guiGraphics, playerSkin, playerX, playerZ, mouseX, mouseY);
         }
 
         if (System.currentTimeMillis() - timeOfLastKeyboardInput < 2000L) {
@@ -722,7 +692,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return Math.max(1.0F, getWindowWidth() / 1600.0F);
     }
 
-    private boolean drawPlayer(GuiGraphics guiGraphics, Identifier skin, float playerX, float playerZ, int mouseX, int mouseY) {
+    private boolean drawPlayer(GuiGraphics guiGraphics, Sprite skin, float playerX, float playerZ, int mouseX, int mouseY) {
         float headWidth = ICON_WIDTH * 0.75F;
         float headHeight = ICON_HEIGHT * 0.75F;
 
@@ -771,7 +741,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, skin, x - headWidth / 2.0F, y - headHeight / 2.0F, headWidth, headHeight, 0, 1, 0, 1, 0xFFFFFFFF);
+        skin.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - headWidth / 2.0F, y - headHeight / 2.0F, headWidth, headHeight);
 
         guiGraphics.pose().popMatrix();
 

@@ -36,7 +36,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     @Override
     public void init() {
-        playerList = new GuiListPlayers(this);
+        playerList = new GuiListPlayers(this, 0, 89, getWidth(), getHeight() - 150);
 
         int messageStringWidth = getFont().width(SHARE_MESSAGE);
         message = new EditBox(getFont(), getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, Component.empty());
