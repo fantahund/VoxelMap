@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.options.containers;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionsScreenMinimap;
+import com.mamiyaotaru.voxelmap.gui.GuiOptionsScreenMinimap;
 import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.options.fields.BooleanField;

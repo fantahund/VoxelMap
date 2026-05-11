@@ -1,5 +1,6 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui.widgets;
 
+import com.mamiyaotaru.voxelmap.gui.IPopupGuiScreen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;

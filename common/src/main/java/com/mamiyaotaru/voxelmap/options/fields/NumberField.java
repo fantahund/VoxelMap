@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.options.fields;
 
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiRangedSlider;
-import com.mamiyaotaru.voxelmap.gui.overridden.IRefreshableOptionWidget;
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiRangedSlider;
+import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
 
 import java.util.Optional;
@@ -44,7 +44,7 @@ public abstract class NumberField<T extends Number> extends OptionField<T> {
         return new NumberFieldSlider<>(this, x, y, w, h, consumer);
     }
 
-    public static class NumberFieldSlider<T extends Number> extends GuiRangedSlider implements IRefreshableOptionWidget {
+    public static class NumberFieldSlider<T extends Number> extends GuiRangedSlider implements IOptionWidget {
         private final NumberField<T> field;
         private final Consumer<T> consumer;
 

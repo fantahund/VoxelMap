@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;

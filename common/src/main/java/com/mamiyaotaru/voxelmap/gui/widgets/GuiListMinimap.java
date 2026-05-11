@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -7,13 +7,12 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetTooltipHolder;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
 
 import java.time.Duration;
 import java.util.ArrayList;
 
-public class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractSelectionList<E> {
+public abstract class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractSelectionList<E> {
     private boolean doubleClicked;
     private long lastClicked;
     private Entry<E> lastSelected;
@@ -40,10 +39,6 @@ public class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractS
 
     protected boolean doubleClicked() {
         return doubleClicked;
-    }
-
-    @Override
-    protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 
     public static abstract class Entry<E extends Entry<E>> extends AbstractSelectionList.Entry<E> {
@@ -100,6 +95,9 @@ public class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractS
             return false;
         }
 
+        public void onClick(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        }
+
         @Override
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
             double mouseX = mouseButtonEvent.x();
@@ -116,9 +114,6 @@ public class GuiListMinimap<E extends GuiListMinimap.Entry<E>> extends AbstractS
                 onClick(mouseButtonEvent, doubleClick);
             }
             return true;
-        }
-
-        public void onClick(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         }
     }
 }

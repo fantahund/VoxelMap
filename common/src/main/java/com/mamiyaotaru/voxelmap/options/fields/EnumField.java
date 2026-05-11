@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.options.fields;
 
-import com.mamiyaotaru.voxelmap.gui.overridden.IRefreshableOptionWidget;
+import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
 import com.mamiyaotaru.voxelmap.options.enums.IOptionEnum;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -67,7 +67,7 @@ public class EnumField<T extends Enum<T>> extends OptionField<T> {
         return new EnumFieldButton<>(this, x, y, w, h, consumer);
     }
 
-    public static class EnumFieldButton<T extends Enum<T>> extends Button.Plain implements IRefreshableOptionWidget {
+    public static class EnumFieldButton<T extends Enum<T>> extends Button.Plain implements IOptionWidget {
         private final EnumField<T> field;
         private final Consumer<T> consumer;
 

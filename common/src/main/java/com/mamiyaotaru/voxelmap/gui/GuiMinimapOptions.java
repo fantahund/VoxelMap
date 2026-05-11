@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionsScreenMinimap;
 import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import com.mamiyaotaru.voxelmap.options.fields.StringField;

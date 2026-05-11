@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;

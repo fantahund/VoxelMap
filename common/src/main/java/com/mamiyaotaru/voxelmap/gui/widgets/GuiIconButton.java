@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;

@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionsScreenMinimap;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;

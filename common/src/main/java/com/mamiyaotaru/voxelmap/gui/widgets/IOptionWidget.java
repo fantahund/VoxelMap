@@ -1,9 +1,9 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import net.minecraft.client.gui.components.AbstractWidget;
 
-public interface IRefreshableOptionWidget {
+public interface IOptionWidget {
     void refresh();
 
     void onUpdate();

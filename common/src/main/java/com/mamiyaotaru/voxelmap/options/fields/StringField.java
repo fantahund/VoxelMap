@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.options.fields;
 
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiButtonText;
-import com.mamiyaotaru.voxelmap.gui.overridden.IRefreshableOptionWidget;
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiButtonText;
+import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 
@@ -44,7 +44,7 @@ public class StringField extends OptionField<String> {
         return new StringFieldTextButton(this, x, y, w, h, consumer);
     }
 
-    public static class StringFieldTextButton extends GuiButtonText implements IRefreshableOptionWidget {
+    public static class StringFieldTextButton extends GuiButtonText implements IOptionWidget {
         private final StringField field;
         private final Consumer<String> consumer;
 

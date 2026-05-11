@@ -1,6 +1,7 @@
-package com.mamiyaotaru.voxelmap.gui.overridden;
+package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
@@ -41,7 +42,7 @@ public abstract class GuiOptionsScreenMinimap extends GuiScreenMinimap {
         VoxelConstants.getVoxelMapInstance().getOptionsManager().updateOptionsActive();
 
         for (AbstractWidget widget : optionWidgets) {
-            if (widget instanceof IRefreshableOptionWidget widget2) {
+            if (widget instanceof IOptionWidget widget2) {
                 widget2.refresh();
             }
         }

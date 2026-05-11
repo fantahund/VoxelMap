@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.options.fields;
 
-import com.mamiyaotaru.voxelmap.gui.overridden.IRefreshableOptionWidget;
+import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.resources.language.I18n;
@@ -47,7 +47,7 @@ public class BooleanField extends OptionField<Boolean> {
         return new BooleanFieldButton(this, x, y, w, h, consumer);
     }
 
-    public static class BooleanFieldButton extends Button.Plain implements IRefreshableOptionWidget {
+    public static class BooleanFieldButton extends Button.Plain implements IOptionWidget {
         private final BooleanField field;
         private final Consumer<Boolean> consumer;
 
