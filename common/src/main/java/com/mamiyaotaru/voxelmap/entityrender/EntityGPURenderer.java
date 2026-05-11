@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.entityrender;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mojang.blaze3d.ProjectionType;
@@ -20,6 +19,7 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -40,7 +40,7 @@ import java.util.function.Consumer;
 
 public class EntityGPURenderer extends AbstractEntityRenderer {
     private final GpuBuffer lightingBuffer;
-    private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
+    private final CachedOrthoProjectionMatrixBuffer projection;
     private final Tesselator tessellator = new Tesselator(4096);
     private final VoxelMapRenderTarget renderTarget;
 
@@ -53,14 +53,14 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(lightingBuffer.slice(), byteBuffer);
         }
 
-        projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 256.0F, -256.0F, -256.0F, 256.0F, 1000.0F, 21000.0F);
+        projection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 1000.0F, 21000.0F, true);
         renderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_radar"));
         renderTarget.createBuffers(TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
     @Override
     protected void setupMatrix() {
-        poseStack.translate(0.0F, 0.0F, -3000.0F);
+        poseStack.translate(256.0F, 256.0F, -3000.0F);
         poseStack.scale(64.0F, 64.0F, -64.0F);
     }
 
@@ -85,7 +85,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+        RenderSystem.setProjectionMatrix(projection.getBuffer(512.0F, 512.0F), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.setShaderLights(lightingBuffer.slice());
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
@@ -147,7 +147,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
         }
 
         RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (output) -> {
-            resultConsumer.accept(ImageUtils.flipHorizontal(output));
+            resultConsumer.accept(ImageUtils.flipVertical(output));
         });
     }
 

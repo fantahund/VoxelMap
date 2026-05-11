@@ -29,7 +29,6 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
-import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
@@ -46,6 +45,7 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -177,7 +177,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     // Map Rendering
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
-    private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
+    private final CachedOrthoProjectionMatrixBuffer mapProjection;
     private final VoxelMapRenderTarget hudRenderTarget; // Used for entire VoxelMap HUD rendering
     private final VoxelMapRenderTarget baseMapRenderTarget; // Used for minimap rendering before masking
     private final VoxelMapRenderTarget finalMapRenderTarget; // Used for minimap rendering after masking
@@ -228,7 +228,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         this.setZoomScale();
 
         this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
-        this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
+        this.mapProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", 1000.0F, 21000.0F, true);
 
         final int fboTextureSize = 512;
 
@@ -1501,7 +1501,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         renderBufferSource.endBatch(); // Flush previous batches
 
         // Draw map, radar, etc.
-        RenderUtils.renderWithCustomProjection(baseMapRenderTarget, mapProjection.getBuffer(), -2000.0F, () -> {
+        RenderUtils.renderWithCustomProjection(baseMapRenderTarget, mapProjection.getBuffer(512.0F, 512.0F), -2000.0F, () -> {
             float scale = getMapImageScale();
             float multi = (float) (1.0 / this.zoomScale);
             float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
@@ -1509,6 +1509,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
             matrixStack.pushMatrix();
             matrixStack.identity();
+            matrixStack.translate(256.0F, 256.0F, 0.0F);
 
             matrixStack.pushMatrix();
             if (!isRotationEnabled()) {
@@ -1534,9 +1535,10 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         });
 
         // Masking the drawn map
-        RenderUtils.renderWithCustomProjection(finalMapRenderTarget, mapProjection.getBuffer(), -2000.0F, () -> {
+        RenderUtils.renderWithCustomProjection(finalMapRenderTarget, mapProjection.getBuffer(512.0F, 512.0F), -2000.0F, () -> {
             matrixStack.pushMatrix();
             matrixStack.identity();
+            matrixStack.translate(256.0F, 256.0F, 0.0F);
 
             RenderType stencilRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(options.squareMap.get() ? resourceSquareMapStencil : resourceRoundMapStencil);
             VertexConsumer stencilBuffer = renderBufferSource.getBuffer(stencilRenderType);
