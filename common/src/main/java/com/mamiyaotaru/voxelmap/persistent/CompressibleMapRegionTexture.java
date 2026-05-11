@@ -31,8 +31,8 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private final boolean compressNotDelete;
     private final Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "mapimage/" + UUID.randomUUID());
 
-    private final GpuSampler samplerSmall;
-    private final GpuSampler samplerLarge;
+    private GpuSampler samplerSmall;
+    private GpuSampler samplerLarge;
 
     private byte[] bytes;
 
@@ -40,8 +40,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         this.compressNotDelete = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages.get();
 
         this.pixels = new NativeImage(CachedRegion.REGION_WIDTH, CachedRegion.REGION_WIDTH, false);
-        this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
-        this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
+        this.updateSamplers();
         this.sampler = samplerLarge;
     }
 
@@ -156,6 +155,17 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
                 pixelsMipmapped[i].close();
             }
             pixelsMipmapped = null;
+        }
+    }
+
+    public void updateSamplers() {
+        boolean filtering = VoxelConstants.getVoxelMapInstance().getMapOptions().filtering.get();
+        if (filtering) {
+            this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
+            this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
+        } else {
+            this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
+            this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
         }
     }
 

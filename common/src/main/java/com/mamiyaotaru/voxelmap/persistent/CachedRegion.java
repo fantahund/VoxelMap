@@ -644,6 +644,7 @@ public class CachedRegion {
                 this.image.setRGB(t, s, color24);
             }
         }
+        this.image.updateSamplers();
         this.image.generateMipmaps();
     }
 
