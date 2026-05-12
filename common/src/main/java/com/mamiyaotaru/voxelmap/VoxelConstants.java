@@ -176,7 +176,7 @@ public final class VoxelConstants {
         MapPermissionsManager permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
         MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (!permissions.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED) || mapOptions.hide.get() || mapOptions.mapCorner.get() != OptionEnumMinimap.Location.TOP_LEFT || !mapOptions.moveScoreboardBelowMap.get() || !Double.isFinite(unscaledHeight)) {
+        if (!permissions.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED) || mapOptions.hide.get() || mapOptions.mapCorner.get() != OptionEnumMinimap.Location.TOP_RIGHT || !mapOptions.moveScoreboardBelowMap.get() || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...

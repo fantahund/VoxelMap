@@ -80,8 +80,8 @@ public class OptionEnumMinimap {
 
     public enum BiomeOverlay implements IOptionEnum {
         OFF("options.off"),
-        SOLID("options.minimap.biomeOverlay.transparent"),
-        TRANSPARENT("options.minimap.biomeOverlay.solid");
+        SOLID("options.minimap.biomeOverlay.solid"),
+        TRANSPARENT("options.minimap.biomeOverlay.transparent");
 
         private final String key;
 

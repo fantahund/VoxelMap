@@ -127,9 +127,9 @@ public class MapOptions extends AbstractOptionsContainer {
     @Override
     public void updateOptionsAllowed(MapPermissionsManager permissionsManager) {
         hide.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED));
-        showCaves.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.CAVES_ALLOWED));
         inGameWaypoints.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED));
-        teleportCommand.setAllowed(permissionsManager.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND) != null);
+        showCaves.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.CAVES_ALLOWED));
+        teleportCommand.setAllowed(permissionsManager.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND) == null);
     }
 
     @Override
@@ -181,9 +181,9 @@ public class MapOptions extends AbstractOptionsContainer {
 
     // Option Attributes
 
-    private String formatMulticoreOption(Boolean flag) {
-        String string = flag ? I18n.get("options.on") : I18n.get("options.off");
-        if (!isMulticore && flag) {
+    private String formatMulticoreOption(Boolean value) {
+        String string = value ? I18n.get("options.on") : I18n.get("options.off");
+        if (!isMulticore && value) {
             string = "§c" + string;
         }
         return string;
