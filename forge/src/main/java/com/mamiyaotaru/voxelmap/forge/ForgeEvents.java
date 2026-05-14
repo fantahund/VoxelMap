@@ -107,12 +107,6 @@ public class ForgeEvents implements Events {
         }
 
         @SubscribeEvent
-        public void onRenderGui(AddGuiOverlayLayersEvent event) {
-            Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
-            event.getLayeredDraw().add(voxelMapMinimapLayer, (graphics, deltaTracker) -> VoxelConstants.renderOverlay(graphics));
-        }
-
-        @SubscribeEvent
         public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
             map.onJoinServer();
         }

@@ -184,8 +184,7 @@ public class RenderUtils {
             return;
         }
 
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
+        RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(renderTarget.getColorTexture(), 0x00000000, renderTarget.getDepthTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
@@ -201,6 +200,8 @@ public class RenderUtils {
             RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
 
             runnable.run();
+
+            RenderUtils.flipTexture(renderTarget.getColorTextureView(), false, true);
         } catch (Exception e) {
             VoxelConstants.getLogger().error("Failed to render with custom projection. ", e);
         } finally {
@@ -209,51 +210,6 @@ public class RenderUtils {
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
-
-        flipTexture(renderTarget.getColorTextureView(), false, true);
-    }
-
-    public static void renderWithFullscreenProjection(RenderTarget renderTarget, Runnable runnable) {
-        RenderSystem.assertOnRenderThread();
-
-        if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
-            return;
-        }
-
-        int windowWidth = Minecraft.getInstance().getWindow().getWidth();
-        int windowHeight = Minecraft.getInstance().getWindow().getHeight();
-
-        if (renderTarget.width != windowWidth || renderTarget.height != windowHeight) {
-            renderTarget.resize(windowWidth, windowHeight);
-        }
-
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
-
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
-        GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
-
-        try {
-            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION.getBuffer(getGuiWidth(), getGuiHeight()), ProjectionType.ORTHOGRAPHIC);
-            RenderSystem.getModelViewStack().pushMatrix();
-            RenderSystem.getModelViewStack().identity();
-            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-            RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
-            RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
-
-            runnable.run();
-        } catch (Exception e) {
-            VoxelConstants.getLogger().error("Failed to render with fullscreen projection. ", e);
-        } finally {
-            RenderSystem.outputColorTextureOverride = lastColorTexture;
-            RenderSystem.outputDepthTextureOverride = lastDepthTexture;
-            RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
-        }
-
-        flipTexture(renderTarget.getColorTextureView(), false, true);
     }
 
     public static void drawMeshWithTexture(GpuTextureView colorTexture, GpuTextureView depthTexture, GpuBufferSlice projection, float initialDepth, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup) {

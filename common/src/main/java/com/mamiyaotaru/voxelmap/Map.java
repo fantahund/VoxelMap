@@ -29,13 +29,13 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.KeyMapping;
@@ -48,7 +48,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
@@ -178,7 +177,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     private final MultiBufferSource.BufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
     private final CachedOrthoProjectionMatrixBuffer mapProjection;
-    private final VoxelMapRenderTarget hudRenderTarget; // Used for entire VoxelMap HUD rendering
+    private final CachedOrthoProjectionMatrixBuffer hudProjection;
     private final VoxelMapRenderTarget baseMapRenderTarget; // Used for minimap rendering before masking
     private final VoxelMapRenderTarget finalMapRenderTarget; // Used for minimap rendering after masking
 
@@ -227,13 +226,11 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         this.zoom = this.options.zoom.get();
         this.setZoomScale();
 
-        this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
-        this.mapProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", 1000.0F, 21000.0F, true);
+        this.renderBufferSource = minecraft.renderBuffers().bufferSource();
+        this.mapProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Minimap Projection", 1000.0F, 21000.0F, true);
+        this.hudProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap HUD Projection", 1000.0F, 21000.0F, true);
 
         final int fboTextureSize = 512;
-
-        this.hudRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_gui"));
-        this.hudRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
         this.baseMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_base_map"));
         this.baseMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
@@ -650,8 +647,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                         }
                         statusIconOffset = 24.0F;
                     }
-                    float resFactor = (float) this.scHeight / minecraft.getWindow().getGuiScaledHeight();
-                    ;
+                    float resFactor = (float) scHeight / minecraft.getWindow().getGuiScaledHeight();
                     mapY += (int) (statusIconOffset * resFactor);
                 }
             }
@@ -675,28 +671,32 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zoomScaleAdjusted
         );
 
-        int mapX2 = mapX;
-        int mapY2 = mapY;
-        RenderUtils.renderWithFullscreenProjection(hudRenderTarget, () -> {
-            renderMatrixStack.pushMatrix();
+        renderBufferSource.endBatch();
 
-            if (!this.options.hide.get()) {
-                if (this.fullscreenMap) {
-                    this.renderMapFull(renderMatrixStack, scWidth, scHeight, scaleProj);
-                    this.drawArrow(renderMatrixStack, scWidth / 2, scHeight / 2, scaleProj);
-                } else {
-                    this.renderMap(renderMatrixStack, mapX2, mapY2, scScale, scaleProj);
-                    this.drawArrow(renderMatrixStack, mapX2, mapY2, scaleProj);
-                    this.drawDirections(renderMatrixStack, mapX2, mapY2, scaleProj);
-                }
+        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
+        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
+        RenderSystem.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC);
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
+
+        renderMatrixStack.pushMatrix();
+        if (!options.hide.get()) {
+            if (fullscreenMap) {
+                renderMapFull(renderMatrixStack, scWidth, scHeight, scaleProj);
+                drawArrow(renderMatrixStack, scWidth / 2, scHeight / 2, scaleProj);
+            } else {
+                renderMap(renderMatrixStack, mapX, mapY, scScale, scaleProj);
+                drawArrow(renderMatrixStack, mapX, mapY, scaleProj);
+                drawDirections(renderMatrixStack, mapX, mapY, scaleProj);
             }
-            this.showCoords(renderMatrixStack, mapX2, mapY2, scaleProj);
+        }
+        showCoords(renderMatrixStack, mapX, mapY, scaleProj);
+        renderMatrixStack.popMatrix();
+        renderBufferSource.endBatch();
 
-            renderMatrixStack.popMatrix();
-            renderBufferSource.endBatch();
-        });
-
-        VoxelMapGuiGraphics.blitFloat(drawContext, RenderPipelines.GUI_TEXTURED, hudRenderTarget.colorTextureId, 0.0F, 0.0F, RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight(), 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
     }
 
     private void checkForChanges() {

@@ -71,13 +71,6 @@ public class NeoForgeEvents implements Events {
         }
 
         @SubscribeEvent
-        public void onRenderGui(RenderGuiLayerEvent.Post event) {
-            if (event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY)) {
-                VoxelConstants.renderOverlay(event.getGuiGraphics());
-            }
-        }
-
-        @SubscribeEvent
         public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
             map.onJoinServer();
         }

@@ -16,6 +16,7 @@ accessible field net/minecraft/client/renderer/entity/layers/SlimeOuterLayer mod
 accessible field net/minecraft/client/renderer/entity/EnderDragonRenderer model Lnet/minecraft/client/model/monster/dragon/EnderDragonModel;
 accessible field net/minecraft/client/renderer/entity/LivingEntityRenderer layers Ljava/util/List;
 accessible field net/minecraft/client/renderer/GameRenderer fogRenderer Lnet/minecraft/client/renderer/fog/FogRenderer;
+accessible field net/minecraft/client/renderer/GameRenderer guiRenderer Lnet/minecraft/client/gui/render/GuiRenderer;
 accessible field net/minecraft/client/gui/GuiGraphics guiRenderState Lnet/minecraft/client/gui/render/state/GuiRenderState;
 accessible field net/minecraft/client/gui/GuiGraphics scissorStack Lnet/minecraft/client/gui/GuiGraphics$ScissorStack;
 accessible field net/minecraft/world/level/biome/BiomeManager biomeZoomSeed J
