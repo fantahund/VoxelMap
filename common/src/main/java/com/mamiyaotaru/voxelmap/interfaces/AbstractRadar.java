@@ -38,7 +38,7 @@ public abstract class AbstractRadar implements IReloadListener {
         VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
-    public abstract void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
+    public abstract void renderMapMobs(Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
 
     protected abstract void initContact(Contact contact);
 

@@ -8,33 +8,6 @@ import net.minecraft.util.Util;
 import java.util.function.Function;
 
 public class VoxelMapRenderTypes {
-    public static final Function<Identifier, RenderType> GUI_TEXTURED_NO_DEPTH_TEST = Util.memoize(
-            identifier -> RenderType.create(
-                    "voxelmap_gui_textured_no_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST)
-                            .withTexture("Sampler0", identifier)
-                            .createRenderSetup()
-            )
-    );
-
-    public static final Function<Identifier, RenderType> GUI_TEXTURED_LEQUAL_DEPTH_TEST = Util.memoize(
-            identifier -> RenderType.create(
-                    "voxelmap_gui_textured_lequal_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST)
-                            .withTexture("Sampler0", identifier)
-                            .createRenderSetup()
-            )
-    );
-
-    public static final Function<Identifier, RenderType> GUI_TEXTURED_MASKED_NO_DEPTH_TEST = Util.memoize(
-            identifier -> RenderType.create(
-                    "voxelmap_gui_textured_masked_no_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_MASKED_NO_DEPTH_TEST)
-                            .withTexture("Sampler0", identifier)
-                            .createRenderSetup()
-            )
-    );
-
     public static final Function<Identifier, RenderType> WAYPOINT_ICON_DEPTH_TEST = Util.memoize(
             identifier -> RenderType.create(
                     "voxelmap_waypoint_icon_depth_test",

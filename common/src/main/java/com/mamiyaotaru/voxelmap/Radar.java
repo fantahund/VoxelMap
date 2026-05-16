@@ -6,11 +6,8 @@ import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -87,13 +84,10 @@ public class Radar extends AbstractRadar {
     }
 
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-        // Draw mob icons
-        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(EntityMapImageManager.resourceTextureAtlasMarker);
-        VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
@@ -122,7 +116,7 @@ public class Radar extends AbstractRadar {
                 int baseColor = ARGB.multiply(colorMult, contact.baseColor);
                 float imageWidth = contact.icon.getIconWidth() / 8.0F;
                 float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
+                RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
 
                 if (contact.armorIcon != null) {
                     int armorColor = ARGB.multiply(colorMult, contact.armorColor);
@@ -130,39 +124,18 @@ public class Radar extends AbstractRadar {
                     float armorOffset = iconConfig.armorOffset();
                     float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
                     float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
+                    RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
+                }
+
+                if (contact.name != null) {
+                    float fontScale = radarOptions.fontScale.get() / 4.0F;
+                    matrixStack.scale(fontScale, fontScale, 1.0F);
+                    RenderUtils.drawCenteredString(matrixStack, contact.name, x / fontScale, (y + 3) / fontScale, zOffset, 0xFFFFFFFF, true);
                 }
             } catch (Exception e) {
-                VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
+                VoxelConstants.getLogger().error("Error rendering mob icon! {} contact type {}", e.getLocalizedMessage(), BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
             } finally {
                 matrixStack.popMatrix();
-            }
-        }
-        bufferSource.endBatch(iconRenderType);
-
-        // Draw mob names
-        for (int i = 0; i < contacts.size(); i++) {
-            Contact contact = contacts.get(i);
-
-            if (contact.displayState != displayState) {
-                continue;
-            }
-
-            if (contact.name != null && ((radarOptions.showPlayerNames.get() && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames.get() && contact.category != VoxelMapMobCategory.PLAYER))) {
-                try {
-                    float scaleFactor = radarOptions.fontScale.get() / 4.0F;
-                    float zOffset = i * 0.01F;
-
-                    matrixStack.pushMatrix();
-                    applyContactTransform(matrixStack, contact, x, y, scScale);
-                    matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
-
-                    RenderUtils.drawCenteredString(matrixStack, bufferSource, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
-                } catch (Exception e) {
-                    VoxelConstants.getLogger().error("Error rendering mob name! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
-                } finally {
-                    matrixStack.popMatrix();
-                }
             }
         }
 
