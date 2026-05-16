@@ -79,8 +79,8 @@ public class MapOptions extends AbstractOptionsContainer {
         addOptionField((showCoordInfo = new EnumField<>("Show Coord Info", "options.minimap.showCoordinates", OptionEnumMinimap.CoordInfo.DEFAULT)));
         addOptionField((mapCorner = new EnumField<>("Map Corner", "options.minimap.location", OptionEnumMinimap.Location.TOP_LEFT)));
         addOptionField((sizeModifier = new EnumField<>("Map Size", "options.minimap.size", OptionEnumMinimap.Size.LARGE)));
-        addOptionField((squareMap = new BooleanField("Square Map", "options.minimap.squareMap", false)));
-        addOptionField((rotates = new BooleanField("Rotation", "options.minimap.rotation", true)));
+        addOptionField((squareMap = new BooleanField("Square Map", "options.minimap.squareMap", false)).withListener(this::updateMinimap));
+        addOptionField((rotates = new BooleanField("Rotation", "options.minimap.rotation", true)).withListener(this::updateMinimap));
         addOptionField((inGameWaypoints = new EnumField<>("In-game Waypoints", "options.minimap.inGameWaypoints", OptionEnumMinimap.InGameWaypoints.SIGNS)).withListener(this::updateInGameWaypoints));
         addOptionField((inGameWaypointsToggle = new EnumField<>("In-game Waypoints Toggle", "", OptionEnumMinimap.InGameWaypoints.SIGNS)));
         addOptionField((showCaves = new BooleanField("Enable Cave Mode", "options.minimap.caveMode", true)).withListener(this::updateMinimap));

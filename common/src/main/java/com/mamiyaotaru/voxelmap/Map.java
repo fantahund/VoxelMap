@@ -390,11 +390,6 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             if (options.keyBindMinimapToggle.consumeClick()) {
                 options.hide.toggle();
             }
-            if (permissions.getBoolean(MapPermissionsManager.DEATH_WAYPOINT_ALLOWED)) {
-                if (minecraft.screen instanceof DeathScreen && !(lastGuiScreen instanceof DeathScreen)) {
-                    waypointManager.handleDeath();
-                }
-            }
             if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED)) {
                 if (options.keyBindWaypointMenu.consumeClick()) {
                     minecraft.setScreen(new GuiWaypoints(null));
@@ -415,6 +410,12 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                     Waypoint waypoint = new Waypoint("", x, z, y, true, r, g, b, "", waypointManager.getCurrentSubworldDescriptor(false), dimensions);
 
                     minecraft.setScreen(new GuiAddWaypoint(null, waypoint, false));
+                }
+            }
+        } else {
+            if (permissions.getBoolean(MapPermissionsManager.DEATH_WAYPOINT_ALLOWED)) {
+                if (minecraft.screen instanceof DeathScreen && !(lastGuiScreen instanceof DeathScreen)) {
+                    waypointManager.handleDeath();
                 }
             }
         }
