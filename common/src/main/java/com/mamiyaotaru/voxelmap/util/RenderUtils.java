@@ -168,11 +168,10 @@ public class RenderUtils {
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
             }
+        } catch (Exception e) {
+            VoxelConstants.getLogger().error("Immediate draw failed! ", e);
         } finally {
             TESSELATOR.clear();
-            boundTexture = null;
-            pipeline = null;
-            bufferBuilder = null;
         }
     }
 
