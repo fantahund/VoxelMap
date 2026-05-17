@@ -68,26 +68,12 @@ public class Radar extends AbstractRadar {
         }
     }
 
-    private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
-        float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
-        if (radarOptions.filtering.get()) {
-            matrixStack.translate(x, y, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-            matrixStack.translate(0.0F, -distance, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-            matrixStack.translate(-x, -y, 0.0F);
-        } else {
-            double wayZ = Math.cos(Math.toRadians(contact.angle)) * distance;
-            double wayX = Math.sin(Math.toRadians(contact.angle)) * distance;
-            matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
-        }
-    }
-
     @Override
     public void renderMapMobs(Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, EntityMapImageManager.resourceTextureAtlasMarker);
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
@@ -97,7 +83,19 @@ public class Radar extends AbstractRadar {
 
             try {
                 matrixStack.pushMatrix();
-                applyContactTransform(matrixStack, contact, x, y, scScale);
+
+                float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
+                if (radarOptions.filtering.get()) {
+                    matrixStack.translate(x, y, 0.0F);
+                    matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+                    matrixStack.translate(0.0F, -distance, 0.0F);
+                    matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                    matrixStack.translate(-x, -y, 0.0F);
+                } else {
+                    double wayZ = Math.cos(Math.toRadians(contact.angle)) * distance;
+                    double wayX = Math.sin(Math.toRadians(contact.angle)) * distance;
+                    matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
+                }
 
                 int colorMult;
                 if (minimapContext.playerY - contact.y < 0) {
@@ -116,7 +114,7 @@ public class Radar extends AbstractRadar {
                 int baseColor = ARGB.multiply(colorMult, contact.baseColor);
                 float imageWidth = contact.icon.getIconWidth() / 8.0F;
                 float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
+                RenderUtils.drawSpriteQuad(matrixStack, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
 
                 if (contact.armorIcon != null) {
                     int armorColor = ARGB.multiply(colorMult, contact.armorColor);
@@ -124,7 +122,7 @@ public class Radar extends AbstractRadar {
                     float armorOffset = iconConfig.armorOffset();
                     float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
                     float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                    RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
+                    RenderUtils.drawSpriteQuad(matrixStack, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
                 }
 
                 if (contact.name != null) {
@@ -138,6 +136,7 @@ public class Radar extends AbstractRadar {
                 matrixStack.popMatrix();
             }
         }
+        RenderUtils.endBatch();
 
         matrixStack.popMatrix();
     }

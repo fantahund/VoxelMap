@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
@@ -25,7 +24,6 @@ import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -54,7 +52,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
         }
 
         projection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 1000.0F, 21000.0F, true);
-        renderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_radar"));
+        renderTarget = new VoxelMapRenderTarget("VoxelMap Entity Map Image Target", true);
         renderTarget.createBuffers(TEXTURE_SIZE, TEXTURE_SIZE);
     }
 

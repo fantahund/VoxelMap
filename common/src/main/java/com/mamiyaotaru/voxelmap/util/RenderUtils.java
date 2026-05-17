@@ -18,30 +18,38 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
+
+    private static final Matrix4f MATRIX_CACHE = new Matrix4f();
     private static final Tesselator TESSELATOR = new Tesselator(4096);
     private static final GpuSampler DEFAULT_SAMPLER = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR, false);
+    private static TextureSetup boundTexture;
+    private static RenderPipeline pipeline;
+    private static BufferBuilder bufferBuilder;
+    private static GpuBuffer immediateDrawVertexBuffer;
+    private static GpuBuffer immediateDrawIndexBuffer;
 
     private static GpuBufferSlice lastProjectionMatrix;
     private static ProjectionType lastProjectionType;
@@ -56,27 +64,24 @@ public class RenderUtils {
         return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
     }
 
-    public static void drawString(Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
-        drawString(matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
+    public static void drawString(Matrix4f matrix, String text, float x, float y, float z, int color, boolean shadow) {
+        drawString(matrix, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    public static void drawString(Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
-        matrixStack.pushMatrix();
-        matrixStack.translate(x, y, z);
-
-        MultiBufferSource.BufferSource bufferSource = MINECRAFT.renderBuffers().bufferSource();
-        MINECRAFT.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrixStack, bufferSource, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
-        bufferSource.endLastBatch();
-
-        matrixStack.popMatrix();
+    public static void drawString(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
+        MATRIX_CACHE.set(matrix);
+        matrix.translate(x, y, z);
+        MINECRAFT.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrix, MINECRAFT.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+        MINECRAFT.renderBuffers().bufferSource().endLastBatch();
+        matrix.set(MATRIX_CACHE);
     }
 
-    public static void drawCenteredString(Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
-        drawCenteredString(matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
+    public static void drawCenteredString(Matrix4f matrix, String text, float x, float y, float z, int color, boolean shadow) {
+        drawCenteredString(matrix, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    public static void drawCenteredString(Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
-        drawString(matrixStack, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
+    public static void drawCenteredString(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
+        drawString(matrix, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
 
     public static void drawTooltip(GuiGraphics guiGraphics, Tooltip tooltip, int x, int y) {
@@ -87,42 +92,59 @@ public class RenderUtils {
         guiGraphics.setTooltipForNextFrame(tooltip.toCharSequence(MINECRAFT), x, y);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, Sprite sprite, float x, float y, float z, float width, float height, int color) {
-        drawTexturedModalRect(matrixStack, pipeline, sprite.getIdentifier(), x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
+    public static void drawSpriteQuad(Matrix4f matrix, Sprite sprite, float x, float y, float z, float width, float height, int color) {
+        drawTexturedModalRect(matrix, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, Identifier texture, float x, float y, float z, float width, float height, int color) {
-        drawTexturedModalRect(matrixStack, pipeline, MINECRAFT.getTextureManager().getTexture(texture), x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+    public static void drawBlitQuad(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
+        float v0 = VoxelConstants.hasVulkanMod() ? 0.0F : 1.0F;
+        float v1 = VoxelConstants.hasVulkanMod() ? 1.0F : 0.0F;
+
+        drawTexturedModalRect(matrix, x, y, z, width, height, 0.0F, 1.0F, v0, v1, color);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, Identifier texture, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
-        drawTexturedModalRect(matrixStack, pipeline, MINECRAFT.getTextureManager().getTexture(texture), x, y, z, width, height, u0, u1, v0, v1, color);
+    public static void drawTexturedModalRect(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
+        drawTexturedModalRect(matrix, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, AbstractTexture texture, float x, float y, float z, float width, float height, int color) {
-        drawTexturedModalRect(matrixStack, pipeline, texture.getTextureView(), x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+    public static void drawTexturedModalRect(Matrix4f matrix, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
+        vertexBuffer().addVertex(matrix, x + 0.0F, y + 0.0F, z).setUv(u0, v0).setColor(color);
+        vertexBuffer().addVertex(matrix, x + 0.0F, y + height, z).setUv(u0, v1).setColor(color);
+        vertexBuffer().addVertex(matrix, x + width, y + height, z).setUv(u1, v1).setColor(color);
+        vertexBuffer().addVertex(matrix, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, AbstractTexture texture, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
-        drawTexturedModalRect(matrixStack, pipeline, texture.getTextureView(), x, y, z, width, height, u0, u1, v0, v1, color);
+    public static void beginBatch(RenderPipeline renderPipeline, Identifier texture) {
+        beginBatch(renderPipeline, MINECRAFT.getTextureManager().getTexture(texture));
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, GpuTextureView texture, float x, float y, float z, float width, float height, int color) {
-        drawTexturedModalRect(matrixStack, pipeline, texture, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+    public static void beginBatch(RenderPipeline renderPipeline, AbstractTexture texture) {
+        beginBatch(renderPipeline, texture.getTextureView());
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, RenderPipeline pipeline, GpuTextureView texture, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
+    public static void beginBatch(RenderPipeline renderPipeline, GpuTextureView texture) {
+        beginBatch(renderPipeline, TextureSetup.singleTexture(texture, DEFAULT_SAMPLER));
+    }
+
+    public static void beginBatch(RenderPipeline renderPipeline, TextureSetup textureSetup) {
         RenderSystem.assertOnRenderThread();
+        boundTexture = textureSetup;
+        pipeline = renderPipeline;
+        bufferBuilder = TESSELATOR.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
+    }
 
-        BufferBuilder bufferBuilder = TESSELATOR.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
-        bufferBuilder.addVertex(matrixStack, x + 0.0F, y + 0.0F, z).setUv(u0, v0).setColor(color);
-        bufferBuilder.addVertex(matrixStack, x + 0.0F, y + height, z).setUv(u0, v1).setColor(color);
-        bufferBuilder.addVertex(matrixStack, x + width, y + height, z).setUv(u1, v1).setColor(color);
-        bufferBuilder.addVertex(matrixStack, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
+    public static VertexConsumer vertexBuffer() {
+        return bufferBuilder;
+    }
 
+    public static void endBatch() {
+        RenderSystem.assertOnRenderThread();
         try (MeshData meshData = bufferBuilder.build()) {
+            if (meshData == null) {
+                return;
+            }
             GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
-            GpuBuffer vertexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+            GpuBuffer vertexBuffer = uploadImmediateVertexBuffer(pipeline.getVertexFormat(), meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -130,28 +152,52 @@ public class RenderUtils {
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = pipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
+                indexBuffer = uploadImmediateIndexBuffer(pipeline.getVertexFormat(), meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
-            GpuTextureView outputColorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : Minecraft.getInstance().getMainRenderTarget().getColorTextureView();
-            GpuTextureView outputDepthTexture = RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : Minecraft.getInstance().getMainRenderTarget().getDepthTextureView();
+            GpuTextureView outputColorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : MINECRAFT.getMainRenderTarget().getColorTextureView();
+            GpuTextureView outputDepthTexture = RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : MINECRAFT.getMainRenderTarget().getDepthTextureView();
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Draw Pass", outputColorTexture, OptionalInt.empty(), outputDepthTexture, OptionalDouble.empty())) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.setVertexBuffer(0, vertexBuffer);
-                renderPass.bindTexture("Sampler0", texture, DEFAULT_SAMPLER);
+                renderPass.bindTexture("Sampler0", boundTexture.texure0(), boundTexture.sampler0());
+                renderPass.bindTexture("Sampler1", boundTexture.texure1(), boundTexture.sampler1());
+                renderPass.bindTexture("Sampler2", boundTexture.texure2(), boundTexture.sampler2());
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
             }
+        } finally {
+            TESSELATOR.clear();
+            boundTexture = null;
+            pipeline = null;
+            bufferBuilder = null;
         }
     }
 
-    public static void blitRenderTarget(Matrix4fStack matrixStack, RenderPipeline pipeline, RenderTarget renderTarget, float x, float y, float z, float width, float height, int color) {
-        float v0 = VoxelConstants.hasVulkanMod() ? 0.0F : 1.0F;
-        float v1 = VoxelConstants.hasVulkanMod() ? 1.0F : 0.0F;
+    public static GpuBuffer uploadImmediateVertexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
+        if (!VoxelConstants.hasVulkanMod()) {
+            return vertexFormat.uploadImmediateVertexBuffer(buffer);
+        } else {
+            if (immediateDrawVertexBuffer != null) {
+                immediateDrawVertexBuffer.close();
+            }
+            immediateDrawVertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, buffer);
+            return immediateDrawVertexBuffer;
+        }
+    }
 
-        drawTexturedModalRect(matrixStack, pipeline, renderTarget.getColorTextureView(), x, y, z, width, height, 0.0F, 1.0F, v0, v1, color);
+    public static GpuBuffer uploadImmediateIndexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
+        if (!VoxelConstants.hasVulkanMod()) {
+            return vertexFormat.uploadImmediateIndexBuffer(buffer);
+        } else {
+            if (immediateDrawIndexBuffer != null) {
+                immediateDrawIndexBuffer.close();
+            }
+            immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, buffer);
+            return immediateDrawIndexBuffer;
+        }
     }
 
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {

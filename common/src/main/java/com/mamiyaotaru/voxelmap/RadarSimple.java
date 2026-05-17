@@ -49,26 +49,12 @@ public class RadarSimple extends AbstractRadar {
     protected void initContact(Contact contact) {
     }
 
-    private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
-        float facing = contact.entity.getYHeadRot();
-        if (mapOptions.rotates.get()) {
-            facing -= minimapContext.direction;
-        } else if (mapOptions.oldNorth.get()) {
-            facing += 90.0F;
-        }
-        float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
-        matrixStack.translate(x, y, 0.0F);
-        matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-        matrixStack.translate(0.0F, -distance, 0.0F);
-        matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + facing));
-        matrixStack.translate(-x, -y, 0.0F);
-    }
-
     @Override
     public void renderMapMobs(Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas.getIdentifier());
         for (Contact contact : contacts) {
             if (contact.displayState != displayState) {
                 continue;
@@ -76,7 +62,19 @@ public class RadarSimple extends AbstractRadar {
 
             try {
                 matrixStack.pushMatrix();
-                applyContactTransform(matrixStack, contact, x, y, scScale);
+
+                float facing = contact.entity.getYHeadRot();
+                if (mapOptions.rotates.get()) {
+                    facing -= minimapContext.direction;
+                } else if (mapOptions.oldNorth.get()) {
+                    facing += 90.0F;
+                }
+                float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
+                matrixStack.translate(x, y, 0.0F);
+                matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+                matrixStack.translate(0.0F, -distance, 0.0F);
+                matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + facing));
+                matrixStack.translate(-x, -y, 0.0F);
 
                 int color = minimapContext.playerY - contact.y < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
                 switch (contact.category) {
@@ -85,11 +83,11 @@ public class RadarSimple extends AbstractRadar {
                 }
 
                 Sprite contactIcon = textureAtlas.getAtlasSprite("contact");
-                RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
+                RenderUtils.drawSpriteQuad(matrixStack, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
 
                 if (radarOptions.showFacing.get()) {
                     Sprite facingIcon = textureAtlas.getAtlasSprite("facing");
-                    RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
+                    RenderUtils.drawSpriteQuad(matrixStack, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
                 }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! {} contact type {}", e.getLocalizedMessage(), BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
@@ -97,6 +95,7 @@ public class RadarSimple extends AbstractRadar {
                 matrixStack.popMatrix();
             }
         }
+        RenderUtils.endBatch();
 
         matrixStack.popMatrix();
     }

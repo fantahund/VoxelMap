@@ -227,10 +227,10 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         final int fboTextureSize = 512;
 
-        this.baseMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_base_map"));
+        this.baseMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Base Map Target", true);
         this.baseMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
-        this.finalMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_final_map"));
+        this.finalMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Final Map Target", true);
         this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
         VoxelConstants.getVoxelMapInstance().addReloadListener(this);
@@ -1513,7 +1513,9 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(-percentX * 512.0F / 64.0F, -percentY * 512.0F / 64.0F, 0.0F);
-        RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapResources[zoom], -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapResources[zoom]);
+        RenderUtils.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
         matrixStack.popMatrix();
 
         if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
@@ -1526,9 +1528,13 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         // Masking the drawn map
         RenderUtils.setRenderTarget(finalMapRenderTarget, true);
 
-        Identifier stencilTexture = options.squareMap.get() ? resourceSquareMapStencil : resourceRoundMapStencil;
-        RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST, stencilTexture, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
-        RenderUtils.blitRenderTarget(matrixStack, VoxelMapPipelines.GUI_TEXTURED_MASKED_NO_DEPTH_TEST, baseMapRenderTarget, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, options.squareMap.get() ? resourceSquareMapStencil : resourceRoundMapStencil);
+        RenderUtils.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
+
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_MASKED_NO_DEPTH_TEST, baseMapRenderTarget.getColorTextureView());
+        RenderUtils.drawBlitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
 
         RenderUtils.restoreRenderTarget();
 
@@ -1539,10 +1545,13 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
 
-        RenderUtils.blitRenderTarget(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, finalMapRenderTarget, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, finalMapRenderTarget.getColorTextureView());
+        RenderUtils.drawBlitQuad(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
 
-        Identifier frameTexture = options.squareMap.get() ? resourceSquareMapFrame : resourceRoundMapFrame;
-        RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, frameTexture, x - 32.0F, y - 32.0F, MAP_OVERLAY_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, options.squareMap.get() ? resourceSquareMapFrame : resourceRoundMapFrame);
+        RenderUtils.drawTexturedModalRect(matrixStack, x - 32.0F, y - 32.0F, MAP_OVERLAY_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
@@ -1593,6 +1602,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
 
         int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F) : color;
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas.getIdentifier());
         if (far) {
             if (icon == null) {
                 icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
@@ -1614,7 +1624,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                     matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
+                RenderUtils.drawSpriteQuad(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1634,13 +1644,14 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
 
-                RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
+                RenderUtils.drawSpriteQuad(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {
                 matrixStack.popMatrix();
             }
         }
+        RenderUtils.endBatch();
     }
 
     private void drawArrow(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
@@ -1651,7 +1662,9 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.rotate(Axis.ZP.rotationDegrees(isRotationEnabled() ? 0.0F : this.direction + this.rotationFactor));
         matrixStack.translate(-x, -y, 0.0F);
 
-        RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, resourceArrow, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, resourceArrow);
+        RenderUtils.drawTexturedModalRect(matrixStack, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
 
         matrixStack.popMatrix();
     }
@@ -1672,7 +1685,9 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), 0.0F);
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        RenderUtils.drawTexturedModalRect(matrixStack, VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapResources[zoom], left, top, MAP_IMAGE_DEPTH, 256.0f, 256.0F, 0xFFFFFFFF);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapResources[zoom]);
+        RenderUtils.drawTexturedModalRect(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0f, 256.0F, 0xFFFFFFFF);
+        RenderUtils.endBatch();
         matrixStack.popMatrix();
 
         if (this.options.biomeOverlay.get() != OptionEnumMinimap.BiomeOverlay.OFF) {

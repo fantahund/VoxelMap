@@ -8,23 +8,22 @@ import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +34,7 @@ public class WaypointContainer {
     private final WaypointOptions options;
     private final WaypointManager waypointManager;
 
+    private final PoseStack poseStack = new PoseStack();
     private final ArrayList<RenderableWaypoint> renderables = new ArrayList<>();
     private static final float INVALID_OFFSET = -1.0F;
 
@@ -74,19 +74,22 @@ public class WaypointContainer {
         return mapOptions.inGameWaypoints.get() == OptionEnumMinimap.InGameWaypoints.SIGNS || mapOptions.inGameWaypoints.get() == OptionEnumMinimap.InGameWaypoints.BOTH;
     }
 
-    public void renderWaypoints(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+    public void renderWaypoints(float partialTick, Matrix4f matrix, Camera camera) {
         if (waypointManager == null) return;
         if (renderables.isEmpty()) return;
 
+        poseStack.setIdentity();
+        poseStack.mulPose(matrix);
+
         if (isBeaconsShown()) {
-            renderWaypointBeams(partialTick, poseStack, bufferSource, camera);
+            renderWaypointBeams(partialTick, poseStack, camera);
         }
         if (isSignsShown()) {
-            renderWaypointSigns(partialTick, poseStack, bufferSource, camera);
+            renderWaypointSigns(partialTick, poseStack, camera);
         }
     }
 
-    public void renderWaypointBeams(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+    public void renderWaypointBeams(float partialTick, PoseStack poseStack, Camera camera) {
         Vec3 cameraPos = camera.position();
         double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - cameraPos.y;
 
@@ -100,11 +103,11 @@ public class WaypointContainer {
             int z = waypoint.getZ();
             double distance = Math.sqrt(waypoint.getDistanceSqToCamera(camera));
 
-            renderBeam(poseStack, bufferSource, waypoint, distance, x - cameraPos.x, bottomOfWorld, z - cameraPos.z);
+            renderBeam(poseStack, waypoint, distance, x - cameraPos.x, bottomOfWorld, z - cameraPos.z);
         }
     }
 
-    public void renderWaypointSigns(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+    public void renderWaypointSigns(float partialTick, PoseStack poseStack, Camera camera) {
         if (minecraft.options.hideGui) return;
 
         Vec3 cameraPos = camera.position();
@@ -141,9 +144,9 @@ public class WaypointContainer {
             boolean isPointedAt = renderable.getOffset() != INVALID_OFFSET && (shiftDown || renderable == last);
             if (waypointManager.isWaypointHighlight(waypoint)) {
                 // Render base waypoint
-                renderSign(poseStack, bufferSource, waypoint, textureAtlas, isPointedAt, false, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+                renderSign(poseStack, waypoint, textureAtlas, isPointedAt, false, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
             }
-            renderSign(poseStack, bufferSource, waypoint, textureAtlas, isPointedAt, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+            renderSign(poseStack, waypoint, textureAtlas, isPointedAt, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
         }
     }
 
@@ -176,7 +179,7 @@ public class WaypointContainer {
     /**
      * Edited from {@link net.minecraft.client.renderer.blockentity.BeaconRenderer}
      */
-    private void renderBeam(PoseStack poseStack, BufferSource bufferSource, Waypoint waypoint, double distance, double baseX, double baseY, double baseZ) {
+    private void renderBeam(PoseStack poseStack, Waypoint waypoint, double distance, double baseX, double baseY, double baseZ) {
         int height = VoxelConstants.getClientWorld().getHeight();
 
         float spentTime = minecraft.getCameraEntity().tickCount + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
@@ -193,21 +196,20 @@ public class WaypointContainer {
         float beamMinV = height * (0.5F / BeaconRenderer.SOLID_BEAM_RADIUS) + beamMaxV;
         int beamColor = waypoint.getUnifiedColor(1.0F);
 
-        RenderType beamRenderType = RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, false);
-        VertexConsumer beamBuffer = bufferSource.getBuffer(beamRenderType);
+        RenderUtils.beginBatch(RenderPipelines.BEACON_BEAM_OPAQUE, BeaconRenderer.BEAM_LOCATION);
         for (int face = 0; face < 4; ++face) {
             float x = (face == 0 || face == 3) ? -beamRadius : beamRadius;
             float z = (face < 2) ? -beamRadius : beamRadius;
             float x2 = (face < 2) ? -beamRadius : beamRadius;
             float z2 = (face == 1 || face == 2) ? -beamRadius : beamRadius;
 
-            beamBuffer.addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMinV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
-            beamBuffer.addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMaxV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
-            beamBuffer.addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMaxV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
-            beamBuffer.addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMinV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMinV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMaxV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMaxV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMinV).setColor(beamColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
 
         }
-        bufferSource.endBatch(beamRenderType);
+        RenderUtils.endBatch();
 
         poseStack.popPose();
 
@@ -216,27 +218,26 @@ public class WaypointContainer {
         float glowMinV = height + beamMaxV;
         int glowColor = waypoint.getUnifiedColor(0.125F);
 
-        RenderType glowRenderType = RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, true);
-        VertexConsumer glowBuffer = bufferSource.getBuffer(glowRenderType);
+        RenderUtils.beginBatch(RenderPipelines.BEACON_BEAM_TRANSLUCENT, BeaconRenderer.BEAM_LOCATION);
         for (int face = 0; face < 4; ++face) {
             float x = (face == 0 || face == 3) ? -glowRadius : glowRadius;
             float z = (face < 2) ? -glowRadius : glowRadius;
             float x2 = (face < 2) ? -glowRadius : glowRadius;
             float z2 = (face == 1 || face == 2) ? -glowRadius : glowRadius;
 
-            glowBuffer.addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMinV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
-            glowBuffer.addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMaxV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
-            glowBuffer.addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMaxV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
-            glowBuffer.addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMinV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMinV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMaxV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMaxV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMinV).setColor(glowColor).setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT);
 
         }
-        bufferSource.endBatch(glowRenderType);
+        RenderUtils.endBatch();
 
         poseStack.popPose();
 
     }
 
-    private void renderSign(PoseStack poseStack, BufferSource bufferSource, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, double distance, double baseX, double baseY, double baseZ) {
+    private void renderSign(PoseStack poseStack, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, double distance, double baseX, double baseY, double baseZ) {
         String mainLabel = waypoint.name;
         if (isHighlighted) {
             mainLabel = waypointManager.isCoordinateHighlight(waypoint) ? "X:" + waypoint.getX() + ", Y:" + waypoint.getY() + ", Z:" + waypoint.getZ() : "";
@@ -276,22 +277,20 @@ public class WaypointContainer {
         }
 
         int iconColorDepthTest = ARGB.colorFromFloat(fade, r, g, b);
-        RenderType renderType = getIconRenderType(focused, true, icon.getIdentifier());
-        VertexConsumer vertexIconDepthTest = bufferSource.getBuffer(renderType);
-        vertexIconDepthTest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(iconColorDepthTest);
-        vertexIconDepthTest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(iconColorDepthTest);
-        vertexIconDepthTest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(iconColorDepthTest);
-        vertexIconDepthTest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(iconColorDepthTest);
-        bufferSource.endBatch(renderType);
+        RenderUtils.beginBatch(getIconPipeline(focused, true), icon.getIdentifier());
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(iconColorDepthTest);
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(iconColorDepthTest);
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(iconColorDepthTest);
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(iconColorDepthTest);
+        RenderUtils.endBatch();
 
         int iconColorNoDepthTest = ARGB.colorFromFloat(0.3F * fade, r, g, b);
-        renderType = getIconRenderType(focused, false, icon.getIdentifier());
-        VertexConsumer vertexIconNoDepthTest = bufferSource.getBuffer(renderType);
-        vertexIconNoDepthTest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(iconColorNoDepthTest);
-        vertexIconNoDepthTest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(iconColorNoDepthTest);
-        vertexIconNoDepthTest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(iconColorNoDepthTest);
-        vertexIconNoDepthTest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(iconColorNoDepthTest);
-        bufferSource.endBatch(renderType);
+        RenderUtils.beginBatch(getIconPipeline(focused, false), icon.getIdentifier());
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(iconColorNoDepthTest);
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(iconColorNoDepthTest);
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(iconColorNoDepthTest);
+        RenderUtils.vertexBuffer().addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(iconColorNoDepthTest);
+        RenderUtils.endBatch();
 
         if (isPointedAt && !hideLabels && options.labelStyle.get() != OptionEnumWaypoint.LabelStyle.OFF) {
             boolean convertFromOneKilometer = options.unitConversion.get() == OptionEnumWaypoint.UnitConversion.FROM_1000M && distance > 1000.0;
@@ -317,26 +316,25 @@ public class WaypointContainer {
 
             int backgroundColor = ARGB.colorFromFloat(0.6F * fade, r, g, b);
             int foregroundColor = ARGB.colorFromFloat(0.15F * fade, 0.0F, 0.0F, 0.0F);
-            renderType = getLabelBackgroundRenderType(focused, true);
-            renderLabelBackgrounds(poseStack, bufferSource, renderType, mainLabel, subLabel, mainLabelY, subLabelY, backgroundColor, foregroundColor);
+            renderLabelBackgrounds(poseStack, getLabelPipeline(focused, true), mainLabel, subLabel, mainLabelY, subLabelY, backgroundColor, foregroundColor);
 
             backgroundColor = ARGB.colorFromFloat(0.15F * fade, r, g, b);
             foregroundColor = ARGB.colorFromFloat(0.15F * fade, 0.0F, 0.0F, 0.0F);
-            renderType = getLabelBackgroundRenderType(focused, false);
-            renderLabelBackgrounds(poseStack, bufferSource, renderType, mainLabel, subLabel, mainLabelY, subLabelY, backgroundColor, foregroundColor);
+            renderLabelBackgrounds(poseStack, getLabelPipeline(focused, false), mainLabel, subLabel, mainLabelY, subLabelY, backgroundColor, foregroundColor);
 
             int textColor = (int) (255.0F * fade) << 24 | 0x00CCCCCC;
-            renderLabels(poseStack, bufferSource, Font.DisplayMode.SEE_THROUGH, mainLabel, subLabel, mainLabelY, subLabelY, textColor);
+            renderLabels(poseStack, Font.DisplayMode.SEE_THROUGH, mainLabel, subLabel, mainLabelY, subLabelY, textColor);
         }
         poseStack.popPose();
     }
 
-    private RenderType getIconRenderType(boolean focused, boolean occluded, Identifier texture) {
-        return (!focused && occluded ? VoxelMapRenderTypes.WAYPOINT_ICON_DEPTH_TEST : VoxelMapRenderTypes.WAYPOINT_ICON_NO_DEPTH_TEST).apply(texture);
+
+    private RenderPipeline getIconPipeline(boolean focused, boolean occluded) {
+        return !focused && occluded ? VoxelMapPipelines.WAYPOINT_ICON_DEPTH_TEST : VoxelMapPipelines.WAYPOINT_ICON_NO_DEPTH_TEST;
     }
 
-    private RenderType getLabelBackgroundRenderType(boolean focused, boolean occluded) {
-        return !focused && occluded ? VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND_DEPTH_TEST : VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND_NO_DEPTH_TEST;
+    private RenderPipeline getLabelPipeline(boolean focused, boolean occluded) {
+        return !focused && occluded ? VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND_DEPTH_TEST : VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND_NO_DEPTH_TEST;
     }
 
     private String getDistanceString(double distance) {
@@ -344,11 +342,11 @@ public class WaypointContainer {
         return (roundDist / 10) + "." + (roundDist % 10);
     }
 
-    private void renderLabels(PoseStack poseStack, BufferSource bufferSource, Font.DisplayMode displayMode, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color) {
+    private void renderLabels(PoseStack poseStack, Font.DisplayMode displayMode, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color) {
         if (!mainLabel.isEmpty()) {
             float halfWidth = minecraft.font.width(mainLabel) / 2.0F;
 
-            minecraft.font.drawInBatch(mainLabel, -halfWidth, mainLabelY, color, false, poseStack.last().pose(), bufferSource, displayMode, 0x00000000, LightTexture.FULL_BRIGHT);
+            minecraft.font.drawInBatch(mainLabel, -halfWidth, mainLabelY, color, false, poseStack.last().pose(), minecraft.renderBuffers().bufferSource(), displayMode, 0x00000000, LightTexture.FULL_BRIGHT);
         }
 
         if (!subLabel.isEmpty()) {
@@ -357,15 +355,15 @@ public class WaypointContainer {
 
             poseStack.pushPose();
             poseStack.scale(scale, scale, 1.0F);
-            minecraft.font.drawInBatch(subLabel, -halfWidth, subLabelY, color, false, poseStack.last().pose(), bufferSource, displayMode, 0x00000000, LightTexture.FULL_BRIGHT);
+            minecraft.font.drawInBatch(subLabel, -halfWidth, subLabelY, color, false, poseStack.last().pose(), minecraft.renderBuffers().bufferSource(), displayMode, 0x00000000, LightTexture.FULL_BRIGHT);
             poseStack.popPose();
         }
 
-        bufferSource.endLastBatch();
+        minecraft.renderBuffers().bufferSource().endLastBatch();
     }
 
-    private void renderLabelBackgrounds(PoseStack poseStack, BufferSource bufferSource, RenderType renderType, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color1, int color2) {
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(renderType);
+    private void renderLabelBackgrounds(PoseStack poseStack, RenderPipeline pipeline, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color1, int color2) {
+        RenderUtils.beginBatch(pipeline, TextureSetup.noTexture());
 
         if (!mainLabel.isEmpty()) {
             float halfWidth = minecraft.font.width(mainLabel) / 2.0F;
@@ -375,20 +373,20 @@ public class WaypointContainer {
             float y00 = mainLabelY - 2.0F;
             float y01 = mainLabelY + 9.0F;
 
-            vertexConsumer.addVertex(poseStack.last(), x00, y00, 0.0F).setColor(color1);
-            vertexConsumer.addVertex(poseStack.last(), x00, y01, 0.0F).setColor(color1);
-            vertexConsumer.addVertex(poseStack.last(), x01, y01, 0.0F).setColor(color1);
-            vertexConsumer.addVertex(poseStack.last(), x01, y00, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x00, y00, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x00, y01, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x01, y01, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x01, y00, 0.0F).setColor(color1);
 
             float x10 = -halfWidth - 1.0F;
             float x11 = halfWidth + 1.0F;
             float y10 = mainLabelY - 1.0F;
             float y11 = mainLabelY + 8.0F;
 
-            vertexConsumer.addVertex(poseStack.last(), x10, y10, 0.0F).setColor(color2);
-            vertexConsumer.addVertex(poseStack.last(), x10, y11, 0.0F).setColor(color2);
-            vertexConsumer.addVertex(poseStack.last(), x11, y11, 0.0F).setColor(color2);
-            vertexConsumer.addVertex(poseStack.last(), x11, y10, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x10, y10, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x10, y11, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x11, y11, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x11, y10, 0.0F).setColor(color2);
         }
 
         if (!subLabel.isEmpty()) {
@@ -400,23 +398,23 @@ public class WaypointContainer {
             float y00 = (subLabelY - 2) * scale;
             float y01 = (subLabelY + 9) * scale;
 
-            vertexConsumer.addVertex(poseStack.last(), x00, y00, 0.0F).setColor(color1);
-            vertexConsumer.addVertex(poseStack.last(), x00, y01, 0.0F).setColor(color1);
-            vertexConsumer.addVertex(poseStack.last(), x01, y01, 0.0F).setColor(color1);
-            vertexConsumer.addVertex(poseStack.last(), x01, y00, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x00, y00, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x00, y01, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x01, y01, 0.0F).setColor(color1);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x01, y00, 0.0F).setColor(color1);
 
             float x10 = (-halfWidth - 1) * scale;
             float x11 = (halfWidth + 1) * scale;
             float y10 = (subLabelY - 1) * scale;
             float y11 = (subLabelY + 8) * scale;
 
-            vertexConsumer.addVertex(poseStack.last(), x10, y10, 0.0F).setColor(color2);
-            vertexConsumer.addVertex(poseStack.last(), x10, y11, 0.0F).setColor(color2);
-            vertexConsumer.addVertex(poseStack.last(), x11, y11, 0.0F).setColor(color2);
-            vertexConsumer.addVertex(poseStack.last(), x11, y10, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x10, y10, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x10, y11, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x11, y11, 0.0F).setColor(color2);
+            RenderUtils.vertexBuffer().addVertex(poseStack.last(), x11, y10, 0.0F).setColor(color2);
         }
 
-        bufferSource.endBatch(renderType);
+        RenderUtils.endBatch();
     }
 
     public static class RenderableWaypoint implements Comparable<RenderableWaypoint> {
