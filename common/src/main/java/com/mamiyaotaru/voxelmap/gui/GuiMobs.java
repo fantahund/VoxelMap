@@ -114,8 +114,8 @@ public class GuiMobs extends GuiScreenMinimap {
                     VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(type);
 
                     if (mobsFlag == OptionEnumRadar.ShowMobs.OFF) continue;
-                    if ((mobsFlag == OptionEnumRadar.ShowMobs.HOSTILES || mobsFlag == OptionEnumRadar.ShowMobs.BOTH) && category != VoxelMapMobCategory.HOSTILE) continue;
-                    if ((mobsFlag == OptionEnumRadar.ShowMobs.NEUTRALS || mobsFlag == OptionEnumRadar.ShowMobs.BOTH) && category != VoxelMapMobCategory.NEUTRAL) continue;
+                    if ((mobsFlag == OptionEnumRadar.ShowMobs.HOSTILES) && category != VoxelMapMobCategory.HOSTILE) continue;
+                    if ((mobsFlag == OptionEnumRadar.ShowMobs.NEUTRALS) && category != VoxelMapMobCategory.NEUTRAL) continue;
 
                     mobs.add(new Entry(type, id));
                 }
