@@ -10,7 +10,7 @@ val forgeVersion by extra { "63.0.1" }
 val neoForgeVersion by extra { "26.1.1.1-beta" }
 val fabricVersion by extra { "0.18.6" }
 val fabricApiVersion by extra { "0.145.3+26.1.1" }
-val voxelMapVersion by extra { "1.16.6" }
+val voxelMapVersion by extra { "1.16.7" }
 
 val fullVersion by extra { "${minecraftVersion}-${voxelMapVersion}" }
 
