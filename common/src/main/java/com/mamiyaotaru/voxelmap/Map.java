@@ -654,6 +654,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zoomScaleAdjusted
         );
 
+        RenderUtils.flushGuiRenderer();
         RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
         matrixStack.pushMatrix();

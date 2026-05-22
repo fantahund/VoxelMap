@@ -18,10 +18,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinInGameHud {
     @Inject(method = "renderBossOverlay", at = @At("TAIL"))
     private void injectRender(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
-        // Flush previous render layers before drawing the VoxelMap overlay.
-        GameRenderer gameRenderer = Minecraft.getInstance().gameRenderer;
-        gameRenderer.guiRenderer.render(gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
-
         VoxelConstants.renderOverlay(guiGraphics);
     }
 

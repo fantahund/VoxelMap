@@ -25,6 +25,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -226,6 +227,10 @@ public class RenderUtils {
             gpuBuffer.close();
             resultConsumer.accept(image);
         }, 0);
+    }
+
+    public static void flushGuiRenderer() {
+        MINECRAFT.gameRenderer.guiRenderer.render(MINECRAFT.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
     }
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {

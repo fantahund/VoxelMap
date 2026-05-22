@@ -25,9 +25,7 @@ import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
-import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
@@ -80,9 +78,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     // UI & Layouts
     private final CachedOrthoProjectionMatrixBuffer mapProjection;
-    private final VoxelMapRenderTarget mapRenderTarget;
-    private int lastMapWidth;
-    private int lastMapHeight;
     private static final float MAP_IMAGE_DEPTH = 0.0F;
     private static final float MAP_TEXT_DEPTH = 100.0F;
     private static final float MAP_ICON_DEPTH = 200.0F;
@@ -169,7 +164,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
 
         mapProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap WorldMap Projection", 1000.0F, 21000.0F, true);
-        mapRenderTarget = new VoxelMapRenderTarget("VoxelMap WorldMap Target", true);
     }
 
     @Override
@@ -563,15 +557,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, bgInfo.getImageLocation(), bgInfo.left, bgInfo.top + 32, 0, 0, bgInfo.width, bgInfo.height, bgInfo.width, bgInfo.height);
         }
 
-        if (lastMapWidth != getWindowWidth() || lastMapHeight != getWindowHeight()) {
-            lastMapWidth = getWindowWidth();
-            lastMapHeight = getWindowHeight();
-
-            mapRenderTarget.createBuffers(lastMapWidth, lastMapHeight);
-        }
-
+        RenderUtils.flushGuiRenderer();
         RenderUtils.setProjectionMatrix(mapProjection.getBuffer(getWidth(), getHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        RenderUtils.setRenderTarget(mapRenderTarget, true);
         Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
         matrixStack.pushMatrix();
         matrixStack.translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui, 0.0F);
@@ -678,8 +665,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         RenderUtils.restoreRenderTarget();
         RenderUtils.restoreProjectionMatrix();
-
-        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, mapRenderTarget.getColorTextureView(), 0, 0, getWidth(), getHeight(), 0.0F, 1.0F, 1.0F, 0.0F, 0xFFFFFFFF);
 
         if (System.currentTimeMillis() - timeOfLastKeyboardInput < 2000L) {
             guiGraphics.blit(RenderPipelines.CROSSHAIR, crosshairResource, (getWidth() - 15) / 2, (getHeight() - 15) / 2, 0.0F, 0.0F, 15, 15, 15, 15);
