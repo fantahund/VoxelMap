@@ -83,11 +83,11 @@ public class RadarSimple extends AbstractRadar {
                 }
 
                 Sprite contactIcon = textureAtlas.getAtlasSprite("contact");
-                RenderUtils.drawSpriteQuad(matrixStack, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
+                RenderUtils.drawSpriteRect(matrixStack, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
 
                 if (radarOptions.showFacing.get()) {
                     Sprite facingIcon = textureAtlas.getAtlasSprite("facing");
-                    RenderUtils.drawSpriteQuad(matrixStack, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
+                    RenderUtils.drawSpriteRect(matrixStack, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
                 }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! {} contact type {}", e.getLocalizedMessage(), BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);

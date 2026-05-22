@@ -30,6 +30,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -42,6 +43,7 @@ import java.util.function.Consumer;
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
 
+    private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final Matrix4f MATRIX_CACHE = new Matrix4f();
     private static final Tesselator TESSELATOR = new Tesselator(4096);
     private static final GpuSampler DEFAULT_SAMPLER = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR, false);
@@ -62,6 +64,10 @@ public class RenderUtils {
 
     public static float getGuiHeight() {
         return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
+    }
+
+    public static Matrix4fStack getRenderMatrixStack() {
+        return MATRIX_STACK;
     }
 
     public static void drawString(Matrix4f matrix, String text, float x, float y, float z, int color, boolean shadow) {
@@ -92,11 +98,11 @@ public class RenderUtils {
         guiGraphics.setTooltipForNextFrame(tooltip.toCharSequence(MINECRAFT), x, y);
     }
 
-    public static void drawSpriteQuad(Matrix4f matrix, Sprite sprite, float x, float y, float z, float width, float height, int color) {
+    public static void drawSpriteRect(Matrix4f matrix, Sprite sprite, float x, float y, float z, float width, float height, int color) {
         drawTexturedModalRect(matrix, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
     }
 
-    public static void drawBlitQuad(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
+    public static void drawBlitRect(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
         float v0 = VoxelConstants.hasVulkanMod() ? 0.0F : 1.0F;
         float v1 = VoxelConstants.hasVulkanMod() ? 1.0F : 0.0F;
 
@@ -119,7 +125,7 @@ public class RenderUtils {
     }
 
     public static void beginBatch(RenderPipeline renderPipeline, AbstractTexture texture) {
-        beginBatch(renderPipeline, texture.getTextureView());
+        beginBatch(renderPipeline, TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()));
     }
 
     public static void beginBatch(RenderPipeline renderPipeline, GpuTextureView texture) {

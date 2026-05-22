@@ -7,9 +7,9 @@ import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
 import com.mamiyaotaru.voxelmap.gui.GuiSubworldsSelect;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.IGuiWaypoints;
+import com.mamiyaotaru.voxelmap.gui.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.gui.widgets.Popup;
 import com.mamiyaotaru.voxelmap.gui.widgets.PopupGuiButton;
-import com.mamiyaotaru.voxelmap.gui.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
@@ -26,26 +26,33 @@ import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
-import org.joml.Vector2f;
+import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -64,30 +71,39 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final DimensionManager dimensionManager;
     private final Random generator = new Random();
 
-    private final int SIDE_MARGIN = 10;
-    private static final int ICON_WIDTH = 16;
-    private static final int ICON_HEIGHT = 16;
-
     // Mapping & Threading
     private final Object closedLock = new Object();
     private boolean closed;
-
-    private CachedRegion[] regionsToDisplay = new CachedRegion[0];
-
     private boolean lastStill;
     private final BiomeMapData biomeMapData = new BiomeMapData(760, 360);
+    private CachedRegion[] regionsToDisplay = new CachedRegion[0];
 
-    // Screen & Layouts
+    // UI & Layouts
+    private final CachedOrthoProjectionMatrixBuffer mapProjection;
+    private final VoxelMapRenderTarget mapRenderTarget;
+    private int lastMapWidth;
+    private int lastMapHeight;
+    private static final float MAP_IMAGE_DEPTH = 0.0F;
+    private static final float MAP_TEXT_DEPTH = 100.0F;
+    private static final float MAP_ICON_DEPTH = 200.0F;
+    private static final float MAP_OVERLAY_DEPTH = 300.0F;
+
     protected String screenTitle = "World Map";
-
     private float scScale = 1.0F;
     private int top;
     private int bottom;
+
+    private static final int SIDE_MARGIN = 10;
+    private static final int ICON_WIDTH = 16;
+    private static final int ICON_HEIGHT = 16;
 
     private Component multiworldButtonName;
     private Component multiworldButtonNameRed;
     private PopupGuiButton buttonWaypoints;
     private PopupGuiButton buttonMultiworld;
+    private Sprite playerSkin;
+    private final Identifier crosshairResource = Identifier.parse("textures/gui/sprites/hud/crosshair.png");
+    private final Identifier caveButtonTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/worldmap/cave_button.png");
 
     // Subworld Names
     private String subworldName = "";
@@ -141,11 +157,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private Waypoint selectedWaypoint;
     private Waypoint hoverdWaypoint;
 
-    // Resources
-    private final Identifier crosshairResource = Identifier.parse("textures/gui/sprites/hud/crosshair.png");
-    private final Identifier caveButtonTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/worldmap/cave_button.png");
-    private Sprite playerSkin;
-
     public GuiPersistentMap(Screen parentGui) {
         super(parentGui, Component.empty());
 
@@ -156,6 +167,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         persistentMap = VoxelConstants.getVoxelMapInstance().getPersistentMap();
         persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
+
+        mapProjection = new CachedOrthoProjectionMatrixBuffer("VoxelMap WorldMap Projection", 1000.0F, 21000.0F, true);
+        mapRenderTarget = new VoxelMapRenderTarget("VoxelMap WorldMap Target", true);
     }
 
     @Override
@@ -500,6 +514,26 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         handleInputAndNavigation(mouseX, mouseY, mouseDirectX, mouseDirectY);
 
+        float cursorX;
+        float cursorY;
+        if (mouseCursorShown) {
+            cursorX = mouseDirectX;
+            cursorY = mouseDirectY - top * guiToDirectMouse;
+        } else {
+            cursorX = getWindowWidth() / 2.0F;
+            cursorY = getWindowHeight() / 2.0F - top * guiToDirectMouse;
+        }
+
+        float cursorCoordX;
+        float cursorCoordZ;
+        if (oldNorth) {
+            cursorCoordX = cursorY * mouseDirectToMap + (mapCenterZ - centerY * guiToMap);
+            cursorCoordZ = -(cursorX * mouseDirectToMap + (mapCenterX - centerX * guiToMap));
+        } else {
+            cursorCoordX = cursorX * mouseDirectToMap + (mapCenterX - centerX * guiToMap);
+            cursorCoordZ = cursorY * mouseDirectToMap + (mapCenterZ - centerY * guiToMap);
+        }
+
         int regionLeft;
         int regionRight;
         int regionTop;
@@ -529,22 +563,32 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, bgInfo.getImageLocation(), bgInfo.left, bgInfo.top + 32, 0, 0, bgInfo.width, bgInfo.height, bgInfo.width, bgInfo.height);
         }
 
-        guiGraphics.pose().pushMatrix();
-        guiGraphics.pose().translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui);
-        if (oldNorth) {
-            guiGraphics.pose().rotate(90.0F * Mth.DEG_TO_RAD);
+        if (lastMapWidth != getWindowWidth() || lastMapHeight != getWindowHeight()) {
+            lastMapWidth = getWindowWidth();
+            lastMapHeight = getWindowHeight();
+
+            mapRenderTarget.createBuffers(lastMapWidth, lastMapHeight);
         }
 
-        float cursorCoordZ = 0.0F;
-        float cursorCoordX = 0.0F;
-        guiGraphics.pose().scale(mapToGui, mapToGui);
+        RenderUtils.setProjectionMatrix(mapProjection.getBuffer(getWidth(), getHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        RenderUtils.setRenderTarget(mapRenderTarget, true);
+        Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+        matrixStack.pushMatrix();
+        matrixStack.translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui, 0.0F);
+        if (oldNorth) {
+            matrixStack.rotate(Axis.ZP.rotationDegrees(90.0F));
+        }
+        matrixStack.scale(mapToGui, mapToGui, 1.0F);
+
         if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED)) {
             for (CachedRegion region : regionsToDisplay) {
-                if (region == null) continue;
-
-                Identifier resource = region.getTextureLocation(zoom);
-                if (resource != null) {
-                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resource, region.getX() * 256, region.getZ() * 256, 0, 0, region.getWidth(), region.getWidth(), region.getWidth(), region.getWidth());
+                if (region != null) {
+                    AbstractTexture image = region.getMapImage(zoom);
+                    if (image != null) {
+                        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, image);
+                        RenderUtils.drawTexturedModalRect(matrixStack, region.getX() * 256.0F, region.getZ() * 256.0F, MAP_IMAGE_DEPTH, region.getWidth(), region.getWidth(), 0xFFFFFFFF);
+                        RenderUtils.endBatch();
+                    }
                 }
             }
 
@@ -557,58 +601,40 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 float x2 = (float) (worldBorder.getMaxX());
                 float z2 = (float) (worldBorder.getMaxZ());
 
-                VoxelMapGuiGraphics.fillGradient(guiGraphics, x1 - scale, z1 - scale, x2 + scale, z1 + scale, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000);
-                VoxelMapGuiGraphics.fillGradient(guiGraphics, x1 - scale, z2 - scale, x2 + scale, z2 + scale, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000);
-
-                VoxelMapGuiGraphics.fillGradient(guiGraphics, x1 - scale, z1 - scale, x1 + scale, z2 + scale, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000);
-                VoxelMapGuiGraphics.fillGradient(guiGraphics, x2 - scale, z1 - scale, x2 + scale, z2 + scale, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000, 0xFFFF0000);
-            }
-
-            float cursorX;
-            float cursorY;
-            if (mouseCursorShown) {
-                cursorX = mouseDirectX;
-                cursorY = mouseDirectY - top * guiToDirectMouse;
-            } else {
-                cursorX = getWindowWidth() / 2.0F;
-                cursorY = getWindowHeight() / 2.0F - top * guiToDirectMouse;
+                RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, TextureSetup.noTexture());
+                RenderUtils.drawTexturedModalRect(matrixStack, x1 - scale, z1 - scale, MAP_IMAGE_DEPTH, x2 + scale, z1 + scale, 0xFFFF0000);
+                RenderUtils.drawTexturedModalRect(matrixStack, x1 - scale, z2 - scale, MAP_IMAGE_DEPTH, x2 + scale, z2 + scale, 0xFFFF0000);
+                RenderUtils.drawTexturedModalRect(matrixStack, x1 - scale, z1 - scale, MAP_IMAGE_DEPTH, x1 + scale, z2 + scale, 0xFFFF0000);
+                RenderUtils.drawTexturedModalRect(matrixStack, x2 - scale, z1 - scale, MAP_IMAGE_DEPTH, x2 + scale, z2 + scale, 0xFFFF0000);
+                RenderUtils.endBatch();
             }
 
             if (oldNorth) {
-                cursorCoordX = cursorY * mouseDirectToMap + (mapCenterZ - centerY * guiToMap);
-                cursorCoordZ = -(cursorX * mouseDirectToMap + (mapCenterX - centerX * guiToMap));
-            } else {
-                cursorCoordX = cursorX * mouseDirectToMap + (mapCenterX - centerX * guiToMap);
-                cursorCoordZ = cursorY * mouseDirectToMap + (mapCenterZ - centerY * guiToMap);
+                matrixStack.rotate(Axis.ZP.rotationDegrees(-90.0F));
             }
 
-            if (oldNorth) {
-                guiGraphics.pose().rotate(-90.0F * Mth.DEG_TO_RAD);
-            }
-
-            guiGraphics.pose().scale(guiToMap, guiToMap);
-            guiGraphics.pose().translate(-(centerX - (mapCenterX * mapToGui)), -((top + centerY) - (mapCenterZ * mapToGui)));
+            matrixStack.scale(guiToMap, guiToMap, 1.0F);
+            matrixStack.translate(-(centerX - mapCenterX * mapToGui), -(top + centerY - mapCenterZ * mapToGui), 0.0F);
 
             if (mapOptions.biomeOverlay.get() != OptionEnumMinimap.BiomeOverlay.OFF) {
-                drawBiomeOverlay(guiGraphics, regionLeft, regionRight, regionTop, regionBottom);
+                drawBiomeOverlay(matrixStack, regionLeft, regionRight, regionTop, regionBottom);
             }
         }
-        guiGraphics.pose().popMatrix();
+        matrixStack.popMatrix();
 
-        if (options.showDistantWaypoints.get()) {
-            overlayBackground(guiGraphics, 0, top);
-            overlayBackground(guiGraphics, bottom, getHeight());
-        }
+        overlayBackground(matrixStack, 0, top);
+        overlayBackground(matrixStack, bottom, getHeight());
 
         Waypoint currentlyHovered = null;
         if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED) && options.showWaypoints.get()) {
             TextureAtlas textureAtlas = waypointManager.getTextureAtlas();
+            RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas);
 
             for (Waypoint waypoint : waypointManager.getWaypoints()) {
                 if (!waypoint.inWorld || !waypoint.inDimension) continue;
 
                 boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
-                boolean isHovered = drawWaypoint(guiGraphics, waypoint, textureAtlas, null, isHighlighted, -1, mouseX, mouseY);
+                boolean isHovered = drawWaypoint(matrixStack, waypoint, textureAtlas, null, isHighlighted, -1, mouseX, mouseY);
                 if (isHovered) {
                     currentlyHovered = waypoint;
                 }
@@ -616,34 +642,52 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
             Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
             if (highlightedPoint != null) {
-                boolean isHovered = drawWaypoint(guiGraphics, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, mouseX, mouseY);
+                boolean isHovered = drawWaypoint(matrixStack, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, mouseX, mouseY);
                 if (isHovered) {
                     currentlyHovered = highlightedPoint;
                 }
             }
+
+            RenderUtils.endBatch();
+
+            if (currentlyHovered != null) {
+                guiGraphics.requestCursor(CursorTypes.POINTING_HAND);
+                if (options.showCoordinates.get()) {
+                    Tooltip tooltip = Tooltip.create(Component.literal("X: " + currentlyHovered.getX() + ", Y: " + currentlyHovered.getY() + ", Z: " + currentlyHovered.getZ()));
+                    RenderUtils.drawTooltip(guiGraphics, tooltip, mouseX, mouseY);
+                }
+            }
         }
         hoverdWaypoint = currentlyHovered;
-
-        if (!options.showDistantWaypoints.get()) {
-            overlayBackground(guiGraphics, 0, top);
-            overlayBackground(guiGraphics, bottom, getHeight());
-        }
 
         if (playerSkin == null) {
             playerSkin = VoxelConstants.getVoxelMapInstance().getEntityMapImageManager().requestImageForMob(VoxelConstants.getPlayer(), true);
         } else {
             float playerX = (float) GameVariableAccessShim.xCoordDouble();
             float playerZ = (float) GameVariableAccessShim.zCoordDouble();
-            drawPlayer(guiGraphics, playerSkin, playerX, playerZ, mouseX, mouseY);
+            boolean isHovered = drawPlayer(matrixStack, playerSkin, playerX, playerZ, mouseX, mouseY);
+
+            if (isHovered) {
+                guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
+                if (options.showCoordinates.get()) {
+                    Component tooltip = Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord());
+                    RenderUtils.drawTooltip(guiGraphics, Tooltip.create(tooltip), mouseX, mouseY);
+                }
+            }
         }
 
+        RenderUtils.restoreRenderTarget();
+        RenderUtils.restoreProjectionMatrix();
+
+        VoxelMapGuiGraphics.blitFloat(guiGraphics, RenderPipelines.GUI_TEXTURED, mapRenderTarget.getColorTextureView(), 0, 0, getWidth(), getHeight(), 0.0F, 1.0F, 1.0F, 0.0F, 0xFFFFFFFF);
+
         if (System.currentTimeMillis() - timeOfLastKeyboardInput < 2000L) {
-            guiGraphics.blit(RenderPipelines.CROSSHAIR, crosshairResource, getWidth() / 2 - 8, getHeight() / 2 - 8, 0, 0, 15, 15, 15, 15);
+            guiGraphics.blit(RenderPipelines.CROSSHAIR, crosshairResource, (getWidth() - 15) / 2, (getHeight() - 15) / 2, 0.0F, 0.0F, 15, 15, 15, 15);
         } else {
             switchToMouseInput();
         }
 
-        if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED)) {
+        if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED)) {
             guiGraphics.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 16, 0xFFFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
             int z = (int) Math.floor(cursorCoordZ);
@@ -686,7 +730,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         return Math.max(1.0F, getWindowWidth() / 1600.0F);
     }
 
-    private boolean drawPlayer(GuiGraphics guiGraphics, Sprite skin, float playerX, float playerZ, int mouseX, int mouseY) {
+    private boolean drawPlayer(Matrix4fStack matrixStack, Sprite skin, float playerX, float playerZ, int mouseX, int mouseY) {
         float headWidth = ICON_WIDTH * 0.75F;
         float headHeight = ICON_HEIGHT * 0.75F;
 
@@ -697,52 +741,44 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         double wayX = mapCenterX - (oldNorth ? -playerZ : playerX);
         double wayY = mapCenterZ - (oldNorth ? playerX : playerZ);
-        float locate = (float) Math.atan2(wayX, wayY);
+        float locate = (float) Math.toDegrees(Math.atan2(wayX, wayY));
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
-        double dispX = hypot * Math.sin(locate);
-        double dispY = hypot * Math.cos(locate);
+        double dispX = hypot * Math.sin(Math.toRadians(locate));
+        double dispY = hypot * Math.cos(Math.toRadians(locate));
         boolean far = Math.abs(dispX) > borderX || Math.abs(dispY) > borderY;
         if (far) {
             hypot *= (float) Math.min(borderX / Math.abs(dispX), borderY / Math.abs(dispY));
         }
 
-        guiGraphics.pose().pushMatrix();
+        matrixStack.pushMatrix();
 
         if (far) {
-            guiGraphics.pose().translate(x, y);
-            guiGraphics.pose().rotate(-locate);
-            guiGraphics.pose().translate(0.0F, -hypot);
-            guiGraphics.pose().rotate(locate);
-            guiGraphics.pose().translate(-x, -y);
+            matrixStack.translate(x, y, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
+            matrixStack.translate(0.0F, -hypot, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
+            matrixStack.translate(-x, -y, 0.0F);
         } else {
-            guiGraphics.pose().rotate(-locate);
-            guiGraphics.pose().translate(0.0F, -hypot);
-            guiGraphics.pose().rotate(locate);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
+            matrixStack.translate(0.0F, -hypot, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
         }
 
-        Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
+        Vector3f guiVector = matrixStack.transformPosition(new Vector3f(x, y, 0.0F));
         float screenX = guiVector.x();
         float screenY = guiVector.y();
 
-        boolean isHovered = mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F
-                && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
-        if (isHovered) {
-            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-            if (options.showCoordinates.get()) {
-                Component tooltip = Component.literal("X: " + GameVariableAccessShim.xCoord() + ", Y: " + GameVariableAccessShim.yCoord() + ", Z: " + GameVariableAccessShim.zCoord());
-                RenderUtils.drawTooltip(guiGraphics, Tooltip.create(tooltip), mouseX, mouseY);
-            }
-        }
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, skin.getIdentifier());
+        RenderUtils.drawSpriteRect(matrixStack, skin, x - headWidth / 2.0F, y - headHeight / 2.0F, MAP_OVERLAY_DEPTH, headWidth, headHeight, 0xFFFFFFFF);
+        RenderUtils.endBatch();
 
-        skin.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - headWidth / 2.0F, y - headHeight / 2.0F, headWidth, headHeight);
+        matrixStack.popMatrix();
 
-        guiGraphics.pose().popMatrix();
-
-        return isHovered;
+        return mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
     }
 
-    private boolean drawWaypoint(GuiGraphics guiGraphics, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, int mouseX, int mouseY) {
+    private boolean drawWaypoint(Matrix4fStack matrixStack, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, int mouseX, int mouseY) {
         float ptX = waypoint.getX() + 0.5F;
         float ptZ = waypoint.getZ() + 0.5F;
 
@@ -756,11 +792,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         double wayX = mapCenterX - (oldNorth ? -ptZ : ptX);
         double wayY = mapCenterZ - (oldNorth ? ptX : ptZ);
-        float locate = (float) Math.atan2(wayX, wayY);
+        float locate = (float) Math.toDegrees(Math.atan2(wayX, wayY));
         float hypot = (float) Math.sqrt(wayX * wayX + wayY * wayY) * mapToGui;
 
-        double dispX = hypot * Math.sin(locate);
-        double dispY = hypot * Math.cos(locate);
+        double dispX = hypot * Math.sin(Math.toRadians(locate));
+        double dispY = hypot * Math.cos(Math.toRadians(locate));
         boolean far = Math.abs(dispX) > borderX || Math.abs(dispY) > borderY;
         if (far) {
             if (!options.showDistantWaypoints.get()) {
@@ -787,59 +823,45 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        guiGraphics.pose().pushMatrix();
+        matrixStack.pushMatrix();
 
         if (far) {
-            guiGraphics.pose().translate(x, y);
-            guiGraphics.pose().rotate(-locate);
+            matrixStack.translate(x, y, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
             if (uprightIcon) {
-                guiGraphics.pose().translate(0.0F, -hypot);
-                guiGraphics.pose().rotate(locate);
-                guiGraphics.pose().translate(-x, -y);
+                matrixStack.translate(0.0F, -hypot, 0.0F);
+                matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
+                matrixStack.translate(-x, -y, 0.0F);
             } else {
-                guiGraphics.pose().translate(-x, -y);
-                guiGraphics.pose().translate(0.0F, -hypot);
+                matrixStack.translate(-x, -y, 0.0F);
+                matrixStack.translate(0.0F, -hypot, 0.0F);
             }
         } else {
-            guiGraphics.pose().rotate(-locate);
-            guiGraphics.pose().translate(0.0F, -hypot);
-            guiGraphics.pose().rotate(locate);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(-locate));
+            matrixStack.translate(0.0F, -hypot, 0.0F);
+            matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
         }
 
-        Vector2f guiVector = guiGraphics.pose().transformPosition(new Vector2f(x, y));
+        Vector3f guiVector = matrixStack.transformPosition(new Vector3f(x, y, 0.0F));
         float screenX = guiVector.x();
         float screenY = guiVector.y();
 
-        boolean isHovered = mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F
-                && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
-        if (isHovered) {
-            guiGraphics.requestCursor(CursorTypes.CROSSHAIR);
-            if (options.showCoordinates.get()) {
-                Component tooltip = Component.literal("X: " + waypoint.getX() + ", Y: " + waypoint.getY() + ", Z: " + waypoint.getZ());
-                RenderUtils.drawTooltip(guiGraphics, Tooltip.create(tooltip), mouseX, mouseY);
-            }
-        }
+        boolean isHovered = mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F  && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
 
+        float iconDepth = options.showDistantWaypoints.get() ? MAP_OVERLAY_DEPTH : MAP_ICON_DEPTH;
         int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !isHovered ? 0.3F : 1.0F) : color;
         int textColor = !waypoint.enabled && !isHighlighted && !isHovered ? 0x55FFFFFF : 0xFFFFFFFF;
-
-        icon.blit(guiGraphics, RenderPipelines.GUI_TEXTURED, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, ICON_WIDTH, ICON_HEIGHT, iconColor);
-
-        boolean textOverFrame = screenY + ICON_HEIGHT > bottom;
-        if (options.showWaypointNames.get() && !far && !textOverFrame) {
-            guiGraphics.pose().pushMatrix();
-            float fontScale = 1.0F;
-            guiGraphics.pose().scale(fontScale, fontScale);
-            writeCentered(guiGraphics, name, x / fontScale, (y + ICON_HEIGHT / 2.0F) / fontScale, textColor, true);
-            guiGraphics.pose().popMatrix();
+        RenderUtils.drawSpriteRect(matrixStack, icon, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, iconDepth, ICON_WIDTH, ICON_HEIGHT, iconColor);
+        if (!far && options.showWaypointNames.get()) {
+            RenderUtils.drawCenteredString(matrixStack, name, x, y + ICON_HEIGHT / 2.0F, MAP_TEXT_DEPTH, textColor, true);
         }
 
-        guiGraphics.pose().popMatrix();
+        matrixStack.popMatrix();
 
         return isHovered;
     }
 
-    private void drawBiomeOverlay(GuiGraphics guiGraphics, int regionLeft, int regionRight, int regionTop, int regionBottom) {
+    private void drawBiomeOverlay(Matrix4fStack matrixStack, int regionLeft, int regionRight, int regionTop, int regionBottom) {
         float biomeScaleX = mapPixelsX / 760.0F;
         float biomeScaleY = mapPixelsY / 360.0F;
 
@@ -917,19 +939,28 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     float x = biomeLabel.x * biomeScaleX / scScale;
                     float z = biomeLabel.z * biomeScaleY / scScale;
 
-                    writeCentered(guiGraphics, label, x, top + z - 3.0F, 0xFFFFFFFF, true);
+                    RenderUtils.drawCenteredString(matrixStack, label, x, top + z - 3.0F, 0.0F, 0xFFFFFFFF, true);
                 }
             }
         }
     }
 
-    protected void overlayBackground(GuiGraphics guiGraphics, int startY, int endY) {
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, VoxelConstants.getOptionsBackgroundTexture(), 0, startY, 0.0F, 0.0F, getWidth(), endY - startY, 32, 32, 0xFF404040);
-        if (startY > getHeight() / 2) {
-            guiGraphics.fillGradient(0, startY - 4, getWidth(), startY, 0x00000000, 0xFF000000);
-        } else {
-            guiGraphics.fillGradient(0, endY, getWidth(), endY + 4, 0xFF000000, 0x00000000);
-        }
+    protected void overlayBackground(Matrix4fStack matrixStack, int startY, int endY) {
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, VoxelConstants.getOptionsBackgroundTexture());
+        RenderUtils.drawTexturedModalRect(matrixStack, 0.0F, startY, MAP_OVERLAY_DEPTH, getWidth(), 32.0F, 0.0F, getWidth() / 32.0F, 0.0F, (endY - startY) / 32.0F, 0xFF404040);
+
+        boolean isTop = startY < getHeight() / 2;
+        int color0 = isTop ? 0xFF000000 : 0x00000000;
+        int color1 = isTop ? 0x00000000 : 0xFF000000;
+        float y0 = isTop ? endY : startY - 4.0F;
+        float y1 = isTop ? endY + 4.0F : startY;
+
+        RenderUtils.vertexBuffer().addVertex(matrixStack, 0.0F, y0, MAP_OVERLAY_DEPTH).setUv(0.0F, 0.0F).setColor(color0);
+        RenderUtils.vertexBuffer().addVertex(matrixStack, 0.0F, y1, MAP_OVERLAY_DEPTH).setUv(0.0F, 1.0F).setColor(color1);
+        RenderUtils.vertexBuffer().addVertex(matrixStack, 0.0F + getWidth(), y1, MAP_OVERLAY_DEPTH).setUv(1.0F, 1.0F).setColor(color1);
+        RenderUtils.vertexBuffer().addVertex(matrixStack, 0.0F + getWidth(), y0, MAP_OVERLAY_DEPTH).setUv(1.0F, 0.0F).setColor(color0);
+
+        RenderUtils.endBatch();
     }
 
     @Override
@@ -1118,29 +1149,5 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         minecraft.setScreen(this);
-    }
-
-    private int textWidth(String string) {
-        return minecraft.font.width(string);
-    }
-
-    private int textWidth(Component text) {
-        return minecraft.font.width(text);
-    }
-
-    private void write(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
-        write(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
-    }
-
-    private void write(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
-        drawContext.drawString(minecraft.font, text, (int) x, (int) y, color, shadow);
-    }
-
-    private void writeCentered(GuiGraphics drawContext, String text, float x, float y, int color, boolean shadow) {
-        writeCentered(drawContext, Component.nullToEmpty(text), x, y, color, shadow);
-    }
-
-    private void writeCentered(GuiGraphics drawContext, Component text, float x, float y, int color, boolean shadow) {
-        drawContext.drawString(minecraft.font, text, (int) x - (textWidth(text) / 2), (int) y, color, shadow);
     }
 }

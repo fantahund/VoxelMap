@@ -33,7 +33,6 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.math.Axis;
@@ -107,15 +106,11 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     private static float statusIconOffset = 0.0F;
 
     // Map Data
-    private final int mapDataCount = 5;
-    private final FullMapData[] mapData = new FullMapData[this.mapDataCount];
-    private final MapChunkCache[] chunkCache = new MapChunkCache[this.mapDataCount];
+    private final FullMapData[] mapData = new FullMapData[5];
+    private final MapChunkCache[] chunkCache = new MapChunkCache[5];
     private DynamicMutableTexture[] mapImages;
-    private Identifier[] mapResources;
-    private final DynamicMutableTexture[] mapImagesFiltered = new DynamicMutableTexture[this.mapDataCount];
-    private final DynamicMutableTexture[] mapImagesUnfiltered = new DynamicMutableTexture[this.mapDataCount];
-    private final Identifier[] resourceMapImageFiltered = new Identifier[this.mapDataCount];
-    private final Identifier[] resourceMapImageUnfiltered = new Identifier[this.mapDataCount];
+    private final DynamicMutableTexture[] mapImagesFiltered = new DynamicMutableTexture[5];
+    private final DynamicMutableTexture[] mapImagesUnfiltered = new DynamicMutableTexture[5];
 
     // Map Core Calculation
     private final int availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -171,7 +166,6 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     private int lastBiome;
 
     // Map Rendering
-    private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
     private final CachedOrthoProjectionMatrixBuffer mapProjection;
     private final CachedOrthoProjectionMatrixBuffer hudProjection;
     private final VoxelMapRenderTarget baseMapRenderTarget; // Used for minimap rendering before masking
@@ -191,10 +185,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         this.zCalc.start();
 
-        for (int i = 0; i < this.mapDataCount; i++) {
-            resourceMapImageFiltered[i] = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, String.format("map/filtered/%s", i));
-            resourceMapImageUnfiltered[i] = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, String.format("map/unfiltered/%s", i));
-
+        for (int i = 0; i < this.mapData.length; i++) {
             int resolution = 1 << (i + 5); // 32, 64, ...
             int chunks = (1 << (i + 1)) + 1; //3, 5, ...
 
@@ -203,20 +194,16 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
             this.mapImagesFiltered[i] = new DynamicMutableTexture(String.format("voxelmap-map-%s", resolution), resolution, resolution, true);
             this.mapImagesFiltered[i].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            minecraft.getTextureManager().register(resourceMapImageFiltered[i], this.mapImagesFiltered[i]);
 
             this.mapImagesUnfiltered[i] = new ScaledDynamicMutableTexture(String.format("voxelmap-map-unfiltered-%s", resolution), resolution, resolution, true);
             this.mapImagesUnfiltered[i].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
-            minecraft.getTextureManager().register(resourceMapImageUnfiltered[i], this.mapImagesUnfiltered[i]);
 
         }
 
         if (this.options.filtering.get()) {
             this.mapImages = this.mapImagesFiltered;
-            this.mapResources = resourceMapImageFiltered;
         } else {
             this.mapImages = this.mapImagesUnfiltered;
-            this.mapResources = resourceMapImageUnfiltered;
         }
 
         this.zoom = this.options.zoom.get();
@@ -481,7 +468,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
     private void cycleZoomLevel() {
         if (--this.zoom < 0) {
-            this.zoom = this.mapDataCount - 1;
+            this.zoom = 4;
         }
         this.options.zoom.set(this.zoom);
         this.zoomChanged = true;
@@ -667,29 +654,23 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zoomScaleAdjusted
         );
 
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        RenderSystem.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC);
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-
-        renderMatrixStack.pushMatrix();
+        RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+        matrixStack.pushMatrix();
+        matrixStack.identity();
         if (!options.hide.get()) {
             if (fullscreenMap) {
-                renderMapFull(renderMatrixStack, scWidth, scHeight, scaleProj);
-                drawArrow(renderMatrixStack, scWidth / 2, scHeight / 2, scaleProj);
+                renderMapFull(matrixStack, scWidth, scHeight, scaleProj);
+                drawArrow(matrixStack, scWidth / 2, scHeight / 2, scaleProj);
             } else {
-                renderMap(renderMatrixStack, mapX, mapY, scScale, scaleProj);
-                drawArrow(renderMatrixStack, mapX, mapY, scaleProj);
-                drawDirections(renderMatrixStack, mapX, mapY, scaleProj);
+                renderMap(matrixStack, mapX, mapY, scScale, scaleProj);
+                drawArrow(matrixStack, mapX, mapY, scaleProj);
+                drawDirections(matrixStack, mapX, mapY, scaleProj);
             }
         }
-        showCoords(renderMatrixStack, mapX, mapY, scaleProj);
-        renderMatrixStack.popMatrix();
-
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+        showCoords(matrixStack, mapX, mapY, scaleProj);
+        matrixStack.popMatrix();
+        RenderUtils.restoreProjectionMatrix();
     }
 
     private void checkForChanges() {
@@ -698,10 +679,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         if (optionsChanged) {
             if (options.filtering.get()) {
                 mapImages = mapImagesFiltered;
-                mapResources = resourceMapImageFiltered;
             } else {
                 mapImages = mapImagesUnfiltered;
-                mapResources = resourceMapImageUnfiltered;
             }
             changed = true;
             setZoomScale();
@@ -1513,7 +1492,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
         matrixStack.scale(scale, scale, 1.0F);
         matrixStack.translate(-percentX * 512.0F / 64.0F, -percentY * 512.0F / 64.0F, 0.0F);
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapResources[zoom]);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapImages[zoom]);
         RenderUtils.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
         RenderUtils.endBatch();
         matrixStack.popMatrix();
@@ -1533,7 +1512,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         RenderUtils.endBatch();
 
         RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_MASKED_NO_DEPTH_TEST, baseMapRenderTarget.getColorTextureView());
-        RenderUtils.drawBlitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+        RenderUtils.drawBlitRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
         RenderUtils.endBatch();
 
         RenderUtils.restoreRenderTarget();
@@ -1546,7 +1525,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         minTablistOffset = guiScale * 63;
 
         RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, finalMapRenderTarget.getColorTextureView());
-        RenderUtils.drawBlitQuad(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        RenderUtils.drawBlitRect(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
         RenderUtils.endBatch();
 
         RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, options.squareMap.get() ? resourceSquareMapFrame : resourceRoundMapFrame);
@@ -1555,8 +1534,10 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
-        TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+
         if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED)) {
+            TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
+            RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas);
             for (Waypoint waypoint : waypointManager.getWaypoints()) {
                 boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
                 if (waypoint.isActive() || isHighlighted) {
@@ -1572,6 +1553,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             if (highlightedPoint != null) {
                 drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
             }
+
+            RenderUtils.endBatch();
         }
         matrixStack.popMatrix();
     }
@@ -1602,7 +1585,6 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
 
         int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && isHighlighted ? 0.3F : 1.0F) : color;
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas.getIdentifier());
         if (far) {
             if (icon == null) {
                 icon = textureAtlas.getAtlasSprite("marker/" + waypoint.imageSuffix);
@@ -1624,7 +1606,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                     matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                RenderUtils.drawSpriteQuad(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
+                RenderUtils.drawSpriteRect(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1644,14 +1626,13 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
 
-                RenderUtils.drawSpriteQuad(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
+                RenderUtils.drawSpriteRect(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {
                 matrixStack.popMatrix();
             }
         }
-        RenderUtils.endBatch();
     }
 
     private void drawArrow(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
@@ -1685,7 +1666,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), 0.0F);
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapResources[zoom]);
+        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapImages[zoom]);
         RenderUtils.drawTexturedModalRect(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0f, 256.0F, 0xFFFFFFFF);
         RenderUtils.endBatch();
         matrixStack.popMatrix();

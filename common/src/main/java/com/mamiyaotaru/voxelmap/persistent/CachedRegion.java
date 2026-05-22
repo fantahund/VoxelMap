@@ -12,10 +12,10 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -696,7 +696,7 @@ public class CachedRegion {
         return REGION_WIDTH;
     }
 
-    public Identifier getTextureLocation(float zoom) {
+    public AbstractTexture getMapImage(float zoom) {
         if (this.image != null) {
             if (!this.refreshingImage) {
                 synchronized (this.image) {
@@ -707,7 +707,7 @@ public class CachedRegion {
                 }
             }
 
-            return this.image.getTextureLocation(zoom);
+            return this.image.getTexture(zoom);
         } else {
             return null;
         }
