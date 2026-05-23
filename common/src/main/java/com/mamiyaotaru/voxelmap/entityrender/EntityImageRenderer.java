@@ -23,7 +23,6 @@ import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -40,13 +39,10 @@ public class EntityImageRenderer {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final Tesselator tesselator = Tesselator.getInstance();
     private final PoseStack poseStack = new PoseStack();
-//    private final RandomSource random = RandomSource.create();
-//    private final ArrayList<ModelPart> modelParts = new ArrayList<>();
-//    private final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     private final CachedOrthoProjectionMatrixBuffer projection;
     private final GpuBuffer lightingBuffer;
     private final VoxelMapRenderTarget renderTarget;
-    private RenderSetup renderSetup;
+    private VariantDataHolder dataHolder;
     private RenderPipeline pipeline;
     private BufferBuilder bufferBuilder;
 
@@ -93,8 +89,8 @@ public class EntityImageRenderer {
         return poseStack;
     }
 
-    public void beginBatch(RenderPipeline pipeline, RenderSetup renderSetup) {
-        this.renderSetup = renderSetup;
+    public void beginBatch(RenderPipeline pipeline, VariantDataHolder dataHolder) {
+        this.dataHolder = dataHolder;
         this.pipeline = pipeline;
         bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
     }
@@ -104,10 +100,10 @@ public class EntityImageRenderer {
     }
 
     public BufferedImage endBatch() {
-        AbstractTexture primaryTexture = renderSetup.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.primaryTexture());
-        AbstractTexture secondaryTexture = renderSetup.secondaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.secondaryTexture());
-        AbstractTexture tertiaryTexture = renderSetup.tertiaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.tertiaryTexture());
-        AbstractTexture quaternaryTexture = renderSetup.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.quaternaryTexture());
+        AbstractTexture primaryTexture = dataHolder.getTexture0() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture0()) : null;
+        AbstractTexture secondaryTexture = dataHolder.getTexture1() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture1()) : null;
+        AbstractTexture tertiaryTexture = dataHolder.getTexture2() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture2()) : null;
+        AbstractTexture quaternaryTexture = dataHolder.getTexture3() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture3()): null;
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -116,10 +112,10 @@ public class EntityImageRenderer {
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
 
-        GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(renderSetup.primaryColor());
-        GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(renderSetup.secondaryColor());
-        GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(renderSetup.tertiaryColor());
-        GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(renderSetup.quaternaryColor());
+        GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(dataHolder.getColor0());
+        GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(dataHolder.getColor1());
+        GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(dataHolder.getColor2());
+        GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(dataHolder.getColor3());
 
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
@@ -193,8 +189,5 @@ public class EntityImageRenderer {
         Matrix4f textureMatrix = new Matrix4f();
 
         return RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), colorModulator, modelOffset, textureMatrix);
-    }
-
-    public record RenderSetup(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
     }
 }
