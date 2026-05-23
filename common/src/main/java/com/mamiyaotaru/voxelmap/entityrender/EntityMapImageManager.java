@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -69,6 +70,7 @@ public class EntityMapImageManager implements IReloadListener {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
+    private final EntityImageRenderer renderer = new EntityImageRenderer();
 
     private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
     private final HashMap<EntityType<?>, AbstractArmorHandler> armorHandlers = new HashMap<>();
@@ -78,20 +80,15 @@ public class EntityMapImageManager implements IReloadListener {
     private final Class<?>[] fullRenderModels;
     private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
 
-    private int imageCreationRequests;
-    private int fulfilledImageCreationRequests;
-    private final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
-
-    private final EntityGPURenderer gpuRenderer = new EntityGPURenderer();
-    private final EntityCPURenderer cpuRenderer = new EntityCPURenderer();
-    private AbstractEntityRenderer renderer;
+    private int totalSpriteCreations;
+    private int doneSpriteCreations;
+    private final ConcurrentLinkedQueue<Runnable> spriteCreationTask = new ConcurrentLinkedQueue<>();
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(true, false);
 
         this.fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
-        this.renderer = gpuRenderer;
 
         VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
@@ -128,11 +125,6 @@ public class EntityMapImageManager implements IReloadListener {
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
-        reset();
-    }
-
-    public void setCompatibilityMode(boolean flag) {
-        renderer = flag ? cpuRenderer : gpuRenderer;
         reset();
     }
 
@@ -270,8 +262,7 @@ public class EntityMapImageManager implements IReloadListener {
 
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
 
-        renderer.setup(getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
-        renderer.enableCull(false);
+        renderer.setup(1.0F / getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
         ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.getLevelRenderState().cameraRenderState);
@@ -295,14 +286,14 @@ public class EntityMapImageManager implements IReloadListener {
             renderer.addMesh(slimeOuter.model.root());
         }
 
-        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(
+        EntityImageRenderer.TextureSet textureSet = new EntityImageRenderer.TextureSet(
                 variant.getPrimaryTexture(), getPrimaryTextureColor(entity),
                 variant.getSecondaryTexture(), getSecondaryTextureColor(entity),
                 variant.getTertiaryTexture(), getTertiaryTextureColor(entity),
                 variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
         );
 
-        BufferedImage output = renderer.render(textureSet);
+        BufferedImage output = renderer.render(VoxelMapPipelines.ENTITY_ICON, textureSet);
         postProcessRenderedMobImage(entity, sprite, model, output, addBorder);
 
         return sprite;
@@ -394,7 +385,7 @@ public class EntityMapImageManager implements IReloadListener {
             image = ImageUtils.trim(image);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
-            addToCreationTask(sprite, image, entity.getType().getDescriptionId());
+            addSpriteCreationTask(sprite, image);
         });
     }
 
@@ -434,13 +425,11 @@ public class EntityMapImageManager implements IReloadListener {
         Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
 
         renderer.setup(1.0F, getCustomMobProperties(entity.getType()));
-        renderer.enableCull(true);
-
         armorHandler.renderArmorModel(renderer);
 
-        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
+        EntityImageRenderer.TextureSet textureSet = new EntityImageRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
 
-        BufferedImage output = renderer.render(textureSet);
+        BufferedImage output = renderer.render(VoxelMapPipelines.ENTITY_ICON_CULLED, textureSet);
         postProcessRenderedArmorImage(sprite, output, armorHandler, armorData);
 
         return sprite;
@@ -451,19 +440,17 @@ public class EntityMapImageManager implements IReloadListener {
             BufferedImage image = image2;
             image = armorHandler.postProcessTexture(image, armorData);
 
-            addToCreationTask(sprite, image, sprite.getIconName().toString());
+            addSpriteCreationTask(sprite, image);
         });
     }
 
-    private void addToCreationTask(Sprite sprite, BufferedImage image, String debugId) {
-        imageCreationRequests++;
-
-        taskQueue.add(() -> {
-            fulfilledImageCreationRequests++;
-
+    private void addSpriteCreationTask(Sprite sprite, BufferedImage image) {
+        totalSpriteCreations++;
+        spriteCreationTask.add(() -> {
+            doneSpriteCreations++;
             sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image));
-            debugInfo("EntityMapImageManager: Buffered Image (" + fulfilledImageCreationRequests + "/" + imageCreationRequests + ") added to texture atlas " + debugId + " (" + image.getWidth() + " * " + image.getHeight() + ")");
-            if (fulfilledImageCreationRequests == imageCreationRequests) {
+            debugInfo("EntityMapImageManager: BufferedImage: ({} / {}) added to texture atlas {} ({} * {})", doneSpriteCreations, totalSpriteCreations, sprite.getIconName(), image.getWidth(), image.getHeight());
+            if (doneSpriteCreations == totalSpriteCreations) {
                 textureAtlas.stitchNew();
                 debugInfo("EntityMapImageManager: Stiching!");
                 if (VoxelConstants.DEBUG) {
@@ -539,14 +526,14 @@ public class EntityMapImageManager implements IReloadListener {
 
     public void onRenderTick() {
         Runnable task;
-        while ((task = taskQueue.poll()) != null) {
+        while ((task = spriteCreationTask.poll()) != null) {
             task.run();
         }
     }
 
-    private void debugInfo(String str) {
+    private void debugInfo(String str, Object... args) {
         if (VoxelConstants.DEBUG) {
-            VoxelConstants.getLogger().info(str);
+            VoxelConstants.getLogger().info(str, args);
         }
     }
 }

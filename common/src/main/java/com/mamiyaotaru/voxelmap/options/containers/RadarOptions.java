@@ -31,7 +31,6 @@ public class RadarOptions extends AbstractOptionsContainer {
     public final BooleanField filtering;
     public final BooleanField outlines;
     public final BooleanField showFacing;
-    public final BooleanField compatRendering;
     public final BooleanField showFullNames;
     public final BooleanField showElevation;
     public final BooleanField hideSneaking;
@@ -51,7 +50,6 @@ public class RadarOptions extends AbstractOptionsContainer {
         addOptionField((filtering = new BooleanField("Radar Filtering", "options.minimap.radar.iconFiltering", true)));
         addOptionField((outlines = new BooleanField("Radar Outlines", "options.minimap.radar.iconOutlines", true)));
         addOptionField((showFacing = new BooleanField("Show Facing", "options.minimap.radar.showFacing", true)));
-        addOptionField((compatRendering = new BooleanField("Radar Compatibility Rendering", "options.minimap.radar.cpuRendering", false)).withListener(this::updateCompatMode).withTooltip(this::buildCompatModeTooltip));
         addOptionField((showFullNames = new BooleanField("Show Full Entity Names", "options.minimap.radar.showFullNames", false)));
         addOptionField((showElevation = new BooleanField("Show Entity Elevation", "options.minimap.radar.showElevation", true)));
         addOptionField((hideSneaking = new BooleanField("Hide Sneaking Players", "options.minimap.radar.hideSneaking", true)));
@@ -140,12 +138,6 @@ public class RadarOptions extends AbstractOptionsContainer {
     private void updateRadarMode(OptionEnumRadar.RadarMode value) {
         if (Minecraft.getInstance().screen instanceof GuiOptionsScreenMinimap screen) {
             screen.rebuildOptionWidgets();
-        }
-    }
-
-    private void updateCompatMode(Boolean value) {
-        if (VoxelConstants.getVoxelMapInstance().getEntityMapImageManager() != null) {
-            VoxelConstants.getVoxelMapInstance().getEntityMapImageManager().setCompatibilityMode(value);
         }
     }
 }

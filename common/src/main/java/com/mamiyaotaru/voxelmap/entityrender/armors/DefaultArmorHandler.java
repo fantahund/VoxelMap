@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
+import com.mamiyaotaru.voxelmap.entityrender.EntityImageRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -160,8 +160,8 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public void renderArmorModel(AbstractEntityRenderer renderer) {
-        PoseStack pose = renderer.getPoseStack();
+    public void renderArmorModel(EntityImageRenderer renderer) {
+        PoseStack pose = renderer.poseStack();
 
         if (armor != null) {
             ModelPart part = humanoidModel.root().getChild("head");

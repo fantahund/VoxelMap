@@ -90,7 +90,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
                         return new OptionField[]{radarOptions.showRadar, radarOptions.radarMode, radarOptions.showMobs, radarOptions.showPlayers, radarOptions.showFacing, radarOptions.showElevation, radarOptions.hideSneaking, radarOptions.hideInvisible};
                     }
                     case FULL -> {
-                        return new OptionField[]{radarOptions.showRadar, radarOptions.radarMode, radarOptions.showMobs, radarOptions.showPlayers, radarOptions.showMobNames, radarOptions.showPlayerNames, radarOptions.showMobHelmets, radarOptions.showPlayerHelmets, radarOptions.filtering, radarOptions.outlines, radarOptions.showFullNames, radarOptions.showElevation, radarOptions.hideSneaking, radarOptions.hideInvisible, radarOptions.compatRendering};
+                        return new OptionField[]{radarOptions.showRadar, radarOptions.radarMode, radarOptions.showMobs, radarOptions.showPlayers, radarOptions.showMobNames, radarOptions.showPlayerNames, radarOptions.showMobHelmets, radarOptions.showPlayerHelmets, radarOptions.filtering, radarOptions.outlines, radarOptions.showFullNames, radarOptions.showElevation, radarOptions.hideSneaking, radarOptions.hideInvisible};
                     }
                 }
             }

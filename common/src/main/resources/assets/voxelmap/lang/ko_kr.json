@@ -65,8 +65,6 @@
   "options.minimap.radar.showMobNames": "몹 이름 표시",
   "options.minimap.radar.randomobs": "랜덤 몹",
   "options.minimap.radar.showFacing": "방향 표시",
-  "options.minimap.radar.cpuRendering": "호환 렌더러 사용",
-  "options.minimap.radar.cpuRendering.tooltip": "레이더 렌더링을 단순화하여 렌더링 문제를 해결합니다.",
   "options.minimap.radar.showFullNames": "엔티티 상세 이름 표시",
   "options.minimap.radar.showElevation": "엔티티 고도 표시",
   "options.minimap.radar.hideSneaking": "웅크린 플레이어 숨기기",

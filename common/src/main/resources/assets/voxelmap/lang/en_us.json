@@ -65,8 +65,6 @@
   "options.minimap.radar.showMobNames": "Show Mob Names",
   "options.minimap.radar.randomobs": "Randomobs",
   "options.minimap.radar.showFacing": "Look Direction",
-  "options.minimap.radar.cpuRendering": "Use Compatibility Renderer",
-  "options.minimap.radar.cpuRendering.tooltip": "Simplifies radar rendering to fix rendering issues.",
   "options.minimap.radar.showFullNames": "Show Full Entity Names",
   "options.minimap.radar.showElevation": "Show Entity Elevation",
   "options.minimap.radar.hideSneaking": "Hide Sneaking Players",

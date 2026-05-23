@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
-import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
+import com.mamiyaotaru.voxelmap.entityrender.EntityImageRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import net.minecraft.client.model.animal.sheep.SheepFurModel;
 import net.minecraft.client.renderer.entity.SheepRenderer;
@@ -30,7 +30,7 @@ public class SheepOverlayHandler extends AbstractArmorHandler {
     }
 
     @Override
-    public void renderArmorModel(AbstractEntityRenderer renderer) {
+    public void renderArmorModel(EntityImageRenderer renderer) {
         renderer.addMesh(sheepFurModel.root().getChild("head"));
     }
 

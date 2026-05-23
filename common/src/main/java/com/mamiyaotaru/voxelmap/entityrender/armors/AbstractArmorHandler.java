@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
-import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
+import com.mamiyaotaru.voxelmap.entityrender.EntityImageRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
@@ -43,7 +43,7 @@ public abstract class AbstractArmorHandler {
 
     public abstract EntityArmorData getArmorData();
 
-    public abstract void renderArmorModel(AbstractEntityRenderer renderer);
+    public abstract void renderArmorModel(EntityImageRenderer renderer);
 
     public abstract BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData);
 

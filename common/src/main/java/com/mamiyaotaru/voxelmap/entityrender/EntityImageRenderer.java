@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.entityrender;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -16,16 +15,23 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -33,16 +39,26 @@ import org.lwjgl.system.MemoryStack;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import java.util.Properties;
 
-public class EntityGPURenderer extends AbstractEntityRenderer {
-    private final GpuBuffer lightingBuffer;
+public class EntityImageRenderer {
+    private final Minecraft minecraft = Minecraft.getInstance();
+    private final Tesselator tesselator = Tesselator.getInstance();
+    private final PoseStack poseStack = new PoseStack();
+    private final RandomSource random = RandomSource.create();
+    private final ArrayList<ModelPart> modelParts = new ArrayList<>();
+    private final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     private final CachedOrthoProjectionMatrixBuffer projection;
-    private final Tesselator tessellator = Tesselator.getInstance();
+    private final GpuBuffer lightingBuffer;
     private final VoxelMapRenderTarget renderTarget;
 
-    public EntityGPURenderer() {
+    public EntityImageRenderer() {
+        projection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 1000.0F, 21000.0F, true);
+
         Vector3f fullBright = new Vector3f(1.0F, -1.0F, 1.0F).normalize();
         Vector3f fullBright2 = new Vector3f(-1.0F, -1.0F, 1.0F).normalize();
         lightingBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Lighting UBO", GpuBuffer.USAGE_UNIFORM + GpuBuffer.USAGE_COPY_DST, Lighting.UBO_SIZE);
@@ -51,21 +67,51 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(lightingBuffer.slice(), byteBuffer);
         }
 
-        projection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 1000.0F, 21000.0F, true);
+        final int fboTextureSize = 512;
         renderTarget = new VoxelMapRenderTarget("VoxelMap Entity Map Image Target", true);
-        renderTarget.createBuffers(TEXTURE_SIZE, TEXTURE_SIZE);
+        renderTarget.createBuffers(fboTextureSize, fboTextureSize);
     }
 
-    @Override
-    protected void setupMatrix() {
+    public void setup(float baseScale, Properties iconConfig) {
+        poseStack.setIdentity();
         poseStack.translate(256.0F, 256.0F, -3000.0F);
-        poseStack.scale(64.0F, 64.0F, -64.0F);
+
+        // Apply Scale
+        float scale = 64.0F * baseScale * Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
+        poseStack.scale(scale, scale, -scale);
+
+        // Apply Rotation
+        String rotation = iconConfig.getProperty("rotation", "");
+        if (rotation.startsWith("{") && rotation.endsWith("}")) {
+            for (String entry : rotation.substring(1, rotation.length() - 1).split(",")) {
+                String[] keyValue = entry.split(":", 2);
+                float value = Float.parseFloat(keyValue[1]);
+                switch (keyValue[0].trim().toLowerCase()) {
+                    case "x" -> poseStack.mulPose(Axis.XP.rotationDegrees(value));
+                    case "y" -> poseStack.mulPose(Axis.YP.rotationDegrees(value));
+                    case "z" -> poseStack.mulPose(Axis.ZP.rotationDegrees(value));
+                }
+            }
+        }
+
+        modelParts.clear();
+        blockModels.clear();
     }
 
-    @Override
-    public BufferedImage render(TextureSet textureSet) {
-        RenderPipeline renderPipeline = cullEnabled ? VoxelMapPipelines.ENTITY_ICON_CULLED : VoxelMapPipelines.ENTITY_ICON;
-        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.Mode.QUADS, renderPipeline.getVertexFormat());
+    public PoseStack poseStack() {
+        return poseStack;
+    }
+
+    public void addMesh(ModelPart modelPart) {
+        modelParts.add(modelPart);
+    }
+
+    public void addBlock(BlockState blockState) {
+        blockModels.add(new BlockModelSet(blockState, minecraft.getBlockRenderer().getBlockModel(blockState).collectParts(random)));
+    }
+
+    public BufferedImage render(RenderPipeline pipeline, TextureSet textureSet) {
+        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
 
         for (ModelPart modelPart : modelParts) {
             modelPart.render(poseStack, bufferBuilder, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
@@ -99,7 +145,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
                 return null;
             }
 
-            GpuBuffer vertexBuffer = RenderUtils.uploadImmediateVertexBuffer(renderPipeline.getVertexFormat(), meshData.vertexBuffer());
+            GpuBuffer vertexBuffer = RenderUtils.uploadImmediateVertexBuffer(pipeline.getVertexFormat(), meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -107,7 +153,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = RenderUtils.uploadImmediateIndexBuffer(renderPipeline.getVertexFormat(), meshData.indexBuffer());
+                indexBuffer = RenderUtils.uploadImmediateIndexBuffer(pipeline.getVertexFormat(), meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
 
@@ -117,7 +163,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             }
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), OptionalInt.of(0x00000000), renderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
-                renderPass.setPipeline(renderPipeline);
+                renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
@@ -148,7 +194,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
 
-            tessellator.clear();
+            tesselator.clear();
         }
 
         RenderUtils.fenceAndWait();
@@ -163,5 +209,11 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
         Matrix4f textureMatrix = new Matrix4f();
 
         return RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), colorModulator, modelOffset, textureMatrix);
+    }
+
+    public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
+    }
+
+    public record BlockModelSet(BlockState blockState, List<BlockModelPart> modelParts) {
     }
 }
