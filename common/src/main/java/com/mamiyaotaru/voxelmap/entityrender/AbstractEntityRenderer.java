@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.Consumer;
 
 public abstract class AbstractEntityRenderer {
     protected final Minecraft minecraft = Minecraft.getInstance();
@@ -73,7 +72,7 @@ public abstract class AbstractEntityRenderer {
 
     protected abstract void setupMatrix();
 
-    public abstract void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer);
+    public abstract BufferedImage render(TextureSet textureSet);
 
     public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
     }

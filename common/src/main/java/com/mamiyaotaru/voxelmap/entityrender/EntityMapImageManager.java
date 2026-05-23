@@ -302,7 +302,8 @@ public class EntityMapImageManager implements IReloadListener {
                 variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
         );
 
-        renderer.render(textureSet, (output) -> postProcessRenderedMobImage(entity, sprite, model, output, addBorder));
+        BufferedImage output = renderer.render(textureSet);
+        postProcessRenderedMobImage(entity, sprite, model, output, addBorder);
 
         return sprite;
     }
@@ -439,7 +440,8 @@ public class EntityMapImageManager implements IReloadListener {
 
         AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
 
-        renderer.render(textureSet, (output) -> postProcessRenderedArmorImage(sprite, output, armorHandler, armorData));
+        BufferedImage output = renderer.render(textureSet);
+        postProcessRenderedArmorImage(sprite, output, armorHandler, armorData);
 
         return sprite;
     }

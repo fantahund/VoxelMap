@@ -23,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class EntityCPURenderer extends AbstractEntityRenderer {
     private static final Direction[] ALL_DIRECTIONS = new Direction[] { null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
@@ -33,7 +32,7 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
     }
 
     @Override
-    public void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer) {
+    public BufferedImage render(TextureSet textureSet) {
         NativeImage primaryTexture = textureSet.primaryTexture() == null ? null : getTextureFromIdentifier(textureSet.primaryTexture());
         NativeImage secondaryTexture = textureSet.secondaryTexture() == null ? null : getTextureFromIdentifier(textureSet.secondaryTexture());
         NativeImage tertiaryTexture = textureSet.tertiaryTexture() == null ? null : getTextureFromIdentifier(textureSet.tertiaryTexture());
@@ -73,7 +72,7 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
             }
         }
 
-        resultConsumer.accept(ImageUtils.bufferedImageFromNativeImage(output));
+        return ImageUtils.bufferedImageFromNativeImage(output);
     }
 
     private NativeImage getTextureFromIdentifier(Identifier identifier) {

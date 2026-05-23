@@ -21,7 +21,6 @@ import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.core.BlockPos;
@@ -225,10 +224,8 @@ public class ColorManager implements IReloadListener {
     }
 
     private void loadTexturePackTerrainImage() {
-        RenderUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
-            terrainBuff = image;
-            loadedTerrainImage = true;
-        });
+        terrainBuff = RenderUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getTexture());
+        loadedTerrainImage = true;
     }
 
     private void loadSpecialColors() {

@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.buffers.GpuFence;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.CommandEncoder;
@@ -39,14 +40,13 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
 
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final Matrix4f MATRIX_CACHE = new Matrix4f();
-    private static final Tesselator TESSELATOR = new Tesselator(4096);
+    private static final Tesselator TESSELATOR = Tesselator.getInstance();
     private static final GpuSampler DEFAULT_SAMPLER = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR, false);
     private static TextureSetup boundTexture;
     private static RenderPipeline pipeline;
@@ -58,6 +58,10 @@ public class RenderUtils {
     private static ProjectionType lastProjectionType;
     private static GpuTextureView lastColorTextureOverride;
     private static GpuTextureView lastDepthTextureOverride;
+
+    public static boolean hasFlippedTexture() {
+        return !VoxelConstants.hasVulkanMod();
+    }
 
     public static float getGuiWidth() {
         return (float) MINECRAFT.getWindow().getWidth() / MINECRAFT.getWindow().getGuiScale();
@@ -104,8 +108,8 @@ public class RenderUtils {
     }
 
     public static void drawBlitRect(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
-        float v0 = VoxelConstants.hasVulkanMod() ? 0.0F : 1.0F;
-        float v1 = VoxelConstants.hasVulkanMod() ? 1.0F : 0.0F;
+        float v0 = hasFlippedTexture() ? 1.0F : 0.0F;
+        float v1 = hasFlippedTexture() ? 0.0F : 1.0F;
 
         drawTexturedModalRect(matrix, x, y, z, width, height, 0.0F, 1.0F, v0, v1, color);
     }
@@ -163,7 +167,7 @@ public class RenderUtils {
                 indexType = meshData.drawState().indexType();
             }
             GpuTextureView outputColorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : MINECRAFT.getMainRenderTarget().getColorTextureView();
-            GpuTextureView outputDepthTexture = RenderSystem.outputDepthTextureOverride != null ? RenderSystem.outputDepthTextureOverride : MINECRAFT.getMainRenderTarget().getDepthTextureView();
+            GpuTextureView outputDepthTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputDepthTextureOverride : MINECRAFT.getMainRenderTarget().getDepthTextureView();
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Draw Pass", outputColorTexture, OptionalInt.empty(), outputDepthTexture, OptionalDouble.empty())) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
@@ -206,7 +210,7 @@ public class RenderUtils {
         }
     }
 
-    public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
+    public static BufferedImage readTextureContentsToBufferedImage(GpuTexture gpuTexture) {
         RenderSystem.assertOnRenderThread();
         int bytePerPixel = gpuTexture.getFormat().pixelSize();
         int width = gpuTexture.getWidth(0);
@@ -214,28 +218,46 @@ public class RenderUtils {
         int bufferSize = bytePerPixel * width * height;
         GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, bufferSize);
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-        commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
-            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-            try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
-                for (int y = 0; y < height; y++) {
-                    for (int x = 0; x < width; x++) {
-                        int pixel = readView.data().getInt((x + y * width) * bytePerPixel);
-                        image.setRGB(x, y, ARGB.fromABGR(pixel));
-                    }
+        commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {}, 0);
+        fenceAndWait();
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int pixel = readView.data().getInt((x + y * width) * bytePerPixel);
+                    image.setRGB(x, y, ARGB.fromABGR(pixel));
                 }
             }
-            gpuBuffer.close();
-            resultConsumer.accept(image);
-        }, 0);
+        }
+        gpuBuffer.close();
+        return image;
     }
 
     public static void flushGuiRenderer() {
+        // FIXME: Gui flickers in some cases
         MINECRAFT.gameRenderer.guiRenderer.render(MINECRAFT.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
+    }
+
+    public static void fenceAndWait() {
+        RenderSystem.assertOnRenderThread();
+        if (!VoxelConstants.hasVulkanMod()) {
+            try (GpuFence fence = RenderSystem.getDevice().createCommandEncoder().createFence()) {
+                fence.awaitCompletion(Long.MAX_VALUE);
+            }
+        } else {
+            try {
+                Class<?> vkRendererClass = Class.forName("net.vulkanmod.vulkan.Renderer");
+                if (vkRendererClass != null) {
+                    Object vkRenderer = vkRendererClass.getMethod("getInstance").invoke(null);
+                    vkRendererClass.getMethod("flushCmds").invoke(vkRenderer);
+                }
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
         RenderSystem.assertOnRenderThread();
-
         lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         lastProjectionType = RenderSystem.getProjectionType();
         RenderSystem.setProjectionMatrix(matrix, type);
@@ -246,14 +268,12 @@ public class RenderUtils {
 
     public static void restoreProjectionMatrix() {
         RenderSystem.assertOnRenderThread();
-
         RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
     }
 
     public static void setRenderTarget(RenderTarget renderTarget, boolean clear) {
         RenderSystem.assertOnRenderThread();
-
         if (clear) {
             CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
             if (renderTarget.getColorTexture() != null) {

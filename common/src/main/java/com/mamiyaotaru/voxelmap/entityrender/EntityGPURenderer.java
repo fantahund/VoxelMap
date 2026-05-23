@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
@@ -34,12 +35,11 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.function.Consumer;
 
 public class EntityGPURenderer extends AbstractEntityRenderer {
     private final GpuBuffer lightingBuffer;
     private final CachedOrthoProjectionMatrixBuffer projection;
-    private final Tesselator tessellator = new Tesselator(4096);
+    private final Tesselator tessellator = Tesselator.getInstance();
     private final VoxelMapRenderTarget renderTarget;
 
     public EntityGPURenderer() {
@@ -63,7 +63,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
     }
 
     @Override
-    public void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer) {
+    public BufferedImage render(TextureSet textureSet) {
         RenderPipeline renderPipeline = cullEnabled ? VoxelMapPipelines.ENTITY_ICON_CULLED : VoxelMapPipelines.ENTITY_ICON;
         BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.Mode.QUADS, renderPipeline.getVertexFormat());
 
@@ -79,7 +79,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
         AbstractTexture primaryTexture = textureSet.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.primaryTexture());
         AbstractTexture secondaryTexture = textureSet.secondaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.secondaryTexture());
         AbstractTexture tertiaryTexture = textureSet.tertiaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tertiaryTexture());
-        AbstractTexture quaternaryTexture =  textureSet.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.quaternaryTexture());
+        AbstractTexture quaternaryTexture = textureSet.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.quaternaryTexture());
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -95,9 +95,11 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
 
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
-            if (meshData == null) return;
+            if (meshData == null) {
+                return null;
+            }
 
-            GpuBuffer vertexBuffer = renderPipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+            GpuBuffer vertexBuffer = RenderUtils.uploadImmediateVertexBuffer(renderPipeline.getVertexFormat(), meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -105,8 +107,13 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = renderPipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
+                indexBuffer = RenderUtils.uploadImmediateIndexBuffer(renderPipeline.getVertexFormat(), meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
+            }
+
+            if (VoxelConstants.hasVulkanMod()) {
+                renderTarget.destroyBuffers();
+                renderTarget.createBuffers(renderTarget.width, renderTarget.height);
             }
 
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), OptionalInt.of(0x00000000), renderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
@@ -144,9 +151,10 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             tessellator.clear();
         }
 
-        RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (output) -> {
-            resultConsumer.accept(ImageUtils.flipVertical(output));
-        });
+        RenderUtils.fenceAndWait();
+
+        BufferedImage output = RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture());
+        return RenderUtils.hasFlippedTexture() ? ImageUtils.flipVertical(output) : output;
     }
 
     private GpuBufferSlice dynamicTransformsWithColor(int color) {
