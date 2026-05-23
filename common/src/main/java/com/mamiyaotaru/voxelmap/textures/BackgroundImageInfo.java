@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.textures;
 
 import java.awt.image.BufferedImage;
 import net.minecraft.client.Minecraft;

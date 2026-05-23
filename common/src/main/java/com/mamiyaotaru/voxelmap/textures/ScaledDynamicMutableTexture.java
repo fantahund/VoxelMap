@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.textures;
 
 public class ScaledDynamicMutableTexture extends DynamicMutableTexture {
     private final int scale;

@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.render;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.pipeline.BlendFunction;

@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.PopupGuiScreen;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.render.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;

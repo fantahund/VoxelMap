@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.widgets;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.render.VoxelMapGuiGraphics;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;

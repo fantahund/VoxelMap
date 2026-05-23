@@ -7,7 +7,7 @@ import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
+import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;

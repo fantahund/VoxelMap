@@ -14,7 +14,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
-import com.mamiyaotaru.voxelmap.util.RenderUtils;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;

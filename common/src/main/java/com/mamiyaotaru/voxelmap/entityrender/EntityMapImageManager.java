@@ -12,9 +12,9 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.EmptySubmitNodeCollector;
+import com.mamiyaotaru.voxelmap.render.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;

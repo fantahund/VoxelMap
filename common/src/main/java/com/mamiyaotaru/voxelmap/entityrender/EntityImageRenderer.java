@@ -2,8 +2,8 @@ package com.mamiyaotaru.voxelmap.entityrender;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mamiyaotaru.voxelmap.util.RenderUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
+import com.mamiyaotaru.voxelmap.render.VoxelMapRenderTarget;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
