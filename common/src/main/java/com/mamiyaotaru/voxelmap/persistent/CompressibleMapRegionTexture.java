@@ -95,13 +95,12 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         this.compress();
     }
 
-    public void setRGB(int x, int y, int color) {
+    public synchronized void setRGB(int x, int y, int color) {
         if (pixels == null) {
             this.decompress();
         }
-        NativeImage localPixels = pixels;
-        if (localPixels != null) {
-            localPixels.setPixel(x, y, ColorUtils.premultiplyWithAlpha(color));
+        if (pixels != null) {
+            pixels.setPixel(x, y, ColorUtils.premultiplyWithAlpha(color));
         }
     }
 
@@ -120,9 +119,12 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         }
     }
 
-    public void generateMipmaps() {
+    public synchronized void generateMipmaps() {
+        if (pixels == null) {
+            return;
+        }
         clearMipmaps();
-        pixelsMipmapped = MipmapGenerator.generateMipLevels(EMPTY_ID, new NativeImage[] { pixels }, MIP_LEVELS, MipmapStrategy.MEAN, 0.0f);
+        pixelsMipmapped = MipmapGenerator.generateMipLevels(EMPTY_ID, new NativeImage[]{pixels}, MIP_LEVELS, MipmapStrategy.MEAN, 0.0f);
     }
 
     private synchronized void decompress() {
@@ -163,7 +165,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         clearMipmaps();
         if (this.pixels != null) {
             this.pixels.close();

@@ -775,7 +775,13 @@ public class CachedRegion {
             if (this.persistentMap.getOptions().outputImages.get()) {
                 this.saveImage();
             }
-            this.image.deleteTexture();
+
+            this.threadLock.lock();
+            try {
+                this.image.deleteTexture();
+            } finally {
+                this.threadLock.unlock();
+            }
         }
 
         this.saveData(true);
