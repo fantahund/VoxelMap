@@ -4,19 +4,23 @@ import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.EntityImageRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.object.skull.SkullModelBase;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.client.resources.model.EquipmentClientInfo.LayerType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
@@ -161,27 +165,26 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
 
     @Override
     public void renderArmorModel(EntityImageRenderer renderer) {
-        PoseStack pose = renderer.poseStack();
-
         if (armor != null) {
             ModelPart part = humanoidModel.root().getChild("head");
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
 
-            renderer.addMesh(part);
+            part.render(renderer.pose(), renderer.vertexBuffer(), OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT);
         }
         if (block != null) {
-            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
-            pose.scale(0.625F, 0.625F, 0.625F);
+            renderer.pose().mulPose(Axis.ZP.rotationDegrees(180.0F));
+            renderer.pose().scale(0.625F, 0.625F, 0.625F);
 
-            renderer.addBlock(block.defaultBlockState());
+            BlockRenderDispatcher blockRenderer = Minecraft.getInstance().getBlockRenderer();
+            blockRenderer.getModelRenderer().tesselateBlock(Minecraft.getInstance().level, blockRenderer.getBlockModel(block.defaultBlockState()).collectParts(random), block.defaultBlockState(), BlockPos.ZERO, renderer.pose(), renderer.vertexBuffer(), true, OverlayTexture.NO_OVERLAY);
         }
         if (skull != null) {
-            pose.scale(1.1875F, 1.1875F, 1.1875F);
+            renderer.pose().scale(1.1875F, 1.1875F, 1.1875F);
             SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skull.getType());
 
-            renderer.addMesh(skullModel.root());
+            skullModel.renderToBuffer(renderer.pose(), renderer.vertexBuffer(), OverlayTexture.NO_OVERLAY, LightTexture.FULL_BRIGHT);
         }
     }
 

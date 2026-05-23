@@ -34,12 +34,14 @@ import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
@@ -263,6 +265,7 @@ public class EntityMapImageManager implements IReloadListener {
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
 
         renderer.setup(1.0F / getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
+        renderer.beginBatch(VoxelMapPipelines.ENTITY_ICON, new EntityImageRenderer.RenderSetup(variant.getPrimaryTexture(), getPrimaryTextureColor(entity), variant.getSecondaryTexture(), getSecondaryTextureColor(entity), variant.getTertiaryTexture(), getTertiaryTextureColor(entity), variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)));
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
         ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.getLevelRenderState().cameraRenderState);
@@ -278,22 +281,14 @@ public class EntityMapImageManager implements IReloadListener {
             part.yRot = 0;
             part.zRot = 0;
 
-            renderer.addMesh(part);
+            part.render(renderer.pose(), renderer.vertexBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
 
         if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
-            SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.getFirst();
-            renderer.addMesh(slimeOuter.model.root());
+            ((SlimeOuterLayer) slimeRenderer.layers.getFirst()).model.root().render(renderer.pose(), renderer.vertexBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
 
-        EntityImageRenderer.TextureSet textureSet = new EntityImageRenderer.TextureSet(
-                variant.getPrimaryTexture(), getPrimaryTextureColor(entity),
-                variant.getSecondaryTexture(), getSecondaryTextureColor(entity),
-                variant.getTertiaryTexture(), getTertiaryTextureColor(entity),
-                variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
-        );
-
-        BufferedImage output = renderer.render(VoxelMapPipelines.ENTITY_ICON, textureSet);
+        BufferedImage output = renderer.endBatch();
         postProcessRenderedMobImage(entity, sprite, model, output, addBorder);
 
         return sprite;
@@ -425,11 +420,9 @@ public class EntityMapImageManager implements IReloadListener {
         Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
 
         renderer.setup(1.0F, getCustomMobProperties(entity.getType()));
+        renderer.beginBatch(VoxelMapPipelines.ENTITY_ICON_CULLED,  new EntityImageRenderer.RenderSetup(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1));
         armorHandler.renderArmorModel(renderer);
-
-        EntityImageRenderer.TextureSet textureSet = new EntityImageRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
-
-        BufferedImage output = renderer.render(VoxelMapPipelines.ENTITY_ICON_CULLED, textureSet);
+        BufferedImage output = renderer.endBatch();
         postProcessRenderedArmorImage(sprite, output, armorHandler, armorData);
 
         return sprite;

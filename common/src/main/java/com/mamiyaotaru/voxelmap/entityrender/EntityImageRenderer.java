@@ -17,21 +17,14 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.block.ModelBlockRenderer;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -39,8 +32,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Properties;
@@ -49,12 +40,15 @@ public class EntityImageRenderer {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final Tesselator tesselator = Tesselator.getInstance();
     private final PoseStack poseStack = new PoseStack();
-    private final RandomSource random = RandomSource.create();
-    private final ArrayList<ModelPart> modelParts = new ArrayList<>();
-    private final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
+//    private final RandomSource random = RandomSource.create();
+//    private final ArrayList<ModelPart> modelParts = new ArrayList<>();
+//    private final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     private final CachedOrthoProjectionMatrixBuffer projection;
     private final GpuBuffer lightingBuffer;
     private final VoxelMapRenderTarget renderTarget;
+    private RenderSetup renderSetup;
+    private RenderPipeline pipeline;
+    private BufferBuilder bufferBuilder;
 
     public EntityImageRenderer() {
         projection = new CachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 1000.0F, 21000.0F, true);
@@ -93,39 +87,27 @@ public class EntityImageRenderer {
                 }
             }
         }
-
-        modelParts.clear();
-        blockModels.clear();
     }
 
-    public PoseStack poseStack() {
+    public PoseStack pose() {
         return poseStack;
     }
 
-    public void addMesh(ModelPart modelPart) {
-        modelParts.add(modelPart);
+    public void beginBatch(RenderPipeline pipeline, RenderSetup renderSetup) {
+        this.renderSetup = renderSetup;
+        this.pipeline = pipeline;
+        bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
     }
 
-    public void addBlock(BlockState blockState) {
-        blockModels.add(new BlockModelSet(blockState, minecraft.getBlockRenderer().getBlockModel(blockState).collectParts(random)));
+    public VertexConsumer vertexBuffer() {
+        return bufferBuilder;
     }
 
-    public BufferedImage render(RenderPipeline pipeline, TextureSet textureSet) {
-        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
-
-        for (ModelPart modelPart : modelParts) {
-            modelPart.render(poseStack, bufferBuilder, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
-        }
-
-        ModelBlockRenderer blockRenderer = minecraft.getBlockRenderer().getModelRenderer();
-        for (BlockModelSet blockModel : blockModels) {
-            blockRenderer.tesselateBlock(minecraft.level, blockModel.modelParts(), blockModel.blockState(), BlockPos.ZERO, poseStack, bufferBuilder, true, OverlayTexture.NO_OVERLAY);
-        }
-
-        AbstractTexture primaryTexture = textureSet.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.primaryTexture());
-        AbstractTexture secondaryTexture = textureSet.secondaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.secondaryTexture());
-        AbstractTexture tertiaryTexture = textureSet.tertiaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tertiaryTexture());
-        AbstractTexture quaternaryTexture = textureSet.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.quaternaryTexture());
+    public BufferedImage endBatch() {
+        AbstractTexture primaryTexture = renderSetup.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.primaryTexture());
+        AbstractTexture secondaryTexture = renderSetup.secondaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.secondaryTexture());
+        AbstractTexture tertiaryTexture = renderSetup.tertiaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.tertiaryTexture());
+        AbstractTexture quaternaryTexture = renderSetup.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(renderSetup.quaternaryTexture());
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -134,10 +116,10 @@ public class EntityImageRenderer {
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
 
-        GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(textureSet.primaryColor());
-        GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(textureSet.secondaryColor());
-        GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(textureSet.tertiaryColor());
-        GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(textureSet.quaternaryColor());
+        GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(renderSetup.primaryColor());
+        GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(renderSetup.secondaryColor());
+        GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(renderSetup.tertiaryColor());
+        GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(renderSetup.quaternaryColor());
 
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
@@ -190,6 +172,8 @@ public class EntityImageRenderer {
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
+        } catch (Exception e) {
+            VoxelConstants.getLogger().error("Entity draw failed! ", e);
         } finally {
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
@@ -211,9 +195,6 @@ public class EntityImageRenderer {
         return RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), colorModulator, modelOffset, textureMatrix);
     }
 
-    public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
-    }
-
-    public record BlockModelSet(BlockState blockState, List<BlockModelPart> modelParts) {
+    public record RenderSetup(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
     }
 }

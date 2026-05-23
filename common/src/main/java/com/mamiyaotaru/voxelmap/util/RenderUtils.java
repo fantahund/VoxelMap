@@ -26,6 +26,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
@@ -82,7 +83,7 @@ public class RenderUtils {
     public static void drawString(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
         MATRIX_CACHE.set(matrix);
         matrix.translate(x, y, z);
-        MINECRAFT.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrix, MINECRAFT.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+        MINECRAFT.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrix, MINECRAFT.renderBuffers().bufferSource(), Font.DisplayMode.NORMAL, 0x00000000, LightTexture.FULL_BRIGHT);
         MINECRAFT.renderBuffers().bufferSource().endLastBatch();
         matrix.set(MATRIX_CACHE);
     }
