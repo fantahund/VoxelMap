@@ -235,7 +235,10 @@ public class RenderUtils {
     }
 
     public static void flushGuiRenderer() {
-        // FIXME: Gui flickers in some cases
+        RenderSystem.assertOnRenderThread();
+        if (VoxelConstants.hasVulkanMod()) {
+            fenceAndWait();
+        }
         MINECRAFT.gameRenderer.guiRenderer.render(MINECRAFT.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
     }
 
