@@ -11,6 +11,11 @@ import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.render.VoxelMapRenderTarget;
+import com.mamiyaotaru.voxelmap.textures.DynamicMutableTexture;
+import com.mamiyaotaru.voxelmap.textures.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
@@ -19,7 +24,6 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.textures.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
@@ -27,10 +31,6 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.render.RenderUtils;
-import com.mamiyaotaru.voxelmap.textures.ScaledDynamicMutableTexture;
-import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
-import com.mamiyaotaru.voxelmap.render.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -654,8 +654,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zoomScaleAdjusted
         );
 
-        RenderUtils.flushGuiRenderer();
         RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget(), true);
         Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
         matrixStack.pushMatrix();
         matrixStack.identity();
@@ -671,7 +671,10 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
         showCoords(matrixStack, mapX, mapY, scaleProj);
         matrixStack.popMatrix();
+        RenderUtils.restoreRenderTarget();
         RenderUtils.restoreProjectionMatrix();
+
+        RenderUtils.blitRenderTarget(drawContext, RenderUtils.getFullscreenRenderTarget());
     }
 
     private void checkForChanges() {

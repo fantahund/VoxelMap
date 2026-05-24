@@ -15,17 +15,17 @@ import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.BiomeMapData;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
-import com.mamiyaotaru.voxelmap.render.RenderUtils;
-import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
@@ -557,8 +557,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, bgInfo.getImageLocation(), bgInfo.left, bgInfo.top + 32, 0, 0, bgInfo.width, bgInfo.height, bgInfo.width, bgInfo.height);
         }
 
-        RenderUtils.flushGuiRenderer();
-        RenderUtils.setProjectionMatrix(mapProjection.getBuffer(getWidth(), getHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        RenderUtils.setProjectionMatrix(mapProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget(), true);
         Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
         matrixStack.pushMatrix();
         matrixStack.translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui, 0.0F);
@@ -665,6 +665,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         RenderUtils.restoreRenderTarget();
         RenderUtils.restoreProjectionMatrix();
+
+        RenderUtils.blitRenderTarget(guiGraphics, RenderUtils.getFullscreenRenderTarget());
 
         if (System.currentTimeMillis() - timeOfLastKeyboardInput < 2000L) {
             guiGraphics.blit(RenderPipelines.CROSSHAIR, crosshairResource, (getWidth() - 15) / 2, (getHeight() - 15) / 2, 0.0F, 0.0F, 15, 15, 15, 15);

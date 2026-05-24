@@ -26,8 +26,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.state.BlitRenderState;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.fog.FogRenderer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -47,8 +48,13 @@ public class RenderUtils {
 
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final Matrix4f MATRIX_CACHE = new Matrix4f();
-    private static final Tesselator TESSELATOR = Tesselator.getInstance();
     private static final GpuSampler DEFAULT_SAMPLER = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.NEAREST, FilterMode.LINEAR, false);
+    private static final GpuSampler BLIT_SAMPLER = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
+    private static final RenderTarget FULLSCREEN_RENDER_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true);
+    private static int lastScreenWidth;
+    private static int lastScreenHeight;
+
+    private static final Tesselator TESSELATOR = Tesselator.getInstance();
     private static TextureSetup boundTexture;
     private static RenderPipeline pipeline;
     private static BufferBuilder bufferBuilder;
@@ -76,6 +82,32 @@ public class RenderUtils {
         return MATRIX_STACK;
     }
 
+    public static RenderTarget getFullscreenRenderTarget() {
+        RenderSystem.assertOnRenderThread();
+        int width = MINECRAFT.getWindow().getScreenWidth();
+        int height = MINECRAFT.getWindow().getScreenHeight();
+        if (width > 0 && height > 0 && (width != lastScreenWidth || height != lastScreenHeight)) {
+            lastScreenWidth = width;
+            lastScreenHeight = height;
+            FULLSCREEN_RENDER_TARGET.resize(width, height);
+        }
+        return FULLSCREEN_RENDER_TARGET;
+    }
+
+
+    public static void drawTooltip(GuiGraphics guiGraphics, Tooltip tooltip, int x, int y) {
+        if (tooltip == null) {
+            return;
+        }
+        guiGraphics.setTooltipForNextFrame(tooltip.toCharSequence(MINECRAFT), x, y);
+    }
+
+    public static void blitRenderTarget(GuiGraphics guiGraphics, RenderTarget renderTarget) {
+        float v0 = hasFlippedTexture() ? 1.0F : 0.0F;
+        float v1 = hasFlippedTexture() ? 0.0F : 1.0F;
+        guiGraphics.guiRenderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(renderTarget.getColorTextureView(), BLIT_SAMPLER), guiGraphics.pose(), 0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), 0.0f, 1.0F, v0, v1, 0xFFFFFFFF, guiGraphics.scissorStack.peek()));
+    }
+
     public static void drawString(Matrix4f matrix, String text, float x, float y, float z, int color, boolean shadow) {
         drawString(matrix, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
@@ -95,15 +127,6 @@ public class RenderUtils {
     public static void drawCenteredString(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
         drawString(matrix, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
-
-    public static void drawTooltip(GuiGraphics guiGraphics, Tooltip tooltip, int x, int y) {
-        if (tooltip == null) {
-            return;
-        }
-
-        guiGraphics.setTooltipForNextFrame(tooltip.toCharSequence(MINECRAFT), x, y);
-    }
-
     public static void drawSpriteRect(Matrix4f matrix, Sprite sprite, float x, float y, float z, float width, float height, int color) {
         drawTexturedModalRect(matrix, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
     }
@@ -111,7 +134,6 @@ public class RenderUtils {
     public static void drawBlitRect(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
         float v0 = hasFlippedTexture() ? 1.0F : 0.0F;
         float v1 = hasFlippedTexture() ? 0.0F : 1.0F;
-
         drawTexturedModalRect(matrix, x, y, z, width, height, 0.0F, 1.0F, v0, v1, color);
     }
 
@@ -188,6 +210,7 @@ public class RenderUtils {
     }
 
     public static GpuBuffer uploadImmediateVertexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
+        RenderSystem.assertOnRenderThread();
         if (!VoxelConstants.hasVulkanMod()) {
             return vertexFormat.uploadImmediateVertexBuffer(buffer);
         } else {
@@ -200,6 +223,7 @@ public class RenderUtils {
     }
 
     public static GpuBuffer uploadImmediateIndexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
+        RenderSystem.assertOnRenderThread();
         if (!VoxelConstants.hasVulkanMod()) {
             return vertexFormat.uploadImmediateIndexBuffer(buffer);
         } else {
@@ -232,14 +256,6 @@ public class RenderUtils {
         }
         gpuBuffer.close();
         return image;
-    }
-
-    public static void flushGuiRenderer() {
-        RenderSystem.assertOnRenderThread();
-        if (VoxelConstants.hasVulkanMod()) {
-            fenceAndWait();
-        }
-        MINECRAFT.gameRenderer.guiRenderer.render(MINECRAFT.gameRenderer.fogRenderer.getBuffer(FogRenderer.FogMode.NONE));
     }
 
     public static void fenceAndWait() {
