@@ -79,7 +79,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
     private OptionField<?>[] getRelevantOptions(int tabId) {
         switch (tabId) {
             case TAB_GENERIC -> {
-                return new OptionField[]{mapOptions.hide, mapOptions.updateNotifier, mapOptions.showBiomeInfo, mapOptions.showCoordInfo, mapOptions.mapCorner, mapOptions.sizeModifier, mapOptions.squareMap, mapOptions.rotates, mapOptions.inGameWaypoints, mapOptions.showCaves, mapOptions.moveMapBelowStatusEffectIcons, mapOptions.moveScoreboardBelowMap};
+                return new OptionField[]{mapOptions.hide, mapOptions.updateNotifier, mapOptions.showCoordInfo, mapOptions.showBiomeInfo, mapOptions.mapCorner, mapOptions.sizeModifier, mapOptions.squareMap, mapOptions.rotates, mapOptions.inGameWaypoints, mapOptions.showCaves, mapOptions.moveMapBelowStatusEffectIcons, mapOptions.moveScoreboardBelowMap};
             }
             case TAB_PERFORMANCE -> {
                 return new OptionField[]{mapOptions.dynamicLighting, mapOptions.terrainDepth, mapOptions.waterTransparency, mapOptions.blockTransparency, mapOptions.biomeShading, mapOptions.biomeOverlay, mapOptions.chunkGrid, mapOptions.slimeChunks, mapOptions.worldBorder, mapOptions.filtering, mapOptions.teleportCommand};

@@ -30,8 +30,8 @@ public class MapOptions extends AbstractOptionsContainer {
     // General Options
     public final BooleanField hide;
     public final BooleanField updateNotifier;
-    public final BooleanField showBiomeInfo;
     public final EnumField<OptionEnumMinimap.CoordInfo> showCoordInfo;
+    public final BooleanField showBiomeInfo;
     public final EnumField<OptionEnumMinimap.Location> mapCorner;
     public final EnumField<OptionEnumMinimap.Size> sizeModifier;
     public final BooleanField squareMap;
@@ -75,8 +75,8 @@ public class MapOptions extends AbstractOptionsContainer {
 
         addOptionField((hide = new BooleanField("Hide Minimap", "options.minimap.hideMinimap", false)));
         addOptionField((updateNotifier = new BooleanField("Update Notifier", "options.minimap.updateNotifier", true)));
-        addOptionField((showBiomeInfo = new BooleanField("Show Biome Info", "options.minimap.showBiome", true)));
         addOptionField((showCoordInfo = new EnumField<>("Show Coord Info", "options.minimap.showCoordinates", OptionEnumMinimap.CoordInfo.DEFAULT)));
+        addOptionField((showBiomeInfo = new BooleanField("Show Biome Info", "options.minimap.showBiome", true)));
         addOptionField((mapCorner = new EnumField<>("Map Corner", "options.minimap.location", OptionEnumMinimap.Location.TOP_LEFT)));
         addOptionField((sizeModifier = new EnumField<>("Map Size", "options.minimap.size", OptionEnumMinimap.Size.LARGE)));
         addOptionField((squareMap = new BooleanField("Square Map", "options.minimap.squareMap", false)).withListener(this::updateMinimap));
@@ -116,7 +116,7 @@ public class MapOptions extends AbstractOptionsContainer {
     public void updateOptionsActive() {
         boolean minimapEnabled = !hide.get();
 
-        OptionField<?>[] minimapOptions = new OptionField[]{showBiomeInfo, showCoordInfo, mapCorner, sizeModifier, squareMap, rotates, moveMapBelowStatusEffectIcons, moveScoreboardBelowMap};
+        OptionField<?>[] minimapOptions = new OptionField[]{showBiomeInfo, mapCorner, sizeModifier, squareMap, rotates, showCaves, moveMapBelowStatusEffectIcons, moveScoreboardBelowMap};
         for (OptionField<?> option : minimapOptions) {
             option.setActive(minimapEnabled);
         }
