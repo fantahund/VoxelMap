@@ -61,10 +61,13 @@ public class RenderUtils {
     private static GpuBuffer immediateDrawVertexBuffer;
     private static GpuBuffer immediateDrawIndexBuffer;
 
-    private static GpuBufferSlice lastProjectionMatrix;
-    private static ProjectionType lastProjectionType;
-    private static GpuTextureView lastColorTextureOverride;
-    private static GpuTextureView lastDepthTextureOverride;
+    private static final GpuBufferSlice[] PROJECTION_MATRIX_STACK = new GpuBufferSlice[16];
+    private static final ProjectionType[] PROJECTION_TYPE_STACK = new ProjectionType[16];
+    private static int projectionMatrixCount;
+
+    private static final GpuTextureView[] COLOR_TEXTURE_OVERRIDE_STACK = new GpuTextureView[16];
+    private static final GpuTextureView[] DEPTH_TEXTURE_OVERRIDE_STACK = new GpuTextureView[16];
+    private static int renderTargetCount;
 
     public static boolean hasFlippedTexture() {
         return !VoxelConstants.hasVulkanMod();
@@ -278,8 +281,9 @@ public class RenderUtils {
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
         RenderSystem.assertOnRenderThread();
-        lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        lastProjectionType = RenderSystem.getProjectionType();
+        PROJECTION_MATRIX_STACK[projectionMatrixCount] = RenderSystem.getProjectionMatrixBuffer();
+        PROJECTION_TYPE_STACK[projectionMatrixCount] = RenderSystem.getProjectionType();
+        projectionMatrixCount++;
         RenderSystem.setProjectionMatrix(matrix, type);
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
@@ -289,7 +293,10 @@ public class RenderUtils {
     public static void restoreProjectionMatrix() {
         RenderSystem.assertOnRenderThread();
         RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+        projectionMatrixCount--;
+        GpuBufferSlice matrix = PROJECTION_MATRIX_STACK[projectionMatrixCount];
+        ProjectionType type = PROJECTION_TYPE_STACK[projectionMatrixCount];
+        RenderSystem.setProjectionMatrix(matrix, type);
     }
 
     public static void setRenderTarget(RenderTarget renderTarget, boolean clear) {
@@ -303,15 +310,19 @@ public class RenderUtils {
                 commandEncoder.clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
             }
         }
-        lastColorTextureOverride = RenderSystem.outputColorTextureOverride;
-        lastDepthTextureOverride = RenderSystem.outputDepthTextureOverride;
+        COLOR_TEXTURE_OVERRIDE_STACK[renderTargetCount] = RenderSystem.outputColorTextureOverride;
+        DEPTH_TEXTURE_OVERRIDE_STACK[renderTargetCount] = RenderSystem.outputDepthTextureOverride;
+        renderTargetCount++;
         RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
         RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
     }
 
     public static void restoreRenderTarget() {
         RenderSystem.assertOnRenderThread();
-        RenderSystem.outputColorTextureOverride = lastColorTextureOverride;
-        RenderSystem.outputDepthTextureOverride = lastDepthTextureOverride;
+        renderTargetCount--;
+        GpuTextureView colorTextureOverride = COLOR_TEXTURE_OVERRIDE_STACK[renderTargetCount];
+        GpuTextureView depthTextureOverride = DEPTH_TEXTURE_OVERRIDE_STACK[renderTargetCount];
+        RenderSystem.outputColorTextureOverride = colorTextureOverride;
+        RenderSystem.outputDepthTextureOverride = depthTextureOverride;
     }
 }
