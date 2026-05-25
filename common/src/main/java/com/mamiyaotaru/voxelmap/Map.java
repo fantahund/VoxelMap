@@ -610,7 +610,6 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         this.scHeight = Mth.ceil(scaledHeightD);
         float scaleProj = (float) (scScale) / minecraft.getWindow().getGuiScale();
 
-        float statusIconOffset = 0.0F;
         int mapX = 0;
         int mapY = 0;
         switch (options.mapCorner.get()) {
@@ -621,18 +620,6 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             case TOP_RIGHT -> {
                 mapX = scWidth - 37;
                 mapY = 37;
-
-                if (!VoxelConstants.getPlayer().getActiveEffects().isEmpty()) {
-                    for (MobEffectInstance effect : VoxelConstants.getPlayer().getActiveEffects()) {
-                        if (effect.showIcon()) {
-                            statusIconOffset = 50.0F;
-                            break;
-                        }
-                        statusIconOffset = 24.0F;
-                    }
-                    float resFactor = (float) scHeight / minecraft.getWindow().getGuiScaledHeight();
-                    mapY += (int) (statusIconOffset * resFactor);
-                }
             }
             case BOTTOM_RIGHT -> {
                 mapX = scWidth - 37;
@@ -642,6 +629,20 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 mapX = 37;
                 mapY = scHeight - 37;
             }
+        }
+        float statusIconOffset = 0.0F;
+        if (options.moveMapBelowStatusEffectIcons.get() && options.mapCorner.get() == OptionEnumMinimap.Location.TOP_RIGHT) {
+            for (MobEffectInstance effect : VoxelConstants.getPlayer().getActiveEffects()) {
+                if (effect.showIcon()) {
+                    if (!effect.getEffect().value().isBeneficial()) {
+                        statusIconOffset = 50.0F;
+                        break;
+                    }
+                    statusIconOffset = 24.0F;
+                }
+            }
+            float resFactor = (float) scHeight / minecraft.getWindow().getGuiScaledHeight();
+            mapY += (int) (statusIconOffset * resFactor);
         }
         Map.statusIconOffset = statusIconOffset;
 
