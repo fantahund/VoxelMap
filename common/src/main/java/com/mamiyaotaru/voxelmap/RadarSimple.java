@@ -76,7 +76,13 @@ public class RadarSimple extends AbstractRadar {
                 matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + facing));
                 matrixStack.translate(-x, -y, 0.0F);
 
-                int color = minimapContext.playerY - contact.y < 0 ? ARGB.colorFromFloat(contact.brightness, 1, 1, 1) : ARGB.colorFromFloat(1, contact.brightness, contact.brightness, contact.brightness);
+                int color;
+                if (minimapContext.playerY - contact.y < 0) {
+                    color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+                } else {
+                    float brightness = contact.brightness * 0.7F + 0.3F;
+                    color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
+                }
                 switch (contact.category) {
                     case HOSTILE -> color = ARGB.multiply(color, 0xFFFF8080);
                     case NEUTRAL -> color = ARGB.multiply(color, 0xFF80FF80);

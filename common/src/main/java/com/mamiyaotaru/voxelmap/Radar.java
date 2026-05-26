@@ -98,7 +98,7 @@ public class Radar extends AbstractRadar {
                 if (minimapContext.playerY - contact.y < 0) {
                     color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
                 } else {
-                    float brightness = Math.max(0.3F, contact.brightness);
+                    float brightness = contact.brightness * 0.7F + 0.3F;
                     color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
                 }
 
