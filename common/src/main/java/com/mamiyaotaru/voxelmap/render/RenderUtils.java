@@ -212,6 +212,17 @@ public class RenderUtils {
         }
     }
 
+    public static void forceFlushCommands() {
+        RenderSystem.assertOnRenderThread();
+        if (VoxelConstants.hasVulkanMod()) {
+            try {
+                Class<?> vkRendererClass = Class.forName("net.vulkanmod.vulkan.Renderer");
+                vkRendererClass.getMethod("flushCmds").invoke(vkRendererClass.getMethod("getInstance").invoke(null));
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     public static GpuBuffer uploadImmediateVertexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
         RenderSystem.assertOnRenderThread();
         if (!VoxelConstants.hasVulkanMod()) {
@@ -233,7 +244,7 @@ public class RenderUtils {
             if (immediateDrawIndexBuffer != null) {
                 immediateDrawIndexBuffer.close();
             }
-            immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, buffer);
+            immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX | GpuBuffer.USAGE_COPY_DST, buffer);
             return immediateDrawIndexBuffer;
         }
     }
@@ -247,7 +258,9 @@ public class RenderUtils {
         GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, bufferSize);
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {}, 0);
-        fenceAndWait();
+        try (GpuFence fence = commandEncoder.createFence()) {
+            fence.awaitCompletion(Long.MAX_VALUE);
+        }
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
         try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
             for (int y = 0; y < height; y++) {
@@ -259,24 +272,6 @@ public class RenderUtils {
         }
         gpuBuffer.close();
         return image;
-    }
-
-    public static void fenceAndWait() {
-        RenderSystem.assertOnRenderThread();
-        if (!VoxelConstants.hasVulkanMod()) {
-            try (GpuFence fence = RenderSystem.getDevice().createCommandEncoder().createFence()) {
-                fence.awaitCompletion(Long.MAX_VALUE);
-            }
-        } else {
-            try {
-                Class<?> vkRendererClass = Class.forName("net.vulkanmod.vulkan.Renderer");
-                if (vkRendererClass != null) {
-                    Object vkRenderer = vkRendererClass.getMethod("getInstance").invoke(null);
-                    vkRendererClass.getMethod("flushCmds").invoke(vkRenderer);
-                }
-            } catch (Exception ignored) {
-            }
-        }
     }
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {

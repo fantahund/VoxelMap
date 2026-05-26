@@ -100,10 +100,10 @@ public class EntityImageRenderer {
     }
 
     public BufferedImage endBatch() {
-        AbstractTexture primaryTexture = dataHolder.getTexture0() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture0()) : null;
-        AbstractTexture secondaryTexture = dataHolder.getTexture1() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture1()) : null;
-        AbstractTexture tertiaryTexture = dataHolder.getTexture2() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture2()) : null;
-        AbstractTexture quaternaryTexture = dataHolder.getTexture3() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture3()): null;
+        AbstractTexture texture0 = dataHolder.getTexture0() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture0()) : null;
+        AbstractTexture texture1 = dataHolder.getTexture1() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture1()) : null;
+        AbstractTexture texture2 = dataHolder.getTexture2() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture2()) : null;
+        AbstractTexture texture3 = dataHolder.getTexture3() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture3()): null;
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -112,10 +112,10 @@ public class EntityImageRenderer {
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
 
-        GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(dataHolder.getColor0());
-        GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(dataHolder.getColor1());
-        GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(dataHolder.getColor2());
-        GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(dataHolder.getColor3());
+        GpuBufferSlice transforms0 = dynamicTransformsWithColor(dataHolder.getColor0());
+        GpuBufferSlice transforms1 = dynamicTransformsWithColor(dataHolder.getColor1());
+        GpuBufferSlice transforms2 = dynamicTransformsWithColor(dataHolder.getColor2());
+        GpuBufferSlice transforms3 = dynamicTransformsWithColor(dataHolder.getColor3());
 
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
@@ -147,24 +147,24 @@ public class EntityImageRenderer {
                 renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.setVertexBuffer(0, vertexBuffer);
                 renderPass.setIndexBuffer(indexBuffer, indexType);
-                if (primaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", primaryTransforms);
-                    renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
+                if (texture0 != null) {
+                    renderPass.setUniform("DynamicTransforms", transforms0);
+                    renderPass.bindTexture("Sampler0", texture0.getTextureView(), texture0.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
-                if (secondaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", secondaryTransforms);
-                    renderPass.bindTexture("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
+                if (texture1 != null) {
+                    renderPass.setUniform("DynamicTransforms", transforms1);
+                    renderPass.bindTexture("Sampler0", texture1.getTextureView(), texture1.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
-                if (tertiaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", tertiaryTransforms);
-                    renderPass.bindTexture("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
+                if (texture2 != null) {
+                    renderPass.setUniform("DynamicTransforms", transforms2);
+                    renderPass.bindTexture("Sampler0", texture2.getTextureView(), texture2.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
-                if (quaternaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", quaternaryTransforms);
-                    renderPass.bindTexture("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
+                if (texture3 != null) {
+                    renderPass.setUniform("DynamicTransforms", transforms3);
+                    renderPass.bindTexture("Sampler0", texture3.getTextureView(), texture3.getSampler());
                     renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
                 }
             }
@@ -177,7 +177,7 @@ public class EntityImageRenderer {
             tesselator.clear();
         }
 
-        RenderUtils.fenceAndWait();
+        RenderUtils.forceFlushCommands();
 
         BufferedImage output = RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture());
         return RenderUtils.hasFlippedTexture() ? ImageUtils.flipVertical(output) : output;
