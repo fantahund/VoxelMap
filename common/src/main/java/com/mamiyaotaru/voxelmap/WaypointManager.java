@@ -19,7 +19,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.Connection;
@@ -782,9 +782,9 @@ public class WaypointManager {
         return false;
     }
 
-    public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+    public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Camera camera) {
         if (options.waypointsAllowed && this.waypointContainer != null) {
-            this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
+            this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, submitNodeCollector, camera);
         }
     }
 

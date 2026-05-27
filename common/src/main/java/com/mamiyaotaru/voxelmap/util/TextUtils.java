@@ -149,7 +149,7 @@ public final class TextUtils {
         StringBuilder stringBuilder = new StringBuilder();
 
         if (style.getColor() != null) {
-            ChatFormatting colorFormat = ChatFormatting.getByName(style.getColor().serialize());
+            ChatFormatting colorFormat = getLegacyColor(style.getColor().serialize());
 
             if (colorFormat != null) {
                 stringBuilder.append(colorFormat);
@@ -172,5 +172,27 @@ public final class TextUtils {
             stringBuilder.append(ChatFormatting.STRIKETHROUGH);
         }
         return stringBuilder.toString();
+    }
+
+    private static ChatFormatting getLegacyColor(String colorName) {
+        return switch (colorName) {
+            case "black" -> ChatFormatting.BLACK;
+            case "dark_blue" -> ChatFormatting.DARK_BLUE;
+            case "dark_green" -> ChatFormatting.DARK_GREEN;
+            case "dark_aqua" -> ChatFormatting.DARK_AQUA;
+            case "dark_red" -> ChatFormatting.DARK_RED;
+            case "dark_purple" -> ChatFormatting.DARK_PURPLE;
+            case "gold" -> ChatFormatting.GOLD;
+            case "gray" -> ChatFormatting.GRAY;
+            case "dark_gray" -> ChatFormatting.DARK_GRAY;
+            case "blue" -> ChatFormatting.BLUE;
+            case "green" -> ChatFormatting.GREEN;
+            case "aqua" -> ChatFormatting.AQUA;
+            case "red" -> ChatFormatting.RED;
+            case "light_purple" -> ChatFormatting.LIGHT_PURPLE;
+            case "yellow" -> ChatFormatting.YELLOW;
+            case "white" -> ChatFormatting.WHITE;
+            default -> null;
+        };
     }
 }

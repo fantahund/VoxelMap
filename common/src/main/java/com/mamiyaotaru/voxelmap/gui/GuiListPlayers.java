@@ -115,7 +115,7 @@ public class GuiListPlayers extends AbstractSelectionList<GuiListPlayers.Row> {
         if (id == -1) {
             parentGui.allClicked = true;
             ConfirmScreen confirmScreen = new ConfirmScreen(parentGui, CONFIRM_TITLE, CONFIRM_EXPLANATION, CONFIRM_AFFIRM, CONFIRM_DENY);
-            minecraft.setScreen(confirmScreen);
+            minecraft.gui.setScreen(confirmScreen);
         } else {
             PlayerInfo ScoreboardEntry = playersFiltered.get(id);
             String name = getPlayerName(ScoreboardEntry).getString();

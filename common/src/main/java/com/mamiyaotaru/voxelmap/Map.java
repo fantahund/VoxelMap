@@ -26,6 +26,7 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.util.VoxelMapBufferSource;
 import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
@@ -42,7 +43,6 @@ import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.OutOfMemoryScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -168,7 +168,7 @@ public class Map implements Runnable, IChangeObserver {
     private int lastBiome;
 
     // Map Rendering
-    private final MultiBufferSource.BufferSource renderBufferSource;
+    private final VoxelMapBufferSource renderBufferSource;
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
     private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
     private final VoxelMapRenderTarget hudRenderTarget; // Used for entire VoxelMap HUD rendering
@@ -218,7 +218,7 @@ public class Map implements Runnable, IChangeObserver {
         this.zoom = this.options.zoom;
         this.setZoomScale();
 
-        this.renderBufferSource = MultiBufferSource.immediate(new ByteBufferBuilder(4096));
+        this.renderBufferSource = new VoxelMapBufferSource();
         this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
 
         final int fboTextureSize = 512;
@@ -326,21 +326,21 @@ public class Map implements Runnable, IChangeObserver {
     public void onTickInGame(GuiGraphicsExtractor graphics) {
         this.rotationFactor = this.options.oldNorth ? 90 : 0;
 
-        if (minecraft.screen == null && this.options.welcome) {
-            minecraft.setScreen(new GuiWelcomeScreen(null));
+        if (minecraft.gui.screen() == null && this.options.welcome) {
+            minecraft.gui.setScreen(new GuiWelcomeScreen(null));
         }
 
-        if (minecraft.screen == null && this.options.keyBindMenu.consumeClick()) {
-            minecraft.setScreen(new GuiPersistentMap(null));
+        if (minecraft.gui.screen() == null && this.options.keyBindMenu.consumeClick()) {
+            minecraft.gui.setScreen(new GuiPersistentMap(null));
         }
 
-        if (minecraft.screen == null && this.options.keyBindWaypointMenu.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindWaypointMenu.consumeClick()) {
             if (options.waypointsAllowed) {
-                minecraft.setScreen(new GuiWaypoints(null));
+                minecraft.gui.setScreen(new GuiWaypoints(null));
             }
         }
 
-        if (minecraft.screen == null && this.options.keyBindWaypoint.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindWaypoint.consumeClick()) {
             if (options.waypointsAllowed) {
                 float r;
                 float g;
@@ -360,38 +360,38 @@ public class Map implements Runnable, IChangeObserver {
                 double dimensionScale = VoxelConstants.getPlayer().level().dimensionType().coordinateScale();
                 Waypoint newWaypoint = new Waypoint("", (int) (GameVariableAccessShim.xCoord() * dimensionScale), (int) (GameVariableAccessShim.zCoord() * dimensionScale), GameVariableAccessShim.yCoord(), true, r, g, b, "",
                         VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
-                minecraft.setScreen(new GuiAddWaypoint(null, newWaypoint, false));
+                minecraft.gui.setScreen(new GuiAddWaypoint(null, newWaypoint, false));
             }
         }
 
-        if (minecraft.screen == null && this.options.keyBindMobToggle.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindMobToggle.consumeClick()) {
             VoxelConstants.getVoxelMapInstance().getRadarOptions().toggleBooleanValue(EnumOptionsMinimap.SHOW_RADAR);
             this.options.saveAll();
         }
 
-        if (minecraft.screen == null && this.options.keyBindWaypointToggle.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindWaypointToggle.consumeClick()) {
             this.options.toggleIngameWaypoints();
         }
 
-        if (minecraft.screen == null && this.options.keyBindZoom.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindZoom.consumeClick()) {
             this.cycleZoomLevel();
         }
 
-        if (minecraft.screen == null && this.options.keyBindFullscreen.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindFullscreen.consumeClick()) {
             this.fullscreenMap = !this.fullscreenMap;
             this.showMessage(I18n.get("minimap.ui.zoomLevel", 2.0 / this.zoomScale));
         }
 
-        if (minecraft.screen == null && this.options.keyBindMinimapToggle.consumeClick()) {
+        if (minecraft.gui.screen() == null && this.options.keyBindMinimapToggle.consumeClick()) {
             this.options.toggleBooleanValue(EnumOptionsMinimap.HIDE_MINIMAP);
         }
 
         this.checkForChanges();
-        if (options.deathWaypointAllowed && minecraft.screen instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
+        if (options.deathWaypointAllowed && minecraft.gui.screen() instanceof DeathScreen && !(this.lastGuiScreen instanceof DeathScreen)) {
             this.waypointManager.handleDeath();
         }
 
-        this.lastGuiScreen = minecraft.screen;
+        this.lastGuiScreen = minecraft.gui.screen();
         this.calculateCurrentLightAndSkyColor();
         if (this.threading) {
             if (!this.zCalc.isAlive()) {
@@ -400,7 +400,7 @@ public class Map implements Runnable, IChangeObserver {
                 this.zCalcTicker = 0;
             }
 
-            if (!(minecraft.screen instanceof DeathScreen) && !(minecraft.screen instanceof OutOfMemoryScreen)) {
+            if (!(minecraft.gui.screen() instanceof DeathScreen) && !(minecraft.gui.screen() instanceof OutOfMemoryScreen)) {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
@@ -427,7 +427,7 @@ public class Map implements Runnable, IChangeObserver {
             this.doFullRender = false;
         }
 
-        boolean enabled = !minecraft.options.hideGui && (this.options.showUnderMenus || minecraft.screen == null) && !minecraft.debugEntries.isOverlayVisible();
+        boolean enabled = !minecraft.gui.hud.isHidden() && (this.options.showUnderMenus || minecraft.gui.screen() == null) && !minecraft.debugEntries.isOverlayVisible();
 
         this.direction = GameVariableAccessShim.rotationYaw() + 180.0F;
 
@@ -559,7 +559,7 @@ public class Map implements Runnable, IChangeObserver {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
         Vector4f color = new Vector4f();
-        minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getBossOverlayWorldDarkening(0.0F), color);
+        minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.mainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.bossOverlayWorldDarkening(0.0F), color);
         int r = (int) (color.x * 255.0F);
         int g = (int) (color.y * 255.0F);
         int b = (int) (color.z * 255.0F);

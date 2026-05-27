@@ -176,7 +176,7 @@ public final class CommandUtils {
             for (Waypoint existingWaypoint : VoxelConstants.getVoxelMapInstance().getWaypointManager().getWaypoints()) {
                 if (newWaypoint.getX() == existingWaypoint.getX() && newWaypoint.getZ() == existingWaypoint.getZ()) {
                     if (control) {
-                        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, existingWaypoint, true));
+                        VoxelConstants.getMinecraft().gui.setScreen(new GuiAddWaypoint(null, existingWaypoint, true));
                     } else {
                         VoxelConstants.getVoxelMapInstance().getWaypointManager().setHighlightedWaypoint(existingWaypoint, false);
                     }
@@ -186,7 +186,7 @@ public final class CommandUtils {
             }
 
             if (control) {
-                VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(null, newWaypoint, false));
+                VoxelConstants.getMinecraft().gui.setScreen(new GuiAddWaypoint(null, newWaypoint, false));
             } else {
                 VoxelConstants.getVoxelMapInstance().getWaypointManager().setHighlightedWaypoint(newWaypoint, false);
             }
@@ -221,12 +221,12 @@ public final class CommandUtils {
         }
 
         message = message + "]";
-        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, message, true));
+        VoxelConstants.getMinecraft().gui.setScreen(new GuiSelectPlayer(null, message, true));
     }
 
     public static void sendCoordinate(int x, int y, int z) {
         String message = String.format("[x:%s, y:%s, z:%s]", x, y, z);
-        VoxelConstants.getMinecraft().setScreen(new GuiSelectPlayer(null, message, false));
+        VoxelConstants.getMinecraft().gui.setScreen(new GuiSelectPlayer(null, message, false));
     }
 
     public static void teleport(String command) {

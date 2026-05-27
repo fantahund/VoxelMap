@@ -39,7 +39,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         ArrayList<String> knownSubworldNames = new ArrayList<>(this.waypointManager.getKnownSubworldNames());
         if (!this.multiworld && !this.waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isThisMultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
-            VoxelConstants.getMinecraft().setScreen(confirmScreen);
+            VoxelConstants.getMinecraft().gui.setScreen(confirmScreen);
         } else {
             VoxelConstants.getMinecraft().options.setCameraType(CameraType.FIRST_PERSON);
         }
@@ -55,7 +55,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
         int buttonWidth = this.width / buttonsPerRow - 5;
         int xSpacing = (this.width - buttonsPerRow * buttonWidth) / 2;
-        Button cancelBtn = new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(null)).bounds(centerX - 100, this.height - 30, 200, 20).build();
+        Button cancelBtn = new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().gui.setScreen(null)).bounds(centerX - 100, this.height - 30, 200, 20).build();
         this.addRenderableWidget(cancelBtn);
         knownSubworldNames.sort((name1, name2) -> -String.CASE_INSENSITIVE_ORDER.compare(name1, name2));
         int numKnownSubworlds = knownSubworldNames.size();
@@ -99,7 +99,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             this.onClose();
         } else {
             this.multiworld = true;
-            VoxelConstants.getMinecraft().setScreen(this);
+            VoxelConstants.getMinecraft().gui.setScreen(this);
         }
 
     }
@@ -168,6 +168,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     private void editWorld(String subworldNameToEdit) {
-        VoxelConstants.getMinecraft().setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
+        VoxelConstants.getMinecraft().gui.setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
     }
 }

@@ -17,9 +17,12 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.Tab;
+import net.minecraft.client.gui.components.tabs.MenuTabBar;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
@@ -75,7 +78,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     public void init() {
         screenTitle = I18n.get("options.minimap.title");
 
-        tabNavigationBar = TabNavigationBar.builder(tabManager, width).addTabs(
+        tabNavigationBar = MenuTabBar.builder(tabManager, width).addTabs(
                 new OptionsTab(Component.translatable("stat.generalButton"), 0),
                 new OptionsTab(Component.translatable("options.minimap.tab.detailsPerformance"), 1),
                 new OptionsTab(Component.translatable("options.minimap.tab.radar"), 2),
@@ -83,7 +86,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                 new OptionsTab(Component.translatable("options.minimap.tab.worldmap"), 4)).build();
 
         tabNavigationBar.selectTab(tabIndex, false);
-        tabNavigationBar.arrangeElements();
+        tabNavigationBar.arrangeElements(width);
         setFocused(tabNavigationBar);
         addRenderableWidget(tabNavigationBar);
 
@@ -136,8 +139,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
                     relevantOptions = RADAR_SIMPLE_OPTIONS;
                 }
             }
-            case 3 -> minecraft.setScreen(new GuiMinimapControls(this));
-            case 4 -> minecraft.setScreen(new GuiPersistentMapOptions(this));
+            case 3 -> minecraft.gui.setScreen(new GuiMinimapControls(this));
+            case 4 -> minecraft.gui.setScreen(new GuiPersistentMapOptions(this));
         }
 
         if (relevantOptions == null) {
@@ -218,7 +221,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         }
 
         if (relevantOptions == RADAR_FULL_OPTIONS) {
-            mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this, radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
+            mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.gui.setScreen(new GuiMobs(this, radarOptions))).bounds(additionalButtonX, additionalButtonY, 150, 20).build();
             addOptionButton(mobListButton);
         }
 
@@ -376,6 +379,10 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         public void doLayout(ScreenRectangle screenRectangle) {
         }
 
+        @Override
+        public Layout getLayout() {
+            return new GridLayout();
+        }
     }
 
     private void newSeed() {

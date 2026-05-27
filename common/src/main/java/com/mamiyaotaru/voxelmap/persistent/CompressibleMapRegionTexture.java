@@ -11,7 +11,7 @@ import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.GpuFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
@@ -85,7 +85,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
 
         if (texture == null) {
             GpuDevice gpuDevice = RenderSystem.getDevice();
-            this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, MIP_LEVELS + 1);
+            this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, MIP_LEVELS + 1);
             this.textureView = gpuDevice.createTextureView(this.texture, 0, MIP_LEVELS + 1);
 
             Minecraft.getInstance().getTextureManager().register(location, this);

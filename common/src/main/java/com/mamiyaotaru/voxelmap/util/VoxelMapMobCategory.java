@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.OwnableEntity;
@@ -27,7 +28,7 @@ public enum VoxelMapMobCategory {
     }
 
     public static VoxelMapMobCategory forEntityType(EntityType<?> entityType) {
-        if (entityType == EntityType.PLAYER) {
+        if (entityType == EntityTypes.PLAYER) {
             return PLAYER;
         } else if (entityType.getCategory() == MobCategory.MONSTER) {
             return HOSTILE;

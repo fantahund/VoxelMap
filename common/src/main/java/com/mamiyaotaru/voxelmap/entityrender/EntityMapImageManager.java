@@ -47,6 +47,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.fish.Pufferfish;
 import net.minecraft.world.entity.animal.fish.Salmon;
@@ -110,16 +111,16 @@ public class EntityMapImageManager {
         variantDataFactories.clear();
         customMobProperties.clear();
 
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), null, null));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), null, null));
-        addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
-        addVariantDataFactory(new EnderDragonVarintDataFactory(EntityType.ENDER_DRAGON));
-        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
-        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.ZOMBIE_VILLAGER));
-        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityType.TROPICAL_FISH));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), null, null));
+        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), null, null));
+        addVariantDataFactory(new HorseVariantDataFactory(EntityTypes.HORSE));
+        addVariantDataFactory(new EnderDragonVarintDataFactory(EntityTypes.ENDER_DRAGON));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityTypes.VILLAGER));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityTypes.ZOMBIE_VILLAGER));
+        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityTypes.TROPICAL_FISH));
 
-        addArmorHandler(EntityType.SHEEP, new SheepOverlayHandler());
+        addArmorHandler(EntityTypes.SHEEP, new SheepOverlayHandler());
 
         if (VoxelConstants.DEBUG) {
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
@@ -272,7 +273,7 @@ public class EntityMapImageManager {
         renderer.enableCull(false);
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
-        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState);
+        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.gameRenderState().levelRenderState.cameraRenderState);
 
         EntityModel model = getEntityModel(baseRenderer);
         if (model == null) {

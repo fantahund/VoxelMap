@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -12,21 +13,22 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.joml.Vector4fc;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
@@ -57,24 +59,35 @@ public class RenderUtils {
         vertexConsumer.addVertex(matrixStack, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
     }
 
-    public static void drawString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
+    public static void drawString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
         drawString(matrixStack, bufferSource, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    public static void drawString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
+    public static void drawString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
         matrixStack.pushMatrix();
         matrixStack.translate(x, y, z);
-        MINECRAFT.font.drawInBatch(text, 0.0F, 0.0F, color, shadow, matrixStack, bufferSource, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+        drawPreparedText(matrixStack, bufferSource, text.getVisualOrderText(), 0.0F, 0.0F, color, shadow, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
 
         matrixStack.popMatrix();
     }
 
-    public static void drawCenteredString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
+    public static void drawCenteredString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
         drawCenteredString(matrixStack, bufferSource, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    public static void drawCenteredString(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
+    public static void drawCenteredString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
         drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
+    }
+
+    public static void drawPreparedText(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, FormattedCharSequence text, float x, float y, int color, boolean shadow, Font.DisplayMode displayMode, int backgroundColor, int light) {
+        Font.PreparedText preparedText = MINECRAFT.font.prepareText(text, x, y, color, shadow, false, backgroundColor);
+        preparedText.visit(new Font.GlyphVisitor() {
+            @Override
+            public void acceptRenderable(TextRenderable renderable) {
+                VertexConsumer builder = bufferSource.getBuffer(renderable.renderType(displayMode));
+                renderable.render(matrixStack, builder, light, false);
+            }
+        });
     }
 
     public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Runnable runnable) {
@@ -84,7 +97,7 @@ public class RenderUtils {
             return;
         }
 
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -127,7 +140,7 @@ public class RenderUtils {
             renderTarget.resize(windowWidth, windowHeight);
         }
 
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
+        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
         RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
@@ -170,33 +183,40 @@ public class RenderUtils {
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
             GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms().writeTransform(
-                    RenderSystem.getModelViewMatrix(),
+                    RenderSystem.getModelViewMatrixCopy(),
                     new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
                     new Vector3f(),
                     new Matrix4f());
-            GpuBuffer vertexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+            GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
             GpuBuffer indexBuffer;
-            VertexFormat.IndexType indexType;
+            boolean closeIndexBuffer = false;
+            IndexType indexType;
             if (meshData.indexBuffer() == null) {
-                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().mode());
+                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = pipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
+                indexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX, meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
+                closeIndexBuffer = true;
             }
-            OptionalInt colorClear = OptionalInt.of(0x00000000);
+            Optional<Vector4fc> colorClear = Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
             OptionalDouble depthClear = depthTexture == null ? OptionalDouble.empty() : OptionalDouble.of(1.0);
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Immediate Draw", colorTexture, colorClear, depthTexture, depthClear)) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-                renderPass.setVertexBuffer(0, vertexBuffer);
+                renderPass.setVertexBuffer(0, vertexBuffer.slice());
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 renderPass.bindTexture("Sampler0", textureSetup.texure0(), textureSetup.sampler0());
                 renderPass.bindTexture("Sampler1", textureSetup.texure1(), textureSetup.sampler1());
                 renderPass.bindTexture("Sampler2", textureSetup.texure2(), textureSetup.sampler2());
-                renderPass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+                renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
+            } finally {
+                vertexBuffer.close();
+                if (closeIndexBuffer) {
+                    indexBuffer.close();
+                }
             }
         } catch (Exception e) {
             VoxelConstants.getLogger().error("Immediate draw failed. Exception: " + e);

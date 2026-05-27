@@ -1,5 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -8,11 +11,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.textures.TextureFormat;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
@@ -23,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class GLUtils {
-    private static final Tesselator TESSELATOR = new Tesselator(4096);
     private static final Projection BLIT_PROJECTION  = new Projection();
     private static final ProjectionMatrixBuffer BLIT_PROJECTION_MATRIX = new ProjectionMatrixBuffer("VoxelMap Blit Projection Matrix");
     static { BLIT_PROJECTION.setupOrtho(1000.0F, 3000.0F, 1.0F, 1.0F, true); }
@@ -38,7 +38,7 @@ public class GLUtils {
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-            try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
+            try (GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         int pixel = readView.data().getInt((x + y * width) * bytePerPixel);
@@ -77,19 +77,22 @@ public class GLUtils {
         RenderSystem.assertOnRenderThread();
 
         RenderPipeline pipeline = VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST;
-        BufferBuilder bufferBuilder = TESSELATOR.begin(VertexFormat.Mode.QUADS, pipeline.getVertexFormat());
-        bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setUv(u0, v0).setColor(color);
-        bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setUv(u0, v1).setColor(color);
-        bufferBuilder.addVertex(1.0F, 1.0F, 0.0F).setUv(u1, v1).setColor(color);
-        bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setUv(u1, v0).setColor(color);
 
         GpuBufferSlice projection = getBlitProjection();
         TextureSetup textureSetup = TextureSetup.singleTexture(src, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
-        try (MeshData meshData = bufferBuilder.build()) {
-            RenderUtils.drawMeshWithTexture(dst, null, projection, -2000.0F, meshData, pipeline, textureSetup);
-        }
+        try (ByteBufferBuilder byteBufferBuilder = ByteBufferBuilder.exactlySized(pipeline.getVertexFormatBinding(0).getVertexSize() * 4)) {
+            BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, pipeline.getVertexFormatBinding(0));
+            bufferBuilder.addVertex(0.0F, 0.0F, 0.0F).setUv(u0, v0).setColor(color);
+            bufferBuilder.addVertex(0.0F, 1.0F, 0.0F).setUv(u0, v1).setColor(color);
+            bufferBuilder.addVertex(1.0F, 1.0F, 0.0F).setUv(u1, v1).setColor(color);
+            bufferBuilder.addVertex(1.0F, 0.0F, 0.0F).setUv(u1, v0).setColor(color);
 
-        TESSELATOR.clear();
+            try (MeshData meshData = bufferBuilder.build()) {
+                RenderUtils.drawMeshWithTexture(dst, null, projection, -2000.0F, meshData, pipeline, textureSetup);
+            }
+        } catch (Exception e) {
+            VoxelConstants.getLogger().error("Simple blit failed", e);
+        }
     }
 
     private static class TextureCache {
@@ -104,7 +107,7 @@ public class GLUtils {
             return getOrCreate(texture.getWidth(0), texture.getHeight(0), texture.getFormat());
         }
 
-        public static GpuTextureView getOrCreate(int width, int height, TextureFormat format) {
+        public static GpuTextureView getOrCreate(int width, int height, GpuFormat format) {
             RenderSystem.assertOnRenderThread();
             handleCaches();
             long data = ((long) width << 32) | ((long) height << 8) | (format.ordinal() & 0xFFL);

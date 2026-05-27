@@ -27,7 +27,7 @@ public abstract class MixinCamera {
 
     @Inject(method = "alignWithEntity", at = @At("TAIL"))
     private void afterCameraSetup(float partialTicks, CallbackInfo ci) {
-        if (!(minecraft.screen instanceof GuiSubworldsSelect)) {
+        if (!(minecraft.gui.screen() instanceof GuiSubworldsSelect)) {
             yaw = entity().getViewYRot(partialTicks);
         } else {
             float frameDelta = minecraft.getDeltaTracker().getRealtimeDeltaTicks();

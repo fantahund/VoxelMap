@@ -148,7 +148,7 @@ public class VoxelMap implements PreparableReloadListener {
 
         map.onTickInGame(graphics);
         if (passMessage != null) {
-            VoxelConstants.getMinecraft().gui.getChat().addClientSystemMessage(Component.literal(passMessage));
+            VoxelConstants.getMinecraft().gui.hud.getChat().addClientSystemMessage(Component.literal(passMessage));
             passMessage = null;
         }
 

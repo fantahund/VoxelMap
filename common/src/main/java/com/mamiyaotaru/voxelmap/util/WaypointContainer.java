@@ -10,12 +10,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -61,19 +61,19 @@ public class WaypointContainer {
         renderables.sort(Collections.reverseOrder());
     }
 
-    public void renderWaypoints(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+    public void renderWaypoints(float partialTick, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Camera camera) {
         if (waypointManager == null) return;
         if (renderables.isEmpty()) return;
 
         if (options.showWaypointBeacons) {
-            renderWaypointBeams(partialTick, poseStack, bufferSource, camera);
+            renderWaypointBeams(partialTick, poseStack, submitNodeCollector, camera);
         }
         if (options.showWaypointSigns) {
-            renderWaypointSigns(partialTick, poseStack, bufferSource, camera);
+            renderWaypointSigns(partialTick, poseStack, submitNodeCollector, camera);
         }
     }
 
-    public void renderWaypointBeams(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
+    public void renderWaypointBeams(float partialTick, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Camera camera) {
         Vec3 cameraPos = camera.position();
         double bottomOfWorld = VoxelConstants.getPlayer().level().getMinY() - cameraPos.y;
 
@@ -87,12 +87,12 @@ public class WaypointContainer {
             int z = waypoint.getZ();
             double distance = Math.sqrt(waypoint.getDistanceSqToCamera(camera));
 
-            renderBeam(poseStack, bufferSource, waypoint, distance, x - cameraPos.x, bottomOfWorld, z - cameraPos.z);
+            renderBeam(poseStack, submitNodeCollector, waypoint, distance, x - cameraPos.x, bottomOfWorld, z - cameraPos.z);
         }
     }
 
-    public void renderWaypointSigns(float partialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        if (minecraft.options.hideGui) return;
+    public void renderWaypointSigns(float partialTick, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Camera camera) {
+        if (minecraft.gui.hud.isHidden()) return;
 
         Vec3 cameraPos = camera.position();
         sortWaypoints();
@@ -128,9 +128,9 @@ public class WaypointContainer {
             boolean isPointedAt = renderable.getOffset() != INVALID_OFFSET && (shiftDown || renderable == last);
             if (waypointManager.isWaypointHighlight(waypoint)) {
                 // Render base waypoint
-                renderSign(poseStack, bufferSource, waypoint, textureAtlas, isPointedAt, false, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+                renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, false, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
             }
-            renderSign(poseStack, bufferSource, waypoint, textureAtlas, isPointedAt, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+            renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
         }
     }
 
@@ -163,7 +163,7 @@ public class WaypointContainer {
     /**
      * Edited from {@link net.minecraft.client.renderer.blockentity.BeaconRenderer}
      */
-    private void renderBeam(PoseStack poseStack, BufferSource bufferSource, Waypoint waypoint, double distance, double baseX, double baseY, double baseZ) {
+    private void renderBeam(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Waypoint waypoint, double distance, double baseX, double baseY, double baseZ) {
         int height = VoxelConstants.getClientWorld().getHeight();
 
         float spentTime = minecraft.getCameraEntity().tickCount + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
@@ -181,20 +181,19 @@ public class WaypointContainer {
         int beamColor = waypoint.getUnifiedColor(1.0F);
 
         RenderType beamRenderType = RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, false);
-        VertexConsumer beamBuffer = bufferSource.getBuffer(beamRenderType);
-        for (int face = 0; face < 4; ++face) {
-            float x = (face == 0 || face == 3) ? -beamRadius : beamRadius;
-            float z = (face < 2) ? -beamRadius : beamRadius;
-            float x2 = (face < 2) ? -beamRadius : beamRadius;
-            float z2 = (face == 1 || face == 2) ? -beamRadius : beamRadius;
+        submitNodeCollector.submitCustomGeometry(poseStack, beamRenderType, (pose, beamBuffer) -> {
+            for (int face = 0; face < 4; ++face) {
+                float x = (face == 0 || face == 3) ? -beamRadius : beamRadius;
+                float z = (face < 2) ? -beamRadius : beamRadius;
+                float x2 = (face < 2) ? -beamRadius : beamRadius;
+                float z2 = (face == 1 || face == 2) ? -beamRadius : beamRadius;
 
-            beamBuffer.addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMinV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
-            beamBuffer.addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMaxV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
-            beamBuffer.addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMaxV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
-            beamBuffer.addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMinV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
-
-        }
-        bufferSource.endBatch(beamRenderType);
+                beamBuffer.addVertex(pose, x, height, z).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMinV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
+                beamBuffer.addVertex(pose, x, 0.0F, z).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(1.0F, beamMaxV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
+                beamBuffer.addVertex(pose, x2, 0.0F, z2).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMaxV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
+                beamBuffer.addVertex(pose, x2, height, z2).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(0.0F, beamMinV).setColor(beamColor).setOverlay(OVERLAY).setLight(LIGHT);
+            }
+        });
 
         poseStack.popPose();
 
@@ -204,26 +203,25 @@ public class WaypointContainer {
         int glowColor = waypoint.getUnifiedColor(0.125F);
 
         RenderType glowRenderType = RenderTypes.beaconBeam(BeaconRenderer.BEAM_LOCATION, true);
-        VertexConsumer glowBuffer = bufferSource.getBuffer(glowRenderType);
-        for (int face = 0; face < 4; ++face) {
-            float x = (face == 0 || face == 3) ? -glowRadius : glowRadius;
-            float z = (face < 2) ? -glowRadius : glowRadius;
-            float x2 = (face < 2) ? -glowRadius : glowRadius;
-            float z2 = (face == 1 || face == 2) ? -glowRadius : glowRadius;
+        submitNodeCollector.submitCustomGeometry(poseStack, glowRenderType, (pose, glowBuffer) -> {
+            for (int face = 0; face < 4; ++face) {
+                float x = (face == 0 || face == 3) ? -glowRadius : glowRadius;
+                float z = (face < 2) ? -glowRadius : glowRadius;
+                float x2 = (face < 2) ? -glowRadius : glowRadius;
+                float z2 = (face == 1 || face == 2) ? -glowRadius : glowRadius;
 
-            glowBuffer.addVertex(poseStack.last(), x, height, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMinV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
-            glowBuffer.addVertex(poseStack.last(), x, 0.0F, z).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMaxV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
-            glowBuffer.addVertex(poseStack.last(), x2, 0.0F, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMaxV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
-            glowBuffer.addVertex(poseStack.last(), x2, height, z2).setNormal(poseStack.last(), 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMinV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
-
-        }
-        bufferSource.endBatch(glowRenderType);
+                glowBuffer.addVertex(pose, x, height, z).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMinV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
+                glowBuffer.addVertex(pose, x, 0.0F, z).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(1.0F, glowMaxV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
+                glowBuffer.addVertex(pose, x2, 0.0F, z2).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMaxV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
+                glowBuffer.addVertex(pose, x2, height, z2).setNormal(pose, 0.0F, 1.0F, 0.0F).setUv(0.0F, glowMinV).setColor(glowColor).setOverlay(OVERLAY).setLight(LIGHT);
+            }
+        });
 
         poseStack.popPose();
 
     }
 
-    private void renderSign(PoseStack poseStack, BufferSource bufferSource, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, double distance, double baseX, double baseY, double baseZ) {
+    private void renderSign(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, double distance, double baseX, double baseY, double baseZ) {
         String mainLabel = waypoint.name;
         if (isHighlighted) {
             if (waypointManager.isCoordinateHighlight(waypoint)) {
@@ -233,7 +231,7 @@ public class WaypointContainer {
             }
         }
 
-        double maxDistance = minecraft.gameRenderer.getMainCamera().depthFar - 8.0;
+        double maxDistance = minecraft.gameRenderer.mainCamera().depthFar - 8.0;
         double adjustedDistance = distance;
         if (distance > maxDistance) {
             baseX = baseX / distance * maxDistance;
@@ -269,20 +267,10 @@ public class WaypointContainer {
         }
 
         RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(icon.getIdentifier());
-        VertexConsumer vertexIconDepthtest = bufferSource.getBuffer(renderType);
-        vertexIconDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, alpha);
-        vertexIconDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, alpha);
-        vertexIconDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, alpha);
-        vertexIconDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, alpha);
-        bufferSource.endBatch(renderType);
+        submitIcon(submitNodeCollector, poseStack, renderType, icon, width, r, g, b, alpha);
 
         renderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(icon.getIdentifier());
-        VertexConsumer vertexIconNoDepthtest = bufferSource.getBuffer(renderType);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, alphaBehindWall);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, alphaBehindWall);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, alphaBehindWall);
-        vertexIconNoDepthtest.addVertex(poseStack.last(), width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, alphaBehindWall);
-        bufferSource.endBatch(renderType);
+        submitIcon(submitNodeCollector, poseStack, renderType, icon, width, r, g, b, alphaBehindWall);
 
         if (isPointedAt) {
             boolean moveLabelsDown = options.waypointNamesLocation == 2;
@@ -323,60 +311,66 @@ public class WaypointContainer {
             int yPosSubLabel = moveLabelsDown ? 26 : -20;
 
             // Render label backgrounds
+            float labelAlpha = alpha;
             renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-            VertexConsumer vertexTextBackground = bufferSource.getBuffer(renderType);
+            submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexTextBackground) -> {
+                if (renderMainLabel) {
+                    vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, halfWidthMainLabel + 2, yPosMainLabel + 9, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, halfWidthMainLabel + 2, yPosMainLabel - 2, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
 
-            if (renderMainLabel) {
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel + 9, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 2, yPosMainLabel - 2, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
+                    vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, halfWidthMainLabel + 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, halfWidthMainLabel + 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                }
 
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), -halfWidthMainLabel - 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel + 8, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), halfWidthMainLabel + 1, yPosMainLabel - 1, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-            }
+                if (renderSubLabel) {
+                    float left = (-halfWidthSubLabel - 2) * subLabelScale;
+                    float right = (halfWidthSubLabel + 2) * subLabelScale;
+                    float top = (yPosSubLabel - 2) * subLabelScale;
+                    float bottom = (yPosSubLabel + 9) * subLabelScale;
+                    vertexTextBackground.addVertex(pose, left, top, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, left, bottom, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, right, bottom, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, right, top, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
 
-            if (renderSubLabel) {
-                float left = (-halfWidthSubLabel - 2) * subLabelScale;
-                float right = (halfWidthSubLabel + 2) * subLabelScale;
-                float top = (yPosSubLabel - 2) * subLabelScale;
-                float bottom = (yPosSubLabel + 9) * subLabelScale;
-                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * alpha);
-
-                left = (-halfWidthSubLabel - 1) * subLabelScale;
-                right = (halfWidthSubLabel + 1) * subLabelScale;
-                top = (yPosSubLabel - 1) * subLabelScale;
-                bottom = (yPosSubLabel + 8) * subLabelScale;
-                vertexTextBackground.addVertex(poseStack.last(), left, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), left, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), right, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-                vertexTextBackground.addVertex(poseStack.last(), right, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * alpha);
-            }
-
-            bufferSource.endBatch(renderType);
+                    left = (-halfWidthSubLabel - 1) * subLabelScale;
+                    right = (halfWidthSubLabel + 1) * subLabelScale;
+                    top = (yPosSubLabel - 1) * subLabelScale;
+                    bottom = (yPosSubLabel + 8) * subLabelScale;
+                    vertexTextBackground.addVertex(pose, left, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, left, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, right, bottom, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                    vertexTextBackground.addVertex(pose, right, top, 0.0F).setColor(0.0F, 0.0F, 0.0F, 0.15F * labelAlpha);
+                }
+            });
 
             // Render labels
             int textColor = (int) (255.0F * alpha) << 24 | 0x00FFFFFF;
 
             if (renderMainLabel) {
-                minecraft.font.drawInBatch(mainLabel, -halfWidthMainLabel, yPosMainLabel, textColor, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0x00000000, LIGHT);
+                submitNodeCollector.submitText(poseStack, -halfWidthMainLabel, yPosMainLabel, Component.literal(mainLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
             }
 
             if (renderSubLabel) {
                 poseStack.pushPose();
                 poseStack.scale(subLabelScale, subLabelScale, 1.0F);
-                minecraft.font.drawInBatch(subLabel, -halfWidthSubLabel, yPosSubLabel, textColor, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.SEE_THROUGH, 0x00000000, LIGHT);
+                submitNodeCollector.submitText(poseStack, -halfWidthSubLabel, yPosSubLabel, Component.literal(subLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
                 poseStack.popPose();
             }
-
-            bufferSource.endLastBatch();
         }
         poseStack.popPose();
+    }
+
+    private void submitIcon(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, RenderType renderType, Sprite icon, float width, float r, float g, float b, float alpha) {
+        submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+            buffer.addVertex(pose, -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, alpha);
+            buffer.addVertex(pose, -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, alpha);
+            buffer.addVertex(pose, width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, alpha);
+            buffer.addVertex(pose, width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, alpha);
+        });
     }
 
     public static class RenderableWaypoint implements Comparable<RenderableWaypoint> {

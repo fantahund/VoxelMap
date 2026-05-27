@@ -6,11 +6,11 @@ import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import com.mamiyaotaru.voxelmap.util.VoxelMapBufferSource;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -95,7 +95,7 @@ public class Radar extends AbstractRadar {
     }
 
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 

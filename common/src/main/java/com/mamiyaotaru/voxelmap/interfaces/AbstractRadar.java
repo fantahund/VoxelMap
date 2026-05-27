@@ -6,11 +6,12 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
+import com.mamiyaotaru.voxelmap.util.VoxelMapBufferSource;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4fStack;
@@ -35,7 +36,7 @@ public abstract class AbstractRadar {
 
     public abstract void onResourceManagerReload(ResourceManager resourceManager);
 
-    public abstract void renderMapMobs(Matrix4fStack matrixStack, MultiBufferSource.BufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
+    public abstract void renderMapMobs(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
 
     protected abstract void initContact(Contact contact);
 
@@ -152,7 +153,7 @@ public abstract class AbstractRadar {
     }
 
     protected float getEntityMaxHeight(Entity entity) {
-        if (entity.getType() == EntityType.PHANTOM) {
+        if (entity.getType() == EntityTypes.PHANTOM) {
             return 64.0F;
         }
 

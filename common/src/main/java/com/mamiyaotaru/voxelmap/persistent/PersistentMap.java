@@ -156,7 +156,7 @@ public class PersistentMap implements IChangeObserver {
         if (VoxelConstants.getMinecraft().getCameraEntity() == null) {
             return;
         }
-        if (VoxelConstants.getMinecraft().screen == null) {
+        if (VoxelConstants.getMinecraft().gui.screen() == null) {
             this.options.mapX = GameVariableAccessShim.xCoord();
             this.options.mapZ = GameVariableAccessShim.zCoord();
         }
@@ -892,7 +892,7 @@ public class PersistentMap implements IChangeObserver {
                 }
             }
 
-            if (VoxelConstants.getMinecraft().screen != null && VoxelConstants.getMinecraft().screen instanceof GuiPersistentMap) {
+            if (VoxelConstants.getMinecraft().gui.screen() != null && VoxelConstants.getMinecraft().gui.screen() instanceof GuiPersistentMap) {
                 cachedRegion.registerChangeAt(chunkX, chunkZ);
                 cachedRegion.refresh(false);
             } else {
