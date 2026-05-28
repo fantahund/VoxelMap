@@ -73,7 +73,7 @@ public class RenderUtils {
     public static void submitString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
         matrixStack.pushMatrix();
         matrixStack.translate(x, y, z);
-        submitPreparedText(submitNodeCollector, matrixStack, text.getVisualOrderText(), 0.0F, 0.0F, color, shadow, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+        submitPreparedText(submitNodeCollector, matrixStack, text.getVisualOrderText(), 0.0F, 0.0F, color, shadow, Font.DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
 
         matrixStack.popMatrix();
     }
