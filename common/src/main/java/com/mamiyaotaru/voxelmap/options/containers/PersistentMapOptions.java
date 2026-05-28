@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.options.containers;
 
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.fields.BooleanField;
 import com.mamiyaotaru.voxelmap.options.fields.FloatField;
 import com.mamiyaotaru.voxelmap.options.fields.IntegerField;
@@ -62,13 +62,13 @@ public class PersistentMapOptions extends AbstractOptionsContainer {
     }
 
     @Override
-    public void updateOptionsAllowed(MapPermissionsManager permissionsManager) {
-        boolean worldMapAllowed = permissionsManager.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED);
+    public void updateOptionsAllowed(ServerSettingsManager serverSettings) {
+        boolean worldMapAllowed = serverSettings.worldmapAllowed.get();
         for (OptionField<?> option : optionByNames.values()) {
             option.setAllowed(worldMapAllowed);
         }
 
-        boolean waypointsAllowed = permissionsManager.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED);
+        boolean waypointsAllowed = serverSettings.waypointsAllowed.get();
         showWaypoints.setAllowed(showWaypoints.isAllowed() && waypointsAllowed);
         showWaypointNames.setAllowed(showWaypointNames.isAllowed() && waypointsAllowed);
         showDistantWaypoints.setAllowed(showDistantWaypoints.isAllowed() && waypointsAllowed);

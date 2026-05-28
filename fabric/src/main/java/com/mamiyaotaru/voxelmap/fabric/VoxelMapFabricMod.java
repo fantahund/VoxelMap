@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 
-public class VoxelmapFabricMod implements ClientModInitializer {
+public class VoxelMapFabricMod implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {

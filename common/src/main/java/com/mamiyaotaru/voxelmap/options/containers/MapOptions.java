@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.options.containers;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.GuiOptionsScreenMinimap;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.options.fields.BooleanField;
 import com.mamiyaotaru.voxelmap.options.fields.EnumField;
@@ -125,11 +125,11 @@ public class MapOptions extends AbstractOptionsContainer {
     }
 
     @Override
-    public void updateOptionsAllowed(MapPermissionsManager permissionsManager) {
-        hide.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED));
-        inGameWaypoints.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED));
-        showCaves.setAllowed(permissionsManager.getBoolean(MapPermissionsManager.CAVES_ALLOWED));
-        teleportCommand.setAllowed(permissionsManager.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND) == null);
+    public void updateOptionsAllowed(ServerSettingsManager serverSettings) {
+        hide.setAllowed(serverSettings.minimapAllowed.get());
+        inGameWaypoints.setAllowed(serverSettings.waypointsAllowed.get());
+        showCaves.setAllowed(serverSettings.cavesAllowed.get());
+        teleportCommand.setAllowed(serverSettings.serverTeleportCommand.get().isEmpty());
     }
 
     @Override

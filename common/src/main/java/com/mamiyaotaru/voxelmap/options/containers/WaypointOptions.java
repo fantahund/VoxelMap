@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.options.containers;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
 import com.mamiyaotaru.voxelmap.options.fields.BooleanField;
@@ -43,13 +43,13 @@ public class WaypointOptions extends AbstractOptionsContainer {
     }
 
     @Override
-    public void updateOptionsAllowed(MapPermissionsManager permissionsManager) {
-        boolean waypointsAllowed = permissionsManager.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED);
+    public void updateOptionsAllowed(ServerSettingsManager serverSettings) {
+        boolean waypointsAllowed = serverSettings.waypointsAllowed.get();
         for (OptionField<?> option : optionByNames.values()) {
             option.setAllowed(waypointsAllowed);
         }
 
-        deathpoints.setAllowed(deathpoints.isAllowed() && permissionsManager.getBoolean(MapPermissionsManager.DEATH_WAYPOINT_ALLOWED));
+        deathpoints.setAllowed(deathpoints.isAllowed() && serverSettings.deathpointsAllowd.get());
     }
 
     public void setSort(int sort) {

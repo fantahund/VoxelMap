@@ -1,13 +1,12 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
+import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
@@ -803,7 +802,7 @@ public class WaypointManager implements IReloadListener {
     }
 
     public void renderWaypoints(float gameTimeDeltaPartialTick, Matrix4f matrix, Camera camera) {
-        if (VoxelConstants.getVoxelMapInstance().getPermissionsManager().getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED) && this.waypointContainer != null) {
+        if (VoxelConstants.getVoxelMapInstance().getServerSettings().waypointsAllowed.get() && this.waypointContainer != null) {
             this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, matrix, camera);
         }
     }

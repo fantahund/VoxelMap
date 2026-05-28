@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
@@ -14,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 
 public abstract class GuiOptionsScreenMinimap extends GuiScreenMinimap {
+    protected final ServerSettingsManager serverSettings;
     protected final MapOptions mapOptions;
     protected final PersistentMapOptions persistentMapOptions;
     protected final RadarOptions radarOptions;
@@ -24,6 +26,7 @@ public abstract class GuiOptionsScreenMinimap extends GuiScreenMinimap {
     protected GuiOptionsScreenMinimap(Screen parentGui, Component title) {
         super(parentGui, title);
 
+        serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         persistentMapOptions = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
         radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();

@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.options.containers;
 
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 
 import java.io.PrintWriter;
@@ -15,7 +15,7 @@ public abstract class AbstractOptionsContainer {
 
     public abstract void updateOptionsActive();
 
-    public abstract void updateOptionsAllowed(MapPermissionsManager permissionsManager);
+    public abstract void updateOptionsAllowed(ServerSettingsManager serverSettings);
 
     public void loadLine(String[] keyValue) {
         OptionField<?> field;

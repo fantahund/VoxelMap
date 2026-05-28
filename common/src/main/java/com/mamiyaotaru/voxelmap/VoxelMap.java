@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.options.MapOptionsManager;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
@@ -35,10 +35,10 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-public class VoxelMap implements PreparableReloadListener {
+public class VoxelMap implements PreparableReloadListener, Executor {
     private boolean initialized = false;
 
-    private MapPermissionsManager permissionsManager;
+    private ServerSettingsManager serverSettings;
     private MapOptionsManager optionsManager;
     private MapOptions mapOptions;
     private PersistentMapOptions persistentMapOptions;
@@ -69,10 +69,10 @@ public class VoxelMap implements PreparableReloadListener {
     VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
-        permissionsManager = new MapPermissionsManager();
-        permissionsManager.set(MapPermissionsManager.RADAR_ALLOWED, !isFair);
-        permissionsManager.set(MapPermissionsManager.RADAR_MOBS_ALLOWED, !isFair);
-        permissionsManager.set(MapPermissionsManager.RADAR_PLAYERS_ALLOWED, !isFair);
+        serverSettings = new ServerSettingsManager();
+        serverSettings.radarAllowed.set(!isFair);
+        serverSettings.radarMobsAllowed.set(!isFair);
+        serverSettings.radarPlayersAllowed.set(!isFair);
 
         optionsManager = new MapOptionsManager();
         mapOptions = new MapOptions();
@@ -91,21 +91,21 @@ public class VoxelMap implements PreparableReloadListener {
         entityMapImageManager = new EntityMapImageManager();
 
         try {
-            if (permissionsManager.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED)) {
+            if (serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get()) {
                 radar = new Radar();
                 radarSimple = new RadarSimple();
             }
         } catch (RuntimeException e) {
             VoxelConstants.getLogger().error("Failed creating radar {}", e.getLocalizedMessage(), e);
-            permissionsManager.set(MapPermissionsManager.RADAR_ALLOWED, false);
-            permissionsManager.set(MapPermissionsManager.RADAR_MOBS_ALLOWED, false);
-            permissionsManager.set(MapPermissionsManager.RADAR_PLAYERS_ALLOWED, false);
+            serverSettings.radarAllowed.set(false);
+            serverSettings.radarMobsAllowed.set(false);
+            serverSettings.radarPlayersAllowed.set(false);
             radar = null;
             radarSimple = null;
         }
 
         mapOptions.showUnderMenus.set(showUnderMenus);
-        optionsManager.updateOptionsAllowed(permissionsManager, "Initialization");
+        optionsManager.updateOptionsAllowed(serverSettings, "Initialization");
 
         map = new Map();
         persistentMap = new PersistentMap();
@@ -117,6 +117,7 @@ public class VoxelMap implements PreparableReloadListener {
         initialized = true;
     }
 
+    @Override
     public synchronized void execute(Runnable task) {
         if (!initialized) {
             executeQueue.addLast(task);
@@ -196,13 +197,14 @@ public class VoxelMap implements PreparableReloadListener {
             persistentMap.newWorld(world);
             if (world != null) {
                 MapUtils.reset();
-                // send "new" world_id packet
 
-                VoxelConstants.getPacketBridge().sendWorldIDPacket();
+                // send "new" world_id packet
+                VoxelConstants.getPacketBridge().sendWorldIDPacket("");
 
                 if (!worldName.equals(waypointManager.getCurrentWorldName())) {
                     worldName = waypointManager.getCurrentWorldName();
                 }
+
 
                 map.newWorld(world);
                 while (!runOnWorldSet.isEmpty()) {
@@ -222,45 +224,41 @@ public class VoxelMap implements PreparableReloadListener {
             boolean applied = false;
 
             if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
-                permissionsManager.set(MapPermissionsManager.CAVES_ALLOWED, false);
+                serverSettings.cavesAllowed.set(false);
                 VoxelConstants.getLogger().info("Server disabled cavemapping.");
-
                 applied = true;
             }
 
             if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
-                permissionsManager.set(MapPermissionsManager.RADAR_ALLOWED, false);
-                permissionsManager.set(MapPermissionsManager.RADAR_MOBS_ALLOWED, false);
-                permissionsManager.set(MapPermissionsManager.RADAR_PLAYERS_ALLOWED, false);
+                serverSettings.radarAllowed.set(false);
+                serverSettings.radarMobsAllowed.set(false);
+                serverSettings.radarPlayersAllowed.set(false);
                 VoxelConstants.getLogger().info("Server disabled radar.");
-
                 applied = true;
             }
 
             if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
-                permissionsManager.set(MapPermissionsManager.CAVES_ALLOWED, true);
+                serverSettings.cavesAllowed.set(true);
                 VoxelConstants.getLogger().info("Server enabled cavemapping.");
-
                 applied = true;
             }
 
             if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
-                permissionsManager.set(MapPermissionsManager.RADAR_ALLOWED, true);
-                permissionsManager.set(MapPermissionsManager.RADAR_MOBS_ALLOWED, true);
-                permissionsManager.set(MapPermissionsManager.RADAR_PLAYERS_ALLOWED, true);
+                serverSettings.radarAllowed.set(true);
+                serverSettings.radarMobsAllowed.set(true);
+                serverSettings.radarPlayersAllowed.set(true);
                 VoxelConstants.getLogger().info("Server enabled radar.");
-
                 applied = true;
             }
 
             if (applied) {
-                optionsManager.updateOptionsAllowed(permissionsManager, "Permission Message");
+                optionsManager.updateOptionsAllowed(serverSettings, "Permission Message");
             }
         });
     }
 
-    public MapPermissionsManager getPermissionsManager() {
-        return permissionsManager;
+    public ServerSettingsManager getServerSettings() {
+        return serverSettings;
     }
 
     public MapOptionsManager getOptionsManager() {
@@ -353,17 +351,8 @@ public class VoxelMap implements PreparableReloadListener {
 
     public void clearServerSettings() {
         execute(() -> {
-            permissionsManager.set(MapPermissionsManager.SERVER_TELEPORT_COMMAND, null);
-            permissionsManager.set(MapPermissionsManager.MINIMAP_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.WORLDMAP_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.CAVES_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.WAYPOINTS_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.DEATH_WAYPOINT_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.RADAR_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.RADAR_MOBS_ALLOWED, true);
-            permissionsManager.set(MapPermissionsManager.RADAR_PLAYERS_ALLOWED, true);
-
-            optionsManager.updateOptionsAllowed(permissionsManager, "Settings Reset");
+            serverSettings.reset();
+            optionsManager.updateOptionsAllowed(serverSettings, "Settings Reset");
         });
     }
 

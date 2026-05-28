@@ -7,7 +7,7 @@ import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
 public class PersistentMap implements IChangeObserver {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
-    private final MapPermissionsManager permissions;
+    private final ServerSettingsManager serverSettings;
     private final MapOptions mapOptions;
     private final PersistentMapOptions options;
     private final ColorManager colorManager;
@@ -87,7 +87,7 @@ public class PersistentMap implements IChangeObserver {
             .thenComparingDouble(region -> getDistanceSq(region.getX(), region.getZ(), region.getWidth()));
 
     public PersistentMap() {
-        this.permissions = voxelMap.getPermissionsManager();
+        this.serverSettings = voxelMap.getServerSettings();
         this.mapOptions = voxelMap.getMapOptions();
         this.options = voxelMap.getPersistentMapOptions();
         this.colorManager = voxelMap.getColorManager();
@@ -203,7 +203,7 @@ public class PersistentMap implements IChangeObserver {
             chunkCache.centerChunks(playerPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            if (!permissions.getBoolean(MapPermissionsManager.CAVES_ALLOWED) || !options.showCaves.get()) {
+            if (!serverSettings.cavesAllowed.get() || !options.showCaves.get()) {
                 isUnderground = false;
             } else {
                 playerPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
@@ -805,7 +805,7 @@ public class PersistentMap implements IChangeObserver {
 
     @Override
     public void processChunk(LevelChunk chunk) {
-        if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED) && !skipProcessing) {
+        if (serverSettings.worldmapAllowed.get() && !skipProcessing) {
             forAllLayers(layer -> layer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks())));
         }
     }

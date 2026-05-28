@@ -1,28 +1,30 @@
 package com.mamiyaotaru.voxelmap.forge;
 
-import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
+import com.mamiyaotaru.voxelmap.packets.WorldIdPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraftforge.event.network.CustomPayloadEvent;
+import net.minecraftforge.network.Channel;
 import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.SimpleChannel;
 
 public class ForgeWorldIdPacketHandler {
-    public static final SimpleChannel WORLD_ID = ChannelBuilder
-            .named(WorldIdS2C.PACKET_ID.id())
-            .networkProtocolVersion(1)
-            .clientAcceptedVersions((status, version) -> true)
-            .serverAcceptedVersions((status, version) -> true)
-            .simpleChannel();
+    private static Channel<CustomPacketPayload> channel;
 
     public static void register() {
-        WORLD_ID.messageBuilder(WorldIdS2C.class, 0)
-                .encoder(WorldIdS2C::write)
-                .decoder(WorldIdS2C::new)
-                .consumerMainThread(ForgeWorldIdPacketHandler::handle)
-                .add();
+        channel = ChannelBuilder
+                .named(WorldIdPayload.PACKET_ID.id())
+                .optional()
+                .payloadChannel()
+                    .any()
+                        .bidirectional()
+                            .addMain(WorldIdPayload.PACKET_ID, WorldIdPayload.PACKET_CODEC, ForgeWorldIdPacketHandler::receive)
+                .build();
     }
 
-    private static void handle(WorldIdS2C data, CustomPayloadEvent.Context context) {
-        context.enqueueWork(() -> WorldIdS2C.updateWorld(data));
-        context.setPacketHandled(true);
+    public static Channel<CustomPacketPayload> getChannel() {
+        return channel;
+    }
+
+    private static void receive(WorldIdPayload data, CustomPayloadEvent.Context context) {
+        WorldIdPayload.parsePacket(data);
     }
 }

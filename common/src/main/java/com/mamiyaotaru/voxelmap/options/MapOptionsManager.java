@@ -33,15 +33,15 @@ public class MapOptionsManager {
         }
     }
 
-    public void updateOptionsAllowed(MapPermissionsManager permissionsManager, String source) {
+    public void updateOptionsAllowed(ServerSettingsManager serverSettings, String source) {
         if (!VoxelConstants.getVoxelMapInstance().isRunning()) {
             return;
         }
 
         for (AbstractOptionsContainer settings : containers) {
-            settings.updateOptionsAllowed(permissionsManager);
+            settings.updateOptionsAllowed(serverSettings);
         }
-        VoxelConstants.getLogger().info("Options updated to match permissions. (Source: {})", source);
+        VoxelConstants.getLogger().info("Options updated to match server settings. (Source: {})", source);
     }
 
     public void loadAll() {

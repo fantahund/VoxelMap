@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumRadar;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 public abstract class AbstractRadar implements IReloadListener {
     protected final Minecraft minecraft = Minecraft.getInstance();
-    protected final MapPermissionsManager permissions;
+    protected final ServerSettingsManager serverSettings;
     protected final MapOptions mapOptions;
     protected final RadarOptions radarOptions;
 
@@ -30,7 +30,7 @@ public abstract class AbstractRadar implements IReloadListener {
     private int calculateMobsPart;
 
     public AbstractRadar() {
-        permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
 
@@ -44,7 +44,7 @@ public abstract class AbstractRadar implements IReloadListener {
     public void onTickInGame(Matrix4fStack matrixStack, MinimapContext minimapContext) {
         this.minimapContext = minimapContext;
 
-        if (permissions.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED)) {
+        if (serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get()) {
             if (timer > 15) {
                 calculateMobs();
                 timer = 0;
@@ -147,8 +147,8 @@ public abstract class AbstractRadar implements IReloadListener {
             return false;
         }
 
-        boolean playersAllowed = permissions.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED);
-        boolean mobsAllowed = permissions.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED);
+        boolean playersAllowed = serverSettings.radarAllowed.get() || serverSettings.radarPlayersAllowed.get();
+        boolean mobsAllowed = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get();
 
         return switch (VoxelMapMobCategory.forEntity(entity)) {
             case PLAYER -> playersAllowed;

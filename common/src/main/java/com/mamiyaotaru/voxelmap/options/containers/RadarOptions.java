@@ -1,8 +1,7 @@
 package com.mamiyaotaru.voxelmap.options.containers;
 
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.GuiOptionsScreenMinimap;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumRadar;
 import com.mamiyaotaru.voxelmap.options.fields.BooleanField;
 import com.mamiyaotaru.voxelmap.options.fields.EnumField;
@@ -76,18 +75,18 @@ public class RadarOptions extends AbstractOptionsContainer {
     }
 
     @Override
-    public void updateOptionsAllowed(MapPermissionsManager permissionsManager) {
-        boolean radarAllowed = permissionsManager.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED);
+    public void updateOptionsAllowed(ServerSettingsManager serverSettings) {
+        boolean radarAllowed = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get();
         for (OptionField<?> option : optionByNames.values()) {
             option.setAllowed(radarAllowed);
         }
 
-        boolean mobsAllowed = permissionsManager.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED);
+        boolean mobsAllowed = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get();
         showMobs.setAllowed(showMobs.isAllowed() && mobsAllowed);
         showMobNames.setAllowed(showMobNames.isAllowed() && mobsAllowed);
         showMobHelmets.setAllowed(showMobHelmets.isAllowed() && mobsAllowed);
 
-        boolean playersAllowed = permissionsManager.anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED);
+        boolean playersAllowed = serverSettings.radarAllowed.get() || serverSettings.radarPlayersAllowed.get();
         showPlayers.setAllowed(showPlayers.isAllowed() && playersAllowed);
         showPlayerNames.setAllowed(showPlayerNames.isAllowed() && playersAllowed);
         showPlayerHelmets.setAllowed(showPlayerHelmets.isAllowed() && playersAllowed);

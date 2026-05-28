@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
@@ -164,18 +164,18 @@ public final class VoxelConstants {
     }
 
     public static void playerRunTeleportCommand(double x, double y, double z) {
-        MapPermissionsManager permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        ServerSettingsManager serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        String cmd = permissions.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND) == null ? mapOptions.teleportCommand.get() : permissions.getString(MapPermissionsManager.SERVER_TELEPORT_COMMAND);
+        String cmd = serverSettings.serverTeleportCommand.get().isEmpty() ? mapOptions.teleportCommand.get() : serverSettings.serverTeleportCommand.get();
         cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
         VoxelConstants.getPlayer().connection.sendCommand(cmd);
     }
 
     public static int moveScoreboard(int bottomX, int entriesHeight) {
-        MapPermissionsManager permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        ServerSettingsManager serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (!permissions.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED) || mapOptions.hide.get() || mapOptions.mapCorner.get() != OptionEnumMinimap.Location.TOP_RIGHT || !mapOptions.moveScoreboardBelowMap.get() || !Double.isFinite(unscaledHeight)) {
+        if (!serverSettings.minimapAllowed.get() || mapOptions.hide.get() || mapOptions.mapCorner.get() != OptionEnumMinimap.Location.TOP_RIGHT || !mapOptions.moveScoreboardBelowMap.get() || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...

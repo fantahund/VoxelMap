@@ -6,13 +6,13 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 
-@Mod(value = "voxelmap", dist = Dist.CLIENT)
-public class VoxelmapNeoForgeMod {
+@Mod(value = VoxelConstants.MOD_ID, dist = Dist.CLIENT)
+public class VoxelMapNeoForgeMod {
 
     private static IEventBus modEventBus;
 
-    public VoxelmapNeoForgeMod(IEventBus modEventBus, ModContainer container) {
-        VoxelmapNeoForgeMod.modEventBus = modEventBus;
+    public VoxelMapNeoForgeMod(IEventBus modEventBus, ModContainer container) {
+        VoxelMapNeoForgeMod.modEventBus = modEventBus;
         VoxelConstants.setModVersion(container.getModInfo().getVersion().toString());
         VoxelConstants.setEvents(new NeoForgeEvents());
         VoxelConstants.setPacketBridge(new NeoForgePacketBridge());

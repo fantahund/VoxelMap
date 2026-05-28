@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import com.mamiyaotaru.voxelmap.options.fields.StringField;
 import net.minecraft.client.gui.GuiGraphics;
@@ -166,7 +166,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
             }
             case TAB_RADAR -> {
                 AbstractWidget mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this))).bounds(widgetX, widgetY, 150, 20).build();
-                mobListButton.active = VoxelConstants.getVoxelMapInstance().getPermissionsManager().anyAllowed(MapPermissionsManager.RADAR_ALLOWED, MapPermissionsManager.RADAR_MOBS_ALLOWED, MapPermissionsManager.RADAR_PLAYERS_ALLOWED);
+                mobListButton.active = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get();
 
                 addOptionWidget(mobListButton);
             }

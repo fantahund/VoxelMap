@@ -6,7 +6,7 @@ import com.mamiyaotaru.voxelmap.gui.GuiWelcomeScreen;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
@@ -81,7 +81,7 @@ import java.util.TreeSet;
 
 public class Map implements Runnable, IChangeObserver, IReloadListener {
     private final Minecraft minecraft = Minecraft.getInstance();
-    private final MapPermissionsManager permissions;
+    private final ServerSettingsManager serverSettings;
     private final MapOptions options;
     private final WaypointOptions waypointOptions;
     private final ColorManager colorManager;
@@ -172,7 +172,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     private final VoxelMapRenderTarget finalMapRenderTarget; // Used for minimap rendering after masking
 
     public Map() {
-        this.permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        this.serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.waypointOptions = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
@@ -258,7 +258,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     }
 
     private boolean isMapEnabled() {
-        return !options.hide.get() && permissions.getBoolean(MapPermissionsManager.MINIMAP_ALLOWED);
+        return !options.hide.get() && serverSettings.minimapAllowed.get();
     }
 
     private boolean isRotationEnabled() {
@@ -377,7 +377,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             if (options.keyBindMinimapToggle.consumeClick()) {
                 options.hide.toggle();
             }
-            if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED)) {
+            if (serverSettings.waypointsAllowed.get()) {
                 if (options.keyBindWaypointMenu.consumeClick()) {
                     minecraft.setScreen(new GuiWaypoints(null));
                 }
@@ -400,7 +400,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 }
             }
         } else {
-            if (permissions.getBoolean(MapPermissionsManager.DEATH_WAYPOINT_ALLOWED)) {
+            if (serverSettings.deathpointsAllowd.get()) {
                 if (minecraft.screen instanceof DeathScreen && !(lastGuiScreen instanceof DeathScreen)) {
                     waypointManager.handleDeath();
                 }
@@ -749,7 +749,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         MutableBlockPos blockPos = MutableBlockPosCache.get();
         blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getMaxY() - 1), world.getMinY()), this.lastZ);
-        boolean caves = permissions.getBoolean(MapPermissionsManager.CAVES_ALLOWED) && MapUtils.isUnderground(world, blockPos, currentY);
+        boolean caves = serverSettings.cavesAllowed.get() && MapUtils.isUnderground(world, blockPos, currentY);
         MutableBlockPosCache.release(blockPos);
 
         boolean beneathRendering = caves;
@@ -833,7 +833,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         MutableBlockPos blockPos = MutableBlockPosCache.get();
         blockPos.setXYZ(this.lastX, Math.max(Math.min(GameVariableAccessShim.yCoord(), world.getMaxY()), world.getMinY()), this.lastZ);
         int currentY = GameVariableAccessShim.yCoord();
-        boolean caves = permissions.getBoolean(MapPermissionsManager.CAVES_ALLOWED) && MapUtils.isUnderground(world, blockPos, currentY);
+        boolean caves = serverSettings.cavesAllowed.get() && MapUtils.isUnderground(world, blockPos, currentY);
         MutableBlockPosCache.release(blockPos);
 
         int zoom = this.zoom;
@@ -1540,7 +1540,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
 
-        if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED)) {
+        if (serverSettings.waypointsAllowed.get()) {
             TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
             RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas);
             for (Waypoint waypoint : waypointManager.getWaypoints()) {

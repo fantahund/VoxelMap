@@ -11,7 +11,7 @@ import com.mamiyaotaru.voxelmap.gui.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.gui.widgets.Popup;
 import com.mamiyaotaru.voxelmap.gui.widgets.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import com.mamiyaotaru.voxelmap.options.MapPermissionsManager;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
@@ -61,7 +61,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Minecraft minecraft = Minecraft.getInstance();
-    private final MapPermissionsManager permissions;
+    private final ServerSettingsManager serverSettings;
     private final MapOptions mapOptions;
     private final PersistentMapOptions options;
     private final PersistentMap persistentMap;
@@ -157,7 +157,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
         dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
-        permissions = VoxelConstants.getVoxelMapInstance().getPermissionsManager();
+        serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         persistentMap = VoxelConstants.getVoxelMapInstance().getPersistentMap();
@@ -339,7 +339,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
             double mouseX = mouseButtonEvent.x();
             double mouseY = mouseButtonEvent.y();
-            if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED)) {
+            if (serverSettings.worldmapAllowed.get()) {
                 createPopup((int) mouseX, (int) mouseY, (int) getMouseDirectX(), (int) getMouseDirectY());
             }
         }
@@ -499,7 +499,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        buttonWaypoints.active = permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED);
+        buttonWaypoints.active = serverSettings.waypointsAllowed.get();
 
         guiGraphics.fill(0, 0, getWidth(), getHeight(), 0xFF000000);
 
@@ -567,7 +567,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
         matrixStack.scale(mapToGui, mapToGui, 1.0F);
 
-        if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED)) {
+        if (serverSettings.worldmapAllowed.get()) {
             for (CachedRegion region : regionsToDisplay) {
                 if (region != null) {
                     AbstractTexture image = region.getMapImage(zoom);
@@ -613,7 +613,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         overlayBackground(matrixStack, bottom, getHeight());
 
         Waypoint currentlyHovered = null;
-        if (permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED) && options.showWaypoints.get()) {
+        if (serverSettings.waypointsAllowed.get() && options.showWaypoints.get()) {
             TextureAtlas textureAtlas = waypointManager.getTextureAtlas();
             RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas);
 
@@ -674,7 +674,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             switchToMouseInput();
         }
 
-        if (permissions.getBoolean(MapPermissionsManager.WORLDMAP_ALLOWED)) {
+        if (serverSettings.worldmapAllowed.get()) {
             guiGraphics.drawCenteredString(getFont(), screenTitle, getWidth() / 2, 16, 0xFFFFFFFF);
             int x = (int) Math.floor(cursorCoordX);
             int z = (int) Math.floor(cursorCoordZ);
@@ -985,9 +985,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             entries.add(entry);
             entry = new Popup.PopupEntry(I18n.get(selectedWaypoint != waypointManager.getHighlightedWaypoint() ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, true);
         } else {
-            entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newWaypoint"), 0, true, permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED));
+            entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.newWaypoint"), 0, true, serverSettings.waypointsAllowed.get());
             entries.add(entry);
-            entry = new Popup.PopupEntry(I18n.get(selectedWaypoint == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED));
+            entry = new Popup.PopupEntry(I18n.get(selectedWaypoint == null ? "minimap.waypoints.highlight" : "minimap.waypoints.removeHighlight"), 1, true, serverSettings.waypointsAllowed.get());
         }
         entries.add(entry);
         entry = new Popup.PopupEntry(I18n.get("minimap.waypoints.teleportTo"), 3, true, true);
@@ -1002,7 +1002,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private Waypoint getHoveredWaypoint() {
-        return permissions.getBoolean(MapPermissionsManager.WAYPOINTS_ALLOWED) ? hoverdWaypoint : null;
+        return serverSettings.waypointsAllowed.get() ? hoverdWaypoint : null;
     }
 
     @Override
