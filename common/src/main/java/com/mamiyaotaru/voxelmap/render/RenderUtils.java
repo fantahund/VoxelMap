@@ -40,6 +40,7 @@ import org.joml.Vector4f;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -58,16 +59,9 @@ public class RenderUtils {
     private static TextureSetup boundTexture;
     private static RenderPipeline pipeline;
     private static BufferBuilder bufferBuilder;
-    private static GpuBuffer immediateDrawVertexBuffer;
-    private static GpuBuffer immediateDrawIndexBuffer;
 
-    private static final GpuBufferSlice[] PROJECTION_MATRIX_STACK = new GpuBufferSlice[16];
-    private static final ProjectionType[] PROJECTION_TYPE_STACK = new ProjectionType[16];
-    private static int projectionMatrixCount;
-
-    private static final GpuTextureView[] COLOR_TEXTURE_OVERRIDE_STACK = new GpuTextureView[16];
-    private static final GpuTextureView[] DEPTH_TEXTURE_OVERRIDE_STACK = new GpuTextureView[16];
-    private static int renderTargetCount;
+    private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
+    private static final ArrayDeque<RenderTargetState> RENDER_TARGET_STACK = new ArrayDeque<>();
 
     public static boolean hasFlippedTexture() {
         return !VoxelConstants.hasVulkanMod();
@@ -181,7 +175,7 @@ public class RenderUtils {
                 return;
             }
             GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
-            GpuBuffer vertexBuffer = uploadImmediateVertexBuffer(pipeline.getVertexFormat(), meshData.vertexBuffer());
+            GpuBuffer vertexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -189,7 +183,7 @@ public class RenderUtils {
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = uploadImmediateIndexBuffer(pipeline.getVertexFormat(), meshData.indexBuffer());
+                indexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
             GpuTextureView outputColorTexture = RenderSystem.outputColorTextureOverride != null ? RenderSystem.outputColorTextureOverride : MINECRAFT.getMainRenderTarget().getColorTextureView();
@@ -223,32 +217,6 @@ public class RenderUtils {
         }
     }
 
-    public static GpuBuffer uploadImmediateVertexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
-        RenderSystem.assertOnRenderThread();
-        if (!VoxelConstants.hasVulkanMod()) {
-            return vertexFormat.uploadImmediateVertexBuffer(buffer);
-        } else {
-            if (immediateDrawVertexBuffer != null) {
-                immediateDrawVertexBuffer.close();
-            }
-            immediateDrawVertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST, buffer);
-            return immediateDrawVertexBuffer;
-        }
-    }
-
-    public static GpuBuffer uploadImmediateIndexBuffer(VertexFormat vertexFormat, ByteBuffer buffer) {
-        RenderSystem.assertOnRenderThread();
-        if (!VoxelConstants.hasVulkanMod()) {
-            return vertexFormat.uploadImmediateIndexBuffer(buffer);
-        } else {
-            if (immediateDrawIndexBuffer != null) {
-                immediateDrawIndexBuffer.close();
-            }
-            immediateDrawIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX | GpuBuffer.USAGE_COPY_DST, buffer);
-            return immediateDrawIndexBuffer;
-        }
-    }
-
     public static BufferedImage readTextureContentsToBufferedImage(GpuTexture gpuTexture) {
         RenderSystem.assertOnRenderThread();
         int bytePerPixel = gpuTexture.getFormat().pixelSize();
@@ -276,9 +244,8 @@ public class RenderUtils {
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
         RenderSystem.assertOnRenderThread();
-        PROJECTION_MATRIX_STACK[projectionMatrixCount] = RenderSystem.getProjectionMatrixBuffer();
-        PROJECTION_TYPE_STACK[projectionMatrixCount] = RenderSystem.getProjectionType();
-        projectionMatrixCount++;
+        ProjectionState projectionState = new ProjectionState(RenderSystem.getProjectionMatrixBuffer(), RenderSystem.getProjectionType());
+        PROJECTION_STACK.push(projectionState);
         RenderSystem.setProjectionMatrix(matrix, type);
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
@@ -288,36 +255,38 @@ public class RenderUtils {
     public static void restoreProjectionMatrix() {
         RenderSystem.assertOnRenderThread();
         RenderSystem.getModelViewStack().popMatrix();
-        projectionMatrixCount--;
-        GpuBufferSlice matrix = PROJECTION_MATRIX_STACK[projectionMatrixCount];
-        ProjectionType type = PROJECTION_TYPE_STACK[projectionMatrixCount];
-        RenderSystem.setProjectionMatrix(matrix, type);
+        ProjectionState projectionState = PROJECTION_STACK.pop();
+        RenderSystem.setProjectionMatrix(projectionState.matrix(), projectionState.type());
     }
 
-    public static void setRenderTarget(RenderTarget renderTarget, boolean clear) {
+    public static void setRenderTarget(RenderTarget renderTarget) {
         RenderSystem.assertOnRenderThread();
-        if (clear) {
-            CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-            if (renderTarget.getColorTexture() != null) {
-                commandEncoder.clearColorTexture(renderTarget.getColorTexture(), 0x00000000);
-            }
-            if (renderTarget.getDepthTexture() != null) {
-                commandEncoder.clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
-            }
-        }
-        COLOR_TEXTURE_OVERRIDE_STACK[renderTargetCount] = RenderSystem.outputColorTextureOverride;
-        DEPTH_TEXTURE_OVERRIDE_STACK[renderTargetCount] = RenderSystem.outputDepthTextureOverride;
-        renderTargetCount++;
+        RenderTargetState renderTargetState = new RenderTargetState(RenderSystem.outputColorTextureOverride, RenderSystem.outputDepthTextureOverride);
+        RENDER_TARGET_STACK.push(renderTargetState);
         RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
         RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
     }
 
     public static void restoreRenderTarget() {
         RenderSystem.assertOnRenderThread();
-        renderTargetCount--;
-        GpuTextureView colorTextureOverride = COLOR_TEXTURE_OVERRIDE_STACK[renderTargetCount];
-        GpuTextureView depthTextureOverride = DEPTH_TEXTURE_OVERRIDE_STACK[renderTargetCount];
-        RenderSystem.outputColorTextureOverride = colorTextureOverride;
-        RenderSystem.outputDepthTextureOverride = depthTextureOverride;
+        RenderTargetState renderTargetState = RENDER_TARGET_STACK.pop();
+        RenderSystem.outputColorTextureOverride = renderTargetState.color();
+        RenderSystem.outputDepthTextureOverride = renderTargetState.depth();
+    }
+
+    public static void clearRenderTarget(RenderTarget renderTarget, int colorClear, double depthClear) {
+        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+        if (renderTarget.getColorTexture() != null) {
+            commandEncoder.clearColorTexture(renderTarget.getColorTexture(), colorClear);
+        }
+        if (renderTarget.getDepthTexture() != null) {
+            commandEncoder.clearDepthTexture(renderTarget.getDepthTexture(), depthClear);
+        }
+    }
+
+    static record ProjectionState(GpuBufferSlice matrix, ProjectionType type) {
+    }
+
+    static record RenderTargetState(GpuTextureView color, GpuTextureView depth) {
     }
 }

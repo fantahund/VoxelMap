@@ -123,7 +123,7 @@ public class EntityImageRenderer {
                 return null;
             }
 
-            GpuBuffer vertexBuffer = RenderUtils.uploadImmediateVertexBuffer(pipeline.getVertexFormat(), meshData.vertexBuffer());
+            GpuBuffer vertexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
             GpuBuffer indexBuffer;
             VertexFormat.IndexType indexType;
             if (meshData.indexBuffer() == null) {
@@ -131,7 +131,7 @@ public class EntityImageRenderer {
                 indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
                 indexType = autoStorageIndexBuffer.type();
             } else {
-                indexBuffer = RenderUtils.uploadImmediateIndexBuffer(pipeline.getVertexFormat(), meshData.indexBuffer());
+                indexBuffer = pipeline.getVertexFormat().uploadImmediateIndexBuffer(meshData.indexBuffer());
                 indexType = meshData.drawState().indexType();
             }
 

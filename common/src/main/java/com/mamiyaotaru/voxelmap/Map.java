@@ -656,7 +656,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         );
 
         RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget(), true);
+        RenderUtils.clearRenderTarget(RenderUtils.getFullscreenRenderTarget(), 0x00000000, 1.0);
+        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget());
         Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
         matrixStack.pushMatrix();
         matrixStack.identity();
@@ -1482,7 +1483,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(256.0F, 256.0F, 0.0F);
 
         // Draw map, radar, etc.
-        RenderUtils.setRenderTarget(baseMapRenderTarget, true);
+        RenderUtils.clearRenderTarget(baseMapRenderTarget, 0x00000000, 1.0);
+        RenderUtils.setRenderTarget(baseMapRenderTarget);
 
         float scale = getMapImageScale();
         float multi = (float) (1.0 / this.zoomScale);
@@ -1510,7 +1512,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         RenderUtils.restoreRenderTarget();
 
         // Masking the drawn map
-        RenderUtils.setRenderTarget(finalMapRenderTarget, true);
+        RenderUtils.clearRenderTarget(finalMapRenderTarget, 0x00000000, 1.0);
+        RenderUtils.setRenderTarget(finalMapRenderTarget);
 
         RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, options.squareMap.get() ? resourceSquareMapStencil : resourceRoundMapStencil);
         RenderUtils.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);

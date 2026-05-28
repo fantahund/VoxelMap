@@ -558,7 +558,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         RenderUtils.setProjectionMatrix(mapProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget(), true);
+        RenderUtils.clearRenderTarget(RenderUtils.getFullscreenRenderTarget(), 0x00000000, 1.0);
+        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget());
         Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
         matrixStack.pushMatrix();
         matrixStack.translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui, 0.0F);
