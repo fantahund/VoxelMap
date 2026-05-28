@@ -12,13 +12,16 @@ import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
@@ -29,6 +32,7 @@ import org.joml.Vector4fc;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.function.Consumer;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
@@ -44,53 +48,55 @@ public class RenderUtils {
         return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, int color) {
-        drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+    public static void submitTexturedModalRect(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, RenderType renderType, float x, float y, float z, float width, float height, int color) {
+        submitTexturedModalRect(submitNodeCollector, matrixStack, renderType, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, Sprite sprite, float x, float y, float z, float width, float height, int color) {
-        drawTexturedModalRect(matrixStack, vertexConsumer, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
+    public static void submitTexturedModalRect(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, RenderType renderType, Sprite sprite, float x, float y, float z, float width, float height, int color) {
+        submitTexturedModalRect(submitNodeCollector, matrixStack, renderType, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
     }
 
-    public static void drawTexturedModalRect(Matrix4fStack matrixStack, VertexConsumer vertexConsumer, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
-        vertexConsumer.addVertex(matrixStack, x + 0.0F, y + 0.0F, z).setUv(u0, v0).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x + 0.0F, y + height, z).setUv(u0, v1).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x + width, y + height, z).setUv(u1, v1).setColor(color);
-        vertexConsumer.addVertex(matrixStack, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
+    public static void submitTexturedModalRect(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, RenderType renderType, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
+        PoseStack poseStack = poseStackFor(matrixStack);
+        submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexConsumer) -> {
+            vertexConsumer.addVertex(pose, x + 0.0F, y + 0.0F, z).setUv(u0, v0).setColor(color);
+            vertexConsumer.addVertex(pose, x + 0.0F, y + height, z).setUv(u0, v1).setColor(color);
+            vertexConsumer.addVertex(pose, x + width, y + height, z).setUv(u1, v1).setColor(color);
+            vertexConsumer.addVertex(pose, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
+        });
     }
 
-    public static void drawString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
-        drawString(matrixStack, bufferSource, Component.nullToEmpty(text), x, y, z, color, shadow);
+    public static void submitString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
+        submitString(submitNodeCollector, matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    public static void drawString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
+    public static void submitString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
         matrixStack.pushMatrix();
         matrixStack.translate(x, y, z);
-        drawPreparedText(matrixStack, bufferSource, text.getVisualOrderText(), 0.0F, 0.0F, color, shadow, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
+        submitPreparedText(submitNodeCollector, matrixStack, text.getVisualOrderText(), 0.0F, 0.0F, color, shadow, Font.DisplayMode.NORMAL, 0, 0x00F000F0);
 
         matrixStack.popMatrix();
     }
 
-    public static void drawCenteredString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, String text, float x, float y, float z, int color, boolean shadow) {
-        drawCenteredString(matrixStack, bufferSource, Component.nullToEmpty(text), x, y, z, color, shadow);
+    public static void submitCenteredString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
+        submitCenteredString(submitNodeCollector, matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
     }
 
-    public static void drawCenteredString(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Component text, float x, float y, float z, int color, boolean shadow) {
-        drawString(matrixStack, bufferSource, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
+    public static void submitCenteredString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
+        submitString(submitNodeCollector, matrixStack, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
     }
 
-    public static void drawPreparedText(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, FormattedCharSequence text, float x, float y, int color, boolean shadow, Font.DisplayMode displayMode, int backgroundColor, int light) {
-        Font.PreparedText preparedText = MINECRAFT.font.prepareText(text, x, y, color, shadow, false, backgroundColor);
-        preparedText.visit(new Font.GlyphVisitor() {
-            @Override
-            public void acceptRenderable(TextRenderable renderable) {
-                VertexConsumer builder = bufferSource.getBuffer(renderable.renderType(displayMode));
-                renderable.render(matrixStack, builder, light, false);
-            }
-        });
+    public static void submitPreparedText(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, FormattedCharSequence text, float x, float y, int color, boolean shadow, Font.DisplayMode displayMode, int backgroundColor, int light) {
+        submitNodeCollector.submitText(poseStackFor(matrixStack), x, y, text, shadow, displayMode, light, color, backgroundColor, 0);
     }
 
-    public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Runnable runnable) {
+    private static PoseStack poseStackFor(Matrix4fStack matrixStack) {
+        PoseStack poseStack = new PoseStack();
+        poseStack.last().pose().set(matrixStack);
+        return poseStack;
+    }
+
+    public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Consumer<SubmitContext> submitter) {
         RenderSystem.assertOnRenderThread();
 
         if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
@@ -113,7 +119,9 @@ public class RenderUtils {
             RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
             RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
 
-            runnable.run();
+            SubmitContext context = new SubmitContext();
+            submitter.accept(context);
+            context.flush();
         } catch (Exception e) {
             VoxelConstants.getLogger().error("Failed to render with custom projection. Exception: " + e);
         } finally {
@@ -126,7 +134,7 @@ public class RenderUtils {
         GLUtils.flipTexture(renderTarget.getColorTextureView(), false, true);
     }
 
-    public static void renderWithFullscreenProjection(RenderTarget renderTarget, Runnable runnable) {
+    public static void renderWithFullscreenProjection(RenderTarget renderTarget, Consumer<SubmitContext> submitter) {
         RenderSystem.assertOnRenderThread();
 
         if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
@@ -157,7 +165,9 @@ public class RenderUtils {
             RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
             RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
 
-            runnable.run();
+            SubmitContext context = new SubmitContext();
+            submitter.accept(context);
+            context.flush();
         } catch (Exception e) {
             VoxelConstants.getLogger().error("Failed to render with fullscreen projection. Exception: " + e);
         } finally {
@@ -223,6 +233,23 @@ public class RenderUtils {
         } finally {
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
+        }
+    }
+
+    public static class SubmitContext {
+        private SubmitNodeStorage storage = new SubmitNodeStorage();
+
+        public SubmitNodeCollector collector() {
+            return storage;
+        }
+
+        public OrderedSubmitNodeCollector order(int order) {
+            return storage.order(order);
+        }
+
+        public void flush() {
+            MINECRAFT.gameRenderer.featureRenderDispatcher().renderAllFeatures(storage);
+            storage = new SubmitNodeStorage();
         }
     }
 }

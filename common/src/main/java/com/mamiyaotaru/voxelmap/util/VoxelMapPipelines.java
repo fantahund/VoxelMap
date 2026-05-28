@@ -7,6 +7,7 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
+import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
@@ -38,6 +39,7 @@ public class VoxelMapPipelines {
     public static final RenderPipeline ENTITY_ICON = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/entity_icon"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withCull(false)
             .build();
@@ -45,6 +47,7 @@ public class VoxelMapPipelines {
     public static final RenderPipeline ENTITY_ICON_CULLED = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/entity_icon_culled"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withCull(true)
             .build();

@@ -5,8 +5,8 @@ import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
+import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import com.mamiyaotaru.voxelmap.util.VoxelMapBufferSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
@@ -36,7 +36,7 @@ public abstract class AbstractRadar {
 
     public abstract void onResourceManagerReload(ResourceManager resourceManager);
 
-    public abstract void renderMapMobs(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
+    public abstract void renderMapMobs(Matrix4fStack matrixStack, RenderUtils.SubmitContext context, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
 
     protected abstract void initContact(Contact contact);
 

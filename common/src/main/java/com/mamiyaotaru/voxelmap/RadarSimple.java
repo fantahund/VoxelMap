@@ -5,10 +5,8 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.RenderUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapBufferSource;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -20,6 +18,7 @@ import net.minecraft.util.ARGB;
 import org.joml.Matrix4fStack;
 
 public class RadarSimple extends AbstractRadar {
+    private static final int SUBMIT_ICON = 20;
     private final TextureAtlas textureAtlas;
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/radarsimple/marker");
 
@@ -68,12 +67,11 @@ public class RadarSimple extends AbstractRadar {
     }
 
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, VoxelMapBufferSource bufferSource, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, RenderUtils.SubmitContext context, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(resourceTextureAtlasMarker);
-        VertexConsumer iconBuffer = bufferSource.getBuffer(iconRenderType);
 
         for (Contact contact : contacts) {
             if (contact.displayState != displayState) {
@@ -91,11 +89,11 @@ public class RadarSimple extends AbstractRadar {
                 }
 
                 Sprite contactIcon = textureAtlas.getAtlasSprite("contact");
-                RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
+                RenderUtils.submitTexturedModalRect(context.order(SUBMIT_ICON), matrixStack, iconRenderType, contactIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
 
                 if (radarOptions.showFacing) {
                     Sprite facingIcon = textureAtlas.getAtlasSprite("facing");
-                    RenderUtils.drawTexturedModalRect(matrixStack, iconBuffer, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
+                    RenderUtils.submitTexturedModalRect(context.order(SUBMIT_ICON), matrixStack, iconRenderType, facingIcon, x - 4.0F, y - 4.0F, 0.0F, 8.0F, 8.0F, color);
                 }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
@@ -103,7 +101,7 @@ public class RadarSimple extends AbstractRadar {
                 matrixStack.popMatrix();
             }
         }
-        bufferSource.endBatch(iconRenderType);
+        context.flush();
 
         matrixStack.popMatrix();
     }
