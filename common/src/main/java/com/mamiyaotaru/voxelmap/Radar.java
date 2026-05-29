@@ -100,7 +100,7 @@ public class Radar extends AbstractRadar {
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         // Draw mob icons
-        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(EntityMapImageManager.resourceTextureAtlasMarker);
+        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(EntityMapImageManager.resourceTextureAtlasMarker);
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 

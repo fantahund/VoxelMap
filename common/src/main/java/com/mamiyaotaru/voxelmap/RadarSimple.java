@@ -71,7 +71,7 @@ public class RadarSimple extends AbstractRadar {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(resourceTextureAtlasMarker);
+        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(resourceTextureAtlasMarker);
 
         for (Contact contact : contacts) {
             if (contact.displayState != displayState) {
