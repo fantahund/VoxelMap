@@ -342,8 +342,12 @@ public class VoxelMap implements PreparableReloadListener {
     }
 
     public void onClientStopping() {
+        if (map != null) {
+            map.shutdown();
+        }
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
+        ThreadManager.shutdownCalculationQueue();
     }
 
     public Properties getImageProperties() {

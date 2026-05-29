@@ -122,7 +122,9 @@ public class Map implements Runnable, IChangeObserver {
     private final int availableProcessors = Runtime.getRuntime().availableProcessors();
     private final boolean multicore = this.availableProcessors > 1;
     private final boolean threading = this.multicore;
-    private Thread zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+    private final Object zCalcLock = new Object();
+    private volatile boolean zCalcRunning = true;
+    private Thread zCalc = createZCalcThread();
     private int zCalcTicker;
     private final Object coordinateLock = new Object();
     private ClientLevel world;
@@ -235,6 +237,12 @@ public class Map implements Runnable, IChangeObserver {
         this.loadMapTextures();
     }
 
+    private Thread createZCalcThread() {
+        Thread thread = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+        thread.setDaemon(true);
+        return thread;
+    }
+
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.loadMapTextures();
     }
@@ -271,7 +279,7 @@ public class Map implements Runnable, IChangeObserver {
     @Override
     public void run() {
         if (minecraft != null) {
-            while (true) {
+            while (this.zCalcRunning) {
                 if (this.world != null) {
                     if (!this.options.hide && this.options.minimapAllowed) {
                         try {
@@ -292,16 +300,37 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 this.zCalcTicker = 0;
-                synchronized (this.zCalc) {
+                synchronized (this.zCalcLock) {
                     try {
-                        this.zCalc.wait(0L);
+                        this.zCalcLock.wait(0L);
                     } catch (InterruptedException exception) {
-                        VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
+                        if (this.zCalcRunning) {
+                            VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
+                        }
                     }
                 }
             }
         }
 
+    }
+
+    public void shutdown() {
+        this.zCalcRunning = false;
+        Thread thread = this.zCalc;
+        synchronized (this.zCalcLock) {
+            this.zCalcLock.notifyAll();
+        }
+        thread.interrupt();
+
+        try {
+            thread.join(5000L);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
+
+        if (thread.isAlive()) {
+            VoxelConstants.getLogger().warn("Voxelmap LiveMap Calculation Thread did not stop within shutdown timeout");
+        }
     }
 
     public void newWorld(ClientLevel world) {
@@ -394,13 +423,13 @@ public class Map implements Runnable, IChangeObserver {
         this.lastGuiScreen = minecraft.gui.screen();
         this.calculateCurrentLightAndSkyColor();
         if (this.threading) {
-            if (!this.zCalc.isAlive()) {
-                this.zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+            if (this.zCalcRunning && !this.zCalc.isAlive()) {
+                this.zCalc = createZCalcThread();
                 this.zCalc.start();
                 this.zCalcTicker = 0;
             }
 
-            if (!(minecraft.gui.screen() instanceof DeathScreen) && !(minecraft.gui.screen() instanceof OutOfMemoryScreen)) {
+            if (this.zCalcRunning && !(minecraft.gui.screen() instanceof DeathScreen) && !(minecraft.gui.screen() instanceof OutOfMemoryScreen)) {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
@@ -409,8 +438,8 @@ public class Map implements Runnable, IChangeObserver {
                     DebugRenderState.print();
                     VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread is hanging?", ex);
                 }
-                synchronized (this.zCalc) {
-                    this.zCalc.notify();
+                synchronized (this.zCalcLock) {
+                    this.zCalcLock.notifyAll();
                 }
             }
         } else {

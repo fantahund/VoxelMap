@@ -37,21 +37,48 @@ public final class ThreadManager {
             Thread.currentThread().interrupt();
         }
         saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        saveExecutorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Saver Thread", false));
         VoxelConstants.getLogger().info("Save queue flushed!");
     }
 
+    public static void shutdownCalculationQueue() {
+        emptyQueue();
+        executorService.shutdown();
+
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+
+                if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                    VoxelConstants.getLogger().warn("Voxelmap WorldMap Calculation Thread pool did not stop within shutdown timeout");
+                }
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
     static {
-        executorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Calculation Thread"));
-        saveExecutorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Saver Thread"));
+        executorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Calculation Thread", true));
+        saveExecutorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Saver Thread", false));
     }
 
     private static final class NamedThreadFactory implements ThreadFactory {
         private final String name;
         private final AtomicInteger threadCount = new AtomicInteger(1);
+        private final boolean daemon;
 
-        private NamedThreadFactory(String name) { this.name = name; }
+        private NamedThreadFactory(String name, boolean daemon) {
+            this.name = name;
+            this.daemon = daemon;
+        }
 
         @Override
-        public Thread newThread(@NotNull Runnable r) { return new Thread(r, this.name + " " + this.threadCount.getAndIncrement()); }
+        public Thread newThread(@NotNull Runnable r) {
+            Thread thread = new Thread(r, this.name + " " + this.threadCount.getAndIncrement());
+            thread.setDaemon(this.daemon);
+            return thread;
+        }
     }
 }
