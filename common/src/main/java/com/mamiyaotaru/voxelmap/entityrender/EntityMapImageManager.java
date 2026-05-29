@@ -180,7 +180,11 @@ public class EntityMapImageManager {
     }
 
     private AbstractEntityRenderer getEntityRenderer() {
-        return cpuRendering ? cpuRenderer : gpuRenderer;
+        return shouldUseCpuRendering() ? cpuRenderer : gpuRenderer;
+    }
+
+    private boolean shouldUseCpuRendering() {
+        return radarOptions.cpuRendering || radarOptions.forceCpuRendering || VoxelConstants.isVulkanRenderer();
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {
@@ -553,7 +557,7 @@ public class EntityMapImageManager {
             task.run();
         }
 
-        if ((cpuRendering = radarOptions.cpuRendering || radarOptions.forceCpuRendering) != lastCpuRendering) {
+        if ((cpuRendering = shouldUseCpuRendering()) != lastCpuRendering) {
             reset();
             lastCpuRendering = cpuRendering;
         }

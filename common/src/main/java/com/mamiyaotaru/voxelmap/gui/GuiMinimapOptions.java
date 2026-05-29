@@ -295,7 +295,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         MutableComponent tooltip = Component.empty();
 
         if (option == EnumOptionsMinimap.RADAR_CPU_RENDERING) {
-            if (VoxelConstants.hasVulkanMod()) {
+            if (VoxelConstants.isVulkanRenderer()) {
                 tooltip.append(Component.translatable("options.minimap.radar.cpuRendering.tooltipVk").withStyle(ChatFormatting.RED));
                 tooltip.append("\n");
             }

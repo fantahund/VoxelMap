@@ -3,6 +3,8 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -23,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.Locale;
 
 public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
@@ -53,7 +56,21 @@ public final class VoxelConstants {
         return serverInfo != null && serverInfo.isRealm();
     }
 
-    public static boolean hasVulkanMod() { return modApiBridge.isModEnabled("vulkanmod"); }
+    public static boolean hasVulkanMod() { return modApiBridge != null && modApiBridge.isModEnabled("vulkanmod"); }
+
+    public static boolean isVulkanRenderer() {
+        if (hasVulkanMod()) {
+            return true;
+        }
+
+        GpuDevice device = RenderSystem.tryGetDevice();
+        if (device == null) {
+            return false;
+        }
+
+        String backendName = device.getDeviceInfo().backendName();
+        return backendName != null && backendName.toLowerCase(Locale.ROOT).contains("vulkan");
+    }
 
     @NotNull
     public static Logger getLogger() { return LOGGER; }
