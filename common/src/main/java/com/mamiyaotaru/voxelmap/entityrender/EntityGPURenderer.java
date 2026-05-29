@@ -15,6 +15,7 @@ import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -38,7 +39,6 @@ import net.minecraft.util.LightCoordsUtil;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.joml.Vector4fc;
 import org.lwjgl.system.MemoryStack;
 
 import java.awt.image.BufferedImage;
@@ -125,8 +125,9 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
                 closeIndexBuffer = true;
             }
 
-            Optional<Vector4fc> clearColor = Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), clearColor, renderTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
+            CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+            commandEncoder.clearColorAndDepthTextures(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), renderTarget.getDepthTexture(), 0.0);
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
