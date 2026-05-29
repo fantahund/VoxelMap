@@ -102,7 +102,7 @@ public class RenderUtils {
     public static void blitRenderTarget(GuiGraphics guiGraphics, RenderTarget renderTarget) {
         float v0 = hasFlippedTexture() ? 1.0F : 0.0F;
         float v1 = hasFlippedTexture() ? 0.0F : 1.0F;
-        guiGraphics.guiRenderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(renderTarget.getColorTextureView(), BLIT_SAMPLER), guiGraphics.pose(), 0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), 0.0f, 1.0F, v0, v1, 0xFFFFFFFF, guiGraphics.scissorStack.peek()));
+        guiGraphics.guiRenderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(renderTarget.getColorTextureView(), BLIT_SAMPLER), guiGraphics.pose(), 0, 0, (int) getGuiWidth(), (int) getGuiHeight(), 0.0F, 1.0F, v0, v1, 0xFFFFFFFF, guiGraphics.scissorStack.peek()));
     }
 
     public static void drawString(Matrix4f matrix, String text, float x, float y, float z, int color, boolean shadow) {
