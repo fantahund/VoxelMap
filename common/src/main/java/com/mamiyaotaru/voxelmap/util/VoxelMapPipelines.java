@@ -17,7 +17,7 @@ public class VoxelMapPipelines {
 
     public static final RenderPipeline GUI_TEXTURED_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_no_depth_test"))
-            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
+            .withDepthStencilState(Optional.empty())
             .build();
 
     public static final RenderPipeline GUI_TEXTURED_LEQUAL_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
@@ -27,7 +27,7 @@ public class VoxelMapPipelines {
 
     public static final RenderPipeline GUI_TEXTURED_MASKED_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
             .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_masked_no_depth_test"))
-            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
+            .withDepthStencilState(Optional.empty())
             .withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
             .build();
 
