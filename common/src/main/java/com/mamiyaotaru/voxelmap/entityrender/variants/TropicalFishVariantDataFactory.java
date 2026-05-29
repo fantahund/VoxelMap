@@ -2,6 +2,8 @@ package com.mamiyaotaru.voxelmap.entityrender.variants;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.entityrender.EntityVariantData;
+import java.util.EnumMap;
+import java.util.Map;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -10,9 +12,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
-
-import java.util.EnumMap;
-import java.util.Map;
 
 public class TropicalFishVariantDataFactory extends DefaultEntityVariantDataFactory {
     private static final EnumMap<TropicalFish.Pattern, Identifier> PATTERN_TEXTURES = Maps.newEnumMap(

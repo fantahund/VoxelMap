@@ -9,6 +9,8 @@ import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTypes;
 import com.mojang.math.Axis;
+import java.util.HashMap;
+import java.util.Properties;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -20,9 +22,6 @@ import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.joml.Matrix4fStack;
-
-import java.util.HashMap;
-import java.util.Properties;
 
 public class Radar extends AbstractRadar {
     private static final int SUBMIT_ICON = 20;

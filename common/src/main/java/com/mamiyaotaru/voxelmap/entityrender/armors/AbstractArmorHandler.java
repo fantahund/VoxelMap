@@ -1,13 +1,12 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
-
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
 
 public abstract class AbstractArmorHandler {
     protected final HashMap<Item, EntityArmorDataFactory> armorDataFactories = new HashMap<>();

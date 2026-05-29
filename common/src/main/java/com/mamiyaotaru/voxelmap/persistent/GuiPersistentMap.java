@@ -26,6 +26,11 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Random;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -48,12 +53,6 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();

@@ -6,6 +6,9 @@ import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelPart;
@@ -31,10 +34,6 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SkullBlock;
-
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DefaultArmorHandler extends AbstractArmorHandler {
     private final RandomSource random = RandomSource.create();

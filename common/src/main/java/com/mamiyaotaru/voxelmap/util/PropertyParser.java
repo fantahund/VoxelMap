@@ -1,8 +1,7 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import net.minecraft.core.Direction;
-
 import java.util.LinkedHashMap;
+import net.minecraft.core.Direction;
 
 public class PropertyParser {
     public static LinkedHashMap<Direction.Axis, Float> parseVector(String property) {

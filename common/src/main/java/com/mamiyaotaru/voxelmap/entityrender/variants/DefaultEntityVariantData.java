@@ -1,10 +1,9 @@
 package com.mamiyaotaru.voxelmap.entityrender.variants;
 
 import com.mamiyaotaru.voxelmap.entityrender.EntityVariantData;
+import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
-
-import java.util.Objects;
 
 public class DefaultEntityVariantData implements EntityVariantData {
     private final EntityType<?> type;

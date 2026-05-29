@@ -3,6 +3,12 @@ package com.mamiyaotaru.voxelmap.entityrender;
 import com.mamiyaotaru.voxelmap.util.PropertyParser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
@@ -10,13 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Consumer;
 
 public abstract class AbstractEntityRenderer {
     protected final Minecraft minecraft = Minecraft.getInstance();

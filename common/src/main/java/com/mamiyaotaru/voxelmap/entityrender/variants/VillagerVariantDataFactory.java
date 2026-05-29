@@ -2,6 +2,8 @@ package com.mamiyaotaru.voxelmap.entityrender.variants;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.entityrender.EntityVariantData;
+import java.util.Map;
+import java.util.Optional;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -14,9 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.npc.villager.VillagerDataHolder;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
 import net.minecraft.world.entity.npc.villager.VillagerType;
-
-import java.util.Map;
-import java.util.Optional;
 
 public class VillagerVariantDataFactory extends DefaultEntityVariantDataFactory {
     private static final Identifier INVISIBLE_TEXTURE = Identifier.withDefaultNamespace("invisible");

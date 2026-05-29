@@ -8,6 +8,9 @@ import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import java.util.Optional;
+import java.util.Random;
+import java.util.TreeSet;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -16,10 +19,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
-
-import java.util.Optional;
-import java.util.Random;
-import java.util.TreeSet;
 
 public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
     protected final MapSettingsManager options;

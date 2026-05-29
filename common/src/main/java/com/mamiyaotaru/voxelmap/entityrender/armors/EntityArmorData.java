@@ -1,9 +1,8 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
+import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
-
-import java.util.Objects;
 
 public class EntityArmorData {
     private final Item item;

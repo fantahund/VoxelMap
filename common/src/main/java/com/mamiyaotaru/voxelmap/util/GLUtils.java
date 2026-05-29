@@ -14,14 +14,13 @@ import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
+import java.awt.image.BufferedImage;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.util.ARGB;
-
-import java.awt.image.BufferedImage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 public class GLUtils {
     private static final Projection BLIT_PROJECTION  = new Projection();

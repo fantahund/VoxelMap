@@ -4,6 +4,8 @@ import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import java.util.ArrayList;
+import java.util.Arrays;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,9 +15,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GuiWelcomeScreen extends GuiScreenMinimap {
     private MapSettingsManager options;

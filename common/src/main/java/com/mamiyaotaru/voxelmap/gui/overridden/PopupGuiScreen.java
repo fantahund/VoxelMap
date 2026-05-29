@@ -1,9 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
+import java.util.ArrayList;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
-
-import java.util.ArrayList;
 
 public abstract class PopupGuiScreen extends GuiScreenMinimap implements IPopupGuiScreen {
     private final ArrayList<Popup> popups = new ArrayList<>();

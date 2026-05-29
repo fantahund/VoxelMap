@@ -2,15 +2,14 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import net.minecraft.client.model.animal.sheep.SheepFurModel;
 import net.minecraft.client.renderer.entity.SheepRenderer;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.Items;
-
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 
 public class SheepOverlayHandler extends AbstractArmorHandler {
     private static final Identifier SHEEP_FUR = Identifier.withDefaultNamespace("textures/entity/sheep/sheep_wool.png");

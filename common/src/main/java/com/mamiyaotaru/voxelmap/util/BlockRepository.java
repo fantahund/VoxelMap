@@ -1,6 +1,11 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -8,12 +13,6 @@ import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BlockRepository {
     public static Block air = Blocks.AIR;

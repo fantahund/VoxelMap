@@ -30,15 +30,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
-import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.Nullable;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -47,6 +38,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility class to check for newer versions of a project hosted on Modrinth.

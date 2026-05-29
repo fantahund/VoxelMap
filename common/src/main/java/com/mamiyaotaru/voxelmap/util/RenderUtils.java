@@ -13,6 +13,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -29,10 +32,6 @@ import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
-
-import java.util.Optional;
-import java.util.OptionalDouble;
-import java.util.function.Consumer;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
