@@ -10,7 +10,6 @@ import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMapOptions;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -295,10 +294,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         MutableComponent tooltip = Component.empty();
 
         if (option == EnumOptionsMinimap.RADAR_CPU_RENDERING) {
-            if (VoxelConstants.isVulkanRenderer()) {
-                tooltip.append(Component.translatable("options.minimap.radar.cpuRendering.tooltipVk").withStyle(ChatFormatting.RED));
-                tooltip.append("\n");
-            }
             tooltip.append(Component.translatable("options.minimap.radar.cpuRendering.tooltip"));
         } else {
             return null;

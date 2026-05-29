@@ -184,7 +184,7 @@ public class EntityMapImageManager {
     }
 
     private boolean shouldUseCpuRendering() {
-        return radarOptions.cpuRendering || radarOptions.forceCpuRendering || VoxelConstants.isVulkanRenderer();
+        return radarOptions.cpuRendering || radarOptions.forceCpuRendering;
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {

@@ -126,7 +126,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             }
 
             Optional<Vector4fc> clearColor = Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), clearColor, renderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), clearColor, renderTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
                 renderPass.setPipeline(renderPipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
