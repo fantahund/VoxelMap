@@ -17,11 +17,14 @@
     "homepage": "https://minecraft.curseforge.com/projects/voxelmap"
   },
   "icon": "assets/voxelmap/icon.png",
-  "environment": "client",
+  "environment": "*",
   "entrypoints": {
     "client": [
       "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricMod"
-    ]
+    ],
+	"server": [
+	  "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricModServer"
+	]
   },
   "accessWidener" : "voxelmap.accesswidener",
   "mixins": [
