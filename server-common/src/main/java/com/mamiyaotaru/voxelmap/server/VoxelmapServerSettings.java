@@ -65,10 +65,6 @@ public final class VoxelmapServerSettings {
         this.worldNameSuffix = worldNameSuffix;
     }
 
-    public static VoxelmapServerSettings empty() {
-        return new VoxelmapServerSettings(Map.of(), false, null, false, null);
-    }
-
     public static VoxelmapServerSettings defaults() {
         Map<String, Boolean> booleanValues = new LinkedHashMap<>();
         for (String key : BOOLEAN_KEYS) {
