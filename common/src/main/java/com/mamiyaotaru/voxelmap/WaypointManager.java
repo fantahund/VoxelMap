@@ -138,12 +138,7 @@ public class WaypointManager implements IReloadListener {
         this.textureAtlas.loadTextureAtlas(iconCreator);
         this.textureAtlasChooser.reset();
 
-        images.sort(Comparator.comparingInt((Identifier id) -> {
-            if (toSimpleName(id.toString()).equals(FALLBACK_ICON_NAME)) {
-                return 0;
-            }
-            return 1;
-        }).thenComparing(Identifier::compareTo));
+        images.sort(Comparator.comparing((Identifier id) -> !toSimpleName(id.toString()).equals(FALLBACK_ICON_NAME)).thenComparing(Identifier::compareTo));
 
         for (Identifier Identifier : images) {
             String name = Identifier.toString();
@@ -154,10 +149,7 @@ public class WaypointManager implements IReloadListener {
             }
         }
 
-//      I couldn't find a better way to make stitch sorted :(
-//      this.textureAtlasChooser.stitch();
-
-        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypoint_icon_filtering", "true"));
+        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypointIconFiltering", "true"));
         this.textureAtlas.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
         this.textureAtlasChooser.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
     }

@@ -29,14 +29,11 @@ import java.util.OptionalInt;
 
 public class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
-
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final RenderTarget FULLSCREEN_RENDER_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true);
     private static int lastScreenWidth;
     private static int lastScreenHeight;
-
     private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
-    private static final ArrayDeque<RenderTargetState> RENDER_TARGET_STACK = new ArrayDeque<>();
 
     public static boolean hasFlippedTexture() {
         return !VoxelConstants.hasVulkanMod();
@@ -135,29 +132,6 @@ public class RenderUtils {
         RenderSystem.getModelViewStack().popMatrix();
         ProjectionState projectionState = PROJECTION_STACK.pop();
         RenderSystem.setProjectionMatrix(projectionState.matrix(), projectionState.type());
-    }
-
-    public static void setRenderTarget(RenderTarget renderTarget) {
-        RenderTargetState renderTargetState = new RenderTargetState(RenderSystem.outputColorTextureOverride, RenderSystem.outputDepthTextureOverride);
-        RENDER_TARGET_STACK.push(renderTargetState);
-        RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
-        RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
-    }
-
-    public static void restoreRenderTarget() {
-        RenderTargetState renderTargetState = RENDER_TARGET_STACK.pop();
-        RenderSystem.outputColorTextureOverride = renderTargetState.color();
-        RenderSystem.outputDepthTextureOverride = renderTargetState.depth();
-    }
-
-    public static void clearRenderTarget(RenderTarget renderTarget, int colorClear, double depthClear) {
-        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-        if (renderTarget.getColorTexture() != null) {
-            commandEncoder.clearColorTexture(renderTarget.getColorTexture(), colorClear);
-        }
-        if (renderTarget.getDepthTexture() != null) {
-            commandEncoder.clearDepthTexture(renderTarget.getDepthTexture(), depthClear);
-        }
     }
 
     static record ProjectionState(GpuBufferSlice matrix, ProjectionType type) {
