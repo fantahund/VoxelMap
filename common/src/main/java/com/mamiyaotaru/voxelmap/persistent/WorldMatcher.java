@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -37,7 +38,7 @@ public class WorldMatcher {
             final String worldNamePathPart = TextUtils.scrubNameFile(worldName);
             final String dimensionName = dimensionManager.getDimensionContainerByWorld(world).getStorageName();
             final String dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-            final File baseDirectory = new File(minecraft.gameDirectory,  CachedRegion.buildRootPath(worldNamePathPart) + "/");
+            final File baseDirectory = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart);
 
             final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
             int x;
@@ -108,7 +109,7 @@ public class WorldMatcher {
                 for (String subWorldName : waypointManager.getKnownSubworldNames()) {
                     if (cancelled) break;
 
-                    File subWorldDirectory = new File(baseDirectory, CachedRegion.buildLayerPath(subWorldName, dimensionNamePathPart, underground, sectionY));
+                    File subWorldDirectory = FileUtils.join(baseDirectory, subWorldName, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY));
                     if (subWorldDirectory.isDirectory()) {
                         ComparisonCachedRegion candidate = new ComparisonCachedRegion(map, x + "," + z, world, worldName, subWorldName, x, z, underground, sectionY);
                         candidate.loadStored();

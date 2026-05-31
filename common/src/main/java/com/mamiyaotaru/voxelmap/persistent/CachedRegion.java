@@ -7,6 +7,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -138,21 +139,6 @@ public class CachedRegion {
 
         Arrays.fill(this.liveChunkUpdateQueued, false);
         Arrays.fill(this.chunkUpdateQueued, false);
-    }
-
-    public static String buildFullPath(String worldName, String subWorldName, String dimensionName, boolean underground, int sectionY) {
-        return String.join("/", buildRootPath(worldName), buildLayerPath(subWorldName, dimensionName, underground, sectionY));
-    }
-
-    public static String buildRootPath(String worldName) {
-        return String.join("/", "voxelmap", "cache", worldName);
-    }
-
-    public static String buildLayerPath(String subWorldName, String dimensionName, boolean underground, int sectionY) {
-        if (underground) {
-            return String.join("/", subWorldName, dimensionName, "caves_" + sectionY);
-        }
-        return String.join("/", subWorldName, dimensionName);
     }
 
     public void renameSubworld(String oldName, String newName) {
@@ -320,8 +306,8 @@ public class CachedRegion {
             }
 
             if (!this.closed && !full) {
-                File directory = new File(DimensionType.getStorageFolder(this.worldServer.dimension(), this.worldServer.getServer().getWorldPath(LevelResource.ROOT).normalize()).toString(), "region");
-                File regionFile = new File(directory, "r." + (int) Math.floor(this.x / 2f) + "." + (int) Math.floor(this.z / 2f) + ".mca");
+                File directory = FileUtils.join(DimensionType.getStorageFolder(worldServer.dimension(), worldServer.getServer().getWorldPath(LevelResource.ROOT).normalize()).toFile(), "region");
+                File regionFile = FileUtils.join(directory, FileUtils.withExtension("r." + (int) Math.floor(x / 2.0F) + "." + (int) Math.floor(z / 2.0F), "mca"));
                 if (regionFile.exists()) {
                     boolean dataChanged = false;
                     boolean loadedChunks = false;
@@ -467,9 +453,8 @@ public class CachedRegion {
 
     private void loadCachedData() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, buildFullPath(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.sectionY));
-            cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), FileUtils.withExtension(key, "zip"));
+            cachedRegionFile.getParentFile().mkdirs();
             if (cachedRegionFile.exists()) {
                 ZipFile zFile = new ZipFile(cachedRegionFile);
                 ZipEntry ze = zFile.getEntry("data");
@@ -577,9 +562,8 @@ public class CachedRegion {
         BiMap<Biome, Integer> biomeToInt = this.data.getBiomeToInt();
         byte[] byteArray = this.data.getData();
         if (byteArray.length == this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION)) {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, buildFullPath(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.sectionY));
-            cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), FileUtils.withExtension(key, "zip"));
+            cachedRegionFile.getParentFile().mkdirs();
             FileOutputStream fos = new FileOutputStream(cachedRegionFile);
             ZipOutputStream zos = new ZipOutputStream(fos);
             ZipEntry ze = new ZipEntry("data");
@@ -650,11 +634,8 @@ public class CachedRegion {
 
     private void saveImage() {
         if (!this.empty && this.image != null) {
-
-            File imageFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, buildFullPath(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.sectionY) + "/images/z1");
-            imageFileDir.mkdirs();
-            final File imageFile = new File(imageFileDir, this.key + ".png");
-                       
+            File imageFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), "images", "z1", FileUtils.withExtension(key, "png"));
+            imageFile.getParentFile().mkdirs();
             if (this.liveChunksUpdated || !imageFile.exists()) {
                 NativeImage toSave = new NativeImage(REGION_WIDTH, REGION_WIDTH, false);
                 toSave.copyFrom(this.image.getData());

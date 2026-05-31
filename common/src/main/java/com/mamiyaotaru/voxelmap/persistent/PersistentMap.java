@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.persistent.gui.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
@@ -98,6 +99,13 @@ public class PersistentMap implements IChangeObserver {
         Arrays.fill(this.lightmapColors, -16777216);
     }
 
+    public static String getRegionCachePath(boolean underground, int sectionY) {
+        if (!underground) {
+            return "";
+        }
+        return "caves_" + sectionY;
+    }
+
     public static int getMinCaveLayer(ClientLevel world) {
         return Math.floorDiv(world.getMinY(), CAVE_LAYER_HEIGHT);
     }
@@ -155,9 +163,9 @@ public class PersistentMap implements IChangeObserver {
 
     private void newWorldStuff() {
         String worldName = TextUtils.scrubNameFile(waypointManager.getCurrentWorldName());
-        File oldCacheDir = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
+        File oldCacheDir = FileUtils.join(FileUtils.legacyVoxelMapPath(), "cache", worldName);
         if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
-            File newCacheDir = new File(minecraft.gameDirectory, "/voxelmap/cache/" + worldName + "/");
+            File newCacheDir = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldName);
             newCacheDir.getParentFile().mkdirs();
             boolean success = oldCacheDir.renameTo(newCacheDir);
             if (!success) {

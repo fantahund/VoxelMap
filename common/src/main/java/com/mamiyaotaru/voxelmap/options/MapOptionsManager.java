@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.options;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.options.containers.AbstractOptionsContainer;
-import net.minecraft.client.Minecraft;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -45,7 +45,7 @@ public class MapOptionsManager {
     }
 
     public void loadAll() {
-        saveFile = new File(Minecraft.getInstance().gameDirectory, "config/voxelmap.properties");
+        saveFile = FileUtils.join(FileUtils.minecraftPath(), "config", FileUtils.withExtension("voxelmap", "properties"));
         try {
             if (saveFile.exists()) {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(saveFile), StandardCharsets.UTF_8.newDecoder()));
@@ -67,12 +67,8 @@ public class MapOptionsManager {
     }
 
     public void saveAll() {
-        File settingsDir = new File(Minecraft.getInstance().gameDirectory, "/config/");
-        if (!settingsDir.exists()) {
-            settingsDir.mkdirs();
-        }
-
-        saveFile = new File(settingsDir, "voxelmap.properties");
+        saveFile = FileUtils.join(FileUtils.minecraftPath(), "config", FileUtils.withExtension("voxelmap", "properties"));
+        saveFile.getParentFile().mkdirs();
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(saveFile), StandardCharsets.UTF_8.newEncoder())));
             for (AbstractOptionsContainer settings : containers) {

@@ -6,6 +6,7 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -93,9 +94,8 @@ public class ComparisonCachedRegion {
 
     public void loadStored() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, CachedRegion.buildFullPath(this.worldNamePathPart, this.subworldNamePathPart, this.dimensionNamePathPart, this.underground, this.sectionY));
-            cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), FileUtils.withExtension(key, "zip"));
+            cachedRegionFile.getParentFile().mkdirs();
             if (cachedRegionFile.exists()) {
                 try (FileInputStream fis = new FileInputStream(cachedRegionFile); ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis)); Scanner sc = new Scanner(zis)) {
                     BiMap<BlockState, Integer> stateToInt = null;

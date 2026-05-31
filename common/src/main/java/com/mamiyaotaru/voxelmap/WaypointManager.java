@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
@@ -437,16 +438,15 @@ public class WaypointManager implements IReloadListener {
             }
 
             VoxelConstants.getVoxelMapInstance().getPersistentMap().renameSubworld(oldName, newName);
-            String worldName = this.getCurrentWorldName();
-            String worldNamePathPart = TextUtils.scrubNameFile(worldName);
-            String subWorldNamePathPart = TextUtils.scrubNameFile(oldName) + "/";
-            File oldCachedRegionFileDir = new File(minecraft.gameDirectory, "/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
-            if (oldCachedRegionFileDir.exists() && oldCachedRegionFileDir.isDirectory()) {
-                subWorldNamePathPart = TextUtils.scrubNameFile(newName) + "/";
-                File newCachedRegionFileDir = new File(minecraft.gameDirectory, "/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
-                boolean success = oldCachedRegionFileDir.renameTo(newCachedRegionFileDir);
+            String worldNamePath = TextUtils.scrubNameFile(getCurrentWorldName());
+            String subworldNamePath = TextUtils.scrubNameFile(oldName);
+            File oldRegionCacheDir = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePath, subworldNamePath);
+            if (oldRegionCacheDir.exists() && oldRegionCacheDir.isDirectory()) {
+                subworldNamePath = TextUtils.scrubNameFile(newName);
+                File newRegionCacheDir = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePath, subworldNamePath);
+                boolean success = oldRegionCacheDir.renameTo(newRegionCacheDir);
                 if (!success) {
-                    VoxelConstants.getLogger().warn("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
+                    VoxelConstants.getLogger().warn("Failed renaming " + oldRegionCacheDir.getPath() + " to " + newRegionCacheDir.getPath());
                 }
             }
 
@@ -519,12 +519,9 @@ public class WaypointManager implements IReloadListener {
         }
 
         worldNameSave = TextUtils.scrubNameFile(worldNameSave);
-        File saveDir = new File(minecraft.gameDirectory, "/voxelmap/");
-        if (!saveDir.exists()) {
-            saveDir.mkdirs();
-        }
 
-        this.settingsFile = new File(saveDir, worldNameSave + ".points");
+        this.settingsFile = FileUtils.join(FileUtils.voxelMapPath(), FileUtils.withExtension(worldNameSave, "points"));
+        this.settingsFile.getParentFile().mkdirs();
 
         try {
             PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8));
@@ -599,8 +596,8 @@ public class WaypointManager implements IReloadListener {
     }
 
     private boolean loadWaypointsExtensible(String worldNameStandard) {
-        File settingsFileNew = new File(minecraft.gameDirectory, "/voxelmap/" + worldNameStandard + ".points");
-        File settingsFileOld = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileOld = FileUtils.join(FileUtils.legacyVoxelMapPath(), FileUtils.withExtension(worldNameStandard, "points"));
+        File settingsFileNew = FileUtils.join(FileUtils.voxelMapPath(), FileUtils.withExtension(worldNameStandard, "points"));
         if (!settingsFileOld.exists() && !settingsFileNew.exists()) {
             return false;
         } else {
