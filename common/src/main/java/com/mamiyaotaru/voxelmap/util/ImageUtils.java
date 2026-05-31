@@ -27,7 +27,10 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-public class ImageUtils {
+public final class ImageUtils {
+    private ImageUtils() {
+    }
+
     public static void saveImage(String name, GpuTexture texture) {
         saveImage(name, texture, 0, texture.getWidth(0), texture.getHeight(0));
     }

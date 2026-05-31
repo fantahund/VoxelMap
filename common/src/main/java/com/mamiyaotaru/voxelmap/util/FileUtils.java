@@ -4,7 +4,10 @@ import net.minecraft.client.Minecraft;
 
 import java.io.File;
 
-public class FileUtils {
+public final class FileUtils {
+    private FileUtils() {
+    }
+
     public static File join(File base, String... paths) {
         File result = base;
         for (String path : paths) {

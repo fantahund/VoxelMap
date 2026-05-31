@@ -27,13 +27,16 @@ import java.util.ArrayDeque;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
-public class RenderUtils {
+public final class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final RenderTarget FULLSCREEN_RENDER_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true);
     private static int lastScreenWidth;
     private static int lastScreenHeight;
     private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
+
+    private RenderUtils() {
+    }
 
     public static boolean hasFlippedTexture() {
         return !VoxelConstants.hasVulkanMod();

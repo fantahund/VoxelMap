@@ -2,10 +2,13 @@ package com.mamiyaotaru.voxelmap.util;
 
 import net.minecraft.util.Mth;
 
-public class EasingUtils {
+public final class EasingUtils {
     private static final double num1 = 1.70158;
     private static final double num2 = num1 * 1.525;
     private static final double num3 = num1 + 1.0;
+
+    private EasingUtils() {
+    }
 
     public static float easeInSine(float startValue, float finalValue, float elapsedTime, float totalTime) {
         float timeFactor = elapsedTime / totalTime;

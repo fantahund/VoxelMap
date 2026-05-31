@@ -10,7 +10,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import java.util.Objects;
 import java.util.Random;
 
-public class MapUtils {
+public final class MapUtils {
     private static MapOptions options;
     private static Random slimeRandom = new Random();
     private static String lastSeed;
@@ -18,6 +18,9 @@ public class MapUtils {
     private static int lastSlimeX;
     private static int lastSlimeZ;
     private static boolean isSlimeChunk;
+
+    private MapUtils() {
+    }
 
     public static void reset() {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
