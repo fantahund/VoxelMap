@@ -72,6 +72,8 @@ public class PersistentMapOptions extends AbstractOptionsContainer {
         showWaypoints.setAllowed(showWaypoints.isAllowed() && waypointsAllowed);
         showWaypointNames.setAllowed(showWaypointNames.isAllowed() && waypointsAllowed);
         showDistantWaypoints.setAllowed(showDistantWaypoints.isAllowed() && waypointsAllowed);
+
+        showCaves.setAllowed(showCaves.isAllowed() && serverSettings.cavesAllowed.get());
     }
 
     public float getZoom()  {

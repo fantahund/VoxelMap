@@ -10,7 +10,7 @@ import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
-import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
+import com.mamiyaotaru.voxelmap.persistent.gui.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
 import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;

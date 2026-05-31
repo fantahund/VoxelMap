@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.persistent;
+package com.mamiyaotaru.voxelmap.persistent.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
@@ -15,6 +15,9 @@ import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
+import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
+import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
+import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
 import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
@@ -96,12 +99,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private static final int ICON_WIDTH = 16;
     private static final int ICON_HEIGHT = 16;
 
+    private PersistentMapOverlay mapOverlay;
     private Component multiworldButtonName;
     private Component multiworldButtonNameRed;
     private PopupGuiButton buttonWaypoints;
     private PopupGuiButton buttonMultiworld;
     private final Identifier crosshairResource = Identifier.parse("textures/gui/sprites/hud/crosshair.png");
-    private final Identifier caveButtonTexture = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/worldmap/cave_button.png");
 
     // Subworld Names
     private String subworldName = "";
@@ -122,8 +125,8 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private float guiToDirectMouse = 2.0F;
 
     // Input & Navigation
-    private boolean skipMouseDetection;
     private boolean mouseCursorShown = true;
+    private boolean skipMouseInput;
     private boolean leftMouseButtonDown;
     private long timeOfLastMouseInput;
     private int lastMouseX;
@@ -176,23 +179,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         screenTitle = I18n.get("worldmap.title");
-
         scScale = (float) minecraft.getWindow().getGuiScale();
         top = 32;
         bottom = getHeight() - 32;
 
+        addRenderableWidget(mapOverlay = new PersistentMapOverlay(persistentMap, 0, top, getWidth(), bottom - top));
         int buttonCount = 5;
         int buttonSeparation = 4;
         int buttonWidth = (getWidth() - SIDE_MARGIN * 2 - buttonSeparation * (buttonCount - 1)) / buttonCount;
-
         addRenderableWidget(buttonWaypoints = new PopupGuiButton(SIDE_MARGIN, getHeight() - 26, buttonWidth, 20, Component.translatable("options.minimap.waypoints"), button -> minecraft.setScreen(new GuiWaypoints(this)), this));
-
         multiworldButtonName = Component.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld");
         multiworldButtonNameRed = multiworldButtonName.copy().withStyle(ChatFormatting.RED);
         if (!minecraft.hasSingleplayerServer() && !waypointManager.receivedAutoSubworldName()) {
             addRenderableWidget(buttonMultiworld = new PopupGuiButton(SIDE_MARGIN + (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, multiworldButtonName, button -> minecraft.setScreen(new GuiSubworldsSelect(this)), this));
         }
-
         addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 3 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("menu.options"), button -> minecraft.setScreen(new GuiMinimapOptions(this)), this));
         addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 4 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("gui.done"), button -> onClose(), this));
 
@@ -201,17 +201,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         centerY = (bottom - top) / 2;
         mapPixelsX = getWindowWidth();
         mapPixelsY = getWindowHeight() - (int) (64.0F * scScale);
-
         zoom = options.getZoom();
         zoomStart = options.getZoom();
         zoomGoal = options.getZoom();
-
         leftMouseButtonDown = false;
         lastStill = false;
         timeAtLastTick = System.currentTimeMillis();
-
         buildWorldName();
-
         centerAt(options.mapX, options.mapZ);
     }
 
@@ -326,6 +322,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     @Override
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        skipMouseInput = mapOverlay.isHovered();
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
         timeOfLastMouseInput = System.currentTimeMillis();
         switchToMouseInput();
@@ -429,7 +431,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         mouseDirectToMap = 1.0F / scaledZoom;
         guiToDirectMouse = scScale;
 
-        if (isMouseDown(GLFW.GLFW_MOUSE_BUTTON_1)) {
+        if (isMouseDown(GLFW.GLFW_MOUSE_BUTTON_1) && !skipMouseInput) {
             if (leftMouseButtonDown) {
                 deltaX = (lastMouseDirectX - mouseDirectX) * mouseDirectToMap;
                 deltaY = (lastMouseDirectY - mouseDirectY) * mouseDirectToMap;
@@ -708,7 +710,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private boolean isMouseDown(int keyCode) {
-        return !skipMouseDetection && GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), keyCode) == GLFW.GLFW_TRUE;
+        return GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), keyCode) == GLFW.GLFW_TRUE;
     }
 
     private boolean isKeyDown(KeyMapping keyMapping) {

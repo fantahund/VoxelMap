@@ -35,7 +35,7 @@ public class DeferredRenderPass implements AutoCloseable {
     private RenderPipeline pipeline;
     private final HashMap<String, GpuBufferSlice> uniformsMap = new HashMap<>(8);
     private final HashMap<String, TextureBinding> texturesMap = new HashMap<>(8);
-    private final Matrix4f matrixCache = new Matrix4f();;
+    private final Matrix4f matrixCache = new Matrix4f();
     private BufferBuilder bufferBuilder;
     private final GpuTextureView lastOutputColorTexture;
     private final GpuTextureView lastOutputDepthTexture;

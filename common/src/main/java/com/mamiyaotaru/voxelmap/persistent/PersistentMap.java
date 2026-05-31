@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
+import com.mamiyaotaru.voxelmap.persistent.gui.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
@@ -51,6 +52,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.IntStream;
 
 public class PersistentMap implements IChangeObserver {
+    public static final int CAVE_LAYER_HEIGHT = 32;
+
     private final Minecraft minecraft = Minecraft.getInstance();
     private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
     private final ServerSettingsManager serverSettings;
@@ -61,23 +64,20 @@ public class PersistentMap implements IChangeObserver {
     private final MutableBlockPos playerPos = new MutableBlockPos(0, 0, 0);
     private final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
 
+    private MapChunkCache chunkCache;
+    private int lastRenderDistance;
     private WorldMatcher worldMatcher;
     private final int[] lightmapColors;
     private ClientLevel world;
     private String subworldName = "";
-    private RegionCacheLayer surfaceLayer = new RegionCacheLayer(0, false);
-    private final ConcurrentHashMap<Integer, RegionCacheLayer> caveLayers = new ConcurrentHashMap<>();
+    private final Object layerLock = new Object();
+    private RegionCacheLayer currentLayer;
 
-    private MapChunkCache chunkCache;
-    private int lastRenderDistance;
-
-    private boolean isUnderground;
-    private boolean skipProcessing;
-    private int lastX;
-    private int lastY;
-    private int lastZ;
+    private boolean autoCaveMode;
     private int caveLayer;
-    private static final int CAVE_LAYER_HEIGHT = 32;
+    private int lastCaveLayer;
+    private boolean underground;
+    private boolean lastUnderground;
 
     private final Comparator<RegionCoordinates> distanceSorter = Comparator
             .comparingDouble(coords -> getDistanceSq(coords.x, coords.z, 256));
@@ -93,7 +93,25 @@ public class PersistentMap implements IChangeObserver {
         this.colorManager = voxelMap.getColorManager();
         this.waypointManager = voxelMap.getWaypointManager();
         this.lightmapColors = new int[256];
+        this.currentLayer = new RegionCacheLayer(0, false);
+        this.enableAutoCave();
         Arrays.fill(this.lightmapColors, -16777216);
+    }
+
+    public static int getMinCaveLayer(ClientLevel world) {
+        return Math.floorDiv(world.getMinY(), CAVE_LAYER_HEIGHT);
+    }
+
+    public static int getMaxCaveLayer(ClientLevel world) {
+        return Math.floorDiv(world.getMaxY(), CAVE_LAYER_HEIGHT);
+    }
+
+    public static int blockToCaveLayer(ClientLevel world, int blockY) {
+        return Math.min(Math.max(Math.floorDiv(blockY, CAVE_LAYER_HEIGHT), getMinCaveLayer(world)), getMaxCaveLayer(world));
+    }
+
+    public static int caveLayerToBlock(ClientLevel world, int sectionY) {
+        return Math.min(Math.max(sectionY * CAVE_LAYER_HEIGHT, world.getMinY()), world.getMaxY());
     }
 
     private boolean isSlopeEnabled() {
@@ -153,11 +171,11 @@ public class PersistentMap implements IChangeObserver {
             worldMatcher = new WorldMatcher(this, world);
             worldMatcher.findMatch();
         }
-
+        enableAutoCave();
         chunkCache = createChunkCache(minecraft.options.renderDistance().get());
     }
 
-    public MapChunkCache createChunkCache(int renderDistance) {
+    private MapChunkCache createChunkCache(int renderDistance) {
         int totalChunks = renderDistance * 2 + 1;
         return new MapChunkCache(totalChunks, totalChunks, this);
     }
@@ -175,6 +193,7 @@ public class PersistentMap implements IChangeObserver {
         if (minecraft.getCameraEntity() == null) {
             return;
         }
+
         if (minecraft.screen == null) {
             options.mapX = GameVariableAccessShim.xCoord();
             options.mapZ = GameVariableAccessShim.zCoord();
@@ -192,67 +211,66 @@ public class PersistentMap implements IChangeObserver {
         if (this.world != null) {
             int renderDistance = minecraft.options.renderDistance().get();
             if (renderDistance != lastRenderDistance) {
+                chunkCache = createChunkCache(renderDistance);
                 lastRenderDistance = renderDistance;
-                createChunkCache(renderDistance);
             }
 
-            lastX = GameVariableAccessShim.xCoord();
-            lastY = GameVariableAccessShim.yCoord();
-            lastZ = GameVariableAccessShim.zCoord();
+            int lastX = GameVariableAccessShim.xCoord();
+            int lastY = GameVariableAccessShim.yCoord();
+            int lastZ = GameVariableAccessShim.zCoord();
 
             chunkCache.centerChunks(playerPos.withXYZ(lastX, 0, lastZ));
             chunkCache.checkIfChunksBecameSurroundedByLoaded();
 
-            if (!serverSettings.cavesAllowed.get() || !options.showCaves.get()) {
-                isUnderground = false;
-            } else {
-                playerPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
-                isUnderground = MapUtils.isUnderground(world, playerPos, lastY);
+            synchronized (layerLock) {
+                if (!serverSettings.cavesAllowed.get() || !options.showCaves.get()) {
+                    underground = false;
+                } else if (autoCaveMode) {
+                    playerPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
+                    caveLayer = blockToCaveLayer(world, lastY);
+                    underground = MapUtils.isUnderground(world, playerPos, lastY);
+                }
 
-                caveLayer = blockToCaveLayer(world, lastY);
-                caveLayers.computeIfAbsent(caveLayer, k -> new RegionCacheLayer(k, true));
+                if ((underground != lastUnderground) || (underground && caveLayer != lastCaveLayer)) {
+                    purgeCachedRegions();
+                    currentLayer = new RegionCacheLayer(caveLayer, underground);
+                    lastCaveLayer = caveLayer;
+                    lastUnderground = underground;
+                }
+
+                currentLayer.onTick();
             }
-
-            getCurrentLayer().handleProcessingQueue();
         }
     }
 
-    public static int getMinCaveLayer(ClientLevel world) {
-        return Math.floorDiv(world.getMinY(), CAVE_LAYER_HEIGHT);
+    public int getCaveLayer() {
+        synchronized (layerLock) {
+            return caveLayer;
+        }
     }
 
-    public static int getMaxCaveLayer(ClientLevel world) {
-        return Math.floorDiv(world.getMaxY(), CAVE_LAYER_HEIGHT);
+    public boolean isAutoCaveEnabled() {
+        synchronized (layerLock) {
+            return autoCaveMode;
+        }
     }
 
-    public static int blockToCaveLayer(ClientLevel world, int blockY) {
-        return Math.min(Math.max(Math.floorDiv(blockY, CAVE_LAYER_HEIGHT), getMinCaveLayer(world)), getMaxCaveLayer(world));
+    public void enableAutoCave() {
+        synchronized (layerLock) {
+            autoCaveMode = true;
+        }
     }
 
-    public static int caveLayerToBlock(ClientLevel world, int sectionY) {
-        return Math.min(Math.max(sectionY * CAVE_LAYER_HEIGHT, world.getMinY()), world.getMaxY());
+    public void setCaveLayer(int layer) {
+        synchronized (layerLock) {
+            autoCaveMode = false;
+            caveLayer = layer;
+            underground = true;
+        }
     }
-
-    private RegionCacheLayer getCurrentLayer() {
-        return !isUnderground ? surfaceLayer : caveLayers.get(caveLayer);
-    }
-
-    private void forAllLayers(LayerVisitor visitor) {
-        visitor.visit(surfaceLayer);
-        caveLayers.forEach((x, y) -> visitor.visit(y));
-    }
-
 
     public PersistentMapOptions getOptions() {
         return options;
-    }
-
-    public void purgeCachedRegions() {
-        forAllLayers(RegionCacheLayer::purgeCachedRegions);
-    }
-
-    public void renameSubworld(String oldName, String newName) {
-        forAllLayers(layer -> layer.renameSubworld(oldName, newName));
     }
 
     public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
@@ -271,6 +289,78 @@ public class PersistentMap implements IChangeObserver {
             this.getSettingsAndLightingChangeNotifier().notifyOfChanges();
         }
 
+    }
+
+    private int getLight(int light) {
+        return this.lightmapColors[light];
+    }
+
+    private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
+        return chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x, chunk.getPos().z);
+    }
+
+
+    public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
+        synchronized (layerLock) {
+            return currentLayer.getRegions(left, right, top, bottom);
+        }
+    }
+
+    public void compress() {
+        synchronized (layerLock) {
+            currentLayer.compress();
+        }
+    }
+
+    public boolean isRegionLoaded(int blockX, int blockZ) {
+        synchronized (layerLock) {
+            return currentLayer.isRegionLoaded(blockX, blockZ);
+        }
+    }
+
+    public int getHeightAt(int blockX, int blockZ) {
+        synchronized (layerLock) {
+            return currentLayer.getHeightAt(blockX, blockZ);
+        }
+    }
+
+    public void debugLog(int blockX, int blockZ) {
+        synchronized (layerLock) {
+            currentLayer.debugLog(blockX, blockZ);
+        }
+    }
+
+    public void purgeCachedRegions() {
+        synchronized (layerLock) {
+            currentLayer.purgeCachedRegions();
+        }
+    }
+
+    public void renameSubworld(String oldName, String newName) {
+        synchronized (layerLock) {
+            currentLayer.renameSubworld(oldName, newName);
+        }
+    }
+
+    @Override
+    public void processChunk(LevelChunk chunk) {
+        if (serverSettings.worldmapAllowed.get()) {
+            synchronized (layerLock) {
+                currentLayer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+            }
+        }
+    }
+
+    @Override
+    public void handleChangeInWorld(int chunkX, int chunkZ) {
+        if (this.world != null) {
+            LevelChunk chunk = this.world.getChunk(chunkX, chunkZ);
+            if (chunk != null && !chunk.isEmpty()) {
+                if (this.isChunkReady(this.world, chunk)) {
+                    this.processChunk(chunk);
+                }
+            }
+        }
     }
 
     public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY, int sectionY) {
@@ -779,59 +869,8 @@ public class PersistentMap implements IChangeObserver {
         return color24;
     }
 
-    private int getLight(int light) {
-        return this.lightmapColors[light];
-    }
-
-    public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
-        return getCurrentLayer().getRegions(left, right, top, bottom);
-    }
-
-    public void compress() {
-        forAllLayers(RegionCacheLayer::compress);
-    }
-
-    @Override
-    public void handleChangeInWorld(int chunkX, int chunkZ) {
-        if (this.world != null) {
-            LevelChunk chunk = this.world.getChunk(chunkX, chunkZ);
-            if (chunk != null && !chunk.isEmpty()) {
-                if (this.isChunkReady(this.world, chunk)) {
-                    this.processChunk(chunk);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void processChunk(LevelChunk chunk) {
-        if (serverSettings.worldmapAllowed.get() && !skipProcessing) {
-            forAllLayers(layer -> layer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks())));
-        }
-    }
-
-    private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
-        return chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x, chunk.getPos().z);
-    }
-
-    public boolean isRegionLoaded(int blockX, int blockZ) {
-        return getCurrentLayer().isRegionLoaded(blockX, blockZ);
-    }
-
-    public int getHeightAt(int blockX, int blockZ) {
-        return getCurrentLayer().getHeightAt(blockX, blockZ);
-    }
-
-    public void debugLog(int blockX, int blockZ) {
-        forAllLayers(layer -> layer.debugLog(blockX, blockZ));
-    }
-
     private record ChunkWithAge(LevelChunk chunk, int tick) {}
     private record RegionCoordinates(int x, int z) {}
-
-    private interface LayerVisitor {
-        void visit(RegionCacheLayer layer);
-    }
 
     private class RegionCacheLayer {
         private final int layerIndex;
@@ -848,7 +887,7 @@ public class PersistentMap implements IChangeObserver {
         private boolean processingQueued = false;
 
         public RegionCacheLayer(int layerIndex, boolean underground) {
-            this.layerIndex = layerIndex;
+            this.layerIndex = underground ? layerIndex : 0;
             this.underground = underground;
         }
 
@@ -986,7 +1025,7 @@ public class PersistentMap implements IChangeObserver {
             chunkProcessingQueue.add(chunk);
         }
 
-        public void handleProcessingQueue() {
+        public void onTick() {
             if (processingQueued) {
                 processingQueued = false;
                 prunePool();

@@ -8,9 +8,7 @@ import com.mamiyaotaru.voxelmap.options.fields.EnumField;
 import com.mamiyaotaru.voxelmap.options.fields.FloatField;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -129,10 +127,6 @@ public class RadarOptions extends AbstractOptionsContainer {
     }
 
     // Option Attributes
-
-    private Tooltip buildCompatModeTooltip(Boolean value) {
-        return Tooltip.create(Component.translatable("options.minimap.radar.cpuRendering.tooltip"));
-    }
 
     private void updateRadarMode(OptionEnumRadar.RadarMode value) {
         if (Minecraft.getInstance().screen instanceof GuiOptionsScreenMinimap screen) {
