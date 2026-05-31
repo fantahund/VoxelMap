@@ -23,7 +23,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -32,8 +33,8 @@ public class DeferredRenderPass implements AutoCloseable {
     private final GpuTextureView colorTexture;
     private final GpuTextureView depthTexture;
     private RenderPipeline pipeline;
-    private final ArrayList<Entry<String, GpuBufferSlice>> uniformsMap = new ArrayList<>();
-    private final ArrayList<Entry<String, TextureBinding>> texturesMap = new ArrayList<>();
+    private final HashMap<String, GpuBufferSlice> uniformsMap = new HashMap<>(8);
+    private final HashMap<String, TextureBinding> texturesMap = new HashMap<>(8);
     private final Matrix4f matrixCache = new Matrix4f();;
     private BufferBuilder bufferBuilder;
     private final GpuTextureView lastOutputColorTexture;
@@ -68,7 +69,7 @@ public class DeferredRenderPass implements AutoCloseable {
     }
 
     public void setUniform(String target, GpuBufferSlice uniform) {
-        uniformsMap.add(new Entry<>(target, uniform));
+        uniformsMap.put(target, uniform);
     }
 
     public void bindTexture(String target, Identifier texture) {
@@ -88,7 +89,7 @@ public class DeferredRenderPass implements AutoCloseable {
     }
 
     public void bindTexture(String target, GpuTextureView texture, GpuSampler sampler) {
-        texturesMap.add(new Entry<>(target, new TextureBinding(texture, sampler)));
+        texturesMap.put(target, new TextureBinding(texture, sampler));
     }
 
     public void drawSpriteRect(Matrix4f matrix, Sprite sprite, float x, float y, float z, float width, float height, int color) {
@@ -172,12 +173,12 @@ public class DeferredRenderPass implements AutoCloseable {
                 pass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
             }
             RenderSystem.bindDefaultUniforms(pass);
-            for (Entry<String, GpuBufferSlice> uniform : uniformsMap) {
-                pass.setUniform(uniform.key(), uniform.value());
+            for (Map.Entry<String, GpuBufferSlice> entry : uniformsMap.entrySet()) {
+                pass.setUniform(entry.getKey(), entry.getValue());
             }
             pass.setVertexBuffer(0, vertexBuffer);
-            for (Entry<String, TextureBinding> texture : texturesMap) {
-                pass.bindTexture(texture.key(), texture.value().texture(), texture.value().sampler());
+            for (Map.Entry<String, TextureBinding> entry : texturesMap.entrySet()) {
+                pass.bindTexture(entry.getKey(), entry.getValue().texture(), entry.getValue().sampler());
             }
             pass.setIndexBuffer(indexBuffer, indexType);
             pass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
@@ -191,9 +192,6 @@ public class DeferredRenderPass implements AutoCloseable {
         pipeline = null;
         uniformsMap.clear();
         texturesMap.clear();
-    }
-
-    static record Entry<K, V>(K key, V value) {
     }
 
     static record TextureBinding(GpuTextureView texture, GpuSampler sampler) {
