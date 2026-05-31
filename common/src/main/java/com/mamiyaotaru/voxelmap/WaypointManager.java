@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -100,9 +101,9 @@ public class WaypointManager implements IReloadListener {
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
         this.textureAtlas = new TextureAtlas("waypoints", Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints"));
-        this.textureAtlas.setFilter(true, false);
+        this.textureAtlas.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
         this.textureAtlasChooser = new TextureAtlas("chooser", Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser"));
-        this.textureAtlasChooser.setFilter(true, false);
+        this.textureAtlasChooser.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
         this.waypointContainer = new WaypointContainer();
 
         VoxelConstants.getVoxelMapInstance().addReloadListener(this);
@@ -157,8 +158,8 @@ public class WaypointManager implements IReloadListener {
 //      this.textureAtlasChooser.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypoint_icon_filtering", "true"));
-        this.textureAtlas.setFilter(useFiltering, false);
-        this.textureAtlasChooser.setFilter(useFiltering, false);
+        this.textureAtlas.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
+        this.textureAtlasChooser.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
     }
 
     public static String toSimpleName(String name) {

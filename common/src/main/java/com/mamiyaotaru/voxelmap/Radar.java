@@ -2,11 +2,11 @@ package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
+import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mojang.math.Axis;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -26,7 +26,6 @@ public class Radar extends AbstractRadar {
     private final HashMap<EntityType<?>, MobIconConfig> iconConfigs = new HashMap<>();
 
     public Radar() {
-        super();
         entityMapImageManager = VoxelConstants.getVoxelMapInstance().getEntityMapImageManager();
     }
 
@@ -66,11 +65,13 @@ public class Radar extends AbstractRadar {
     }
 
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
+    public void renderMapMobs(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, Contact.DisplayState displayState, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, EntityMapImageManager.resourceTextureAtlasMarker);
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.bindTexture("Sampler0", EntityMapImageManager.resourceTextureAtlasMarker);
+        pass.beginBatch();
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
@@ -110,20 +111,20 @@ public class Radar extends AbstractRadar {
 
                 float imageWidth = contact.icon.getIconWidth() / 8.0F;
                 float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                RenderUtils.drawSpriteRect(matrixStack, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
+                pass.drawSpriteRect(matrixStack, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, color);
 
                 if (contact.armorIcon != null) {
                     MobIconConfig iconConfig = getIconConfig(contact);
                     float armorOffset = iconConfig.armorOffset();
                     float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
                     float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                    RenderUtils.drawSpriteRect(matrixStack, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, color);
+                    pass.drawSpriteRect(matrixStack, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, color);
                 }
 
                 if (contact.name != null) {
                     float fontScale = radarOptions.fontScale.get() / 4.0F;
                     matrixStack.scale(fontScale, fontScale, 1.0F);
-                    RenderUtils.drawCenteredString(matrixStack, contact.name, x / fontScale, (y + 3) / fontScale, zOffset, 0xFFFFFFFF, true);
+                    pass.drawCenteredString(matrixStack, contact.name, x / fontScale, (y + 3) / fontScale, zOffset, 0xFFFFFFFF, true);
                 }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! {} contact type {}", e.getLocalizedMessage(), BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
@@ -131,7 +132,7 @@ public class Radar extends AbstractRadar {
                 matrixStack.popMatrix();
             }
         }
-        RenderUtils.endBatch();
+        pass.endBatch();
 
         matrixStack.popMatrix();
     }

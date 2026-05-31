@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
+import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
 import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.render.VoxelMapRenderTarget;
@@ -33,6 +34,7 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.math.Axis;
@@ -45,8 +47,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -76,6 +77,8 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.Random;
 import java.util.TreeSet;
 
@@ -93,11 +96,11 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     private static final float MAP_IMAGE_DEPTH = 0.0F;
     private static final float MAP_OVERLAY_DEPTH = 100.0F;
     private static final float MAP_TEXT_DEPTH = 200.0F;
-    private final Identifier resourceArrow = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/minimap_arrow.png");
-    private final Identifier resourceSquareMapFrame = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_frame.png");
-    private final Identifier resourceSquareMapStencil = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_stencil.png");
-    private final Identifier resourceRoundMapFrame = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_frame.png");
-    private final Identifier resourceRoundMapStencil = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_stencil.png");
+    private AbstractTexture minimapArrowTexture;
+    private AbstractTexture squareMapFrameTexture;
+    private AbstractTexture squareMapStencilTexture;
+    private AbstractTexture roundMapFrameTexture;
+    private AbstractTexture roundMapStencilTexture;
     private int scWidth;
     private int scHeight;
     private String message = "";
@@ -225,27 +228,21 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
+        minimapArrowTexture = minecraft.getTextureManager().getTexture(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/minimap_arrow.png"));
+        squareMapFrameTexture = minecraft.getTextureManager().getTexture(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_frame.png"));
+        squareMapStencilTexture = minecraft.getTextureManager().getTexture(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/square_map_stencil.png"));
+        roundMapFrameTexture = minecraft.getTextureManager().getTexture(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_frame.png"));
+        roundMapStencilTexture = minecraft.getTextureManager().getTexture(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/round_map_stencil.png"));
+
+        squareMapStencilTexture.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
+        roundMapStencilTexture.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
+
         boolean arrowFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("minimap_arrow_filtering", "true"));
-        FilterMode arrowFilterMode = arrowFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
+        minimapArrowTexture.sampler = arrowFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
 
         boolean frameFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("minimap_frame_filtering", "true"));
-        FilterMode frameFilterMode = frameFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
-
-        try {
-            DynamicTexture arrowTexture = new DynamicTexture(() -> "Minimap Arrow", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceArrow).image());
-            arrowTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(arrowFilterMode);
-            minecraft.getTextureManager().register(resourceArrow, arrowTexture);
-
-            DynamicTexture squareMapTexture = new DynamicTexture(() -> "Minimap Square Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMapFrame).image());
-            squareMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(frameFilterMode);
-            minecraft.getTextureManager().register(resourceSquareMapFrame, squareMapTexture);
-
-            DynamicTexture roundMapTexture = new DynamicTexture(() -> "Minimap Round Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMapFrame).image());
-            roundMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(frameFilterMode);
-            minecraft.getTextureManager().register(resourceRoundMapFrame, roundMapTexture);
-        } catch (Exception exception) {
-            VoxelConstants.getLogger().error("Failed getting map images " + exception.getLocalizedMessage(), exception);
-        }
+        squareMapFrameTexture.sampler = frameFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
+        roundMapFrameTexture.sampler = frameFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
     }
 
     public void forceFullRender(boolean forceFullRender) {
@@ -655,28 +652,28 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zoomScaleAdjusted
         );
 
-        RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        RenderUtils.clearRenderTarget(RenderUtils.getFullscreenRenderTarget(), 0x00000000, 1.0);
-        RenderUtils.setRenderTarget(RenderUtils.getFullscreenRenderTarget());
-        Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
-        matrixStack.pushMatrix();
-        matrixStack.identity();
-        if (!options.hide.get()) {
-            if (fullscreenMap) {
-                renderMapFull(matrixStack, scWidth, scHeight, scaleProj);
-                drawArrow(matrixStack, scWidth / 2, scHeight / 2, scaleProj);
-            } else {
-                renderMap(matrixStack, mapX, mapY, scScale, scaleProj);
-                drawArrow(matrixStack, mapX, mapY, scaleProj);
-                drawDirections(matrixStack, mapX, mapY, scaleProj);
-            }
-        }
-        showCoords(matrixStack, mapX, mapY, scaleProj);
-        matrixStack.popMatrix();
-        RenderUtils.restoreRenderTarget();
-        RenderUtils.restoreProjectionMatrix();
+        RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
 
-        RenderUtils.blitRenderTarget(drawContext, RenderUtils.getFullscreenRenderTarget());
+        RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Map Draw", fullscreenTarget.getColorTextureView(), OptionalInt.of(0x00000000), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+            Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+            matrixStack.pushMatrix();
+            matrixStack.identity();
+            if (!options.hide.get()) {
+                if (fullscreenMap) {
+                    renderMapFull(matrixStack, pass, scWidth / 2, scHeight / 2, scaleProj);
+                    drawArrow(matrixStack, pass, scWidth / 2, scHeight / 2, scaleProj);
+                } else {
+                    renderMap(matrixStack, pass, mapX, mapY, scScale, scaleProj);
+                    drawArrow(matrixStack, pass, mapX, mapY, scaleProj);
+                    drawDirections(matrixStack, pass, mapX, mapY, scaleProj);
+                }
+            }
+            showCoords(matrixStack, pass, mapX, mapY, scaleProj);
+            matrixStack.popMatrix();
+        }
+        RenderUtils.restoreProjectionMatrix();
+        RenderUtils.blitRenderTarget(drawContext, fullscreenTarget);
     }
 
     private void checkForChanges() {
@@ -1463,7 +1460,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     }
 
 
-    private void renderMap(Matrix4fStack matrixStack, int x, int y, int scScale, float scaleProj) {
+    private void renderMap(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
@@ -1483,91 +1480,95 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(256.0F, 256.0F, 0.0F);
 
         // Draw map, radar, etc.
-        RenderUtils.clearRenderTarget(baseMapRenderTarget, 0x00000000, 1.0);
-        RenderUtils.setRenderTarget(baseMapRenderTarget);
+        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Base Map Draw", baseMapRenderTarget.getColorTextureView(), OptionalInt.of(0x00000000), baseMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+            float scale = getMapImageScale();
+            float multi = (float) (1.0 / this.zoomScale);
+            float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
+            float percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ) * multi;
 
-        float scale = getMapImageScale();
-        float multi = (float) (1.0 / this.zoomScale);
-        float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
-        float percentY = (float) (GameVariableAccessShim.zCoordDouble() - this.lastImageZ) * multi;
+            matrixStack.pushMatrix();
+            if (!isRotationEnabled()) {
+                matrixStack.rotate(Axis.ZP.rotationDegrees(rotationFactor));
+            } else {
+                matrixStack.rotate(Axis.ZP.rotationDegrees(-direction));
+            }
+            matrixStack.scale(scale, scale, 1.0F);
+            matrixStack.translate(-percentX * 512.0F / 64.0F, -percentY * 512.0F / 64.0F, 0.0F);
+            mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+            mapPass.bindTexture("Sampler0", mapImages[zoom]);
+            mapPass.beginBatch();
+            mapPass.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+            mapPass.endBatch();
+            matrixStack.popMatrix();
 
-        matrixStack.pushMatrix();
-        if (!isRotationEnabled()) {
-            matrixStack.rotate(Axis.ZP.rotationDegrees(rotationFactor));
-        } else {
-            matrixStack.rotate(Axis.ZP.rotationDegrees(-direction));
+            if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
+                VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(minimapContext);
+                VoxelConstants.getVoxelMapInstance().getRadar().renderMapMobs(matrixStack, mapPass, 0, 0, Contact.DisplayState.BELOW_FRAME, scScale, 512.0F / 64.0F);
+            }
         }
-        matrixStack.scale(scale, scale, 1.0F);
-        matrixStack.translate(-percentX * 512.0F / 64.0F, -percentY * 512.0F / 64.0F, 0.0F);
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapImages[zoom]);
-        RenderUtils.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
-        matrixStack.popMatrix();
-
-        if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
-            VoxelConstants.getVoxelMapInstance().getRadar().onTickInGame(matrixStack, minimapContext);
-            VoxelConstants.getVoxelMapInstance().getRadar().renderMapMobs(matrixStack, Contact.DisplayState.BELOW_FRAME, 0, 0, scScale, 512.0F / 64.0F);
-        }
-
-        RenderUtils.restoreRenderTarget();
 
         // Masking the drawn map
-        RenderUtils.clearRenderTarget(finalMapRenderTarget, 0x00000000, 1.0);
-        RenderUtils.setRenderTarget(finalMapRenderTarget);
+        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Final Map Draw", finalMapRenderTarget.getColorTextureView(), OptionalInt.of(0x00000000), finalMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+            mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST);
+            mapPass.bindTexture("Sampler0", options.squareMap.get() ? squareMapStencilTexture : roundMapStencilTexture);
+            mapPass.beginBatch();
+            mapPass.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+            mapPass.endBatch();
 
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, options.squareMap.get() ? resourceSquareMapStencil : resourceRoundMapStencil);
-        RenderUtils.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
+            mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST_MASKED);
+            mapPass.bindTexture("Sampler0", baseMapRenderTarget.getColorTextureView(), VoxelMapPipelines.LINEAR_CLAMP_SAMPLER);
+            mapPass.beginBatch();
+            mapPass.drawBlitRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+            mapPass.endBatch();
+        }
 
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_MASKED_NO_DEPTH_TEST, baseMapRenderTarget.getColorTextureView());
-        RenderUtils.drawBlitRect(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
-
-        RenderUtils.restoreRenderTarget();
-
-        // Restore default projection matrix
+        // Restore projection matrix
         matrixStack.popMatrix();
         RenderUtils.restoreProjectionMatrix();
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
 
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, finalMapRenderTarget.getColorTextureView());
-        RenderUtils.drawBlitRect(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
 
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, options.squareMap.get() ? resourceSquareMapFrame : resourceRoundMapFrame);
-        RenderUtils.drawTexturedModalRect(matrixStack, x - 32.0F, y - 32.0F, MAP_OVERLAY_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
+        pass.bindTexture("Sampler0", finalMapRenderTarget.getColorTextureView(), VoxelMapPipelines.LINEAR_CLAMP_SAMPLER);
+        pass.beginBatch();
+        pass.drawBlitRect(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        pass.endBatch();
+
+        pass.bindTexture("Sampler0", options.squareMap.get() ? squareMapFrameTexture : roundMapFrameTexture);
+        pass.beginBatch();
+        pass.drawTexturedModalRect(matrixStack, x - 32.0F, y - 32.0F, MAP_OVERLAY_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        pass.endBatch();
 
         double lastXDouble = GameVariableAccessShim.xCoordDouble();
         double lastZDouble = GameVariableAccessShim.zCoordDouble();
 
         if (serverSettings.waypointsAllowed.get()) {
             TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-            RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, textureAtlas);
+            pass.bindTexture("Sampler0", textureAtlas);
+            pass.beginBatch();
             for (Waypoint waypoint : waypointManager.getWaypoints()) {
                 boolean isHighlighted = waypointManager.isHighlightedWaypoint(waypoint);
                 if (waypoint.isActive() || isHighlighted) {
                     double distanceSq = waypoint.getDistanceSqToEntity(minecraft.getCameraEntity());
                     boolean isOutOfRange = waypointOptions.maxDistance.get() <= 10000 && distanceSq >= (waypointOptions.maxDistance.get() * waypointOptions.maxDistance.get());
                     if (!isOutOfRange || isHighlighted) {
-                        drawWaypoint(matrixStack, x, y, waypoint, textureAtlas, null, isHighlighted, -1, lastXDouble, lastZDouble);
+                        drawWaypoint(matrixStack, pass, x, y, waypoint, textureAtlas, null, isHighlighted, -1, lastXDouble, lastZDouble);
                     }
                 }
             }
-
             Waypoint highlightedPoint = waypointManager.getHighlightedWaypoint();
             if (highlightedPoint != null) {
-                drawWaypoint(matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
+                drawWaypoint(matrixStack, pass, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
             }
-
-            RenderUtils.endBatch();
+            pass.endBatch();
         }
+
         matrixStack.popMatrix();
     }
 
-    private void drawWaypoint(Matrix4fStack matrixStack, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, double baseX, double baseZ) {
+    private void drawWaypoint(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, double baseX, double baseZ) {
         boolean uprightIcon = icon != null;
 
         double wayX = baseX - waypoint.getX() - 0.5;
@@ -1614,7 +1615,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                     matrixStack.translate(0.0F, -hypot, 0.0F);
                 }
 
-                RenderUtils.drawSpriteRect(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
+                pass.drawSpriteRect(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var40) {
                 this.showMessage("Error: marker overlay not found!");
             } finally {
@@ -1634,7 +1635,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 matrixStack.translate(0.0F, -hypot, 0.0F);
                 matrixStack.rotate(Axis.ZP.rotationDegrees(locate));
 
-                RenderUtils.drawSpriteRect(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
+                pass.drawSpriteRect(matrixStack, icon, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, iconColor);
             } catch (Exception var42) {
                 this.showMessage("Error: waypoint overlay not found!");
             } finally {
@@ -1643,7 +1644,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
     }
 
-    private void drawArrow(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+    private void drawArrow(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, float scaleProj) {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
@@ -1651,14 +1652,16 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.rotate(Axis.ZP.rotationDegrees(isRotationEnabled() ? 0.0F : this.direction + this.rotationFactor));
         matrixStack.translate(-x, -y, 0.0F);
 
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, resourceArrow);
-        RenderUtils.drawTexturedModalRect(matrixStack, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.bindTexture("Sampler0", minimapArrowTexture);
+        pass.beginBatch();
+        pass.drawTexturedModalRect(matrixStack, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
+        pass.endBatch();
 
         matrixStack.popMatrix();
     }
 
-    private void renderMapFull(Matrix4fStack matrixStack, int scWidth, int scHeight, float scaleProj) {
+    private void renderMapFull(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, float scaleProj) {
         synchronized (this.coordinateLock) {
             if (this.imageChanged) {
                 this.imageChanged = false;
@@ -1669,14 +1672,16 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
-        matrixStack.translate(scWidth / 2.0F, scHeight / 2.0F, 0.0F);
+        matrixStack.translate(x, y, 0.0F);
         matrixStack.rotate(Axis.ZP.rotationDegrees(rotationFactor));
-        matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), 0.0F);
-        int left = scWidth / 2 - 128;
-        int top = scHeight / 2 - 128;
-        RenderUtils.beginBatch(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST, mapImages[zoom]);
-        RenderUtils.drawTexturedModalRect(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0f, 256.0F, 0xFFFFFFFF);
-        RenderUtils.endBatch();
+        matrixStack.translate(-x, -y, 0.0F);
+        int left = x - 128;
+        int top = y - 128;
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.bindTexture("Sampler0", mapImages[zoom]);
+        pass.beginBatch();
+        pass.drawTexturedModalRect(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0f, 256.0F, 0xFFFFFFFF);
+        pass.endBatch();
         matrixStack.popMatrix();
 
         if (this.options.biomeOverlay.get() != OptionEnumMinimap.BiomeOverlay.OFF) {
@@ -1689,12 +1694,12 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             for (AbstractMapData.BiomeLabel o : labels) {
                 if (o.segmentSize > minimumSize) {
                     String name = o.name;
-                    float x = (float) (o.x * factor);
-                    float z = (float) (o.z * factor);
+                    float labelX = (float) (o.x * factor);
+                    float labelZ = (float) (o.z * factor);
                     if (this.options.oldNorth.get()) {
-                        RenderUtils.drawCenteredString(matrixStack, name, (left + 256) - z, top + x - 3.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                        pass.drawCenteredString(matrixStack, name, (left + 256) - labelZ, top + labelX - 3.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
                     } else {
-                        RenderUtils.drawCenteredString(matrixStack, name, left + x, top + z - 3.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                        pass.drawCenteredString(matrixStack, name, left + labelX, top + labelZ - 3.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
                     }
                 }
             }
@@ -1703,7 +1708,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
     }
 
-    private void drawDirections(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+    private void drawDirections(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, float scaleProj) {
         float scale = 0.5F;
         float rotate;
         if (isRotationEnabled()) {
@@ -1731,25 +1736,25 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate - 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate - 90.0F) * Mth.DEG_TO_RAD), 0.0F);
-        RenderUtils.drawCenteredString(matrixStack, "N", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+        pass.drawCenteredString(matrixStack, "N", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate) * Mth.DEG_TO_RAD), 0.0F);
-        RenderUtils.drawCenteredString(matrixStack, "E", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+        pass.drawCenteredString(matrixStack, "E", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate + 90.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 90.0F) * Mth.DEG_TO_RAD), 0.0F);
-        RenderUtils.drawCenteredString(matrixStack, "S", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+        pass.drawCenteredString(matrixStack, "S", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
         matrixStack.pushMatrix();
         matrixStack.translate(distance * Mth.sin(-(rotate + 180.0F) * Mth.DEG_TO_RAD), distance * Mth.cos(-(rotate + 180.0F) * Mth.DEG_TO_RAD), 0.0F);
-        RenderUtils.drawCenteredString(matrixStack, "W", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+        pass.drawCenteredString(matrixStack, "W", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
 
         matrixStack.popMatrix();
     }
 
-    private void showCoords(Matrix4fStack matrixStack, int x, int y, float scaleProj) {
+    private void showCoords(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, float scaleProj) {
         if (!this.options.hide.get() && !this.fullscreenMap) {
             int textStart;
             if (y > this.scHeight - 37 - 32 - 4 - 15) {
@@ -1768,28 +1773,28 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             switch (options.showCoordInfo.get()) {
                 case DEFAULT -> {
                     coords = GameVariableAccessShim.xCoord() + ", " + GameVariableAccessShim.yCoord() + ", " + GameVariableAccessShim.zCoord();
-                    RenderUtils.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // X, Z
+                    pass.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // X, Z
                     lineCount++;
                 }
                 case CLASSIC -> {
                     coords = this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord());
-                    RenderUtils.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // X, Z
+                    pass.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // X, Z
                     lineCount++;
 
                     coords = this.dCoord(GameVariableAccessShim.yCoord());
-                    RenderUtils.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // Y
+                    pass.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // Y
                     lineCount++;
                 }
             }
 
             if (this.options.showBiomeInfo.get()) {
                 coords = BiomeRepository.getName(this.lastBiome);
-                RenderUtils.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // BIOME
+                pass.drawCenteredString(matrixStack, coords, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // BIOME
                 lineCount++;
             }
 
             if (!this.message.isEmpty()) {
-                RenderUtils.drawCenteredString(matrixStack, this.message, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // WORLD NAME
+                pass.drawCenteredString(matrixStack, this.message, x / scale, textStart / scale + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true); // WORLD NAME
                 lineCount++;
             }
 
@@ -1819,11 +1824,11 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
                 String direction = I18n.get("minimap.ui." + ns + ew);
                 String stats = "(" + this.dCoord(GameVariableAccessShim.xCoord()) + ", " + this.dCoord(GameVariableAccessShim.yCoord()) + ", " + this.dCoord(GameVariableAccessShim.zCoord()) + ") " + heading + "' " + direction;
-                RenderUtils.drawCenteredString(matrixStack, stats, (this.scWidth * scaleProj / 2.0F), textStart + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                pass.drawCenteredString(matrixStack, stats, (this.scWidth * scaleProj / 2.0F), textStart + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
                 lineCount++;
             }
             if (!this.message.isEmpty()) {
-                RenderUtils.drawCenteredString(matrixStack, this.message, (this.scWidth * scaleProj / 2.0F), textStart + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
+                pass.drawCenteredString(matrixStack, this.message, (this.scWidth * scaleProj / 2.0F), textStart + lineHeight * lineCount, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
                 lineCount++;
             }
         }

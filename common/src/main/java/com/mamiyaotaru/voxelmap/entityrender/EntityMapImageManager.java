@@ -106,7 +106,7 @@ public class EntityMapImageManager implements IReloadListener {
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
-        this.textureAtlas.setFilter(true, false);
+        this.textureAtlas.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
 
         this.fullRenderModels = Set.of(CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class);
 
