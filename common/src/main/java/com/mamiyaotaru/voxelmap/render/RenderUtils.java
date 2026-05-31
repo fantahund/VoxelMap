@@ -54,18 +54,6 @@ public final class RenderUtils {
         return MATRIX_STACK;
     }
 
-    public static RenderTarget getFullscreenRenderTarget() {
-        RenderSystem.assertOnRenderThread();
-        int width = MINECRAFT.getWindow().getScreenWidth();
-        int height = MINECRAFT.getWindow().getScreenHeight();
-        if (width > 0 && height > 0 && (width != lastScreenWidth || height != lastScreenHeight)) {
-            lastScreenWidth = width;
-            lastScreenHeight = height;
-            FULLSCREEN_RENDER_TARGET.resize(width, height);
-        }
-        return FULLSCREEN_RENDER_TARGET;
-    }
-
     public static void drawTooltip(GuiGraphics guiGraphics, Tooltip tooltip, int x, int y) {
         if (tooltip == null) {
             return;
@@ -76,7 +64,7 @@ public final class RenderUtils {
     public static void blitRenderTarget(GuiGraphics guiGraphics, RenderTarget renderTarget) {
         float v0 = hasFlippedTexture() ? 1.0F : 0.0F;
         float v1 = hasFlippedTexture() ? 0.0F : 1.0F;
-        guiGraphics.guiRenderState.submitBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(renderTarget.getColorTextureView(), VoxelMapPipelines.NEAREST_REPEAT_SAMPLER), guiGraphics.pose(), 0, 0, (int) getGuiWidth(), (int) getGuiHeight(), 0.0F, 1.0F, v0, v1, 0xFFFFFFFF, guiGraphics.scissorStack.peek()));
+        guiGraphics.guiRenderState.submitGuiElement(new FloatBlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(renderTarget.getColorTextureView(), VoxelMapPipelines.NEAREST_REPEAT_SAMPLER), guiGraphics.pose(), 0.0F, 0.0F, getGuiWidth(), getGuiHeight(), 0.0F, 1.0F, v0, v1, 0xFFFFFFFF, 0xFFFFFFFF, guiGraphics.scissorStack.peek()));
     }
 
     public static DeferredRenderPass createDeferredRenderPass(String passName, GpuTextureView colorTexture, OptionalInt colorClear, GpuTextureView depthTexture, OptionalDouble depthClear) {
@@ -95,6 +83,33 @@ public final class RenderUtils {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    public static RenderTarget getFullscreenRenderTarget() {
+        RenderSystem.assertOnRenderThread();
+        int width = MINECRAFT.getWindow().getScreenWidth();
+        int height = MINECRAFT.getWindow().getScreenHeight();
+        if (width > 0 && height > 0 && (width != lastScreenWidth || height != lastScreenHeight)) {
+            lastScreenWidth = width;
+            lastScreenHeight = height;
+            FULLSCREEN_RENDER_TARGET.resize(width, height);
+        }
+        return FULLSCREEN_RENDER_TARGET;
+    }
+
+    public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
+        ProjectionState projectionState = new ProjectionState(RenderSystem.getProjectionMatrixBuffer(), RenderSystem.getProjectionType());
+        PROJECTION_STACK.push(projectionState);
+        RenderSystem.setProjectionMatrix(matrix, type);
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
+    }
+
+    public static void restoreProjectionMatrix() {
+        RenderSystem.getModelViewStack().popMatrix();
+        ProjectionState projectionState = PROJECTION_STACK.pop();
+        RenderSystem.setProjectionMatrix(projectionState.matrix(), projectionState.type());
     }
 
     public static BufferedImage readTextureContentsToBufferedImage(GpuTexture gpuTexture) {
@@ -122,24 +137,6 @@ public final class RenderUtils {
         return image;
     }
 
-    public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
-        ProjectionState projectionState = new ProjectionState(RenderSystem.getProjectionMatrixBuffer(), RenderSystem.getProjectionType());
-        PROJECTION_STACK.push(projectionState);
-        RenderSystem.setProjectionMatrix(matrix, type);
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
-        RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-    }
-
-    public static void restoreProjectionMatrix() {
-        RenderSystem.getModelViewStack().popMatrix();
-        ProjectionState projectionState = PROJECTION_STACK.pop();
-        RenderSystem.setProjectionMatrix(projectionState.matrix(), projectionState.type());
-    }
-
     static record ProjectionState(GpuBufferSlice matrix, ProjectionType type) {
-    }
-
-    static record RenderTargetState(GpuTextureView color, GpuTextureView depth) {
     }
 }
