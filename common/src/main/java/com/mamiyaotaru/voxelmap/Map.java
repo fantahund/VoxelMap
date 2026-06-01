@@ -359,7 +359,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 minecraft.setScreen(new GuiPersistentMap(null));
             }
             if (options.keyBindMobToggle.consumeClick()) {
-                VoxelConstants.getVoxelMapInstance().getRadarOptions().showRadar.toggle();
+                VoxelConstants.getVoxelMapInstance().getRadarOptions().showRadar.cycle();
             }
             if (options.keyBindWaypointToggle.consumeClick()) {
                 options.toggleInGameWaypoints();
@@ -372,7 +372,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 showMessage(I18n.get("minimap.ui.zoomLevel", 2.0 / zoomScale));
             }
             if (options.keyBindMinimapToggle.consumeClick()) {
-                options.hide.toggle();
+                options.hide.cycle();
             }
             if (serverSettings.waypointsAllowed.get()) {
                 if (options.keyBindWaypointMenu.consumeClick()) {

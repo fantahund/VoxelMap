@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 
-public class BiomeParser {
+public final class BiomeParser {
     private BiomeParser() {
     }
 

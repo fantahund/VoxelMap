@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.options.fields;
 
 import java.util.Optional;
 
-public class DoubleField extends NumberField<Double> {
+public class DoubleField extends SliderableField<Double> {
     public DoubleField(String saveKey, String key, double defaultValue, double min, double max) {
         this(saveKey, key, defaultValue, min, max, 0.0);
     }

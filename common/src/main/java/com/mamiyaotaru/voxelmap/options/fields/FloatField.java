@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.options.fields;
 
 import java.util.Optional;
 
-public class FloatField extends NumberField<Float> {
+public class FloatField extends SliderableField<Float> {
     public FloatField(String saveKey, String key, float defaultValue, float min, float max) {
         this(saveKey, key, defaultValue, min, max, 0.0F);
     }

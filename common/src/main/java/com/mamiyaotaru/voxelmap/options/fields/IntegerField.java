@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.options.fields;
 
 import java.util.Optional;
 
-public class IntegerField extends NumberField<Integer> {
+public class IntegerField extends SliderableField<Integer> {
     public IntegerField(String saveKey, String key, int defaultValue, int min, int max) {
         this(saveKey, key, defaultValue, min, max, 0);
     }
@@ -13,7 +13,7 @@ public class IntegerField extends NumberField<Integer> {
 
     @Override
     protected Integer fromDouble(double value) {
-        return (int) value;
+        return (int) Math.round(value);
     }
 
     @Override
