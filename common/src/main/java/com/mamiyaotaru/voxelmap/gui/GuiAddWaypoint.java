@@ -25,6 +25,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -229,24 +230,40 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
-        boolean pressed = false;
-        if (!popupOpen()) {
-            pressed = super.keyPressed(keyEvent);
-
-            boolean acceptable = isWaypointAcceptable();
-            doneButton.active = acceptable;
-            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && acceptable) {
-                acceptWaypoint();
+        if (popupOpen()) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                closePopupAndCancelChanges();
             }
+            handlePopupEvents(widget -> widget.keyPressed(keyEvent));
+            return false;
         }
-
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            closePopupAndCancelChanges();
+        boolean pressed = super.keyPressed(keyEvent);
+        boolean acceptable = isWaypointAcceptable();
+        doneButton.active = acceptable;
+        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && acceptable) {
+            acceptWaypoint();
         }
-
-        handlePopupEvents(widget -> widget.keyPressed(keyEvent));
-
         return pressed;
+    }
+
+    @Override
+    public boolean keyReleased(KeyEvent keyEvent) {
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.keyReleased(keyEvent));
+            return false;
+        }
+        return super.keyReleased(keyEvent);
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent characterEvent) {
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.charTyped(characterEvent));
+            return false;
+        }
+        boolean typed = super.charTyped(characterEvent);
+        doneButton.active = isWaypointAcceptable();
+        return typed;
     }
 
     @Override
@@ -254,54 +271,44 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         double mouseX = mouseButtonEvent.x();
         double mouseY = mouseButtonEvent.y();
         int button = mouseButtonEvent.button();
-
-        if (!popupOpen()) {
-            return super.mouseClicked(mouseButtonEvent, doubleClick);
-        }
-
-        handlePopupEvents(widget -> widget.mouseClicked(mouseButtonEvent, doubleClick));
-
-        if (choosingIcon && button == 0) {
-            Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
-            if (pickedIcon != null) {
-                pickedSuffix = WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", "");
+        if (popupOpen()) {
+            if (choosingIcon && button == 0) {
+                Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
+                if (pickedIcon != null) {
+                    pickedSuffix = WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", "");
+                }
             }
+            handlePopupEvents(widget -> widget.mouseClicked(mouseButtonEvent, doubleClick));
+            return false;
         }
-
-        return false;
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (!popupOpen()) {
-            return super.mouseReleased(mouseButtonEvent);
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.mouseReleased(mouseButtonEvent));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.mouseReleased(mouseButtonEvent));
-
-        return false;
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        if (!popupOpen()) {
-            return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.mouseDragged(mouseButtonEvent, deltaX, deltaY));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.mouseDragged(mouseButtonEvent, deltaX, deltaY));
-
-        return false;
+        return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        if (!popupOpen()) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.mouseScrolled(mouseX, mouseY, horizontalAmount, amount));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.mouseScrolled(mouseX, mouseY, horizontalAmount, amount));
-
-        return false;
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
     }
 
     private void handlePopupEvents(Consumer<GuiEventListener> action) {
