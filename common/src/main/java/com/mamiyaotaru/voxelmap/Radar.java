@@ -35,7 +35,7 @@ public class Radar extends AbstractRadar {
 
     @Override
     protected void initContact(Contact contact) {
-        if (contact.category == VoxelMapMobCategory.PLAYER || contact.entity.hasCustomName()) {
+        if (radarOptions.showPlayerNames.get() && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobNames.get() && contact.category != VoxelMapMobCategory.PLAYER && contact.entity.hasCustomName()) {
             contact.name = radarOptions.showFullNames.get() ? contact.entity.getDisplayName() : getSimplifiedName(contact);
         }
 

@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -36,8 +37,9 @@ import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -46,7 +48,7 @@ import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -77,7 +79,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -91,6 +92,7 @@ public class EntityMapImageManager implements IReloadListener {
 
     private final HashMap<EntityType<?>, EntityVariantDataFactory> entityVariantDataFactories = new HashMap<>();
     private final HashMap<Item, ArmorVariantDataFactory> armorVariantDataFactories = new HashMap<>();
+    private final Direction[] allDirections;
     private final Set<Class<?>> fullRenderModels;
     private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
 
@@ -108,6 +110,7 @@ public class EntityMapImageManager implements IReloadListener {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
         this.textureAtlas.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
 
+        this.allDirections = new Direction[]{null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
         this.fullRenderModels = Set.of(CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class);
 
         CubeDeformation armorInflate = new CubeDeformation(1.0F);
@@ -456,11 +459,10 @@ public class EntityMapImageManager implements IReloadListener {
                 renderer.pose().scale(1.1875F, 1.1875F, 1.1875F);
                 skullModel.renderToBuffer(renderer.pose(), renderer.vertexBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
             } else {
-                BlockRenderDispatcher blockRenderer = minecraft.getBlockRenderer();
+                BlockStateModel blockModel = minecraft.getBlockRenderer().getBlockModel(blockItem.getBlock().defaultBlockState());
                 renderer.pose().mulPose(Axis.ZP.rotationDegrees(180.0F));
                 renderer.pose().scale(0.625F, 0.625F, 0.625F);
-                List<BlockModelPart> allQuads = blockRenderer.getBlockModel(blockItem.getBlock().defaultBlockState()).collectParts(randomSource);
-                blockRenderer.getModelRenderer().tesselateBlock(minecraft.level, allQuads, blockItem.getBlock().defaultBlockState(), BlockPos.ZERO, renderer.pose(), renderer.vertexBuffer(), true, OverlayTexture.NO_OVERLAY);
+                renderBlockToBuffer(renderer.pose(), renderer.vertexBuffer(), blockModel, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
             }
         } else if (itemStack.get(DataComponents.EQUIPPABLE) != null) {
             ModelPart part = humanoidModel.root().getChild("head");
@@ -476,6 +478,17 @@ public class EntityMapImageManager implements IReloadListener {
         }
 
         return sprite;
+    }
+
+    private void renderBlockToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, BlockStateModel model, int light, int overlay) {
+        PoseStack.Pose pose = poseStack.last();
+        for (BlockModelPart part : model.collectParts(randomSource)) {
+            for (Direction direction : allDirections) {
+                for (BakedQuad quad : part.getQuads(direction)) {
+                    vertexConsumer.putBulkData(pose, quad, 1.0F, 1.0F, 1.0F, 1.0F, light, overlay);
+                }
+            }
+        }
     }
 
     private void postProcessRenderedArmorImage(ItemStack itemStack, Sprite sprite, BufferedImage image2, boolean addBorder) {
