@@ -31,7 +31,7 @@ public class VoxelMapPipelines {
     static {
         NEAREST_CLAMP_SAMPLER = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
 
-        NEAREST_REPEAT_SAMPLER = RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR);
+        NEAREST_REPEAT_SAMPLER = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
 
         LINEAR_CLAMP_SAMPLER = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
 
