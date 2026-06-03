@@ -7,6 +7,7 @@ public class ServerSettingsManager {
     public final BooleanField minimapAllowed;
     public final BooleanField worldmapAllowed;
     public final BooleanField cavesAllowed;
+    public final BooleanField manualCavesAllowed;
     public final BooleanField waypointsAllowed;
     public final BooleanField deathpointsAllowd;
     public final BooleanField radarAllowed;
@@ -18,6 +19,7 @@ public class ServerSettingsManager {
         minimapAllowed = new BooleanField("Minimap Allowed", "", true);
         worldmapAllowed = new BooleanField("WorldMap Allowed", "", true);
         cavesAllowed = new BooleanField("Caves Allowed", "", true);
+        manualCavesAllowed = new BooleanField("Manual Caves Allowed", "", true);
         waypointsAllowed = new BooleanField("Waypoints Allowed", "", true);
         deathpointsAllowd = new BooleanField("Deathpoints Allowed", "", true);
         radarAllowed = new BooleanField("Radar Allowed", "", true);
@@ -31,6 +33,7 @@ public class ServerSettingsManager {
         minimapAllowed.set(true);
         worldmapAllowed.set(true);
         cavesAllowed.set(true);
+        manualCavesAllowed.set(true);
         waypointsAllowed.set(true);
         deathpointsAllowd.set(true);
         radarAllowed.set(true);

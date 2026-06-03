@@ -44,6 +44,7 @@ public record SettingsPayload(String settingsJson) implements CustomPacketPayloa
                 case "minimapAllowed" -> serverSettings.minimapAllowed.set(value);
                 case "worldmapAllowed" -> serverSettings.worldmapAllowed.set(value);
                 case "cavesAllowed" -> serverSettings.cavesAllowed.set(value);
+                case "manualCavesAllowed" -> serverSettings.manualCavesAllowed.set(value);
                 case "waypointsAllowed" -> serverSettings.waypointsAllowed.set(value);
                 case "deathWaypointAllowed" -> serverSettings.deathpointsAllowd.set(value);
                 case "radarAllowed" -> serverSettings.radarAllowed.set(value);

@@ -38,8 +38,10 @@ public class CaveModeOverlay extends PersistentMapOverlay.OverlayElement {
     }
 
     private void caveModeUpdated(boolean value) {
-        caveLayerField.setActive(caveModeField.isAllowed() && value);
-        if (!value) {
+        boolean allowed = VoxelConstants.getVoxelMapInstance().getServerSettings().manualCavesAllowed.get();
+        caveLayerField.setActive(value);
+        caveLayerField.setAllowed(allowed);
+        if (value && allowed) {
             caveLayerField.set(maxLayer + 1);
         }
         ((IOptionWidget) caveModeWidget).refresh();
@@ -50,7 +52,7 @@ public class CaveModeOverlay extends PersistentMapOverlay.OverlayElement {
         if (value > maxLayer) {
             map.enableAutoCave();
         } else {
-            map.setCaveLayer(value);
+            map.setManualCaveLayer(value);
         }
     }
 

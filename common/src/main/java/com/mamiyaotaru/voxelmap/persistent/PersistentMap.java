@@ -233,10 +233,10 @@ public class PersistentMap implements IChangeObserver {
             synchronized (layerLock) {
                 if (!serverSettings.cavesAllowed.get() || !options.showCaves.get()) {
                     underground = false;
-                } else if (autoCaveMode) {
-                    playerPos.setXYZ(lastX, Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY()), lastZ);
+                } else if (!serverSettings.manualCavesAllowed.get() || autoCaveMode) {
+                    int clampedY = Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY());
                     caveLayer = blockToCaveLayer(world, lastY);
-                    underground = MapUtils.isUnderground(world, playerPos, lastY);
+                    underground = MapUtils.isUnderground(world, playerPos.withXYZ(lastX, clampedY, lastZ), lastY);
                 }
 
                 if ((underground != lastUnderground) || (underground && caveLayer != lastCaveLayer)) {
@@ -269,7 +269,7 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    public void setCaveLayer(int layer) {
+    public void setManualCaveLayer(int layer) {
         synchronized (layerLock) {
             autoCaveMode = false;
             caveLayer = layer;
