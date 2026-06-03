@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import com.mamiyaotaru.voxelmap.options.fields.StringField;
 import net.minecraft.client.gui.GuiGraphics;
@@ -95,7 +94,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
                 }
             }
             case TAB_WORLDMAP -> {
-                return new OptionField[]{persistentMapOptions.showCoordinates, persistentMapOptions.showCaves, persistentMapOptions.showWaypoints, persistentMapOptions.showWaypointNames, persistentMapOptions.showDistantWaypoints, persistentMapOptions.minZoomExponent, persistentMapOptions.maxZoomExponent, persistentMapOptions.cacheSize};
+                return new OptionField[]{persistentMapOptions.showCoordinates, persistentMapOptions.showCaves, persistentMapOptions.showWaypoints, persistentMapOptions.showWaypointNames, persistentMapOptions.minZoomExponent, persistentMapOptions.maxZoomExponent, persistentMapOptions.cacheSize};
             }
         }
         return null;

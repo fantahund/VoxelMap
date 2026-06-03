@@ -15,6 +15,7 @@ import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
 import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumPersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.CachedRegion;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
@@ -625,7 +626,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             overlayBackground(matrixStack, pass, bottom, getHeight());
 
             Waypoint currentlyHovered = null;
-            if (serverSettings.waypointsAllowed.get() && options.showWaypoints.get()) {
+            if (serverSettings.waypointsAllowed.get() && options.showWaypoints.get() != OptionEnumPersistentMap.ShowWaypoints.OFF) {
                 TextureAtlas textureAtlas = waypointManager.getTextureAtlas();
                 pass.bindTexture("Sampler0", textureAtlas);
                 pass.beginBatch();
@@ -781,8 +782,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         int x = getWidth() / 2;
         int y = getHeight() / 2;
 
-        int borderOffsetX = options.showDistantWaypoints.get() ? -4 : ICON_WIDTH / 2;
-        int borderOffsetY = options.showDistantWaypoints.get() ? 0 : ICON_HEIGHT / 2;
+        boolean showDistant = options.showWaypoints.get() == OptionEnumPersistentMap.ShowWaypoints.ALL;
+
+        int borderOffsetX = showDistant ? -4 : ICON_WIDTH / 2;
+        int borderOffsetY = showDistant ? 0 : ICON_HEIGHT / 2;
         int borderX = x + borderOffsetX;
         int borderY = y - top + borderOffsetY;
 
@@ -795,7 +798,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         double dispY = hypot * Math.cos(Math.toRadians(locate));
         boolean far = Math.abs(dispX) > borderX || Math.abs(dispY) > borderY;
         if (far) {
-            if (!options.showDistantWaypoints.get()) {
+            if (!showDistant) {
                 return false;
             }
 
@@ -844,7 +847,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
         boolean isHovered = mouseX >= screenX - ICON_WIDTH / 2.0F && mouseX <= screenX + ICON_WIDTH / 2.0F  && mouseY >= screenY - ICON_HEIGHT / 2.0F && mouseY <= screenY + ICON_HEIGHT / 2.0F;
 
-        float iconDepth = options.showDistantWaypoints.get() ? MAP_OVERLAY_DEPTH : MAP_ICON_DEPTH;
+        float iconDepth = showDistant ? MAP_OVERLAY_DEPTH : MAP_ICON_DEPTH;
         int iconColor = color == -1 ? waypoint.getUnifiedColor(!waypoint.enabled && !isHighlighted && !isHovered ? 0.3F : 1.0F) : color;
         int textColor = !waypoint.enabled && !isHighlighted && !isHovered ? 0x55FFFFFF : 0xFFFFFFFF;
         pass.drawSpriteRect(matrixStack, icon, x - ICON_WIDTH / 2.0F, y - ICON_HEIGHT / 2.0F, iconDepth, ICON_WIDTH, ICON_HEIGHT, iconColor);

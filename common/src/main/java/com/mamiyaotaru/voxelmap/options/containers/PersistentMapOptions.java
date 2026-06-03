@@ -1,7 +1,9 @@
 package com.mamiyaotaru.voxelmap.options.containers;
 
 import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumPersistentMap;
 import com.mamiyaotaru.voxelmap.options.fields.BooleanField;
+import com.mamiyaotaru.voxelmap.options.fields.EnumField;
 import com.mamiyaotaru.voxelmap.options.fields.FloatField;
 import com.mamiyaotaru.voxelmap.options.fields.IntegerField;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
@@ -12,9 +14,8 @@ public class PersistentMapOptions extends AbstractOptionsContainer {
 
     public final BooleanField showCoordinates;
     public final BooleanField showCaves;
-    public final BooleanField showWaypoints;
+    public final EnumField<OptionEnumPersistentMap.ShowWaypoints> showWaypoints;
     public final BooleanField showWaypointNames;
-    public final BooleanField showDistantWaypoints;
     public final BooleanField outputImages;
 
     public final IntegerField cacheSize;
@@ -34,9 +35,8 @@ public class PersistentMapOptions extends AbstractOptionsContainer {
     public PersistentMapOptions() {
         addOptionField((showCoordinates = new BooleanField("Show WorldMap Coordinates", "options.worldmap.showCoordinates", true)));
         addOptionField((showCaves = new BooleanField("Enable WorldMap Cave Mode", "options.worldmap.caveMode", true)));
-        addOptionField((showWaypoints = new BooleanField("Show WorldMap Waypoints", "options.worldmap.showWaypoints", true)));
+        addOptionField((showWaypoints = new EnumField<>("Show WorldMap Waypoints", "options.worldmap.showWaypoints", OptionEnumPersistentMap.ShowWaypoints.ALL)));
         addOptionField((showWaypointNames = new BooleanField("Show WorldMap Waypoint Names", "options.worldmap.showWaypointNames", true)));
-        addOptionField((showDistantWaypoints = new BooleanField("Show WorldMap Distant Waypoints", "options.worldmap.showDistantWaypoints", true)));
         addOptionField((outputImages = new BooleanField("WorldMap Output Images", "", false)));
 
         addOptionField((cacheSize = new IntegerField("WorldMap Cache Size", "options.worldmap.cacheSize", 500, 30, 5000)).withListener(this::updateCacheSize));
@@ -56,9 +56,7 @@ public class PersistentMapOptions extends AbstractOptionsContainer {
 
     @Override
     public void updateOptionsActive() {
-        boolean waypointEnabled = showWaypoints.get();
-        showWaypointNames.setActive(waypointEnabled);
-        showDistantWaypoints.setActive(waypointEnabled);
+        showWaypointNames.setActive(showWaypoints.get() != OptionEnumPersistentMap.ShowWaypoints.OFF);
     }
 
     @Override
@@ -71,7 +69,6 @@ public class PersistentMapOptions extends AbstractOptionsContainer {
         boolean waypointsAllowed = serverSettings.waypointsAllowed.get();
         showWaypoints.setAllowed(showWaypoints.isAllowed() && waypointsAllowed);
         showWaypointNames.setAllowed(showWaypointNames.isAllowed() && waypointsAllowed);
-        showDistantWaypoints.setAllowed(showDistantWaypoints.isAllowed() && waypointsAllowed);
 
         showCaves.setAllowed(showCaves.isAllowed() && serverSettings.cavesAllowed.get());
     }
