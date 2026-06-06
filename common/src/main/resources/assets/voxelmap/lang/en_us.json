@@ -216,6 +216,7 @@
   "options.worldmap.caveMode.layer" : "Y",
   "options.worldmap.caveMode.layer.range" : "%s - %s",
   "options.worldmap.caveMode.layer.auto" : "Auto",
+  "options.worldmap.caveMode.layer.surface" : "Surface",
   "options.worldmap.showWaypoints": "Show Waypoints",
   "options.worldmap.showWaypoints.nearby": "Nearby",
   "options.worldmap.showWaypoints.all": "All",

@@ -251,6 +251,12 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
+    public boolean isUnderground() {
+        synchronized (layerLock) {
+            return underground;
+        }
+    }
+
     public int getCaveLayer() {
         synchronized (layerLock) {
             return caveLayer;
@@ -269,11 +275,11 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    public void setManualCaveLayer(int layer) {
+    public void setCaveLayer(int layer, boolean underground) {
         synchronized (layerLock) {
             autoCaveMode = false;
             caveLayer = layer;
-            underground = true;
+            this.underground = underground;
         }
     }
 

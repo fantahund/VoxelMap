@@ -216,6 +216,7 @@
   "options.worldmap.caveMode.layer" : "Y",
   "options.worldmap.caveMode.layer.range" : "%s ~ %s",
   "options.worldmap.caveMode.layer.auto" : "자동",
+  "options.worldmap.caveMode.layer.surface" : "표면",
   "options.worldmap.showWaypoints": "경유지 표시",
   "options.worldmap.showWaypoints.nearby": "가까운 것만",
   "options.worldmap.showWaypoints.all": "모두",
