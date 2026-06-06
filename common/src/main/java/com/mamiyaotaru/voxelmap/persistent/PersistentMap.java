@@ -399,7 +399,7 @@ public class PersistentMap implements IChangeObserver {
         if (biome != null) {
             boolean solid = false;
             if (underground) {
-                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY, sectionY);
+                surfaceHeight = this.getNetherHeight(startX + imageX, startZ + imageY, sectionY);
                 surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                 if (surfaceHeight != Short.MIN_VALUE) {
                     foliageHeight = surfaceHeight + 1;
@@ -537,34 +537,32 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int getNetherHeight(LevelChunk chunk, int x, int z, int sectionY) {
-        int baseY = caveLayerToBlock(world, sectionY);
-        int y = baseY;
+    private int getNetherHeight(int x, int z, int sectionY) {
+        int minY = caveLayerToBlock(world, sectionY);
+        int maxY = minY + CAVE_LAYER_HEIGHT;
+        int y = (minY + maxY) / 2;
         this.blockPos.setXYZ(x, y, z);
-        BlockState blockState = chunk.getBlockState(this.blockPos);
+        BlockState blockState = world.getBlockState(this.blockPos);
         if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
-            while (y > chunk.getMinY()) {
+            while (y >= minY && y > world.getMinY()) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
-                blockState = chunk.getBlockState(this.blockPos);
+                blockState = world.getBlockState(this.blockPos);
                 if (blockState.getLightBlock() > 0 || blockState.getBlock() == Blocks.LAVA) {
                     return y + 1;
                 }
             }
-
-            return y;
         } else {
-            while (y <= baseY + CAVE_LAYER_HEIGHT && y < world.getMaxY()) {
+            while (y <= maxY && y < world.getMaxY()) {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
-                blockState = chunk.getBlockState(this.blockPos);
+                blockState = world.getBlockState(this.blockPos);
                 if (blockState.getLightBlock() == 0 && blockState.getBlock() != Blocks.LAVA) {
                     return y;
                 }
             }
-
-            return Short.MIN_VALUE;
         }
+        return Short.MIN_VALUE;
     }
 
     private int getLight(BlockState blockState, Level world, MutableBlockPos blockPos, int x, int z, int height, boolean solid) {
