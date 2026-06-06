@@ -258,10 +258,7 @@ public class EntityMapImageManager implements IReloadListener {
             ((SlimeOuterLayer) slimeRenderer.layers.getFirst()).model.root().render(renderer.pose(), renderer.vertexBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
 
-        BufferedImage output = renderer.endBatch();
-        if (output != null) {
-            postProcessRenderedMobImage(entity, sprite, output, addBorder);
-        }
+        renderer.endBatch((image) -> postProcessRenderedMobImage(entity, sprite, image, addBorder));
 
         return sprite;
     }
@@ -472,10 +469,7 @@ public class EntityMapImageManager implements IReloadListener {
             part.render(renderer.pose(), renderer.vertexBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         }
 
-        BufferedImage output = renderer.endBatch();
-        if (output != null) {
-            postProcessRenderedArmorImage(itemStack, sprite, output, addBorder);
-        }
+        renderer.endBatch((image) ->  postProcessRenderedArmorImage(itemStack, sprite, image, addBorder));
 
         return sprite;
     }

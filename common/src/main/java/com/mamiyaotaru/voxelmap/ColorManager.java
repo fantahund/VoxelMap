@@ -3,12 +3,12 @@ package com.mamiyaotaru.voxelmap;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.IdentifierException;
@@ -224,8 +224,10 @@ public class ColorManager implements IReloadListener {
     }
 
     private void loadTexturePackTerrainImage() {
-        terrainBuff = RenderUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getTexture());
-        loadedTerrainImage = true;
+        RenderUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getTexture(), (image) -> {
+            terrainBuff = image;
+            loadedTerrainImage = true;
+        });
     }
 
     private void loadSpecialColors() {

@@ -1,9 +1,9 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.render.VoxelMapRenderTarget;
+import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 public class EntityImageRenderer {
     private final Minecraft minecraft = Minecraft.getInstance();
@@ -99,7 +100,7 @@ public class EntityImageRenderer {
         return bufferBuilder;
     }
 
-    public BufferedImage endBatch() {
+    public void endBatch(Consumer<BufferedImage> resultConsumer) {
         AbstractTexture texture0 = dataHolder.getTexture0() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture0()) : null;
         AbstractTexture texture1 = dataHolder.getTexture1() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture1()) : null;
         AbstractTexture texture2 = dataHolder.getTexture2() != null ? minecraft.getTextureManager().getTexture(dataHolder.getTexture2()) : null;
@@ -120,7 +121,7 @@ public class EntityImageRenderer {
         try (MeshData meshData = bufferBuilder.build()) {
             // no mesh? might happen with some mods
             if (meshData == null) {
-                return null;
+                return;
             }
 
             GpuBuffer vertexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
@@ -179,8 +180,9 @@ public class EntityImageRenderer {
 
         RenderUtils.forceFlushCommands();
 
-        BufferedImage output = RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture());
-        return RenderUtils.hasFlippedTexture() ? ImageUtils.flipVertical(output) : output;
+        RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
+            resultConsumer.accept(RenderUtils.hasFlippedTexture() ? ImageUtils.flipVertical(image) : image);
+        });
     }
 
     private GpuBufferSlice dynamicTransformsWithColor(int color) {
