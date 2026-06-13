@@ -2,7 +2,7 @@ name: VoxelMap
 version: ${version}
 main: com.mamiyaotaru.voxelmap.paper.VoxelmapPaperPlugin
 description: Sends server-side VoxelMap settings to VoxelMap clients
-api-version: '14'
+api-version: '1.14'
 commands:
   voxelmap:
     description: Reloads the VoxelMap server settings
