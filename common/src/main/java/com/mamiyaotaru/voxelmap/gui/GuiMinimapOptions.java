@@ -265,7 +265,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             }
             EnumOptionsMinimap option = button2.returnEnumOptions();
 
-            boolean radarBlocked = !radarOptions.radarAllowed && !radarOptions.radarPlayersAllowed && !radarOptions.radarMobsAllowed;
+            boolean radarBlocked = !radarOptions.radarAllowed || (!radarOptions.radarPlayersAllowed && !radarOptions.radarMobsAllowed);
 
             if (containsOption(option, RADAR_FULL_OPTIONS) || containsOption(option, RADAR_SIMPLE_OPTIONS)) {
                 button2.active = radarOptions.showRadar && !radarBlocked;
