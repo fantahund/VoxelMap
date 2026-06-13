@@ -29,7 +29,7 @@ public class GLUtils {
 
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
         RenderSystem.assertOnRenderThread();
-        int bytePerPixel = gpuTexture.getFormat().pixelSize();
+        int bytePerPixel = gpuTexture.getFormat().blockSize();
         int width = gpuTexture.getWidth(0);
         int height = gpuTexture.getHeight(0);
         int bufferSize = bytePerPixel * width * height;
