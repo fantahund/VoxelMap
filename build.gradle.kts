@@ -1,16 +1,16 @@
 plugins {
     id("java")
-    id("net.fabricmc.fabric-loom") version ("1.16-SNAPSHOT") apply (false)
+    id("net.fabricmc.fabric-loom") version ("1.17-SNAPSHOT") apply (false)
     id("net.minecraftforge.gradle") version ("7.0.17") apply (false)
     id("net.neoforged.moddev") version ("2.0.141") apply (false)
 }
 
-val minecraftVersion by extra { "26.2-rc-2" }
+val minecraftVersion by extra { "26.2" }
 val forgeVersion by extra { "63.0.1" }
-val neoForgeVersion by extra { "26.1.1.1-beta" }
+val neoForgeVersion by extra { "26.2.0.0-beta" }
 val fabricVersion by extra { "0.19.3" }
-val fabricApiVersion by extra { "0.152.0+26.2" }
-val paperApiVersion by extra { "26.2-rc-2.build.5-alpha" }
+val fabricApiVersion by extra { "0.152.1+26.2" }
+val paperApiVersion by extra { "[26.2.build,)" }
 val voxelMapVersion by extra { "1.16.7" }
 
 val fullVersion by extra { "${minecraftVersion}-${voxelMapVersion}" }
