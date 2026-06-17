@@ -1,0 +1,50 @@
+package com.mamiyaotaru.voxelmap.packets;
+
+import com.google.gson.Gson;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
+import java.util.Map;
+import net.minecraft.client.Minecraft;
+
+public final class VoxelmapClientPacketHandler {
+    private VoxelmapClientPacketHandler() {
+    }
+
+    public static void applySettings(VoxelmapSettingsS2C packet) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> settings = new Gson().fromJson(packet.settingsJson(), Map.class);
+        for (Map.Entry<String, Object> entry : settings.entrySet()) {
+            String setting = entry.getKey();
+            Object value = entry.getValue();
+            switch (setting) {
+                case "worldName" -> {
+                    if (value instanceof String worldName) {
+                        Minecraft.getInstance().execute(() -> {
+                            VoxelConstants.getLogger().info("Received world name from settings: " + worldName);
+                            VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
+                        });
+                    } else {
+                        VoxelConstants.getLogger().warn("Invalid world name: " + value);
+                    }
+                }
+                case "radarAllowed" -> VoxelConstants.getVoxelMapInstance().getRadarOptions().radarAllowed = (Boolean) value;
+                case "radarMobsAllowed" -> VoxelConstants.getVoxelMapInstance().getRadarOptions().radarMobsAllowed = (Boolean) value;
+                case "radarPlayersAllowed" -> VoxelConstants.getVoxelMapInstance().getRadarOptions().radarPlayersAllowed = (Boolean) value;
+                case "cavesAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().cavesAllowed = (Boolean) value;
+                case "minimapAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().minimapAllowed = (Boolean) value;
+                case "worldmapAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().worldmapAllowed = (Boolean) value;
+                case "waypointsAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().waypointsAllowed = (Boolean) value;
+                case "deathWaypointAllowed" -> VoxelConstants.getVoxelMapInstance().getMapOptions().deathWaypointAllowed = (Boolean) value;
+                case "teleportCommand" -> VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand = (String) value;
+                default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
+            }
+        }
+    }
+
+    public static void updateWorld(WorldIdS2C packet) {
+        String worldName = packet.worldName();
+        VoxelConstants.getLogger().info("Received world_id: " + worldName);
+        if (worldName != null) {
+            VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
+        }
+    }
+}

@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.fabric;
 
+import com.mamiyaotaru.voxelmap.packets.VoxelmapClientPacketHandler;
 import com.mamiyaotaru.voxelmap.packets.WorldIdC2S;
 import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
@@ -20,11 +21,11 @@ public class FabricWorldIdChannelHandler implements ClientPlayNetworking.PlayPay
 
     @Override
     public void receive(WorldIdS2C payload, Context context) {
-        WorldIdS2C.updateWorld(payload);
+        VoxelmapClientPacketHandler.updateWorld(payload);
     }
 
     @Override
     public void receive(WorldIdS2C payload, net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.Context context) {
-        WorldIdS2C.updateWorld(payload);
+        VoxelmapClientPacketHandler.updateWorld(payload);
     }
 }
