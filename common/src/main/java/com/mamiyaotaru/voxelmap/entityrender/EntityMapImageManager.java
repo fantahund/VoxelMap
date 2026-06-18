@@ -23,9 +23,11 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -79,6 +81,8 @@ public class EntityMapImageManager {
     private final EmptySubmitNodeCollector emptySubmitNodeCollector = new EmptySubmitNodeCollector();
     private final Class<?>[] fullRenderModels;
     private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
+    private final HashSet<EntityType<?>> failedPreviewIconTypes = new HashSet<>();
+    private final AtomicInteger previewEntityIds = new AtomicInteger(-1);
 
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
@@ -110,6 +114,8 @@ public class EntityMapImageManager {
 
         variantDataFactories.clear();
         customMobProperties.clear();
+        failedPreviewIconTypes.clear();
+        previewEntityIds.set(-1);
 
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), null, null));
@@ -196,9 +202,30 @@ public class EntityMapImageManager {
     }
 
     public Sprite requestImageForMobType(EntityType<?> type, int size, boolean addBorder) {
-        if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity le) {
-            return requestImageForMob(le, size, addBorder);
+        if (failedPreviewIconTypes.contains(type)) {
+            return null;
         }
+
+        LivingEntity previewEntity = createPreviewEntity(type);
+        if (previewEntity == null) {
+            return null;
+        }
+
+        try {
+            return requestImageForMob(previewEntity, size, addBorder);
+        } catch (RuntimeException e) {
+            failedPreviewIconTypes.add(type);
+            VoxelConstants.getLogger().warn("Failed to render radar preview icon for mob type {}", BuiltInRegistries.ENTITY_TYPE.getKey(type), e);
+            return null;
+        }
+    }
+
+    private LivingEntity createPreviewEntity(EntityType<?> type) {
+        if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity livingEntity) {
+            livingEntity.setId(previewEntityIds.getAndDecrement());
+            return livingEntity;
+        }
+
         return null;
     }
 
