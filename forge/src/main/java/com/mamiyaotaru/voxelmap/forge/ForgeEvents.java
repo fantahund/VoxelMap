@@ -21,7 +21,7 @@ import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.language.IModInfo;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -41,16 +41,14 @@ public class ForgeEvents implements Events {
         this.map = map;
 
         BusGroup modBusGroup = VoxelMapForgeMod.getModBusGroup();
-        FMLCommonSetupEvent.getBus(modBusGroup).addListener(this::preInitClient);
+        FMLClientSetupEvent.getBus(modBusGroup).addListener(this::preInitClient);
         AddPackFindersEvent.BUS.addListener(this::registerResourcePacks);
         RegisterClientReloadListenersEvent.BUS.addListener(this::registerReloadListener);
         MinecraftForge.EVENT_BUS.register(new ForgeEventListener(map));
     }
 
-    private void preInitClient(final FMLCommonSetupEvent event) {
+    private void preInitClient(final FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
-            ForgeSettingsPacketHandler.register();
-            ForgeWorldIdPacketHandler.register();
             map.onClientStarted();
             map.onConfigurationInit();
         });
