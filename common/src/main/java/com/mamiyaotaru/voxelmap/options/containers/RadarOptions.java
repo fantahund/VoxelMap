@@ -74,17 +74,17 @@ public class RadarOptions extends AbstractOptionsContainer {
 
     @Override
     public void updateOptionsAllowed(ServerSettingsManager serverSettings) {
-        boolean radarAllowed = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get();
+        boolean radarAllowed = serverSettings.radarAllowed.get() && (serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get());
         for (OptionField<?> option : optionByNames.values()) {
             option.setAllowed(radarAllowed);
         }
 
-        boolean mobsAllowed = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get();
+        boolean mobsAllowed = serverSettings.radarAllowed.get() && serverSettings.radarMobsAllowed.get();
         showMobs.setAllowed(showMobs.isAllowed() && mobsAllowed);
         showMobNames.setAllowed(showMobNames.isAllowed() && mobsAllowed);
         showMobHelmets.setAllowed(showMobHelmets.isAllowed() && mobsAllowed);
 
-        boolean playersAllowed = serverSettings.radarAllowed.get() || serverSettings.radarPlayersAllowed.get();
+        boolean playersAllowed = serverSettings.radarAllowed.get() && serverSettings.radarPlayersAllowed.get();
         showPlayers.setAllowed(showPlayers.isAllowed() && playersAllowed);
         showPlayerNames.setAllowed(showPlayerNames.isAllowed() && playersAllowed);
         showPlayerHelmets.setAllowed(showPlayerHelmets.isAllowed() && playersAllowed);

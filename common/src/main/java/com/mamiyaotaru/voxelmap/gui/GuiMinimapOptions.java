@@ -165,7 +165,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
             }
             case TAB_RADAR -> {
                 AbstractWidget mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this))).bounds(widgetX, widgetY, 150, 20).build();
-                mobListButton.active = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get();
+                mobListButton.active = serverSettings.radarAllowed.get() && (serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get());
 
                 addOptionWidget(mobListButton);
             }

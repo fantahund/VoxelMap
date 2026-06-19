@@ -45,7 +45,7 @@ public abstract class AbstractRadar implements IReloadListener {
     public void onTickInGame(MinimapContext minimapContext) {
         this.minimapContext = minimapContext;
 
-        if (serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get()) {
+        if (serverSettings.radarAllowed.get() && (serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get())) {
             if (timer > 15) {
                 calculateMobs();
                 timer = 0;
@@ -56,6 +56,8 @@ public abstract class AbstractRadar implements IReloadListener {
             for (Contact contact : contacts) {
                 updateContact(contact);
             }
+        } else if (!contacts.isEmpty()) {
+            contacts.clear();
         }
     }
 
@@ -148,8 +150,8 @@ public abstract class AbstractRadar implements IReloadListener {
             return false;
         }
 
-        boolean playersAllowed = serverSettings.radarAllowed.get() || serverSettings.radarPlayersAllowed.get();
-        boolean mobsAllowed = serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get();
+        boolean playersAllowed = serverSettings.radarAllowed.get() && serverSettings.radarPlayersAllowed.get();
+        boolean mobsAllowed = serverSettings.radarAllowed.get() && serverSettings.radarMobsAllowed.get();
 
         return switch (VoxelMapMobCategory.forEntity(entity)) {
             case PLAYER -> playersAllowed;

@@ -91,7 +91,7 @@ public class VoxelMap implements PreparableReloadListener, Executor {
         entityMapImageManager = new EntityMapImageManager();
 
         try {
-            if (serverSettings.radarAllowed.get() || serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get()) {
+            if (serverSettings.radarAllowed.get() && (serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get())) {
                 radar = new Radar();
                 radarSimple = new RadarSimple();
             }
