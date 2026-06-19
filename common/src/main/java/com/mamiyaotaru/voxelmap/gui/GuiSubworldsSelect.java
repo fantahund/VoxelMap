@@ -2,19 +2,15 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiButtonText;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
@@ -22,8 +18,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private Component title;
     private Component subtitle;
     private boolean multiworld;
-    private EditBox newNameField;
-    private boolean newWorld;
     private String[] worlds;
     private final WaypointManager waypointManager;
     private final CameraType lastCameraType;
@@ -79,17 +73,10 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
             this.addRenderableWidget(editButtons[t]);
         }
 
-        int numButtons = selectButtons.length - 1;
-        int i = (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth;
-        if (!this.newWorld) {
-            selectButtons[numButtons] = new Button.Builder(Component.literal("< " + I18n.get("worldmap.multiworld.newName") + " >"), button -> {
-                this.newWorld = true;
-                this.newNameField.setFocused(true);
-            }).bounds(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20).build();
-            this.addRenderableWidget(selectButtons[numButtons]);
-        }
-
-        this.newNameField = new EditBox(this.getFont(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, Component.empty());
+        int lastIndex = selectButtons.length - 1;
+        int fieldX = (buttonsPerRow - 1 - lastRowShiftBy - lastIndex % buttonsPerRow) * buttonWidth + xSpacing;
+        int fieldY = this.height - 60 - lastIndex / buttonsPerRow * 21;
+        this.addRenderableWidget(new GuiButtonText(this.getFont(), fieldX, fieldY, buttonWidth - 2, 20, Component.literal("< " + I18n.get("worldmap.multiworld.newName") + " >"), this::nameFieldUpdated));
     }
 
     @Override
@@ -103,40 +90,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
-        if (newWorld) {
-            newNameField.mouseClicked(mouseButtonEvent, bl);
-        }
-
-        return super.mouseClicked(mouseButtonEvent, bl);
-    }
-
-    @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        if (newNameField.isFocused()) {
-            newNameField.charTyped(characterEvent);
-        }
-
-        return super.charTyped(characterEvent);
-    }
-
-    @Override
-    public boolean keyPressed(KeyEvent keyEvent) {
-        if (newNameField.isFocused()) {
-            newNameField.keyPressed(keyEvent);
-            int keyCode = keyEvent.key();
-            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
-                String newName = newNameField.getValue();
-                if (!newName.isEmpty()) {
-                    worldSelected(newName);
-                }
-            }
-        }
-
-        return super.keyPressed(keyEvent);
-    }
-
-    @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         super.render(drawContext, mouseX, mouseY, delta);
 
@@ -144,10 +97,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         drawContext.fill(getWidth() / 2 - titleWidth / 2 - 5, 0, getWidth() / 2 + titleWidth / 2 + 5, 27, -1073741824);
         drawContext.drawCenteredString(getFont(), title, getWidth() / 2, 5, 0xFFFFFFFF);
         drawContext.drawCenteredString(getFont(), subtitle, getWidth() / 2, 15, 0xFFFF0000);
-
-        if (newWorld) {
-            newNameField.render(drawContext, mouseX, mouseY, delta);
-        }
     }
 
     @Override
@@ -166,5 +115,12 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
     private void editWorld(String subworldNameToEdit) {
         minecraft.setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
+    }
+
+    private void nameFieldUpdated(GuiButtonText field) {
+        String newName = field.getText();
+        if (!newName.isEmpty()) {
+            worldSelected(newName);
+        }
     }
 }
