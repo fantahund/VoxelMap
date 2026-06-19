@@ -66,6 +66,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.StainedGlassBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
@@ -1499,6 +1500,22 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             mapPass.beginBatch();
             mapPass.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
             mapPass.endBatch();
+            if (options.worldBorder.get()) {
+                WorldBorder worldBorder = minecraft.level.getWorldBorder();
+
+                float x0 = ((float) (worldBorder.getMinX()) - lastImageX) * multi * 512.0F / 64.0F;
+                float z0 = ((float) (worldBorder.getMinZ()) - lastImageZ) * multi * 512.0F / 64.0F;
+                float x1 = ((float) (worldBorder.getMaxX()) - lastImageX) * multi * 512.0F / 64.0F;
+                float z1 = ((float) (worldBorder.getMaxZ()) - lastImageZ) * multi * 512.0F / 64.0F;
+
+                mapPass.setPipeline(VoxelMapPipelines.GUI_LEQUAL_DEPTH_TEST);
+                mapPass.beginBatch();
+                mapPass.drawTexturedModalRect(matrixStack, x0 - 2.0F, z0 - 2.0F, -10.0F, x1 - x0 + 4.0F, 4.0F, 0xFFFF0000);
+                mapPass.drawTexturedModalRect(matrixStack, x0 - 2.0F, z1 - 2.0F, -10.0F, x1 - x0 + 4.0F, 4.0F, 0xFFFF0000);
+                mapPass.drawTexturedModalRect(matrixStack, x0 - 2.0F, z0 - 2.0F, -10.0F, 4.0F, z1 - z0 + 4.0F, 0xFFFF0000);
+                mapPass.drawTexturedModalRect(matrixStack, x1 - 2.0F, z0 - 2.0F, -10.0F, 4.0F, z1 - z0 + 4.0F, 0xFFFF0000);
+                mapPass.endBatch();
+            }
             matrixStack.popMatrix();
 
             if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {

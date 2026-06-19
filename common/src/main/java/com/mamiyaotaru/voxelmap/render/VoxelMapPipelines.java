@@ -21,6 +21,8 @@ public class VoxelMapPipelines {
     public static final RenderPipeline GUI_TEXTURED_NO_DEPTH_TEST;
     public static final RenderPipeline GUI_TEXTURED_NO_DEPTH_TEST_MASKED;
     public static final RenderPipeline GUI_TEXTURED_LEQUAL_DEPTH_TEST;
+    public static final RenderPipeline GUI_NO_DEPTH_TEST;
+    public static final RenderPipeline GUI_LEQUAL_DEPTH_TEST;
     public static final RenderPipeline WAYPOINT_ICON_DEPTH_TEST;
     public static final RenderPipeline WAYPOINT_ICON_NO_DEPTH_TEST;
     public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_DEPTH_TEST;
@@ -60,6 +62,16 @@ public class VoxelMapPipelines {
 
         GUI_TEXTURED_LEQUAL_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_lequal_depth_test"))
+                .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+                .build();
+
+        GUI_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_no_depth_test"))
+                .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+                .build();
+
+        GUI_LEQUAL_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_lequal_depth_test"))
                 .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
                 .build();
 

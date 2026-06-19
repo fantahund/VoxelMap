@@ -35,7 +35,6 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
@@ -595,18 +594,19 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     WorldBorder worldBorder = minecraft.level.getWorldBorder();
                     float scale = 1.0F / scScale / mapToGui;
 
-                    float x1 = (float) (worldBorder.getMinX());
-                    float z1 = (float) (worldBorder.getMinZ());
-                    float x2 = (float) (worldBorder.getMaxX());
-                    float z2 = (float) (worldBorder.getMaxZ());
+                    float x0 = (float) (worldBorder.getMinX());
+                    float z0 = (float) (worldBorder.getMinZ());
+                    float x1 = (float) (worldBorder.getMaxX());
+                    float z1 = (float) (worldBorder.getMaxZ());
 
-                    pass.bindTexture("Sampler0", (GpuTextureView) null, null);
+                    pass.setPipeline(VoxelMapPipelines.GUI_LEQUAL_DEPTH_TEST);
                     pass.beginBatch();
-                    pass.drawTexturedModalRect(matrixStack, x1 - scale, z1 - scale, MAP_IMAGE_DEPTH, x2 + scale, z1 + scale, 0xFFFF0000);
-                    pass.drawTexturedModalRect(matrixStack, x1 - scale, z2 - scale, MAP_IMAGE_DEPTH, x2 + scale, z2 + scale, 0xFFFF0000);
-                    pass.drawTexturedModalRect(matrixStack, x1 - scale, z1 - scale, MAP_IMAGE_DEPTH, x1 + scale, z2 + scale, 0xFFFF0000);
-                    pass.drawTexturedModalRect(matrixStack, x2 - scale, z1 - scale, MAP_IMAGE_DEPTH, x2 + scale, z2 + scale, 0xFFFF0000);
+                    pass.drawTexturedModalRect(matrixStack, x0 - scale, z0 - scale, MAP_IMAGE_DEPTH, x1 - x0 + 2.0F * scale, 2.0F * scale, 0xFFFF0000);
+                    pass.drawTexturedModalRect(matrixStack, x0 - scale, z1 - scale, MAP_IMAGE_DEPTH, x1 - x0 + 2.0F * scale, 2.0F * scale, 0xFFFF0000);
+                    pass.drawTexturedModalRect(matrixStack, x0 - scale, z0 - scale, MAP_IMAGE_DEPTH, 2.0F * scale, z1 - z0 + 2.0F * scale, 0xFFFF0000);
+                    pass.drawTexturedModalRect(matrixStack, x1 - scale, z0 - scale, MAP_IMAGE_DEPTH, 2.0F * scale, z1 - z0 + 2.0F * scale, 0xFFFF0000);
                     pass.endBatch();
+                    pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
                 }
 
                 if (oldNorth) {
