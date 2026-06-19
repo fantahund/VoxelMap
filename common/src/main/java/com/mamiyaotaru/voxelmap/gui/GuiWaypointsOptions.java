@@ -1,98 +1,44 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionButtonMinimap;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiOptionSliderMinimap;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import com.mamiyaotaru.voxelmap.options.fields.OptionField;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class GuiWaypointsOptions extends GuiScreenMinimap {
-    private static final EnumOptionsMinimap[] relevantOptions = { EnumOptionsMinimap.WAYPOINT_DISTANCE, EnumOptionsMinimap.WAYPOINT_SIGN_SCALE, EnumOptionsMinimap.DEATHPOINTS, EnumOptionsMinimap.WAYPOINT_DISTANCE_UNIT_CONVERSION, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_NAMES, EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES };
-    private final MapSettingsManager options;
-    protected Component screenTitle;
+public class GuiWaypointsOptions extends GuiOptionsScreenMinimap {
+    private final OptionField<?>[] relevantOptions;
 
-    public GuiWaypointsOptions(Screen parent, MapSettingsManager options) {
-        this.lastScreen = parent;
+    public GuiWaypointsOptions(Screen parentGui) {
+        super(parentGui, Component.translatable("options.minimap.waypoints.title"));
 
-        this.options = options;
+        relevantOptions = new OptionField[] {
+                waypointOptions.maxDistance,
+                waypointOptions.signScale,
+                waypointOptions.deathpoints,
+                waypointOptions.unitConversion,
+                waypointOptions.labelStyle,
+                waypointOptions.highlightFocused
+        };
     }
 
     @Override
     public void init() {
-        int var2 = 0;
-        this.screenTitle = Component.translatable("options.minimap.waypoints.title");
-
-        for (EnumOptionsMinimap option : relevantOptions) {
-            if (option.getType() == EnumOptionsMinimap.Type.FLOAT) {
-                float value = this.options.getFloatValue(option);
-                switch (option) {
-                    case WAYPOINT_DISTANCE -> {
-                        if (value < 0.0F) {
-                            value = 10001.0F;
-                        }
-
-                        value = (value - 50.0F) / 9951.0F;
-                    }
-                    case WAYPOINT_SIGN_SCALE -> value = value - 0.5F;
-                }
-                this.addRenderableWidget(new GuiOptionSliderMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, value, this.options));
-            } else {
-                GuiOptionButtonMinimap optionButton = new GuiOptionButtonMinimap(this.getWidth() / 2 - 155 + var2 % 2 * 160, this.getHeight() / 6 + 24 * (var2 >> 1), option, Component.literal(this.options.getKeyText(option)), this::optionClicked);
-
-                switch (option) {
-                    case DEATHPOINTS -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.deathpoints.tooltip")));
-                    case WAYPOINT_DISTANCE_UNIT_CONVERSION -> optionButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.waypoints.distanceUnitConversion.tooltip")));
-                }
-
-                this.addRenderableWidget(optionButton);
-            }
-
-            ++var2;
-        }
-
-        this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.onClose()).bounds(this.getWidth() / 2 - 100, this.getHeight() - 26, 200, 20).build());
-    }
-
-    protected void optionClicked(Button par1GuiButton) {
-        EnumOptionsMinimap option = ((GuiOptionButtonMinimap) par1GuiButton).returnEnumOptions();
-        MapSettingsManager.updateBooleanOrListValue(this.options, option);
-        par1GuiButton.setMessage(Component.literal(this.options.getKeyText(option)));
-
-        for (GuiEventListener item : children()) {
-            if (!(item instanceof GuiOptionButtonMinimap button)) {
-                continue;
-            }
-
-            switch (button.returnEnumOptions()) {
-                case SHOW_IN_GAME_WAYPOINT_NAMES -> button.active = this.options.showWaypointSigns;
-                case SHOW_IN_GAME_WAYPOINT_DISTANCES -> {
-                    button.setMessage(Component.literal(this.options.getKeyText(EnumOptionsMinimap.SHOW_IN_GAME_WAYPOINT_DISTANCES)));
-                    button.active = this.options.showWaypointSigns;
-                }
-            }
-        }
-
-        for (GuiEventListener item : children()) {
-            if (!(item instanceof GuiOptionSliderMinimap slider)) {
-                continue;
-            }
-
-            if (slider.returnEnumOptions() == EnumOptionsMinimap.WAYPOINT_SIGN_SCALE) {
-                slider.active = this.options.showWaypointSigns;
-            }
-        }
+        addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 - 100, getHeight() - 26, 200, 20).build());
+        rebuildOptionWidgets();
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        graphics.centeredText(this.font, this.screenTitle, this.getWidth() / 2, 20, 0xFFFFFFFF);
+    protected void setupOptionWidgets() {
+        int i = 0;
+        for (OptionField<?> option : relevantOptions) {
+            int x = getWidth() / 2 - 155 + i % 2 * 160;
+            int y = getHeight() / 6 + 24 * (i >> 1);
+            AbstractWidget widget = createOptionWidget(option, x, y, 150, 20);
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+            addOptionWidget(widget);
+
+            ++i;
+        }
     }
 }

@@ -1,11 +1,8 @@
 package com.mamiyaotaru.voxelmap.entityrender.variants;
 
 import com.google.common.collect.Maps;
-import com.mamiyaotaru.voxelmap.entityrender.EntityVariantData;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -14,7 +11,7 @@ import net.minecraft.world.entity.animal.fish.TropicalFish;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class TropicalFishVariantDataFactory extends DefaultEntityVariantDataFactory {
+public class TropicalFishVariantDataFactory extends EntityVariantDataFactory {
     private static final EnumMap<TropicalFish.Pattern, Identifier> PATTERN_TEXTURES = Maps.newEnumMap(
             Map.ofEntries(
                     Map.entry(TropicalFish.Pattern.KOB, Identifier.withDefaultNamespace("textures/entity/fish/tropical_a_pattern_1.png")),
@@ -36,14 +33,13 @@ public class TropicalFishVariantDataFactory extends DefaultEntityVariantDataFact
         super(type);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("rawtypes")
     @Override
-    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
-        TropicalFish fish = (TropicalFish) entity;
-        Identifier primaryTexture = ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state);
-        Identifier secondaryTexture = PATTERN_TEXTURES.get(fish.getPattern());
-
-        return new DefaultEntityVariantData(getType(), identifier, size, addBorder, primaryTexture, secondaryTexture, null, null);
+    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, int size, boolean addBorder) {
+        Identifier baseTexture = getBaseTexture(renderer, state);
+        int baseColor = ((TropicalFish) entity).getBaseColor().getMapColor().col | 0xFF000000;
+        Identifier overlay0 = PATTERN_TEXTURES.get(((TropicalFish) entity).getPattern());
+        int color0 = ((TropicalFish) entity).getPatternColor().getMapColor().col | 0xFF000000;
+        return new EntityVariantData(getType(), id, baseTexture, baseColor, overlay0, color0, size, addBorder);
     }
-
 }

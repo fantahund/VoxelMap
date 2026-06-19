@@ -1,28 +1,30 @@
 package com.mamiyaotaru.voxelmap.forge;
 
-import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
+import com.mamiyaotaru.voxelmap.packets.SettingsPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraftforge.event.network.CustomPayloadEvent;
+import net.minecraftforge.network.Channel;
 import net.minecraftforge.network.ChannelBuilder;
-import net.minecraftforge.network.SimpleChannel;
 
 public class ForgeSettingsPacketHandler {
-    public static final SimpleChannel SETTINGS = ChannelBuilder
-            .named(VoxelmapSettingsS2C.PACKET_ID.id())
-            .networkProtocolVersion(1)
-            .clientAcceptedVersions((status, version) -> true)
-            .serverAcceptedVersions((status, version) -> true)
-            .simpleChannel();
+    private static Channel<CustomPacketPayload> channel;
 
     public static void register() {
-        SETTINGS.messageBuilder(VoxelmapSettingsS2C.class, 0)
-                .encoder(VoxelmapSettingsS2C::write)
-                .decoder(VoxelmapSettingsS2C::new)
-                .consumerMainThread(ForgeSettingsPacketHandler::handle)
-                .add();
+        channel = ChannelBuilder
+                .named(SettingsPayload.PACKET_ID.id())
+                .optional()
+                .payloadChannel()
+                    .any()
+                        .clientbound()
+                            .addMain(SettingsPayload.PACKET_ID, SettingsPayload.PACKET_CODEC, ForgeSettingsPacketHandler::receive)
+                .build();
     }
 
-    private static void handle(VoxelmapSettingsS2C data, CustomPayloadEvent.Context context) {
-        context.enqueueWork(() -> VoxelmapSettingsS2C.parsePacket(data));
-        context.setPacketHandled(true);
+    public static Channel<CustomPacketPayload> getChannel() {
+        return channel;
+    }
+
+    private static void receive(SettingsPayload data, CustomPayloadEvent.Context context) {
+        SettingsPayload.parsePacket(data);
     }
 }

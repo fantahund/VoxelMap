@@ -2,10 +2,11 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -20,7 +21,6 @@ import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
@@ -74,7 +74,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ColorManager {
+public class ColorManager implements IReloadListener {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
@@ -106,8 +106,9 @@ public class ColorManager {
 
     public ColorManager() {
         this.useConnectedTextures = VoxelConstants.getModApiBridge().isModEnabled("optifine") || VoxelConstants.getModApiBridge().isModEnabled("continuity");
-
         ++this.sizeOfBiomeArray;
+
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
     public int getAirColor() {
@@ -122,6 +123,7 @@ public class ColorManager {
         return this.hueSatColorWheel;
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.resourcePacksChanged = true;
     }
@@ -222,7 +224,7 @@ public class ColorManager {
     }
 
     private void loadTexturePackTerrainImage() {
-        GLUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
+        RenderUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getTexture(), (image) -> {
             terrainBuff = image;
             loadedTerrainImage = true;
         });

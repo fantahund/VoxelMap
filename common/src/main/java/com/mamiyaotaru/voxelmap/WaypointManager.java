@@ -1,16 +1,20 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumWaypoint;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.textures.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerList;
@@ -19,7 +23,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.Connection;
@@ -29,6 +32,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.storage.LevelResource;
+import org.joml.Matrix4f;
 
 import javax.imageio.ImageIO;
 import java.awt.Graphics;
@@ -59,14 +63,24 @@ import java.util.Properties;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class WaypointManager {
-    public final MapSettingsManager options;
-    final TextureAtlas textureAtlas;
-    final TextureAtlas textureAtlasChooser;
+public class WaypointManager implements IReloadListener {
+    public static final String FALLBACK_ICON_NAME = "selectable/point";
+    public static final String COORDINATE_HIGHLIGHT_NAME = "§t§a§r§g§e§t";
+
+    private final Minecraft minecraft = Minecraft.getInstance();
+    private final WaypointOptions options;
+
+    private File settingsFile;
     private boolean loaded;
     private boolean needSave;
+
+    // Waypoint Management
+    private final Object waypointLock = new Object();
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint;
+    private WaypointContainer waypointContainer;
+
+    // World Management
     private String worldName = "";
     private String currentSubWorldName = "";
     private String currentSubworldDescriptor = "";
@@ -77,26 +91,26 @@ public class WaypointManager {
     private final TreeSet<String> knownSubworldNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final HashSet<String> oldNorthWorldNames = new HashSet<>();
     private final HashMap<String, String> worldSeeds = new HashMap<>();
-    private BackgroundImageInfo backgroundImageInfo;
-    private WaypointContainer waypointContainer;
-    private File settingsFile;
     private Long lastNewWorldNameTime = 0L;
-    private final Object waypointLock = new Object();
-    public static final String fallbackIconLocation = "selectable/point";
-    public static final Identifier resourceTextureAtlasWaypoints = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints");
-    public static final Identifier resourceTextureAtlasWaypointChooser = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser");
-    public final Minecraft minecraft = Minecraft.getInstance();
-    public static final String coordinateHighlightName = "§t§a§r§g§e§t";
+    private boolean skipNextOldNorthUpdate;
+
+    // Texture Management
+    private BackgroundImageInfo backgroundImageInfo;
+    private final TextureAtlas textureAtlas;
+    private final TextureAtlas textureAtlasChooser;
 
     public WaypointManager() {
-        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        this.textureAtlas = new TextureAtlas("waypoints", resourceTextureAtlasWaypoints);
-        this.textureAtlas.setFilter(true, false);
-        this.textureAtlasChooser = new TextureAtlas("chooser", resourceTextureAtlasWaypointChooser);
-        this.textureAtlasChooser.setFilter(true, false);
-        this.waypointContainer = new WaypointContainer(this.options);
+        this.options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
+        this.textureAtlas = new TextureAtlas("waypoints", Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoints"));
+        this.textureAtlas.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
+        this.textureAtlasChooser = new TextureAtlas("chooser", Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/waypoint-chooser"));
+        this.textureAtlasChooser.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
+        this.waypointContainer = new WaypointContainer();
+
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {
@@ -125,12 +139,7 @@ public class WaypointManager {
         this.textureAtlas.loadTextureAtlas(iconCreator);
         this.textureAtlasChooser.reset();
 
-        images.sort(Comparator.comparingInt((Identifier id) -> {
-            if (toSimpleName(id.toString()).equals(fallbackIconLocation)) {
-                return 0;
-            }
-            return 1;
-        }).thenComparing(Identifier::compareTo));
+        images.sort(Comparator.comparing((Identifier id) -> !toSimpleName(id.toString()).equals(FALLBACK_ICON_NAME)).thenComparing(Identifier::compareTo));
 
         for (Identifier Identifier : images) {
             String name = Identifier.toString();
@@ -141,12 +150,9 @@ public class WaypointManager {
             }
         }
 
-//      I couldn't find a better way to make stitch sorted :(
-//      this.textureAtlasChooser.stitch();
-
-        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypoint_icon_filtering", "true"));
-        this.textureAtlas.setFilter(useFiltering, false);
-        this.textureAtlasChooser.setFilter(useFiltering, false);
+        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypointIconFiltering", "true"));
+        this.textureAtlas.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
+        this.textureAtlasChooser.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
     }
 
     public static String toSimpleName(String name) {
@@ -267,7 +273,7 @@ public class WaypointManager {
             }
 
             if (pt.name.startsWith("Previous Death")) {
-                if (this.options.deathpoints == 2) {
+                if (this.options.deathpoints.get() == OptionEnumWaypoint.Deathpoints.ALL) {
                     int num = 0;
 
                     try {
@@ -286,13 +292,13 @@ public class WaypointManager {
             }
         }
 
-        if (this.options.deathpoints != 2 && (!(toDel.isEmpty()))) {
+        if (this.options.deathpoints.get() != OptionEnumWaypoint.Deathpoints.ALL && !toDel.isEmpty()) {
             for (Waypoint pt : toDel) {
                 this.deleteWaypoint(pt);
             }
         }
 
-        if (this.options.deathpoints != 0) {
+        if (this.options.deathpoints.get() != OptionEnumWaypoint.Deathpoints.OFF) {
             TreeSet<DimensionContainer> dimensions = new TreeSet<>();
             dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
             double dimensionScale = VoxelConstants.getPlayer().level().dimensionType().coordinateScale();
@@ -313,7 +319,7 @@ public class WaypointManager {
                 pt.inDimension = pt.dimensions.isEmpty() || pt.dimensions.contains(dimension);
             }
 
-            this.waypointContainer = new WaypointContainer(this.options);
+            this.waypointContainer = new WaypointContainer();
             this.waypointContainer.refreshRenderables();
         }
 
@@ -321,6 +327,10 @@ public class WaypointManager {
     }
 
     public void setOldNorth(boolean oldNorth) {
+        if (skipNextOldNorthUpdate) {
+            return;
+        }
+
         String oldNorthWorldName;
         if (this.knownSubworldNames.isEmpty()) {
             oldNorthWorldName = "all";
@@ -395,7 +405,10 @@ public class WaypointManager {
             }
         }
 
-        VoxelConstants.getVoxelMapInstance().getMapOptions().oldNorth = this.oldNorthWorldNames.contains(this.currentSubworldDescriptorNoCodes);
+        skipNextOldNorthUpdate = true;
+        VoxelConstants.getVoxelMapInstance().getMapOptions().oldNorth.set(oldNorthWorldNames.contains(currentSubworldDescriptorNoCodes));
+
+        skipNextOldNorthUpdate = false;
     }
 
     private void newSubworldName(String name) {
@@ -425,16 +438,15 @@ public class WaypointManager {
             }
 
             VoxelConstants.getVoxelMapInstance().getPersistentMap().renameSubworld(oldName, newName);
-            String worldName = this.getCurrentWorldName();
-            String worldNamePathPart = TextUtils.scrubNameFile(worldName);
-            String subWorldNamePathPart = TextUtils.scrubNameFile(oldName) + "/";
-            File oldCachedRegionFileDir = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
-            if (oldCachedRegionFileDir.exists() && oldCachedRegionFileDir.isDirectory()) {
-                subWorldNamePathPart = TextUtils.scrubNameFile(newName) + "/";
-                File newCachedRegionFileDir = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
-                boolean success = oldCachedRegionFileDir.renameTo(newCachedRegionFileDir);
+            String worldNamePath = TextUtils.scrubNameFile(getCurrentWorldName());
+            String subworldNamePath = TextUtils.scrubNameFile(oldName);
+            File oldRegionCacheDir = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePath, subworldNamePath);
+            if (oldRegionCacheDir.exists() && oldRegionCacheDir.isDirectory()) {
+                subworldNamePath = TextUtils.scrubNameFile(newName);
+                File newRegionCacheDir = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePath, subworldNamePath);
+                boolean success = oldRegionCacheDir.renameTo(newRegionCacheDir);
                 if (!success) {
-                    VoxelConstants.getLogger().warn("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
+                    VoxelConstants.getLogger().warn("Failed renaming " + oldRegionCacheDir.getPath() + " to " + newRegionCacheDir.getPath());
                 }
             }
 
@@ -507,12 +519,9 @@ public class WaypointManager {
         }
 
         worldNameSave = TextUtils.scrubNameFile(worldNameSave);
-        File saveDir = new File(minecraft.gameDirectory, "/voxelmap/");
-        if (!saveDir.exists()) {
-            saveDir.mkdirs();
-        }
 
-        this.settingsFile = new File(saveDir, worldNameSave + ".points");
+        this.settingsFile = FileUtils.join(FileUtils.voxelMapPath(), FileUtils.withExtension(worldNameSave, "points"));
+        this.settingsFile.getParentFile().mkdirs();
 
         try {
             PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8));
@@ -587,8 +596,8 @@ public class WaypointManager {
     }
 
     private boolean loadWaypointsExtensible(String worldNameStandard) {
-        File settingsFileNew = new File(minecraft.gameDirectory, "/voxelmap/" + worldNameStandard + ".points");
-        File settingsFileOld = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileOld = FileUtils.join(FileUtils.legacyVoxelMapPath(), FileUtils.withExtension(worldNameStandard, "points"));
+        File settingsFileNew = FileUtils.join(FileUtils.voxelMapPath(), FileUtils.withExtension(worldNameStandard, "points"));
         if (!settingsFileOld.exists() && !settingsFileNew.exists()) {
             return false;
         } else {
@@ -746,7 +755,7 @@ public class WaypointManager {
             this.highlightedWaypoint = null;
         } else {
             if (waypoint != null && !this.wayPts.contains(waypoint)) {
-                waypoint.name = coordinateHighlightName;
+                waypoint.name = COORDINATE_HIGHLIGHT_NAME;
                 waypoint.red = 1.0F;
                 waypoint.blue = 0.0F;
                 waypoint.green = 0.0F;
@@ -776,15 +785,15 @@ public class WaypointManager {
 
     public boolean isCoordinateHighlight(Waypoint waypoint) {
         if (isHighlightedWaypoint(waypoint)) {
-            return waypoint.name.equals(coordinateHighlightName);
+            return waypoint.name.equals(COORDINATE_HIGHLIGHT_NAME);
         }
 
         return false;
     }
 
-    public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, BufferSource bufferSource, Camera camera) {
-        if (options.waypointsAllowed && this.waypointContainer != null) {
-            this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, bufferSource, camera);
+    public void renderWaypoints(float gameTimeDeltaPartialTick, Matrix4f matrix, Camera camera) {
+        if (VoxelConstants.getVoxelMapInstance().getServerSettings().waypointsAllowed.get() && this.waypointContainer != null) {
+            this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, matrix, camera);
         }
     }
 

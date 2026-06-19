@@ -5,14 +5,8 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -22,6 +16,11 @@ import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class TextureAtlas extends AbstractTexture {
     private final HashMap<Object, Sprite> mapRegisteredSprites;
     private final HashMap<Object, Sprite> mapUploadedSprites;
@@ -30,8 +29,6 @@ public class TextureAtlas extends AbstractTexture {
     private final Sprite missingImage;
     private final Sprite failedImage;
     private Stitcher stitcher;
-    private boolean linearFilter;
-    private boolean mipmap;
     private Identifier Identifier;
 
     public TextureAtlas(String basePath, Identifier Identifier) {
@@ -47,14 +44,6 @@ public class TextureAtlas extends AbstractTexture {
         this.iconCreator = iconCreator;
         this.Identifier = Identifier;
         Minecraft.getInstance().getTextureManager().register(Identifier, this);
-    }
-
-    public void setFilter(boolean linearFilter, boolean mipmap) {
-        this.linearFilter = linearFilter;
-        this.mipmap = mipmap;
-        if (texture != null) {
-            sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,  linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, false);
-        }
     }
 
     private void initMissingImage() {

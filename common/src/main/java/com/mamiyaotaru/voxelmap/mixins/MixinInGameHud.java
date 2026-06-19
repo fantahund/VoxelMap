@@ -1,14 +1,20 @@
 package com.mamiyaotaru.voxelmap.mixins;
 
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
 public class MixinInGameHud {
+    @Inject(method = "extractBossOverlay", at = @At("TAIL"))
+    private void injectRender(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        VoxelConstants.renderOverlay(graphics);
+    }
 
     // this method: private void displayScoreboardSidebar(GuiGraphics guiGraphics, Objective objective)
     // this variable: int o = guiGraphics.guiHeight() / 2 + n / 3;

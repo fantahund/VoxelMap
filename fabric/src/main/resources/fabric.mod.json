@@ -20,7 +20,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricMod"
+      "com.mamiyaotaru.voxelmap.fabric.VoxelMapFabricMod"
     ]
   },
   "accessWidener" : "voxelmap.accesswidener",

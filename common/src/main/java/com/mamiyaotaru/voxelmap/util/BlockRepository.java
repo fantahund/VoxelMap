@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class BlockRepository {
+public final class BlockRepository {
     public static Block air = Blocks.AIR;
     public static Block voidAir;
     public static Block caveAir;
@@ -60,6 +60,9 @@ public class BlockRepository {
     private static final ReferenceArrayList<BlockState> blockStates = new ReferenceArrayList<>(16384);
     private static int count = 1;
     private static final ReadWriteLock incrementLock = new ReentrantReadWriteLock();
+
+    private BlockRepository() {
+    }
 
     public static void getBlocks() {
         air = Blocks.AIR;

@@ -27,7 +27,10 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-public class ImageUtils {
+public final class ImageUtils {
+    private ImageUtils() {
+    }
+
     public static void saveImage(String name, GpuTexture texture) {
         saveImage(name, texture, 0, texture.getWidth(0), texture.getHeight(0));
     }
@@ -283,6 +286,13 @@ public class ImageUtils {
     public static BufferedImage flipHorizontal(BufferedImage image) {
         AffineTransform tx = AffineTransform.getScaleInstance(-1.0, 1.0);
         tx.translate(-image.getWidth(null), 0.0);
+        AffineTransformOp op = new AffineTransformOp(tx, 1);
+        return op.filter(image, null);
+    }
+
+    public static BufferedImage flipVertical(BufferedImage image) {
+        AffineTransform tx = AffineTransform.getScaleInstance(1.0, -1.0);
+        tx.translate(0.0, -image.getHeight(null));
         AffineTransformOp op = new AffineTransformOp(tx, 1);
         return op.filter(image, null);
     }

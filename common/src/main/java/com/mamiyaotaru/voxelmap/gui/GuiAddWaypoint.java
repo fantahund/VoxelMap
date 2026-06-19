@@ -1,24 +1,28 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.ColorManager;
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
-import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiColorPickerContainer;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import com.mamiyaotaru.voxelmap.gui.overridden.IPopupGuiScreen;
-import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
-import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiColorPickerContainer;
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiIconButton;
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiListMinimap;
+import com.mamiyaotaru.voxelmap.gui.widgets.Popup;
+import com.mamiyaotaru.voxelmap.gui.widgets.PopupGuiButton;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
+import com.mamiyaotaru.voxelmap.util.DimensionManager;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.input.CharacterEvent;
@@ -30,18 +34,19 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 
 public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen {
-    private final MapSettingsManager mapOptions;
-    final WaypointManager waypointManager;
-    final ColorManager colorManager;
+    private final MapOptions mapOptions;
+    private final WaypointOptions options;
+    private final WaypointManager waypointManager;
+    private final DimensionManager dimensionManager;
     private final IGuiWaypoints parentGui;
+
     private PopupGuiButton doneButton;
-    private GuiListDimensions dimensionList;
-    protected DimensionContainer selectedDimension;
-    private Component tooltip;
+    private DimensionList dimensionList;
     private EditBox waypointName;
     private EditBox waypointX;
     private EditBox waypointY;
@@ -63,15 +68,18 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     private float blue;
     private String suffix;
     private boolean enabled;
-    protected TreeSet<DimensionContainer> dimensions;
+    private TreeSet<DimensionContainer> dimensions;
+
+    private DimensionContainer selectedDimension;
 
     public GuiAddWaypoint(IGuiWaypoints parentGui, Waypoint waypoint, boolean editing) {
-        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        super((Screen) parentGui, Component.translatable(editing ? "minimap.waypoints.edit" : "minimap.waypoints.new"));
         this.parentGui = parentGui;
-        lastScreen = (Screen) parentGui;
-
+        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        options = VoxelConstants.getVoxelMapInstance().getWaypointOptions();
         waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
-        colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
+        dimensionManager = VoxelConstants.getVoxelMapInstance().getDimensionManager();
+
         this.waypoint = waypoint;
         this.editing = editing;
 
@@ -93,7 +101,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     public void init() {
         clearWidgets();
 
-        dimensionList = new GuiListDimensions(this);
+        dimensionList = new DimensionList(getWidth() / 2, getHeight() / 6 + 90, 101, 64);
         waypointName = new EditBox(getFont(), getWidth() / 2 - 100, getHeight() / 6 + 13, 200, 20, Component.empty());
         waypointName.setValue(waypoint.name);
         waypointX = new EditBox(getFont(), getWidth() / 2 - 100, getHeight() / 6 + 41 + 13, 56, 20, Component.empty());
@@ -122,11 +130,11 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         addRenderableWidget(new PopupGuiButton(getWidth() / 2 + 5, getHeight() - 26, 150, 20, Component.translatable("gui.cancel"), button -> cancelWaypoint(), this));
         doneButton.active = !waypointName.getValue().isEmpty();
 
-        boolean simpleMode = mapOptions.colorPickerMode == 0;
+        boolean simpleMode = mapOptions.colorPickerMode.get() == OptionEnumMinimap.ColorPickerMode.SIMPLE;
         colorPicker = new GuiColorPickerContainer(getWidth() / 2, getHeight() / 2, 200, 140, simpleMode, picker -> {});
         colorPicker.setColor(ARGB.colorFromFloat(1.0F, red, green, blue));
-        colorPickerModeButton = new PopupGuiButton(0, 0, 50, 15, Component.literal(mapOptions.getListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)), this::updateColorPickerMode, this);
-        colorPickerModeButton.setTooltip(Tooltip.create(Component.translatable("options.minimap.colorPickerMode")));
+        colorPickerModeButton = new PopupGuiButton(0, 0, 50, 15, Component.literal(mapOptions.colorPickerMode.getValueString()), this::updateColorPickerMode, this);
+        colorPickerModeButton.setTooltip(Tooltip.create(Component.translatable(mapOptions.colorPickerMode.getKey())));
         popupDoneButton = new PopupGuiButton(getWidth() / 2 - 155, getHeight() - 26, 150, 20, Component.translatable("gui.done"), button -> closePopupAndApplyChanges(), this);
         popupCancelButton = new PopupGuiButton(getWidth() / 2 + 5, getHeight() - 26, 150, 20, Component.translatable("gui.cancel"), button -> closePopupAndCancelChanges(), this);
     }
@@ -136,13 +144,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     }
 
     private void updateColorPickerMode(Button button) {
-        mapOptions.cycleListValue(EnumOptionsMinimap.COLOR_PICKER_MODE);
-        colorPicker.updateMode(mapOptions.colorPickerMode == 0);
+        mapOptions.colorPickerMode.cycle();
+        colorPicker.updateMode(mapOptions.colorPickerMode.get() == OptionEnumMinimap.ColorPickerMode.SIMPLE);
 
-        button.setMessage(Component.literal(mapOptions.getListValue(EnumOptionsMinimap.COLOR_PICKER_MODE)));
+        button.setMessage(Component.literal(mapOptions.colorPickerMode.getValueString()));
     }
 
-    protected void cancelWaypoint() {
+    private void cancelWaypoint() {
         if (parentGui != null) {
             parentGui.accept(false);
             return;
@@ -151,7 +159,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         onClose();
     }
 
-    protected void acceptWaypoint() {
+    private void acceptWaypoint() {
         waypoint.name = waypointName.getValue();
         waypoint.setX(Integer.parseInt(waypointX.getValue()));
         waypoint.setY(Integer.parseInt(waypointY.getValue()));
@@ -222,93 +230,85 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
-        boolean pressed = false;
-        if (!popupOpen()) {
-            pressed = super.keyPressed(keyEvent);
-
-            boolean acceptable = isWaypointAcceptable();
-            doneButton.active = acceptable;
-            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && acceptable) {
-                acceptWaypoint();
+        if (popupOpen()) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                closePopupAndCancelChanges();
             }
+            handlePopupEvents(widget -> widget.keyPressed(keyEvent));
+            return false;
         }
-
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            closePopupAndCancelChanges();
+        boolean pressed = super.keyPressed(keyEvent);
+        boolean acceptable = isWaypointAcceptable();
+        doneButton.active = acceptable;
+        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && acceptable) {
+            acceptWaypoint();
         }
-
-        handlePopupEvents(widget -> widget.keyPressed(keyEvent));
-
         return pressed;
     }
 
     @Override
-    public boolean charTyped(CharacterEvent characterEvent) {
-        boolean pressed = false;
-        if (!popupOpen()) {
-            pressed = super.charTyped(characterEvent);
-            doneButton.active = isWaypointAcceptable();
+    public boolean keyReleased(KeyEvent keyEvent) {
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.keyReleased(keyEvent));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.charTyped(characterEvent));
-
-        return pressed;
+        return super.keyReleased(keyEvent);
     }
 
+    @Override
+    public boolean charTyped(CharacterEvent characterEvent) {
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.charTyped(characterEvent));
+            return false;
+        }
+        boolean typed = super.charTyped(characterEvent);
+        doneButton.active = isWaypointAcceptable();
+        return typed;
+    }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
         double mouseX = mouseButtonEvent.x();
         double mouseY = mouseButtonEvent.y();
         int button = mouseButtonEvent.button();
-
-        if (!popupOpen()) {
-            return super.mouseClicked(mouseButtonEvent, doubleClick);
-        }
-
-        handlePopupEvents(widget -> widget.mouseClicked(mouseButtonEvent, doubleClick));
-
-        if (choosingIcon && button == 0) {
-            Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
-            if (pickedIcon != null) {
-                pickedSuffix = WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", "");
+        if (popupOpen()) {
+            if (choosingIcon && button == 0) {
+                Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
+                if (pickedIcon != null) {
+                    pickedSuffix = WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", "");
+                }
             }
+            handlePopupEvents(widget -> widget.mouseClicked(mouseButtonEvent, doubleClick));
+            return false;
         }
-
-        return false;
+        return super.mouseClicked(mouseButtonEvent, doubleClick);
     }
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (!popupOpen()) {
-            return super.mouseReleased(mouseButtonEvent);
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.mouseReleased(mouseButtonEvent));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.mouseReleased(mouseButtonEvent));
-
-        return false;
+        return super.mouseReleased(mouseButtonEvent);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        if (!popupOpen()) {
-            return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.mouseDragged(mouseButtonEvent, deltaX, deltaY));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.mouseDragged(mouseButtonEvent, deltaX, deltaY));
-
-        return false;
+        return super.mouseDragged(mouseButtonEvent, deltaX, deltaY);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
-        if (!popupOpen()) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
+        if (popupOpen()) {
+            handlePopupEvents(widget -> widget.mouseScrolled(mouseX, mouseY, horizontalAmount, amount));
+            return false;
         }
-
-        handlePopupEvents(widget -> widget.mouseScrolled(mouseX, mouseY, horizontalAmount, amount));
-
-        return false;
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
     }
 
     private void handlePopupEvents(Consumer<GuiEventListener> action) {
@@ -344,11 +344,8 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        tooltip = null;
-
         super.extractRenderState(graphics, popupOpen() ? 0 : mouseX, popupOpen() ? 0 : mouseY, delta);
 
-        graphics.centeredText(getFont(), (parentGui == null || !parentGui.isEditing()) && !editing ? I18n.get("minimap.waypoints.new") : I18n.get("minimap.waypoints.edit"), getWidth() / 2, 20, 0xFFFFFFFF);
         graphics.text(getFont(), I18n.get("minimap.waypoints.name"), getWidth() / 2 - 100, getHeight() / 6, 0xFFFFFFFF);
         graphics.text(getFont(), "X", getWidth() / 2 - 100, getHeight() / 6 + 41, 0xFFFFFFFF);
         graphics.text(getFont(), "Y", getWidth() / 2 - 28, getHeight() / 6 + 41, 0xFFFFFFFF);
@@ -364,7 +361,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         TextureAtlas chooser = waypointManager.getTextureAtlasChooser();
         Sprite icon = chooser.getAtlasSprite("selectable/" + suffix);
         if (icon == chooser.getMissingImage()) {
-            icon = chooser.getAtlasSprite(WaypointManager.fallbackIconLocation);
+            icon = chooser.getAtlasSprite(WaypointManager.FALLBACK_ICON_NAME);
         }
         icon.blit(graphics, RenderPipelines.GUI_TEXTURED, getWidth() / 2 - 25, buttonListY + 48 + 2, 16, 16, color);
 
@@ -420,7 +417,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 // render selected icon
                 Sprite currentIcon = chooser.getAtlasSprite("selectable/" + pickedSuffix);
                 if (currentIcon == chooser.getMissingImage()) {
-                    currentIcon = chooser.getAtlasSprite(WaypointManager.fallbackIconLocation);
+                    currentIcon = chooser.getAtlasSprite(WaypointManager.FALLBACK_ICON_NAME);
                 }
                 int iconX = currentIcon.getOriginX() + pickerX;
                 int iconY = currentIcon.getOriginY() + pickerY;
@@ -437,16 +434,13 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
                     hoveredIcon.blit(graphics, RenderPipelines.GUI_TEXTURED, iconX, iconY, iconWidth, iconHeight, iconColor);
 
-                    tooltip = Component.translatable("minimap.waypoints.icon." + WaypointManager.toSimpleName(hoveredIcon.getIconName().toString()).replace("selectable/", ""));
+                    Component tooltip = Component.translatable("minimap.waypoints.icon." + WaypointManager.toSimpleName(hoveredIcon.getIconName().toString()).replace("selectable/", ""));
+                    RenderUtils.drawTooltip(graphics, Tooltip.create(tooltip), mouseX, mouseY);
                 }
             }
 
             popupDoneButton.extractRenderState(graphics, mouseX, mouseY, delta);
             popupCancelButton.extractRenderState(graphics, mouseX, mouseY, delta);
-        }
-
-        if (tooltip != null) {
-            renderTooltip(graphics, tooltip, mouseX, mouseY);
         }
     }
 
@@ -478,7 +472,72 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
     }
 
-    protected void setTooltip(Component tooltip) {
-        this.tooltip = tooltip;
+    class DimensionList extends GuiListMinimap<DimensionList.Entry> {
+        private static final Tooltip TOOLTIP_APPLIES = Tooltip.create(Component.translatable("minimap.waypoints.dimension.applies"));
+        private static final Tooltip TOOLTIP_NOT_APPLIES = Tooltip.create(Component.translatable("minimap.waypoints.dimension.notApplies"));
+
+        private final ArrayList<Entry> dimensionItems;
+
+        public DimensionList(int x, int y, int width, int height) {
+            super(x, y, width, height, 18);
+
+            dimensionItems = new ArrayList<>();
+            Entry first = null;
+            for (DimensionContainer dim : dimensionManager.getDimensions()) {
+                Entry item = new Entry(dim);
+                dimensionItems.add(item);
+                if (dim.equals(dimensions.first())) {
+                    first = item;
+                }
+            }
+
+            dimensionItems.forEach(this::addEntry);
+
+            if (first != null) {
+                scrollToEntry(first);
+            }
+        }
+
+        @Override
+        public int getRowWidth() {
+            return 100;
+        }
+
+        @Override
+        public void setSelected(Entry entry) {
+            super.setSelected(entry);
+            if (getSelected() != null) {
+                GameNarrator narratorManager = new GameNarrator(VoxelConstants.getMinecraft());
+                narratorManager.sayChatQueued(Component.translatable("narrator.select", getSelected().dim.name));
+            }
+
+            setSelectedDimension(entry.dim);
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
+        }
+
+        public class Entry extends GuiListMinimap.Entry<Entry> {
+            private final DimensionContainer dim;
+            private final GuiIconButton dimToggle;
+
+            public Entry(DimensionContainer dim) {
+                super(DimensionList.this);
+                this.dim = dim;
+                addWidget(dimToggle = new GuiIconButton(getX() + getWidth() - 20, getY(), 18, 18, element -> toggleDimensionSelected()));
+            }
+
+            @Override
+            public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+                super.extractContent(graphics, mouseX, mouseY, hovered, tickDelta);
+
+                graphics.centeredText(getFont(), dim.getDisplayName(), (GuiAddWaypoint.this.getWidth() + getWidth()) / 2, getY() + 5, 0xFFFFFFFF);
+
+                dimToggle.setPosition(getX() + getWidth() - 20, getY());
+                dimToggle.setIcon(dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+                dimToggle.setTooltip(dimensions.contains(dim) ? TOOLTIP_APPLIES : TOOLTIP_NOT_APPLIES);
+            }
+        }
     }
 }

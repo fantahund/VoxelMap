@@ -12,7 +12,6 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.TextureFormat;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
 import net.minecraft.client.renderer.texture.MipmapStrategy;
@@ -20,29 +19,27 @@ import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.system.MemoryUtil;
 
-import java.util.UUID;
 import java.util.zip.DataFormatException;
 
 public class CompressibleMapRegionTexture extends AbstractTexture {
-    private final static int MIP_LEVELS = 7;
+    private static final int MIP_LEVELS = 7;
+    private static final Identifier EMPTY_ID = Identifier.parse("");
 
     private NativeImage pixels;
     private NativeImage[] pixelsMipmapped;
 
     private final boolean compressNotDelete;
-    private final Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "mapimage/" + UUID.randomUUID());
 
-    private final GpuSampler samplerSmall;
-    private final GpuSampler samplerLarge;
+    private GpuSampler samplerSmall;
+    private GpuSampler samplerLarge;
 
     private byte[] bytes;
 
     public CompressibleMapRegionTexture() {
-        this.compressNotDelete = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages;
+        this.compressNotDelete = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages.get();
 
         this.pixels = new NativeImage(CachedRegion.REGION_WIDTH, CachedRegion.REGION_WIDTH, false);
-        this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
-        this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
+        this.updateSamplers();
         this.sampler = samplerLarge;
     }
 
@@ -53,22 +50,19 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         return pixels;
     }
 
-    public Identifier getTextureLocation(float zoom) {
+    public AbstractTexture getTexture(float zoom) {
         if (zoom < 2) {
             this.sampler = samplerSmall;
         } else {
             this.sampler = samplerLarge;
         }
-        return texture != null ? this.location : null;
+        return this.texture != null ? this : null;
     }
 
     public void deleteTexture() {
         if (!RenderSystem.isOnRenderThread()) {
             VoxelConstants.getLogger().log(Level.WARN, "Texture unload call from wrong thread", new Exception());
             return;
-        }
-        if (texture != null) {
-            Minecraft.getInstance().getTextureManager().release(location);
         }
         close();
     }
@@ -87,8 +81,6 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
             GpuDevice gpuDevice = RenderSystem.getDevice();
             this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, TextureFormat.RGBA8, this.pixels.getWidth(), this.pixels.getHeight(), 1, MIP_LEVELS + 1);
             this.textureView = gpuDevice.createTextureView(this.texture, 0, MIP_LEVELS + 1);
-
-            Minecraft.getInstance().getTextureManager().register(location, this);
         }
 
         int w = texture.getWidth(0);
@@ -129,9 +121,11 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     }
 
     public synchronized void generateMipmaps() {
-        if (pixels == null) return;
+        if (pixels == null) {
+            return;
+        }
         clearMipmaps();
-        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[]{pixels}, MIP_LEVELS, MipmapStrategy.MEAN, 0.0F, Transparency.TRANSPARENT_AND_TRANSLUCENT);
+        pixelsMipmapped = MipmapGenerator.generateMipLevels(EMPTY_ID, new NativeImage[]{pixels}, MIP_LEVELS, MipmapStrategy.MEAN, 0.0F, Transparency.TRANSPARENT_AND_TRANSLUCENT);
     }
 
     private synchronized void decompress() {
@@ -157,6 +151,17 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
                 pixelsMipmapped[i].close();
             }
             pixelsMipmapped = null;
+        }
+    }
+
+    public void updateSamplers() {
+        boolean filtering = VoxelConstants.getVoxelMapInstance().getMapOptions().filtering.get();
+        if (filtering) {
+            this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
+            this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
+        } else {
+            this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
+            this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
         }
     }
 
