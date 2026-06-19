@@ -60,6 +60,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.camel.Camel;
@@ -135,14 +136,14 @@ public class EntityMapImageManager implements IReloadListener {
         entityVariantDataFactories.clear();
         customMobProperties.clear();
 
-        addVariantDataFactory(new EntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), 0xFFFFFFFF));
-        addVariantDataFactory(new EntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), 0xFFFFFFFF));
-        addVariantDataFactory(new EntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), 0xFFFFFFFF));
-        addVariantDataFactory(new EnderDragonVariantDataFactory(EntityType.ENDER_DRAGON));
-        addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
-        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityType.TROPICAL_FISH));
-        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
-        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.ZOMBIE_VILLAGER));
+        addVariantDataFactory(new EntityVariantDataFactory(EntityTypes.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), 0xFFFFFFFF));
+        addVariantDataFactory(new EntityVariantDataFactory(EntityTypes.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), 0xFFFFFFFF));
+        addVariantDataFactory(new EntityVariantDataFactory(EntityTypes.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), 0xFFFFFFFF));
+        addVariantDataFactory(new EnderDragonVariantDataFactory(EntityTypes.ENDER_DRAGON));
+        addVariantDataFactory(new HorseVariantDataFactory(EntityTypes.HORSE));
+        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityTypes.TROPICAL_FISH));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityTypes.VILLAGER));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityTypes.ZOMBIE_VILLAGER));
 
         addVariantDataFactory(new ArmorVariantDataFactory(Items.LEATHER_HELMET, Identifier.withDefaultNamespace("textures/entity/equipment/humanoid/leather_overlay.png"), 0xFFFFFFFF));
 
@@ -243,7 +244,7 @@ public class EntityMapImageManager implements IReloadListener {
         renderer.beginBatch(VoxelMapPipelines.ENTITY_ICON, dataHolder);
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
-        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState);
+        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.gameRenderState().levelRenderState.cameraRenderState);
 
         ModelPart[] modelParts = getPartToRender(baseRenderer);
         if (modelParts != null) {
@@ -456,7 +457,7 @@ public class EntityMapImageManager implements IReloadListener {
             if (blockItem.getBlock() instanceof SkullBlock skullBlock) {
                 SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skullBlock.getType());
                 renderer.pose().scale(1.1875F, 1.1875F, 1.1875F);
-                skullModel.renderToBuffer(renderer.pose(), renderer.vertexBuffer(), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+                skullModel.renderToBuffer(renderer.pose(), renderer.vertexBuffer(), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
             } else {
                 BlockStateModel blockModel = minecraft.getModelManager().getBlockStateModelSet().get(blockItem.getBlock().defaultBlockState());
                 renderer.pose().mulPose(Axis.ZP.rotationDegrees(180.0F));

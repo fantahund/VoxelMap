@@ -20,7 +20,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricMod"
+      "com.mamiyaotaru.voxelmap.fabric.VoxelMapFabricMod"
     ],
 	"server": [
 	  "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricModServer"

@@ -33,7 +33,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         ArrayList<String> knownSubworldNames = new ArrayList<>(waypointManager.getKnownSubworldNames());
         if (!multiworld && !waypointManager.isMultiworld() && !VoxelConstants.isRealmServer()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(this, Component.translatable("worldmap.multiworld.isThisMultiworld"), Component.translatable("worldmap.multiworld.explanation"), Component.translatable("gui.yes"), Component.translatable("gui.no"));
-            minecraft.setScreen(confirmScreen);
+            minecraft.gui.setScreen(confirmScreen);
         } else {
             minecraft.options.setCameraType(CameraType.FIRST_PERSON);
         }
@@ -48,7 +48,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
         int buttonWidth = getWidth() / buttonsPerRow - 5;
         int xSpacing = (getWidth() - buttonsPerRow * buttonWidth) / 2;
-        Button cancelBtn = new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().setScreen(null)).bounds(centerX - 100, this.height - 30, 200, 20).build();
+        Button cancelBtn = new Button.Builder(Component.translatable("gui.cancel"), button -> VoxelConstants.getMinecraft().gui.setScreen(null)).bounds(centerX - 100, this.height - 30, 200, 20).build();
         addRenderableWidget(cancelBtn);
         knownSubworldNames.sort((name1, name2) -> -String.CASE_INSENSITIVE_ORDER.compare(name1, name2));
         int numKnownSubworlds = knownSubworldNames.size();
@@ -83,7 +83,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     public void accept(boolean accept) {
         if (accept) {
             multiworld = true;
-            minecraft.setScreen(this);
+            minecraft.gui.setScreen(this);
         } else {
             onClose();
         }
@@ -114,7 +114,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     private void editWorld(String subworldNameToEdit) {
-        minecraft.setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
+        minecraft.gui.setScreen(new GuiSubworldEdit(this, subworldNameToEdit));
     }
 
     private void nameFieldUpdated(GuiButtonText field) {

@@ -7,10 +7,13 @@ import com.mamiyaotaru.voxelmap.options.fields.StringField;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.tabs.MenuTabBar;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
+import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
@@ -55,9 +58,9 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
                 new OptionsTab(TAB_WORLDMAP, Component.translatable("options.minimap.tab.worldmap")),
                 new OptionsTab(TAB_CONTROLS, Component.translatable("controls.title"))
         };
-        tabNavigationBar = TabNavigationBar.builder(tabManager, getWidth()).addTabs(allTabs).build();
+        tabNavigationBar = MenuTabBar.builder(tabManager, getWidth()).addTabs(allTabs).build();
         tabNavigationBar.selectTab(currentTab, false);
-        tabNavigationBar.arrangeElements();
+        tabNavigationBar.arrangeElements(width);
         setFocused(tabNavigationBar);
         addRenderableWidget(tabNavigationBar);
 
@@ -110,7 +113,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
         OptionField<?>[] relevantOptions = getRelevantOptions(currentTab);
 
         if (currentTab == TAB_CONTROLS) {
-            minecraft.setScreen(new GuiMinimapControls(this));
+            minecraft.gui.setScreen(new GuiMinimapControls(this));
         }
 
         if (relevantOptions == null) {
@@ -164,7 +167,7 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
                 addOptionWidget(widget);
             }
             case TAB_RADAR -> {
-                AbstractWidget mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.setScreen(new GuiMobs(this))).bounds(widgetX, widgetY, 150, 20).build();
+                AbstractWidget mobListButton = new Button.Builder(Component.translatable("options.minimap.radar.selectMobs"), x -> minecraft.gui.setScreen(new GuiMobs(this))).bounds(widgetX, widgetY, 150, 20).build();
                 mobListButton.active = serverSettings.radarAllowed.get() && (serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get());
 
                 addOptionWidget(mobListButton);
@@ -220,6 +223,11 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
 
         @Override
         public void doLayout(ScreenRectangle screenRectangle) {
+        }
+
+        @Override
+        public Layout getLayout() {
+            return new GridLayout();
         }
     }
 }

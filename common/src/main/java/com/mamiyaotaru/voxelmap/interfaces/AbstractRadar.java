@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4fStack;
@@ -161,7 +162,7 @@ public abstract class AbstractRadar implements IReloadListener {
     }
 
     protected float getEntityMaxHeight(Entity entity) {
-        if (entity.getType() == EntityType.PHANTOM) {
+        if (entity.getType() == EntityTypes.PHANTOM) {
             return 64.0F;
         }
 

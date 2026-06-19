@@ -202,7 +202,7 @@ public class PersistentMap implements IChangeObserver {
             return;
         }
 
-        if (minecraft.screen == null) {
+        if (minecraft.gui.screen() == null) {
             options.mapX = GameVariableAccessShim.xCoord();
             options.mapZ = GameVariableAccessShim.zCoord();
         }
@@ -1077,7 +1077,7 @@ public class PersistentMap implements IChangeObserver {
             }
 
             try {
-                if (minecraft.screen instanceof GuiPersistentMap) {
+                if (minecraft.gui.screen() instanceof GuiPersistentMap) {
                     cachedRegion.registerChangeAt(chunkX, chunkZ);
                     cachedRegion.refresh(false);
                 } else {

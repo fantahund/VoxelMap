@@ -202,7 +202,7 @@ public class MapOptions extends AbstractOptionsContainer {
     }
 
     private void updateInGameWaypoints(OptionEnumMinimap.InGameWaypoints value) {
-        if (Minecraft.getInstance().screen instanceof GuiOptionsScreenMinimap) {
+        if (Minecraft.getInstance().gui.screen() instanceof GuiOptionsScreenMinimap) {
             inGameWaypointsToggle.set(value);
         }
     }

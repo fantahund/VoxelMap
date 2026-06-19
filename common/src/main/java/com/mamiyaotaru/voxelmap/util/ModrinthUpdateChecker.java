@@ -250,7 +250,7 @@ public class ModrinthUpdateChecker {
 
             Component link = Component.translatable("voxelmap.update.link").setStyle(linkStyle);
             Component msg = prefix.copy().append(link).append(suffix);
-            VoxelConstants.getMinecraft().execute(() -> VoxelConstants.getMinecraft().gui.getChat().addClientSystemMessage(msg));
+            VoxelConstants.getMinecraft().execute(() -> VoxelConstants.getMinecraft().gui.hud.getChat().addClientSystemMessage(msg));
         });
     }
 }

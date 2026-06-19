@@ -79,7 +79,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     private void sendClicked() {
         if (selectedPlyer.isEmpty()) {
             ConfirmScreen confirmScreen = new ConfirmScreen(GuiSelectPlayer.this, CONFIRM_TITLE, CONFIRM_EXPLANATION, CONFIRM_AFFIRM, CONFIRM_DENY);
-            minecraft.setScreen(confirmScreen);
+            minecraft.gui.setScreen(confirmScreen);
         } else {
             sendMessageToPlayer(selectedPlyer);
         }
@@ -98,7 +98,7 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
             onClose();
         } else {
-            VoxelConstants.getMinecraft().setScreen(this);
+            VoxelConstants.getMinecraft().gui.setScreen(this);
         }
     }
 

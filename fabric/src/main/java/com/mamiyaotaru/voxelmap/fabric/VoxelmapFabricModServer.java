@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.fabric;
 
-import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
 import com.mamiyaotaru.voxelmap.server.VoxelmapServerConfigManager;
 import com.mojang.brigadier.context.CommandContext;
 import java.nio.file.Path;
@@ -26,7 +25,7 @@ public class VoxelmapFabricModServer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        FabricSettingsChannelHandler.initServer();
+//        FabricSettingsChannelHandler.initServer();
         configFile = FabricLoader.getInstance().getConfigDir().resolve("voxelmap.json");
         configManager = new VoxelmapServerConfigManager(configFile);
         loadInitialConfig();
@@ -77,14 +76,14 @@ public class VoxelmapFabricModServer implements DedicatedServerModInitializer {
             return false;
         }
 
-        if (!ServerPlayNetworking.canSend(player, VoxelmapSettingsS2C.PACKET_ID)) {
-            LOGGER.debug("Skipping VoxelMap settings send for " + player.getName().getString() + " (" + event + "): client cannot receive settings packet");
-            return false;
-        }
+//        if (!ServerPlayNetworking.canSend(player, VoxelmapSettingsS2C.PACKET_ID)) {
+//            LOGGER.debug("Skipping VoxelMap settings send for " + player.getName().getString() + " (" + event + "): client cannot receive settings packet");
+//            return false;
+//        }
 
         String worldId = player.level().dimension().identifier().toString();
         String settingsJson = configManager.createSettingsJson(worldId);
-        ServerPlayNetworking.send(player, new VoxelmapSettingsS2C(settingsJson));
+//        ServerPlayNetworking.send(player, new VoxelmapSettingsS2C(settingsJson));
         LOGGER.info("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
         return true;
     }

@@ -129,7 +129,7 @@ public class RadarOptions extends AbstractOptionsContainer {
     // Option Attributes
 
     private void updateRadarMode(OptionEnumRadar.RadarMode value) {
-        if (Minecraft.getInstance().screen instanceof GuiOptionsScreenMinimap screen) {
+        if (Minecraft.getInstance().gui.screen() instanceof GuiOptionsScreenMinimap screen) {
             screen.rebuildOptionWidgets();
         }
     }

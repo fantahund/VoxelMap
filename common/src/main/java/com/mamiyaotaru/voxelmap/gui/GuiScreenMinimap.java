@@ -29,7 +29,7 @@ public class GuiScreenMinimap extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.setScreen(parentGui);
+        minecraft.gui.setScreen(parentGui);
     }
 
     @Override

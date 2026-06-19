@@ -78,7 +78,7 @@ public class GuiSubworldEdit extends GuiScreenMinimap implements BooleanConsumer
         Component affirm = Component.translatable("selectServer.deleteButton");
         Component deny = Component.translatable("gui.cancel");
 
-        minecraft.setScreen(new ConfirmScreen(this, title, explanation, affirm, deny));
+        minecraft.gui.setScreen(new ConfirmScreen(this, title, explanation, affirm, deny));
     }
 
     @Override

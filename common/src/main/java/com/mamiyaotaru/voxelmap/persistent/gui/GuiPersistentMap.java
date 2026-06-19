@@ -56,10 +56,12 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Random;
@@ -174,7 +176,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void init() {
-        if (minecraft.screen == this) {
+        if (minecraft.gui.screen() == this) {
             closed = false;
         }
 
@@ -187,13 +189,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         int buttonCount = 5;
         int buttonSeparation = 4;
         int buttonWidth = (getWidth() - SIDE_MARGIN * 2 - buttonSeparation * (buttonCount - 1)) / buttonCount;
-        addRenderableWidget(buttonWaypoints = new PopupGuiButton(SIDE_MARGIN, getHeight() - 26, buttonWidth, 20, Component.translatable("options.minimap.waypoints"), button -> minecraft.setScreen(new GuiWaypoints(this)), this));
+        addRenderableWidget(buttonWaypoints = new PopupGuiButton(SIDE_MARGIN, getHeight() - 26, buttonWidth, 20, Component.translatable("options.minimap.waypoints"), button -> minecraft.gui.setScreen(new GuiWaypoints(this)), this));
         multiworldButtonName = Component.translatable(VoxelConstants.isRealmServer() ? "menu.online" : "options.worldmap.multiworld");
         multiworldButtonNameRed = multiworldButtonName.copy().withStyle(ChatFormatting.RED);
         if (!minecraft.hasSingleplayerServer() && !waypointManager.receivedAutoSubworldName()) {
-            addRenderableWidget(buttonMultiworld = new PopupGuiButton(SIDE_MARGIN + (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, multiworldButtonName, button -> minecraft.setScreen(new GuiSubworldsSelect(this)), this));
+            addRenderableWidget(buttonMultiworld = new PopupGuiButton(SIDE_MARGIN + (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, multiworldButtonName, button -> minecraft.gui.setScreen(new GuiSubworldsSelect(this)), this));
         }
-        addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 3 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("menu.options"), button -> minecraft.setScreen(new GuiMinimapOptions(this)), this));
+        addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 3 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("menu.options"), button -> minecraft.gui.setScreen(new GuiMinimapOptions(this)), this));
         addRenderableWidget(new PopupGuiButton(SIDE_MARGIN + 4 * (buttonWidth + buttonSeparation), getHeight() - 26, buttonWidth, 20, Component.translatable("gui.done"), button -> onClose(), this));
 
         oldNorth = mapOptions.oldNorth.get();
@@ -565,7 +567,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
 
         RenderUtils.setProjectionMatrix(mapProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap WorldMap Draw", fullscreenTarget.getColorTextureView(), OptionalInt.of(0x00000000), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap WorldMap Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
             Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
@@ -1066,7 +1068,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 dimensions.add(dimensionManager.getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
                 y = y > VoxelConstants.getPlayer().level().getMinY() ? y : 64;
                 newWaypoint = new Waypoint("", (int) (x * dimensionScale), (int) (z * dimensionScale), y, true, r, g, b, "", waypointManager.getCurrentSubworldDescriptor(false), dimensions);
-                minecraft.setScreen(new GuiAddWaypoint(this, newWaypoint, false));
+                minecraft.gui.setScreen(new GuiAddWaypoint(this, newWaypoint, false));
             }
             case 1 -> {
                 if (selectedWaypoint != null) {
@@ -1102,7 +1104,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             case 4 -> {
                 if (selectedWaypoint != null) {
                     editClicked = true;
-                    minecraft.setScreen(new GuiAddWaypoint(this, selectedWaypoint, true));
+                    minecraft.gui.setScreen(new GuiAddWaypoint(this, selectedWaypoint, true));
                 }
             }
             case 5 -> {
@@ -1113,7 +1115,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     Component affirm = Component.translatable("selectServer.deleteButton");
                     Component deny = Component.translatable("gui.cancel");
                     ConfirmScreen confirmScreen = new ConfirmScreen(this, title, explanation, affirm, deny);
-                    minecraft.setScreen(confirmScreen);
+                    minecraft.gui.setScreen(confirmScreen);
                 }
             }
             default -> VoxelConstants.getLogger().warn("unimplemented command");
@@ -1150,6 +1152,6 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             }
         }
 
-        minecraft.setScreen(this);
+        minecraft.gui.setScreen(this);
     }
 }

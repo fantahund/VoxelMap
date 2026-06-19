@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.render;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -11,22 +12,22 @@ import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public class DeferredRenderPass implements AutoCloseable {
     private final String passName;
@@ -35,12 +36,13 @@ public class DeferredRenderPass implements AutoCloseable {
     private RenderPipeline pipeline;
     private final HashMap<String, GpuBufferSlice> uniformsMap = new HashMap<>(8);
     private final HashMap<String, TextureBinding> texturesMap = new HashMap<>(8);
-    private final Matrix4f matrixCache = new Matrix4f();
+    private final PoseStack poseCache = new PoseStack();
     private BufferBuilder bufferBuilder;
+    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final GpuTextureView lastOutputColorTexture;
     private final GpuTextureView lastOutputDepthTexture;
 
-    public DeferredRenderPass(String passName, GpuTextureView colorTexture, OptionalInt colorClear, GpuTextureView depthTexture, OptionalDouble depthClear) {
+    public DeferredRenderPass(String passName, GpuTextureView colorTexture, Optional<Vector4f> colorClear, GpuTextureView depthTexture, OptionalDouble depthClear) {
         this.passName = passName;
         this.colorTexture = colorTexture;
         this.depthTexture = depthTexture;
@@ -53,7 +55,7 @@ public class DeferredRenderPass implements AutoCloseable {
 
         // Clear color and depth textures
         if (colorTexture != null && colorClear.isPresent()) {
-            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(colorTexture.texture(), colorClear.getAsInt());
+            RenderSystem.getDevice().createCommandEncoder().clearColorTexture(colorTexture.texture(), colorClear.get());
         }
         if (depthTexture != null && depthClear.isPresent()) {
             RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(depthTexture.texture(), depthClear.getAsDouble());
@@ -126,17 +128,16 @@ public class DeferredRenderPass implements AutoCloseable {
     }
 
     public void drawString(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
-        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        Matrix4f textMatrix = matrixCache.set(matrix).translate(x, y, z);
-        Minecraft.getInstance().font.drawInBatch(text, 0.0F, 0.0F, color, shadow, textMatrix, bufferSource, Font.DisplayMode.NORMAL, 0x00000000, LightCoordsUtil.FULL_BRIGHT);
-        bufferSource.endLastBatch();
+        poseCache.last().pose().set(matrix).translate(x, y, z);
+        submitNodeStorage.submitText(poseCache, 0.0F, 0.0F, text.getVisualOrderText(), shadow, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+        Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
     }
 
     public void beginBatch() {
         if (pipeline == null) {
             throw new IllegalStateException("Cannot begin batch! RenderPipeline is null.");
         }
-        bufferBuilder = Tesselator.getInstance().begin(pipeline.getVertexFormatMode(), pipeline.getVertexFormat());
+        bufferBuilder = Tesselator.getInstance().begin(pipeline);
     }
 
     public VertexConsumer vertexBuffer() {
@@ -155,18 +156,18 @@ public class DeferredRenderPass implements AutoCloseable {
     }
 
     private void drawWithShader(MeshData meshData) {
-        GpuBuffer vertexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.vertexBuffer());
+        GpuBuffer vertexBuffer = RenderUtils.createVertexBuffer(meshData.vertexBuffer());
         GpuBuffer indexBuffer;
-        VertexFormat.IndexType indexType;
+        IndexType indexType;
         if (meshData.indexBuffer() == null) {
-            RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().mode());
+            RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
             indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
             indexType = autoStorageIndexBuffer.type();
         } else {
-            indexBuffer = pipeline.getVertexFormat().uploadImmediateVertexBuffer(meshData.indexBuffer());
+            indexBuffer = RenderUtils.createIndexBuffer(meshData.indexBuffer());
             indexType = meshData.drawState().indexType();
         }
-        try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> passName, colorTexture, OptionalInt.empty(), depthTexture, OptionalDouble.empty())) {
+        try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> passName, colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
             pass.setPipeline(pipeline);
             ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
             if (scissorState.enabled()) {
@@ -176,12 +177,12 @@ public class DeferredRenderPass implements AutoCloseable {
             for (Map.Entry<String, GpuBufferSlice> entry : uniformsMap.entrySet()) {
                 pass.setUniform(entry.getKey(), entry.getValue());
             }
-            pass.setVertexBuffer(0, vertexBuffer);
+            pass.setVertexBuffer(0, vertexBuffer.slice());
             for (Map.Entry<String, TextureBinding> entry : texturesMap.entrySet()) {
                 pass.bindTexture(entry.getKey(), entry.getValue().texture(), entry.getValue().sampler());
             }
             pass.setIndexBuffer(indexBuffer, indexType);
-            pass.drawIndexed(0, 0, meshData.drawState().indexCount(), 1);
+            pass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
         }
     }
 

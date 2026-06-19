@@ -61,7 +61,7 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
         addRenderableWidget(closeButton = new PlainTextButton(0, 0, 0, 0, closeMessage, button -> onClose(), getFont()));
 
         Component controlsMessage = Component.translatable("options.controls").withStyle(ChatFormatting.GRAY);
-        addRenderableWidget(controlsButton = new PlainTextButton(0, 0, 0, 0, controlsMessage, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
+        addRenderableWidget(controlsButton = new PlainTextButton(0, 0, 0, 0, controlsMessage, button -> minecraft.gui.setScreen(new GuiMinimapControls(this)), getFont()));
     }
 
     @Override

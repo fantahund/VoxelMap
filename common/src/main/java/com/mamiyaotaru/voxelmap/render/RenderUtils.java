@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.render;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -9,6 +10,7 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
@@ -21,7 +23,9 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
@@ -29,7 +33,7 @@ import java.util.function.Consumer;
 public final class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
-    private static final RenderTarget FULLSCREEN_RENDER_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true);
+    private static final RenderTarget FULLSCREEN_RENDER_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true, GpuFormat.RGBA8_UNORM);
     private static int lastScreenWidth;
     private static int lastScreenHeight;
     private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
@@ -38,7 +42,7 @@ public final class RenderUtils {
     }
 
     public static boolean hasFlippedTexture() {
-        return !VoxelConstants.hasVulkanMod();
+        return !VoxelConstants.hasVulkanMod() || RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
     }
 
     public static float getGuiWidth() {
@@ -47,6 +51,14 @@ public final class RenderUtils {
 
     public static float getGuiHeight() {
         return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
+    }
+
+    public static GpuBuffer createVertexBuffer(ByteBuffer vertexBuf) {
+        return RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX, vertexBuf);
+    }
+
+    public static GpuBuffer createIndexBuffer(ByteBuffer indexBuf) {
+        return RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX, indexBuf);
     }
 
     public static Matrix4fStack getRenderMatrixStack() {
@@ -66,8 +78,8 @@ public final class RenderUtils {
         graphics.guiRenderState.addGuiElement(new FloatBlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(renderTarget.getColorTextureView(), VoxelMapPipelines.NEAREST_REPEAT_SAMPLER), graphics.pose(), 0.0F, 0.0F, getGuiWidth(), getGuiHeight(), 0.0F, 1.0F, v0, v1, 0xFFFFFFFF, 0xFFFFFFFF, graphics.scissorStack.peek()));
     }
 
-    public static DeferredRenderPass createDeferredRenderPass(String passName, GpuTextureView colorTexture, OptionalInt colorClear, GpuTextureView depthTexture, OptionalDouble depthClear) {
-        GpuBufferSlice dynamicUniforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrix(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
+    public static DeferredRenderPass createDeferredRenderPass(String passName, GpuTextureView colorTexture, Optional<Vector4f> colorClear, GpuTextureView depthTexture, OptionalDouble depthClear) {
+        GpuBufferSlice dynamicUniforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), new Vector3f(), new Matrix4f());
         DeferredRenderPass pass = new DeferredRenderPass(passName, colorTexture, colorClear, depthTexture, depthClear);
         pass.setUniform("DynamicTransforms", dynamicUniforms);
         return pass;
@@ -113,7 +125,7 @@ public final class RenderUtils {
 
     public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
         RenderSystem.assertOnRenderThread();
-        int bytePerPixel = gpuTexture.getFormat().pixelSize();
+        int bytePerPixel = gpuTexture.getFormat().blockSize();
         int width = gpuTexture.getWidth(0);
         int height = gpuTexture.getHeight(0);
         int bufferSize = bytePerPixel * width * height;
@@ -121,7 +133,7 @@ public final class RenderUtils {
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
         commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-            try (GpuBuffer.MappedView readView = commandEncoder.mapBuffer(gpuBuffer, true, false)) {
+            try (GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
                 for (int y = 0; y < height; y++) {
                     for (int x = 0; x < width; x++) {
                         int pixel = readView.data().getInt((x + y * width) * bytePerPixel);

@@ -34,6 +34,7 @@ import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -77,6 +78,7 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.Random;
@@ -216,10 +218,10 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         final int fboTextureSize = 512;
 
-        this.baseMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Base Map Target", true);
+        this.baseMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Base Map Target", true, GpuFormat.RGBA8_UNORM);
         this.baseMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
-        this.finalMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Final Map Target", true);
+        this.finalMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Final Map Target", true, GpuFormat.RGBA8_UNORM);
         this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
         VoxelConstants.getVoxelMapInstance().addReloadListener(this);
@@ -345,12 +347,12 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     public void onTickInGame(GuiGraphicsExtractor graphics) {
         this.rotationFactor = this.options.oldNorth.get() ? 90 : 0;
 
-        if (minecraft.screen == null) {
+        if (minecraft.gui.screen() == null) {
             if (options.welcome.get()) {
-                minecraft.setScreen(new GuiWelcomeScreen(null));
+                minecraft.gui.setScreen(new GuiWelcomeScreen(null));
             }
             if (options.keyBindMenu.consumeClick()) {
-                minecraft.setScreen(new GuiPersistentMap(null));
+                minecraft.gui.setScreen(new GuiPersistentMap(null));
             }
             if (options.keyBindMobToggle.consumeClick()) {
                 VoxelConstants.getVoxelMapInstance().getRadarOptions().showRadar.cycle();
@@ -370,7 +372,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             }
             if (serverSettings.waypointsAllowed.get()) {
                 if (options.keyBindWaypointMenu.consumeClick()) {
-                    minecraft.setScreen(new GuiWaypoints(null));
+                    minecraft.gui.setScreen(new GuiWaypoints(null));
                 }
                 if (options.keyBindWaypoint.consumeClick()) {
                     boolean isFirst = waypointManager.getWaypoints().isEmpty();
@@ -387,17 +389,17 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                     dimensions.add(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(VoxelConstants.getPlayer().level()));
                     Waypoint waypoint = new Waypoint("", x, z, y, true, r, g, b, "", waypointManager.getCurrentSubworldDescriptor(false), dimensions);
 
-                    minecraft.setScreen(new GuiAddWaypoint(null, waypoint, false));
+                    minecraft.gui.setScreen(new GuiAddWaypoint(null, waypoint, false));
                 }
             }
         } else {
             if (serverSettings.deathpointsAllowd.get()) {
-                if (minecraft.screen instanceof DeathScreen && !(lastGuiScreen instanceof DeathScreen)) {
+                if (minecraft.gui.screen() instanceof DeathScreen && !(lastGuiScreen instanceof DeathScreen)) {
                     waypointManager.handleDeath();
                 }
             }
         }
-        this.lastGuiScreen = minecraft.screen;
+        this.lastGuiScreen = minecraft.gui.screen();
 
         this.checkForChanges();
         this.calculateCurrentLightAndSkyColor();
@@ -409,7 +411,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zCalcTicker = 0;
             }
 
-            if (!(minecraft.screen instanceof DeathScreen) && !(minecraft.screen instanceof OutOfMemoryScreen)) {
+            if (!(minecraft.gui.screen() instanceof DeathScreen) && !(minecraft.gui.screen() instanceof OutOfMemoryScreen)) {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
@@ -450,7 +452,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             this.message = "";
         }
 
-        if (!minecraft.options.hideGui && (minecraft.screen == null || options.showUnderMenus.get())) {
+        if (!minecraft.gui.hud.isHidden() && (minecraft.gui.screen() == null || options.showUnderMenus.get())) {
             this.drawMinimap(graphics);
         }
 
@@ -560,7 +562,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         this.needSkyColor = false;
         boolean aboveHorizon = this.lastAboveHorizon;
         Vector4f color = new Vector4f();
-        minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.getMainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.getBossOverlayWorldDarkening(0.0F), color);
+        minecraft.gameRenderer.fogRenderer.computeFogColor(minecraft.gameRenderer.mainCamera(), 0.0F, this.world, minecraft.options.renderDistance().get(), minecraft.gameRenderer.bossOverlayWorldDarkening(0.0F), color);
         int r = (int) (color.x * 255.0F);
         int g = (int) (color.y * 255.0F);
         int b = (int) (color.z * 255.0F);
@@ -644,7 +646,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
 
         RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Map Draw", fullscreenTarget.getColorTextureView(), OptionalInt.of(0x00000000), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Map Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
             Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
@@ -1469,7 +1471,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(256.0F, 256.0F, 0.0F);
 
         // Draw map, radar, etc.
-        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Base Map Draw", baseMapRenderTarget.getColorTextureView(), OptionalInt.of(0x00000000), baseMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Base Map Draw", baseMapRenderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), baseMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
             float scale = getMapImageScale();
             float multi = (float) (1.0 / this.zoomScale);
             float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
@@ -1513,7 +1515,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
 
         // Masking the drawn map
-        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Final Map Draw", finalMapRenderTarget.getColorTextureView(), OptionalInt.of(0x00000000), finalMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Final Map Draw", finalMapRenderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), finalMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
             mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST);
             mapPass.bindTexture("Sampler0", options.squareMap.get() ? squareMapStencilTexture : roundMapStencilTexture);
             mapPass.beginBatch();

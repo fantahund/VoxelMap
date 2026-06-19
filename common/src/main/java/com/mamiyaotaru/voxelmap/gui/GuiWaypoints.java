@@ -95,7 +95,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         addRenderableWidget(buttonHighlight = new Button.Builder(Component.translatable("minimap.waypoints.highlight"), button -> setHighlightedWaypoint()).bounds(getWidth() / 2 + 80, getHeight() - 50, 74, 20).build());
         addRenderableWidget(buttonTeleport = new Button.Builder(Component.translatable("minimap.waypoints.teleportTo"), button -> teleportClicked()).bounds(getWidth() / 2 - 154, getHeight() - 26, 74, 20).build());
         addRenderableWidget(buttonShare = new Button.Builder(Component.translatable("minimap.waypoints.share"), button -> CommandUtils.sendWaypoint(selectedWaypoint)).bounds(getWidth() / 2 - 76, getHeight() - 26, 74, 20).build());
-        addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().setScreen(new GuiWaypointsOptions(this))).bounds(getWidth() / 2 + 2, getHeight() - 26, 74, 20).build());
+        addRenderableWidget(new Button.Builder(Component.translatable("menu.options"), button -> VoxelConstants.getMinecraft().gui.setScreen(new GuiWaypointsOptions(this))).bounds(getWidth() / 2 + 2, getHeight() - 26, 74, 20).build());
         addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> onClose()).bounds(getWidth() / 2 + 80, getHeight() - 26, 74, 20).build());
 
         boolean isSomethingSelected = selectedWaypoint != null;
@@ -149,7 +149,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
             Component affirm = Component.translatable("selectServer.deleteButton");
             Component deny = Component.translatable("gui.cancel");
 
-            VoxelConstants.getMinecraft().setScreen(new ConfirmScreen(this, title, explanation, affirm, deny));
+            VoxelConstants.getMinecraft().gui.setScreen(new ConfirmScreen(this, title, explanation, affirm, deny));
         }
     }
 
@@ -160,7 +160,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         int targetY = selectedWaypoint.getY() > minY ? selectedWaypoint.getY() : (!hasCeiling ? maxY : 64);
 
         VoxelConstants.playerRunTeleportCommand(selectedWaypoint.getX(), targetY, selectedWaypoint.getZ());
-        VoxelConstants.getMinecraft().setScreen(null);
+        VoxelConstants.getMinecraft().gui.setScreen(null);
     }
 
     private void sortClicked(int id) {
@@ -187,7 +187,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
                 selectedWaypoint = null;
             }
 
-            VoxelConstants.getMinecraft().setScreen(this);
+            VoxelConstants.getMinecraft().gui.setScreen(this);
         }
 
         if (editClicked) {
@@ -196,7 +196,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
                 waypointManager.saveWaypoints();
             }
 
-            VoxelConstants.getMinecraft().setScreen(this);
+            VoxelConstants.getMinecraft().gui.setScreen(this);
         }
 
         if (addClicked) {
@@ -206,7 +206,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
                 setSelectedWaypoint(newWaypoint);
             }
 
-            VoxelConstants.getMinecraft().setScreen(this);
+            VoxelConstants.getMinecraft().gui.setScreen(this);
         }
 
     }
@@ -232,7 +232,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     private void editWaypoint(Waypoint waypoint) {
         editClicked = true;
-        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, waypoint, true));
+        VoxelConstants.getMinecraft().gui.setScreen(new GuiAddWaypoint(this, waypoint, true));
     }
 
     private void addWaypoint() {
@@ -259,7 +259,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         int scaledY = (int) (GameVariableAccessShim.yCoord() * 1.0F);
         newWaypoint = new Waypoint("", scaledX, scaledZ, scaledY, true, r, g, b, "", VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false), dimensions);
 
-        VoxelConstants.getMinecraft().setScreen(new GuiAddWaypoint(this, newWaypoint, false));
+        VoxelConstants.getMinecraft().gui.setScreen(new GuiAddWaypoint(this, newWaypoint, false));
     }
 
     private void toggleWaypointVisibility() {
