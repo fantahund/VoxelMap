@@ -1,47 +1,37 @@
 package com.mamiyaotaru.voxelmap.entityrender.variants;
 
 import com.google.common.collect.Maps;
-import com.mamiyaotaru.voxelmap.entityrender.EntityVariantData;
-import java.util.Map;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.Horse;
 import net.minecraft.world.entity.animal.equine.Markings;
 
-public class HorseVariantDataFactory extends DefaultEntityVariantDataFactory {
+import java.util.Map;
+
+public class HorseVariantDataFactory extends EntityVariantDataFactory {
     private static final Identifier INVISIBLE_TEXTURE = Identifier.withDefaultNamespace("invisible");
     private static final Map<Markings, Identifier> LOCATION_BY_MARKINGS = Maps.newEnumMap(
-            Map.of(
-                    Markings.NONE,
-                    INVISIBLE_TEXTURE,
-                    Markings.WHITE,
-                    Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_white.png"),
-                    Markings.WHITE_FIELD,
-                    Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_whitefield.png"),
-                    Markings.WHITE_DOTS,
-                    Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_whitedots.png"),
-                    Markings.BLACK_DOTS,
-                    Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_blackdots.png")));
+            Map.ofEntries(
+                    Map.entry(Markings.NONE, INVISIBLE_TEXTURE),
+                    Map.entry(Markings.WHITE, Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_white.png")),
+                    Map.entry(Markings.WHITE_FIELD, Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_whitefield.png")),
+                    Map.entry(Markings.WHITE_DOTS, Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_whitedots.png")),
+                    Map.entry(Markings.BLACK_DOTS, Identifier.withDefaultNamespace("textures/entity/horse/horse_markings_blackdots.png"))
+            )
+    );
 
     public HorseVariantDataFactory(EntityType<?> type) {
         super(type);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("rawtypes")
     @Override
-    public EntityVariantData createVariantData(Entity entity, EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
-        Horse horse = (Horse) entity;
-        Markings markings = horse.getMarkings();
-
-        Identifier primaryTexture = ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state);
-        Identifier secondaryTexture = LOCATION_BY_MARKINGS.get(markings);
-
-        return new DefaultEntityVariantData(getType(), identifier, size, addBorder, primaryTexture, secondaryTexture == INVISIBLE_TEXTURE ? null : secondaryTexture, null, null);
+    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, int size, boolean addBorder) {
+        Identifier baseTexture = getBaseTexture(renderer, state);
+        Identifier overlay0 = LOCATION_BY_MARKINGS.get(((Horse) entity).getMarkings());
+        return new EntityVariantData(getType(), id, baseTexture, 0xFFFFFFFF, overlay0 == INVISIBLE_TEXTURE ? null : overlay0, 0xFFFFFFFF, size, addBorder);
     }
-
 }

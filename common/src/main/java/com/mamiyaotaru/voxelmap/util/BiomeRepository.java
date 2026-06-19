@@ -29,8 +29,7 @@ public final class BiomeRepository {
     private BiomeRepository() {}
 
     public static void loadBiomeColors() {
-        File saveDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/");
-        File settingsFile = new File(saveDir, "biomecolors.txt");
+        File settingsFile = FileUtils.join(FileUtils.voxelMapPath(), FileUtils.withExtension("biomecolors", "txt"));
         if (settingsFile.exists()) {
             try {
                 BufferedReader br = new BufferedReader(new FileReader(settingsFile));
@@ -88,19 +87,15 @@ public final class BiomeRepository {
             br.close();
             is.close();
         } catch (IOException var11) {
-            VoxelConstants.getLogger().error("Error loading biome color config file from litemod!", var11);
+            VoxelConstants.getLogger().error("Error loading biome color config file from mod!", var11);
         }
 
     }
 
     public static void saveBiomeColors() {
         if (dirty) {
-            File saveDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/");
-            if (!saveDir.exists()) {
-                saveDir.mkdirs();
-            }
-
-            File settingsFile = new File(saveDir, "biomecolors.txt");
+            File settingsFile = FileUtils.join(FileUtils.voxelMapPath(), FileUtils.withExtension("biomecolors", "txt"));
+            settingsFile.getParentFile().mkdirs();
 
             try {
                 PrintWriter out = new PrintWriter(new FileWriter(settingsFile));

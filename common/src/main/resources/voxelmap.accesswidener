@@ -8,6 +8,7 @@ accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
 # fields
 accessible field net/minecraft/client/model/QuadrupedModel head Lnet/minecraft/client/model/geom/ModelPart;
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
+accessible field net/minecraft/client/KeyMapping key Lcom/mojang/blaze3d/platform/InputConstants$Key;
 mutable field net/minecraft/client/Options keyMappings [Lnet/minecraft/client/KeyMapping;
 accessible field net/minecraft/client/renderer/RenderPipelines GUI_TEXTURED_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible field net/minecraft/client/renderer/entity/layers/SlimeOuterLayer model Lnet/minecraft/client/model/monster/slime/SlimeModel;

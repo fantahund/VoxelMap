@@ -30,6 +30,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -38,14 +48,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import net.minecraft.SharedConstants;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextColor;
-import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Utility class to check for newer versions of a project hosted on Modrinth.
@@ -198,25 +200,25 @@ public class ModrinthUpdateChecker {
             return Component.translatable("voxelmap.update.noChangelogAvailable");
         }
 
-        Component out = Component.translatable("voxelmap.update.changes").setStyle(Style.EMPTY.withColor(red)).append("\n");
+        MutableComponent out = Component.translatable("voxelmap.update.changes").setStyle(Style.EMPTY.withColor(red)).append("\n");
 
         for (int i = 0; i < updates.size(); i++) {
             VersionInfo v = updates.get(i);
 
-            if (i > 0) out = out.copy().append(Component.literal("\n"));
+            if (i > 0) out.append(Component.literal("\n"));
 
-            out = out.copy().append(Component.literal(v.version() + ":").setStyle(Style.EMPTY.withColor(red)));
+            out.append(Component.literal(v.version() + ":").setStyle(Style.EMPTY.withColor(red)));
 
             String changelog = (v.changelog() == null) ? "" : v.changelog();
             String[] lines = changelog.split("\\R", -1);
 
             if (lines.length == 0 || (lines.length == 1 && lines[0].isBlank())) {
-                out = out.copy().append(Component.literal("\n ").append(Component.translatable("voxelmap.update.noChangelogProvided")).setStyle(Style.EMPTY.withColor(green)));
+                out.append(Component.literal("\n ").append(Component.translatable("voxelmap.update.noChangelogProvided")).setStyle(Style.EMPTY.withColor(green)));
                 continue;
             }
 
             for (String line : lines) {
-                out = out.copy().append(Component.literal("\n " + line).setStyle(Style.EMPTY.withColor(green)));
+                out.append(Component.literal("\n " + line).setStyle(Style.EMPTY.withColor(green)));
             }
         }
 
@@ -224,7 +226,7 @@ public class ModrinthUpdateChecker {
     }
 
     public static void checkUpdates() {
-        if (!VoxelConstants.getVoxelMapInstance().getMapOptions().updateNotifier) {
+        if (!VoxelConstants.getVoxelMapInstance().getMapOptions().updateNotifier.get()) {
             return;
         }
         String modVersion = VoxelConstants.getModVersion();
@@ -248,7 +250,7 @@ public class ModrinthUpdateChecker {
 
             Component link = Component.translatable("voxelmap.update.link").setStyle(linkStyle);
             Component msg = prefix.copy().append(link).append(suffix);
-            VoxelConstants.getMinecraft().execute(() -> VoxelConstants.getMinecraft().gui.hud.getChat().addClientSystemMessage(msg));
+            VoxelConstants.getMinecraft().execute(() -> VoxelConstants.getMinecraft().gui.getChat().addClientSystemMessage(msg));
         });
     }
 }

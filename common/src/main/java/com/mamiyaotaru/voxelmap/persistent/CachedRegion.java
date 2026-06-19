@@ -7,10 +7,30 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.thread.BlockableEventLoop;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.storage.LevelResource;
+import org.apache.logging.log4j.Level;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,25 +49,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ChunkMap;
-import net.minecraft.server.level.ServerChunkCache;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.thread.BlockableEventLoop;
-import net.minecraft.world.level.CardinalLighting;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.dimension.DimensionType;
-import net.minecraft.world.level.storage.LevelResource;
-import org.apache.logging.log4j.Level;
 
 public class CachedRegion {
     private final static int CHUNKS_WIDTH = 16;
@@ -71,6 +72,7 @@ public class CachedRegion {
     private boolean underground;
     private int x;
     private int z;
+    private int sectionY;
     private boolean empty = true;
     private boolean liveChunksUpdated;
     boolean remoteWorld;
@@ -101,7 +103,7 @@ public class CachedRegion {
         this.persistentMap = null;
     }
 
-    public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
+    public CachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z, boolean underground, int sectionY) {
         this.persistentMap = persistentMap;
         this.key = key;
         this.world = world;
@@ -113,13 +115,12 @@ public class CachedRegion {
 
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        boolean knownUnderground;
-        knownUnderground = dimensionName.toLowerCase().contains("erebus");
-        this.underground = world.dimensionType().cardinalLightType() != CardinalLighting.Type.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
+        this.underground = underground;
         this.remoteWorld = !VoxelConstants.getMinecraft().hasSingleplayerServer();
         persistentMap.getSettingsAndLightingChangeNotifier().addObserver(this);
         this.x = x;
         this.z = z;
+        this.sectionY = sectionY;
         if (!this.remoteWorld) {
             Optional<net.minecraft.world.level.Level> optionalWorld = VoxelConstants.getWorldByKey(world.dimension());
 
@@ -260,7 +261,7 @@ public class CachedRegion {
     private void doLoadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
         for (int t = 0; t < CHUNK_BLOCKS; ++t) {
             for (int s = 0; s < CHUNK_BLOCKS; ++s) {
-                this.persistentMap.getAndStoreData(this.data, chunk.getLevel(), chunk, this.blockPos, this.underground, this.x * REGION_WIDTH, this.z * REGION_WIDTH, chunkX * CHUNK_BLOCKS + t, chunkZ * CHUNK_BLOCKS + s);
+                this.persistentMap.getAndStoreData(this.data, chunk.getLevel(), chunk, this.blockPos, this.underground, this.x * REGION_WIDTH, this.z * REGION_WIDTH, chunkX * CHUNK_BLOCKS + t, chunkZ * CHUNK_BLOCKS + s, this.sectionY);
             }
         }
 
@@ -305,8 +306,8 @@ public class CachedRegion {
             }
 
             if (!this.closed && !full) {
-                File directory = new File(DimensionType.getStorageFolder(this.worldServer.dimension(), this.worldServer.getServer().getWorldPath(LevelResource.ROOT).normalize()).toString(), "region");
-                File regionFile = new File(directory, "r." + (int) Math.floor(this.x / 2f) + "." + (int) Math.floor(this.z / 2f) + ".mca");
+                File directory = FileUtils.join(DimensionType.getStorageFolder(worldServer.dimension(), worldServer.getServer().getWorldPath(LevelResource.ROOT).normalize()).toFile(), "region");
+                File regionFile = FileUtils.join(directory, FileUtils.withExtension("r." + (int) Math.floor(x / 2.0F) + "." + (int) Math.floor(z / 2.0F), "mca"));
                 if (regionFile.exists()) {
                     boolean dataChanged = false;
                     boolean loadedChunks = false;
@@ -452,9 +453,8 @@ public class CachedRegion {
 
     private void loadCachedData() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
-            cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), FileUtils.withExtension(key, "zip"));
+            cachedRegionFile.getParentFile().mkdirs();
             if (cachedRegionFile.exists()) {
                 ZipFile zFile = new ZipFile(cachedRegionFile);
                 ZipEntry ze = zFile.getEntry("data");
@@ -562,9 +562,8 @@ public class CachedRegion {
         BiMap<Biome, Integer> biomeToInt = this.data.getBiomeToInt();
         byte[] byteArray = this.data.getData();
         if (byteArray.length == this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION)) {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
-            cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), FileUtils.withExtension(key, "zip"));
+            cachedRegionFile.getParentFile().mkdirs();
             FileOutputStream fos = new FileOutputStream(cachedRegionFile);
             ZipOutputStream zos = new ZipOutputStream(fos);
             ZipEntry ze = new ZipEntry("data");
@@ -625,20 +624,18 @@ public class CachedRegion {
     private void fillImage() {
         for (int t = 0; t < REGION_WIDTH; ++t) {
             for (int s = 0; s < REGION_WIDTH; ++s) {
-                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
+                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s, this.sectionY);
                 this.image.setRGB(t, s, color24);
             }
         }
+        this.image.updateSamplers();
         this.image.generateMipmaps();
     }
 
     private void saveImage() {
         if (!this.empty && this.image != null) {
-
-            File imageFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart + "/images/z1");
-            imageFileDir.mkdirs();
-            final File imageFile = new File(imageFileDir, this.key + ".png");
-                       
+            File imageFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), "images", "z1", FileUtils.withExtension(key, "png"));
+            imageFile.getParentFile().mkdirs();
             if (this.liveChunksUpdated || !imageFile.exists()) {
                 NativeImage toSave = new NativeImage(REGION_WIDTH, REGION_WIDTH, false);
                 toSave.copyFrom(this.image.getData());
@@ -680,7 +677,7 @@ public class CachedRegion {
         return REGION_WIDTH;
     }
 
-    public Identifier getTextureLocation(float zoom) {
+    public AbstractTexture getMapImage(float zoom) {
         if (this.image != null) {
             if (!this.refreshingImage) {
                 synchronized (this.image) {
@@ -691,7 +688,7 @@ public class CachedRegion {
                 }
             }
 
-            return this.image.getTextureLocation(zoom);
+            return this.image.getTexture(zoom);
         } else {
             return null;
         }
@@ -756,7 +753,7 @@ public class CachedRegion {
 
         this.persistentMap.getSettingsAndLightingChangeNotifier().removeObserver(this);
         if (this.image != null) {
-            if (this.persistentMap.getOptions().outputImages) {
+            if (this.persistentMap.getOptions().outputImages.get()) {
                 this.saveImage();
             }
 

@@ -1,131 +1,134 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.PlainTextButton;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ARGB;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.network.chat.HoverEvent;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GuiWelcomeScreen extends GuiScreenMinimap {
-    private MapSettingsManager options;
-
+    private final MapOptions options;
+    private final ArrayList<StringWidget> welcomeTexts = new ArrayList<>();
+    private int lineStart = 1;
+    private PlainTextButton scrollUpButton;
+    private PlainTextButton scrollDownButton;
     private PlainTextButton closeButton;
     private PlainTextButton controlsButton;
 
-    private final ArrayList<Component> welcomeTexts = new ArrayList<>();
-
-    public GuiWelcomeScreen(Screen parentScreen) {
-        this.lastScreen = parentScreen;
-        this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
+    public GuiWelcomeScreen(Screen parentGui) {
+        super(parentGui, Component.empty());
+        options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
     @Override
     public void init() {
-        this.clearWidgets();
+        clearWidgets();
 
-        String maintainers = "Fantahund, Brokkonaut, Algamja11";
-        this.welcomeTexts.clear();
-        this.welcomeTexts.add(Component.literal("VoxelMap!").withStyle(ChatFormatting.RED));
-        this.welcomeTexts.add(Component.translatable("minimap.ui.welcome1", maintainers));
-        this.welcomeTexts.add(Component.translatable("minimap.ui.welcome2"));
-        this.welcomeTexts.add(Component.empty());
-        this.welcomeTexts.add(Component.translatable("minimap.ui.welcome3"));
-        this.welcomeTexts.add(Component.translatable("minimap.ui.welcome4"));
-        this.welcomeTexts.add(Component.empty());
+        Component maintainers = Component.literal("The VoxelMap Team").withStyle((style) -> style
+                .withColor(ChatFormatting.GREEN)
+                .withHoverEvent(new HoverEvent.ShowText(Component.literal("fantahund\nBrokkonaut\nTheAlgorithm476\nAlgamja11")))
+        );
+        welcomeTexts.clear();
+        welcomeTexts.add(createString(Component.literal("VoxelMap!").withStyle(ChatFormatting.RED)));
+        welcomeTexts.add(createString(Component.translatable("minimap.ui.welcome1", maintainers)));
+        welcomeTexts.add(createString(Component.translatable("minimap.ui.welcome2")));
+        welcomeTexts.add(createString(Component.empty()));
+        welcomeTexts.add(createString(Component.translatable("minimap.ui.welcome3")));
+        welcomeTexts.add(createString(Component.translatable("minimap.ui.welcome4")));
+        welcomeTexts.add(createString(Component.empty()));
         KeyMapping[] sortedKeys = Arrays.stream(options.keyBindings).sorted().toArray(KeyMapping[]::new);
-        int count = 0;
         for (KeyMapping key : sortedKeys) {
-            if (key.isUnbound()) continue;
-
-            Component keyText = Component.empty()
-                    .append(key.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA))
-                    .append(Component.literal(": ").withStyle(ChatFormatting.WHITE))
-                    .append(Component.translatable(key.getName()));
-
-            if (count % 2 == 0) {
-                this.welcomeTexts.add(keyText);
-            } else {
-                int lastIndex = this.welcomeTexts.size() - 1;
-                this.welcomeTexts.set(lastIndex, this.welcomeTexts.getLast().copy().append(", ").append(keyText));
+            if (key.isUnbound()) {
+                continue;
             }
-
-            ++count;
+            Component keyText = Component.translatable("options.generic_value", key.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA), Component.translatable(key.getName()));
+            welcomeTexts.add(createString(keyText));
         }
 
-        Component closeThisMessage = Component.translatable("minimap.ui.welcome5").withStyle(ChatFormatting.GRAY);
-        this.addRenderableWidget(this.closeButton = new PlainTextButton(0, 0, 100, 10, closeThisMessage, button -> {
-            this.options.toggleBooleanValue(EnumOptionsMinimap.WELCOME_SCREEN);
-            this.options.saveAll();
+        addRenderableWidget(scrollUpButton = new PlainTextButton(0, 0, 10, 10, Component.literal("↑"), button -> scrollLine(1.0), getFont()));
+        addRenderableWidget(scrollDownButton = new PlainTextButton(0, 0, 10, 10, Component.literal("↓"), button -> scrollLine(-1.0), getFont()));
 
-            this.onClose();
-        }, getFont()));
+        Component closeMessage = Component.translatable("minimap.ui.welcome5").withStyle(ChatFormatting.GRAY);
+        addRenderableWidget(closeButton = new PlainTextButton(0, 0, 0, 0, closeMessage, button -> onClose(), getFont()));
 
-        Component controls = Component.translatable("options.controls").withStyle(ChatFormatting.GRAY);
-        this.addRenderableWidget(this.controlsButton = new PlainTextButton(0, 0, 100, 10, controls, button -> minecraft.gui.setScreen(new GuiMinimapControls(this)), getFont()));
+        Component controlsMessage = Component.translatable("options.controls").withStyle(ChatFormatting.GRAY);
+        addRenderableWidget(controlsButton = new PlainTextButton(0, 0, 0, 0, controlsMessage, button -> minecraft.setScreen(new GuiMinimapControls(this)), getFont()));
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double amount) {
+        scrollLine(amount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, amount);
+    }
+
+    private void scrollLine(double amount) {
+        if (amount > 0.0) {
+            lineStart--;
+        } else if (amount < 0.0) {
+            lineStart++;
+        }
+        lineStart = Math.min(Math.max(lineStart, 1), Math.max(welcomeTexts.size() - 9, 1));
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-
-        int centerX = graphics.guiWidth() / 2;
-        int centerY = graphics.guiHeight() / 2;
-
         int lineHeight = getFont().lineHeight;
-
-        int boxColor = ARGB.color(128, 0, 0, 0);
-        int boxTop = centerY - ((this.welcomeTexts.size() * lineHeight) / 2);
-
-        // Main Box
-        int boxWidth = 0;
-        for (int i = 1; i < this.welcomeTexts.size(); ++i) {
-            boxWidth = Math.max(boxWidth, getFont().width(this.welcomeTexts.get(i)));
+        int width = 0;
+        for (StringWidget widget : welcomeTexts) {
+            width = Math.max(width, widget.getWidth());
+            removeWidget(widget);
         }
-        this.drawBox(graphics, centerX - (boxWidth / 2), boxTop, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1), 4, 1, boxColor);
+        int height = lineHeight * 9;
+        int top = (getHeight() - height) / 2;
+        int bottom = (getHeight() + height) / 2;
+        int left = (getWidth() - width) / 2;
+        int right = (getWidth() + width) / 2;
 
-        // Title Box
-        this.drawBox(graphics, centerX - (boxWidth / 2), boxTop - lineHeight - 3, centerX + (boxWidth / 2), boxTop + lineHeight * (this.welcomeTexts.size() - 1) + 22, 6, 1, boxColor);
+        graphics.fill(left - 6, top - lineHeight - 4, right + 6, bottom + 20, 0x80000000);
+        graphics.fill(left - 4, top - 1, right + 4, bottom + 1, 0x80000000);
 
-        // Main Text
-        for (int i = 1; i < this.welcomeTexts.size(); ++i) {
-            graphics.text(getFont(), this.welcomeTexts.get(i), centerX - (boxWidth / 2), boxTop + lineHeight * (i - 1), 0xFFFFFFFF);
+        welcomeTexts.getFirst().setPosition((getWidth() - welcomeTexts.getFirst().getWidth()) / 2, top - lineHeight - 2);
+        addRenderableWidget(welcomeTexts.getFirst());
+
+        int lineEnd = Math.min(lineStart + 9, welcomeTexts.size());
+        for (int i = lineStart; i < lineEnd; i++) {
+            welcomeTexts.get(i).setPosition((getWidth() - width) / 2, top + lineHeight * (i - lineStart));
+            addRenderableWidget(welcomeTexts.get(i));
         }
 
-        //  Title Text
-        graphics.centeredText(getFont(), this.welcomeTexts.getFirst(), centerX, boxTop - lineHeight - 3, 0xFFFFFFFF);
-        boxTop += lineHeight * this.welcomeTexts.size();
+        scrollUpButton.setPosition(right - 4, top + 2);
+        scrollDownButton.setPosition(right - 4, bottom - 12);
 
+        int buttonWidth = width / 2 - 8;
 
-        // Buttons
-        this.closeButton.setWidth((boxWidth / 2) - 8);
-        this.closeButton.setPosition(getWidth() / 2 + 8, boxTop);
-        this.drawBox(graphics, this.closeButton.getX(), boxTop, this.closeButton.getX() + this.closeButton.getWidth(), boxTop + this.closeButton.getHeight(), 4, 1, boxColor);
+        closeButton.setRectangle(buttonWidth, 10, getWidth() / 2 + 8, bottom + 6);
+        drawButtonBackground(graphics, closeButton);
 
-        this.controlsButton.setWidth((boxWidth / 2) - 8);
-        this.controlsButton.setPosition((getWidth() / 2) - (boxWidth / 2), boxTop);
-        this.drawBox(graphics, this.controlsButton.getX(), boxTop, this.controlsButton.getX() + this.controlsButton.getWidth(), boxTop + this.controlsButton.getHeight(), 4, 1, boxColor);
+        controlsButton.setRectangle(buttonWidth, 10, (getWidth() - width) / 2, bottom + 6);
+        drawButtonBackground(graphics, controlsButton);
+
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
-    private void drawBox(GuiGraphicsExtractor graphics, int x1, int y1, int x2, int y2, int inflateX, int inflateY, int color) {
-        graphics.fill(x1 - inflateX, y1 - inflateY, x2 + inflateX, y2 + inflateY, color);
+    private StringWidget createString(Component component) {
+        return new StringWidget(component, minecraft.font);
+    }
+
+    private void drawButtonBackground(GuiGraphicsExtractor graphics, AbstractWidget widget) {
+        graphics.fill(widget.getX() - 4, widget.getY() - 1, widget.getX() + widget.getWidth() + 4, widget.getY() + widget.getHeight() + 1, 0x80000000);
     }
 
     @Override
-    public void extractMenuBackground(GuiGraphicsExtractor graphics) {
-    }
-
-    @Override
-    public void extractBlurredBackground(GuiGraphicsExtractor graphics) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
     }
 
     @Override
@@ -139,12 +142,8 @@ public class GuiWelcomeScreen extends GuiScreenMinimap {
     }
 
     @Override
-    public boolean keyPressed(KeyEvent keyEvent) {
-        if (keyEvent.key() == GLFW.GLFW_KEY_ESCAPE) {
-            this.options.toggleBooleanValue(EnumOptionsMinimap.WELCOME_SCREEN);
-            this.options.saveAll();
-        }
-
-        return super.keyPressed(keyEvent);
+    public void onClose() {
+        super.onClose();
+        options.welcome.set(false);
     }
 }

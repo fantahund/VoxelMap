@@ -1,0 +1,79 @@
+package com.mamiyaotaru.voxelmap.options.fields;
+
+import com.mamiyaotaru.voxelmap.gui.widgets.GuiRangedSlider;
+import com.mamiyaotaru.voxelmap.gui.widgets.IOptionWidget;
+import net.minecraft.client.gui.components.AbstractWidget;
+
+import java.util.Optional;
+import java.util.function.Consumer;
+
+public abstract class SliderableField<T extends Number> extends OptionField<T> {
+    private final double min;
+    private final double max;
+    private final double step;
+
+    public SliderableField(String saveKey, String key, T defaultValue, T min, T max, T step) {
+        super(saveKey, key, defaultValue);
+        this.min = min.doubleValue();
+        this.max = max.doubleValue();
+        this.step = step.doubleValue();
+    }
+
+    public double getMin() {
+        return min;
+    }
+
+    public double getMax() {
+        return max;
+    }
+
+    public double getStep() {
+        return step;
+    }
+
+    protected abstract T fromDouble(double value);
+
+    @Override
+    protected Optional<T> validate(T value) {
+        double val = value.doubleValue();
+        return val >= min && val <= max ? Optional.of(value) : Optional.empty();
+    }
+
+    @Override
+    public AbstractWidget createWidget(int x, int y, int w, int h, Consumer<T> consumer) {
+        return new SliderWidget<>(this, x, y, w, h, consumer);
+    }
+
+    public static class SliderWidget<T extends Number> extends GuiRangedSlider implements IOptionWidget {
+        private final SliderableField<T> field;
+        private final Consumer<T> consumer;
+
+        public SliderWidget(SliderableField<T> field, int x, int y, int w, int h, Consumer<T> consumer) {
+            super(x, y, w, h, field.getMessage(), field.get().doubleValue(), field.getMin(), field.getMax(), (e) -> ((SliderWidget<?>) e).onUpdate());
+            this.field = field;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void refresh() {
+            if (!isFocused()) {
+                setUnscaled(field.get().doubleValue());
+            }
+            refreshWidget(this, field);
+        }
+
+        @Override
+        public void onUpdate() {
+            double unscaled = getUnscaled();
+            double step = field.getStep();
+            if (step > 0.0 && unscaled > field.getMin() && unscaled < field.getMax()) {
+                unscaled = Math.round(unscaled / step) * step;
+            }
+            T value = field.fromDouble(unscaled);
+            field.set(value);
+            consumer.accept(value);
+
+            refresh();
+        }
+    }
+}

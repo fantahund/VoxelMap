@@ -1,27 +1,26 @@
 package com.mamiyaotaru.voxelmap.fabric;
 
-import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
-import com.mamiyaotaru.voxelmap.packets.VoxelmapClientPacketHandler;
+import com.mamiyaotaru.voxelmap.packets.SettingsPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
-public class FabricSettingsChannelHandler {
-    private FabricSettingsChannelHandler() {
+public class FabricSettingsChannelHandler implements ClientPlayNetworking.PlayPayloadHandler<SettingsPayload>, ClientConfigurationNetworking.ConfigurationPayloadHandler<SettingsPayload> {
+    public FabricSettingsChannelHandler() {
+        PayloadTypeRegistry.clientboundPlay().register(SettingsPayload.PACKET_ID, SettingsPayload.PACKET_CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(SettingsPayload.PACKET_ID, SettingsPayload.PACKET_CODEC);
+
+        ClientPlayNetworking.registerGlobalReceiver(SettingsPayload.PACKET_ID, this);
+        ClientConfigurationNetworking.registerGlobalReceiver(SettingsPayload.PACKET_ID, this);
     }
 
-    private static void registerPacket() {
-        PayloadTypeRegistry.clientboundPlay().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
-        PayloadTypeRegistry.clientboundConfiguration().register(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC);
+    @Override
+    public void receive(SettingsPayload payload, ClientConfigurationNetworking.Context context) {
+        SettingsPayload.parsePacket(payload);
     }
 
-    public static void initClient() {
-        registerPacket();
-        ClientPlayNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, (payload, _) -> VoxelmapClientPacketHandler.applySettings(payload));
-        ClientConfigurationNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, (payload, _) -> VoxelmapClientPacketHandler.applySettings(payload));
-    }
-
-    public static void initServer() {
-        registerPacket();
+    @Override
+    public void receive(SettingsPayload payload, ClientPlayNetworking.Context context) {
+        SettingsPayload.parsePacket(payload);
     }
 }

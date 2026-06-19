@@ -6,9 +6,16 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.Heightmap;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,12 +26,6 @@ import java.util.Scanner;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.world.level.CardinalLighting;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ComparisonCachedRegion {
     private final PersistentMap persistentMap;
@@ -37,13 +38,14 @@ public class ComparisonCachedRegion {
     private final boolean underground;
     private final int x;
     private final int z;
+    private final int sectionY;
     private final CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     private int loadedChunks;
     private boolean loaded;
     private boolean empty = true;
 
-    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z) {
+    public ComparisonCachedRegion(PersistentMap persistentMap, String key, ClientLevel world, String worldName, String subworldName, int x, int z, boolean underground, int sectionY) {
         this.data = new CompressibleMapData(world);
         this.persistentMap = persistentMap;
         this.key = key;
@@ -55,9 +57,10 @@ public class ComparisonCachedRegion {
         }
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        this.underground = world.dimensionType().cardinalLightType() != CardinalLighting.Type.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling();
+        this.underground = underground;
         this.x = x;
         this.z = z;
+        this.sectionY = sectionY;
     }
 
     public void loadCurrent() {
@@ -83,7 +86,7 @@ public class ComparisonCachedRegion {
     private void loadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
         for (int t = 0; t < 16; ++t) {
             for (int s = 0; s < 16; ++s) {
-                this.persistentMap.getAndStoreData(this.data, this.world, chunk, this.blockPos, this.underground, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s);
+                this.persistentMap.getAndStoreData(this.data, this.world, chunk, this.blockPos, this.underground, this.x * 256, this.z * 256, chunkX * 16 + t, chunkZ * 16 + s, this.sectionY);
             }
         }
 
@@ -91,9 +94,8 @@ public class ComparisonCachedRegion {
 
     public void loadStored() {
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
-            cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldNamePathPart, subworldNamePathPart, dimensionNamePathPart, PersistentMap.getRegionCachePath(underground, sectionY), FileUtils.withExtension(key, "zip"));
+            cachedRegionFile.getParentFile().mkdirs();
             if (cachedRegionFile.exists()) {
                 try (FileInputStream fis = new FileInputStream(cachedRegionFile); ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis)); Scanner sc = new Scanner(zis)) {
                     BiMap<BlockState, Integer> stateToInt = null;

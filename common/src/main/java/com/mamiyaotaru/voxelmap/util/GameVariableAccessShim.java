@@ -5,7 +5,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 
-public class GameVariableAccessShim {
+public final class GameVariableAccessShim {
+    private GameVariableAccessShim() {
+    }
+
     public static ClientLevel getWorld() {
         return Minecraft.getInstance().level;
     }

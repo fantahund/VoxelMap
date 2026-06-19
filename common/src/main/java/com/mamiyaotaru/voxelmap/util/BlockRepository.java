@@ -1,11 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -14,7 +9,13 @@ import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BlockRepository {
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+public final class BlockRepository {
     public static Block air = Blocks.AIR;
     public static Block voidAir;
     public static Block caveAir;
@@ -59,6 +60,9 @@ public class BlockRepository {
     private static final ReferenceArrayList<BlockState> blockStates = new ReferenceArrayList<>(16384);
     private static int count = 1;
     private static final ReadWriteLock incrementLock = new ReentrantReadWriteLock();
+
+    private BlockRepository() {
+    }
 
     public static void getBlocks() {
         air = Blocks.AIR;

@@ -1,13 +1,17 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.levelgen.Heightmap;
+
 import java.util.Objects;
 import java.util.Random;
-import net.minecraft.client.multiplayer.ClientLevel;
 
-public class MapUtils {
-    private static MapSettingsManager options;
+public final class MapUtils {
+    private static MapOptions options;
     private static Random slimeRandom = new Random();
     private static String lastSeed;
     private static long lastSeedLong;
@@ -15,16 +19,26 @@ public class MapUtils {
     private static int lastSlimeZ;
     private static boolean isSlimeChunk;
 
+    private MapUtils() {
+    }
+
     public static void reset() {
         options = VoxelConstants.getVoxelMapInstance().getMapOptions();
     }
 
+    public static boolean isUnderground(ClientLevel world, BlockPos blockPos, int compareY) {
+        if (world.dimensionType().hasCeiling() || !world.dimensionType().hasSkyLight()) {
+            return compareY < world.getChunk(blockPos).getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX(), blockPos.getZ());
+        }
+        return world.getBrightness(LightLayer.SKY, blockPos) <= 0;
+    }
+
     public static int doSlimeAndGrid(int color24, ClientLevel world, int mcX, int mcZ) {
-        if (options.slimeChunks && isSlimeChunk(mcX, mcZ)) {
+        if (options.slimeChunks.get() && isSlimeChunk(mcX, mcZ)) {
             color24 = ColorUtils.colorAdder(0x7D00FF00, color24);
         }
 
-        if (options.chunkGrid) {
+        if (options.chunkGrid.get()) {
             if (mcX % 512 != 0 && mcZ % 512 != 0) {
                 if (mcX % 16 == 0 || mcZ % 16 == 0) {
                     color24 = ColorUtils.colorAdder(0x7D000000, color24);

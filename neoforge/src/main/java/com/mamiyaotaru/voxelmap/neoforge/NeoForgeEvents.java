@@ -3,8 +3,8 @@ package com.mamiyaotaru.voxelmap.neoforge;
 import com.mamiyaotaru.voxelmap.Events;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
-import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
+import com.mamiyaotaru.voxelmap.packets.SettingsPayload;
+import com.mamiyaotaru.voxelmap.packets.WorldIdPayload;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
@@ -14,12 +14,12 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class NeoForgeEvents implements Events {
     private VoxelMap map;
@@ -30,32 +30,38 @@ public class NeoForgeEvents implements Events {
     @Override
     public void initEvents(VoxelMap map) {
         this.map = map;
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
         NeoForge.EVENT_BUS.register(new NeoForgeEventListener(map));
     }
 
-    private void preInitClient(final FMLClientSetupEvent event) {
+    public void preInitClient(final FMLClientSetupEvent event) {
         map.onClientStarted();
         map.onConfigurationInit();
     }
 
+    public void registerPackets(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("1");
+        registrar.optional().commonToClient(SettingsPayload.PACKET_ID, SettingsPayload.PACKET_CODEC, NeoForgeSettingsPacketHandler::receive);
+        registrar.optional().commonBidirectional(WorldIdPayload.PACKET_ID, WorldIdPayload.PACKET_CODEC, NeoForgeWorldIdPacketHandler::receive);
+    }
+
     public void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
-        event.register(VoxelmapSettingsS2C.PACKET_ID, NeoForgeSettingsPacketHandler::handleDataOnMain);
-        event.register(WorldIdS2C.PACKET_ID, NeoForgeWorldIdPacketHandler::handleDataOnMain);
+        event.register(WorldIdPayload.PACKET_ID, NeoForgeWorldIdPacketHandler::receive);
     }
 
-    private void registerResourcePacks(final AddPackFindersEvent event) {
-        event.addPackFinders(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "resourcepacks/voxelmap_legacy"), PackType.CLIENT_RESOURCES, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackSource.BUILT_IN, false, Pack.Position.TOP);
-    }
-
-    private void registerReloadListener(final AddClientReloadListenersEvent event) {
+    public void registerReloadListener(final AddClientReloadListenersEvent event) {
         event.addListener(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
     }
 
-    private static class NeoForgeEventListener {
+    public void registerResourcePacks(final AddPackFindersEvent event) {
+        event.addPackFinders(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "resourcepacks/voxelmap_legacy"), PackType.CLIENT_RESOURCES, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackSource.BUILT_IN, false, Pack.Position.TOP);
+    }
+
+    public static class NeoForgeEventListener {
         private final VoxelMap map;
 
         public NeoForgeEventListener(VoxelMap map) {
@@ -63,24 +69,17 @@ public class NeoForgeEvents implements Events {
         }
 
         @SubscribeEvent
-        public void onRenderGui(RenderGuiLayerEvent.Post event) {
-            if (event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY)) {
-                VoxelConstants.renderOverlay(event.getGuiGraphics());
-            }
-        }
-
-        @SubscribeEvent
-        public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+        public void onJoin(final ClientPlayerNetworkEvent.LoggingIn event) {
             map.onJoinServer();
         }
 
         @SubscribeEvent
-        public void onQuit(ClientPlayerNetworkEvent.LoggingOut event) {
+        public void onQuit(final ClientPlayerNetworkEvent.LoggingOut event) {
             map.onDisconnect();
         }
 
         @SubscribeEvent
-        public void onClientShutdown(GameShuttingDownEvent event) {
+        public void onClientShutdown(final GameShuttingDownEvent event) {
             map.onClientStopping();
         }
     }

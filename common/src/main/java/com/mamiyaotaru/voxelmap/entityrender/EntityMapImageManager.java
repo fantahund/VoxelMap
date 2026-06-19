@@ -1,138 +1,268 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
-import com.mamiyaotaru.voxelmap.entityrender.armors.DefaultArmorHandler;
-import com.mamiyaotaru.voxelmap.entityrender.armors.EntityArmorData;
-import com.mamiyaotaru.voxelmap.entityrender.armors.SheepOverlayHandler;
-import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantData;
-import com.mamiyaotaru.voxelmap.entityrender.variants.DefaultEntityVariantDataFactory;
-import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.armors.ArmorVariantData;
+import com.mamiyaotaru.voxelmap.entityrender.armors.ArmorVariantDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVariantDataFactory;
+import com.mamiyaotaru.voxelmap.entityrender.variants.EntityVariantData;
+import com.mamiyaotaru.voxelmap.entityrender.variants.EntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.render.EmptySubmitNodeCollector;
+import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.util.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.imageio.ImageIO;
+import com.mojang.blaze3d.vertex.QuadInstance;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.animal.camel.CamelModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.animal.fish.CodModel;
 import net.minecraft.client.model.animal.fish.SalmonModel;
 import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
 import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
-import net.minecraft.client.model.animal.ghast.HappyGhastModel;
-import net.minecraft.client.model.animal.llama.LlamaModel;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.model.monster.slime.SlimeModel;
 import net.minecraft.client.model.monster.wither.WitherBossModel;
 import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
 import net.minecraft.client.model.npc.VillagerModel;
+import net.minecraft.client.model.object.skull.SkullModelBase;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.util.Mth;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.camel.Camel;
+import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.fish.Pufferfish;
 import net.minecraft.world.entity.animal.fish.Salmon;
-import net.minecraft.world.entity.animal.fish.TropicalFish;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.monster.cubemob.SulfurCube;
-import org.joml.Matrix4fStack;
+import net.minecraft.world.entity.animal.happyghast.HappyGhast;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.SkullBlock;
 
-public class EntityMapImageManager {
+import javax.imageio.ImageIO;
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+public class EntityMapImageManager implements IReloadListener {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
-    private final RadarSettingsManager radarOptions;
-    private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
+    private final TextureAtlas textureAtlas;
+    private final StringBuilder stringBuilder = new StringBuilder();
 
-    private final HashMap<EntityType<?>, EntityVariantDataFactory> variantDataFactories = new HashMap<>();
-    private final HashMap<EntityType<?>, AbstractArmorHandler> armorHandlers = new HashMap<>();
-    private final DefaultArmorHandler defaultArmorHandler = new DefaultArmorHandler();
+    private final HashMap<EntityType<?>, EntityVariantDataFactory> entityVariantDataFactories = new HashMap<>();
+    private final HashMap<Item, ArmorVariantDataFactory> armorVariantDataFactories = new HashMap<>();
+    private final Direction[] allDirections;
+    private final Set<Class<?>> fullRenderModels;
+    private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
+
+    private final RandomSource randomSource = RandomSource.create();
     private final PoseStack emptyPoseStack = new PoseStack();
     private final EmptySubmitNodeCollector emptySubmitNodeCollector = new EmptySubmitNodeCollector();
-    private final Class<?>[] fullRenderModels;
-    private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
-    private final HashSet<EntityType<?>> failedPreviewIconTypes = new HashSet<>();
-    private final AtomicInteger previewEntityIds = new AtomicInteger(-1);
+    private final HumanoidModel<?> humanoidModel;
+    private final EntityImageRenderer renderer = new EntityImageRenderer();
 
-    private int imageCreationRequests;
-    private int fulfilledImageCreationRequests;
-    private final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
-
-    private final EntityGPURenderer gpuRenderer = new EntityGPURenderer();
-    private final EntityCPURenderer cpuRenderer = new EntityCPURenderer();
-    private boolean cpuRendering = false;
-    private boolean lastCpuRendering = false;
+    private int totalSpriteCreations;
+    private int doneSpriteCreations;
+    private final ConcurrentLinkedQueue<Runnable> spriteCreationTask = new ConcurrentLinkedQueue<>();
 
     public EntityMapImageManager() {
-        this.radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
-        this.textureAtlas.setFilter(true, false);
+        this.textureAtlas.sampler = VoxelMapPipelines.LINEAR_CLAMP_SAMPLER;
 
-        this.fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, SulfurCube.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
-        reset();
+        this.allDirections = new Direction[]{null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
+        this.fullRenderModels = Set.of(CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class);
+
+        CubeDeformation armorInflate = new CubeDeformation(1.0F);
+        LayerDefinition layerDefinition = LayerDefinition.create(HumanoidModel.createMesh(armorInflate, 0.0F), 64, 32);
+        this.humanoidModel = new HumanoidModel<>(layerDefinition.bakeRoot());
+
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
     public void reset() {
-        debugInfo("EntityMapImageManager: Resetting");
-
         this.textureAtlas.reset();
         this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
         this.textureAtlas.stitch();
 
-        variantDataFactories.clear();
+        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("radarIconFiltering", "true"));
+        this.textureAtlas.sampler = useFiltering ? VoxelMapPipelines.LINEAR_CLAMP_SAMPLER : VoxelMapPipelines.NEAREST_CLAMP_SAMPLER;
+
+        entityVariantDataFactories.clear();
         customMobProperties.clear();
-        failedPreviewIconTypes.clear();
-        previewEntityIds.set(-1);
 
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), null, null));
-        addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), null, null));
-        addVariantDataFactory(new HorseVariantDataFactory(EntityTypes.HORSE));
-        addVariantDataFactory(new EnderDragonVarintDataFactory(EntityTypes.ENDER_DRAGON));
-        addVariantDataFactory(new VillagerVariantDataFactory(EntityTypes.VILLAGER));
-        addVariantDataFactory(new VillagerVariantDataFactory(EntityTypes.ZOMBIE_VILLAGER));
-        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityTypes.TROPICAL_FISH));
+        addVariantDataFactory(new EntityVariantDataFactory(EntityType.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), 0xFFFFFFFF));
+        addVariantDataFactory(new EntityVariantDataFactory(EntityType.DROWNED, Identifier.withDefaultNamespace("textures/entity/zombie/drowned_outer_layer.png"), 0xFFFFFFFF));
+        addVariantDataFactory(new EntityVariantDataFactory(EntityType.ENDERMAN, Identifier.withDefaultNamespace("textures/entity/enderman/enderman_eyes.png"), 0xFFFFFFFF));
+        addVariantDataFactory(new EnderDragonVariantDataFactory(EntityType.ENDER_DRAGON));
+        addVariantDataFactory(new HorseVariantDataFactory(EntityType.HORSE));
+        addVariantDataFactory(new TropicalFishVariantDataFactory(EntityType.TROPICAL_FISH));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.VILLAGER));
+        addVariantDataFactory(new VillagerVariantDataFactory(EntityType.ZOMBIE_VILLAGER));
 
-        addArmorHandler(EntityTypes.SHEEP, new SheepOverlayHandler());
+        addVariantDataFactory(new ArmorVariantDataFactory(Items.LEATHER_HELMET, Identifier.withDefaultNamespace("textures/entity/equipment/humanoid/leather_overlay.png"), 0xFFFFFFFF));
 
-        if (VoxelConstants.DEBUG) {
-            BuiltInRegistries.ENTITY_TYPE.forEach(t -> {
-                requestImageForMobType(t, 32, true);
-            });
+        runOnDebug(() -> {
+            VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
+            BuiltInRegistries.ENTITY_TYPE.forEach(t -> requestImageForMobType(t, 32, true));
+        });
+    }
+
+    @Override
+    public void onResourceManagerReload(ResourceManager resourceManager) {
+        reset();
+    }
+
+    // Mob image
+
+    private void addVariantDataFactory(EntityVariantDataFactory factory) {
+        entityVariantDataFactories.put(factory.getType(), factory);
+    }
+
+    private String getMobIdentifier(Entity entity) {
+        stringBuilder.setLength(0);
+
+        // Common properties
+        stringBuilder.append(",scale:").append(getUniqueMobScale(entity));
+        stringBuilder.append(",isBaby:").append(entity instanceof LivingEntity le && le.isBaby());
+
+        // Unique properties
+        if (entity instanceof Pufferfish pufferfish) {
+            stringBuilder.append(",puffState:").append(pufferfish.getPuffState());
         }
+
+        return stringBuilder.deleteCharAt(0).toString();
+    }
+
+    private float getUniqueMobScale(Entity entity) {
+        float scale = 1.0F;
+        if (entity instanceof Salmon salmon) {
+            scale *= salmon.getSalmonScale();
+        }
+
+        return scale;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private VariantDataHolder getOrCreateVariantData(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
+        if (entity instanceof AbstractClientPlayer player) {
+            return new EntityVariantData(entity.getType(), "", player.getSkin().body().texturePath(), 0xFFFFFFFF, size, addBorder);
+        }
+
+        EntityRenderState renderState = renderer.createRenderState(entity, 0.5F);
+        String id = getMobIdentifier(entity);
+
+        EntityVariantDataFactory factory = entityVariantDataFactories.get(entity.getType());
+        if (factory != null) {
+            EntityVariantData data = factory.create(entity, renderer, renderState, id, size, addBorder);
+            if (data != null) {
+                return data;
+            }
+        }
+        return EntityVariantDataFactory.createSimple(entity, renderer, renderState, id, size, addBorder);
+    }
+
+    public Sprite requestImageForMobType(EntityType<?> type, boolean addBorder) {
+        return requestImageForMobType(type, -1, addBorder);
+    }
+
+    public Sprite requestImageForMobType(EntityType<?> type, int size, boolean addBorder) {
+        if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity entity) {
+            return requestImageForMob(entity, size, addBorder);
+        }
+        return null;
+    }
+
+    public Sprite requestImageForMob(Entity entity, boolean addBorder) {
+        return requestImageForMob(entity, -1, addBorder);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
+        Sprite customIcon = tryCustomMobIcon(entity.getType(), addBorder);
+        if (customIcon != null && customIcon.getTextureData() != null && customIcon != textureAtlas.getMissingImage()) {
+            return customIcon;
+        }
+
+        EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
+        VariantDataHolder dataHolder = getOrCreateVariantData(entity, baseRenderer, size, addBorder);
+
+        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(dataHolder);
+        if (existing != null && existing != textureAtlas.getMissingImage()) {
+            return existing;
+        }
+        runOnDebug(() -> VoxelConstants.getLogger().info("EntityMapImageManager: Rendering Mob of type {}", dataHolder.getName()));
+
+        Sprite sprite = textureAtlas.registerEmptyIcon(dataHolder);
+
+        renderer.setup(1.0F / getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
+        renderer.beginBatch(VoxelMapPipelines.ENTITY_ICON, dataHolder);
+
+        EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
+        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState);
+
+        ModelPart[] modelParts = getPartToRender(baseRenderer);
+        if (modelParts != null) {
+            for (ModelPart part : modelParts) {
+                part.xRot = 0;
+                part.yRot = 0;
+                part.zRot = 0;
+
+                part.render(renderer.pose(), renderer.vertexBuffer(), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            }
+        }
+
+        if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
+            ((SlimeOuterLayer) slimeRenderer.layers.getFirst()).model.root().render(renderer.pose(), renderer.vertexBuffer(), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        }
+
+        renderer.endBatch((image) -> postProcessRenderedMobImage(entity, sprite, image, addBorder));
+
+        return sprite;
     }
 
     public Properties getCustomMobProperties(EntityType<?> type) {
@@ -158,7 +288,7 @@ public class EntityMapImageManager {
 
     private Sprite tryCustomMobIcon(EntityType<?> type, boolean addBorder) {
         String entityId = type.getDescriptionId();
-        String iconId = entityId + "-custom" + (addBorder ? "-outlined" : "");
+        String iconId = entityId + "(custom" + (addBorder ? ",outlined)" : ")");
         Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(iconId);
         if (existing != null && existing != textureAtlas.getMissingImage()) {
             return existing;
@@ -185,360 +315,64 @@ public class EntityMapImageManager {
         return sprite;
     }
 
-    private AbstractEntityRenderer getEntityRenderer() {
-        return shouldUseCpuRendering() ? cpuRenderer : gpuRenderer;
-    }
+    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, BufferedImage image2, boolean addBorder) {
+        Util.backgroundExecutor().execute(() -> {
+            BufferedImage image = image2;
 
-    private boolean shouldUseCpuRendering() {
-        return radarOptions.cpuRendering || radarOptions.forceCpuRendering;
-    }
-
-    private void addVariantDataFactory(EntityVariantDataFactory factory) {
-        variantDataFactories.put(factory.getType(), factory);
-    }
-
-    public Sprite requestImageForMobType(EntityType<?> type, boolean addBorder) {
-        return requestImageForMobType(type, -1, addBorder);
-    }
-
-    public Sprite requestImageForMobType(EntityType<?> type, int size, boolean addBorder) {
-        if (failedPreviewIconTypes.contains(type)) {
-            return null;
-        }
-
-        LivingEntity previewEntity = createPreviewEntity(type);
-        if (previewEntity == null) {
-            return null;
-        }
-
-        try {
-            return requestImageForMob(previewEntity, size, addBorder);
-        } catch (RuntimeException e) {
-            failedPreviewIconTypes.add(type);
-            VoxelConstants.getLogger().warn("Failed to render radar preview icon for mob type {}", BuiltInRegistries.ENTITY_TYPE.getKey(type), e);
-            return null;
-        }
-    }
-
-    private LivingEntity createPreviewEntity(EntityType<?> type) {
-        if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity livingEntity) {
-            livingEntity.setId(previewEntityIds.getAndDecrement());
-            return livingEntity;
-        }
-
-        return null;
-    }
-
-    public Sprite requestImageForMob(LivingEntity e, boolean addBorder) {
-        return requestImageForMob(e, -1, addBorder);
-    }
-
-    private EntityVariantData getVariantData(Entity entity, @SuppressWarnings("rawtypes") EntityRenderer renderer, EntityRenderState state, int identifier, int size, boolean addBorder) {
-        EntityVariantDataFactory factory = variantDataFactories.get(entity.getType());
-        if (factory != null) {
-            EntityVariantData data = factory.createVariantData(entity, renderer, state, identifier, size, addBorder);
-            if (data != null) {
-                return data;
+            Graphics2D graphics = image.createGraphics();
+            if (entity instanceof Camel) {
+                graphics.setComposite(AlphaComposite.Clear);
+                graphics.fillRect(0, 192, image.getWidth(), image.getHeight());
+            } else if (entity instanceof Llama) {
+                graphics.setComposite(AlphaComposite.Clear);
+                graphics.fillRect(0, 248, image.getWidth(), image.getHeight());
+            } else if (entity instanceof HappyGhast) {
+                graphics.setComposite(AlphaComposite.Clear);
+                graphics.fillRect(0, 352, image.getWidth(), image.getHeight());
             }
-        }
-        return DefaultEntityVariantDataFactory.createSimpleVariantData(entity, renderer, state, identifier, size, addBorder);
-    }
+            graphics.dispose();
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private EntityVariantData getOrCreateVariantData(Entity entity, EntityRenderer renderer, int identifier, int size, boolean addBorder) {
-        EntityRenderState renderState = null;
-        if (entity instanceof AbstractClientPlayer player) {
-            return new DefaultEntityVariantData(entity.getType(), identifier, size, addBorder, player.getSkin().body().texturePath(), null, null, null);
-        }
+            image = ImageUtils.trim(image);
+            image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
 
-        if (entity instanceof LivingEntity entity2 && renderer instanceof LivingEntityRenderer renderer2) {
-            renderState = renderer2.createRenderState(entity2, 0.5f);
-        } else if (entity instanceof EnderDragon entity2 && renderer instanceof EnderDragonRenderer renderer2) {
-            renderState = renderer2.createRenderState(entity2, 0.5f);
-        }
-
-        if (renderState == null) {
-            return null;
-        }
-
-        return getVariantData(entity, renderer, renderState, identifier, size, addBorder);
+            addSpriteCreationTask(sprite, image);
+        });
     }
 
     @SuppressWarnings("rawtypes")
-    private EntityModel getEntityModel(EntityRenderer renderer) {
+    private ModelPart[] getPartToRender(EntityRenderer renderer) {
+        EntityModel<?> model;
         if (renderer instanceof LivingEntityRenderer renderer2) {
-            return renderer2.getModel();
+            model = renderer2.getModel();
         } else if (renderer instanceof EnderDragonRenderer renderer2) {
-            return renderer2.model;
-        }
-        return null;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
-        Sprite customIcon = tryCustomMobIcon(entity.getType(), addBorder);
-        if (customIcon != null && customIcon.getTextureData() != null && customIcon != textureAtlas.getMissingImage()) {
-            return customIcon;
-        }
-
-        EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        int identifier = getMobIdentifier(entity);
-        EntityVariantData variant = getOrCreateVariantData(entity, baseRenderer, identifier, size, addBorder);
-
-        if (variant == null) {
-            return null;
-        }
-
-        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(variant);
-        if (existing != null && existing != textureAtlas.getMissingImage()) {
-//            debugInfo("EntityMapImageManager: Existing type " + entity.getType().getDescriptionId());
-            return existing;
-        }
-        debugInfo("EntityMapImageManager: Rendering Mob of type " + entity.getType().getDescriptionId());
-
-        Sprite sprite = textureAtlas.registerEmptyIcon(variant);
-        Properties iconConfig = getCustomMobProperties(entity.getType());
-
-        AbstractEntityRenderer renderer = getEntityRenderer();
-        renderer.setup(iconConfig);
-        renderer.enableCull(false);
-
-        EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
-        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.gameRenderState().levelRenderState.cameraRenderState);
-
-        EntityModel model = getEntityModel(baseRenderer);
-        if (model == null) {
+            model = renderer2.model;
+        } else {
             return null;
         }
         model.resetPose();
 
-        for (ModelPart part : getPartToRender(model)) {
-            part.xRot = 0;
-            part.yRot = 0;
-            part.zRot = 0;
-
-            renderer.addMesh(part);
-        }
-
-        if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
-            SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.getFirst();
-            renderer.addMesh(slimeOuter.model.root());
-        }
-
-        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(
-                variant.getPrimaryTexture(), getPrimaryTextureColor(entity),
-                variant.getSecondaryTexture(), getSecondaryTextureColor(entity),
-                variant.getTertiaryTexture(), getTertiaryTextureColor(entity),
-                variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
-        );
-
-        float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedMobImage(entity, sprite, model, output, addBorder, iconScale);
-        });
-
-        return sprite;
-    }
-
-    private int getPrimaryTextureColor(Entity entity) {
-        if (entity instanceof TropicalFish tropicalFish) {
-            return tropicalFish.getBaseColor().getMapColor().col | 0xFF000000;
-        }
-
-        return 0xFFFFFFFF;
-    }
-
-    private int getSecondaryTextureColor(Entity entity) {
-        if (entity instanceof TropicalFish tropicalFish) {
-            return tropicalFish.getPatternColor().getMapColor().col | 0xFF000000;
-        }
-
-        return 0xFFFFFFFF;
-    }
-
-    private int getTertiaryTextureColor(Entity entity) {
-        return 0xFFFFFFFF;
-    }
-
-    private int getQuaternaryTextureColor(Entity entity) {
-        return 0xFFFFFFFF;
-    }
-
-    private int getMobIdentifier(Entity entity) {
-        int id = 0;
-
-        // Unique properties
-        switch (entity) {
-            case Pufferfish pufferfish -> id = pufferfish.getPuffState() & 0x7;
-            case TropicalFish tropicalFish -> {
-                id = tropicalFish.getBaseColor().getId() & 0xF;
-                id |= (tropicalFish.getPatternColor().getId() & 0xF) << 4;
-            }
-            default -> {}
-        }
-
-        // Common properties
-        if (entity instanceof LivingEntity livingEntity && livingEntity.isBaby()) {
-            id |= (1 << 8);
-        }
-
-        int intScale = (int) Mth.clamp(getUniqueMobScale(entity) * 10.0F, 0.0F, 100.0F);
-        id |= (intScale & 0x3FF) << 9;
-
-        return id;
-    }
-
-    private float getUniqueMobScale(Entity entity) {
-        float scale = 1.0F;
-        if (entity instanceof Salmon salmon) {
-            scale *= salmon.getSalmonScale();
-        }
-
-        return scale;
-    }
-
-    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder, float scale) {
-        Util.backgroundExecutor().execute(() -> {
-            BufferedImage image = image2;
-
-            switch (model) {
-                case CamelModel camelModel -> {
-                    Graphics2D g = image.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0, 192, image.getWidth(), image.getHeight());
-                    g.dispose();
-                }
-                case LlamaModel llamaModel -> {
-                    Graphics2D g = image.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0, 248, image.getWidth(), image.getHeight());
-                    g.dispose();
-                }
-                case HappyGhastModel happyGhastModel -> {
-                    Graphics2D g = image.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0,  352, image.getWidth(), image.getHeight());
-                    g.dispose();
-                }
-                default -> {}
-            }
-
-            float uniqueMobScale = getUniqueMobScale(entity);
-            image = ImageUtils.trim(image);
-            image = ImageUtils.scaleImage(image, scale / uniqueMobScale);
-            image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
-
-            addToCreationTask(sprite, image, entity.getType().getDescriptionId());
-        });
-    }
-
-    private void addArmorHandler(EntityType<?> type, AbstractArmorHandler handler) {
-        armorHandlers.put(type, handler);
-    }
-
-    private AbstractArmorHandler getArmorHandler(EntityType<?> type) {
-        AbstractArmorHandler armorHandler = armorHandlers.get(type);
-        if (armorHandler != null) {
-            return armorHandler;
-        }
-
-        return defaultArmorHandler;
-    }
-
-    private AbstractArmorHandler getAndSetupArmorHandler(Entity entity, EntityRenderer<?, ?> renderer, int size, boolean addBorder) {
-        AbstractArmorHandler armorHandler = getArmorHandler(entity.getType());
-        armorHandler.setupForEntity(entity, renderer, size, addBorder);
-
-        return armorHandler;
-    }
-
-    public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
-        EntityRenderer<?, ?> entityRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-
-        AbstractArmorHandler armorHandler = getAndSetupArmorHandler(entity, entityRenderer, size, addBorder);
-        EntityArmorData armorData = armorHandler.getArmorData();
-        if (armorData == null) {
-            return null;
-        }
-
-        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(armorData);
-        if (existing != null && existing != textureAtlas.getMissingImage()) {
-            return existing;
-        }
-        Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
-        Properties iconConfig = getCustomMobProperties(entity.getType());
-
-        AbstractEntityRenderer renderer = getEntityRenderer();
-        renderer.setup(iconConfig);
-        renderer.enableCull(true);
-
-        armorHandler.renderArmorModel(renderer);
-
-        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
-
-        float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedArmorImage(sprite, output, armorHandler, armorData, iconScale);
-        });
-
-        return sprite;
-    }
-
-    private void postProcessRenderedArmorImage(Sprite sprite, BufferedImage image2, AbstractArmorHandler armorHandler, EntityArmorData armorData, float scale) {
-        Util.backgroundExecutor().execute(() -> {
-            BufferedImage image = image2;
-
-            image = ImageUtils.flipHorizontal(image);
-            image = armorHandler.postProcessTexture(image, armorData);
-            image = ImageUtils.scaleImage(image, scale);
-
-            addToCreationTask(sprite, image, sprite.getIconName().toString());
-        });
-    }
-
-    private void addToCreationTask(Sprite sprite, BufferedImage image, String debugId) {
-        imageCreationRequests++;
-
-        taskQueue.add(() -> {
-            fulfilledImageCreationRequests++;
-
-            sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image));
-            debugInfo("EntityMapImageManager: Buffered Image (" + fulfilledImageCreationRequests + "/" + imageCreationRequests + ") added to texture atlas " + debugId + " (" + image.getWidth() + " * " + image.getHeight() + ")");
-            if (fulfilledImageCreationRequests == imageCreationRequests) {
-                textureAtlas.stitchNew();
-                debugInfo("EntityMapImageManager: Stiching!");
-                if (VoxelConstants.DEBUG) {
-                    textureAtlas.saveDebugImage();
-                }
-            }
-        });
-    }
-
-    private ModelPart[] getPartToRender(EntityModel<?> model) {
         // full-model rendered mobs
-        for (Class<?> clazz : fullRenderModels) {
-            if (clazz.isInstance(model)) {
-                return new ModelPart[] { model.root() };
-            }
+        if (fullRenderModels.contains(model.getClass())) {
+            return new ModelPart[]{model.root()};
         }
 
         // wither
         if (model instanceof WitherBossModel witherModel) {
-            return new ModelPart[] { witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head") };
+            return new ModelPart[]{witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head")};
         }
 
         // villager
         if (model instanceof VillagerModel villagerModel) {
-            return new ModelPart[] { villagerModel.root().getChild("head"), villagerModel.root().getChild("head").getChild("hat") };
+            return new ModelPart[]{villagerModel.root().getChild("head"), villagerModel.root().getChild("head").getChild("hat")};
         }
         if (model instanceof ZombieVillagerModel<?> zombieVillagerModel) {
-            return new ModelPart[] { zombieVillagerModel.root().getChild("head"), zombieVillagerModel.root().getChild("head").getChild("hat") };
+            return new ModelPart[]{zombieVillagerModel.root().getChild("head"), zombieVillagerModel.root().getChild("head").getChild("hat")};
         }
 
         // horses
         for (ModelPart part : model.allParts()) {
             if (part.hasChild("head_parts")) {
-                return new ModelPart[] { part.getChild("head_parts") };
+                return new ModelPart[]{part.getChild("head_parts")};
             }
         }
 
@@ -547,52 +381,162 @@ public class EntityMapImageManager {
             if (part.hasChild("head")) {
                 if (part.hasChild("body0")) {
                     // spider
-                    return new ModelPart[] { part.getChild("head"), part.getChild("body0") };
+                    return new ModelPart[]{part.getChild("head"), part.getChild("body0")};
                 }
-                return new ModelPart[] { part.getChild("head") };
+                return new ModelPart[]{part.getChild("head")};
             }
         }
 
         // bee, ghast
         for (ModelPart part : model.allParts()) {
             if (part.hasChild("body")) {
-                return new ModelPart[] { part.getChild("body") };
+                return new ModelPart[]{part.getChild("body")};
             }
         }
 
         // bee, ghast, slime
         for (ModelPart part : model.allParts()) {
             if (part.hasChild("cube")) {
-                return new ModelPart[] { part.getChild("cube") };
+                return new ModelPart[]{part.getChild("cube")};
             }
         }
 
         // silverfish, endermite
         for (ModelPart part : model.allParts()) {
             if (part.hasChild("segment0")) {
-                return new ModelPart[] { part.getChild("segment0"), part.getChild("segment1") };
+                return new ModelPart[]{part.getChild("segment0"), part.getChild("segment1")};
             }
         }
 
         // fallback
-        return new ModelPart[] { model.root() };
+        return new ModelPart[]{model.root()};
     }
 
-    public void onRenderTick(Matrix4fStack matrixStack) {
+    // Armor image
+
+    private void addVariantDataFactory(ArmorVariantDataFactory factory) {
+        armorVariantDataFactories.put(factory.getType(), factory);
+    }
+
+    private String getArmorIdentifier(ItemStack itemStack) {
+        return "";
+    }
+
+    private VariantDataHolder getOrCreateVariantData(ItemStack itemStack, int size, boolean addBorder) {
+        String id = getArmorIdentifier(itemStack);
+
+        ArmorVariantDataFactory factory = armorVariantDataFactories.get(itemStack.getItem());
+        if (factory != null) {
+            ArmorVariantData data = factory.create(itemStack, id, size, addBorder);
+            if (data != null) {
+                return data;
+            }
+        }
+        return ArmorVariantDataFactory.createSimple(itemStack, id, size, addBorder);
+    }
+
+    public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
+        ItemStack itemStack;
+        if (!(entity instanceof LivingEntity livingEntity) || (itemStack = livingEntity.getItemBySlot(EquipmentSlot.HEAD)).isEmpty()) {
+            return null;
+        }
+
+        VariantDataHolder dataHolder = getOrCreateVariantData(itemStack, size, addBorder);
+
+        Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(dataHolder);
+        if (existing != null && existing != textureAtlas.getMissingImage()) {
+            return existing;
+        }
+        Sprite sprite = textureAtlas.registerEmptyIcon(dataHolder);
+
+        renderer.setup(1.0F, getCustomMobProperties(entity.getType()));
+        renderer.beginBatch(VoxelMapPipelines.ENTITY_ICON_CULLED, dataHolder);
+
+        if (itemStack.getItem() instanceof BlockItem blockItem) {
+            if (blockItem.getBlock() instanceof SkullBlock skullBlock) {
+                SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skullBlock.getType());
+                renderer.pose().scale(1.1875F, 1.1875F, 1.1875F);
+                skullModel.renderToBuffer(renderer.pose(), renderer.vertexBuffer(), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            } else {
+                BlockStateModel blockModel = minecraft.getModelManager().getBlockStateModelSet().get(blockItem.getBlock().defaultBlockState());
+                renderer.pose().mulPose(Axis.ZP.rotationDegrees(180.0F));
+                renderer.pose().scale(0.625F, 0.625F, 0.625F);
+                renderBlockToBuffer(renderer.pose(), renderer.vertexBuffer(), blockModel, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+            }
+        } else if (itemStack.get(DataComponents.EQUIPPABLE) != null) {
+            ModelPart part = humanoidModel.root().getChild("head");
+            part.xRot = 0;
+            part.yRot = 0;
+            part.zRot = 0;
+            part.render(renderer.pose(), renderer.vertexBuffer(), LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        }
+
+        renderer.endBatch((image) ->  postProcessRenderedArmorImage(itemStack, sprite, image, addBorder));
+
+        return sprite;
+    }
+
+    private void renderBlockToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, BlockStateModel model, int light, int overlay) {
+        PoseStack.Pose pose = poseStack.last();
+
+        QuadInstance quadData = new QuadInstance();
+        quadData.setLightCoords(light);
+        quadData.setOverlayCoords(overlay);
+
+        ArrayList<BlockStateModelPart> parts = new ArrayList<>();
+        model.collectParts(randomSource, parts);
+        for (BlockStateModelPart part : parts) {
+            for (Direction direction : allDirections) {
+                for (BakedQuad quad : part.getQuads(direction)) {
+                    vertexConsumer.putBakedQuad(pose, quad, quadData);
+                }
+            }
+        }
+    }
+
+    private void postProcessRenderedArmorImage(ItemStack itemStack, Sprite sprite, BufferedImage image2, boolean addBorder) {
+        Util.backgroundExecutor().execute(() -> {
+            BufferedImage image = image2;
+
+            image = ImageUtils.trim(image);
+            boolean isHelmetItem = itemStack.get(DataComponents.EQUIPPABLE) != null && !(itemStack.getItem() instanceof BlockItem);
+            if (isHelmetItem) {
+                // Top align the helmet image
+                BufferedImage canvas = new BufferedImage(image.getWidth(), image.getWidth(), image.getType());
+                image = ImageUtils.addImages(canvas, image, 0, 0, image.getWidth(), image.getHeight());
+            }
+            image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, true, 37.5F, 37.5F, 2);
+
+            addSpriteCreationTask(sprite, image);
+        });
+    }
+
+    private void addSpriteCreationTask(Sprite sprite, BufferedImage image) {
+        totalSpriteCreations++;
+        spriteCreationTask.add(() -> {
+            doneSpriteCreations++;
+            sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image));
+            runOnDebug(() -> VoxelConstants.getLogger().info("EntityMapImageManager: BufferedImage: ({} / {}) added to texture atlas {} ({} * {})", doneSpriteCreations, totalSpriteCreations, sprite.getIconName(), image.getWidth(), image.getHeight()));
+            if (doneSpriteCreations == totalSpriteCreations) {
+                textureAtlas.stitchNew();
+                runOnDebug(() -> {
+                    VoxelConstants.getLogger().info("EntityMapImageManager: Stitching!");
+                    textureAtlas.saveDebugImage();
+                });
+            }
+        });
+    }
+
+    public void onRenderTick() {
         Runnable task;
-        while ((task = taskQueue.poll()) != null) {
+        while ((task = spriteCreationTask.poll()) != null) {
             task.run();
         }
-
-        if ((cpuRendering = shouldUseCpuRendering()) != lastCpuRendering) {
-            reset();
-            lastCpuRendering = cpuRendering;
-        }
     }
 
-    private void debugInfo(String str) {
+    private void runOnDebug(Runnable runnable) {
         if (VoxelConstants.DEBUG) {
-            VoxelConstants.getLogger().info(str);
+            runnable.run();
         }
     }
 }

@@ -15,7 +15,9 @@ public final class TextUtils {
 
     private TextUtils() {}
 
-    public static String scrubCodes(String string) { return CODE_SCRUBBING_PATTERN.matcher(string).replaceAll(""); }
+    public static String scrubCodes(String string) {
+        return CODE_SCRUBBING_PATTERN.matcher(string).replaceAll("");
+    }
 
     @NotNull
     public static String scrubName(String input) {

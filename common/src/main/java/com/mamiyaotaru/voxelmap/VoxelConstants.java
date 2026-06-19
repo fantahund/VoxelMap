@@ -1,13 +1,11 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Locale;
-import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -15,7 +13,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -24,6 +21,9 @@ import net.minecraft.world.level.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
+
+import java.util.Optional;
 
 public final class VoxelConstants {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
@@ -36,6 +36,7 @@ public final class VoxelConstants {
     private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
     private static String modVersion = null;
+    private static boolean initialized;
     private static int elapsedTicks;
     private static Events events;
     private static PacketBridge packetBridge;
@@ -54,21 +55,7 @@ public final class VoxelConstants {
         return serverInfo != null && serverInfo.isRealm();
     }
 
-    public static boolean hasVulkanMod() { return modApiBridge != null && modApiBridge.isModEnabled("vulkanmod"); }
-
-    public static boolean isVulkanRenderer() {
-        if (hasVulkanMod()) {
-            return true;
-        }
-
-        GpuDevice device = RenderSystem.tryGetDevice();
-        if (device == null) {
-            return false;
-        }
-
-        String backendName = device.getDeviceInfo().backendName();
-        return backendName != null && backendName.toLowerCase(Locale.ROOT).contains("vulkan");
-    }
+    public static boolean hasVulkanMod() { return modApiBridge.isModEnabled("vulkanmod"); }
 
     @NotNull
     public static Logger getLogger() { return LOGGER; }
@@ -117,7 +104,16 @@ public final class VoxelConstants {
         return CROSS_MARKER_TEXTURE;
     }
 
+    public static void lateInit() {
+        initialized = true;
+        VoxelConstants.getVoxelMapInstance().lateInit(true, false);
+    }
+
     public static void clientTick() {
+        if (!initialized) {
+            lateInit();
+        }
+
         VoxelConstants.getVoxelMapInstance().onTick();
 
     }
@@ -146,9 +142,9 @@ public final class VoxelConstants {
         }
     }
 
-    public static void onRenderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Camera camera) {
+    public static void onRenderWaypoints(float gameTimeDeltaPartialTick, Matrix4f matrix, Camera camera) {
         try {
-            VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(gameTimeDeltaPartialTick, poseStack, submitNodeCollector, camera);
+            VoxelConstants.getVoxelMapInstance().getWaypointManager().renderWaypoints(gameTimeDeltaPartialTick, matrix, camera);
         } catch (RuntimeException e) {
             VoxelConstants.getLogger().log(org.apache.logging.log4j.Level.ERROR, "Error while render waypoints", e);
         }
@@ -157,7 +153,7 @@ public final class VoxelConstants {
     public static void onShutDown() {
         VoxelConstants.getLogger().info("Saving all world maps");
         VoxelConstants.getVoxelMapInstance().getPersistentMap().purgeCachedRegions();
-        VoxelConstants.getVoxelMapInstance().getMapOptions().saveAll();
+        VoxelConstants.getVoxelMapInstance().getOptionsManager().saveAll();
         BiomeRepository.saveBiomeColors();
         long shutdownTime = System.currentTimeMillis();
 
@@ -167,16 +163,18 @@ public final class VoxelConstants {
     }
 
     public static void playerRunTeleportCommand(double x, double y, double z) {
-        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
+        ServerSettingsManager serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
+        MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        String cmd = serverSettings.serverTeleportCommand.get().isEmpty() ? mapOptions.teleportCommand.get() : serverSettings.serverTeleportCommand.get();
         cmd = cmd.replace("%p", VoxelConstants.getPlayer().getName().getString()).replace("%x", String.valueOf(x + 0.5)).replace("%y", String.valueOf(y)).replace("%z", String.valueOf(z + 0.5));
         VoxelConstants.getPlayer().connection.sendCommand(cmd);
     }
 
     public static int moveScoreboard(int bottomX, int entriesHeight) {
-        MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
+        ServerSettingsManager serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
+        MapOptions mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         double unscaledHeight = Map.getMinTablistOffset(); // / scaleFactor;
-        if (mapSettingsManager.hide || !mapSettingsManager.minimapAllowed || mapSettingsManager.mapCorner != 1 || !mapSettingsManager.moveScoreboardBelowMap || !Double.isFinite(unscaledHeight)) {
+        if (!serverSettings.minimapAllowed.get() || mapOptions.hide.get() || mapOptions.mapCorner.get() != OptionEnumMinimap.Location.TOP_RIGHT || !mapOptions.moveScoreboardBelowMap.get() || !Double.isFinite(unscaledHeight)) {
             return bottomX;
         }
         double scaleFactor = Minecraft.getInstance().getWindow().getGuiScale(); // 1x 2x 3x, ...

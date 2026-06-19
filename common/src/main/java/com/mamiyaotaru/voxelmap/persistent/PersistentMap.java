@@ -1,29 +1,27 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.ColorManager;
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
+import com.mamiyaotaru.voxelmap.persistent.gui.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
+import com.mamiyaotaru.voxelmap.util.FileUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.IntStream;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -44,58 +42,97 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.IntStream;
+
 public class PersistentMap implements IChangeObserver {
-    final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
-    final ColorManager colorManager;
-    final MapSettingsManager mapOptions;
-    PersistentMapSettingsManager options;
-    WorldMatcher worldMatcher;
-    final int[] lightmapColors;
-    ClientLevel world;
-    String subworldName = "";
-    protected final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
-    protected final ConcurrentHashMap<String, CachedRegion> cachedRegions = new ConcurrentHashMap<>(150, 0.9F, 2);
-    int lastLeft;
-    int lastRight;
-    int lastTop;
-    int lastBottom;
-    CachedRegion[] lastRegionsArray = new CachedRegion[0];
-    final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
-        long mostRecentAccess1 = region1.getMostRecentView();
-        long mostRecentAccess2 = region2.getMostRecentView();
-        if (mostRecentAccess1 < mostRecentAccess2) {
-            return 1;
-        } else if (mostRecentAccess1 > mostRecentAccess2) {
-            return -1;
-        } else {
-            double distance1sq = (region1.getX() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapX) * (region1.getX() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapX) + (region1.getZ() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapZ) * (region1.getZ() * 256 + region1.getWidth() / 2f - PersistentMap.this.options.mapZ);
-            double distance2sq = (region2.getX() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapX) * (region2.getX() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapX) + (region2.getZ() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapZ) * (region2.getZ() * 256 + region2.getWidth() / 2f - PersistentMap.this.options.mapZ);
-            return Double.compare(distance1sq, distance2sq);
-        }
-    };
-    final Comparator<RegionCoordinates> distanceSorter = (coordinates1, coordinates2) -> {
-        double distance1sq = (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates1.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates1.z * 256 + 128 - PersistentMap.this.options.mapZ);
-        double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
-        return Double.compare(distance1sq, distance2sq);
-    };
-    private boolean queuedChangedChunks;
+    public static final int CAVE_LAYER_HEIGHT = 32;
+
+    private final Minecraft minecraft = Minecraft.getInstance();
+    private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
+    private final ServerSettingsManager serverSettings;
+    private final MapOptions mapOptions;
+    private final PersistentMapOptions options;
+    private final ColorManager colorManager;
+    private final WaypointManager waypointManager;
+    private final MutableBlockPos playerPos = new MutableBlockPos(0, 0, 0);
+    private final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
+
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
-    private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
+    private WorldMatcher worldMatcher;
+    private final int[] lightmapColors;
+    private ClientLevel world;
+    private String subworldName = "";
+    private final Object layerLock = new Object();
+    private RegionCacheLayer currentLayer;
+
+    private boolean autoCaveMode;
+    private int caveLayer;
+    private int lastCaveLayer;
+    private boolean underground;
+    private boolean lastUnderground;
+
+    private final Comparator<RegionCoordinates> distanceSorter = Comparator
+            .comparingDouble(coords -> getDistanceSq(coords.x, coords.z, 256));
+
+    private final Comparator<CachedRegion> ageThenDistanceSorter = Comparator
+            .comparingLong(CachedRegion::getMostRecentView).reversed()
+            .thenComparingDouble(region -> getDistanceSq(region.getX(), region.getZ(), region.getWidth()));
 
     public PersistentMap() {
-        this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
-        mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
-        this.options = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions();
+        this.serverSettings = voxelMap.getServerSettings();
+        this.mapOptions = voxelMap.getMapOptions();
+        this.options = voxelMap.getPersistentMapOptions();
+        this.colorManager = voxelMap.getColorManager();
+        this.waypointManager = voxelMap.getWaypointManager();
         this.lightmapColors = new int[256];
+        this.currentLayer = new RegionCacheLayer(0, false);
+        this.enableAutoCave();
         Arrays.fill(this.lightmapColors, -16777216);
+    }
+
+    public static String getRegionCachePath(boolean underground, int sectionY) {
+        if (!underground) {
+            return "";
+        }
+        return "caves_" + sectionY;
+    }
+
+    public static int getMinCaveLayer(ClientLevel world) {
+        return Math.floorDiv(world.getMinY(), CAVE_LAYER_HEIGHT);
+    }
+
+    public static int getMaxCaveLayer(ClientLevel world) {
+        return Math.floorDiv(world.getMaxY(), CAVE_LAYER_HEIGHT);
+    }
+
+    public static int blockToCaveLayer(ClientLevel world, int blockY) {
+        return Math.min(Math.max(Math.floorDiv(blockY, CAVE_LAYER_HEIGHT), getMinCaveLayer(world)), getMaxCaveLayer(world));
+    }
+
+    public static int caveLayerToBlock(ClientLevel world, int sectionY) {
+        return Math.min(Math.max(sectionY * CAVE_LAYER_HEIGHT, world.getMinY()), world.getMaxY());
+    }
+
+    private boolean isSlopeEnabled() {
+        return mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.SLOPE_MAP || mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.BOTH;
+    }
+
+    private boolean isHeightEnabled() {
+        return mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.HEIGHT_MAP || mapOptions.terrainDepth.get() == OptionEnumMinimap.TerrainDepth.BOTH;
     }
 
     public void newWorld(ClientLevel world) {
         this.subworldName = "";
         this.purgeCachedRegions();
-        this.queuedChangedChunks = false;
-        this.chunkUpdateQueue.clear();
         this.world = world;
         if (this.worldMatcher != null) {
             this.worldMatcher.cancel();
@@ -125,10 +162,10 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private void newWorldStuff() {
-        String worldName = TextUtils.scrubNameFile(VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName());
-        File oldCacheDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/mods/mamiyaotaru/voxelmap/cache/" + worldName + "/");
+        String worldName = TextUtils.scrubNameFile(waypointManager.getCurrentWorldName());
+        File oldCacheDir = FileUtils.join(FileUtils.legacyVoxelMapPath(), "cache", worldName);
         if (oldCacheDir.exists() && oldCacheDir.isDirectory()) {
-            File newCacheDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + worldName + "/");
+            File newCacheDir = FileUtils.join(FileUtils.voxelMapPath(), "cache", worldName);
             newCacheDir.getParentFile().mkdirs();
             boolean success = oldCacheDir.renameTo(newCacheDir);
             if (!success) {
@@ -138,86 +175,120 @@ public class PersistentMap implements IChangeObserver {
             }
         }
 
-        if (VoxelConstants.getVoxelMapInstance().getWaypointManager().isMultiworld() && !VoxelConstants.isSinglePlayer() && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
-            this.worldMatcher = new WorldMatcher(this, this.world);
-            this.worldMatcher.findMatch();
+        if (waypointManager.isMultiworld() && !VoxelConstants.isSinglePlayer() && !waypointManager.receivedAutoSubworldName()) {
+            worldMatcher = new WorldMatcher(this, world);
+            worldMatcher.findMatch();
         }
-
-        this.createChunkCache(VoxelConstants.getMinecraft().options.renderDistance().get());
+        enableAutoCave();
+        chunkCache = createChunkCache(minecraft.options.renderDistance().get());
     }
 
-    public void createChunkCache(int renderDistance) {
+    private MapChunkCache createChunkCache(int renderDistance) {
         int totalChunks = renderDistance * 2 + 1;
-        this.chunkCache = new MapChunkCache(totalChunks, totalChunks, this);
+        return new MapChunkCache(totalChunks, totalChunks, this);
+    }
+
+    private double getDistanceSq(int x, int z, int width) {
+        double centerX =  x * 256.0 + width / 2.0;
+        double centerZ =  z * 256.0 + width / 2.0;
+        double dx = centerX - options.mapX;
+        double dz = centerZ - options.mapZ;
+
+        return dx * dx + dz * dz;
     }
 
     public void onTick() {
-        if (VoxelConstants.getMinecraft().getCameraEntity() == null) {
+        if (minecraft.getCameraEntity() == null) {
             return;
         }
-        if (VoxelConstants.getMinecraft().gui.screen() == null) {
-            this.options.mapX = GameVariableAccessShim.xCoord();
-            this.options.mapZ = GameVariableAccessShim.zCoord();
+
+        if (minecraft.screen == null) {
+            options.mapX = GameVariableAccessShim.xCoord();
+            options.mapZ = GameVariableAccessShim.zCoord();
         }
 
-        if (!VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false).equals(this.subworldName)) {
-            this.subworldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-            if (this.worldMatcher != null && !this.subworldName.isEmpty()) {
-                this.worldMatcher.cancel();
+        if (!waypointManager.getCurrentSubworldDescriptor(false).equals(subworldName)) {
+            subworldName = waypointManager.getCurrentSubworldDescriptor(false);
+            if (worldMatcher != null && !subworldName.isEmpty()) {
+                worldMatcher.cancel();
             }
 
-            this.purgeCachedRegions();
-        }
-
-        if (this.queuedChangedChunks) {
-            this.queuedChangedChunks = false;
-            this.prunePool();
+            purgeCachedRegions();
         }
 
         if (this.world != null) {
-            int renderDistance = VoxelConstants.getMinecraft().options.renderDistance().get();
-            if (renderDistance != this.lastRenderDistance) {
-                this.lastRenderDistance = renderDistance;
-                this.createChunkCache(renderDistance);
+            int renderDistance = minecraft.options.renderDistance().get();
+            if (renderDistance != lastRenderDistance) {
+                chunkCache = createChunkCache(renderDistance);
+                lastRenderDistance = renderDistance;
             }
 
-            this.chunkCache.centerChunks(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), 0, GameVariableAccessShim.zCoord()));
-            this.chunkCache.checkIfChunksBecameSurroundedByLoaded();
+            int lastX = GameVariableAccessShim.xCoord();
+            int lastY = GameVariableAccessShim.yCoord();
+            int lastZ = GameVariableAccessShim.zCoord();
 
-            while (!this.chunkUpdateQueue.isEmpty() && Math.abs(VoxelConstants.getElapsedTicks() - this.chunkUpdateQueue.peek().tick) >= 20) {
-                this.doProcessChunk(this.chunkUpdateQueue.remove().chunk);
+            chunkCache.centerChunks(playerPos.withXYZ(lastX, 0, lastZ));
+            chunkCache.checkIfChunksBecameSurroundedByLoaded();
+
+            synchronized (layerLock) {
+                if (!serverSettings.cavesAllowed.get() || !options.showCaves.get()) {
+                    underground = false;
+                } else if (!serverSettings.manualCavesAllowed.get() || autoCaveMode) {
+                    int clampedY = Math.max(Math.min(lastY, world.getMaxY() - 1), world.getMinY());
+                    caveLayer = blockToCaveLayer(world, lastY);
+                    underground = MapUtils.isUnderground(world, playerPos.withXYZ(lastX, clampedY, lastZ), lastY);
+                }
+
+                if ((underground != lastUnderground) || (underground && caveLayer != lastCaveLayer)) {
+                    purgeCachedRegions();
+                    currentLayer = new RegionCacheLayer(caveLayer, underground);
+                    lastCaveLayer = caveLayer;
+                    lastUnderground = underground;
+                }
+
+                currentLayer.onTick();
             }
         }
-
     }
 
-    public PersistentMapSettingsManager getOptions() {
-        return this.options;
-    }
-
-    public void purgeCachedRegions() {
-        synchronized (this.cachedRegionsPool) {
-            for (CachedRegion cachedRegion : this.cachedRegionsPool) {
-                cachedRegion.cleanup();
-            }
-
-            this.cachedRegions.clear();
-            this.cachedRegionsPool.clear();
-            this.getRegions(0, -1, 0, -1);
+    public boolean isUnderground() {
+        synchronized (layerLock) {
+            return underground;
         }
     }
 
-    public void renameSubworld(String oldName, String newName) {
-        synchronized (this.cachedRegionsPool) {
-            for (CachedRegion cachedRegion : this.cachedRegionsPool) {
-                cachedRegion.renameSubworld(oldName, newName);
-            }
-
+    public int getCaveLayer() {
+        synchronized (layerLock) {
+            return caveLayer;
         }
+    }
+
+    public boolean isAutoCaveEnabled() {
+        synchronized (layerLock) {
+            return autoCaveMode;
+        }
+    }
+
+    public void enableAutoCave() {
+        synchronized (layerLock) {
+            autoCaveMode = true;
+        }
+    }
+
+    public void setCaveLayer(int layer, boolean underground) {
+        synchronized (layerLock) {
+            autoCaveMode = false;
+            caveLayer = layer;
+            this.underground = underground;
+        }
+    }
+
+    public PersistentMapOptions getOptions() {
+        return options;
     }
 
     public SettingsAndLightingChangeNotifier getSettingsAndLightingChangeNotifier() {
-        return VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier();
+        return voxelMap.getSettingsAndLightingChangeNotifier();
     }
 
     public void setLightMapArray(int[] lights) {
@@ -234,7 +305,79 @@ public class PersistentMap implements IChangeObserver {
 
     }
 
-    public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
+    private int getLight(int light) {
+        return this.lightmapColors[light];
+    }
+
+    private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
+        return chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x(), chunk.getPos().z());
+    }
+
+
+    public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
+        synchronized (layerLock) {
+            return currentLayer.getRegions(left, right, top, bottom);
+        }
+    }
+
+    public void compress() {
+        synchronized (layerLock) {
+            currentLayer.compress();
+        }
+    }
+
+    public boolean isRegionLoaded(int blockX, int blockZ) {
+        synchronized (layerLock) {
+            return currentLayer.isRegionLoaded(blockX, blockZ);
+        }
+    }
+
+    public int getHeightAt(int blockX, int blockZ) {
+        synchronized (layerLock) {
+            return currentLayer.getHeightAt(blockX, blockZ);
+        }
+    }
+
+    public void debugLog(int blockX, int blockZ) {
+        synchronized (layerLock) {
+            currentLayer.debugLog(blockX, blockZ);
+        }
+    }
+
+    public void purgeCachedRegions() {
+        synchronized (layerLock) {
+            currentLayer.purgeCachedRegions();
+        }
+    }
+
+    public void renameSubworld(String oldName, String newName) {
+        synchronized (layerLock) {
+            currentLayer.renameSubworld(oldName, newName);
+        }
+    }
+
+    @Override
+    public void processChunk(LevelChunk chunk) {
+        if (serverSettings.worldmapAllowed.get()) {
+            synchronized (layerLock) {
+                currentLayer.addProcessingQueue(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+            }
+        }
+    }
+
+    @Override
+    public void handleChangeInWorld(int chunkX, int chunkZ) {
+        if (this.world != null) {
+            LevelChunk chunk = this.world.getChunk(chunkX, chunkZ);
+            if (chunk != null && !chunk.isEmpty()) {
+                if (this.isChunkReady(this.world, chunk)) {
+                    this.processChunk(chunk);
+                }
+            }
+        }
+    }
+
+    public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY, int sectionY) {
         int bottomY = world.getMinY();
         int surfaceHeight;
         int seafloorHeight = bottomY;
@@ -256,7 +399,7 @@ public class PersistentMap implements IChangeObserver {
         if (biome != null) {
             boolean solid = false;
             if (underground) {
-                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY);
+                surfaceHeight = this.getNetherHeight(startX + imageX, startZ + imageY, sectionY);
                 surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                 if (surfaceHeight != Short.MIN_VALUE) {
                     foliageHeight = surfaceHeight + 1;
@@ -394,34 +537,32 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int getNetherHeight(LevelChunk chunk, int x, int z) {
-        int bottomY = chunk.getMinY();
-        int y = 80;
+    private int getNetherHeight(int x, int z, int sectionY) {
+        int minY = caveLayerToBlock(world, sectionY);
+        int maxY = minY + CAVE_LAYER_HEIGHT;
+        int y = (minY + maxY) / 2;
         this.blockPos.setXYZ(x, y, z);
-        BlockState blockState = chunk.getBlockState(this.blockPos);
+        BlockState blockState = world.getBlockState(this.blockPos);
         if (blockState.getLightDampening() == 0 && blockState.getBlock() != Blocks.LAVA) {
-            while (y > bottomY) {
+            while (y >= minY && y > world.getMinY()) {
                 --y;
                 this.blockPos.setXYZ(x, y, z);
-                blockState = chunk.getBlockState(this.blockPos);
+                blockState = world.getBlockState(this.blockPos);
                 if (blockState.getLightDampening() > 0 || blockState.getBlock() == Blocks.LAVA) {
                     return y + 1;
                 }
             }
-
-            return y;
         } else {
-            while (y <= 90) {
+            while (y <= maxY && y < world.getMaxY()) {
                 ++y;
                 this.blockPos.setXYZ(x, y, z);
-                blockState = chunk.getBlockState(this.blockPos);
+                blockState = world.getBlockState(this.blockPos);
                 if (blockState.getLightDampening() == 0 && blockState.getBlock() != Blocks.LAVA) {
                     return y;
                 }
             }
-
-            return Short.MIN_VALUE;
         }
+        return Short.MIN_VALUE;
     }
 
     private int getLight(BlockState blockState, Level world, MutableBlockPos blockPos, int x, int z, int height, boolean solid) {
@@ -442,7 +583,7 @@ public class PersistentMap implements IChangeObserver {
         return lightCombined;
     }
 
-    public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
+    public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY, int sectionY) {
         int bottomY = world.getMinY();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
@@ -463,7 +604,7 @@ public class PersistentMap implements IChangeObserver {
         Biome biome = mapData.getBiome(imageX, imageY);
         surfaceBlockState = mapData.getBlockstate(imageX, imageY);
         if (surfaceBlockState != null && (surfaceBlockState.getBlock() != BlockRepository.air || mapData.getLight(imageX, imageY) != 0 || mapData.getHeight(imageX, imageY) != Short.MIN_VALUE) && biome != null) {
-            if (mapOptions.biomeOverlay == 1) {
+            if (mapOptions.biomeOverlay.get() == OptionEnumMinimap.BiomeOverlay.SOLID) {
                 color24 = ARGB.toABGR(BiomeRepository.getBiomeColor(biome) | 0xFF000000);
             } else {
                 boolean solid = false;
@@ -480,7 +621,7 @@ public class PersistentMap implements IChangeObserver {
                     solid = false;
                 }
 
-                if (mapOptions.biomes) {
+                if (mapOptions.biomeShading.get()) {
                     surfaceColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                     int tint;
                     tint = this.colorManager.getBiomeTint(mapData, world, surfaceBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -491,23 +632,23 @@ public class PersistentMap implements IChangeObserver {
                     surfaceColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                 }
 
-                surfaceColor = this.applyHeight(mapData, surfaceColor, underground, multi, imageX, imageY, surfaceHeight, solid, 1);
+                surfaceColor = this.applyHeight(mapData, surfaceColor, underground, multi, imageX, imageY, surfaceHeight, solid, 1, sectionY);
                 int light = mapData.getLight(imageX, imageY);
                 if (solid) {
                     surfaceColor = 0;
-                } else if (mapOptions.dynamicLighting) {
+                } else if (mapOptions.dynamicLighting.get()) {
                     int lightValue = this.getLight(light);
                     surfaceColor = ColorUtils.colorMultiplier(surfaceColor, lightValue);
                 }
 
-                if (mapOptions.waterTransparency && !solid) {
+                if (mapOptions.waterTransparency.get() && !solid) {
                     seafloorHeight = mapData.getOceanFloorHeight(imageX, imageY);
                     if (seafloorHeight > bottomY) {
                         blockPos.setXYZ(mcX, seafloorHeight - 1, mcZ);
                         seafloorBlockState = mapData.getOceanFloorBlockstate(imageX, imageY);
                         if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(seafloorBlockState);
-                            if (mapOptions.biomes) {
+                            if (mapOptions.biomeShading.get()) {
                                 seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, seafloorBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -518,10 +659,10 @@ public class PersistentMap implements IChangeObserver {
                                 seafloorColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                             }
 
-                            seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0);
+                            seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0, sectionY);
                             int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
-                            if (mapOptions.dynamicLighting) {
+                            if (mapOptions.dynamicLighting.get()) {
                                 int lightValue = this.getLight(seafloorLight);
                                 seafloorColor = ColorUtils.colorMultiplier(seafloorColor, lightValue);
                             }
@@ -529,14 +670,14 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                if (mapOptions.blockTransparency && !solid) {
+                if (mapOptions.blockTransparency.get() && !solid) {
                     transparentHeight = mapData.getTransparentHeight(imageX, imageY);
                     if (transparentHeight > bottomY) {
                         blockPos.setXYZ(mcX, transparentHeight - 1, mcZ);
                         transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                         if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(transparentBlockState);
-                            if (mapOptions.biomes) {
+                            if (mapOptions.biomeShading.get()) {
                                 transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, transparentBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -547,10 +688,10 @@ public class PersistentMap implements IChangeObserver {
                                 transparentColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                             }
 
-                            transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3);
+                            transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3, sectionY);
                             int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
-                            if (mapOptions.dynamicLighting) {
+                            if (mapOptions.dynamicLighting.get()) {
                                 int lightValue = this.getLight(transparentLight);
                                 transparentColor = ColorUtils.colorMultiplier(transparentColor, lightValue);
                             }
@@ -563,7 +704,7 @@ public class PersistentMap implements IChangeObserver {
                         foliageBlockState = mapData.getFoliageBlockstate(imageX, imageY);
                         if (foliageBlockState != null && foliageBlockState != BlockRepository.air.defaultBlockState()) {
                             blockStateID = BlockRepository.getStateId(foliageBlockState);
-                            if (mapOptions.biomes) {
+                            if (mapOptions.biomeShading.get()) {
                                 foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
                                 tint = this.colorManager.getBiomeTint(mapData, world, foliageBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
@@ -574,10 +715,10 @@ public class PersistentMap implements IChangeObserver {
                                 foliageColor = this.colorManager.getBlockColorWithDefaultTint(blockPos, blockStateID);
                             }
 
-                            foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2);
+                            foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2, sectionY);
                             int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
-                            if (mapOptions.dynamicLighting) {
+                            if (mapOptions.dynamicLighting.get()) {
                                 int lightValue = this.getLight(foliageLight);
                                 foliageColor = ColorUtils.colorMultiplier(foliageColor, lightValue);
                             }
@@ -585,7 +726,7 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                if (mapOptions.waterTransparency && seafloorHeight > bottomY) {
+                if (mapOptions.waterTransparency.get() && seafloorHeight > bottomY) {
                     color24 = seafloorColor;
                     if (foliageColor != 0 && foliageHeight <= surfaceHeight) {
                         color24 = ColorUtils.colorAdder(foliageColor, seafloorColor);
@@ -608,7 +749,7 @@ public class PersistentMap implements IChangeObserver {
                     color24 = ColorUtils.colorAdder(transparentColor, color24);
                 }
 
-                if (mapOptions.biomeOverlay == 2) {
+                if (mapOptions.biomeOverlay.get() == OptionEnumMinimap.BiomeOverlay.TRANSPARENT) {
                     int bc = 0;
                     if (biome != null) {
                         bc = ARGB.toABGR(BiomeRepository.getBiomeColor(biome));
@@ -625,15 +766,16 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer) {
+    private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer, int sectionY) {
         if (color24 != this.colorManager.getAirColor() && color24 != 0) {
+            int baseY = !underground ? 80 : caveLayerToBlock(world, sectionY);
             int heightComp = Short.MIN_VALUE;
-            if ((mapOptions.heightmap || mapOptions.slopemap) && !solid) {
+            if ((isHeightEnabled() || isSlopeEnabled()  ) && !solid) {
                 int diff;
                 double sc = 0.0;
                 boolean invert = false;
-                if (!mapOptions.slopemap) {
-                    diff = height - 80;
+                if (!isSlopeEnabled()) {
+                    diff = height - baseY;
                     sc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
                     if (diff < 0) {
                         sc = 0.0 - sc;
@@ -710,8 +852,8 @@ public class PersistentMap implements IChangeObserver {
                         sc /= 8.0;
                     }
 
-                    if (mapOptions.heightmap) {
-                        diff = height - 80;
+                    if (isHeightEnabled()) {
+                        diff = height - baseY;
                         double heightsc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
                         sc = diff > 0 ? sc + heightsc : sc - heightsc;
                     }
@@ -739,130 +881,175 @@ public class PersistentMap implements IChangeObserver {
         return color24;
     }
 
-    private int getLight(int light) {
-        return this.lightmapColors[light];
-    }
+    private record ChunkWithAge(LevelChunk chunk, int tick) {}
+    private record RegionCoordinates(int x, int z) {}
 
-    public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
-        if (left == this.lastLeft && right == this.lastRight && top == this.lastTop && bottom == this.lastBottom) {
-            return this.lastRegionsArray;
-        } else {
+    private class RegionCacheLayer {
+        private final int layerIndex;
+        private final boolean underground;
+        private final ConcurrentHashMap<String, CachedRegion> cachedRegions = new ConcurrentHashMap<>(150, 0.9F, 2);
+        private final List<CachedRegion> cachedRegionsPool = Collections.synchronizedList(new ArrayList<>());
+        private final ConcurrentLinkedQueue<ChunkWithAge> chunkProcessingQueue = new ConcurrentLinkedQueue<>();
+        private int lastLeft;
+        private int lastRight;
+        private int lastTop;
+        private int lastBottom;
+        private CachedRegion[] lastVisibleRegions = new CachedRegion[0];
+        private boolean gotRegions = false;
+        private boolean processingQueued = false;
+
+        public RegionCacheLayer(int layerIndex, boolean underground) {
+            this.layerIndex = underground ? layerIndex : 0;
+            this.underground = underground;
+        }
+
+        public void purgeCachedRegions() {
+            synchronized (cachedRegionsPool) {
+                for (CachedRegion region : cachedRegionsPool) {
+                    region.cleanup();
+                }
+
+                cachedRegions.clear();
+                cachedRegionsPool.clear();
+                chunkProcessingQueue.clear();
+
+                getRegions(0, -1, 0, -1);
+
+                gotRegions = false;
+                processingQueued = false;
+            }
+        }
+
+        public void renameSubworld(String oldName, String newName) {
+            synchronized (cachedRegionsPool) {
+                for (CachedRegion region : cachedRegionsPool) {
+                    region.renameSubworld(oldName, newName);
+                }
+            }
+        }
+
+        public boolean isRegionLoaded(int blockX, int blockZ) {
+            int x = (int) Math.floor(blockX / 256.0F);
+            int z = (int) Math.floor(blockZ / 256.0F);
+            CachedRegion cachedRegion = cachedRegions.get(x + "," + z);
+
+            return cachedRegion != null && cachedRegion.isLoaded();
+        }
+
+        public int getHeightAt(int blockX, int blockZ) {
+            int x = (int) Math.floor(blockX / 256.0F);
+            int z = (int) Math.floor(blockZ / 256.0F);
+            CachedRegion cachedRegion = cachedRegions.get(x + "," + z);
+
+            return cachedRegion == null ? Short.MIN_VALUE : cachedRegion.getHeightAt(blockX, blockZ);
+        }
+
+        public void compress() {
+            synchronized (cachedRegionsPool) {
+                for (CachedRegion region : cachedRegionsPool) {
+                    if (System.currentTimeMillis() - region.getMostRecentChange() > 5000L) {
+                        region.compress();
+                    }
+                }
+            }
+        }
+
+        private void prunePool() {
+            synchronized (cachedRegionsPool) {
+                cachedRegionsPool.removeIf(region -> {
+                    if (region.isLoaded() && region.isEmpty()) {
+                        cachedRegions.put(region.getKey(), CachedRegion.EMPTY_REGION);
+                        region.cleanup();
+                        return true;
+                    }
+                    return false;
+                });
+
+                int overSize = cachedRegionsPool.size() - options.cacheSize.get();
+                if (overSize > 0) {
+                    cachedRegionsPool.sort(ageThenDistanceSorter);
+                    for (int i = 0; i < overSize; ++i) {
+                        CachedRegion removed = cachedRegionsPool.removeLast();
+                        cachedRegions.remove(removed.getKey());
+                        removed.cleanup();
+                    }
+                }
+
+                compress();
+            }
+        }
+
+        public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
+            if (left == lastLeft && right == lastRight && top == lastTop && bottom == lastBottom) {
+                return lastVisibleRegions;
+            }
+
             ThreadManager.emptyQueue();
-            CachedRegion[] visibleCachedRegionsArray = new CachedRegion[(right - left + 1) * (bottom - top + 1)];
-            String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
-            String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-            List<RegionCoordinates> regionsToDisplay = new ArrayList<>();
 
-            for (int t = left; t <= right; ++t) {
-                for (int s = top; s <= bottom; ++s) {
-                    RegionCoordinates regionCoordinates = new RegionCoordinates(t, s);
+            String worldName = waypointManager.getCurrentWorldName();
+            String subWorldName = waypointManager.getCurrentSubworldDescriptor(false);
+
+            int regionWidth = right - left + 1;
+            int regionHeight = bottom - top + 1;
+            CachedRegion[] visibleRegions = new CachedRegion[regionWidth * regionHeight];
+
+            List<RegionCoordinates> regionsToDisplay = new ArrayList<>();
+            for (int x = left; x <= right; ++x) {
+                for (int z = top; z <= bottom; ++z) {
+                    RegionCoordinates regionCoordinates = new RegionCoordinates(x, z);
                     regionsToDisplay.add(regionCoordinates);
                 }
             }
-
-            regionsToDisplay.sort(this.distanceSorter);
+            regionsToDisplay.sort(distanceSorter);
 
             for (RegionCoordinates regionCoordinates : regionsToDisplay) {
                 int x = regionCoordinates.x;
                 int z = regionCoordinates.z;
                 String key = x + "," + z;
-                CachedRegion cachedRegion;
-                synchronized (this.cachedRegions) {
-                    cachedRegion = this.cachedRegions.get(key);
-                    if (cachedRegion == null) {
-                        cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, x, z);
-                        this.cachedRegions.put(key, cachedRegion);
-                        synchronized (this.cachedRegionsPool) {
-                            this.cachedRegionsPool.add(cachedRegion);
-                        }
-                    }
-                }
+
+                CachedRegion cachedRegion = cachedRegions.computeIfAbsent(key, k -> {
+                    CachedRegion newRegion = new CachedRegion(PersistentMap.this, key, world, worldName, subWorldName, x, z, underground, layerIndex);
+                    cachedRegionsPool.add(newRegion);
+
+                    return newRegion;
+                });
 
                 cachedRegion.refresh(true);
-                visibleCachedRegionsArray[(z - top) * (right - left + 1) + (x - left)] = cachedRegion;
+                visibleRegions[(z - top) * regionWidth + (x - left)] = cachedRegion;
             }
 
-            this.prunePool();
-            synchronized (this.lastRegionsArray) {
-                this.lastLeft = left;
-                this.lastRight = right;
-                this.lastTop = top;
-                this.lastBottom = bottom;
-                this.lastRegionsArray = visibleCachedRegionsArray;
-                return visibleCachedRegionsArray;
-            }
-        }
-    }
+            prunePool();
 
-    private void prunePool() {
-        synchronized (this.cachedRegionsPool) {
-            Iterator<CachedRegion> iterator = this.cachedRegionsPool.iterator();
+            synchronized (lastVisibleRegions) {
+                lastLeft = left;
+                lastRight = right;
+                lastTop = top;
+                lastBottom = bottom;
+                lastVisibleRegions = visibleRegions;
+                gotRegions = true;
 
-            while (iterator.hasNext()) {
-                CachedRegion region = iterator.next();
-                if (region.isLoaded() && region.isEmpty()) {
-                    this.cachedRegions.put(region.getKey(), CachedRegion.EMPTY_REGION);
-                    region.cleanup();
-                    iterator.remove();
-                }
-            }
-
-            if (this.cachedRegionsPool.size() > this.options.cacheSize) {
-                this.cachedRegionsPool.sort(this.ageThenDistanceSorter);
-                List<CachedRegion> toRemove = this.cachedRegionsPool.subList(this.options.cacheSize, this.cachedRegionsPool.size());
-
-                for (CachedRegion cachedRegion : toRemove) {
-                    this.cachedRegions.remove(cachedRegion.getKey());
-                    cachedRegion.cleanup();
-                }
-
-                toRemove.clear();
-            }
-
-            this.compress();
-        }
-    }
-
-    public void compress() {
-        synchronized (this.cachedRegionsPool) {
-            for (CachedRegion cachedRegion : this.cachedRegionsPool) {
-                if (System.currentTimeMillis() - cachedRegion.getMostRecentChange() > 5000L) {
-                    cachedRegion.compress();
-                }
-            }
-
-        }
-    }
-
-    @Override
-    public void handleChangeInWorld(int chunkX, int chunkZ) {
-        if (this.world != null) {
-            LevelChunk chunk = this.world.getChunk(chunkX, chunkZ);
-            if (chunk != null && !chunk.isEmpty()) {
-                if (this.isChunkReady(this.world, chunk)) {
-                    this.processChunk(chunk);
-                }
-
+                return visibleRegions;
             }
         }
-    }
 
-    @Override
-    public void processChunk(LevelChunk chunk) {
-        if (mapOptions.worldmapAllowed) {
-            this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+        public void addProcessingQueue(ChunkWithAge chunk) {
+            processingQueued = true;
+            chunkProcessingQueue.add(chunk);
         }
-    }
 
-    private void doProcessChunk(LevelChunk chunk) {
-        this.queuedChangedChunks = true;
-
-        try {
-            if (this.world == null) {
-                return;
+        public void onTick() {
+            if (processingQueued) {
+                processingQueued = false;
+                prunePool();
             }
 
-            if (chunk == null || chunk.isEmpty()) {
+            while (!chunkProcessingQueue.isEmpty() && Math.abs(VoxelConstants.getElapsedTicks() - chunkProcessingQueue.peek().tick) >= 20) {
+                processChunk(chunkProcessingQueue.remove().chunk);
+            }
+        }
+
+        public void processChunk(LevelChunk chunk) {
+            if (!gotRegions || world == null || chunk == null || chunk.isEmpty()) {
                 return;
             }
 
@@ -871,79 +1058,57 @@ public class PersistentMap implements IChangeObserver {
             int regionX = (int) Math.floor(chunkX / 16.0);
             int regionZ = (int) Math.floor(chunkZ / 16.0);
             String key = regionX + "," + regionZ;
-            CachedRegion cachedRegion;
-            synchronized (this.cachedRegions) {
-                cachedRegion = this.cachedRegions.get(key);
-                if (cachedRegion == null || cachedRegion == CachedRegion.EMPTY_REGION) {
-                    String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
-                    String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-                    cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, regionX, regionZ);
-                    this.cachedRegions.put(key, cachedRegion);
-                    synchronized (this.cachedRegionsPool) {
-                        this.cachedRegionsPool.add(cachedRegion);
-                    }
 
-                    synchronized (this.lastRegionsArray) {
-                        if (regionX >= this.lastLeft && regionX <= this.lastRight && regionZ >= this.lastTop && regionZ <= this.lastBottom) {
-                            this.lastRegionsArray[(regionZ - this.lastTop) * (this.lastRight - this.lastLeft + 1) + (regionX - this.lastLeft)] = cachedRegion;
-                        }
+            CachedRegion cachedRegion = cachedRegions.get(key);
+            if (cachedRegion == null || cachedRegion == CachedRegion.EMPTY_REGION) {
+                String worldName = waypointManager.getCurrentWorldName();
+                String subWorldName = waypointManager.getCurrentSubworldDescriptor(false);
+
+                cachedRegion = new CachedRegion(PersistentMap.this, key, world, worldName, subWorldName, regionX, regionZ, underground, layerIndex);
+                cachedRegions.put(key, cachedRegion);
+                cachedRegionsPool.add(cachedRegion);
+
+                synchronized (lastVisibleRegions) {
+                    int regionWidth = lastRight - lastLeft + 1;
+                    if (regionX >= lastLeft && regionX <= lastRight && regionZ >= lastTop && regionZ <= lastBottom) {
+                        lastVisibleRegions[(regionZ - lastTop) * regionWidth + (regionX - lastLeft)] = cachedRegion;
                     }
                 }
             }
 
-            if (VoxelConstants.getMinecraft().gui.screen() != null && VoxelConstants.getMinecraft().gui.screen() instanceof GuiPersistentMap) {
-                cachedRegion.registerChangeAt(chunkX, chunkZ);
-                cachedRegion.refresh(false);
-            } else {
-                cachedRegion.handleChangedChunk(chunk);
+            try {
+                if (minecraft.screen instanceof GuiPersistentMap) {
+                    cachedRegion.registerChangeAt(chunkX, chunkZ);
+                    cachedRegion.refresh(false);
+                } else {
+                    cachedRegion.handleChangedChunk(chunk);
+                }
+            } catch (Exception e) {
+                VoxelConstants.getLogger().error(e.getMessage(), e);
             }
-        } catch (Exception var19) {
-            VoxelConstants.getLogger().error(var19.getMessage(), var19);
         }
 
-    }
-
-    private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
-        return this.chunkCache.isChunkSurroundedByLoaded(chunk.getPos().x(), chunk.getPos().z());
-    }
-
-    public boolean isRegionLoaded(int blockX, int blockZ) {
-        int x = (int) Math.floor(blockX / 256.0F);
-        int z = (int) Math.floor(blockZ / 256.0F);
-        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
-        return cachedRegion != null && cachedRegion.isLoaded();
-    }
-
-    public int getHeightAt(int blockX, int blockZ) {
-        int x = (int) Math.floor(blockX / 256.0F);
-        int z = (int) Math.floor(blockZ / 256.0F);
-        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
-        return cachedRegion == null ? Short.MIN_VALUE : cachedRegion.getHeightAt(blockX, blockZ);
-    }
-
-    public void debugLog(int blockX, int blockZ) {
-        int x = (int) Math.floor(blockX / 256.0F);
-        int z = (int) Math.floor(blockZ / 256.0F);
-        CachedRegion cachedRegion = this.cachedRegions.get(x + "," + z);
-        if (cachedRegion == null) {
-            VoxelConstants.getLogger().info("No Region " + x + "," + z + " at " + blockX + "," + blockZ);
-        } else {
-            VoxelConstants.getLogger().info("Info for region " + x + "," + z + " block " + blockX + "," + blockZ);
-            int localx = blockX - x * 256;
-            int localz = blockZ - z * 256;
-            CompressibleMapData data = cachedRegion.getMapData();
-            if (data == null) {
-                VoxelConstants.getLogger().info("  No map data!");
+        public void debugLog(int blockX, int blockZ) {
+            int x = (int) Math.floor(blockX / 256.0);
+            int z = (int) Math.floor(blockZ / 256.0);
+            CachedRegion cachedRegion = cachedRegions.get(x + "," + z);
+            if (cachedRegion == null) {
+                VoxelConstants.getLogger().info("No Region {},{} at {},{}", x, z, blockX, blockZ);
             } else {
-                VoxelConstants.getLogger().info("  Base: " + data.getHeight(localx, localz) + " Block: " + data.getBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getLight(localx, localz)));
-                VoxelConstants.getLogger().info("  Foilage: " + data.getFoliageHeight(localx, localz) + " Block: " + data.getFoliageBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getFoliageLight(localx, localz)));
-                VoxelConstants.getLogger().info("  Ocean Floor: " + data.getOceanFloorHeight(localx, localz) + " Block: " + data.getOceanFloorBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getOceanFloorLight(localx, localz)));
-                VoxelConstants.getLogger().info("  Transparent: " + data.getTransparentHeight(localx, localz) + " Block: " + data.getTransparentBlockstate(localx, localz) + " Light: " + Integer.toHexString(data.getTransparentLight(localx, localz)));
-                VoxelConstants.getLogger().info("  Biome: " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(data.getBiome(localx, localz)) + " (" + data.getBiomeId(localx, localz) + ")");
+                VoxelConstants.getLogger().info("Info for region {},{} block {},{}", x, z, blockX, blockZ);
+                int localX = blockX - x * 256;
+                int localZ = blockZ - z * 256;
+                CompressibleMapData data = cachedRegion.getMapData();
+                if (data == null) {
+                    VoxelConstants.getLogger().info("  No map data!");
+                } else {
+                    VoxelConstants.getLogger().info("  Base: {} Block: {} Light: {}", data.getHeight(localX, localZ), data.getBlockstate(localX, localZ), Integer.toHexString(data.getLight(localX, localZ)));
+                    VoxelConstants.getLogger().info("  Foilage: {} Block: {} Light: {}", data.getFoliageHeight(localX, localZ), data.getFoliageBlockstate(localX, localZ), Integer.toHexString(data.getFoliageLight(localX, localZ)));
+                    VoxelConstants.getLogger().info("  Ocean Floor: {} Block: {} Light: {}", data.getOceanFloorHeight(localX, localZ), data.getOceanFloorBlockstate(localX, localZ), Integer.toHexString(data.getOceanFloorLight(localX, localZ)));
+                    VoxelConstants.getLogger().info("  Transparent: {} Block: {} Light: {}", data.getTransparentHeight(localX, localZ), data.getTransparentBlockstate(localX, localZ), Integer.toHexString(data.getTransparentLight(localX, localZ)));
+                    VoxelConstants.getLogger().info("  Biome: {} ({})", world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(data.getBiome(localX, localZ)), data.getBiomeId(localX, localZ));
+                }
             }
         }
     }
-
-    private record ChunkWithAge(LevelChunk chunk, int tick) {}
-    private record RegionCoordinates(int x, int z) {}
 }

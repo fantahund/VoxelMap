@@ -1,25 +1,28 @@
 package com.mamiyaotaru.voxelmap.interfaces;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
+import com.mamiyaotaru.voxelmap.options.enums.OptionEnumRadar;
+import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
-import com.mamiyaotaru.voxelmap.util.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4fStack;
 
-public abstract class AbstractRadar {
+import java.util.ArrayList;
+
+public abstract class AbstractRadar implements IReloadListener {
     protected final Minecraft minecraft = Minecraft.getInstance();
-    protected final MapSettingsManager mapOptions;
-    protected final RadarSettingsManager radarOptions;
+    protected final ServerSettingsManager serverSettings;
+    protected final MapOptions mapOptions;
+    protected final RadarOptions radarOptions;
 
     protected MinimapContext minimapContext;
 
@@ -28,24 +31,21 @@ public abstract class AbstractRadar {
     private int calculateMobsPart;
 
     public AbstractRadar() {
+        serverSettings = VoxelConstants.getVoxelMapInstance().getServerSettings();
         mapOptions = VoxelConstants.getVoxelMapInstance().getMapOptions();
         radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
+
+        VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
-    public abstract void onResourceManagerReload(ResourceManager resourceManager);
-
-    public abstract void renderMapMobs(Matrix4fStack matrixStack, RenderUtils.SubmitContext context, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
+    public abstract void renderMapMobs(Matrix4fStack matrixStack, DeferredRenderPass pass, int x, int y, Contact.DisplayState displayState, int scScale, float scaleProj);
 
     protected abstract void initContact(Contact contact);
 
-    public void onTickInGame(Matrix4fStack matrixStack, MinimapContext minimapContext) {
+    public void onTickInGame(MinimapContext minimapContext) {
         this.minimapContext = minimapContext;
 
-        if (radarOptions.radarAllowed && (radarOptions.radarMobsAllowed || radarOptions.radarPlayersAllowed)) {
-            if (radarOptions.isChanged()) {
-                timer = 500;
-            }
-
+        if (serverSettings.radarAllowed.get() && (serverSettings.radarMobsAllowed.get() || serverSettings.radarPlayersAllowed.get())) {
             if (timer > 15) {
                 calculateMobs();
                 timer = 0;
@@ -56,10 +56,8 @@ public abstract class AbstractRadar {
             for (Contact contact : contacts) {
                 updateContact(contact);
             }
-        } else {
-            if (!contacts.isEmpty()) {
-                contacts.clear();
-            }
+        } else if (!contacts.isEmpty()) {
+            contacts.clear();
         }
     }
 
@@ -115,8 +113,8 @@ public abstract class AbstractRadar {
         double wayY = minimapContext.playerY - contact.y;
 
         if (!isInRange(contact.entity, wayX, wayY, wayZ, 0.0F)
-            || (radarOptions.hideSneakingPlayers && contact.entity instanceof Player player && player.isCrouching())
-            || (radarOptions.hideInvisibleEntities && contact.entity.isInvisibleTo(VoxelConstants.getPlayer()))
+            || (radarOptions.hideSneaking.get() && contact.entity instanceof Player player && player.isCrouching())
+            || (radarOptions.hideInvisible.get() && contact.entity.isInvisibleTo(VoxelConstants.getPlayer()))
         ) {
             contact.displayState = Contact.DisplayState.HIDDEN;
             return;
@@ -129,7 +127,7 @@ public abstract class AbstractRadar {
 
         contact.distance = Math.sqrt(wayX * wayX + wayZ * wayZ);
 
-        if (!radarOptions.showEntityElevation) {
+        if (!radarOptions.showElevation.get()) {
             contact.brightness = 1.0F;
         } else {
             double maxHeight = getEntityMaxHeight(contact.entity) * minimapContext.zoomScaleAdjusted;
@@ -139,23 +137,31 @@ public abstract class AbstractRadar {
         }
     }
 
+    protected boolean isHostilesShown() {
+        return radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.HOSTILES || radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.BOTH;
+    }
+
+    protected boolean isNeutralsShown() {
+        return radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.NEUTRALS || radarOptions.showMobs.get() == OptionEnumRadar.ShowMobs.BOTH;
+    }
+
     protected boolean isEntityShown(Entity entity) {
         if (!(entity instanceof LivingEntity) || entity.equals(VoxelConstants.getPlayer())) {
             return false;
         }
 
-        boolean playersAllowed = radarOptions.radarAllowed && radarOptions.radarPlayersAllowed;
-        boolean mobsAllowed = radarOptions.radarAllowed && radarOptions.radarMobsAllowed;
+        boolean playersAllowed = serverSettings.radarAllowed.get() && serverSettings.radarPlayersAllowed.get();
+        boolean mobsAllowed = serverSettings.radarAllowed.get() && serverSettings.radarMobsAllowed.get();
 
         return switch (VoxelMapMobCategory.forEntity(entity)) {
             case PLAYER -> playersAllowed;
-            case HOSTILE -> mobsAllowed && radarOptions.showHostiles;
-            case NEUTRAL -> mobsAllowed && radarOptions.showNeutrals;
+            case HOSTILE -> mobsAllowed && isHostilesShown();
+            case NEUTRAL -> mobsAllowed && isNeutralsShown();
         };
     }
 
     protected float getEntityMaxHeight(Entity entity) {
-        if (entity.getType() == EntityTypes.PHANTOM) {
+        if (entity.getType() == EntityType.PHANTOM) {
             return 64.0F;
         }
 
@@ -169,12 +175,12 @@ public abstract class AbstractRadar {
         dz /= scale;
 
         double maxHeight = getEntityMaxHeight(entity) + cullDist;
-        if (radarOptions.showEntityElevation && Math.abs(dy) > maxHeight) {
+        if (radarOptions.showElevation.get() && Math.abs(dy) > maxHeight) {
             return false;
         }
 
         double maxDist = 32.0 + cullDist;
-        if (!mapOptions.squareMap) {
+        if (!mapOptions.squareMap.get()) {
             return (dx * dx + dz * dz) <= (maxDist * maxDist);
         } else {
             return Math.abs(dx) <= maxDist && Math.abs(dz) <= maxDist;

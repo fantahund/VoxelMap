@@ -5,7 +5,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 /**
- * from lightmap.fsh + net.minecraft.client.renderer.LightTexture
+ * from lightmap.fsh + {@link net.minecraft.client.renderer.LightTexture}
  */
 public class CPULightmap {
     private static final CPULightmap INSTANCE = new CPULightmap();
