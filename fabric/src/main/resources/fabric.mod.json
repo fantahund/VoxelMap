@@ -23,7 +23,7 @@
       "com.mamiyaotaru.voxelmap.fabric.VoxelMapFabricMod"
     ],
 	"server": [
-	  "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricModServer"
+      "com.mamiyaotaru.voxelmap.fabric.VoxelMapFabricModServer"
 	]
   },
   "accessWidener" : "voxelmap.accesswidener",
