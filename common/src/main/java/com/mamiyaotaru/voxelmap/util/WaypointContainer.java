@@ -28,13 +28,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
-import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public class WaypointContainer {
     private final Minecraft minecraft = Minecraft.getInstance();
@@ -86,7 +84,7 @@ public class WaypointContainer {
         if (renderables.isEmpty()) return;
 
         RenderTarget renderTarget = minecraft.gameRenderer.mainRenderTarget();
-        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Waypoint Draw", renderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
+        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Waypoint Draw", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
             Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
@@ -359,7 +357,7 @@ public class WaypointContainer {
     private void renderLabels(Matrix4fStack matrixStack, DeferredRenderPass pass, Font.DisplayMode displayMode, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color) {
         if (!mainLabel.isEmpty()) {
             float halfWidth = minecraft.font.width(mainLabel) / 2.0F;
-//            minecraft.font.drawInBatch(mainLabel, -halfWidth, mainLabelY, color, false, matrixStack, minecraft.renderBuffers().bufferSource(), displayMode, 0x00000000, LightCoordsUtil.FULL_BRIGHT);
+            pass.drawStringInBatch(matrixStack, -halfWidth, mainLabelY, 0.0F, mainLabel, false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
         }
 
         if (!subLabel.isEmpty()) {
@@ -367,11 +365,9 @@ public class WaypointContainer {
             float scale = 0.75F;
             matrixStack.pushMatrix();
             matrixStack.scale(scale, scale, 1.0F);
-//            minecraft.font.drawInBatch(subLabel, -halfWidth, subLabelY, color, false, matrixStack, minecraft.renderBuffers().bufferSource(), displayMode, 0x00000000, LightCoordsUtil.FULL_BRIGHT);
+            pass.drawStringInBatch(matrixStack, -halfWidth, subLabelY, 0.0F, subLabel, false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
             matrixStack.popMatrix();
         }
-
-//        minecraft.renderBuffers().bufferSource().endLastBatch();
     }
 
     private void renderLabelBackgrounds(Matrix4fStack matrixStack, DeferredRenderPass pass, RenderPipeline pipeline, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color1, int color2) {
