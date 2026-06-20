@@ -145,7 +145,7 @@ public class DeferredRenderPass implements AutoCloseable {
         if (pipeline == null) {
             throw new IllegalStateException("Cannot begin batch! RenderPipeline is null.");
         }
-        bufferBuilder = Tesselator.getInstance().begin(pipeline);
+        bufferBuilder = Tesselator.getInstance().begin(pipeline.getPrimitiveTopology(), pipeline.getVertexFormatBinding(0));
     }
 
     public VertexConsumer vertexBuffer() {

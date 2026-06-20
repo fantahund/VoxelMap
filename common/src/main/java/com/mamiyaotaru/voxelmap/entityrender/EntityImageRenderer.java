@@ -94,7 +94,7 @@ public class EntityImageRenderer {
     public void beginBatch(RenderPipeline pipeline, VariantDataHolder dataHolder) {
         this.dataHolder = dataHolder;
         this.pipeline = pipeline;
-        bufferBuilder = tesselator.begin(pipeline);
+        bufferBuilder = tesselator.begin(pipeline.getPrimitiveTopology(), pipeline.getVertexFormatBinding(0));
     }
 
     public VertexConsumer vertexBuffer() {

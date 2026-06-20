@@ -1,34 +1,44 @@
 package com.mamiyaotaru.voxelmap.render;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
-public final class Tesselator {
-    private static Tesselator instance;
+public class Tesselator {
+    private static final int MAX_BYTES = 0xC0000;
     private final ByteBufferBuilder buffer;
+    private static Tesselator instance;
 
-    public Tesselator() {
-        this(16384);
-    }
-
-    public Tesselator(int bufSize) {
-        buffer = new ByteBufferBuilder(bufSize);
-        instance = this;
+    public static void init() {
+        if (instance != null) {
+            throw new IllegalStateException("Tesselator has already been initialized");
+        } else {
+            instance = new Tesselator();
+        }
     }
 
     public static Tesselator getInstance() {
         if (instance == null) {
-            new Tesselator();
+            throw new IllegalStateException("Tesselator has not been initialized");
+        } else {
+            return instance;
         }
-        return instance;
+    }
+
+    public Tesselator(int size) {
+        buffer = new ByteBufferBuilder(size);
+    }
+
+    public Tesselator() {
+        this(MAX_BYTES);
+    }
+
+    public BufferBuilder begin(PrimitiveTopology topology, VertexFormat format) {
+        return new BufferBuilder(buffer, topology, format);
     }
 
     public void clear() {
         buffer.clear();
-    }
-
-    public BufferBuilder begin(RenderPipeline pipeline) {
-        return new BufferBuilder(buffer, pipeline.getPrimitiveTopology(), pipeline.getVertexFormatBinding(0));
     }
 }
