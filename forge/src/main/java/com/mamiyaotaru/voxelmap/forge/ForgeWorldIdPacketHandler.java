@@ -12,7 +12,9 @@ public class ForgeWorldIdPacketHandler {
     public static void register() {
         channel = ChannelBuilder
                 .named(WorldIdPayload.PACKET_ID.id())
-                .optional()
+                .networkProtocolVersion(1)
+                .clientAcceptedVersions((status, version) -> true)
+                .serverAcceptedVersions((status, version) -> true)
                 .payloadChannel()
                     .any()
                         .bidirectional()
@@ -25,6 +27,8 @@ public class ForgeWorldIdPacketHandler {
     }
 
     private static void receive(WorldIdPayload data, CustomPayloadEvent.Context context) {
-        WorldIdPayload.parsePacket(data);
+        if (context.isClientSide()) {
+            WorldIdPayload.parsePacket(data);
+        }
     }
 }

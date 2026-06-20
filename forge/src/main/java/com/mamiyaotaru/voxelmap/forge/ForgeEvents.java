@@ -43,10 +43,6 @@ public class ForgeEvents implements Events {
     }
 
     private void preInitClient(final FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> {
-            ForgeSettingsPacketHandler.register();
-            ForgeWorldIdPacketHandler.register();
-        });
         map.onClientStarted();
         map.onConfigurationInit();
     }

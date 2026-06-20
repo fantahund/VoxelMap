@@ -12,7 +12,9 @@ public class ForgeSettingsPacketHandler {
     public static void register() {
         channel = ChannelBuilder
                 .named(SettingsPayload.PACKET_ID.id())
-                .optional()
+                .networkProtocolVersion(1)
+                .clientAcceptedVersions((status, version) -> true)
+                .serverAcceptedVersions((status, version) -> true)
                 .payloadChannel()
                     .any()
                         .clientbound()
@@ -25,6 +27,8 @@ public class ForgeSettingsPacketHandler {
     }
 
     private static void receive(SettingsPayload data, CustomPayloadEvent.Context context) {
-        SettingsPayload.parsePacket(data);
+        if (context.isClientSide()) {
+            SettingsPayload.parsePacket(data);
+        }
     }
 }

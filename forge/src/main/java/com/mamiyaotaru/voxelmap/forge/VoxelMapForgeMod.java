@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.forge;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.bus.BusGroup;
 import net.minecraftforge.fml.common.Mod;
@@ -15,10 +16,13 @@ public class VoxelMapForgeMod {
         VoxelMapForgeMod.modBusGroup = context.getModBusGroup();
         ForgeSettingsPacketHandler.register();
         ForgeWorldIdPacketHandler.register();
-        new VoxelmapForgeServer().init();
+        new VoxelMapForgeServer().init();
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            ForgeClientBootstrap.init(context);
+            VoxelConstants.setModVersion(context.getContainer().getModInfo().getVersion().toString());
+            VoxelConstants.setEvents(new ForgeEvents());
+            VoxelConstants.setPacketBridge(new ForgePacketBridge());
+            VoxelConstants.setModApiBride(new ForgeModApiBridge());
         }
     }
 
