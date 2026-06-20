@@ -45,8 +45,8 @@ public class NeoForgeEvents implements Events {
 
     public void registerPackets(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
-        registrar.optional().commonToClient(SettingsPayload.PACKET_ID, SettingsPayload.PACKET_CODEC, NeoForgeSettingsPacketHandler::receive);
-        registrar.optional().commonBidirectional(WorldIdPayload.PACKET_ID, WorldIdPayload.PACKET_CODEC, NeoForgeWorldIdPacketHandler::receive);
+        registrar.commonToClient(SettingsPayload.PACKET_ID, SettingsPayload.PACKET_CODEC, NeoForgeSettingsPacketHandler::receive);
+        registrar.commonBidirectional(WorldIdPayload.PACKET_ID, WorldIdPayload.PACKET_CODEC, NeoForgeWorldIdPacketHandler::receive);
     }
 
     public void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
