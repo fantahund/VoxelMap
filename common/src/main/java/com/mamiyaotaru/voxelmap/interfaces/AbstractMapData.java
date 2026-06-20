@@ -2,10 +2,11 @@ package com.mamiyaotaru.voxelmap.interfaces;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractMapData {
     protected int width;

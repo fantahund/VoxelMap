@@ -1,5 +1,8 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import net.minecraft.client.model.geom.builders.UVPair;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
@@ -9,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
-import net.minecraft.client.model.geom.builders.UVPair;
-import net.minecraft.client.resources.model.geometry.BakedQuad;
 
 public class BlockModel {
     final ArrayList<BlockFace> faces;

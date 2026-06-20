@@ -2,9 +2,10 @@ package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import java.util.UUID;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+
+import java.util.UUID;
 
 public class Contact {
     public enum DisplayState {

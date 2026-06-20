@@ -1,8 +1,9 @@
 package com.mamiyaotaru.voxelmap.textures;
 
-import java.awt.image.BufferedImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+
+import java.awt.image.BufferedImage;
 
 public class BackgroundImageInfo {
     private Identifier imageLocation;

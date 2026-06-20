@@ -1,8 +1,6 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import java.util.ArrayList;
-import java.util.Optional;
 import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
@@ -10,6 +8,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
+
+import java.util.ArrayList;
+import java.util.Optional;
 
 public class DimensionManager {
     public final ArrayList<DimensionContainer> dimensions;

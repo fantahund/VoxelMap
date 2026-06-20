@@ -2,8 +2,6 @@ package com.mamiyaotaru.voxelmap.paper;
 
 import com.mamiyaotaru.voxelmap.server.VoxelmapServerConfigManager;
 import com.mamiyaotaru.voxelmap.server.VoxelmapSettingsPayloadEncoder;
-import java.nio.file.Path;
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,6 +15,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.Nullable;
+
+import java.nio.file.Path;
+import java.util.List;
 
 public final class VoxelmapPaperPlugin extends JavaPlugin implements Listener, CommandExecutor {
     private static final String SETTINGS_CHANNEL = "voxelmap:settings";

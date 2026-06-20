@@ -3,11 +3,12 @@ package com.mamiyaotaru.voxelmap.textures;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import net.minecraft.util.Mth;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.util.Mth;
 
 public class Stitcher {
     private final Set<Holder> setStitchHolders = Sets.newHashSetWithExpectedSize(256);

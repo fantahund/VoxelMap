@@ -1,8 +1,9 @@
 package com.mamiyaotaru.voxelmap.util;
 
-import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.dimension.DimensionType;
+
+import java.util.Objects;
 
 public class DimensionContainer implements Comparable<DimensionContainer> {
     public DimensionType type;

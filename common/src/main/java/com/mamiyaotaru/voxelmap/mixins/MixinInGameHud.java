@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.mixins;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import org.spongepowered.asm.mixin.Mixin;

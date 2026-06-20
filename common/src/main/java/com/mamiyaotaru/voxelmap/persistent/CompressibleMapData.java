@@ -4,14 +4,15 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
-import java.util.Arrays;
-import java.util.zip.DataFormatException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.Arrays;
+import java.util.zip.DataFormatException;
 
 public class CompressibleMapData extends AbstractMapData {
     public final static int DATA_VERSION = 4;

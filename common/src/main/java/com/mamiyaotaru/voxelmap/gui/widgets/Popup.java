@@ -4,10 +4,11 @@ import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.render.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import java.util.ArrayList;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
+
+import java.util.ArrayList;
 
 public class Popup {
     private final Font fontRendererObj;

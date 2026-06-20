@@ -11,7 +11,6 @@ import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;

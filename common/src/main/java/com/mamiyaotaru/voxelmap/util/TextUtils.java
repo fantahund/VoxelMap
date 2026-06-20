@@ -1,14 +1,15 @@
 package com.mamiyaotaru.voxelmap.util;
 
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
-import org.jetbrains.annotations.NotNull;
 
 public final class TextUtils {
     private static final Pattern CODE_SCRUBBING_PATTERN = Pattern.compile("(§.)");

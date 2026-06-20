@@ -1,9 +1,10 @@
 package com.mamiyaotaru.voxelmap.util;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
-import java.util.Arrays;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.Arrays;
 
 public class FullMapData extends AbstractMapData {
     private final static int LAYERS = 17;

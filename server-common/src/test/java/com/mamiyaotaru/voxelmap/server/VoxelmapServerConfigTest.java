@@ -1,15 +1,16 @@
 package com.mamiyaotaru.voxelmap.server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import org.junit.jupiter.api.Test;
+
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.Test;
 
 class VoxelmapServerConfigTest {
     private static final Gson GSON = new Gson();

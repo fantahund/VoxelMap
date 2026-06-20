@@ -5,6 +5,15 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.textures.GpuTexture;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.resources.Identifier;
+import org.lwjgl.system.MemoryUtil;
+
+import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -17,14 +26,6 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import javax.imageio.ImageIO;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.ReloadableTexture;
-import net.minecraft.client.renderer.texture.TextureContents;
-import net.minecraft.resources.Identifier;
-import org.lwjgl.system.MemoryUtil;
 
 public final class ImageUtils {
     private ImageUtils() {
