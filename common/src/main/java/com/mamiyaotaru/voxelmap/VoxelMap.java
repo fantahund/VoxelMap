@@ -375,7 +375,11 @@ public class VoxelMap implements PreparableReloadListener, Executor {
     }
 
     public void onClientStopping() {
+        if (map != null) {
+            map.shutdown();
+        }
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
+        ThreadManager.shutdownCalculationQueue();
     }
 }

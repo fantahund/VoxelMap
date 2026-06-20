@@ -120,7 +120,9 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
     private final int availableProcessors = Runtime.getRuntime().availableProcessors();
     private final boolean multicore = this.availableProcessors > 1;
     private final boolean threading = this.multicore;
-    private Thread zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+    private final Object zCalcLock = new Object();
+    private volatile boolean zCalcRunning = true;
+    private Thread zCalc = createZCalcThread();
     private int zCalcTicker;
     private final Object coordinateLock = new Object();
     private ClientLevel world;
@@ -226,6 +228,12 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         VoxelConstants.getVoxelMapInstance().addReloadListener(this);
     }
 
+    private Thread createZCalcThread() {
+        Thread thread = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+        thread.setDaemon(true);
+        return thread;
+    }
+
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         minimapArrowTexture = minecraft.getTextureManager().getTexture(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/minimap/minimap_arrow.png"));
@@ -290,38 +298,56 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
     @Override
     public void run() {
-        if (minecraft != null) {
-            while (true) {
-                if (this.world != null) {
-                    if (isMapEnabled()) {
-                        try {
-                            this.mapCalc(this.doFullRender);
-                            if (!this.doFullRender) {
-                                MutableBlockPos blockPos = MutableBlockPosCache.get();
-                                this.chunkCache[this.zoom].centerChunks(blockPos.withXYZ(this.lastX, 0, this.lastZ));
-                                MutableBlockPosCache.release(blockPos);
-                                this.chunkCache[this.zoom].checkIfChunksChanged();
-                            }
-                        } catch (Exception exception) {
-                            VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
+        while (this.zCalcRunning) {
+            if (this.world != null) {
+                if (isMapEnabled()) {
+                    try {
+                        this.mapCalc(this.doFullRender);
+                        if (!this.doFullRender) {
+                            MutableBlockPos blockPos = MutableBlockPosCache.get();
+                            this.chunkCache[this.zoom].centerChunks(blockPos.withXYZ(this.lastX, 0, this.lastZ));
+                            MutableBlockPosCache.release(blockPos);
+                            this.chunkCache[this.zoom].checkIfChunksChanged();
                         }
+                    } catch (Exception exception) {
+                        VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
                     }
-
-                    this.doFullRender = this.zoomChanged;
-                    this.zoomChanged = false;
                 }
 
-                this.zCalcTicker = 0;
-                synchronized (this.zCalc) {
-                    try {
-                        this.zCalc.wait(0L);
-                    } catch (InterruptedException exception) {
+                this.doFullRender = this.zoomChanged;
+                this.zoomChanged = false;
+            }
+
+            this.zCalcTicker = 0;
+            synchronized (this.zCalcLock) {
+                try {
+                    this.zCalcLock.wait(0L);
+                } catch (InterruptedException exception) {
+                    if (this.zCalcRunning) {
                         VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread", exception);
                     }
                 }
             }
         }
+    }
 
+    public void shutdown() {
+        this.zCalcRunning = false;
+        Thread thread = this.zCalc;
+        synchronized (this.zCalcLock) {
+            this.zCalcLock.notifyAll();
+        }
+        thread.interrupt();
+
+        try {
+            thread.join(5000L);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+        }
+
+        if (thread.isAlive()) {
+            VoxelConstants.getLogger().warn("Voxelmap LiveMap Calculation Thread did not stop within shutdown timeout");
+        }
     }
 
     public void newWorld(ClientLevel world) {
@@ -404,13 +430,13 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         this.calculateCurrentLightAndSkyColor();
 
         if (this.threading) {
-            if (!this.zCalc.isAlive()) {
-                this.zCalc = new Thread(this, "Voxelmap LiveMap Calculation Thread");
+            if (this.zCalcRunning && !this.zCalc.isAlive()) {
+                this.zCalc = createZCalcThread();
                 this.zCalc.start();
                 this.zCalcTicker = 0;
             }
 
-            if (!(minecraft.gui.screen() instanceof DeathScreen) && !(minecraft.gui.screen() instanceof OutOfMemoryScreen)) {
+            if (this.zCalcRunning && !(minecraft.gui.screen() instanceof DeathScreen) && !(minecraft.gui.screen() instanceof OutOfMemoryScreen)) {
                 ++this.zCalcTicker;
                 if (this.zCalcTicker > 2000) {
                     this.zCalcTicker = 0;
@@ -419,8 +445,8 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                     DebugRenderState.print();
                     VoxelConstants.getLogger().error("Voxelmap LiveMap Calculation Thread is hanging?", ex);
                 }
-                synchronized (this.zCalc) {
-                    this.zCalc.notify();
+                synchronized (this.zCalcLock) {
+                    this.zCalcLock.notifyAll();
                 }
             }
         } else {
