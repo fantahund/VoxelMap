@@ -11,7 +11,7 @@ val neoForgeVersion by extra { "26.2.0.0-beta" }
 val fabricVersion by extra { "0.19.3" }
 val fabricApiVersion by extra { "0.152.1+26.2" }
 val paperApiVersion by extra { "[26.2.build,)" }
-val voxelMapVersion by extra { "1.16.8" }
+val voxelMapVersion by extra { "1.17.0" }
 
 val fullVersion by extra { "${minecraftVersion}-${voxelMapVersion}" }
 
