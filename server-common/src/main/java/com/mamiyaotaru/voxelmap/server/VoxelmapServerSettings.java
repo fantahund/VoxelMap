@@ -15,6 +15,7 @@ public final class VoxelmapServerSettings {
     public static final String RADAR_MOBS_ALLOWED = "radarMobsAllowed";
     public static final String RADAR_PLAYERS_ALLOWED = "radarPlayersAllowed";
     public static final String CAVES_ALLOWED = "cavesAllowed";
+    public static final String MANUAL_CAVES_ALLOWED = "manualCavesAllowed";
     public static final String MINIMAP_ALLOWED = "minimapAllowed";
     public static final String WORLDMAP_ALLOWED = "worldmapAllowed";
     public static final String WAYPOINTS_ALLOWED = "waypointsAllowed";
@@ -27,6 +28,7 @@ public final class VoxelmapServerSettings {
             RADAR_MOBS_ALLOWED,
             RADAR_PLAYERS_ALLOWED,
             CAVES_ALLOWED,
+            MANUAL_CAVES_ALLOWED,
             MINIMAP_ALLOWED,
             WORLDMAP_ALLOWED,
             WAYPOINTS_ALLOWED,
@@ -37,6 +39,7 @@ public final class VoxelmapServerSettings {
             RADAR_MOBS_ALLOWED,
             RADAR_PLAYERS_ALLOWED,
             CAVES_ALLOWED,
+            MANUAL_CAVES_ALLOWED,
             MINIMAP_ALLOWED,
             WORLDMAP_ALLOWED,
             WAYPOINTS_ALLOWED,
