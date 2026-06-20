@@ -21,7 +21,6 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -35,7 +34,6 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -144,7 +142,7 @@ public class EntityImageRenderer {
                 renderTarget.createBuffers(renderTarget.width, renderTarget.height);
             }
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0f, 0.0F)), renderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0f, 0.0F)), renderTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));

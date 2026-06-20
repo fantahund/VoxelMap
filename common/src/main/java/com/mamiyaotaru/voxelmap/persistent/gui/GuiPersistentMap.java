@@ -63,7 +63,6 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Random;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
@@ -567,7 +566,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
 
         RenderUtils.setProjectionMatrix(mapProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap WorldMap Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap WorldMap Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
             Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
@@ -578,7 +577,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             matrixStack.scale(mapToGui, mapToGui, 1.0F);
 
             if (serverSettings.worldmapAllowed.get()) {
-                pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+                pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
 
                 for (CachedRegion region : regionsToDisplay) {
                     if (region != null) {
@@ -601,14 +600,14 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     float x1 = (float) (worldBorder.getMaxX());
                     float z1 = (float) (worldBorder.getMaxZ());
 
-                    pass.setPipeline(VoxelMapPipelines.GUI_LEQUAL_DEPTH_TEST);
+                    pass.setPipeline(VoxelMapPipelines.GUI_DEPTH_TEST);
                     pass.beginBatch();
                     pass.drawTexturedModalRect(matrixStack, x0 - scale, z0 - scale, MAP_IMAGE_DEPTH, x1 - x0 + 2.0F * scale, 2.0F * scale, 0xFFFF0000);
                     pass.drawTexturedModalRect(matrixStack, x0 - scale, z1 - scale, MAP_IMAGE_DEPTH, x1 - x0 + 2.0F * scale, 2.0F * scale, 0xFFFF0000);
                     pass.drawTexturedModalRect(matrixStack, x0 - scale, z0 - scale, MAP_IMAGE_DEPTH, 2.0F * scale, z1 - z0 + 2.0F * scale, 0xFFFF0000);
                     pass.drawTexturedModalRect(matrixStack, x1 - scale, z0 - scale, MAP_IMAGE_DEPTH, 2.0F * scale, z1 - z0 + 2.0F * scale, 0xFFFF0000);
                     pass.endBatch();
-                    pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+                    pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
                 }
 
                 if (oldNorth) {
@@ -947,7 +946,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private void overlayBackground(Matrix4fStack matrixStack, DeferredRenderPass pass, int startY, int endY) {
-        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
         pass.bindTexture("Sampler0", VoxelConstants.getOptionsBackgroundTexture());
         pass.beginBatch();
 

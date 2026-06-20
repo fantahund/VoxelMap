@@ -129,7 +129,7 @@ public class DeferredRenderPass implements AutoCloseable {
 
     public void drawString(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
         poseCache.last().pose().set(matrix).translate(x, y, z);
-        submitNodeStorage.submitText(poseCache, 0.0F, 0.0F, text.getVisualOrderText(), shadow, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+        submitNodeStorage.submitText(poseCache, 0.0F, 0.0F, text.getVisualOrderText(), shadow, Font.DisplayMode.NORMAL, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
         Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
     }
 

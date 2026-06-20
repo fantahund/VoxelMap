@@ -53,7 +53,7 @@ public class RadarSimple extends AbstractRadar {
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
         pass.bindTexture("Sampler0", textureAtlas);
         pass.beginBatch();
         for (Contact contact : contacts) {

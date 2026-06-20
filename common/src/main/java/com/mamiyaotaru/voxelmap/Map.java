@@ -11,8 +11,8 @@ import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.enums.OptionEnumMinimap;
 import com.mamiyaotaru.voxelmap.persistent.gui.GuiPersistentMap;
-import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
 import com.mamiyaotaru.voxelmap.render.CachedOrthoProjection;
+import com.mamiyaotaru.voxelmap.render.DeferredRenderPass;
 import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.render.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.render.VoxelMapRenderTarget;
@@ -80,7 +80,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 import java.util.Random;
 import java.util.TreeSet;
 
@@ -646,7 +645,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
 
         RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
-        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Map Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Map Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
             Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
@@ -1471,7 +1470,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(256.0F, 256.0F, 0.0F);
 
         // Draw map, radar, etc.
-        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Base Map Draw", baseMapRenderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), baseMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Base Map Draw", baseMapRenderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), baseMapRenderTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
             float scale = getMapImageScale();
             float multi = (float) (1.0 / this.zoomScale);
             float percentX = (float) (GameVariableAccessShim.xCoordDouble() - this.lastImageX) * multi;
@@ -1485,7 +1484,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             }
             matrixStack.scale(scale, scale, 1.0F);
             matrixStack.translate(-percentX * 512.0F / 64.0F, -percentY * 512.0F / 64.0F, 0.0F);
-            mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+            mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
             mapPass.bindTexture("Sampler0", mapImages[zoom]);
             mapPass.beginBatch();
             mapPass.drawTexturedModalRect(matrixStack, -256.0F, -256.0F, -10.0F, 512.0F, 512.0F, 0xFFFFFFFF);
@@ -1498,7 +1497,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 float x1 = ((float) (worldBorder.getMaxX()) - lastImageX) * multi * 512.0F / 64.0F;
                 float z1 = ((float) (worldBorder.getMaxZ()) - lastImageZ) * multi * 512.0F / 64.0F;
 
-                mapPass.setPipeline(VoxelMapPipelines.GUI_LEQUAL_DEPTH_TEST);
+                mapPass.setPipeline(VoxelMapPipelines.GUI_DEPTH_TEST);
                 mapPass.beginBatch();
                 mapPass.drawTexturedModalRect(matrixStack, x0 - 2.0F, z0 - 2.0F, -10.0F, x1 - x0 + 4.0F, 4.0F, 0xFFFF0000);
                 mapPass.drawTexturedModalRect(matrixStack, x0 - 2.0F, z1 - 2.0F, -10.0F, x1 - x0 + 4.0F, 4.0F, 0xFFFF0000);
@@ -1515,7 +1514,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
 
         // Masking the drawn map
-        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Final Map Draw", finalMapRenderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), finalMapRenderTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
+        try (DeferredRenderPass mapPass = RenderUtils.createDeferredRenderPass("VoxelMap Final Map Draw", finalMapRenderTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), finalMapRenderTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
             mapPass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST);
             mapPass.bindTexture("Sampler0", options.squareMap.get() ? squareMapStencilTexture : roundMapStencilTexture);
             mapPass.beginBatch();
@@ -1536,7 +1535,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
 
-        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
 
         pass.bindTexture("Sampler0", finalMapRenderTarget.getColorTextureView(), VoxelMapPipelines.LINEAR_CLAMP_SAMPLER);
         pass.beginBatch();
@@ -1659,7 +1658,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.rotate(Axis.ZP.rotationDegrees(isRotationEnabled() ? 0.0F : this.direction + this.rotationFactor));
         matrixStack.translate(-x, -y, 0.0F);
 
-        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
         pass.bindTexture("Sampler0", minimapArrowTexture);
         pass.beginBatch();
         pass.drawTexturedModalRect(matrixStack, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
@@ -1684,7 +1683,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         matrixStack.translate(-x, -y, 0.0F);
         int left = x - 128;
         int top = y - 128;
-        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST);
+        pass.setPipeline(VoxelMapPipelines.GUI_TEXTURED_DEPTH_TEST);
         pass.bindTexture("Sampler0", mapImages[zoom]);
         pass.beginBatch();
         pass.drawTexturedModalRect(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0f, 256.0F, 0xFFFFFFFF);

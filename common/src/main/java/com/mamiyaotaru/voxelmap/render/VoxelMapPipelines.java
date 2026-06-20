@@ -10,8 +10,6 @@ import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -23,11 +21,11 @@ public class VoxelMapPipelines {
     public static final GpuSampler NEAREST_REPEAT_SAMPLER;
     public static final GpuSampler LINEAR_CLAMP_SAMPLER;
     public static final GpuSampler LINEAR_REPEAT_SAMPLER;
+    public static final RenderPipeline GUI_TEXTURED_DEPTH_TEST;
     public static final RenderPipeline GUI_TEXTURED_NO_DEPTH_TEST;
     public static final RenderPipeline GUI_TEXTURED_NO_DEPTH_TEST_MASKED;
-    public static final RenderPipeline GUI_TEXTURED_LEQUAL_DEPTH_TEST;
+    public static final RenderPipeline GUI_DEPTH_TEST;
     public static final RenderPipeline GUI_NO_DEPTH_TEST;
-    public static final RenderPipeline GUI_LEQUAL_DEPTH_TEST;
     public static final RenderPipeline WAYPOINT_ICON_DEPTH_TEST;
     public static final RenderPipeline WAYPOINT_ICON_NO_DEPTH_TEST;
     public static final RenderPipeline WAYPOINT_TEXT_BACKGROUND_DEPTH_TEST;
@@ -44,6 +42,11 @@ public class VoxelMapPipelines {
 
         LINEAR_REPEAT_SAMPLER = RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR);
 
+        GUI_TEXTURED_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_depth_test"))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+                .build();
+
         GUI_TEXTURED_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_no_depth_test"))
                 .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
@@ -55,9 +58,9 @@ public class VoxelMapPipelines {
                 .withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT), GpuFormat.RGBA8_UNORM, ColorTargetState.WRITE_COLOR))
                 .build();
 
-        GUI_TEXTURED_LEQUAL_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-                .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_textured_lequal_depth_test"))
-                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
+        GUI_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_depth_test"))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
                 .build();
 
         GUI_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
@@ -65,14 +68,9 @@ public class VoxelMapPipelines {
                 .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true))
                 .build();
 
-        GUI_LEQUAL_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-                .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/gui_lequal_depth_test"))
-                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
-                .build();
-
         WAYPOINT_ICON_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/waypoint_icon_depth_test"))
-                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
                 .build();
 
         WAYPOINT_ICON_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
@@ -82,7 +80,7 @@ public class VoxelMapPipelines {
 
         WAYPOINT_TEXT_BACKGROUND_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
                 .withLocation(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "pipeline/waypoint_text_background_depth_test"))
-                .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+                .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
                 .build();
 
         WAYPOINT_TEXT_BACKGROUND_NO_DEPTH_TEST = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
