@@ -357,7 +357,7 @@ public class WaypointContainer {
     private void renderLabels(Matrix4fStack matrixStack, DeferredRenderPass pass, Font.DisplayMode displayMode, String mainLabel, String subLabel, int mainLabelY, int subLabelY, int color) {
         if (!mainLabel.isEmpty()) {
             float halfWidth = minecraft.font.width(mainLabel) / 2.0F;
-            pass.drawStringInBatch(matrixStack, -halfWidth, mainLabelY, 0.0F, mainLabel, false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+            pass.drawStringInBatch(matrixStack, -halfWidth, mainLabelY, 0.0F, mainLabel, false, displayMode, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
         }
 
         if (!subLabel.isEmpty()) {
@@ -365,7 +365,7 @@ public class WaypointContainer {
             float scale = 0.75F;
             matrixStack.pushMatrix();
             matrixStack.scale(scale, scale, 1.0F);
-            pass.drawStringInBatch(matrixStack, -halfWidth, subLabelY, 0.0F, subLabel, false, Font.DisplayMode.SEE_THROUGH, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+            pass.drawStringInBatch(matrixStack, -halfWidth, subLabelY, 0.0F, subLabel, false, displayMode, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
             matrixStack.popMatrix();
         }
     }
