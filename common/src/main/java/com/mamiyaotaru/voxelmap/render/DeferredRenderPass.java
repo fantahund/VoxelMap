@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.render;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mamiyaotaru.voxelmap.util.FastHashMap;
 import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -24,8 +25,6 @@ import net.minecraft.util.LightCoordsUtil;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
@@ -34,8 +33,8 @@ public class DeferredRenderPass implements AutoCloseable {
     private final GpuTextureView colorTexture;
     private final GpuTextureView depthTexture;
     private RenderPipeline pipeline;
-    private final HashMap<String, GpuBufferSlice> uniformsMap = new HashMap<>(8);
-    private final HashMap<String, TextureBinding> texturesMap = new HashMap<>(8);
+    private final FastHashMap<String, GpuBufferSlice> uniformsMap = new FastHashMap<>(64);
+    private final FastHashMap<String, TextureBinding> texturesMap = new FastHashMap<>(64);
     private final PoseStack poseCache = new PoseStack();
     private BufferBuilder bufferBuilder;
     private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
@@ -182,12 +181,12 @@ public class DeferredRenderPass implements AutoCloseable {
                 pass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
             }
             RenderSystem.bindDefaultUniforms(pass);
-            for (Map.Entry<String, GpuBufferSlice> entry : uniformsMap.entrySet()) {
-                pass.setUniform(entry.getKey(), entry.getValue());
+            for (int i = 0; i < uniformsMap.size(); i++) {
+                pass.setUniform(uniformsMap.getKey(i), uniformsMap.getValue(i));
             }
             pass.setVertexBuffer(0, vertexBuffer.slice());
-            for (Map.Entry<String, TextureBinding> entry : texturesMap.entrySet()) {
-                pass.bindTexture(entry.getKey(), entry.getValue().texture(), entry.getValue().sampler());
+            for (int i = 0; i < texturesMap.size(); i++) {
+                pass.bindTexture(texturesMap.getKey(i), texturesMap.getValue(i).texture(), texturesMap.getValue(i).sampler());
             }
             pass.setIndexBuffer(indexBuffer, indexType);
             pass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
