@@ -99,7 +99,7 @@ public class MapOptions extends AbstractOptionsContainer {
         addOptionField((filtering = new BooleanField("Map Filtering", "options.minimap.filtering", false)).withListener(this::updateMinimap));
         addOptionField((teleportCommand = new StringField("Teleport Command", "options.minimap.teleportCommand", "tp %p %x %y %z", StringField.PATTERN_NOT_EMPTY)));
 
-        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "controls.title_test"));
+        KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "controls.title"));
         keyBindZoom = new KeyMapping("key.minimap.zoom", InputConstants.KEY_Z, category);
         keyBindFullscreen = new KeyMapping("key.minimap.toggleFullscreen", InputConstants.KEY_X, category);
         keyBindMenu = new KeyMapping("key.minimap.voxelmapMenu", InputConstants.KEY_M, category);
