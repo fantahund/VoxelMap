@@ -57,13 +57,13 @@ public class Stitcher {
         int stitcherHoldersArrayLength = stitchHoldersArray.length;
         if (stitcherHoldersArrayLength > 0) {
             Holder holder = stitchHoldersArray[0];
-            int iconWidth = holder.width;
-            int iconHeight = holder.height;
+            int iconWidth = holder.getWidth();
+            int iconHeight = holder.getHeight();
             boolean allSameSize = true;
 
             for (int stitcherHolderIndex = 1; stitcherHolderIndex < stitcherHoldersArrayLength && allSameSize; ++stitcherHolderIndex) {
                 holder = stitchHoldersArray[stitcherHolderIndex];
-                allSameSize = holder.width == iconWidth && holder.height == iconHeight;
+                allSameSize = holder.getWidth() == iconWidth && holder.getHeight() == iconHeight;
             }
 
             if (allSameSize) {
@@ -186,8 +186,8 @@ public class Stitcher {
 
         public Holder(Sprite icon) {
             this.icon = icon;
-            this.width = icon.getIconWidth();
-            this.height = icon.getIconHeight();
+            this.width = icon.getAtlasUploadWidth();
+            this.height = icon.getAtlasUploadHeight();
         }
 
         public Sprite getAtlasSprite() {
@@ -255,7 +255,7 @@ public class Stitcher {
         }
 
         public boolean addSlot(Holder holder) {
-            if (holder.width >= this.failsAt) {
+            if (holder.getWidth() >= this.failsAt) {
                 return false;
             } else if (this.holder != null) {
                 this.failsAt = 0;
@@ -296,11 +296,11 @@ public class Stitcher {
                             }
                         }
 
-                        this.failsAt = holder.width;
+                        this.failsAt = holder.getWidth();
                         return false;
                     }
                 } else {
-                    this.failsAt = holder.width;
+                    this.failsAt = holder.getWidth();
                     return false;
                 }
             }

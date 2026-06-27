@@ -18,8 +18,13 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TextureAtlas extends AbstractTexture {
     private final HashMap<Object, Sprite> mapRegisteredSprites;
@@ -103,7 +108,7 @@ public class TextureAtlas extends AbstractTexture {
 
             try {
                 if (icon.getTextureData() != null) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                    this.uploadSprite(icon);
                 }
             } catch (Throwable var10) {
                 CrashReport crashReport = CrashReport.forThrowable(var10, "Stitching texture atlas");
@@ -121,8 +126,8 @@ public class TextureAtlas extends AbstractTexture {
             }
         }
 
-        this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
-        this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
+        this.missingImage.initSprite(this.getImageWidth(), this.getImageHeight(), 0, 0, 0);
+        this.failedImage.initSprite(this.getImageWidth(), this.getImageHeight(), 0, 0, 0);
         if (VoxelConstants.DEBUG) {
             saveDebugImage();
         }
@@ -161,7 +166,7 @@ public class TextureAtlas extends AbstractTexture {
 
             try {
                 if (icon.getTextureData() != null) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                    this.uploadSprite(icon);
                 }
             } catch (Throwable var11) {
                 CrashReport crashReport = CrashReport.forThrowable(var11, "Stitching texture atlas");
@@ -179,8 +184,8 @@ public class TextureAtlas extends AbstractTexture {
             }
         }
 
-        this.missingImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
-        this.failedImage.initSprite(this.getHeight(), this.getWidth(), 0, 0);
+        this.missingImage.initSprite(this.getImageWidth(), this.getImageHeight(), 0, 0, 0);
+        this.failedImage.initSprite(this.getImageWidth(), this.getImageHeight(), 0, 0, 0);
         if (VoxelConstants.DEBUG) {
             if (oldWidth != this.stitcher.getCurrentImageWidth() || oldHeight != this.stitcher.getCurrentImageHeight()) {
                 saveDebugImage();
@@ -192,9 +197,51 @@ public class TextureAtlas extends AbstractTexture {
         ImageUtils.saveImage(this.basePath.replaceAll("/", "_"), this.getTexture(), 0, this.stitcher.getCurrentImageWidth(), this.stitcher.getCurrentImageHeight());
     }
 
+    private void uploadSprite(Sprite icon) {
+        NativeImage uploadImage = this.createPaddedSpriteImage(icon);
+        try {
+            RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, uploadImage, 0, 0, icon.getAtlasOriginX(), icon.getAtlasOriginY(), icon.getAtlasUploadWidth(), icon.getAtlasUploadHeight(), 0, 0);
+        } finally {
+            uploadImage.close();
+        }
+    }
+
+    private NativeImage createPaddedSpriteImage(Sprite icon) {
+        NativeImage source = icon.getTextureData();
+        int padding = icon.getAtlasPadding();
+        int sourceWidth = icon.getIconWidth();
+        int sourceHeight = icon.getIconHeight();
+        NativeImage paddedImage = new NativeImage(icon.getAtlasUploadWidth(), icon.getAtlasUploadHeight(), false);
+
+        for (int y = 0; y < paddedImage.getHeight(); y++) {
+            int sourceY = clamp(y - padding, 0, sourceHeight - 1);
+            for (int x = 0; x < paddedImage.getWidth(); x++) {
+                int sourceX = clamp(x - padding, 0, sourceWidth - 1);
+                paddedImage.setPixel(x, y, source.getPixel(sourceX, sourceY));
+            }
+        }
+
+        return paddedImage;
+    }
+
+    private static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
     public Sprite getIconAt(float x, float y) {
         return this.mapUploadedSprites.entrySet().stream().map(stringSpriteEntry -> (Sprite) ((Map.Entry<?, ?>) stringSpriteEntry).getValue()).filter(icon -> x >= icon.originX && x < (icon.originX + icon.width) && y >= icon.originY && y < (icon.originY + icon.height)).findFirst()
                 .orElse(this.missingImage);
+    }
+
+    public Collection<Sprite> getUploadedSprites() {
+        ArrayList<Sprite> sprites = new ArrayList<>();
+        Set<Sprite> seenSprites = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Sprite sprite : this.mapUploadedSprites.values()) {
+            if (seenSprites.add(sprite)) {
+                sprites.add(sprite);
+            }
+        }
+        return Collections.unmodifiableList(sprites);
     }
 
     public Sprite getAtlasSprite(Object name) {
