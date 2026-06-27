@@ -9,7 +9,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.resources.language.I18n;
 
-public class CaveModeOverlay extends PersistentMapOverlay.OverlayElement {
+public class GuiOverlayCaveMode extends GuiPersistentMapOverlay.OverlayElement {
     private final PersistentMap map;
     private final ClientLevel world;
     private final int autoLayer;
@@ -19,7 +19,7 @@ public class CaveModeOverlay extends PersistentMapOverlay.OverlayElement {
     private final IntegerField caveLayerField;
     private final AbstractWidget caveLayerWidget;
 
-    public CaveModeOverlay(PersistentMap map, int x, int y, int width, int height) {
+    public GuiOverlayCaveMode(PersistentMap map, int x, int y, int width, int height) {
         super(map, x, y, width, height);
 
         this.map = map;

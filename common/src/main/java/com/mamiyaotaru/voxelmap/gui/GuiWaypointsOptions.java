@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -12,6 +13,7 @@ public class GuiWaypointsOptions extends GuiOptionsScreenMinimap {
     public GuiWaypointsOptions(Screen parentGui) {
         super(parentGui, Component.translatable("options.minimap.waypoints.title"));
 
+        WaypointOptions waypointOptions = voxelMap.getWaypointOptions();
         relevantOptions = new OptionField[] {
                 waypointOptions.maxDistance,
                 waypointOptions.signScale,
