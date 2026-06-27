@@ -2,7 +2,6 @@ package com.mamiyaotaru.voxelmap.textures;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -132,50 +131,85 @@ public class Stitcher {
     }
 
     private boolean expandAndAllocateSlot(Holder holder) {
-        int expandBy = holder.getWidth();
+        ExpansionCandidate expandRight = this.createExpandRightCandidate(holder);
+        ExpansionCandidate expandDown = this.createExpandDownCandidate(holder);
+        ExpansionCandidate selectedCandidate = this.selectExpansionCandidate(expandRight, expandDown);
+
+        if (selectedCandidate == null) {
+            return false;
+        }
+
+        if (!selectedCandidate.primarySlot.addSlot(holder)) {
+            return false;
+        }
+
+        this.currentWidth = selectedCandidate.width;
+        this.currentHeight = selectedCandidate.height;
+        this.stitchSlots.add(selectedCandidate.primarySlot);
+        if (selectedCandidate.extraSlot != null) {
+            this.stitchSlots.add(selectedCandidate.extraSlot);
+        }
+        return true;
+    }
+
+    private ExpansionCandidate createExpandRightCandidate(Holder holder) {
+        int newWidth = this.currentWidth + holder.getWidth();
+        int newHeight = Math.max(this.currentHeight, holder.getHeight());
+        if (!this.canFit(newWidth, newHeight)) {
+            return null;
+        }
+
+        Slot primarySlot = new Slot(this.currentWidth, 0, holder.getWidth(), newHeight);
+        Slot extraSlot = newHeight > this.currentHeight && this.currentWidth > 0 ? new Slot(0, this.currentHeight, this.currentWidth, newHeight - this.currentHeight) : null;
+        return new ExpansionCandidate(newWidth, newHeight, primarySlot, extraSlot);
+    }
+
+    private ExpansionCandidate createExpandDownCandidate(Holder holder) {
+        int newWidth = Math.max(this.currentWidth, holder.getWidth());
+        int newHeight = this.currentHeight + holder.getHeight();
+        if (!this.canFit(newWidth, newHeight)) {
+            return null;
+        }
+
+        Slot primarySlot = new Slot(0, this.currentHeight, newWidth, holder.getHeight());
+        Slot extraSlot = newWidth > this.currentWidth && this.currentHeight > 0 ? new Slot(this.currentWidth, 0, newWidth - this.currentWidth, this.currentHeight) : null;
+        return new ExpansionCandidate(newWidth, newHeight, primarySlot, extraSlot);
+    }
+
+    private ExpansionCandidate selectExpansionCandidate(ExpansionCandidate expandRight, ExpansionCandidate expandDown) {
+        if (expandRight == null) {
+            return expandDown;
+        }
+        if (expandDown == null) {
+            return expandRight;
+        }
+
+        int rightWidthToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(expandRight.width);
+        int rightHeightToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(expandRight.height);
+        int downWidthToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(expandDown.width);
+        int downHeightToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(expandDown.height);
+        long rightArea = (long) rightWidthToPowerOfTwo * rightHeightToPowerOfTwo;
+        long downArea = (long) downWidthToPowerOfTwo * downHeightToPowerOfTwo;
+        if (rightArea != downArea) {
+            return rightArea < downArea ? expandRight : expandDown;
+        }
+
         int currentWidthToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(this.currentWidth);
         int currentHeightToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(this.currentHeight);
-        int possibleNewWidthToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(this.currentWidth + expandBy);
-        int possibleNewHeightToPowerOfTwo = Mth.smallestEncompassingPowerOfTwo(this.currentHeight + expandBy);
-        boolean isRoomToExpandRight = possibleNewWidthToPowerOfTwo <= this.maxWidth;
-        boolean isRoomToExpandDown = possibleNewHeightToPowerOfTwo <= this.maxHeight;
-        if (!isRoomToExpandRight && !isRoomToExpandDown) {
-            return false;
-        } else {
-            boolean widthWouldChange = currentWidthToPowerOfTwo != possibleNewWidthToPowerOfTwo;
-            boolean heightWouldChange = currentHeightToPowerOfTwo != possibleNewHeightToPowerOfTwo;
-            boolean shouldExpandRight;
-            if (widthWouldChange ^ heightWouldChange) {
-                shouldExpandRight = !widthWouldChange;
-            } else {
-                shouldExpandRight = isRoomToExpandRight && currentWidthToPowerOfTwo <= currentHeightToPowerOfTwo;
-            }
-
-            if (Mth.smallestEncompassingPowerOfTwo((shouldExpandRight ? this.currentWidth : this.currentHeight) + expandBy) > (shouldExpandRight ? this.maxWidth : this.maxHeight)) {
-                return false;
-            } else {
-                Slot slot;
-                if (shouldExpandRight) {
-                    if (this.currentHeight == 0) {
-                        this.currentHeight = holder.getHeight();
-                    }
-
-                    slot = new Slot(this.currentWidth, 0, holder.getWidth(), this.currentHeight);
-                    this.currentWidth += holder.getWidth();
-                } else {
-                    slot = new Slot(0, this.currentHeight, this.currentWidth, holder.getHeight());
-                    this.currentHeight += holder.getHeight();
-                }
-
-                if (!slot.addSlot(holder)) {
-                    String errorString = String.format("Unable to fit: %s - size: %dx%d - Maybe try a lower resolution resourcepack?", holder.getAtlasSprite().getIconName(), holder.getAtlasSprite().getIconWidth(), holder.getAtlasSprite().getIconHeight());
-                    VoxelConstants.getLogger().warn(errorString);
-                }
-
-                this.stitchSlots.add(slot);
-                return true;
-            }
+        boolean rightWidthWouldChange = currentWidthToPowerOfTwo != rightWidthToPowerOfTwo;
+        boolean downHeightWouldChange = currentHeightToPowerOfTwo != downHeightToPowerOfTwo;
+        if (rightWidthWouldChange != downHeightWouldChange) {
+            return !rightWidthWouldChange ? expandRight : expandDown;
         }
+
+        return rightWidthToPowerOfTwo <= downHeightToPowerOfTwo ? expandRight : expandDown;
+    }
+
+    private boolean canFit(int width, int height) {
+        return Mth.smallestEncompassingPowerOfTwo(width) <= this.maxWidth && Mth.smallestEncompassingPowerOfTwo(height) <= this.maxHeight;
+    }
+
+    private record ExpansionCandidate(int width, int height, Slot primarySlot, Slot extraSlot) {
     }
 
     public static class Holder implements Comparable<Holder> {
