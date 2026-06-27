@@ -7,10 +7,13 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 
 public class Sprite {
+    private static final int ATLAS_PADDING = 1;
     private final Object iconName;
     protected NativeImage imageData;
     protected int originX;
     protected int originY;
+    private int atlasOriginX;
+    private int atlasOriginY;
     protected int width;
     protected int height;
     private float minU;
@@ -34,19 +37,25 @@ public class Sprite {
     }
 
     public void initSprite(int sheetWidth, int sheetHeight, int originX, int originY) {
-        this.originX = originX;
-        this.originY = originY;
-        float var6 = (float) (0.01F / (double) sheetWidth);
-        float var7 = (float) (0.01F / (double) sheetHeight);
-        this.minU = originX / (float) (sheetWidth) + var6;
-        this.maxU = (originX + this.width) / (float) (sheetWidth) - var6;
-        this.minV = (float) originY / sheetHeight + var7;
-        this.maxV = (float) (originY + this.height) / sheetHeight - var7;
+        initSprite(sheetWidth, sheetHeight, originX, originY, this.getAtlasPadding());
+    }
+
+    void initSprite(int sheetWidth, int sheetHeight, int originX, int originY, int padding) {
+        this.atlasOriginX = originX;
+        this.atlasOriginY = originY;
+        this.originX = originX + padding;
+        this.originY = originY + padding;
+        this.minU = this.originX / (float) sheetWidth;
+        this.maxU = (this.originX + this.width) / (float) sheetWidth;
+        this.minV = this.originY / (float) sheetHeight;
+        this.maxV = (this.originY + this.height) / (float) sheetHeight;
     }
 
     public void copyFrom(Sprite sourceSprite) {
         this.originX = sourceSprite.originX;
         this.originY = sourceSprite.originY;
+        this.atlasOriginX = sourceSprite.atlasOriginX;
+        this.atlasOriginY = sourceSprite.atlasOriginY;
         this.width = sourceSprite.width;
         this.height = sourceSprite.height;
         this.minU = sourceSprite.minU;
@@ -63,12 +72,32 @@ public class Sprite {
         return this.originY;
     }
 
+    int getAtlasOriginX() {
+        return this.atlasOriginX;
+    }
+
+    int getAtlasOriginY() {
+        return this.atlasOriginY;
+    }
+
     public int getIconWidth() {
         return this.width;
     }
 
     public int getIconHeight() {
         return this.height;
+    }
+
+    int getAtlasUploadWidth() {
+        return this.width + this.getAtlasPadding() * 2;
+    }
+
+    int getAtlasUploadHeight() {
+        return this.height + this.getAtlasPadding() * 2;
+    }
+
+    int getAtlasPadding() {
+        return this.imageData == null ? 0 : ATLAS_PADDING;
     }
 
     public float getMinU() {
