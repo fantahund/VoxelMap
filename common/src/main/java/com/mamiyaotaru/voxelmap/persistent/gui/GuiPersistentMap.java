@@ -34,6 +34,7 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
@@ -715,11 +716,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private boolean isKeyDown(KeyMapping keyMapping) {
-        return isKeyDown(keyMapping.key.getValue());
-    }
+        InputConstants.Key key = keyMapping.key;
+        if (key == InputConstants.UNKNOWN) {
+            return false;
+        }
 
-    private boolean isKeyDown(int keyCode) {
-        return GLFW.glfwGetKey(minecraft.getWindow().handle(), keyCode) == GLFW.GLFW_TRUE;
+        if (key.getType() == InputConstants.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), key.getValue()) == GLFW.GLFW_TRUE;
+        }
+
+        if (key.getType() == InputConstants.Type.KEYSYM) {
+            return GLFW.glfwGetKey(minecraft.getWindow().handle(), key.getValue()) == GLFW.GLFW_TRUE;
+        }
+
+        return keyMapping.isDown();
     }
 
     private float getWindowScale() {
