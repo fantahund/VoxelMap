@@ -1,7 +1,9 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.VoxelMap;
+import com.mamiyaotaru.voxelmap.options.ServerSettingsManager;
+import com.mamiyaotaru.voxelmap.options.containers.MapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.PersistentMapOptions;
+import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
 import com.mamiyaotaru.voxelmap.options.fields.OptionField;
 import com.mamiyaotaru.voxelmap.options.fields.StringField;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,7 +31,10 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
     private static final int TAB_WORLDMAP = 3;
     private static final int TAB_CONTROLS = 4;
 
-    private final VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
+    private final ServerSettingsManager serverSettings;
+    private final MapOptions mapOptions;
+    private final PersistentMapOptions persistentMapOptions;
+    private final RadarOptions radarOptions;
 
     // Tab & Page Management
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
@@ -44,6 +49,11 @@ public class GuiMinimapOptions extends GuiOptionsScreenMinimap {
 
     public GuiMinimapOptions(Screen parentGui) {
         super(parentGui, Component.empty());
+
+        serverSettings = voxelMap.getServerSettings();
+        mapOptions = voxelMap.getMapOptions();
+        persistentMapOptions = voxelMap.getPersistentMapOptions();
+        radarOptions = voxelMap.getRadarOptions();
     }
 
     @Override
