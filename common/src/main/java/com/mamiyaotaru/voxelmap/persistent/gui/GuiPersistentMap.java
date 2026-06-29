@@ -100,7 +100,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private static final int ICON_WIDTH = 16;
     private static final int ICON_HEIGHT = 16;
 
-    private PersistentMapOverlay mapOverlay;
+    private GuiPersistentMapOverlay mapOverlay;
     private Component multiworldButtonName;
     private Component multiworldButtonNameRed;
     private PopupGuiButton buttonWaypoints;
@@ -184,7 +184,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         top = 32;
         bottom = getHeight() - 32;
 
-        addRenderableWidget(mapOverlay = new PersistentMapOverlay(persistentMap, 0, top, getWidth(), bottom - top));
+        addRenderableWidget(mapOverlay = new GuiPersistentMapOverlay(persistentMap, 0, top, getWidth(), bottom - top));
         int buttonCount = 5;
         int buttonSeparation = 4;
         int buttonWidth = (getWidth() - SIDE_MARGIN * 2 - buttonSeparation * (buttonCount - 1)) / buttonCount;
