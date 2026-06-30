@@ -563,11 +563,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, bgInfo.getImageLocation(), bgInfo.left, bgInfo.top + 32, 0, 0, bgInfo.width, bgInfo.height, bgInfo.width, bgInfo.height);
         }
 
-        RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
+        RenderTarget fullscreenTarget = RenderUtils.getFullscreenTarget();
 
         RenderUtils.setProjectionMatrix(mapProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap WorldMap Draw", fullscreenTarget.getColorTextureView(), OptionalInt.of(0x00000000), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(1.0))) {
-            Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+            Matrix4fStack matrixStack = RenderUtils.getMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
             matrixStack.translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui, 0.0F);

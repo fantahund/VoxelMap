@@ -85,7 +85,7 @@ public class WaypointContainer {
 
         RenderTarget renderTarget = minecraft.getMainRenderTarget();
         try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Waypoint Draw", renderTarget.getColorTextureView(), OptionalInt.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
-            Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+            Matrix4fStack matrixStack = RenderUtils.getMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
             matrixStack.mul(matrix);
