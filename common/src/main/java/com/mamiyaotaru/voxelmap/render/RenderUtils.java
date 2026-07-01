@@ -38,8 +38,8 @@ public final class RenderUtils {
     }
 
     public static void init() {
-        int width = MINECRAFT.getWindow().getScreenWidth();
-        int height = MINECRAFT.getWindow().getScreenHeight();
+        int width = getSafeScreenWidth();
+        int height = getSafeScreenHeight();
         FULLSCREEN_TARGET.createBuffers(width, height);
     }
 
@@ -100,12 +100,20 @@ public final class RenderUtils {
 
     public static RenderTarget getFullscreenTarget() {
         RenderSystem.assertOnRenderThread();
-        int width = MINECRAFT.getWindow().getScreenWidth();
-        int height = MINECRAFT.getWindow().getScreenHeight();
+        int width = getSafeScreenWidth();
+        int height = getSafeScreenHeight();
         if (width != FULLSCREEN_TARGET.width || height != FULLSCREEN_TARGET.height) {
             FULLSCREEN_TARGET.resize(width, height);
         }
         return FULLSCREEN_TARGET;
+    }
+
+    private static int getSafeScreenWidth() {
+        return Math.max(1, MINECRAFT.getWindow().getScreenWidth());
+    }
+
+    private static int getSafeScreenHeight() {
+        return Math.max(1, MINECRAFT.getWindow().getScreenHeight());
     }
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
