@@ -668,11 +668,11 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
                 this.zoomScaleAdjusted
         );
 
-        RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
+        RenderTarget fullscreenTarget = RenderUtils.getFullscreenTarget();
 
         RenderUtils.setProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap Map Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
-            Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+            Matrix4fStack matrixStack = RenderUtils.getMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
             if (!options.hide.get()) {

@@ -16,13 +16,13 @@ import net.minecraft.resources.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PersistentMapOverlay extends AbstractContainerWidget {
+public class GuiPersistentMapOverlay extends AbstractContainerWidget {
     private static final Identifier CAVE_ICON = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/worldmap/cave_button.png");
     private final ArrayList<AbstractWidget> widgets = new ArrayList<>();
     private final PersistentMap map;
     private OverlayElement currentOverlay;
 
-    public PersistentMapOverlay(PersistentMap map, int x, int y, int width, int height) {
+    public GuiPersistentMapOverlay(PersistentMap map, int x, int y, int width, int height) {
         super(x, y, width, height, Component.empty(), AbstractScrollArea.defaultSettings(0));
         this.map = map;
         widgets.add(new OverlayButton(CAVE_ICON, x + getWidth() - 30, y + getHeight() - 30, 20, 20, (button) -> createPopup(button, 0)));
@@ -36,7 +36,7 @@ public class PersistentMapOverlay extends AbstractContainerWidget {
             int baseX = button.getX();
             int baseY = button.getY();
             switch (type) {
-                case 0 -> currentOverlay = new CaveModeOverlay(map, baseX - 130, baseY - 30, 120, 60);
+                case 0 -> currentOverlay = new GuiOverlayCaveMode(map, baseX - 130, baseY - 30, 120, 60);
             }
             widgets.add(currentOverlay);
         }

@@ -31,12 +31,16 @@ import java.util.function.Consumer;
 public final class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
-    private static final RenderTarget FULLSCREEN_RENDER_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true, GpuFormat.RGBA8_UNORM);
-    private static int lastScreenWidth;
-    private static int lastScreenHeight;
+    private static final RenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true, GpuFormat.RGBA8_UNORM);
     private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
 
     private RenderUtils() {
+    }
+
+    public static void init() {
+        int width = MINECRAFT.getWindow().getScreenWidth();
+        int height = MINECRAFT.getWindow().getScreenHeight();
+        FULLSCREEN_TARGET.createBuffers(width, height);
     }
 
     public static boolean hasFlippedTexture() {
@@ -59,7 +63,7 @@ public final class RenderUtils {
         return RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX, indexBuf);
     }
 
-    public static Matrix4fStack getRenderMatrixStack() {
+    public static Matrix4fStack getMatrixStack() {
         return MATRIX_STACK;
     }
 
@@ -94,16 +98,14 @@ public final class RenderUtils {
         }
     }
 
-    public static RenderTarget getFullscreenRenderTarget() {
+    public static RenderTarget getFullscreenTarget() {
         RenderSystem.assertOnRenderThread();
         int width = MINECRAFT.getWindow().getScreenWidth();
         int height = MINECRAFT.getWindow().getScreenHeight();
-        if (width > 0 && height > 0 && (width != lastScreenWidth || height != lastScreenHeight)) {
-            lastScreenWidth = width;
-            lastScreenHeight = height;
-            FULLSCREEN_RENDER_TARGET.resize(width, height);
+        if (width != FULLSCREEN_TARGET.width || height != FULLSCREEN_TARGET.height) {
+            FULLSCREEN_TARGET.resize(width, height);
         }
-        return FULLSCREEN_RENDER_TARGET;
+        return FULLSCREEN_TARGET;
     }
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {

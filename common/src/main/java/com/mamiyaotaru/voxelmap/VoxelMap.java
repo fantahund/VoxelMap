@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.options.containers.RadarOptions;
 import com.mamiyaotaru.voxelmap.options.containers.WaypointOptions;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
+import com.mamiyaotaru.voxelmap.render.RenderUtils;
 import com.mamiyaotaru.voxelmap.render.Tesselator;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
@@ -70,6 +71,7 @@ public class VoxelMap implements PreparableReloadListener, Executor {
     VoxelMap() {}
 
     public void lateInit(boolean showUnderMenus, boolean isFair) {
+        RenderUtils.init();
         Tesselator.init();
 
         serverSettings = new ServerSettingsManager();

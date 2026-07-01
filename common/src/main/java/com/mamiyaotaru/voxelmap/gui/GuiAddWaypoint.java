@@ -412,7 +412,9 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
                 // render icon picker
                 int pickerX = (getWidth() - chooser.getWidth()) / 2;
                 int pickerY = (getHeight() - chooser.getHeight()) / 2;
-                graphics.blit(RenderPipelines.GUI_TEXTURED, chooser.getIdentifier(), pickerX, pickerY, 0f, 0f, chooser.getWidth(), chooser.getHeight(), chooser.getWidth(), chooser.getHeight(), 0xBFFFFFFF);
+                for (Sprite pickerIcon : chooser.getUploadedSprites()) {
+                    pickerIcon.blit(graphics, RenderPipelines.GUI_TEXTURED, pickerIcon.getOriginX() + pickerX, pickerIcon.getOriginY() + pickerY, pickerIcon.getIconWidth(), pickerIcon.getIconHeight(), 0xBFFFFFFF);
+                }
 
                 // render selected icon
                 Sprite currentIcon = chooser.getAtlasSprite("selectable/" + pickedSuffix);

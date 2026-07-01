@@ -35,6 +35,7 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.math.Axis;
 import net.minecraft.ChatFormatting;
@@ -100,7 +101,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private static final int ICON_WIDTH = 16;
     private static final int ICON_HEIGHT = 16;
 
-    private PersistentMapOverlay mapOverlay;
+    private GuiPersistentMapOverlay mapOverlay;
     private Component multiworldButtonName;
     private Component multiworldButtonNameRed;
     private PopupGuiButton buttonWaypoints;
@@ -184,7 +185,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         top = 32;
         bottom = getHeight() - 32;
 
-        addRenderableWidget(mapOverlay = new PersistentMapOverlay(persistentMap, 0, top, getWidth(), bottom - top));
+        addRenderableWidget(mapOverlay = new GuiPersistentMapOverlay(persistentMap, 0, top, getWidth(), bottom - top));
         int buttonCount = 5;
         int buttonSeparation = 4;
         int buttonWidth = (getWidth() - SIDE_MARGIN * 2 - buttonSeparation * (buttonCount - 1)) / buttonCount;
@@ -563,11 +564,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, bgInfo.getImageLocation(), bgInfo.left, bgInfo.top + 32, 0, 0, bgInfo.width, bgInfo.height, bgInfo.width, bgInfo.height);
         }
 
-        RenderTarget fullscreenTarget = RenderUtils.getFullscreenRenderTarget();
+        RenderTarget fullscreenTarget = RenderUtils.getFullscreenTarget();
 
         RenderUtils.setProjectionMatrix(mapProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         try (DeferredRenderPass pass = RenderUtils.createDeferredRenderPass("VoxelMap WorldMap Draw", fullscreenTarget.getColorTextureView(), Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F)), fullscreenTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
-            Matrix4fStack matrixStack = RenderUtils.getRenderMatrixStack();
+            Matrix4fStack matrixStack = RenderUtils.getMatrixStack();
             matrixStack.pushMatrix();
             matrixStack.identity();
             matrixStack.translate(centerX - mapCenterX * mapToGui, top + centerY - mapCenterZ * mapToGui, 0.0F);
@@ -716,11 +717,20 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     }
 
     private boolean isKeyDown(KeyMapping keyMapping) {
-        return isKeyDown(keyMapping.key.getValue());
-    }
+        InputConstants.Key key = keyMapping.key;
+        if (key == InputConstants.UNKNOWN) {
+            return false;
+        }
 
-    private boolean isKeyDown(int keyCode) {
-        return GLFW.glfwGetKey(minecraft.getWindow().handle(), keyCode) == GLFW.GLFW_TRUE;
+        if (key.getType() == InputConstants.Type.MOUSE) {
+            return GLFW.glfwGetMouseButton(minecraft.getWindow().handle(), key.getValue()) == GLFW.GLFW_TRUE;
+        }
+
+        if (key.getType() == InputConstants.Type.KEYSYM) {
+            return GLFW.glfwGetKey(minecraft.getWindow().handle(), key.getValue()) == GLFW.GLFW_TRUE;
+        }
+
+        return keyMapping.isDown();
     }
 
     private float getWindowScale() {
