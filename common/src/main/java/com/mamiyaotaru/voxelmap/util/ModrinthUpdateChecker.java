@@ -150,13 +150,13 @@ public class ModrinthUpdateChecker {
 
         if (compatible.isEmpty()) return null;
 
-        String latest = compatible.stream().map(VersionInfo::version).max(String::compareTo).orElse(null);
+        String latest = compatible.stream().map(VersionInfo::version).max(ModrinthUpdateChecker::compareVersions).orElse(null);
 
         if (latest == null) return null;
 
         List<VersionInfo> updates = compatible.stream()
-                .filter(v -> v.version().compareTo(installedRaw) > 0)
-                .sorted(Comparator.comparing(VersionInfo::version))
+                .filter(v -> compareVersions(v.version(), installedRaw) > 0)
+                .sorted(Comparator.comparing(VersionInfo::version, ModrinthUpdateChecker::compareVersions))
                 .collect(Collectors.toList());
 
         return new UpdateResult(latest, updates);
@@ -182,6 +182,24 @@ public class ModrinthUpdateChecker {
         version = version.replaceAll("^\\D+", "");
         String[] split = version.split("\\+");
         return split[0];
+    }
+
+    static int compareVersions(String left, String right) {
+        String[] leftSegments = getRawVersion(left).split("[^0-9]+");
+        String[] rightSegments = getRawVersion(right).split("[^0-9]+");
+        int maxLength = Math.max(leftSegments.length, rightSegments.length);
+
+        for (int i = 0; i < maxLength; i++) {
+            int comparison = Integer.compare(parseVersionSegment(leftSegments, i), parseVersionSegment(rightSegments, i));
+            if (comparison != 0) return comparison;
+        }
+
+        return 0;
+    }
+
+    private static int parseVersionSegment(String[] segments, int index) {
+        if (index >= segments.length || segments[index].isEmpty()) return 0;
+        return Integer.parseInt(segments[index]);
     }
 
     /**
@@ -237,7 +255,7 @@ public class ModrinthUpdateChecker {
 
         new ModrinthUpdateChecker("voxelmap-updated", VoxelConstants.getModApiBridge().getModLoader(), mcVersion).checkUpdates(modVersion, result -> {
             String installedRaw = getRawVersion(modVersion);
-            if (installedRaw.equals(result.latestVersion())) {
+            if (compareVersions(installedRaw, result.latestVersion()) >= 0 || result.updates().isEmpty()) {
                 VoxelConstants.getLogger().info("Voxelmap is up to date.");
                 return;
             }
