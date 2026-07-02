@@ -33,6 +33,8 @@ public final class RenderUtils {
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final RenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true, GpuFormat.RGBA8_UNORM);
     private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
+    private static GpuBuffer immediateVertexBuffer;
+    private static GpuBuffer immediateIndexBuffer;
 
     private RenderUtils() {
     }
@@ -56,11 +58,19 @@ public final class RenderUtils {
     }
 
     public static GpuBuffer createVertexBuffer(ByteBuffer vertexBuf) {
-        return RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX, vertexBuf);
+        if (immediateVertexBuffer != null && !immediateVertexBuffer.isClosed()) {
+            immediateVertexBuffer.close();
+        }
+        immediateVertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX, vertexBuf);
+        return immediateVertexBuffer;
     }
 
     public static GpuBuffer createIndexBuffer(ByteBuffer indexBuf) {
-        return RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX, indexBuf);
+        if (immediateIndexBuffer != null && !immediateIndexBuffer.isClosed()) {
+            immediateIndexBuffer.close();
+        }
+        immediateIndexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX, indexBuf);
+        return immediateIndexBuffer;
     }
 
     public static Matrix4fStack getMatrixStack() {

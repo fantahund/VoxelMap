@@ -176,6 +176,8 @@ public class VoxelMap implements PreparableReloadListener, Executor {
     public void onTickInGame(GuiGraphicsExtractor graphics) {
         if (!initialized) return;
 
+        Tesselator.getInstance().clear();
+
         map.onTickInGame(graphics);
         if (passMessage != null) {
             VoxelConstants.getMinecraft().gui.hud.getChat().addClientSystemMessage(Component.literal(passMessage));
