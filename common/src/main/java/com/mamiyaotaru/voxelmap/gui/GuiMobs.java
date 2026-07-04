@@ -110,14 +110,18 @@ public class GuiMobs extends GuiScreenMinimap {
                 Identifier id = mobEntry.getKey().identifier();
                 EntityType<?> type = mobEntry.getValue();
 
-                if (type.create(VoxelConstants.getMinecraft().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
-                    VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(type);
+                try {
+                    if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
+                        VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(type);
 
-                    if (mobsFlag == OptionEnumRadar.ShowMobs.OFF) continue;
-                    if ((mobsFlag == OptionEnumRadar.ShowMobs.HOSTILES) && category != VoxelMapMobCategory.HOSTILE) continue;
-                    if ((mobsFlag == OptionEnumRadar.ShowMobs.NEUTRALS) && category != VoxelMapMobCategory.NEUTRAL) continue;
+                        if (mobsFlag == OptionEnumRadar.ShowMobs.OFF) continue;
+                        if (mobsFlag == OptionEnumRadar.ShowMobs.HOSTILES && category != VoxelMapMobCategory.HOSTILE) continue;
+                        if (mobsFlag == OptionEnumRadar.ShowMobs.NEUTRALS && category != VoxelMapMobCategory.NEUTRAL) continue;
 
-                    mobs.add(new Entry(type, id));
+                        mobs.add(new Entry(type, id));
+                    }
+                } catch (Exception e) {
+                    VoxelConstants.getLogger().warn("Failed to load entity for list: {}", type.getDescriptionId());
                 }
             }
 
