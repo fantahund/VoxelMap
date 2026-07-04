@@ -66,6 +66,10 @@ public class GuiPersistentMapOverlay extends AbstractContainerWidget {
     }
 
     @Override
+    public void setFocused(boolean focused) {
+    }
+
+    @Override
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
     }
 
@@ -125,6 +129,10 @@ public class GuiPersistentMapOverlay extends AbstractContainerWidget {
         @Override
         protected double scrollRate() {
             return 0;
+        }
+
+        @Override
+        public void setFocused(boolean focused) {
         }
 
         @Override
