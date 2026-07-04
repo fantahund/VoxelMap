@@ -40,13 +40,19 @@ public final class RenderUtils {
     }
 
     public static void init() {
-        int width = getSafeScreenWidth();
-        int height = getSafeScreenHeight();
-        FULLSCREEN_TARGET.createBuffers(width, height);
+        FULLSCREEN_TARGET.createBuffers(getSafeScreenWidth(), getSafeScreenHeight());
+    }
+
+    private static int getSafeScreenWidth() {
+        return Math.max(1, MINECRAFT.getWindow().getScreenWidth());
+    }
+
+    private static int getSafeScreenHeight() {
+        return Math.max(1, MINECRAFT.getWindow().getScreenHeight());
     }
 
     public static boolean hasFlippedTexture() {
-        return !VoxelConstants.hasVulkanMod() || RenderSystem.getDevice().getDeviceInfo().isZZeroToOne();
+        return !VoxelConstants.hasVulkanMod();
     }
 
     public static float getGuiWidth() {
@@ -116,14 +122,6 @@ public final class RenderUtils {
             FULLSCREEN_TARGET.resize(width, height);
         }
         return FULLSCREEN_TARGET;
-    }
-
-    private static int getSafeScreenWidth() {
-        return Math.max(1, MINECRAFT.getWindow().getScreenWidth());
-    }
-
-    private static int getSafeScreenHeight() {
-        return Math.max(1, MINECRAFT.getWindow().getScreenHeight());
     }
 
     public static void setProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {

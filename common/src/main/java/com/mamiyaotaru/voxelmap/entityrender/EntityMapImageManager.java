@@ -212,9 +212,13 @@ public class EntityMapImageManager implements IReloadListener {
     }
 
     public Sprite requestImageForMobType(EntityType<?> type, int size, boolean addBorder) {
-        if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity entity) {
-            entity.setId(-1);
-            return requestImageForMob(entity, size, addBorder);
+        try {
+            if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity entity) {
+                entity.setId(-1);
+                return requestImageForMob(entity, size, addBorder);
+            }
+        } catch (Exception e) {
+            VoxelConstants.getLogger().warn("Failed to load entity for icon: {}", type.getDescriptionId());
         }
         return null;
     }
