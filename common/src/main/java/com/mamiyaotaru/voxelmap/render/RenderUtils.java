@@ -36,9 +36,15 @@ public final class RenderUtils {
     }
 
     public static void init() {
-        int width = MINECRAFT.getWindow().getScreenWidth();
-        int height = MINECRAFT.getWindow().getScreenHeight();
-        FULLSCREEN_TARGET.createBuffers(width, height);
+        FULLSCREEN_TARGET.createBuffers(getSafeScreenWidth(), getSafeScreenHeight());
+    }
+
+    private static int getSafeScreenWidth() {
+        return Math.max(1, MINECRAFT.getWindow().getScreenWidth());
+    }
+
+    private static int getSafeScreenHeight() {
+        return Math.max(1, MINECRAFT.getWindow().getScreenHeight());
     }
 
     public static boolean hasFlippedTexture() {
@@ -90,8 +96,8 @@ public final class RenderUtils {
 
     public static RenderTarget getFullscreenTarget() {
         RenderSystem.assertOnRenderThread();
-        int width = MINECRAFT.getWindow().getScreenWidth();
-        int height = MINECRAFT.getWindow().getScreenHeight();
+        int width = getSafeScreenWidth();
+        int height = getSafeScreenHeight();
         if (width != FULLSCREEN_TARGET.width || height != FULLSCREEN_TARGET.height) {
             FULLSCREEN_TARGET.resize(width, height);
         }
