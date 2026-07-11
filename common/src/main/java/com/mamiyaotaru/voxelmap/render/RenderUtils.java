@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -31,6 +32,7 @@ import java.util.function.Consumer;
 public final class RenderUtils {
     private static final Minecraft MINECRAFT = Minecraft.getInstance();
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
+    private static final SubmitNodeStorage SUBMIT_NODE_STORAGE = new SubmitNodeStorage();
     private static final RenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", true, GpuFormat.RGBA8_UNORM);
     private static final ArrayDeque<ProjectionState> PROJECTION_STACK = new ArrayDeque<>();
     private static GpuBuffer immediateVertexBuffer;
@@ -81,6 +83,10 @@ public final class RenderUtils {
 
     public static Matrix4fStack getMatrixStack() {
         return MATRIX_STACK;
+    }
+
+    public static SubmitNodeStorage getSubmitNodeStorage() {
+        return SUBMIT_NODE_STORAGE;
     }
 
     public static void drawTooltip(GuiGraphicsExtractor graphics, Tooltip tooltip, int x, int y) {

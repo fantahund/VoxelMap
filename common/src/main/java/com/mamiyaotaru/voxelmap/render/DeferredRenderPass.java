@@ -37,7 +37,6 @@ public class DeferredRenderPass implements AutoCloseable {
     private final FastHashMap<String, TextureBinding> texturesMap = new FastHashMap<>(64);
     private final PoseStack poseCache = new PoseStack();
     private BufferBuilder bufferBuilder;
-    private final SubmitNodeStorage submitNodeStorage = new SubmitNodeStorage();
     private final GpuTextureView lastOutputColorTexture;
     private final GpuTextureView lastOutputDepthTexture;
 
@@ -135,6 +134,7 @@ public class DeferredRenderPass implements AutoCloseable {
     }
 
     public void drawStringInBatch(Matrix4f matrix, float x, float y, float z, Component text, boolean shadow, Font.DisplayMode displayMode, int light, int color, int backgroundColor, int outlineColor) {
+        SubmitNodeStorage submitNodeStorage = RenderUtils.getSubmitNodeStorage();
         poseCache.last().pose().set(matrix).translate(x, y, z);
         submitNodeStorage.submitText(poseCache, 0.0F, 0.0F, text.getVisualOrderText(), shadow, displayMode, light, color, backgroundColor, outlineColor);
         Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
