@@ -254,6 +254,11 @@ public class RadarSettingsManager implements ISubSettingsManager {
         }
     }
 
+    /** Marks settings changed when a typed UI adapter updates a public setting directly. */
+    public void markChanged() {
+        somethingChanged = true;
+    }
+
     public boolean isMobEnabled(LivingEntity entity) {
         return isMobEnabled(entity.getType());
     }

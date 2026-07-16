@@ -604,4 +604,18 @@ public class MapSettingsManager implements ISettingsManager {
             return false;
         }
     }
+
+    /** Marks settings changed when a typed UI adapter updates a public setting directly. */
+    public void markChanged() {
+        somethingChanged = true;
+    }
+
+    public boolean isCaveModeShown() {
+        return showCaves;
+    }
+
+    public void setCaveModeShown(boolean showCaves) {
+        this.showCaves = showCaves;
+        markChanged();
+    }
 }

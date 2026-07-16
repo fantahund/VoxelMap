@@ -19,6 +19,9 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
 
     compileOnly("net.fabricmc:sponge-mixin:0.16.4+mixin.0.8.7")
+    testImplementation("com.google.code.gson:gson:2.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 //    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
 //    annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
 }
@@ -46,4 +49,8 @@ tasks {
 // This trick hides common tasks in the IDEA list.
 tasks.configureEach {
     group = null
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
