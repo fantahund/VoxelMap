@@ -11,6 +11,8 @@ pluginManagement {
 }
 
 include("common")
+include("server-common")
 include("fabric")
-include("forge")
-include("neoforge")
+include("paper")
+// include("forge")
+// include("neoforge")
