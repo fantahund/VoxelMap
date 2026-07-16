@@ -587,6 +587,17 @@ public class MapSettingsManager implements ISettingsManager {
         return keyBinding.getTranslatedKeyMessage();
     }
 
+    public boolean isWelcomeTutorialPending() {
+        return welcome;
+    }
+
+    public void completeWelcomeTutorial() {
+        if (welcome) {
+            welcome = false;
+            saveAll();
+        }
+    }
+
     public void setWaypointSort(int sort) {
         if (sort != waypointSort && sort != -waypointSort) {
             waypointSort = sort;

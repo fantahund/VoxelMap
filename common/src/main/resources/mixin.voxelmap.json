@@ -16,6 +16,7 @@
     "MixinCamera",
     "MixinChatHud",
     "MixinInGameHud",
+    "MixinTutorial",
     "MixinWorldRenderer",
 	"MixinSectionUpdateTracker"
   ]

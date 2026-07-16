@@ -2,13 +2,13 @@ package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
-import com.mamiyaotaru.voxelmap.gui.GuiWelcomeScreen;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
+import com.mamiyaotaru.voxelmap.tutorial.ModTutorialSignals;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.CPULightmap;
@@ -353,12 +353,9 @@ public class Map implements Runnable, IChangeObserver {
     public void onTickInGame(GuiGraphicsExtractor graphics) {
         this.rotationFactor = this.options.oldNorth ? 90 : 0;
 
-        if (minecraft.gui.screen() == null && this.options.welcome) {
-            minecraft.gui.setScreen(new GuiWelcomeScreen(null));
-        }
-
         if (minecraft.gui.screen() == null && this.options.keyBindMenu.consumeClick()) {
             minecraft.gui.setScreen(new GuiPersistentMap(null));
+            ModTutorialSignals.menuOpened();
         }
 
         if (minecraft.gui.screen() == null && this.options.keyBindWaypointMenu.consumeClick()) {
