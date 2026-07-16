@@ -20,8 +20,6 @@ import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlers
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 public class NeoForgeEvents implements Events {
     private VoxelMap map;
@@ -33,7 +31,6 @@ public class NeoForgeEvents implements Events {
     public void initEvents(VoxelMap map) {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerPackets);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
@@ -45,13 +42,8 @@ public class NeoForgeEvents implements Events {
         map.onConfigurationInit();
     }
 
-    public void registerPackets(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
-        registrar.optional().commonToClient(VoxelmapSettingsS2C.PACKET_ID, VoxelmapSettingsS2C.PACKET_CODEC, NeoForgeSettingsPacketHandler::handleDataOnMain);
-        registrar.optional().commonBidirectional(WorldIdS2C.PACKET_ID, WorldIdS2C.PACKET_CODEC, NeoForgeWorldIdPacketHandler::handleDataOnMain);
-    }
-
     public void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
+        event.register(VoxelmapSettingsS2C.PACKET_ID, NeoForgeSettingsPacketHandler::handleDataOnMain);
         event.register(WorldIdS2C.PACKET_ID, NeoForgeWorldIdPacketHandler::handleDataOnMain);
     }
 

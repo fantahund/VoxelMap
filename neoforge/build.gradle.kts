@@ -44,11 +44,14 @@ dependencies {
 }
 
 tasks.jar {
-    val main = project.project(":common").sourceSets.getByName("main")
-    from(main.output.classesDirs) {
+    val commonMain = project.project(":common").sourceSets.getByName("main")
+    val serverCommonMain = project.project(":server-common").sourceSets.getByName("main")
+    from(commonMain.output.classesDirs) {
         exclude("/voxelmap.refmap.json")
     }
-    from(main.output.resourcesDir)
+    from(commonMain.output.resourcesDir)
+    from(serverCommonMain.output.classesDirs)
+    from(serverCommonMain.output.resourcesDir)
 
     from(rootDir.resolve("LICENSE.md"))
 
@@ -67,12 +70,16 @@ neoForge {
         create("client") {
             client()
         }
+        create("server") {
+            server()
+        }
     }
 
     mods {
         create("voxelmap") {
             sourceSet(sourceSets.main.get())
             sourceSet(project.project(":common").sourceSets.main.get())
+            sourceSet(project.project(":server-common").sourceSets.main.get())
         }
     }
 }
@@ -83,6 +90,7 @@ tasks.named("compileTestJava").configure {
 
 dependencies {
     compileOnly(project.project(":common").sourceSets.main.get().output)
+    compileOnly(project.project(":server-common").sourceSets.main.get().output)
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)

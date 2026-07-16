@@ -42,7 +42,7 @@ public abstract class AbstractRadar {
     public void onTickInGame(Matrix4fStack matrixStack, MinimapContext minimapContext) {
         this.minimapContext = minimapContext;
 
-        if (radarOptions.radarAllowed || radarOptions.radarMobsAllowed || radarOptions.radarPlayersAllowed) {
+        if (radarOptions.radarAllowed && (radarOptions.radarMobsAllowed || radarOptions.radarPlayersAllowed)) {
             if (radarOptions.isChanged()) {
                 timer = 500;
             }
@@ -56,6 +56,10 @@ public abstract class AbstractRadar {
 
             for (Contact contact : contacts) {
                 updateContact(contact);
+            }
+        } else {
+            if (!contacts.isEmpty()) {
+                contacts.clear();
             }
         }
     }
@@ -141,8 +145,8 @@ public abstract class AbstractRadar {
             return false;
         }
 
-        boolean playersAllowed = radarOptions.radarAllowed || radarOptions.radarPlayersAllowed;
-        boolean mobsAllowed = radarOptions.radarAllowed || radarOptions.radarMobsAllowed;
+        boolean playersAllowed = radarOptions.radarAllowed && radarOptions.radarPlayersAllowed;
+        boolean mobsAllowed = radarOptions.radarAllowed && radarOptions.radarMobsAllowed;
 
         return switch (VoxelMapMobCategory.forEntity(entity)) {
             case PLAYER -> playersAllowed;

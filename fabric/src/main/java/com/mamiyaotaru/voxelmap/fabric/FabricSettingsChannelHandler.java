@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.fabric;
 
 import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
+import com.mamiyaotaru.voxelmap.packets.VoxelmapClientPacketHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -16,8 +17,8 @@ public class FabricSettingsChannelHandler {
 
     public static void initClient() {
         registerPacket();
-        ClientPlayNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, (payload, _) -> VoxelmapSettingsS2C.parsePacket(payload));
-        ClientConfigurationNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, (payload, _) -> VoxelmapSettingsS2C.parsePacket(payload));
+        ClientPlayNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, (payload, _) -> VoxelmapClientPacketHandler.applySettings(payload));
+        ClientConfigurationNetworking.registerGlobalReceiver(VoxelmapSettingsS2C.PACKET_ID, (payload, _) -> VoxelmapClientPacketHandler.applySettings(payload));
     }
 
     public static void initServer() {

@@ -23,6 +23,7 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private Component select;
     private boolean multiworld;
     private EditBox newNameField;
+    private Button newNameButton;
     private boolean newWorld;
     private String[] worlds;
     private final WaypointManager waypointManager;
@@ -82,15 +83,16 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
 
         int numButtons = selectButtons.length - 1;
         int i = (buttonsPerRow - 1 - lastRowShiftBy - numButtons % buttonsPerRow) * buttonWidth;
-        if (!this.newWorld) {
-            selectButtons[numButtons] = new Button.Builder(Component.literal("< " + I18n.get("worldmap.multiworld.newName") + " >"), button -> {
-                this.newWorld = true;
-                this.newNameField.setFocused(true);
-            }).bounds(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20).build();
-            this.addRenderableWidget(selectButtons[numButtons]);
-        }
-
+        String previousNewName = this.newNameField == null ? "" : this.newNameField.getValue();
         this.newNameField = new EditBox(this.getFont(), i + xSpacing + 1, this.height - 60 - numButtons / buttonsPerRow * 21 + 1, buttonWidth - 4, 18, Component.empty());
+        this.newNameField.setValue(previousNewName);
+        if (!this.newWorld) {
+            this.newNameButton = new Button.Builder(Component.literal("< " + I18n.get("worldmap.multiworld.newName") + " >"), button -> this.showNewNameField()).bounds(i + xSpacing, this.height - 60 - numButtons / buttonsPerRow * 21, buttonWidth - 2, 20).build();
+            this.addRenderableWidget(this.newNameButton);
+        } else {
+            this.addRenderableWidget(this.newNameField);
+            this.focusNewNameField();
+        }
     }
 
     @Override
@@ -105,24 +107,24 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
-        if (this.newWorld) {
-            this.newNameField.mouseClicked(mouseButtonEvent, bl);
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
+        boolean wasNewWorld = this.newWorld;
+        boolean clicked = super.mouseClicked(mouseButtonEvent, doubleClick);
+        if (!wasNewWorld && this.newWorld) {
+            this.focusNewNameField();
         }
 
-        return super.mouseClicked(mouseButtonEvent, bl);
+        return clicked;
     }
 
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        if (this.newNameField.isFocused()) {
-            this.newNameField.keyPressed(keyEvent);
-            int keyCode = keyEvent.key(); //TODO 1.21.9
-            if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && this.newNameField.isFocused()) {
-                String newName = this.newNameField.getValue();
-                if (newName != null && !newName.isEmpty()) {
-                    this.worldSelected(newName);
-                }
+        int keyCode = keyEvent.key();
+        if (this.newWorld && this.newNameField.isFocused() && (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER)) {
+            String newName = this.newNameField.getValue();
+            if (newName != null && !newName.isEmpty()) {
+                this.worldSelected(newName);
+                return true;
             }
         }
 
@@ -143,9 +145,6 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
         graphics.text(this.getFont(), this.select, this.width / 2, 15, 0xFFFF0000);
 
         super.extractRenderState(graphics, mouseX, mouseY, delta);
-        if (this.newWorld) {
-            this.newNameField.extractRenderState(graphics, mouseX, mouseY, delta);
-        }
 
     }
 
@@ -165,6 +164,22 @@ public class GuiSubworldsSelect extends GuiScreenMinimap implements BooleanConsu
     private void worldSelected(String selectedSubworldName) {
         this.waypointManager.setSubworldName(selectedSubworldName, false);
         this.onClose();
+    }
+
+    private void showNewNameField() {
+        this.newWorld = true;
+        if (this.newNameButton != null) {
+            this.removeWidget(this.newNameButton);
+            this.newNameButton = null;
+        }
+
+        this.addRenderableWidget(this.newNameField);
+        this.focusNewNameField();
+    }
+
+    private void focusNewNameField() {
+        this.setFocused(this.newNameField);
+        this.newNameField.setFocused(true);
     }
 
     private void editWorld(String subworldNameToEdit) {

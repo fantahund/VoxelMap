@@ -30,8 +30,6 @@ public class TextureAtlas extends AbstractTexture {
     private final Sprite missingImage;
     private final Sprite failedImage;
     private Stitcher stitcher;
-    private boolean linearFilter;
-    private boolean mipmap;
     private Identifier Identifier;
 
     public TextureAtlas(String basePath, Identifier Identifier) {
@@ -50,8 +48,6 @@ public class TextureAtlas extends AbstractTexture {
     }
 
     public void setFilter(boolean linearFilter, boolean mipmap) {
-        this.linearFilter = linearFilter;
-        this.mipmap = mipmap;
         if (texture != null) {
             sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,  linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, false);
         }
@@ -114,7 +110,7 @@ public class TextureAtlas extends AbstractTexture {
 
             try {
                 if (icon.getTextureData() != null) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY());
                 }
             } catch (Throwable var10) {
                 CrashReport crashReport = CrashReport.forThrowable(var10, "Stitching texture atlas");
@@ -172,7 +168,7 @@ public class TextureAtlas extends AbstractTexture {
 
             try {
                 if (icon.getTextureData() != null) {
-                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY(), icon.getIconWidth(), icon.getIconHeight(), 0, 0);
+                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(texture, icon.getTextureData(), 0, 0, icon.getOriginX(), icon.getOriginY());
                 }
             } catch (Throwable var11) {
                 CrashReport crashReport = CrashReport.forThrowable(var11, "Stitching texture atlas");

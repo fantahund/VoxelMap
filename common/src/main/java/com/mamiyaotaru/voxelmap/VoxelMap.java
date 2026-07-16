@@ -78,12 +78,12 @@ public class VoxelMap implements PreparableReloadListener {
             boolean mobsAllowed = radarOptions.radarMobsAllowed;
             boolean playersAllowed = radarOptions.radarPlayersAllowed;
 
-            if (radarAllowed || mobsAllowed || playersAllowed) {
+            if (radarAllowed && (mobsAllowed || playersAllowed)) {
                 radar = new Radar();
                 radarSimple = new RadarSimple();
             }
-        } catch (RuntimeException var4) {
-            VoxelConstants.getLogger().error("Failed creating radar " + var4.getLocalizedMessage(), var4);
+        } catch (RuntimeException e) {
+            VoxelConstants.getLogger().error("Failed creating radar " + e.getLocalizedMessage(), e);
             radarOptions.radarAllowed = false;
             radarOptions.radarMobsAllowed = false;
             radarOptions.radarPlayersAllowed = false;

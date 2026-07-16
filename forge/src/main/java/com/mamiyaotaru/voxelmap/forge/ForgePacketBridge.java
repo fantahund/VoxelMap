@@ -10,7 +10,7 @@ public class ForgePacketBridge implements PacketBridge {
     @Override
     public void sendWorldIDPacket() {
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
-        if (connection != null && ForgeWorldIdPacketHandler.WORLD_ID.isRemotePresent(connection.getConnection())) {
+        if (connection != null && ForgeWorldIdPacketHandler.WORLD_ID != null && ForgeWorldIdPacketHandler.WORLD_ID.isRemotePresent(connection.getConnection())) {
             ForgeWorldIdPacketHandler.WORLD_ID.send(new WorldIdS2C(""), PacketDistributor.SERVER.noArg());
         }
     }

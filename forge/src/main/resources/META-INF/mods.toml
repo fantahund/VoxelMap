@@ -15,16 +15,16 @@ displayURL = "https://github.com/fantahund/Voxelmap"
 [[dependencies.voxelmap]]
 modId = "forge"
 mandatory = true
-versionRange = "[61,)"
+versionRange = "[65,)"
 ordering = "NONE"
-side = "CLIENT"
+side = "BOTH"
 
 [[dependencies.voxelmap]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[26.1,)"
+versionRange = "[26.2,)"
 ordering = "NONE"
-side = "CLIENT"
+side = "BOTH"
 
 [[mixins]]
 config = "mixin.voxelmap.json"

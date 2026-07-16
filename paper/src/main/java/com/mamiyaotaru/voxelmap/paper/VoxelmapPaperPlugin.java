@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.paper;
 import com.mamiyaotaru.voxelmap.server.VoxelmapServerConfigManager;
 import com.mamiyaotaru.voxelmap.server.VoxelmapSettingsPayloadEncoder;
 import java.nio.file.Path;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,7 +16,7 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 public final class VoxelmapPaperPlugin extends JavaPlugin implements Listener, CommandExecutor {
     private static final String SETTINGS_CHANNEL = "voxelmap:settings";
@@ -62,12 +63,7 @@ public final class VoxelmapPaperPlugin extends JavaPlugin implements Listener, C
     }
 
     @Override
-    public boolean onCommand(
-            @NotNull CommandSender sender,
-            @NotNull Command command,
-            @NotNull String label,
-            @NotNull String[] args
-    ) {
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length != 1 || !"reload".equalsIgnoreCase(args[0])) {
             return false;
         }
@@ -83,6 +79,14 @@ public final class VoxelmapPaperPlugin extends JavaPlugin implements Listener, C
         }
 
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (args.length == 1 && "reload".startsWith(args[0])) {
+            return List.of("reload");
+        }
+        return List.of();
     }
 
     private void loadInitialConfig() {

@@ -32,6 +32,7 @@ repositories {
 dependencies {
     implementation(minecraft.dependency("net.minecraftforge:forge:${minecraftVersion}-${forgeVersion}"))
     compileOnly(project.project(":common").sourceSets.main.get().output)
+    compileOnly(project.project(":server-common").sourceSets.main.get().output)
 }
 
 minecraft {
@@ -46,6 +47,20 @@ minecraft {
                 create("voxelmap") {
                     source(sourceSets.main.get())
                     source(project.project(":common").sourceSets.main.get())
+                    source(project.project(":server-common").sourceSets.main.get())
+                }
+            }
+        }
+
+        register("server") {
+            workingDir.set(file("run-server"))
+            args("--mixin.config=mixin.voxelmap.json", "--mixin.config=mixin.voxelmap.forge.json")
+
+            mods {
+                create("voxelmap") {
+                    source(sourceSets.main.get())
+                    source(project.project(":common").sourceSets.main.get())
+                    source(project.project(":server-common").sourceSets.main.get())
                 }
             }
         }
@@ -55,12 +70,18 @@ minecraft {
 tasks {
     withType<JavaCompile> {
         val commonMain = project(":common").sourceSets.main.get()
+        val serverCommonMain = project(":server-common").sourceSets.main.get()
         source(commonMain.java.srcDirs)
+        source(serverCommonMain.java.srcDirs)
     }
 
     processResources {
         val commonMain = project(":common").sourceSets.main.get()
+        val serverCommonMain = project(":server-common").sourceSets.main.get()
         from(commonMain.resources.srcDirs) {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+        from(serverCommonMain.resources.srcDirs) {
             duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         }
 

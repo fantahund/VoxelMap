@@ -94,10 +94,10 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         int w = texture.getWidth(0);
         int h = texture.getHeight(0);
         if (pixelsMipmapped == null) {
-            RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels, 0, 0, 0, 0, w, h, 0, 0);
+            RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels, 0, 0, 0, 0);
         } else {
             for (int i = 0; i < pixelsMipmapped.length; i++) {
-                RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixelsMipmapped[i], i, 0, 0, 0, w >> i, h >> i, 0, 0);
+                RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixelsMipmapped[i], i, 0, 0, 0);
             }
         }
 
