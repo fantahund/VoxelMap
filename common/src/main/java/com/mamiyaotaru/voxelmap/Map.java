@@ -335,6 +335,7 @@ public class Map implements Runnable, IChangeObserver {
         this.world = world;
         this.mapData[this.zoom].blank();
         this.doFullRender = true;
+        this.calculateCurrentLightAndSkyColor(true);
         VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
     }
 
@@ -416,7 +417,7 @@ public class Map implements Runnable, IChangeObserver {
         }
 
         this.lastGuiScreen = minecraft.gui.screen();
-        this.calculateCurrentLightAndSkyColor();
+        this.calculateCurrentLightAndSkyColor(false);
         if (this.threading) {
             if (this.zCalcRunning && !this.zCalc.isAlive()) {
                 this.zCalc = createZCalcThread();
@@ -497,10 +498,10 @@ public class Map implements Runnable, IChangeObserver {
 
     }
 
-    public void calculateCurrentLightAndSkyColor() {
+    public void calculateCurrentLightAndSkyColor(boolean force) {
         try {
             if (this.world != null) {
-                if (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !minecraft.isPaused() || this.options.realTimeTorches) {
+                if (force || (this.needLightmapRefresh && VoxelConstants.getElapsedTicks() != this.tickWithLightChange && !minecraft.isPaused() || this.options.realTimeTorches)) {
                     this.needLightmapRefresh = false;
                     CPULightmap lightmap = CPULightmap.getInstance();
                     lightmap.setup();
