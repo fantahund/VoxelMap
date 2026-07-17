@@ -113,6 +113,7 @@ public class SubmitPass implements AutoCloseable {
 
     public void flush() {
         Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
+        currentRenderType = null;
     }
 
     @Override

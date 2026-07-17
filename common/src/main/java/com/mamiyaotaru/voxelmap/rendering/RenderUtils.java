@@ -74,6 +74,13 @@ public class RenderUtils {
     }
 
     public static void setupProjectionMatrix(GpuBufferSlice matrix, ProjectionType type) {
+        setupProjectionMatrix(matrix, type, 0.0F);
+    }
+
+    public static void setupProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().translate(0.0f, 0.0F, initialDepth);
         PROJECTION_STACK.push(new ProjectionEntry(RenderSystem.getProjectionMatrixBuffer(), RenderSystem.getProjectionType()));
         RenderSystem.setProjectionMatrix(matrix, type);
     }
@@ -81,6 +88,7 @@ public class RenderUtils {
     public static void restoreProjectionMatrix() {
         ProjectionEntry projection = PROJECTION_STACK.pop();
         RenderSystem.setProjectionMatrix(projection.matrix(), projection.type());
+        RenderSystem.getModelViewStack().popMatrix();
     }
 
     public static record ProjectionEntry(GpuBufferSlice matrix, ProjectionType type) {

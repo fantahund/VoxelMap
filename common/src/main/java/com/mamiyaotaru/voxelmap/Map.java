@@ -657,10 +657,11 @@ public class Map implements Runnable, IChangeObserver {
 
         VoxelMapRenderTarget fullscreenTarget = RenderUtils.getFullscreenTarget();
         Matrix4fStack matrixStack = RenderUtils.getMatrixStack();
-        RenderUtils.setupProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC);
+        RenderUtils.setupProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
 
         try (SubmitPass pass = RenderUtils.createSubmitPass("VoxelMap HUD", fullscreenTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
             matrixStack.pushMatrix();
+            matrixStack.identity();
             if (!this.options.hide) {
                 if (this.fullscreenMap) {
                     this.renderMapFull(pass, matrixStack, scWidth, scHeight, scaleProj);
@@ -1517,7 +1518,7 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        RenderUtils.setupProjectionMatrix(mapProjection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+        RenderUtils.setupProjectionMatrix(mapProjection.getBuffer(), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         matrixStack.pushMatrix();
         matrixStack.identity();
 
@@ -1541,7 +1542,7 @@ public class Map implements Runnable, IChangeObserver {
             matrixStack.scale(scale, scale, 1.0F);
             matrixStack.translate(-percentX * matrixScale, -percentY * matrixScale, 0.0F);
 
-            basePass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(mapResources[zoom]));
+            basePass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(mapResources[zoom]));
             basePass.submitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
             matrixStack.popMatrix();
 
@@ -1553,11 +1554,11 @@ public class Map implements Runnable, IChangeObserver {
 
         // Masking the drawn map
         try (SubmitPass finalPass = RenderUtils.createSubmitPass("VoxelMap Final Map", finalMapRenderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
-            finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(options.squareMap ? resourceSquareMapStencil : resourceRoundMapStencil));
-            finalPass.submitBlit(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
-
-            finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_MASKED_NO_DEPTH_TEST.apply(baseMapRenderTarget.colorTexId));
+            finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH.apply(options.squareMap ? resourceSquareMapStencil : resourceRoundMapStencil));
             finalPass.submitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+
+            finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH_MASKED.apply(baseMapRenderTarget.colorTexId));
+            finalPass.submitBlit(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
         }
 
         matrixStack.popMatrix();
@@ -1567,16 +1568,16 @@ public class Map implements Runnable, IChangeObserver {
         minTablistOffset = guiScale * 63;
 
 
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(finalMapRenderTarget.colorTexId));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(finalMapRenderTarget.colorTexId));
         pass.submitBlit(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
 
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(options.squareMap ? resourceSquareMapFrame : resourceRoundMapFrame));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(options.squareMap ? resourceSquareMapFrame : resourceRoundMapFrame));
         pass.submitQuad(matrixStack, x - 32.0F, y - 32.0F, MAP_OVERLAY_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
 
 
         if (options.waypointsAllowed) {
             TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
-            pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(textureAtlas.getIdentifier()));
+            pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(textureAtlas.getIdentifier()));
             double lastXDouble = GameVariableAccessShim.xCoordDouble();
             double lastZDouble = GameVariableAccessShim.zCoordDouble();
 
@@ -1687,7 +1688,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.rotate(Axis.ZP.rotationDegrees(this.options.rotates && !this.fullscreenMap ? 0.0F : this.direction + this.rotationFactor));
         matrixStack.translate(-x, -y, 0.0F);
 
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(resourceArrow));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(resourceArrow));
         pass.submitQuad(matrixStack, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
 
         matrixStack.popMatrix();
@@ -1709,7 +1710,7 @@ public class Map implements Runnable, IChangeObserver {
         matrixStack.translate(-(scWidth / 2.0F), -(scHeight / 2.0F), 0.0F);
         int left = scWidth / 2 - 128;
         int top = scHeight / 2 - 128;
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(mapResources[zoom]));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(mapResources[zoom]));
         pass.submitQuad(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0F, 256.0F, 0xFFFFFFFF);
         matrixStack.popMatrix();
 

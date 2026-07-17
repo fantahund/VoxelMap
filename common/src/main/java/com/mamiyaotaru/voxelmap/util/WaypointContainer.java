@@ -265,10 +265,10 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
         }
 
-        RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(icon.getIdentifier());
+        RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(icon.getIdentifier());
         submitIcon(submitNodeCollector, poseStack, renderType, icon, width, r, g, b, alpha);
 
-        renderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(icon.getIdentifier());
+        renderType = VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH.apply(icon.getIdentifier());
         submitIcon(submitNodeCollector, poseStack, renderType, icon, width, r, g, b, alphaBehindWall);
 
         if (isPointedAt) {

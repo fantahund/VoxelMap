@@ -66,7 +66,7 @@ public class RadarSimple extends AbstractRadar {
 
     @Override
     public void renderMapMobs(SubmitPass pass, Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(resourceTextureAtlasMarker));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH.apply(resourceTextureAtlasMarker));
 
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
