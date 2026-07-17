@@ -188,36 +188,6 @@ public class VoxelMap implements PreparableReloadListener {
         persistentMap.onTick();
     }
 
-    public void checkPermissionMessages(Component message) {
-        String msg = message.getString().replaceAll("§r", "");
-
-        runAfterInitialized(() -> {
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §d")) {
-                mapOptions.cavesAllowed = false;
-                VoxelConstants.getLogger().info("Server disabled cavemapping.");
-            }
-
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §e")) {
-                radarOptions.radarAllowed = false;
-                radarOptions.radarPlayersAllowed = false;
-                radarOptions.radarMobsAllowed = false;
-                VoxelConstants.getLogger().info("Server disabled radar.");
-            }
-
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §f")) {
-                mapOptions.cavesAllowed = true;
-                VoxelConstants.getLogger().info("Server enabled cavemapping.");
-            }
-
-            if (msg.contains("§3 §6 §3 §6 §3 §6 §0")) {
-                radarOptions.radarAllowed = true;
-                radarOptions.radarPlayersAllowed = true;
-                radarOptions.radarMobsAllowed = true;
-                VoxelConstants.getLogger().info("Server enabled radar.");
-            }
-        });
-    }
-
     public MapSettingsManager getMapOptions() {
         return mapOptions;
     }
