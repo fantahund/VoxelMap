@@ -12,9 +12,9 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.EnderDragonVarintDataFacto
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
+import com.mamiyaotaru.voxelmap.rendering.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
-import com.mamiyaotaru.voxelmap.rendering.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.AlphaComposite;
@@ -66,7 +66,6 @@ import net.minecraft.world.entity.animal.fish.Salmon;
 import net.minecraft.world.entity.animal.fish.TropicalFish;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
-import org.joml.Matrix4fStack;
 
 public class EntityMapImageManager {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
@@ -578,7 +577,7 @@ public class EntityMapImageManager {
         return new ModelPart[] { model.root() };
     }
 
-    public void onRenderTick(Matrix4fStack matrixStack) {
+    public void onRenderTick() {
         Runnable task;
         while ((task = taskQueue.poll()) != null) {
             task.run();

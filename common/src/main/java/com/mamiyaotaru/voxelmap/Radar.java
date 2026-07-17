@@ -2,16 +2,15 @@ package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
+import com.mamiyaotaru.voxelmap.rendering.SubmitPass;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
-import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mojang.math.Axis;
 import java.util.HashMap;
 import java.util.Properties;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -24,8 +23,6 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import org.joml.Matrix4fStack;
 
 public class Radar extends AbstractRadar {
-    private static final int SUBMIT_ICON = 20;
-    private static final int SUBMIT_TEXT = 30;
     private final EntityMapImageManager entityMapImageManager;
     private final HashMap<EntityType<?>, MobIconConfig> iconConfigs = new HashMap<>();
 
@@ -40,9 +37,9 @@ public class Radar extends AbstractRadar {
     }
 
     @Override
-    public void onTickInGame(Matrix4fStack matrixStack, MinimapContext minimapContext) {
-        entityMapImageManager.onRenderTick(matrixStack);
-        super.onTickInGame(matrixStack, minimapContext);
+    public void onTickInGame(MinimapContext minimapContext) {
+        entityMapImageManager.onRenderTick();
+        super.onTickInGame(minimapContext);
     }
 
     @Override
@@ -94,12 +91,13 @@ public class Radar extends AbstractRadar {
     }
 
     @Override
-    public void renderMapMobs(Matrix4fStack matrixStack, RenderUtils.SubmitContext context, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
+    public void renderMapMobs(SubmitPass pass, Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(EntityMapImageManager.resourceTextureAtlasMarker));
+
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         // Draw mob icons
-        RenderType iconRenderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(EntityMapImageManager.resourceTextureAtlasMarker);
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
@@ -128,7 +126,7 @@ public class Radar extends AbstractRadar {
                 int baseColor = ARGB.multiply(colorMult, contact.baseColor);
                 float imageWidth = contact.icon.getIconWidth() / 8.0F;
                 float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                RenderUtils.submitTexturedModalRect(context.order(SUBMIT_ICON), matrixStack, iconRenderType, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
+                pass.submitQuad(matrixStack, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
 
                 if (contact.armorIcon != null) {
                     int armorColor = ARGB.multiply(colorMult, contact.armorColor);
@@ -136,7 +134,7 @@ public class Radar extends AbstractRadar {
                     float armorOffset = iconConfig.armorOffset();
                     float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
                     float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                    RenderUtils.submitTexturedModalRect(context.order(SUBMIT_ICON), matrixStack, iconRenderType, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
+                    pass.submitQuad(matrixStack, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
                 }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
@@ -144,7 +142,6 @@ public class Radar extends AbstractRadar {
                 matrixStack.popMatrix();
             }
         }
-        context.flush();
 
         // Draw mob names
         for (int i = 0; i < contacts.size(); i++) {
@@ -163,7 +160,7 @@ public class Radar extends AbstractRadar {
                     applyContactTransform(matrixStack, contact, x, y, scScale);
                     matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
 
-                    RenderUtils.submitCenteredString(context.order(SUBMIT_TEXT), matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
+                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
                 } catch (Exception e) {
                     VoxelConstants.getLogger().error("Error rendering mob name! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
                 } finally {

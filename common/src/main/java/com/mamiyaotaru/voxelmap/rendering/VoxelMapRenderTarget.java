@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.AllocatedTexture;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -8,41 +9,43 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 
 public class VoxelMapRenderTarget extends RenderTarget {
-    public final Identifier colorTextureId;
-    public final Identifier depthTextureId;
-    private AllocatedTexture allocatedColorTexture;
-    private AllocatedTexture allocatedDepthTexture;
+    public final Identifier colorTexId;
+    public final Identifier depthTexId;
+    private AllocatedTexture colorTex;
+    private AllocatedTexture depthTex;
 
-    public VoxelMapRenderTarget(Identifier baseId) {
-        super(baseId.toString(), true, GpuFormat.RGBA8_UNORM);
+    public VoxelMapRenderTarget(String path, GpuFormat format, int width, int height) {
+        this(path, format);
+        createBuffers(width, height);
+    }
 
-        colorTextureId = baseId.withSuffix("_color");
-        depthTextureId = baseId.withSuffix("_depth");
+    public VoxelMapRenderTarget(String path, GpuFormat format) {
+        super(path, true, format);
+        colorTexId = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render/" + path + "_color");
+        depthTexId = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render/" + path + "_depth");
     }
 
     @Override
-    public void createBuffers(int w, int h) {
-        super.createBuffers(w, h);
-
+    public void createBuffers(int width, int height) {
+        super.createBuffers(width, height);
+        colorTex = new AllocatedTexture(colorTexture, colorTextureView);
+        depthTex = new AllocatedTexture(depthTexture, depthTextureView);
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        allocatedColorTexture = new AllocatedTexture(colorTexture, colorTextureView);
-        allocatedDepthTexture = new AllocatedTexture(depthTexture, depthTextureView);
-        textureManager.register(colorTextureId, allocatedColorTexture);
-        textureManager.register(depthTextureId, allocatedDepthTexture);
+        textureManager.register(colorTexId, colorTex);
+        textureManager.register(depthTexId, depthTex);
     }
 
     @Override
     public void destroyBuffers() {
         super.destroyBuffers();
-
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        if (allocatedColorTexture != null) {
-            textureManager.release(colorTextureId);
-            allocatedColorTexture = null;
+        if (colorTex != null) {
+            textureManager.release(colorTexId);
+            colorTex = null;
         }
-        if (allocatedDepthTexture != null) {
-            textureManager.release(depthTextureId);
-            allocatedDepthTexture = null;
+        if (depthTex != null) {
+            textureManager.release(depthTexId);
+            depthTex = null;
         }
     }
 }
