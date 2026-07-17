@@ -1,7 +1,6 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
 import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
-import com.mamiyaotaru.voxelmap.rendering.GLUtils;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
@@ -161,7 +160,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
         }
 
-        GLUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
+        RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
             resultConsumer.accept(RenderUtils.hasFlippedV() ? ImageUtils.flipVertical(image) : image);
         });
     }

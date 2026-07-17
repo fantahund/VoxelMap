@@ -2,17 +2,23 @@ package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.util.ARGB;
 import org.joml.Matrix4fStack;
 import org.joml.Vector4fc;
 
@@ -89,6 +95,29 @@ public class RenderUtils {
         ProjectionEntry projection = PROJECTION_STACK.pop();
         RenderSystem.setProjectionMatrix(projection.matrix(), projection.type());
         RenderSystem.getModelViewStack().popMatrix();
+    }
+
+    public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
+        RenderSystem.assertOnRenderThread();
+        int bytePerPixel = gpuTexture.getFormat().blockSize();
+        int width = gpuTexture.getWidth(0);
+        int height = gpuTexture.getHeight(0);
+        int bufferSize = bytePerPixel * width * height;
+        GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, bufferSize);
+        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+        commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            try (GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int pixel = readView.data().getInt((x + y * width) * bytePerPixel);
+                        image.setRGB(x, y, ARGB.fromABGR(pixel));
+                    }
+                }
+            }
+            gpuBuffer.close();
+            resultConsumer.accept(image);
+        }, 0);
     }
 
     public static record ProjectionEntry(GpuBufferSlice matrix, ProjectionType type) {

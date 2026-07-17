@@ -2,10 +2,10 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
-import com.mamiyaotaru.voxelmap.rendering.GLUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -220,7 +220,7 @@ public class ColorManager {
     }
 
     private void loadTexturePackTerrainImage() {
-        GLUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
+        RenderUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
             terrainBuff = image;
             loadedTerrainImage = true;
         });
