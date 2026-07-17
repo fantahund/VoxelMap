@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -31,6 +32,8 @@ public class WaypointContainer {
     private static final float INVALID_OFFSET = -1.0F;
     private static final int LIGHT = LightCoordsUtil.FULL_BRIGHT;
     private static final int OVERLAY = OverlayTexture.NO_OVERLAY;
+    private static final int WAYPOINT_LABEL_BACKGROUND_ORDER = Integer.MAX_VALUE - 1;
+    private static final int WAYPOINT_LABEL_TEXT_ORDER = Integer.MAX_VALUE;
 
 
     public WaypointContainer(MapSettingsManager options) {
@@ -309,10 +312,13 @@ public class WaypointContainer {
             int halfWidthSubLabel = minecraft.font.width(subLabel) / 2;
             int yPosSubLabel = moveLabelsDown ? 26 : -20;
 
+            OrderedSubmitNodeCollector labelBackgroundSubmitter = submitNodeCollector.order(WAYPOINT_LABEL_BACKGROUND_ORDER);
+            OrderedSubmitNodeCollector labelTextSubmitter = submitNodeCollector.order(WAYPOINT_LABEL_TEXT_ORDER);
+
             // Render label backgrounds
             float labelAlpha = alpha;
             renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-            submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexTextBackground) -> {
+            labelBackgroundSubmitter.submitCustomGeometry(poseStack, renderType, (pose, vertexTextBackground) -> {
                 if (renderMainLabel) {
                     vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
                     vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
@@ -350,13 +356,13 @@ public class WaypointContainer {
             int textColor = (int) (255.0F * alpha) << 24 | 0x00FFFFFF;
 
             if (renderMainLabel) {
-                submitNodeCollector.submitText(poseStack, -halfWidthMainLabel, yPosMainLabel, Component.literal(mainLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
+                labelTextSubmitter.submitText(poseStack, -halfWidthMainLabel, yPosMainLabel, Component.literal(mainLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
             }
 
             if (renderSubLabel) {
                 poseStack.pushPose();
                 poseStack.scale(subLabelScale, subLabelScale, 1.0F);
-                submitNodeCollector.submitText(poseStack, -halfWidthSubLabel, yPosSubLabel, Component.literal(subLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
+                labelTextSubmitter.submitText(poseStack, -halfWidthSubLabel, yPosSubLabel, Component.literal(subLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
                 poseStack.popPose();
             }
         }
