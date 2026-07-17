@@ -1544,6 +1544,7 @@ public class Map implements Runnable, IChangeObserver {
 
             basePass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(mapResources[zoom]));
             basePass.submitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+            basePass.nextDraw();
             matrixStack.popMatrix();
 
             if (VoxelConstants.getVoxelMapInstance().getRadar() != null) {
@@ -1556,6 +1557,7 @@ public class Map implements Runnable, IChangeObserver {
         try (SubmitPass finalPass = RenderUtils.createSubmitPass("VoxelMap Final Map", finalMapRenderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
             finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH.apply(options.squareMap ? resourceSquareMapStencil : resourceRoundMapStencil));
             finalPass.submitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
+            finalPass.nextDraw();
 
             finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH_MASKED.apply(baseMapRenderTarget.colorTexId));
             finalPass.submitBlit(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
@@ -1570,10 +1572,11 @@ public class Map implements Runnable, IChangeObserver {
 
         pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(finalMapRenderTarget.colorTexId));
         pass.submitBlit(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
+        pass.nextDraw();
 
         pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(options.squareMap ? resourceSquareMapFrame : resourceRoundMapFrame));
         pass.submitQuad(matrixStack, x - 32.0F, y - 32.0F, MAP_OVERLAY_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
-
+        pass.nextDraw();
 
         if (options.waypointsAllowed) {
             TextureAtlas textureAtlas = VoxelConstants.getVoxelMapInstance().getWaypointManager().getTextureAtlas();
@@ -1597,6 +1600,8 @@ public class Map implements Runnable, IChangeObserver {
                 drawWaypoint(pass, matrixStack, x, y, highlightedPoint, textureAtlas, textureAtlas.getAtlasSprite("marker/target"), true, 0xFFFF0000, lastXDouble, lastZDouble);
             }
         }
+
+        pass.nextDraw();
         matrixStack.popMatrix();
     }
 
@@ -1690,6 +1695,7 @@ public class Map implements Runnable, IChangeObserver {
 
         pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(resourceArrow));
         pass.submitQuad(matrixStack, x - 4.0F, y - 4.0F, MAP_OVERLAY_DEPTH, 8.0F, 8.0F, 0xFFFFFFFF);
+        pass.nextDraw();
 
         matrixStack.popMatrix();
     }
@@ -1712,6 +1718,7 @@ public class Map implements Runnable, IChangeObserver {
         int top = scHeight / 2 - 128;
         pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(mapResources[zoom]));
         pass.submitQuad(matrixStack, left, top, MAP_IMAGE_DEPTH, 256.0F, 256.0F, 0xFFFFFFFF);
+        pass.nextDraw();
         matrixStack.popMatrix();
 
         if (this.options.biomeOverlay != 0) {
@@ -1734,6 +1741,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
             }
 
+            pass.nextDraw();
             matrixStack.popMatrix();
         }
     }
@@ -1781,6 +1789,7 @@ public class Map implements Runnable, IChangeObserver {
         pass.submitCenteredText(matrixStack, "W", x / scale, y / scale - 4.0F, MAP_TEXT_DEPTH, 0xFFFFFFFF, true);
         matrixStack.popMatrix();
 
+        pass.nextDraw();
         matrixStack.popMatrix();
     }
 

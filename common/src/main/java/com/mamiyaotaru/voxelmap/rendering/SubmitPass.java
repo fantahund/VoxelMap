@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -24,6 +25,7 @@ public class SubmitPass implements AutoCloseable {
     private final String name;
     private final SubmitNodeStorage submitNodeStorage;
 
+    private int submitOrder;
     private RenderType currentRenderType;
 
     public SubmitPass(String passName, GpuTextureView colorTexture, Optional<Vector4fc> colorClear, GpuTextureView depthTexture, OptionalDouble depthClear) {
@@ -46,8 +48,12 @@ public class SubmitPass implements AutoCloseable {
         submitNodeStorage = RenderUtils.getSubmitNodeStorage();
     }
 
-    public SubmitNodeStorage getSubmitNodeStorage() {
-        return submitNodeStorage;
+    public OrderedSubmitNodeCollector getSubmit() {
+        return submitNodeStorage.order(submitOrder);
+    }
+
+    public void nextDraw() {
+        submitOrder++;
     }
 
     public void setRenderType(RenderType renderType) {
@@ -69,7 +75,7 @@ public class SubmitPass implements AutoCloseable {
         if (currentRenderType == null) {
             throw new IllegalStateException("Set RenderType before submitting geometry!");
         }
-        submitNodeStorage.submitCustomGeometry(asPoseStack(matrix), currentRenderType, renderer);
+        getSubmit().submitCustomGeometry(asPoseStack(matrix), currentRenderType, renderer);
     }
 
     public void submitBlit(Matrix4f matrix, float x, float y, float z, float width, float height, int color) {
@@ -108,11 +114,12 @@ public class SubmitPass implements AutoCloseable {
     }
 
     public void submitText(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
-        submitNodeStorage.submitText(asPoseStack(matrix, x, y, z), 0.0F, 0.0F, text.getVisualOrderText(), shadow, Font.DisplayMode.NORMAL, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+        getSubmit().submitText(asPoseStack(matrix, x, y, z), 0.0F, 0.0F, text.getVisualOrderText(), shadow, Font.DisplayMode.NORMAL, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
     }
 
     public void flush() {
         Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
+        submitOrder = 0;
         currentRenderType = null;
     }
 
