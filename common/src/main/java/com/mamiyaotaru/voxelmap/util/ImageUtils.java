@@ -286,6 +286,13 @@ public class ImageUtils {
         return op.filter(image, null);
     }
 
+    public static BufferedImage flipVertical(BufferedImage image) {
+        AffineTransform tx = AffineTransform.getScaleInstance(1.0, -1.0);
+        tx.translate(0.0, -image.getHeight(null));
+        AffineTransformOp op = new AffineTransformOp(tx, 1);
+        return op.filter(image, null);
+    }
+
     public static BufferedImage into128(BufferedImage base) {
         BufferedImage frame = new BufferedImage(128, 128, base.getType());
         Graphics gfx = frame.getGraphics();

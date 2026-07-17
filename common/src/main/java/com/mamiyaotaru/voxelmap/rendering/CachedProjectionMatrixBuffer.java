@@ -5,16 +5,16 @@ import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 
 public class CachedProjectionMatrixBuffer {
-    public static CachedProjectionMatrixBuffer perspective(String name, float zNear, float zFar, float fov, float width, float height) {
+    public static CachedProjectionMatrixBuffer perspective(String name, float zNear, float zFar, float fov) {
         Projection projection = new Projection();
-        projection.setupPerspective(zNear, zFar, fov, width, height);
+        projection.setupPerspective(zNear, zFar, fov, 0.0F, 0.0F);
 
         return new CachedProjectionMatrixBuffer(name, projection);
     }
 
-    public static CachedProjectionMatrixBuffer orthographic(String name, float zNear, float zFar, float width, float height, boolean invertY) {
+    public static CachedProjectionMatrixBuffer orthographic(String name, float zNear, float zFar, boolean invertY) {
         Projection projection = new Projection();
-        projection.setupOrtho(zNear, zFar, width, height, invertY);
+        projection.setupOrtho(zNear, zFar, 0.0F, 0.0F, invertY);
 
         return new CachedProjectionMatrixBuffer(name, projection);
     }
@@ -25,10 +25,6 @@ public class CachedProjectionMatrixBuffer {
     public CachedProjectionMatrixBuffer(String name, Projection projection) {
         this.projection = projection;
         buffer = new ProjectionMatrixBuffer(name);
-    }
-
-    public GpuBufferSlice getBuffer() {
-        return buffer.getBuffer(projection);
     }
 
     public GpuBufferSlice getBuffer(float width, float height) {

@@ -1,7 +1,8 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
+import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.GLUtils;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
@@ -44,7 +45,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class EntityGPURenderer extends AbstractEntityRenderer {
     private final GpuBuffer lightingBuffer;
-    private final VoxelMapCachedOrthoProjectionMatrixBuffer projection;
+    private final CachedProjectionMatrixBuffer projection;
     private final VoxelMapRenderTarget renderTarget;
 
     public EntityGPURenderer() {
@@ -56,14 +57,14 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             RenderSystem.getDevice().createCommandEncoder().writeToBuffer(lightingBuffer.slice(), byteBuffer);
         }
 
-        projection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Entity Map Image Proj", 256.0F, -256.0F, -256.0F, 256.0F, 1000.0F, 21000.0F);
+        projection = CachedProjectionMatrixBuffer.orthographic("VoxelMap Entity Projection", 1000.0F, 21000.0F, true);
         renderTarget = new VoxelMapRenderTarget("entity_render", GpuFormat.RGBA8_UNORM);
         renderTarget.createBuffers(TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
     @Override
     protected void setupMatrix() {
-        poseStack.translate(0.0F, 0.0F, -3000.0F);
+        poseStack.translate(256.0F, 256.0F, -3000.0F);
         poseStack.scale(64.0F, 64.0F, -64.0F);
     }
 
@@ -78,7 +79,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
 
         ProjectionType originalProjectionType = RenderSystem.getProjectionType();
         GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        RenderSystem.setProjectionMatrix(projection.getBuffer(), ProjectionType.ORTHOGRAPHIC);
+        RenderSystem.setProjectionMatrix(projection.getBuffer(512.0F, 512.0F), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.setShaderLights(lightingBuffer.slice());
         RenderSystem.getModelViewStack().pushMatrix();
         RenderSystem.getModelViewStack().identity();
@@ -160,8 +161,8 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
         }
 
-        GLUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (output) -> {
-            resultConsumer.accept(ImageUtils.flipHorizontal(output));
+        GLUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
+            resultConsumer.accept(RenderUtils.hasFlippedV() ? ImageUtils.flipVertical(image) : image);
         });
     }
 

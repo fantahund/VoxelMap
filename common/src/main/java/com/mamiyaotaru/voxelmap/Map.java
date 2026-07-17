@@ -9,7 +9,6 @@ import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.SubmitPass;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.textures.DynamicMutableTexture;
@@ -167,7 +166,7 @@ public class Map implements Runnable, IChangeObserver {
 
     // Map Rendering
     private final CachedProjectionMatrixBuffer hudProjection;
-    private final VoxelMapCachedOrthoProjectionMatrixBuffer mapProjection;
+    private final CachedProjectionMatrixBuffer mapProjection;
     private final VoxelMapRenderTarget baseMapRenderTarget; // for map, radar, etc.
     private final VoxelMapRenderTarget finalMapRenderTarget; // for masking
 
@@ -214,8 +213,8 @@ public class Map implements Runnable, IChangeObserver {
         this.zoom = this.options.zoom;
         this.setZoomScale();
 
-        this.hudProjection = CachedProjectionMatrixBuffer.orthographic("VoxelMap HUD Projection", 1000.0F, 21000.0F, 0, 0, true);
-        this.mapProjection = new VoxelMapCachedOrthoProjectionMatrixBuffer("VoxelMap Map To Screen Proj", -256.0F, 256.0F, 256.0F, -256.0F, 1000.0F, 21000.0F);
+        this.hudProjection = CachedProjectionMatrixBuffer.orthographic("VoxelMap HUD Projection", 1000.0F, 21000.0F, true);
+        this.mapProjection = CachedProjectionMatrixBuffer.orthographic("VoxelMap Map Projection", 1000.0F, 21000.0F, true);
 
         final int fboTextureSize = 512;
 
@@ -1518,9 +1517,10 @@ public class Map implements Runnable, IChangeObserver {
             }
         }
 
-        RenderUtils.setupProjectionMatrix(mapProjection.getBuffer(), ProjectionType.ORTHOGRAPHIC, -2000.0F);
+        RenderUtils.setupProjectionMatrix(mapProjection.getBuffer(512.0f, 512.0F), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         matrixStack.pushMatrix();
         matrixStack.identity();
+        matrixStack.translate(256.0F, 256.0F, 0.0F);
 
         // Draw map, radar, etc.
         try (SubmitPass basePass = RenderUtils.createSubmitPass("VoxelMap Base Map", baseMapRenderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
