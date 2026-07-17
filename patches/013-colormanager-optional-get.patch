@@ -1,0 +1,121 @@
+# =====================================================================
+# Titel:      NoSuchElementException beim Laden von CTM/Custom Colors:
+#             Optional.get() ohne Praesenzpruefung auf ResourceManager-
+#             Ressourcen
+# Schweregrad: Medium
+# Kategorie:  Bug
+# Betroffen:  common/src/main/java/com/mamiyaotaru/voxelmap/ColorManager.java
+#             (Zeilen 682, 826, 1054, 1156, 1188)
+#
+# Problem:
+#   ResourceManager.getResource() liefert Optional<Resource>. An fuenf
+#   Stellen wird darauf direkt .get().open() aufgerufen. Die
+#   angefragten Dateien (optifine/renderpass.properties,
+#   optifine/color.properties, optifine/colormap/*.png/.properties,
+#   von CTM-Properties referenzierte PNGs) existieren nur, wenn ein
+#   Resourcepack im OptiFine-Format installiert ist. Ohne ein solches
+#   Pack wirft .get() eine NoSuchElementException - die umliegenden
+#   catch(IOException)-Bloecke fangen diese NICHT, die Exception bricht
+#   processCTM() bzw. processColorProperties() komplett ab und wird
+#   erst in loadColors() geloggt:
+#     "error loading CTM No value present"
+#     "error loading custom color properties No value present"
+#   Reproduzierbar bei jedem Weltbeitritt/Resourcepack-Wechsel, sobald
+#   die Option "Connected Textures" aktiv ist (Log-Spam mit zwei
+#   Stacktraces). Funktionale Folge: Der Abbruch ueberspringt auch die
+#   nachgelagerte Verarbeitung - in processCTM() die Biome-Tint-
+#   Vorbereitung ueber alle Blockfarben (Schleife am Methodenende), in
+#   processColorProperties() die Lilypad-/Palette-Behandlung. Mit einem
+#   nur teilweise passenden Pack (z. B. renderpass.properties fehlt,
+#   CTM-Dateien vorhanden) gehen dadurch tatsaechlich Farbdaten
+#   verloren; ein defektes Pack mit fehlenden PNG-Referenzen (Z. 826)
+#   bricht die restliche CTM-Verarbeitung ab.
+#
+# Loesung:
+#   Alle fuenf Stellen pruefen das Optional mit isPresent()/isEmpty(),
+#   bevor geoeffnet wird; fehlende Dateien werden wie bisher gedacht
+#   still uebersprungen (bzw. an Z. 826 mit derselben Fehlermeldung wie
+#   der bestehende IOException-Pfad geloggt). Die Verarbeitung laeuft
+#   danach regulaer weiter. Die uebrigen .get()-Stellen (Z. 719, 1095)
+#   bleiben unveraendert, da sie nur mit Identifiern aus
+#   findResources() aufgerufen werden, deren Existenz gesichert ist.
+#   Die Alternative, NoSuchElementException mitzufangen, wurde
+#   verworfen: Praesenzpruefung statt Exception-Steuerfluss ist die
+#   vorgesehene Nutzung der Optional-API und vermeidet die
+#   Stacktrace-Kosten pro Weltbeitritt.
+# =====================================================================
+
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/ColorManager.java b/common/src/main/java/com/mamiyaotaru/voxelmap/ColorManager.java
+--- a/common/src/main/java/com/mamiyaotaru/voxelmap/ColorManager.java
++++ b/common/src/main/java/com/mamiyaotaru/voxelmap/ColorManager.java
+@@ -25,6 +25,7 @@
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
++import java.util.Optional;
+ import java.util.Properties;
+ import java.util.Set;
+ import java.util.regex.Matcher;
+@@ -679,8 +680,9 @@
+         Identifier propertiesFile = Identifier.withDefaultNamespace("optifine/renderpass.properties");
+ 
+         try {
+-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile).get().open();
+-            if (input != null) {
++            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile);
++            if (resource.isPresent()) {
++                InputStream input = resource.get().open();
+                 properties.load(input);
+                 input.close();
+                 this.renderPassThreeBlendMode = properties.getProperty("blend.3", "alpha");
+@@ -823,7 +825,12 @@
+                 if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.isEmpty())) {
+                     try {
+                         Identifier pngResource = Identifier.fromNamespaceAndPath(propertiesFile.getNamespace(), tilePath);
+-                        InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource).get().open();
++                        Optional<Resource> pngResourceOptional = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource);
++                        if (pngResourceOptional.isEmpty()) {
++                            VoxelConstants.getLogger().error("error getting CTM block from " + propertiesFile.getPath() + ": missing " + tilePath);
++                            return;
++                        }
++                        InputStream is = pngResourceOptional.get().open();
+                         Image top = ImageIO.read(is);
+                         is.close();
+                         top = top.getScaledInstance(1, 1, 4);
+@@ -1051,8 +1058,9 @@
+         Properties properties = new Properties();
+ 
+         try {
+-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("optifine/color.properties")).get().open();
+-            if (input != null) {
++            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("optifine/color.properties"));
++            if (resource.isPresent()) {
++                InputStream input = resource.get().open();
+                 properties.load(input);
+                 input.close();
+             }
+@@ -1153,8 +1161,9 @@
+         int yOffset = 0;
+ 
+         try {
+-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceProperties).get().open();
+-            if (input != null) {
++            Optional<Resource> resourceOptional = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceProperties);
++            if (resourceOptional.isPresent()) {
++                InputStream input = resourceOptional.get().open();
+                 colorProperties.load(input);
+                 input.close();
+             }
+@@ -1185,7 +1194,11 @@
+         Image tintColors;
+ 
+         try {
+-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resource).get().open();
++            Optional<Resource> resourceOptional = VoxelConstants.getMinecraft().getResourceManager().getResource(resource);
++            if (resourceOptional.isEmpty()) {
++                return;
++            }
++            InputStream is = resourceOptional.get().open();
+             tintColors = ImageIO.read(is);
+             is.close();
+         } catch (IOException var21) {

@@ -25,10 +25,21 @@ zusätzlich funktional getestet (Roundtrip + Fehlerpfad).
 | 010 | `CompressibleMapData.moveX()/moveZ()` rechnen im veralteten Interleaved-Layout (latente Datenkorruption) | Low | Bug | `persistent/CompressibleMapData.java` |
 | 011 | String-Allokationen pro Tick für den „Ether“-Dimensionscheck | Low | Performance | `Map.java` |
 | 012 | Reader-/Stream-Leaks in `BiomeRepository.loadBiomeColors()` bei IO-Fehlern | Low | Resource Leak | `util/BiomeRepository.java` |
+| 013 | `NoSuchElementException` beim CTM-/Custom-Colors-Laden: `Optional.get()` ohne Präsenzprüfung | Medium | Bug | `ColorManager.java` |
+| 014 | CTM-/Custom-Colors-Verarbeitung läuft vor Abschluss des asynchronen Terrain-Atlas-Readbacks (NPE, falsche/veraltete Farben) | Medium | Bug | `ColorManager.java` |
 
 Pfade relativ zu `common/src/main/java/com/mamiyaotaru/voxelmap/`.
 
-**Verteilung:** 3× High, 6× Medium, 3× Low — davon 4× Bug, 3× Race Condition, 4× Resource Leak, 1× Performance.
+**Verteilung:** 3× High, 8× Medium, 3× Low — davon 6× Bug, 3× Race Condition, 4× Resource Leak, 1× Performance.
+
+*Nachtrag 2026-07-18:* Issues 013 und 014 wurden anhand von Runtime-Logs identifiziert und sind
+unabhängig von den Patches 001–012. 013: Stacktraces „error loading CTM No value present" /
+„error loading custom color properties No value present" bei jedem Weltbeitritt mit aktivierter
+„Connected Textures"-Option ohne OptiFine-Format-Pack. 014: nach 013 sichtbar gewordene
+Folge-NPEs („terrainImage is null", „failed getting color: Lily Pad"), verursacht durch die
+asynchrone GPU-Rückleseoperation des Block-Atlas — der Fehler existierte schon vorher, wurde
+aber durch den früheren Abbruch aus 013 verdeckt. **014 setzt 013 voraus** (gleiche Datei,
+Anwendung in Nummernreihenfolge).
 
 ## Hinweise zur Anwendung
 
