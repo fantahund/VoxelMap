@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;

@@ -1,5 +1,6 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.rendering;
 
+import com.mamiyaotaru.voxelmap.textures.AllocatedTexture;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Minecraft;

@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.rendering;
 
 import java.util.function.Function;
 import net.minecraft.client.renderer.rendertype.RenderSetup;

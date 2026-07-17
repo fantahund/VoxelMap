@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mojang.blaze3d.vertex.PoseStack;

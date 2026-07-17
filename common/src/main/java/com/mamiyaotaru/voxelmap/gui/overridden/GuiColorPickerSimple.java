@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
 import java.awt.Color;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

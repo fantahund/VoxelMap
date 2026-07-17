@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;

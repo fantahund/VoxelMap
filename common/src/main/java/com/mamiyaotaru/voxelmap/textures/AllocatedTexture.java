@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.util;
+package com.mamiyaotaru.voxelmap.textures;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;

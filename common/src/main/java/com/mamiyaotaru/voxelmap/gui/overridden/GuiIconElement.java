@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mamiyaotaru.voxelmap.util.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

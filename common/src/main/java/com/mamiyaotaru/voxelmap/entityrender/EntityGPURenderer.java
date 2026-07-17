@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.util.GLUtils;
+import com.mamiyaotaru.voxelmap.rendering.GLUtils;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mamiyaotaru.voxelmap.util.VoxelMapCachedOrthoProjectionMatrixBuffer;
-import com.mamiyaotaru.voxelmap.util.VoxelMapPipelines;
-import com.mamiyaotaru.voxelmap.util.VoxelMapRenderTarget;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
 import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
