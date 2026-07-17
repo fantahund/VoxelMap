@@ -1,0 +1,134 @@
+# =====================================================================
+# Titel:      Stream-Leak in CachedRegion.doSave() bei IO-Fehlern
+#             waehrend des Regionsspeicherns
+# Schweregrad: Medium
+# Kategorie:  Resource Leak
+# Betroffen:  common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
+#             (Zeilen 560-623)
+#
+# Problem:
+#   doSave() oeffnet FileOutputStream und ZipOutputStream ohne
+#   try-with-resources. Die Methode deklariert "throws IOException";
+#   die Aufrufer (saveData) fangen die Exception und loggen sie nur.
+#   Schlaegt ein write()/putNextEntry() fehl (volle Platte, Netzlauf-
+#   werk, Berechtigungen), bleiben beide Streams offen: Datei-Handle-
+#   Leak und eine dauerhaft halb geschriebene, gesperrte Zip-Datei.
+#   Da doSave() beim Entladen jeder Region und beim Weltwechsel fuer
+#   alle Regionen laeuft, summiert sich das bei wiederkehrenden
+#   IO-Fehlern schnell.
+#
+# Loesung:
+#   FileOutputStream und ZipOutputStream werden in try-with-resources
+#   verwaltet; die expliziten close()-Aufrufe entfallen. Die
+#   Ressourcen werden dadurch in korrekter Reihenfolge (zos vor fos)
+#   auf jedem Pfad geschlossen. Ein zusaetzliches Schreiben in eine
+#   Tempdatei mit atomarem Rename (gegen halb geschriebene Zips) waere
+#   eine sinnvolle Erweiterung, wurde aber als Verhaltensaenderung
+#   ausserhalb des minimalen Fixes verworfen.
+# =====================================================================
+
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java b/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
+--- a/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
++++ b/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
+@@ -565,57 +565,55 @@
+             File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+             cachedRegionFileDir.mkdirs();
+             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+-            FileOutputStream fos = new FileOutputStream(cachedRegionFile);
+-            ZipOutputStream zos = new ZipOutputStream(fos);
+-            ZipEntry ze = new ZipEntry("data");
+-            ze.setSize(byteArray.length);
+-            zos.putNextEntry(ze);
+-            zos.write(byteArray);
+-            zos.closeEntry();
+-            if (stateToInt != null) {
+-                StringBuilder stringBuffer = new StringBuilder();
+-
+-                for (Entry<BlockState, Integer> entry : stateToInt.entrySet()) {
+-                    String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
+-                    stringBuffer.append(nextLine);
+-                }
+-
+-                byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
+-                ze = new ZipEntry("key");
++            try (FileOutputStream fos = new FileOutputStream(cachedRegionFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
++                ZipEntry ze = new ZipEntry("data");
++                ze.setSize(byteArray.length);
++                zos.putNextEntry(ze);
++                zos.write(byteArray);
++                zos.closeEntry();
++                if (stateToInt != null) {
++                    StringBuilder stringBuffer = new StringBuilder();
++
++                    for (Entry<BlockState, Integer> entry : stateToInt.entrySet()) {
++                        String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
++                        stringBuffer.append(nextLine);
++                    }
++
++                    byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
++                    ze = new ZipEntry("key");
++                    ze.setSize(keyByteArray.length);
++                    zos.putNextEntry(ze);
++                    zos.write(keyByteArray);
++                    zos.closeEntry();
++                }
++                if (biomeToInt != null) {
++                    StringBuilder stringBuffer = new StringBuilder();
++
++                    for (Entry<Biome, Integer> entry : biomeToInt.entrySet()) {
++                        try {
++                            String nextLine = entry.getValue() + " " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
++                            stringBuffer.append(nextLine);
++                        } catch (NullPointerException ex) {
++                            VoxelConstants.getLogger().warn("Nullpointer for Biome: " + entry.getValue() + " at " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
++                        }
++                    }
++
++                    byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
++                    ze = new ZipEntry("biomes");
++                    ze.setSize(keyByteArray.length);
++                    zos.putNextEntry(ze);
++                    zos.write(keyByteArray);
++                    zos.closeEntry();
++                }
++
++                String nextLine = "version:" + CompressibleMapData.DATA_VERSION + "\r\n";
++                byte[] keyByteArray = nextLine.getBytes();
++                ze = new ZipEntry("control");
+                 ze.setSize(keyByteArray.length);
+                 zos.putNextEntry(ze);
+                 zos.write(keyByteArray);
+                 zos.closeEntry();
+             }
+-            if (biomeToInt != null) {
+-                StringBuilder stringBuffer = new StringBuilder();
+-
+-                for (Entry<Biome, Integer> entry : biomeToInt.entrySet()) {
+-                    try {
+-                        String nextLine = entry.getValue() + " " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
+-                        stringBuffer.append(nextLine);
+-                    } catch (NullPointerException ex) {
+-                        VoxelConstants.getLogger().warn("Nullpointer for Biome: " + entry.getValue() + " at " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+-                    }
+-                }
+-
+-                byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
+-                ze = new ZipEntry("biomes");
+-                ze.setSize(keyByteArray.length);
+-                zos.putNextEntry(ze);
+-                zos.write(keyByteArray);
+-                zos.closeEntry();
+-            }
+-
+-            String nextLine = "version:" + CompressibleMapData.DATA_VERSION + "\r\n";
+-            byte[] keyByteArray = nextLine.getBytes();
+-            ze = new ZipEntry("control");
+-            ze.setSize(keyByteArray.length);
+-            zos.putNextEntry(ze);
+-            zos.write(keyByteArray);
+-            zos.closeEntry();
+-            zos.close();
+-            fos.close();
+         } else {
+             VoxelConstants.getLogger().warn("Data array wrong size: " + byteArray.length + "for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+         }

@@ -1,0 +1,60 @@
+# =====================================================================
+# Titel:      Fehlende Sichtbarkeitsgarantien fuer die Thread-
+#             Kommunikationsflags doFullRender/imageChanged/zoomChanged
+# Schweregrad: Medium
+# Kategorie:  Race Condition
+# Betroffen:  common/src/main/java/com/mamiyaotaru/voxelmap/Map.java
+#             (Zeilen 130-131, 142)
+#
+# Problem:
+#   Diese drei booleschen Flags bilden das Kommunikationsprotokoll
+#   zwischen Render-/Tick-Thread und dem "Voxelmap LiveMap Calculation
+#   Thread":
+#   - doFullRender wird vom Render-Thread gesetzt (forceFullRender,
+#     checkForChanges, cycleZoomLevel) und vom Calc-Thread gelesen und
+#     zurueckgesetzt (run/mapCalc).
+#   - imageChanged wird vom Calc-Thread ausserhalb jedes Locks gesetzt
+#     (mapCalc Z.840, rectangleCalc Z.910), aber vom Render-Thread unter
+#     coordinateLock gelesen/geloescht (renderMap/renderMapFull).
+#   - zoomChanged wird vom Render-Thread gesetzt und vom Calc-Thread
+#     gelesen/zurueckgesetzt.
+#   Da die Schreiber nicht dasselbe Monitor-Objekt verwenden wie die
+#   Leser, existiert keine happens-before-Beziehung: Das Java Memory
+#   Model erlaubt, dass der lesende Thread die Aenderung beliebig lange
+#   nicht sieht. Praktisch aeussert sich das als ausbleibende Textur-
+#   Uploads (Minimap aktualisiert nicht mehr), verpasste Full-Render-
+#   Anforderungen nach Settings-/Zoomwechsel oder verschluckte
+#   Zoomaenderungen - selten, timing- und JIT-abhaengig.
+#
+# Loesung:
+#   Die drei Flags werden volatile deklariert. Das stellt Sichtbarkeit
+#   zwischen den Threads her; Atomizitaet einzelner boolean-Schreib-
+#   zugriffe ist ohnehin gegeben. Die Alternative, alle Zugriffe unter
+#   coordinateLock zu ziehen, wurde verworfen, weil sie den Render-Pfad
+#   unnoetig serialisieren und deutlich mehr Code veraendern wuerde.
+#   (zCalcRunning ist bereits volatile - gleiches Muster.)
+# =====================================================================
+
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/Map.java b/common/src/main/java/com/mamiyaotaru/voxelmap/Map.java
+--- a/common/src/main/java/com/mamiyaotaru/voxelmap/Map.java
++++ b/common/src/main/java/com/mamiyaotaru/voxelmap/Map.java
+@@ -127,8 +127,8 @@
+     private final Object coordinateLock = new Object();
+     private ClientLevel world;
+     private int updateTimer;
+-    private boolean doFullRender = true;
+-    private boolean imageChanged = true;
++    private volatile boolean doFullRender = true;
++    private volatile boolean imageChanged = true;
+ 
+     // Map Terrain Calculation
+     private final int heightMapResetHeight = this.multicore ? 2 : 5;
+@@ -139,7 +139,7 @@
+     private BlockState surfaceBlockState;
+ 
+     // Map Player Calculation
+-    private boolean zoomChanged;
++    private volatile boolean zoomChanged;
+     private int zoom;
+     private double zoomScale = 1.0;
+     private double zoomScaleAdjusted = 1.0;

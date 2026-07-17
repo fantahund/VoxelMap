@@ -1,0 +1,156 @@
+# =====================================================================
+# Titel:      ZipFile-Handle-Leak in CachedRegion.loadCachedData() bei
+#             Exceptions/korrupten Cache-Dateien
+# Schweregrad: Medium
+# Kategorie:  Resource Leak
+# Betroffen:  common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
+#             (Zeilen 453-524)
+#
+# Problem:
+#   loadCachedData() oeffnet die Region-Zip-Datei ohne
+#   try-with-resources. Der gesamte Parse-Code steht in einem
+#   try/catch, das Exceptions nur loggt - zFile.close() wird aber nur
+#   am Ende des Happy Path erreicht. Bei jeder Exception davor
+#   (fehlender "data"- oder "key"-Eintrag -> NPE bei getInputStream,
+#   IOException bei defektem Zip, Fehler im BlockState-/Biome-Parser)
+#   bleibt das Datei-Handle offen. Die Methode laeuft auf den Worldmap-
+#   Worker-Threads fuer jede besuchte Region; ein Bestand korrupter
+#   Cache-Dateien fuehrt so zu einem stetig wachsenden Handle-Leak
+#   (unter Windows bleiben die Dateien zusaetzlich gesperrt und koennen
+#   von doSave() nicht ueberschrieben werden -> Kartendaten gehen
+#   verloren).
+#
+# Loesung:
+#   Die ZipFile wird in try-with-resources geoeffnet; das explizite
+#   close() entfaellt. Das Schliessen der ZipFile schliesst auch alle
+#   von ihr ausgegebenen InputStreams, damit sind auch die
+#   Zwischenstreams auf allen Fehlerpfaden abgedeckt. Die inneren
+#   expliziten close()-Aufrufe bleiben unveraendert erhalten, um den
+#   Diff klein zu halten.
+# =====================================================================
+
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java b/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
+--- a/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
++++ b/common/src/main/java/com/mamiyaotaru/voxelmap/persistent/CachedRegion.java
+@@ -456,65 +456,65 @@
+             cachedRegionFileDir.mkdirs();
+             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+             if (cachedRegionFile.exists()) {
+-                ZipFile zFile = new ZipFile(cachedRegionFile);
+-                ZipEntry ze = zFile.getEntry("data");
+-                InputStream is = zFile.getInputStream(ze);
+-                byte[] decompressedByteData = is.readAllBytes();
+-                is.close();
+-                ze = zFile.getEntry("key");
+-                is = zFile.getInputStream(ze);
+-                BiMap<BlockState, Integer> blockstateMap = HashBiMap.create();
+-                Scanner sc = new Scanner(is);
+-
+-                while (sc.hasNextLine()) {
+-                    BlockStateParser.parseLine(sc.nextLine(), blockstateMap);
+-                }
+-                sc.close();
+-                is.close();
+-
+-                BiMap<Biome, Integer> biomeMap = HashBiMap.create();
+-                ze = zFile.getEntry("biomes");
+-                if (ze != null) {
++                try (ZipFile zFile = new ZipFile(cachedRegionFile)) {
++                    ZipEntry ze = zFile.getEntry("data");
++                    InputStream is = zFile.getInputStream(ze);
++                    byte[] decompressedByteData = is.readAllBytes();
++                    is.close();
++                    ze = zFile.getEntry("key");
+                     is = zFile.getInputStream(ze);
+-                    sc = new Scanner(is);
++                    BiMap<BlockState, Integer> blockstateMap = HashBiMap.create();
++                    Scanner sc = new Scanner(is);
+ 
+                     while (sc.hasNextLine()) {
+-                        BiomeParser.parseLine(world, sc.nextLine(), biomeMap);
+-                    }
+-                } else {
+-                    BiomeParser.populateLegacyBiomeMap(world, biomeMap);
+-                }
+-
+-                sc.close();
+-                is.close();
+-                int version = 1;
+-                ze = zFile.getEntry("control");
+-                if (ze != null) {
+-                    is = zFile.getInputStream(ze);
+-                    if (is != null) {
+-                        Properties properties = new Properties();
+-                        properties.load(is);
+-                        String versionString = properties.getProperty("version", "1");
+-
+-                        try {
+-                            version = Integer.parseInt(versionString);
+-                        } catch (NumberFormatException ignored) {}
+-
+-                        is.close();
+-                    }
+-                }
+-
+-                zFile.close();
+-                if (decompressedByteData.length == this.data.getExpectedDataLength(version)) {
+-                    this.data.setData(decompressedByteData, blockstateMap, biomeMap, version);
+-                    this.empty = false;
+-                    this.dataUpdated = true;
+-                } else {
+-                    VoxelConstants.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
+-                }
+-
+-                if (version < 2) {
+-                    this.liveChunksUpdated = true;
++                        BlockStateParser.parseLine(sc.nextLine(), blockstateMap);
++                    }
++                    sc.close();
++                    is.close();
++
++                    BiMap<Biome, Integer> biomeMap = HashBiMap.create();
++                    ze = zFile.getEntry("biomes");
++                    if (ze != null) {
++                        is = zFile.getInputStream(ze);
++                        sc = new Scanner(is);
++
++                        while (sc.hasNextLine()) {
++                            BiomeParser.parseLine(world, sc.nextLine(), biomeMap);
++                        }
++                    } else {
++                        BiomeParser.populateLegacyBiomeMap(world, biomeMap);
++                    }
++
++                    sc.close();
++                    is.close();
++                    int version = 1;
++                    ze = zFile.getEntry("control");
++                    if (ze != null) {
++                        is = zFile.getInputStream(ze);
++                        if (is != null) {
++                            Properties properties = new Properties();
++                            properties.load(is);
++                            String versionString = properties.getProperty("version", "1");
++
++                            try {
++                                version = Integer.parseInt(versionString);
++                            } catch (NumberFormatException ignored) {}
++
++                            is.close();
++                        }
++                    }
++
++                    if (decompressedByteData.length == this.data.getExpectedDataLength(version)) {
++                        this.data.setData(decompressedByteData, blockstateMap, biomeMap, version);
++                        this.empty = false;
++                        this.dataUpdated = true;
++                    } else {
++                        VoxelConstants.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
++                    }
++
++                    if (version < 2) {
++                        this.liveChunksUpdated = true;
++                    }
+                 }
+             }
+         } catch (Exception ex) {
