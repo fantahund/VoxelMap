@@ -93,6 +93,7 @@ public class ColorManager {
     private final RandomSource random = RandomSource.create();
     private boolean loaded;
     private boolean loadedTerrainImage;
+    private boolean terrainDependentColorsProcessed;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
     private final ColorResolver spruceColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
     private final ColorResolver birchColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
@@ -159,7 +160,9 @@ public class ColorManager {
     }
 
     private void loadColors() {
+        this.loaded = false;
         this.loadedTerrainImage = false;
+        this.terrainDependentColorsProcessed = false;
         VoxelConstants.getMinecraft().getSkinManager().get(VoxelConstants.getPlayer().getGameProfile());
         BlockRepository.getBlocks();
         this.loadColorPicker();
@@ -167,7 +170,6 @@ public class ColorManager {
         TextureAtlasSprite missing = VoxelConstants.getMinecraft().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.parse("missingno"));
         this.failedToLoadX = missing.getU0();
         this.failedToLoadY = missing.getV0();
-        this.loaded = false;
 
         try {
             Arrays.fill(this.blockColors, 0xFEFF00FF);
@@ -177,18 +179,9 @@ public class ColorManager {
             this.biomeTextureAvailable.clear();
             this.blockBiomeSpecificColors.clear();
             this.blockTintTables.clear();
-            if (this.useConnectedTextures) {
-                try {
-                    this.processCTM();
-                } catch (Exception var4) {
-                    VoxelConstants.getLogger().error("error loading CTM " + var4.getLocalizedMessage(), var4);
-                }
-
-                try {
-                    this.processColorProperties();
-                } catch (Exception var3) {
-                    VoxelConstants.getLogger().error("error loading custom color properties " + var3.getLocalizedMessage(), var3);
-                }
+            if (this.loadedTerrainImage) {
+                // terrain image read-back already completed synchronously
+                this.processTerrainDependentColors();
             }
 
             VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
@@ -197,6 +190,29 @@ public class ColorManager {
         }
 
         this.loaded = true;
+    }
+
+    private void processTerrainDependentColors() {
+        if (this.terrainDependentColorsProcessed) {
+            return;
+        }
+
+        this.terrainDependentColorsProcessed = true;
+        if (this.useConnectedTextures) {
+            try {
+                this.processCTM();
+            } catch (Exception var4) {
+                VoxelConstants.getLogger().error("error loading CTM " + var4.getLocalizedMessage(), var4);
+            }
+
+            try {
+                this.processColorProperties();
+            } catch (Exception var3) {
+                VoxelConstants.getLogger().error("error loading custom color properties " + var3.getLocalizedMessage(), var3);
+            }
+        }
+
+        VoxelConstants.getVoxelMapInstance().getMap().forceFullRender(true);
     }
 
     private void loadColorPicker() {
@@ -224,6 +240,11 @@ public class ColorManager {
         GLUtils.readTextureContentsToBufferedImage(VoxelConstants.getMinecraft().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTexture(), image -> {
             terrainBuff = image;
             loadedTerrainImage = true;
+            if (loaded) {
+                // loadColors() has already finished; run the deferred
+                // terrain-dependent processing now that the image exists
+                this.processTerrainDependentColors();
+            }
         });
     }
 
