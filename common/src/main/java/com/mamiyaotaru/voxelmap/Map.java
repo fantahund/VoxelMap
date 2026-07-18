@@ -1300,7 +1300,7 @@ public class Map implements Runnable, IChangeObserver {
         LevelChunk chunk = (LevelChunk) world.getChunk(blockPos);
         int height = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) + 1;
         BlockState blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z));
-        FluidState fluidState = this.transparentBlockState.getFluidState();
+        FluidState fluidState = blockState.getFluidState();
         if (fluidState != Fluids.EMPTY.defaultFluidState()) {
             blockState = fluidState.createLegacyBlock();
         }
@@ -1308,7 +1308,7 @@ public class Map implements Runnable, IChangeObserver {
         while (blockState.getLightDampening() == 0 && height > world.getMinY()) {
             --height;
             blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z));
-            fluidState = this.surfaceBlockState.getFluidState();
+            fluidState = blockState.getFluidState();
             if (fluidState != Fluids.EMPTY.defaultFluidState()) {
                 blockState = fluidState.createLegacyBlock();
             }
