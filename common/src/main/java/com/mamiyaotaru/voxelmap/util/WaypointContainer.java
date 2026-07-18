@@ -130,9 +130,9 @@ public class WaypointContainer {
             boolean isPointedAt = renderable.getOffset() != INVALID_OFFSET && (shiftDown || renderable == last);
             if (waypointManager.isWaypointHighlight(waypoint)) {
                 // Render base waypoint
-                renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, false, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+                renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, false, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
             }
-            renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+            renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, isHighlighted, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
         }
     }
 
@@ -223,7 +223,7 @@ public class WaypointContainer {
 
     }
 
-    private void renderSign(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, double distance, double baseX, double baseY, double baseZ) {
+    private void renderSign(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, boolean isOnHighlighted, double distance, double baseX, double baseY, double baseZ) {
         String mainLabel = waypoint.name;
         if (isHighlighted) {
             if (waypointManager.isCoordinateHighlight(waypoint)) {
@@ -250,7 +250,7 @@ public class WaypointContainer {
         poseStack.scale(-scale, -scale, -scale);
 
         float distanceAlpha = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
-        float foregroundAlpha = distanceAlpha * (isPointedAt ? 1.0F : 0.3F);
+        float foregroundAlpha = distanceAlpha * (isPointedAt || isHighlighted || isOnHighlighted ? 1.0F : 0.4F);
 
         float width = 10.0F;
         float r = isHighlighted ? 1.0F : waypoint.red;
