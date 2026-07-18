@@ -122,8 +122,8 @@ public class Map implements Runnable, IChangeObserver {
     private final Object coordinateLock = new Object();
     private ClientLevel world;
     private int updateTimer;
-    private boolean doFullRender = true;
-    private boolean imageChanged = true;
+    private volatile boolean doFullRender = true;
+    private volatile boolean imageChanged = true;
 
     // Map Terrain Calculation
     private final int heightMapResetHeight = this.multicore ? 2 : 5;
@@ -134,7 +134,7 @@ public class Map implements Runnable, IChangeObserver {
     private BlockState surfaceBlockState;
 
     // Map Player Calculation
-    private boolean zoomChanged;
+    private volatile boolean zoomChanged;
     private int zoom;
     private double zoomScale = 1.0;
     private double zoomScaleAdjusted = 1.0;
@@ -163,6 +163,7 @@ public class Map implements Runnable, IChangeObserver {
     private boolean lastPaused = true;
     private boolean lastAboveHorizon = true;
     private int lastBiome;
+    private boolean worldIsEther;
 
     // Map Rendering
     private final CachedProjectionMatrixBuffer hudProjection;
@@ -325,6 +326,7 @@ public class Map implements Runnable, IChangeObserver {
 
     public void newWorld(ClientLevel world) {
         this.world = world;
+        this.worldIsEther = world != null && world.dimension().identifier().toString().toLowerCase().contains("ether");
         this.mapData[this.zoom].blank();
         this.doFullRender = true;
         this.calculateCurrentLightAndSkyColor(true);
@@ -546,7 +548,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 boolean aboveHorizon = VoxelConstants.getPlayer().getEyePosition(0.0F).y >= this.world.getLevelData().getHorizonHeight(this.world);
-                if (this.world.dimension().identifier().toString().toLowerCase().contains("ether")) {
+                if (this.worldIsEther) {
                     aboveHorizon = true;
                 }
 
@@ -1296,7 +1298,7 @@ public class Map implements Runnable, IChangeObserver {
         LevelChunk chunk = (LevelChunk) world.getChunk(blockPos);
         int height = chunk.getHeight(Heightmap.Types.MOTION_BLOCKING, blockPos.getX() & 15, blockPos.getZ() & 15) + 1;
         BlockState blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z));
-        FluidState fluidState = this.transparentBlockState.getFluidState();
+        FluidState fluidState = blockState.getFluidState();
         if (fluidState != Fluids.EMPTY.defaultFluidState()) {
             blockState = fluidState.createLegacyBlock();
         }
@@ -1304,7 +1306,7 @@ public class Map implements Runnable, IChangeObserver {
         while (blockState.getLightDampening() == 0 && height > world.getMinY()) {
             --height;
             blockState = world.getBlockState(blockPos.withXYZ(x, height - 1, z));
-            fluidState = this.surfaceBlockState.getFluidState();
+            fluidState = blockState.getFluidState();
             if (fluidState != Fluids.EMPTY.defaultFluidState()) {
                 blockState = fluidState.createLegacyBlock();
             }

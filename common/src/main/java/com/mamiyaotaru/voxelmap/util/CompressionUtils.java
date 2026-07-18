@@ -12,39 +12,41 @@ public final class CompressionUtils {
 
     public static byte[] compress(byte[] dataToCompress) {
         Deflater deflater = new Deflater();
-        deflater.setLevel(1);
-        deflater.setInput(dataToCompress);
-        deflater.finish();
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToCompress.length)) {
+            deflater.setLevel(1);
+            deflater.setInput(dataToCompress);
+            deflater.finish();
             byte[] buffer = new byte[1024];
 
             while (!deflater.finished()) {
                 int count = deflater.deflate(buffer);
                 outputStream.write(buffer, 0, count);
             }
-            deflater.end();
 
             return outputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("IOException should not happen for ByteArrayOutputStream", e);
+        } finally {
+            deflater.end();
         }
     }
 
     public static byte[] decompress(byte[] dataToDecompress) throws DataFormatException {
         Inflater inflater = new Inflater();
-        inflater.setInput(dataToDecompress);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream(dataToDecompress.length)) {
+            inflater.setInput(dataToDecompress);
             byte[] buffer = new byte[1024];
 
             while (!(inflater.finished())) {
                 int count = inflater.inflate(buffer);
                 outputStream.write(buffer, 0, count);
             }
-            inflater.end();
 
             return outputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException("IOException should not happen for ByteArrayOutputStream", e);
+        } finally {
+            inflater.end();
         }
     }
 }

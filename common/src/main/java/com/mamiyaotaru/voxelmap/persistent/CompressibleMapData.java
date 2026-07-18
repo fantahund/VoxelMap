@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.Biome;
@@ -45,8 +44,6 @@ public class CompressibleMapData extends AbstractMapData {
     private BiMap<Biome, Integer> biomeToInt;
     int biomeCount = 1;
     private final ClientLevel world;
-
-    private final Minecraft MINECRAFT = Minecraft.getInstance();
 
     public CompressibleMapData(ClientLevel world) {
         this.width = REGION_SIZE;
@@ -155,7 +152,7 @@ public class CompressibleMapData extends AbstractMapData {
     public Biome getBiome(int x, int z) {
         int biomeId = getBiomeId(x, z);
         if (biomeId == 0 && getHeight(x, z) != Short.MIN_VALUE) {
-            return MINECRAFT.level.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
+            return world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
         }
         return this.getBiomeFromID(biomeId);
     }
@@ -292,10 +289,16 @@ public class CompressibleMapData extends AbstractMapData {
         if (this.isCompressed) {
             this.decompress();
         }
-        if (x > 0) {
-            System.arraycopy(this.data, x * LAYERS, this.data, 0, this.data.length - x * LAYERS);
-        } else if (x < 0) {
-            System.arraycopy(this.data, 0, this.data, -x * LAYERS, this.data.length + x * LAYERS);
+        // data is stored in planes of width * height bytes per layer (since data
+        // version 2), so each layer plane has to be shifted individually
+        int layerSize = this.width * this.height;
+        for (int layer = 0; layer < LAYERS; ++layer) {
+            int base = layer * layerSize;
+            if (x > 0) {
+                System.arraycopy(this.data, base + x, this.data, base, layerSize - x);
+            } else if (x < 0) {
+                System.arraycopy(this.data, base, this.data, base - x, layerSize + x);
+            }
         }
     }
 
@@ -304,10 +307,14 @@ public class CompressibleMapData extends AbstractMapData {
         if (this.isCompressed) {
             this.decompress();
         }
-        if (z > 0) {
-            System.arraycopy(this.data, z * this.width * LAYERS, this.data, 0, this.data.length - z * this.width * LAYERS);
-        } else if (z < 0) {
-            System.arraycopy(this.data, 0, this.data, -z * this.width * LAYERS, this.data.length + z * this.width * LAYERS);
+        int layerSize = this.width * this.height;
+        for (int layer = 0; layer < LAYERS; ++layer) {
+            int base = layer * layerSize;
+            if (z > 0) {
+                System.arraycopy(this.data, base + z * this.width, this.data, base, layerSize - z * this.width);
+            } else if (z < 0) {
+                System.arraycopy(this.data, base, this.data, base - z * this.width, layerSize + z * this.width);
+            }
         }
     }
 

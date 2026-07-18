@@ -14,9 +14,10 @@
     "APIMixinMinecraftClient",
     "APIMixinNetHandlerPlayClient",
     "MixinCamera",
+    "MixinClientLevel",
     "MixinInGameHud",
+    "MixinLevelExtractor",
     "MixinTutorial",
-    "MixinWorldRenderer",
-	"MixinSectionUpdateTracker"
+    "MixinWorldRenderer"
   ]
 }

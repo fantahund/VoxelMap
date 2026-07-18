@@ -14,7 +14,9 @@
     "Algamja11"
   ],
   "contact": {
-    "homepage": "https://minecraft.curseforge.com/projects/voxelmap"
+    "homepage": "https://modrinth.com/plugin/voxelmap-updated",
+    "sources": "https://github.com/fantahund/VoxelMap",
+    "issues": "https://github.com/fantahund/VoxelMap/issues"
   },
   "icon": "assets/voxelmap/icon.png",
   "environment": "*",
@@ -22,9 +24,12 @@
     "client": [
       "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricMod"
     ],
-	"server": [
-	  "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricModServer"
-	]
+    "server": [
+      "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricModServer"
+    ],
+    "modmenu": [
+      "com.mamiyaotaru.voxelmap.fabric.VoxelmapModMenuApi"
+    ]
   },
   "accessWidener" : "voxelmap.accesswidener",
   "mixins": [
@@ -35,5 +40,12 @@
     "fabricloader": ">=0.18.4",
     "fabric-api": ">=0.144.1",
     "minecraft": ">=26.1"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/4nGrfZxb2a"
+      }
+    }
   }
 }

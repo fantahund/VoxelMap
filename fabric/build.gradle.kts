@@ -7,6 +7,7 @@ plugins {
 val minecraftVersion: String by rootProject.extra
 val fabricVersion: String by rootProject.extra
 val fabricApiVersion: String by rootProject.extra
+val modMenuVersion: String by rootProject.extra
 
 val fullVersion: String by rootProject.extra
 
@@ -19,6 +20,7 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loader:${fabricVersion}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+    implementation("maven.modrinth:modmenu:${modMenuVersion}")
 
     implementation(project.project(":server-common").sourceSets.getByName("main").output)
     implementation(project.project(":common").sourceSets.getByName("main").output)
