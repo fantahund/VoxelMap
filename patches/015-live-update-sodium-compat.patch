@@ -1,0 +1,219 @@
+# =====================================================================
+# Titel:      Minimap/Worldmap aktualisieren sich nicht mehr live bei
+#             Blockaenderungen, wenn Sodium installiert ist
+# Schweregrad: High
+# Kategorie:  Bug (Mod-Loader-/API-Kompatibilitaet)
+# Betroffen:  common/src/main/java/com/mamiyaotaru/voxelmap/mixins/
+#               MixinSectionUpdateTracker.java (entfernt)
+#               MixinClientLevel.java (neu)
+#               MixinLevelExtractor.java (neu)
+#             common/src/main/resources/mixin.voxelmap.json
+#
+# Problem:
+#   Beim 26.2-Port (Commit edb6e82d) wurde der Aenderungs-Hook von
+#   LevelRenderer.setSectionDirty(IIIZ) auf die neue Klasse
+#   SectionUpdateTracker.setDirty(IIIZ) verlegt. Vanilla erreicht diese
+#   Methode fuer jeden relevanten Pfad (Einzelblock-Update, Multi-
+#   Block-Update, Chunk-(Re-)Load) ueber die LevelExtractor-Methoden
+#   setBlockDirty/setBlocksDirty/setSectionDirty.
+#   Sodium (getestet: 0.9.1+mc26.2) OVERWRITET aber genau diese
+#   LevelExtractor-Methoden (setBlockDirty(BlockPos,Z),
+#   setBlocksDirty(IIIIII), setSectionDirtyWithNeighbors(III) und das
+#   private setSectionDirty(IIIZ)) und leitet direkt an den
+#   SodiumWorldRenderer weiter (scheduleRebuildForBlockArea/-Chunks).
+#   SectionUpdateTracker.setDirty wird mit Sodium dadurch NIE
+#   aufgerufen -> der VoxelMap-Mixin feuert nie -> Map.handleChangeInWorld/
+#   PersistentMap.handleChangeInWorld werden nie benachrichtigt -> die
+#   Karte zeigt Blockaenderungen (WorldEdit-Flaechen, einzelne gesetzte/
+#   abgebaute Bloecke) erst nach Relog/Chunk-Neuladen.
+#   Ohne Sodium funktioniert der alte Hook - darum faellt der Fehler
+#   nur in Sodium-Instanzen auf ("ging frueher": in den 1.21.x-Staenden
+#   sass der Hook auf LevelRenderer.setSectionDirty, das Sodium damals
+#   nicht ersetzte).
+#
+# Loesung:
+#   Der Hook wandert an Stellen, die unabhaengig von der Render-
+#   Pipeline immer durchlaufen werden:
+#   1. MixinClientLevel: ClientLevel.sendBlockUpdated,
+#      ClientLevel.setBlocksDirty, ClientLevel.setSectionDirtyWithNeighbors,
+#      ClientLevel.setSectionRangeDirty - das sind die von den Paket-
+#      Handlern aufgerufenen Vanilla-Einstiegspunkte VOR dem Extractor;
+#      Sodium injectet dort nur additiv und ersetzt nichts.
+#      Bei Block-Updates werden (wie bisher ueber das +-1-Blockfenster
+#      des alten Pfads) angrenzende Sections an Chunkgrenzen mit
+#      benachrichtigt, damit Randpixel (Slope-Schattierung) neu
+#      gezeichnet werden.
+#   2. MixinLevelExtractor: das public LevelExtractor.setSectionDirty(III),
+#      das ClientChunkCache und ClientPacketListener beim Chunk-Load/
+#      -Resend DIREKT aufrufen (an ClientLevel vorbei). Sodium
+#      overwritet nur die private (IIIZ)-Ueberladung, die public
+#      (III)-Ueberladung bleibt mit und ohne Sodium erhalten.
+#   Der bisherige MixinSectionUpdateTracker entfaellt, da die neuen
+#   Hooks alle seine Ausloesepfade abdecken (per Bytecode-Analyse aller
+#   Aufrufer in MC 26.2 verifiziert) - sonst kaeme jede Aenderung ohne
+#   Sodium doppelt an.
+#   Alternative, nur zusaetzliche Hooks neben dem Tracker-Hook zu
+#   setzen, wurde wegen der Doppelbenachrichtigungen verworfen;
+#   ein Hook in Sodium-eigene Klassen wurde verworfen, weil VoxelMap
+#   nicht von Sodium abhaengen soll.
+# =====================================================================
+
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinClientLevel.java b/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinClientLevel.java
+new file mode 100644
+index 00000000..f4332f00
+--- /dev/null
++++ b/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinClientLevel.java
+@@ -0,0 +1,79 @@
++package com.mamiyaotaru.voxelmap.mixins;
++
++import com.mamiyaotaru.voxelmap.VoxelConstants;
++import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
++import net.minecraft.client.multiplayer.ClientLevel;
++import net.minecraft.core.BlockPos;
++import net.minecraft.core.SectionPos;
++import net.minecraft.world.level.block.state.BlockState;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.Unique;
++import org.spongepowered.asm.mixin.injection.At;
++import org.spongepowered.asm.mixin.injection.Inject;
++import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
++
++/**
++ * Notifies VoxelMap of block changes at the ClientLevel entry points. These are
++ * invoked by the packet handlers before the render pipeline takes over, so they
++ * fire regardless of whether the vanilla LevelExtractor/SectionUpdateTracker or a
++ * replacement render pipeline (e.g. Sodium, which overwrites the LevelExtractor
++ * methods feeding the tracker) handles the update.
++ */
++@Mixin(ClientLevel.class)
++public abstract class MixinClientLevel {
++    @Inject(method = "sendBlockUpdated", at = @At("RETURN"))
++    private void voxelmap$onBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags, CallbackInfo ci) {
++        voxelmap$notifyBlockArea(pos);
++    }
++
++    @Inject(method = "setBlocksDirty", at = @At("RETURN"))
++    private void voxelmap$onBlocksDirty(BlockPos pos, BlockState oldState, BlockState newState, CallbackInfo ci) {
++        voxelmap$notifyBlockArea(pos);
++    }
++
++    @Inject(method = "setSectionDirtyWithNeighbors", at = @At("RETURN"))
++    private void voxelmap$onSectionDirtyWithNeighbors(int sectionX, int sectionY, int sectionZ, CallbackInfo ci) {
++        WorldUpdateListener listener = VoxelConstants.getVoxelMapInstance().getWorldUpdateListener();
++        if (listener != null) {
++            for (int x = sectionX - 1; x <= sectionX + 1; ++x) {
++                for (int z = sectionZ - 1; z <= sectionZ + 1; ++z) {
++                    listener.notifyObservers(x, z);
++                }
++            }
++        }
++    }
++
++    @Inject(method = "setSectionRangeDirty", at = @At("RETURN"))
++    private void voxelmap$onSectionRangeDirty(int minSectionX, int minSectionY, int minSectionZ, int maxSectionX, int maxSectionY, int maxSectionZ, CallbackInfo ci) {
++        WorldUpdateListener listener = VoxelConstants.getVoxelMapInstance().getWorldUpdateListener();
++        if (listener != null) {
++            for (int x = minSectionX; x <= maxSectionX; ++x) {
++                for (int z = minSectionZ; z <= maxSectionZ; ++z) {
++                    listener.notifyObservers(x, z);
++                }
++            }
++        }
++    }
++
++    @Unique
++    private static void voxelmap$notifyBlockArea(BlockPos pos) {
++        WorldUpdateListener listener = VoxelConstants.getVoxelMapInstance().getWorldUpdateListener();
++        if (listener == null) {
++            return;
++        }
++
++        // include neighboring sections when the block sits on a section border, so
++        // border pixels (e.g. slope shading) are repainted like they were with the
++        // old SectionUpdateTracker hook
++        int minSectionX = SectionPos.blockToSectionCoord(pos.getX() - 1);
++        int maxSectionX = SectionPos.blockToSectionCoord(pos.getX() + 1);
++        int minSectionZ = SectionPos.blockToSectionCoord(pos.getZ() - 1);
++        int maxSectionZ = SectionPos.blockToSectionCoord(pos.getZ() + 1);
++
++        for (int x = minSectionX; x <= maxSectionX; ++x) {
++            for (int z = minSectionZ; z <= maxSectionZ; ++z) {
++                listener.notifyObservers(x, z);
++            }
++        }
++    }
++}
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinLevelExtractor.java b/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinLevelExtractor.java
+new file mode 100644
+index 00000000..0462e640
+--- /dev/null
++++ b/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinLevelExtractor.java
+@@ -0,0 +1,27 @@
++package com.mamiyaotaru.voxelmap.mixins;
++
++import com.mamiyaotaru.voxelmap.VoxelConstants;
++import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
++import net.minecraft.client.renderer.extract.LevelExtractor;
++import org.spongepowered.asm.mixin.Mixin;
++import org.spongepowered.asm.mixin.injection.At;
++import org.spongepowered.asm.mixin.injection.Inject;
++import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
++
++/**
++ * Covers the section-dirty calls that do not go through ClientLevel:
++ * ClientChunkCache and ClientPacketListener call LevelExtractor.setSectionDirty(III)
++ * directly when chunks are loaded or re-sent by the server. Sodium only overwrites
++ * the private setSectionDirty(IIIZ) overload, so this public overload keeps firing
++ * with and without Sodium installed.
++ */
++@Mixin(LevelExtractor.class)
++public abstract class MixinLevelExtractor {
++    @Inject(method = "setSectionDirty(III)V", at = @At("HEAD"))
++    private void voxelmap$onSectionDirty(int sectionX, int sectionY, int sectionZ, CallbackInfo ci) {
++        WorldUpdateListener listener = VoxelConstants.getVoxelMapInstance().getWorldUpdateListener();
++        if (listener != null) {
++            listener.notifyObservers(sectionX, sectionZ);
++        }
++    }
++}
+diff --git a/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinSectionUpdateTracker.java b/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinSectionUpdateTracker.java
+deleted file mode 100644
+index b028ff03..00000000
+--- a/common/src/main/java/com/mamiyaotaru/voxelmap/mixins/MixinSectionUpdateTracker.java
++++ /dev/null
+@@ -1,18 +0,0 @@
+-package com.mamiyaotaru.voxelmap.mixins;
+-
+-import com.mamiyaotaru.voxelmap.VoxelConstants;
+-import net.minecraft.client.SectionUpdateTracker;
+-import org.spongepowered.asm.mixin.Mixin;
+-import org.spongepowered.asm.mixin.injection.At;
+-import org.spongepowered.asm.mixin.injection.Inject;
+-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+-
+-@Mixin(SectionUpdateTracker.class)
+-public abstract class MixinSectionUpdateTracker {
+-    @Inject(method = "setDirty(IIIZ)V", at = @At("RETURN"))
+-    public void postScheduleChunkRender(int sectionX, int sectionY, int sectionZ, boolean playerChanged, CallbackInfo ci) {
+-        if (VoxelConstants.getVoxelMapInstance().getWorldUpdateListener() != null) {
+-            VoxelConstants.getVoxelMapInstance().getWorldUpdateListener().notifyObservers(sectionX, sectionZ);
+-        }
+-    }
+-}
+diff --git a/common/src/main/resources/mixin.voxelmap.json b/common/src/main/resources/mixin.voxelmap.json
+index b680ba3e..1dff6447 100644
+--- a/common/src/main/resources/mixin.voxelmap.json
++++ b/common/src/main/resources/mixin.voxelmap.json
+@@ -14,9 +14,10 @@
+     "APIMixinMinecraftClient",
+     "APIMixinNetHandlerPlayClient",
+     "MixinCamera",
++    "MixinClientLevel",
+     "MixinInGameHud",
++    "MixinLevelExtractor",
+     "MixinTutorial",
+-    "MixinWorldRenderer",
+-	"MixinSectionUpdateTracker"
++    "MixinWorldRenderer"
+   ]
+ }

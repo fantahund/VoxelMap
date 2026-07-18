@@ -27,10 +27,11 @@ zusätzlich funktional getestet (Roundtrip + Fehlerpfad).
 | 012 | Reader-/Stream-Leaks in `BiomeRepository.loadBiomeColors()` bei IO-Fehlern | Low | Resource Leak | `util/BiomeRepository.java` |
 | 013 | `NoSuchElementException` beim CTM-/Custom-Colors-Laden: `Optional.get()` ohne Präsenzprüfung | Medium | Bug | `ColorManager.java` |
 | 014 | CTM-/Custom-Colors-Verarbeitung läuft vor Abschluss des asynchronen Terrain-Atlas-Readbacks (NPE, falsche/veraltete Farben) | Medium | Bug | `ColorManager.java` |
+| 015 | Karte aktualisiert sich nicht live bei Blockänderungen, wenn Sodium installiert ist (Hook auf `SectionUpdateTracker` wird von Sodium umgangen) | High | Bug | `mixins/` + `mixin.voxelmap.json` |
 
 Pfade relativ zu `common/src/main/java/com/mamiyaotaru/voxelmap/`.
 
-**Verteilung:** 3× High, 8× Medium, 3× Low — davon 6× Bug, 3× Race Condition, 4× Resource Leak, 1× Performance.
+**Verteilung:** 4× High, 8× Medium, 3× Low — davon 7× Bug, 3× Race Condition, 4× Resource Leak, 1× Performance.
 
 *Nachtrag 2026-07-18:* Issues 013 und 014 wurden anhand von Runtime-Logs identifiziert und sind
 unabhängig von den Patches 001–012. 013: Stacktraces „error loading CTM No value present" /
@@ -40,6 +41,17 @@ Folge-NPEs („terrainImage is null", „failed getting color: Lily Pad"), verur
 asynchrone GPU-Rückleseoperation des Block-Atlas — der Fehler existierte schon vorher, wurde
 aber durch den früheren Abbruch aus 013 verdeckt. **014 setzt 013 voraus** (gleiche Datei,
 Anwendung in Nummernreihenfolge).
+
+015: Beim 26.2-Port wanderte der Änderungs-Hook auf `SectionUpdateTracker.setDirty`; Sodium
+(0.9.1+mc26.2) overwritet aber die `LevelExtractor`-Methoden, die den Tracker füttern, und
+leitet Block-Updates direkt an den `SodiumWorldRenderer` um — der Hook feuert mit Sodium nie,
+die Karte zeigt Blockänderungen (z. B. WorldEdit-Flächen) erst nach Relog. Der Fix verlegt die
+Hooks auf die Sodium-festen `ClientLevel`-Einstiegspunkte (`sendBlockUpdated`, `setBlocksDirty`,
+`setSectionDirtyWithNeighbors`, `setSectionRangeDirty`) plus das nicht overwrittene public
+`LevelExtractor.setSectionDirty(III)` für Chunk-Loads/-Resends; der alte
+`MixinSectionUpdateTracker` entfällt (alle Auslösepfade per Bytecode-Analyse der MC-26.2- und
+Sodium-Jars verifiziert). Ohne Sodium war der alte Hook funktional — der Fehler betraf nur
+Instanzen mit Sodium.
 
 ## Hinweise zur Anwendung
 
