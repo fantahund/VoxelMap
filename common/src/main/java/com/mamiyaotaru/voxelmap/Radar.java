@@ -75,29 +75,13 @@ public class Radar extends AbstractRadar {
         }
     }
 
-    private void applyContactTransform(Matrix4fStack matrixStack, Contact contact, int x, int y, int scScale) {
-        float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
-        if (radarOptions.filtering) {
-            matrixStack.translate(x, y, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
-            matrixStack.translate(0.0F, -distance, 0.0F);
-            matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
-            matrixStack.translate(-x, -y, 0.0F);
-        } else {
-            double wayZ = Math.cos(Math.toRadians(contact.angle)) * distance;
-            double wayX = Math.sin(Math.toRadians(contact.angle)) * distance;
-            matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
-        }
-    }
-
     @Override
     public void renderMapMobs(SubmitPass pass, Matrix4fStack matrixStack, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj) {
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH.apply(EntityMapImageManager.resourceTextureAtlasMarker));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(EntityMapImageManager.resourceTextureAtlasMarker));
 
         matrixStack.pushMatrix();
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
-        // Draw mob icons
         for (int i = 0; i < contacts.size(); i++) {
             Contact contact = contacts.get(i);
 
@@ -107,7 +91,19 @@ public class Radar extends AbstractRadar {
 
             try {
                 matrixStack.pushMatrix();
-                applyContactTransform(matrixStack, contact, x, y, scScale);
+
+                float distance = (float) (contact.distance / minimapContext.zoomScaleAdjusted);
+                if (radarOptions.filtering) {
+                    matrixStack.translate(x, y, 0.0F);
+                    matrixStack.rotate(Axis.ZP.rotationDegrees(-contact.angle));
+                    matrixStack.translate(0.0F, -distance, 0.0F);
+                    matrixStack.rotate(Axis.ZP.rotationDegrees(contact.angle + contact.rotationFactor));
+                    matrixStack.translate(-x, -y, 0.0F);
+                } else {
+                    double wayZ = Math.cos(Math.toRadians(contact.angle)) * distance;
+                    double wayX = Math.sin(Math.toRadians(contact.angle)) * distance;
+                    matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
+                }
 
                 int colorMult;
                 if (minimapContext.playerY - contact.y < 0) {
@@ -117,7 +113,7 @@ public class Radar extends AbstractRadar {
                     colorMult = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
                 }
 
-                float zOffset = i * 0.01F;
+                float zOffset = (i % 100) * 0.1F; // 0.0 - 10.0
                 float yOffset = 0.0F;
                 if (contact.entity.getVehicle() != null && isEntityShown(contact.entity.getVehicle())) {
                     yOffset = -4.0F;
@@ -136,36 +132,18 @@ public class Radar extends AbstractRadar {
                     float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
                     pass.submitQuad(matrixStack, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
                 }
+
+                if (contact.name != null && ((radarOptions.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
+                    float scaleFactor = radarOptions.fontScale / 4.0F;
+                    matrixStack.pushMatrix();
+                    matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
+                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
+                    matrixStack.popMatrix();
+                }
             } catch (Exception e) {
                 VoxelConstants.getLogger().error("Error rendering mob icon! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
             } finally {
                 matrixStack.popMatrix();
-            }
-        }
-
-        // Draw mob names
-        for (int i = 0; i < contacts.size(); i++) {
-            Contact contact = contacts.get(i);
-
-            if (contact.displayState != displayState) {
-                continue;
-            }
-
-            if (contact.name != null && ((radarOptions.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
-                try {
-                    float scaleFactor = radarOptions.fontScale / 4.0F;
-                    float zOffset = i * 0.01F;
-
-                    matrixStack.pushMatrix();
-                    applyContactTransform(matrixStack, contact, x, y, scScale);
-                    matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
-
-                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
-                } catch (Exception e) {
-                    VoxelConstants.getLogger().error("Error rendering mob name! " + e.getLocalizedMessage() + " contact type " + BuiltInRegistries.ENTITY_TYPE.getKey(contact.entity.getType()), e);
-                } finally {
-                    matrixStack.popMatrix();
-                }
             }
         }
 
