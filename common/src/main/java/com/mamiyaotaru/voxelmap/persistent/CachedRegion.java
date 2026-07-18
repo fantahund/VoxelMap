@@ -565,57 +565,55 @@ public class CachedRegion {
             File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
-            FileOutputStream fos = new FileOutputStream(cachedRegionFile);
-            ZipOutputStream zos = new ZipOutputStream(fos);
-            ZipEntry ze = new ZipEntry("data");
-            ze.setSize(byteArray.length);
-            zos.putNextEntry(ze);
-            zos.write(byteArray);
-            zos.closeEntry();
-            if (stateToInt != null) {
-                StringBuilder stringBuffer = new StringBuilder();
-
-                for (Entry<BlockState, Integer> entry : stateToInt.entrySet()) {
-                    String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
-                    stringBuffer.append(nextLine);
-                }
-
-                byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
-                ze = new ZipEntry("key");
-                ze.setSize(keyByteArray.length);
+            try (FileOutputStream fos = new FileOutputStream(cachedRegionFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
+                ZipEntry ze = new ZipEntry("data");
+                ze.setSize(byteArray.length);
                 zos.putNextEntry(ze);
-                zos.write(keyByteArray);
+                zos.write(byteArray);
                 zos.closeEntry();
-            }
-            if (biomeToInt != null) {
-                StringBuilder stringBuffer = new StringBuilder();
+                if (stateToInt != null) {
+                    StringBuilder stringBuffer = new StringBuilder();
 
-                for (Entry<Biome, Integer> entry : biomeToInt.entrySet()) {
-                    try {
-                        String nextLine = entry.getValue() + " " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
+                    for (Entry<BlockState, Integer> entry : stateToInt.entrySet()) {
+                        String nextLine = entry.getValue() + " " + entry.getKey().toString() + "\r\n";
                         stringBuffer.append(nextLine);
-                    } catch (NullPointerException ex) {
-                        VoxelConstants.getLogger().warn("Nullpointer for Biome: " + entry.getValue() + " at " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
                     }
+
+                    byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
+                    ze = new ZipEntry("key");
+                    ze.setSize(keyByteArray.length);
+                    zos.putNextEntry(ze);
+                    zos.write(keyByteArray);
+                    zos.closeEntry();
+                }
+                if (biomeToInt != null) {
+                    StringBuilder stringBuffer = new StringBuilder();
+
+                    for (Entry<Biome, Integer> entry : biomeToInt.entrySet()) {
+                        try {
+                            String nextLine = entry.getValue() + " " + world.registryAccess().lookupOrThrow(Registries.BIOME).getKey(entry.getKey()).toString() + "\r\n";
+                            stringBuffer.append(nextLine);
+                        } catch (NullPointerException ex) {
+                            VoxelConstants.getLogger().warn("Nullpointer for Biome: " + entry.getValue() + " at " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
+                        }
+                    }
+
+                    byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
+                    ze = new ZipEntry("biomes");
+                    ze.setSize(keyByteArray.length);
+                    zos.putNextEntry(ze);
+                    zos.write(keyByteArray);
+                    zos.closeEntry();
                 }
 
-                byte[] keyByteArray = String.valueOf(stringBuffer).getBytes();
-                ze = new ZipEntry("biomes");
+                String nextLine = "version:" + CompressibleMapData.DATA_VERSION + "\r\n";
+                byte[] keyByteArray = nextLine.getBytes();
+                ze = new ZipEntry("control");
                 ze.setSize(keyByteArray.length);
                 zos.putNextEntry(ze);
                 zos.write(keyByteArray);
                 zos.closeEntry();
             }
-
-            String nextLine = "version:" + CompressibleMapData.DATA_VERSION + "\r\n";
-            byte[] keyByteArray = nextLine.getBytes();
-            ze = new ZipEntry("control");
-            ze.setSize(keyByteArray.length);
-            zos.putNextEntry(ze);
-            zos.write(keyByteArray);
-            zos.closeEntry();
-            zos.close();
-            fos.close();
         } else {
             VoxelConstants.getLogger().warn("Data array wrong size: " + byteArray.length + "for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
         }
