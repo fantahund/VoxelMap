@@ -168,6 +168,7 @@ public class Map implements Runnable, IChangeObserver {
     private boolean lastPaused = true;
     private boolean lastAboveHorizon = true;
     private int lastBiome;
+    private boolean worldIsEther;
 
     // Map Rendering
     private final Matrix4fStack renderMatrixStack = new Matrix4fStack(16);
@@ -333,6 +334,7 @@ public class Map implements Runnable, IChangeObserver {
 
     public void newWorld(ClientLevel world) {
         this.world = world;
+        this.worldIsEther = world != null && world.dimension().identifier().toString().toLowerCase().contains("ether");
         this.mapData[this.zoom].blank();
         this.doFullRender = true;
         this.calculateCurrentLightAndSkyColor(true);
@@ -554,7 +556,7 @@ public class Map implements Runnable, IChangeObserver {
                 }
 
                 boolean aboveHorizon = VoxelConstants.getPlayer().getEyePosition(0.0F).y >= this.world.getLevelData().getHorizonHeight(this.world);
-                if (this.world.dimension().identifier().toString().toLowerCase().contains("ether")) {
+                if (this.worldIsEther) {
                     aboveHorizon = true;
                 }
 
