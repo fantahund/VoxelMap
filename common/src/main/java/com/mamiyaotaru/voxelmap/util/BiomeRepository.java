@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -22,8 +22,9 @@ import org.jetbrains.annotations.NotNull;
 
 public final class BiomeRepository {
     private static final Random generator = new Random();
-    private static final HashMap<Biome, Integer> IDtoColor = new HashMap<>(256);
+    private static final ConcurrentHashMap<Biome, Integer> IDtoColor = new ConcurrentHashMap<>(256);
     private static final TreeMap<String, Integer> nameToColor = new TreeMap<>();
+    private static final Object colorLock = new Object();
     private static boolean dirty;
 
     private BiomeRepository() {}
@@ -105,17 +106,19 @@ public final class BiomeRepository {
             try {
                 PrintWriter out = new PrintWriter(new FileWriter(settingsFile));
 
-                for (Map.Entry<String, Integer> entry : nameToColor.entrySet()) {
-                    String name = entry.getKey();
-                    Integer color = entry.getValue();
-                    StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
+                synchronized (colorLock) {
+                    for (Map.Entry<String, Integer> entry : nameToColor.entrySet()) {
+                        String name = entry.getKey();
+                        Integer color = entry.getValue();
+                        StringBuilder hexColor = new StringBuilder(Integer.toHexString(color));
 
-                    while (hexColor.length() < 6) {
-                        hexColor.insert(0, "0");
+                        while (hexColor.length() < 6) {
+                            hexColor.insert(0, "0");
+                        }
+
+                        hexColor.insert(0, "0x");
+                        out.println(name + "=" + hexColor);
                     }
-
-                    hexColor.insert(0, "0x");
-                    out.println(name + "=" + hexColor);
                 }
 
                 out.close();
@@ -141,28 +144,30 @@ public final class BiomeRepository {
         }
 
         String identifier = VoxelConstants.getPlayer().level().registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome).toString();
-        color = nameToColor.get(identifier);
+        synchronized (colorLock) {
+            color = nameToColor.get(identifier);
 
-        if (color == null) {
-            String friendlyName = getName(biome);
+            if (color == null) {
+                String friendlyName = getName(biome);
 
-            color = nameToColor.get(friendlyName);
+                color = nameToColor.get(friendlyName);
 
-            if (color != null) {
-                nameToColor.remove(friendlyName);
+                if (color != null) {
+                    nameToColor.remove(friendlyName);
+                    nameToColor.put(identifier, color);
+                    dirty = true;
+                }
+            }
+
+            if (color == null) {
+                int r = generator.nextInt(255);
+                int g = generator.nextInt(255);
+                int b = generator.nextInt(255);
+
+                color = r << 16 | g << 8 | b;
                 nameToColor.put(identifier, color);
                 dirty = true;
             }
-        }
-
-        if (color == null) {
-            int r = generator.nextInt(255);
-            int g = generator.nextInt(255);
-            int b = generator.nextInt(255);
-
-            color = r << 16 | g << 8 | b;
-            nameToColor.put(identifier, color);
-            dirty = true;
         }
 
         IDtoColor.put(biome, color);
