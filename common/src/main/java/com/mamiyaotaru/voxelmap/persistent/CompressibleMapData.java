@@ -6,7 +6,6 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.Biome;
@@ -45,8 +44,6 @@ public class CompressibleMapData extends AbstractMapData {
     private BiMap<Biome, Integer> biomeToInt;
     int biomeCount = 1;
     private final ClientLevel world;
-
-    private final Minecraft MINECRAFT = Minecraft.getInstance();
 
     public CompressibleMapData(ClientLevel world) {
         this.width = REGION_SIZE;
@@ -155,7 +152,7 @@ public class CompressibleMapData extends AbstractMapData {
     public Biome getBiome(int x, int z) {
         int biomeId = getBiomeId(x, z);
         if (biomeId == 0 && getHeight(x, z) != Short.MIN_VALUE) {
-            return MINECRAFT.level.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
+            return world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
         }
         return this.getBiomeFromID(biomeId);
     }
