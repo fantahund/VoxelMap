@@ -105,12 +105,12 @@ public class Radar extends AbstractRadar {
                     matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
                 }
 
-                int colorMult;
+                int baseColor;
                 if (minimapContext.playerY - contact.y < 0) {
-                    colorMult = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+                    baseColor = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
                 } else {
-                    float brightness = Math.max(0.3F, contact.brightness);
-                    colorMult = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
+                    float brightness = contact.brightness * 0.7F + 0.3F;
+                    baseColor = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
                 }
 
                 float zOffset = (i % 100) * 0.1F; // 0.0 - 10.0
@@ -119,25 +119,28 @@ public class Radar extends AbstractRadar {
                     yOffset = -4.0F;
                 }
 
-                int baseColor = ARGB.multiply(colorMult, contact.baseColor);
-                float imageWidth = contact.icon.getIconWidth() / 8.0F;
-                float imageHeight = contact.icon.getIconHeight() / 8.0F;
-                pass.submitQuad(matrixStack, contact.icon, x - (imageWidth / 2), y + yOffset - (imageHeight / 2), zOffset, imageWidth, imageHeight, baseColor);
+                if (contact.icon != null) {
+                    int color = ARGB.multiply(baseColor, contact.baseColor);
+                    float width = contact.icon.getIconWidth() / 8.0F;
+                    float height = contact.icon.getIconHeight() / 8.0F;
+                    pass.submitQuad(matrixStack, contact.icon, x - (width / 2.0F), y + yOffset - (height / 2.0F), zOffset, width, height, color);
+                }
 
                 if (contact.armorIcon != null) {
-                    int armorColor = ARGB.multiply(colorMult, contact.armorColor);
                     MobIconConfig iconConfig = getIconConfig(contact);
-                    float armorOffset = iconConfig.armorOffset();
-                    float armorWidth = contact.armorIcon.getIconWidth() / 8.0F;
-                    float armorHeight = contact.armorIcon.getIconHeight() / 8.0F;
-                    pass.submitQuad(matrixStack, contact.armorIcon, x - (armorWidth / 2), y + yOffset + armorOffset - (armorHeight / 2), zOffset, armorWidth, armorHeight, armorColor);
+                    yOffset += iconConfig.armorOffset();
+
+                    int color = ARGB.multiply(baseColor, contact.armorColor);
+                    float width = contact.armorIcon.getIconWidth() / 8.0F;
+                    float height = contact.armorIcon.getIconHeight() / 8.0F;
+                    pass.submitQuad(matrixStack, contact.armorIcon, x - (width / 2.0F), y + yOffset - (height / 2.0F), zOffset, width, height, color);
                 }
 
                 if (contact.name != null && ((radarOptions.showPlayerNames && contact.category == VoxelMapMobCategory.PLAYER) || (radarOptions.showMobNames && contact.category != VoxelMapMobCategory.PLAYER))) {
                     float scaleFactor = radarOptions.fontScale / 4.0F;
                     matrixStack.pushMatrix();
                     matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
-                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, 0xFFFFFFFF, true);
+                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, baseColor, radarOptions.outlines);
                     matrixStack.popMatrix();
                 }
             } catch (Exception e) {
