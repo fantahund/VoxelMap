@@ -148,13 +148,13 @@ public class ModrinthUpdateChecker {
 
         if (compatible.isEmpty()) return null;
 
-        String latest = compatible.stream().map(VersionInfo::version).max(String::compareTo).orElse(null);
+        String latest = compatible.stream().map(VersionInfo::version).max(ModrinthUpdateChecker::compareVersions).orElse(null);
 
         if (latest == null) return null;
 
         List<VersionInfo> updates = compatible.stream()
-                .filter(v -> v.version().compareTo(installedRaw) > 0)
-                .sorted(Comparator.comparing(VersionInfo::version))
+                .filter(v -> compareVersions(v.version(), installedRaw) > 0)
+                .sorted(Comparator.comparing(VersionInfo::version, ModrinthUpdateChecker::compareVersions))
                 .collect(Collectors.toList());
 
         return new UpdateResult(latest, updates);
@@ -180,6 +180,46 @@ public class ModrinthUpdateChecker {
         version = version.replaceAll("^\\D+", "");
         String[] split = version.split("\\+");
         return split[0];
+    }
+
+    /**
+     * Compares two version strings numerically, segment by segment,
+     * so that e.g. "1.16.10" is considered newer than "1.16.9".
+     * Segments without a numeric prefix fall back to lexicographic comparison.
+     */
+    public static int compareVersions(String a, String b) {
+        String[] as = a.split("[.\\-]");
+        String[] bs = b.split("[.\\-]");
+        int len = Math.max(as.length, bs.length);
+        for (int i = 0; i < len; i++) {
+            String sa = i < as.length ? as[i] : "0";
+            String sb = i < bs.length ? bs[i] : "0";
+            int na = parseLeadingInt(sa);
+            int nb = parseLeadingInt(sb);
+            if (na != nb) {
+                return Integer.compare(na, nb);
+            }
+            int cmp = sa.compareTo(sb);
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return 0;
+    }
+
+    private static int parseLeadingInt(String segment) {
+        int end = 0;
+        while (end < segment.length() && Character.isDigit(segment.charAt(end))) {
+            end++;
+        }
+        if (end == 0) {
+            return -1;
+        }
+        try {
+            return Integer.parseInt(segment.substring(0, end));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     /**
