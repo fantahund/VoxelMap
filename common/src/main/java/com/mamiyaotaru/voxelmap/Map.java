@@ -218,10 +218,11 @@ public class Map implements Runnable, IChangeObserver {
 
         final int fboTextureSize = 512;
 
-        this.baseMapRenderTarget = new VoxelMapRenderTarget("minimap_base", GpuFormat.RGBA8_UNORM, fboTextureSize, fboTextureSize);
+        this.baseMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Base Map Target", GpuFormat.RGBA8_UNORM, true);
         this.baseMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
-        this.finalMapRenderTarget = new VoxelMapRenderTarget("minimap_final", GpuFormat.RGBA8_UNORM, fboTextureSize, fboTextureSize);
+        this.finalMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Final Map Target", GpuFormat.RGBA8_UNORM, true);
+        this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
 
         this.loadMapTextures();
     }
@@ -1559,7 +1560,7 @@ public class Map implements Runnable, IChangeObserver {
             finalPass.submitQuad(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
             finalPass.nextDraw();
 
-            finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH_MASKED.apply(baseMapRenderTarget.colorTexId));
+            finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH_MASKED.apply(baseMapRenderTarget.textureId));
             finalPass.submitBlit(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
         }
 
@@ -1570,7 +1571,7 @@ public class Map implements Runnable, IChangeObserver {
         minTablistOffset = guiScale * 63;
 
 
-        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(finalMapRenderTarget.colorTexId));
+        pass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_GEQUAL_DEPTH.apply(finalMapRenderTarget.textureId));
         pass.submitBlit(matrixStack, x - 32.0F, y - 32.0F, MAP_IMAGE_DEPTH, 64.0F, 64.0F, 0xFFFFFFFF);
         pass.nextDraw();
 

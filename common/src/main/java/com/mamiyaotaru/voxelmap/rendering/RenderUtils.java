@@ -25,7 +25,7 @@ import org.joml.Vector4fc;
 public class RenderUtils {
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final SubmitNodeStorage SUBMIT_NODE_STORAGE = new SubmitNodeStorage();
-    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("fullscreen", GpuFormat.RGBA8_UNORM);
+    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", GpuFormat.RGBA8_UNORM, true);
     private static final ArrayDeque<ProjectionEntry> PROJECTION_STACK = new ArrayDeque<>();
 
     public static void init() {

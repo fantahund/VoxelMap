@@ -57,7 +57,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
         }
 
         projection = CachedProjectionMatrixBuffer.orthographic("VoxelMap Entity Projection", 1000.0F, 21000.0F, true);
-        renderTarget = new VoxelMapRenderTarget("entity_render", GpuFormat.RGBA8_UNORM);
+        renderTarget = new VoxelMapRenderTarget("VoxelMap Entity Target", GpuFormat.RGBA8_UNORM, true);
         renderTarget.createBuffers(TEXTURE_SIZE, TEXTURE_SIZE);
     }
 
