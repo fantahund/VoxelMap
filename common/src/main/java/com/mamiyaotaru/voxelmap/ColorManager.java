@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -679,8 +680,9 @@ public class ColorManager {
         Identifier propertiesFile = Identifier.withDefaultNamespace("optifine/renderpass.properties");
 
         try {
-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile).get().open();
-            if (input != null) {
+            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(propertiesFile);
+            if (resource.isPresent()) {
+                InputStream input = resource.get().open();
                 properties.load(input);
                 input.close();
                 this.renderPassThreeBlendMode = properties.getProperty("blend.3", "alpha");
@@ -823,7 +825,12 @@ public class ColorManager {
                 if (!method.equals("horizontal") && !method.startsWith("overlay") && (method.equals("sandstone") || method.equals("top") || faces.contains("top") || faces.contains("all") || faces.isEmpty())) {
                     try {
                         Identifier pngResource = Identifier.fromNamespaceAndPath(propertiesFile.getNamespace(), tilePath);
-                        InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource).get().open();
+                        Optional<Resource> pngResourceOptional = VoxelConstants.getMinecraft().getResourceManager().getResource(pngResource);
+                        if (pngResourceOptional.isEmpty()) {
+                            VoxelConstants.getLogger().error("error getting CTM block from " + propertiesFile.getPath() + ": missing " + tilePath);
+                            return;
+                        }
+                        InputStream is = pngResourceOptional.get().open();
                         Image top = ImageIO.read(is);
                         is.close();
                         top = top.getScaledInstance(1, 1, 4);
@@ -1051,8 +1058,9 @@ public class ColorManager {
         Properties properties = new Properties();
 
         try {
-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("optifine/color.properties")).get().open();
-            if (input != null) {
+            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.parse("optifine/color.properties"));
+            if (resource.isPresent()) {
+                InputStream input = resource.get().open();
                 properties.load(input);
                 input.close();
             }
@@ -1153,8 +1161,9 @@ public class ColorManager {
         int yOffset = 0;
 
         try {
-            InputStream input = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceProperties).get().open();
-            if (input != null) {
+            Optional<Resource> resourceOptional = VoxelConstants.getMinecraft().getResourceManager().getResource(resourceProperties);
+            if (resourceOptional.isPresent()) {
+                InputStream input = resourceOptional.get().open();
                 colorProperties.load(input);
                 input.close();
             }
@@ -1185,7 +1194,11 @@ public class ColorManager {
         Image tintColors;
 
         try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(resource).get().open();
+            Optional<Resource> resourceOptional = VoxelConstants.getMinecraft().getResourceManager().getResource(resource);
+            if (resourceOptional.isEmpty()) {
+                return;
+            }
+            InputStream is = resourceOptional.get().open();
             tintColors = ImageIO.read(is);
             is.close();
         } catch (IOException var21) {
