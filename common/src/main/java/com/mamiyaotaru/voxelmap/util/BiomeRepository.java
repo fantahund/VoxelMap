@@ -33,9 +33,7 @@ public final class BiomeRepository {
         File saveDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/");
         File settingsFile = new File(saveDir, "biomecolors.txt");
         if (settingsFile.exists()) {
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(settingsFile));
-
+            try (BufferedReader br = new BufferedReader(new FileReader(settingsFile))) {
                 String sCurrentLine;
                 while ((sCurrentLine = br.readLine()) != null) {
                     String[] curLine = sCurrentLine.split("=");
@@ -54,16 +52,13 @@ public final class BiomeRepository {
                         }
                     }
                 }
-
-                br.close();
             } catch (IOException var12) {
                 VoxelConstants.getLogger().error("biome load error: " + var12.getLocalizedMessage(), var12);
             }
         }
 
-        try {
-            InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/biomecolors.txt")).get().open();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        try (InputStream is = VoxelConstants.getMinecraft().getResourceManager().getResource(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/biomecolors.txt")).get().open();
+             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
             String sCurrentLine;
             while ((sCurrentLine = br.readLine()) != null) {
@@ -85,9 +80,6 @@ public final class BiomeRepository {
                     }
                 }
             }
-
-            br.close();
-            is.close();
         } catch (IOException var11) {
             VoxelConstants.getLogger().error("Error loading biome color config file from litemod!", var11);
         }
