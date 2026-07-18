@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.util;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
+import com.mamiyaotaru.voxelmap.rendering.AlwaysOnTopSubmitter;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -31,6 +32,8 @@ public class WaypointContainer {
     private static final float INVALID_OFFSET = -1.0F;
     private static final int LIGHT = LightCoordsUtil.FULL_BRIGHT;
     private static final int OVERLAY = OverlayTexture.NO_OVERLAY;
+    private static final int WAYPOINT_LABEL_BACKGROUND_AND_ICON_ORDER = Integer.MAX_VALUE - 1;
+    private static final int WAYPOINT_LABEL_TEXT_ORDER = Integer.MAX_VALUE;
 
 
     public WaypointContainer(MapSettingsManager options) {
@@ -127,9 +130,9 @@ public class WaypointContainer {
             boolean isPointedAt = renderable.getOffset() != INVALID_OFFSET && (shiftDown || renderable == last);
             if (waypointManager.isWaypointHighlight(waypoint)) {
                 // Render base waypoint
-                renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, false, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+                renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, false, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
             }
-            renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
+            renderSign(poseStack, submitNodeCollector, waypoint, textureAtlas, isPointedAt, isHighlighted, isHighlighted, distance, x - cameraPos.x, y - cameraPos.y + 1.12, z - cameraPos.z);
         }
     }
 
@@ -220,7 +223,7 @@ public class WaypointContainer {
 
     }
 
-    private void renderSign(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, double distance, double baseX, double baseY, double baseZ) {
+    private void renderSign(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Waypoint waypoint, TextureAtlas textureAtlas, boolean isPointedAt, boolean isHighlighted, boolean isOnHighlighted, double distance, double baseX, double baseY, double baseZ) {
         String mainLabel = waypoint.name;
         if (isHighlighted) {
             if (waypointManager.isCoordinateHighlight(waypoint)) {
@@ -246,14 +249,8 @@ public class WaypointContainer {
         poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.xRot()));
         poseStack.scale(-scale, -scale, -scale);
 
-        float alpha = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
-        float alphaBehindWall = alpha;
-        if (!isPointedAt) {
-            if (!waypoint.enabled && !isHighlighted) {
-                alpha *= 0.3F;
-            }
-            alphaBehindWall *= 0.3F;
-        }
+        float distanceAlpha = distance > 5.0 ? 1.0F : (float) distance / 5.0F;
+        float foregroundAlpha = distanceAlpha * (isPointedAt || isHighlighted || isOnHighlighted ? 1.0F : 0.4F);
 
         float width = 10.0F;
         float r = isHighlighted ? 1.0F : waypoint.red;
@@ -265,11 +262,9 @@ public class WaypointContainer {
             icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
         }
 
-        RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED_LEQUAL_DEPTH_TEST.apply(icon.getIdentifier());
-        submitIcon(submitNodeCollector, poseStack, renderType, icon, width, r, g, b, alpha);
-
-        renderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(icon.getIdentifier());
-        submitIcon(submitNodeCollector, poseStack, renderType, icon, width, r, g, b, alphaBehindWall);
+        AlwaysOnTopSubmitter iconSubmitter = AlwaysOnTopSubmitter.order(submitNodeCollector, WAYPOINT_LABEL_BACKGROUND_AND_ICON_ORDER);
+        RenderType renderType = VoxelMapRenderTypes.GUI_TEXTURED_NO_DEPTH_TEST.apply(icon.getIdentifier());
+        iconSubmitter.submitCustomGeometry(poseStack, renderType, createIconRenderer(icon, width, r, g, b, foregroundAlpha));
 
         if (isPointedAt) {
             boolean moveLabelsDown = options.waypointNamesLocation == 2;
@@ -309,10 +304,13 @@ public class WaypointContainer {
             int halfWidthSubLabel = minecraft.font.width(subLabel) / 2;
             int yPosSubLabel = moveLabelsDown ? 26 : -20;
 
+            AlwaysOnTopSubmitter labelBackgroundSubmitter = AlwaysOnTopSubmitter.order(submitNodeCollector, WAYPOINT_LABEL_BACKGROUND_AND_ICON_ORDER);
+            AlwaysOnTopSubmitter labelTextSubmitter = AlwaysOnTopSubmitter.order(submitNodeCollector, WAYPOINT_LABEL_TEXT_ORDER);
+
             // Render label backgrounds
-            float labelAlpha = alpha;
+            float labelAlpha = distanceAlpha;
             renderType = VoxelMapRenderTypes.WAYPOINT_TEXT_BACKGROUND;
-            submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexTextBackground) -> {
+            labelBackgroundSubmitter.submitCustomGeometry(poseStack, renderType, (pose, vertexTextBackground) -> {
                 if (renderMainLabel) {
                     vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 2, yPosMainLabel - 2, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
                     vertexTextBackground.addVertex(pose, -halfWidthMainLabel - 2, yPosMainLabel + 9, 0.0F).setColor(waypoint.red, waypoint.green, waypoint.blue, 0.6F * labelAlpha);
@@ -347,29 +345,29 @@ public class WaypointContainer {
             });
 
             // Render labels
-            int textColor = (int) (255.0F * alpha) << 24 | 0x00FFFFFF;
+            int textColor = (int) (255.0F * distanceAlpha) << 24 | 0x00FFFFFF;
 
             if (renderMainLabel) {
-                submitNodeCollector.submitText(poseStack, -halfWidthMainLabel, yPosMainLabel, Component.literal(mainLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
+                labelTextSubmitter.submitText(poseStack, -halfWidthMainLabel, yPosMainLabel, Component.literal(mainLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
             }
 
             if (renderSubLabel) {
                 poseStack.pushPose();
                 poseStack.scale(subLabelScale, subLabelScale, 1.0F);
-                submitNodeCollector.submitText(poseStack, -halfWidthSubLabel, yPosSubLabel, Component.literal(subLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
+                labelTextSubmitter.submitText(poseStack, -halfWidthSubLabel, yPosSubLabel, Component.literal(subLabel).getVisualOrderText(), false, net.minecraft.client.gui.Font.DisplayMode.SEE_THROUGH, LIGHT, textColor, 0x00000000, 0);
                 poseStack.popPose();
             }
         }
         poseStack.popPose();
     }
 
-    private void submitIcon(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, RenderType renderType, Sprite icon, float width, float r, float g, float b, float alpha) {
-        submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+    private SubmitNodeCollector.CustomGeometryRenderer createIconRenderer(Sprite icon, float width, float r, float g, float b, float alpha) {
+        return (pose, buffer) -> {
             buffer.addVertex(pose, -width, -width, 0.0F).setUv(icon.getMinU(), icon.getMinV()).setColor(r, g, b, alpha);
             buffer.addVertex(pose, -width, width, 0.0F).setUv(icon.getMinU(), icon.getMaxV()).setColor(r, g, b, alpha);
             buffer.addVertex(pose, width, width, 0.0F).setUv(icon.getMaxU(), icon.getMaxV()).setColor(r, g, b, alpha);
             buffer.addVertex(pose, width, -width, 0.0F).setUv(icon.getMaxU(), icon.getMinV()).setColor(r, g, b, alpha);
-        });
+        };
     }
 
     public static class RenderableWaypoint implements Comparable<RenderableWaypoint> {
