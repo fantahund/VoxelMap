@@ -255,9 +255,7 @@ public class WaypointContainer {
         if (!waypoint.enabled && !isHighlighted) {
             fade *= 0.3F;
         }
-// TODO: update waypoint focusing option
-        boolean focused = isPointedAt && false;
-//        boolean focused = options.highlightFocused.get() && isPointedAt;
+        boolean focused = isPointedAt && options.highlightSignOnFocus;
 
         float width = 10.0F;
         float r = isHighlighted ? 1.0F : waypoint.red;
@@ -277,25 +275,17 @@ public class WaypointContainer {
         pass.setOrder(1);
         renderIcon(pass, matrixStack, getIconRenderType(focused, false, icon.getIdentifier()), icon, width, iconColor);
 
-// TODO: update waypoint style option
-        if (isPointedAt && !hideLabels) {
-//        if (isPointedAt && !hideLabels && options.labelStyle.get() != OptionEnumWaypoint.LabelStyle.OFF) {
-            boolean convertFromOneKilometer = false;
-            boolean convertFromTenKilometers = false;
-//            boolean convertFromOneKilometer = options.unitConversion.get() == OptionEnumWaypoint.UnitConversion.FROM_1000M && distance > 1000.0;
-//            boolean convertFromTenKilometers = options.unitConversion.get() == OptionEnumWaypoint.UnitConversion.FROM_10000M && distance > 10000.0;
-
+        if (isPointedAt && !hideLabels && options.waypointSignLayout != 0) {
             String distanceLabel;
-            if (convertFromOneKilometer || convertFromTenKilometers) {
+            if ((options.waypointDistanceConversion == 1 && distance > 1000.0)
+                    || options.waypointDistanceConversion == 2 && distance > 10000.0) {
                 distanceLabel = getDistanceString(distance / 1000.0) + "km";
             } else {
                 distanceLabel = getDistanceString(distance) + "m";
             }
 
-            boolean showSubLabel = false;
-            boolean moveLabelDown = false;
-//            boolean showSubLabel = options.labelStyle.get() == OptionEnumWaypoint.LabelStyle.DEFAULT;
-//            boolean moveLabelDown = options.labelStyle.get() != OptionEnumWaypoint.LabelStyle.CLASSIC_TOP;
+            boolean showSubLabel = options.waypointSignLayout == 1;
+            boolean moveLabelDown = options.waypointSignLayout != 2;
 
             String subLabel = showSubLabel ? distanceLabel : "";
             if (!showSubLabel && !distanceLabel.isEmpty()) {
