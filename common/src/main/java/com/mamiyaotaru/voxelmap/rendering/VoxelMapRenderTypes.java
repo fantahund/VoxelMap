@@ -34,9 +34,15 @@ public class VoxelMapRenderTypes {
             )
     );
 
-    public static final RenderType WAYPOINT_TEXT_BACKGROUND = RenderType.create(
-            "voxelmap_waypoint_text_background",
-            RenderSetup.builder(VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND)
+    public static final RenderType TEXT_BACKGROUND_GEQUAL_DEPTH = RenderType.create(
+            "voxelmap_text_background_gequal_depth",
+            RenderSetup.builder(VoxelMapPipelines.TEXT_BACKGROUND_GEQUAL_DEPTH)
+                    .createRenderSetup()
+    );
+
+    public static final RenderType TEXT_BACKGROUND_ANY_DEPTH = RenderType.create(
+            "voxelmap_text_background_any_depth",
+            RenderSetup.builder(VoxelMapPipelines.TEXT_BACKGROUND_ANY_DEPTH)
                     .createRenderSetup()
     );
 }

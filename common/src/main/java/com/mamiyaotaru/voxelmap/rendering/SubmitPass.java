@@ -48,12 +48,16 @@ public class SubmitPass implements AutoCloseable {
         submitNodeStorage = RenderUtils.getSubmitNodeStorage();
     }
 
-    public OrderedSubmitNodeCollector getSubmit() {
+    private OrderedSubmitNodeCollector getSubmit() {
         return submitNodeStorage.order(submitOrder);
     }
 
     public void nextDraw() {
         submitOrder++;
+    }
+
+    public void setOrder(int i) {
+        submitOrder = i;
     }
 
     public void setRenderType(RenderType renderType) {
@@ -71,7 +75,7 @@ public class SubmitPass implements AutoCloseable {
         return POSE_CACHE;
     }
 
-    private void submitGeometry(Matrix4f matrix, SubmitNodeCollector.CustomGeometryRenderer renderer) {
+    public void submitGeometry(Matrix4f matrix, SubmitNodeCollector.CustomGeometryRenderer renderer) {
         if (currentRenderType == null) {
             throw new IllegalStateException("Set RenderType before submitting geometry!");
         }
@@ -114,7 +118,15 @@ public class SubmitPass implements AutoCloseable {
     }
 
     public void submitText(Matrix4f matrix, Component text, float x, float y, float z, int color, boolean shadow) {
-        getSubmit().submitText(asPoseStack(matrix, x, y, z), 0.0F, 0.0F, text.getVisualOrderText(), shadow, Font.DisplayMode.NORMAL, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+        submitText(matrix, x, y, z, text, shadow, Font.DisplayMode.NORMAL, LightCoordsUtil.FULL_BRIGHT, color, 0x00000000, 0x00000000);
+    }
+
+    public void submitText(Matrix4f matrix, float x, float y, float z, String text, boolean shadow, Font.DisplayMode displayMode, int light, int color, int backgroundColor, int outlineColor) {
+        submitText(matrix, x, y, z, Component.nullToEmpty(text), shadow, displayMode, light, color, backgroundColor, outlineColor);
+    }
+
+    public void submitText(Matrix4f matrix, float x, float y, float z, Component text, boolean shadow, Font.DisplayMode displayMode, int light, int color, int backgroundColor, int outlineColor) {
+        getSubmit().submitText(asPoseStack(matrix, x, y, z), 0.0F, 0.0F, text.getVisualOrderText(), shadow, displayMode, light, color, backgroundColor, outlineColor);
     }
 
     public void flush() {
