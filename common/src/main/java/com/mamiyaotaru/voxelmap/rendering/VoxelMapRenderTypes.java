@@ -27,7 +27,7 @@ public class VoxelMapRenderTypes {
 
     public static final Function<Identifier, RenderType> GUI_TEXTURED_ANY_DEPTH_MASKED = Util.memoize(
             identifier -> RenderType.create(
-                    "voxelmap_gui_textured_masked_any_depth_masked",
+                    "voxelmap_gui_textured_any_depth_masked",
                     RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_MASKED)
                             .withTexture("Sampler0", identifier)
                             .createRenderSetup()
