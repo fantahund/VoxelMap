@@ -55,20 +55,6 @@ public final class VoxelConstants {
 
     public static boolean hasVulkanMod() { return modApiBridge != null && modApiBridge.isModEnabled("vulkanmod"); }
 
-    public static boolean isVulkanRenderer() {
-        if (hasVulkanMod()) {
-            return true;
-        }
-
-        GpuDevice device = RenderSystem.tryGetDevice();
-        if (device == null) {
-            return false;
-        }
-
-        String backendName = device.getDeviceInfo().backendName();
-        return backendName != null && backendName.toLowerCase(Locale.ROOT).contains("vulkan");
-    }
-
     @NotNull
     public static Logger getLogger() { return LOGGER; }
 

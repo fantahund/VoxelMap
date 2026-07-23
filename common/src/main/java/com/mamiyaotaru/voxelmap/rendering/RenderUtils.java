@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
@@ -58,7 +59,7 @@ public class RenderUtils {
     }
 
     public static boolean hasFlippedV() {
-        return true; // return false if the renderer not uses vertically flipped texture
+        return !VoxelConstants.hasVulkanMod(); // Returns true if the renderer uses flipped textures
     }
 
     public static void blitToScreen(GuiGraphicsExtractor graphics, GpuTextureView texture, float x, float y, float width, float height, int color) {
@@ -76,7 +77,16 @@ public class RenderUtils {
     }
 
     public static void flushCmds() {
-        RenderSystem.getDevice().createCommandEncoder().submit();
+        RenderSystem.assertOnRenderThread();
+        if (!VoxelConstants.hasVulkanMod()) {
+            RenderSystem.getDevice().createCommandEncoder().submit();
+        } else {
+            try {
+                Class<?> vkRendererClass = Class.forName("net.vulkanmod.vulkan.Renderer");
+                vkRendererClass.getMethod("flushCmds").invoke(vkRendererClass.getMethod("getInstance").invoke(null));
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     public static VoxelMapRenderTarget getFullscreenTarget() {
