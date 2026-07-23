@@ -42,7 +42,7 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
     private final VoxelMapRenderTarget renderTarget;
 
     public EntityGPURenderer() {
-        stagedVertexBuffer = minecraft.gameRenderer.renderBuffers().stagedVertexBuffer();
+        stagedVertexBuffer = new StagedVertexBuffer(() -> "VoxelMap Entity Buffer", 4096);
 
         Vector3f fullBright = new Vector3f(1.0F, -1.0F, 1.0F).normalize();
         Vector3f fullBright2 = new Vector3f(-1.0F, -1.0F, 1.0F).normalize();
