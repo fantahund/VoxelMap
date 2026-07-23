@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
 
 public class EmptySubmitNodeCollector implements SubmitNodeCollector {
     @Override
-    public OrderedSubmitNodeCollector order(int i) {
+    public OrderedSubmitNodeCollector order(int order) {
         return this;
     }
 
@@ -61,12 +61,10 @@ public class EmptySubmitNodeCollector implements SubmitNodeCollector {
 
     @Override
     public void submitBlockModel(PoseStack poseStack, RenderType renderType, List<BlockStateModelPart> parts, int[] tintLayers, int lightCoords, int overlayCoords, int outlineColor) {
-
     }
 
     @Override
     public void submitBreakingBlockModel(PoseStack poseStack, List<BlockStateModelPart> parts, int progress) {
-
     }
 
     @Override
