@@ -6,30 +6,23 @@ import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.GpuFormat;
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.function.Consumer;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -43,11 +36,14 @@ import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 public class EntityGPURenderer extends AbstractEntityRenderer {
+    private final StagedVertexBuffer stagedVertexBuffer;
     private final GpuBuffer lightingBuffer;
     private final CachedProjectionMatrixBuffer projection;
     private final VoxelMapRenderTarget renderTarget;
 
     public EntityGPURenderer() {
+        stagedVertexBuffer = minecraft.gameRenderer.renderBuffers().stagedVertexBuffer();
+
         Vector3f fullBright = new Vector3f(1.0F, -1.0F, 1.0F).normalize();
         Vector3f fullBright2 = new Vector3f(-1.0F, -1.0F, 1.0F).normalize();
         lightingBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Lighting UBO", GpuBuffer.USAGE_UNIFORM + GpuBuffer.USAGE_COPY_DST, Lighting.UBO_SIZE);
@@ -69,96 +65,71 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
 
     @Override
     public void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer) {
-        RenderPipeline renderPipeline = cullEnabled ? VoxelMapPipelines.ENTITY_ICON_CULLED : VoxelMapPipelines.ENTITY_ICON;
+        RenderPipeline pipeline = cullEnabled ? VoxelMapPipelines.ENTITY_ICON_CULLED : VoxelMapPipelines.ENTITY_ICON;
 
         AbstractTexture primaryTexture = textureSet.primaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.primaryTexture());
         AbstractTexture secondaryTexture = textureSet.secondaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.secondaryTexture());
         AbstractTexture tertiaryTexture = textureSet.tertiaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tertiaryTexture());
-        AbstractTexture quaternaryTexture =  textureSet.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.quaternaryTexture());
+        AbstractTexture quaternaryTexture = textureSet.quaternaryTexture() == null ? null : minecraft.getTextureManager().getTexture(textureSet.quaternaryTexture());
 
-        ProjectionType originalProjectionType = RenderSystem.getProjectionType();
-        GpuBufferSlice originalProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        RenderSystem.setProjectionMatrix(projection.getBuffer(512.0F, 512.0F), ProjectionType.ORTHOGRAPHIC);
+        RenderUtils.setupProjectionMatrix(projection.getBuffer(512.0F, 512.0F), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.setShaderLights(lightingBuffer.slice());
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().identity();
 
         GpuBufferSlice primaryTransforms = dynamicTransformsWithColor(textureSet.primaryColor());
         GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(textureSet.secondaryColor());
         GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(textureSet.tertiaryColor());
         GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(textureSet.quaternaryColor());
 
-        try (ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(4096)) {
-            BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, renderPipeline.getVertexFormatBinding(0));
+        StagedVertexBuffer.Draw draw = stagedVertexBuffer.appendDraw(pipeline.getVertexFormatBinding(0), pipeline.getPrimitiveTopology());
+        VertexConsumer buffer = stagedVertexBuffer.getVertexBuilder(draw);
 
-            for (ModelPart modelPart : modelParts) {
-                modelPart.render(poseStack, bufferBuilder, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+        for (ModelPart modelPart : modelParts) {
+            modelPart.render(poseStack, buffer, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+        }
+
+        for (BlockModelSet blockModel : blockModels) {
+            for (BlockStateModelPart modelPart : blockModel.modelParts()) {
+                drawBlockModelPart(modelPart, poseStack, buffer, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
             }
+        }
 
-            for (BlockModelSet blockModel : blockModels) {
-                for (BlockStateModelPart modelPart : blockModel.modelParts()) {
-                    drawBlockModelPart(modelPart, poseStack, bufferBuilder, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
-                }
-            }
+        stagedVertexBuffer.upload();
+        StagedVertexBuffer.ExecuteInfo meshInfo = stagedVertexBuffer.getExecuteInfo(draw);
 
-            try (MeshData meshData = bufferBuilder.build()) {
-            // no mesh? might happen with some mods
-            if (meshData == null) return;
-
-            GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Entity Icon Vertex Buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
-            GpuBuffer indexBuffer;
-            boolean closeIndexBuffer = false;
-            IndexType indexType;
-            if (meshData.indexBuffer() == null) {
-                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
-                indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
-                indexType = autoStorageIndexBuffer.type();
-            } else {
-                indexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Entity Icon Index Buffer", GpuBuffer.USAGE_INDEX, meshData.indexBuffer());
-                indexType = meshData.drawState().indexType();
-                closeIndexBuffer = true;
-            }
-
-            CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-            commandEncoder.clearColorAndDepthTextures(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), renderTarget.getDepthTexture(), 0.0);
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
-                renderPass.setPipeline(renderPipeline);
+        if (meshInfo != null) {
+            try (RenderPass renderPass = RenderUtils.createRenderPass("VoxelMap Entity Render", renderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
+                renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-                renderPass.setVertexBuffer(0, vertexBuffer.slice());
-                renderPass.setIndexBuffer(indexBuffer, indexType);
+                renderPass.setVertexBuffer(0, meshInfo.vertexBuffer().slice());
+                renderPass.setIndexBuffer(meshInfo.indexBuffer(), meshInfo.indexType());
                 if (primaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", primaryTransforms);
                     renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
+                    renderPass.drawIndexed(meshInfo.indexCount(), 1, meshInfo.firstIndex(), meshInfo.baseVertex(), 0);
                 }
                 if (secondaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", secondaryTransforms);
                     renderPass.bindTexture("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
+                    renderPass.drawIndexed(meshInfo.indexCount(), 1, meshInfo.firstIndex(), meshInfo.baseVertex(), 0);
                 }
                 if (tertiaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", tertiaryTransforms);
                     renderPass.bindTexture("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
+                    renderPass.drawIndexed(meshInfo.indexCount(), 1, meshInfo.firstIndex(), meshInfo.baseVertex(), 0);
                 }
                 if (quaternaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", quaternaryTransforms);
                     renderPass.bindTexture("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
-                }
-            } finally {
-                vertexBuffer.close();
-                if (closeIndexBuffer) {
-                    indexBuffer.close();
+                    renderPass.drawIndexed(meshInfo.indexCount(), 1, meshInfo.firstIndex(), meshInfo.baseVertex(), 0);
                 }
             }
-            }
-        } finally {
-            RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
         }
+
+        stagedVertexBuffer.endFrame();
+        RenderUtils.flushCmds();
+        RenderUtils.restoreProjectionMatrix();
 
         RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
             resultConsumer.accept(RenderUtils.hasFlippedV() ? ImageUtils.flipVertical(image) : image);
