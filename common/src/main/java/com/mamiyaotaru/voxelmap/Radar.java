@@ -113,7 +113,7 @@ public class Radar extends AbstractRadar {
                     baseColor = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
                 }
 
-                float zOffset = (i % 100) * 0.1F; // 0.0 - 10.0
+                float zOffset = (i % 1000) * 0.1F; // 0.0 - 100.0
                 float yOffset = 0.0F;
                 if (contact.entity.getVehicle() != null && isEntityShown(contact.entity.getVehicle())) {
                     yOffset = -4.0F;
