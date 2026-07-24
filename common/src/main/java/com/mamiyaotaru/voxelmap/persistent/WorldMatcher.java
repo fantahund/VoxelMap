@@ -26,7 +26,6 @@ public class WorldMatcher {
             final ArrayList<ComparisonCachedRegion> candidateRegions = new ArrayList<>();
             ComparisonCachedRegion region;
             final String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
-            final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
             final String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
             final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
             final File cachedRegionFileDir = VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir();
@@ -99,8 +98,8 @@ public class WorldMatcher {
 
                 MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
                 if (!WorldMatcher.this.cancelled && this.candidateRegions.size() == 1 && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
-                    VoxelConstants.getVoxelMapInstance().newSubWorldName(this.candidateRegions.get(0).getSubworldName(), false);
-                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundWorld1") + ":" + " §a" + this.candidateRegions.get(0).getSubworldName() + ".§r" + " " + I18n.get("worldmap.multiworld.foundWorld2"));
+                    VoxelConstants.getVoxelMapInstance().newSubWorldName(this.candidateRegions.getFirst().getSubworldName(), false);
+                    MessageUtils.chatInfo(I18n.get("worldmap.multiworld.foundWorld1") + ":" + " §a" + this.candidateRegions.getFirst().getSubworldName() + ".§r" + " " + I18n.get("worldmap.multiworld.foundWorld2"));
                 } else if (!WorldMatcher.this.cancelled && !VoxelConstants.getVoxelMapInstance().getWaypointManager().receivedAutoSubworldName()) {
                     MessageUtils.printDebug("remaining regions: " + this.candidateRegions.size());
                     MessageUtils.chatInfo("§4VoxelMap§r" + ":" + " " + I18n.get("worldmap.multiworld.unknownSubworld"));

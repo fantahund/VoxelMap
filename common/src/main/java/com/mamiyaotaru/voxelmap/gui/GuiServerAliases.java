@@ -84,7 +84,7 @@ public class GuiServerAliases extends GuiScreenMinimap {
     }
 
     private void onRowEdited(AliasRow row) {
-        if (row == this.rows.get(this.rows.size() - 1) && !row.field.getValue().isEmpty()) {
+        if (row == this.rows.getLast() && !row.field.getValue().isEmpty()) {
             addRow("");
             layoutRows();
         }
@@ -95,7 +95,7 @@ public class GuiServerAliases extends GuiScreenMinimap {
         this.removeWidget(row.delete);
         this.rows.remove(row);
 
-        if (this.rows.isEmpty() || !this.rows.get(this.rows.size() - 1).field.getValue().isEmpty()) {
+        if (this.rows.isEmpty() || !this.rows.getLast().field.getValue().isEmpty()) {
             addRow("");
         }
 

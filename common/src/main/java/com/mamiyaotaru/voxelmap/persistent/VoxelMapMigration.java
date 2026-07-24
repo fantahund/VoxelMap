@@ -9,14 +9,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public final class VoxelMapMigration {
 
     public static final class Progress {
         public volatile long totalBytes;
-        public volatile long copiedBytes;
         public volatile int totalFiles;
-        public volatile int copiedFiles;
+        public final AtomicLong copiedBytes = new AtomicLong();
+        public final AtomicInteger copiedFiles = new AtomicInteger();
         public volatile boolean done;
         public volatile boolean failed;
         public volatile String currentFile = "";
@@ -110,8 +112,8 @@ public final class VoxelMapMigration {
                 if (item.mergeWaypoints() && item.source().isFile() && item.dest().exists()) {
                     progress.currentFile = item.source().getName();
                     WaypointFileMerger.mergeInto(item.source(), item.dest());
-                    progress.copiedBytes += item.source().length();
-                    progress.copiedFiles += 1;
+                    progress.copiedBytes.addAndGet(item.source().length());
+                    progress.copiedFiles.incrementAndGet();
                 } else {
                     copyRecursive(item.source().toPath(), item.dest().toPath(), progress, this.overwrite);
                 }
@@ -141,8 +143,8 @@ public final class VoxelMapMigration {
             progress.currentFile = sourceFile.getName();
 
             if (!overwrite && Files.exists(dest)) {
-                progress.copiedBytes += sourceFile.length();
-                progress.copiedFiles += 1;
+                progress.copiedBytes.addAndGet(sourceFile.length());
+                progress.copiedFiles.incrementAndGet();
                 return;
             }
 
@@ -152,8 +154,8 @@ public final class VoxelMapMigration {
             }
 
             Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-            progress.copiedBytes += sourceFile.length();
-            progress.copiedFiles += 1;
+            progress.copiedBytes.addAndGet(sourceFile.length());
+            progress.copiedFiles.incrementAndGet();
         }
     }
 

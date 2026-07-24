@@ -42,14 +42,14 @@ public class GuiMigrationProgress extends GuiScreenMinimap {
         graphics.centeredText(this.getFont(), this.titleText, centerX, barY - 40, 0xFFFFFFFF);
 
         long total = this.progress.totalBytes;
-        long copied = this.progress.copiedBytes;
+        long copied = this.progress.copiedBytes.get();
         float fraction = total > 0L ? Math.min(1.0F, (float) copied / (float) total) : (this.progress.done ? 1.0F : 0.0F);
 
         graphics.fill(barX - 1, barY - 1, barX + barWidth + 1, barY + barHeight + 1, 0xFF000000);
         graphics.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF555555);
         graphics.fill(barX, barY, barX + (int) (barWidth * fraction), barY + barHeight, 0xFF4CAF50);
 
-        String status = this.progress.copiedFiles + " / " + this.progress.totalFiles + " "
+        String status = this.progress.copiedFiles.get() + " / " + this.progress.totalFiles + " "
                 + Component.translatable("voxelmap.migration.progress.files").getString()
                 + "  (" + humanBytes(copied) + " / " + humanBytes(total) + ")";
         graphics.centeredText(this.getFont(), status, centerX, barY + barHeight + 8, 0xFFA0A0A0);

@@ -106,7 +106,7 @@ public final class WaypointFileMerger {
         String scrubbed = TextUtils.scrubName(newDescrubbedName);
         StringBuilder sb = new StringBuilder();
         for (String token : line.split(",")) {
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(',');
             }
 
