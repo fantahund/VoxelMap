@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -172,6 +173,7 @@ public class WaypointManager {
     public void newWorld(Level world) {
         if (world == null) {
             this.currentDimension = null;
+            this.worldName = "";
         } else {
             String mapName;
             if (VoxelConstants.getMinecraft().hasSingleplayerServer()) {
@@ -180,12 +182,14 @@ public class WaypointManager {
                 mapName = this.getServerName();
                 if (mapName != null) {
                     mapName = mapName.toLowerCase();
+                    mapName = VoxelMapDataConfig.getInstance().resolveCanonical(mapName);
                 }
             }
 
             if (!this.worldName.equals(mapName) && mapName != null && !mapName.isEmpty()) {
                 this.currentDimension = null;
                 this.worldName = mapName;
+                VoxelConstants.getVoxelMapInstance().getDataStore().resolveForCurrentWorld();
                 VoxelConstants.getVoxelMapInstance().getDimensionManager().populateDimensions(world);
                 this.loadWaypoints();
             }
@@ -379,10 +383,9 @@ public class WaypointManager {
         this.currentSubworldDescriptor = descriptor;
         this.currentSubworldDescriptorNoCodes = TextUtils.scrubCodes(this.currentSubworldDescriptor);
         this.newSubworldName(this.currentSubworldDescriptorNoCodes);
-        String currentSubWorldDescriptorScrubbed = TextUtils.scrubName(this.currentSubworldDescriptorNoCodes);
         synchronized (this.waypointLock) {
             for (Waypoint pt : this.wayPts) {
-                pt.inWorld = currentSubWorldDescriptorScrubbed.isEmpty() || Objects.equals(pt.world, "") || currentSubWorldDescriptorScrubbed.equals(pt.world);
+                pt.inWorld = this.currentSubworldDescriptorNoCodes.isEmpty() || Objects.equals(pt.world, "") || this.currentSubworldDescriptorNoCodes.equals(pt.world);
             }
         }
 
@@ -424,13 +427,12 @@ public class WaypointManager {
             }
 
             VoxelConstants.getVoxelMapInstance().getPersistentMap().renameSubworld(oldName, newName);
-            String worldName = this.getCurrentWorldName();
-            String worldNamePathPart = TextUtils.scrubNameFile(worldName);
             String subWorldNamePathPart = TextUtils.scrubNameFile(oldName) + "/";
-            File oldCachedRegionFileDir = new File(minecraft.gameDirectory, "/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
+            File cacheDir = VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir();
+            File oldCachedRegionFileDir = new File(cacheDir, subWorldNamePathPart);
             if (oldCachedRegionFileDir.exists() && oldCachedRegionFileDir.isDirectory()) {
                 subWorldNamePathPart = TextUtils.scrubNameFile(newName) + "/";
-                File newCachedRegionFileDir = new File(minecraft.gameDirectory, "/voxelmap/cache/" + worldNamePathPart + "/" + subWorldNamePathPart);
+                File newCachedRegionFileDir = new File(cacheDir, subWorldNamePathPart);
                 boolean success = oldCachedRegionFileDir.renameTo(newCachedRegionFileDir);
                 if (!success) {
                     VoxelConstants.getLogger().warn("Failed renaming " + oldCachedRegionFileDir.getPath() + " to " + newCachedRegionFileDir.getPath());
@@ -497,21 +499,11 @@ public class WaypointManager {
     }
 
     public void saveWaypoints() {
-        String worldNameSave = this.getCurrentWorldName();
-        if (worldNameSave.endsWith(":25565")) {
-            int portSepLoc = worldNameSave.lastIndexOf(':');
-            if (portSepLoc != -1) {
-                worldNameSave = worldNameSave.substring(0, portSepLoc);
-            }
-        }
-
-        worldNameSave = TextUtils.scrubNameFile(worldNameSave);
-        File saveDir = new File(minecraft.gameDirectory, "/voxelmap/");
-        if (!saveDir.exists()) {
+        this.settingsFile = VoxelConstants.getVoxelMapInstance().getDataStore().getPointsFile();
+        File saveDir = this.settingsFile.getParentFile();
+        if (saveDir != null && !saveDir.exists()) {
             saveDir.mkdirs();
         }
-
-        this.settingsFile = new File(saveDir, worldNameSave + ".points");
 
         try {
             PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.settingsFile), StandardCharsets.UTF_8));
@@ -586,7 +578,7 @@ public class WaypointManager {
     }
 
     private boolean loadWaypointsExtensible(String worldNameStandard) {
-        File settingsFileNew = new File(minecraft.gameDirectory, "/voxelmap/" + worldNameStandard + ".points");
+        File settingsFileNew = VoxelConstants.getVoxelMapInstance().getDataStore().getPointsFile();
         File settingsFileOld = new File(minecraft.gameDirectory, "/mods/mamiyaotaru/voxelmap/" + worldNameStandard + ".points");
         if (!settingsFileOld.exists() && !settingsFileNew.exists()) {
             return false;

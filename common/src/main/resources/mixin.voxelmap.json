@@ -17,7 +17,9 @@
     "MixinClientLevel",
     "MixinInGameHud",
     "MixinLevelExtractor",
+    "MixinManageServerScreen",
     "MixinTutorial",
+    "MixinWorldOpenFlows",
     "MixinWorldRenderer"
   ]
 }

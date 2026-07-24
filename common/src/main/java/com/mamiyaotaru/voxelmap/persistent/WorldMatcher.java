@@ -29,7 +29,7 @@ public class WorldMatcher {
             final String worldNamePathPart = TextUtils.scrubNameFile(this.worldName);
             final String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(WorldMatcher.this.world).getStorageName();
             final String dimensionNamePathPart = TextUtils.scrubNameFile(this.dimensionName);
-            final File cachedRegionFileDir = new File(VoxelConstants.getMinecraft().gameDirectory, "/voxelmap/cache/" + this.worldNamePathPart + "/");
+            final File cachedRegionFileDir = VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir();
 
             @Override
             public void run() {
