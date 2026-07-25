@@ -61,12 +61,12 @@ public class EntityImageRenderer {
         renderTarget.createBuffers(fboTextureSize, fboTextureSize);
     }
 
-    public void setupMatrix(float scale, Properties iconConfig) {
+    public void setupMatrix(float baseScale, Properties iconConfig) {
         poseStack.setIdentity();
-
         poseStack.translate(256.0F, 256.0F, -3000.0F);
-        poseStack.scale(64.0F, 64.0F, -64.0F);
-        poseStack.scale(scale, scale, scale);
+
+        float scale = 64.0F * baseScale * Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
+        poseStack.scale(scale, scale, -scale);
 
         String rotation = iconConfig.getProperty("rotation", "");
         if (rotation.startsWith("{") && rotation.endsWith("}")) {
@@ -168,6 +168,11 @@ public class EntityImageRenderer {
         stagedVertexBuffer.endFrame();
         RenderUtils.flushCmds();
         RenderUtils.restoreProjectionMatrix();
+
+        pipeline = null;
+        variant = null;
+        draw = null;
+        vertexBuffer = null;
 
         RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
             resultConsumer.accept(RenderUtils.hasFlippedV() ? ImageUtils.flipVertical(image) : image);
