@@ -59,12 +59,10 @@ public class Radar extends AbstractRadar {
 
         if (contact.icon == null) {
             contact.icon = entityMapImageManager.requestImageForMob(contact.entity, 32, radarOptions.outlines);
-            contact.baseColor = getBaseColor(contact);
         }
 
         if (radarOptions.showPlayerHelmets && contact.category == VoxelMapMobCategory.PLAYER || radarOptions.showMobHelmets && contact.category != VoxelMapMobCategory.PLAYER) {
             contact.armorIcon = entityMapImageManager.requestImageForArmor(contact.entity, 32, radarOptions.outlines);
-            contact.armorColor = getArmorColor(contact);
         }
     }
 
@@ -105,12 +103,12 @@ public class Radar extends AbstractRadar {
                     matrixStack.translate((float) Math.round(-wayX * scScale) / scScale, (float) Math.round(-wayZ * scScale) / scScale, 0.0F);
                 }
 
-                int baseColor;
+                int color;
                 if (minimapContext.playerY - contact.y < 0) {
-                    baseColor = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
+                    color = ARGB.colorFromFloat(contact.brightness, 1.0F, 1.0F, 1.0F);
                 } else {
                     float brightness = contact.brightness * 0.7F + 0.3F;
-                    baseColor = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
+                    color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
                 }
 
                 float zOffset = (i % 1000) * 0.1F; // 0.0 - 100.0
@@ -120,7 +118,6 @@ public class Radar extends AbstractRadar {
                 }
 
                 if (contact.icon != null) {
-                    int color = ARGB.multiply(baseColor, contact.baseColor);
                     float width = contact.icon.getIconWidth() / 8.0F;
                     float height = contact.icon.getIconHeight() / 8.0F;
                     pass.submitQuad(matrixStack, contact.icon, x - (width / 2.0F), y + yOffset - (height / 2.0F), zOffset, width, height, color);
@@ -130,7 +127,6 @@ public class Radar extends AbstractRadar {
                     MobIconConfig iconConfig = getIconConfig(contact);
                     yOffset += iconConfig.armorOffset();
 
-                    int color = ARGB.multiply(baseColor, contact.armorColor);
                     float width = contact.armorIcon.getIconWidth() / 8.0F;
                     float height = contact.armorIcon.getIconHeight() / 8.0F;
                     pass.submitQuad(matrixStack, contact.armorIcon, x - (width / 2.0F), y + yOffset - (height / 2.0F), zOffset, width, height, color);
@@ -140,7 +136,7 @@ public class Radar extends AbstractRadar {
                     float scaleFactor = radarOptions.fontScale / 4.0F;
                     matrixStack.pushMatrix();
                     matrixStack.scale(scaleFactor, scaleFactor, 1.0F);
-                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, baseColor, radarOptions.outlines);
+                    pass.submitCenteredText(matrixStack, contact.name, x / scaleFactor, (y + 3) / scaleFactor, zOffset, color, radarOptions.outlines);
                     matrixStack.popMatrix();
                 }
             } catch (Exception e) {
@@ -158,18 +154,6 @@ public class Radar extends AbstractRadar {
         copy.withColor(contact.entity.getTeamColor());
 
         return copy;
-    }
-
-    private int getBaseColor(Contact contact) {
-        return 0xFFFFFFFF;
-    }
-
-    private int getArmorColor(Contact contact) {
-        if (contact.entity instanceof Sheep sheep) {
-            return sheep.getColor().getMapColor().col | 0xFF000000;
-        }
-
-        return 0xFFFFFFFF;
     }
 
     private MobIconConfig getIconConfig(Contact contact) {
