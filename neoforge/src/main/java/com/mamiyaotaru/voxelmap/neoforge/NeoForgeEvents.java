@@ -3,8 +3,6 @@ package com.mamiyaotaru.voxelmap.neoforge;
 import com.mamiyaotaru.voxelmap.Events;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
-import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
-import com.mamiyaotaru.voxelmap.packets.WorldIdS2C;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
@@ -16,7 +14,6 @@ import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
-import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
@@ -31,7 +28,7 @@ public class NeoForgeEvents implements Events {
     public void initEvents(VoxelMap map) {
         this.map = map;
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerClientPayloadHandlers);
+        VoxelmapNeoForgeMod.getModEventBus().addListener(NeoForgePacketHandler::initClient);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
         VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
         NeoForge.EVENT_BUS.register(new NeoForgeEventListener(map));
@@ -40,11 +37,6 @@ public class NeoForgeEvents implements Events {
     private void preInitClient(final FMLClientSetupEvent event) {
         map.onClientStarted();
         map.onConfigurationInit();
-    }
-
-    public void registerClientPayloadHandlers(final RegisterClientPayloadHandlersEvent event) {
-        event.register(VoxelmapSettingsS2C.PACKET_ID, NeoForgeSettingsPacketHandler::handleDataOnMain);
-        event.register(WorldIdS2C.PACKET_ID, NeoForgeWorldIdPacketHandler::handleDataOnMain);
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {

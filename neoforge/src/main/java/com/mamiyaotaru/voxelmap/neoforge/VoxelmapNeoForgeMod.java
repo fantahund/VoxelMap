@@ -12,7 +12,7 @@ public class VoxelmapNeoForgeMod {
 
     public VoxelmapNeoForgeMod(IEventBus modEventBus, ModContainer container) {
         VoxelmapNeoForgeMod.modEventBus = modEventBus;
-        modEventBus.addListener(NeoForgePayloads::register);
+        modEventBus.addListener(NeoForgePacketHandler::initCommon);
 
         if (FMLEnvironment.getDist().isClient()) {
             ClientInit.init(container);

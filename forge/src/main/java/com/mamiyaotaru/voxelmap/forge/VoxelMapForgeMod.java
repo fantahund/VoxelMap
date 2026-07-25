@@ -13,8 +13,7 @@ public class VoxelMapForgeMod {
 
     public VoxelMapForgeMod(FMLJavaModLoadingContext context) {
         VoxelMapForgeMod.modBusGroup = context.getModBusGroup();
-        ForgeSettingsPacketHandler.register();
-        ForgeWorldIdPacketHandler.register();
+        ForgePacketHandler.register();
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ForgeClientBootstrap.init(context);

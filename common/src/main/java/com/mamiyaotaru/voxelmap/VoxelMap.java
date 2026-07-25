@@ -171,9 +171,9 @@ public class VoxelMap implements PreparableReloadListener {
             persistentMap.newWorld(world);
             if (world != null) {
                 MapUtils.reset();
-                // send "new" world_id packet
 
-                VoxelConstants.getPacketBridge().sendWorldIDPacket();
+                // send "new" world_id packet
+                VoxelConstants.getPacketBridge().sendWorldIDPacket("");
 
                 if (!worldName.equals(waypointManager.getCurrentWorldName())) {
                     worldName = waypointManager.getCurrentWorldName();
