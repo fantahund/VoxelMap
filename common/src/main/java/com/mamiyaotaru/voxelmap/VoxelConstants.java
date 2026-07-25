@@ -135,7 +135,9 @@ public final class VoxelConstants {
     }
 
     public static boolean onSendChatMessage(String message) {
-        if (message.startsWith("newWaypoint")) {
+        if (CommandUtils.handleSharedWaypointCommand(message)) {
+            return false;
+        } else if (message.startsWith("newWaypoint")) {
             CommandUtils.waypointClicked(message);
             return false;
         } else if (message.startsWith("ztp")) {
