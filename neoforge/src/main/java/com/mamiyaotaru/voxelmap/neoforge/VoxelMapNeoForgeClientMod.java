@@ -3,8 +3,8 @@ package com.mamiyaotaru.voxelmap.neoforge;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.neoforged.fml.ModContainer;
 
-public final class NeoForgeClientBootstrap {
-    private NeoForgeClientBootstrap() {
+public final class VoxelMapNeoForgeClientMod {
+    private VoxelMapNeoForgeClientMod() {
     }
 
     public static void init(ModContainer container) {

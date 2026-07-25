@@ -27,10 +27,10 @@ public class NeoForgeEvents implements Events {
     @Override
     public void initEvents(VoxelMap map) {
         this.map = map;
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(NeoForgePacketHandler::initClient);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
-        VoxelmapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::preInitClient);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(NeoForgePacketHandler::initClient);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::registerResourcePacks);
+        VoxelMapNeoForgeMod.getModEventBus().addListener(this::registerReloadListener);
         NeoForge.EVENT_BUS.register(new NeoForgeEventListener(map));
     }
 

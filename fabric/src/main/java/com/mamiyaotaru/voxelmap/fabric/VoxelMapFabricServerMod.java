@@ -19,7 +19,7 @@ import net.minecraft.server.permissions.Permissions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class VoxelmapFabricModServer implements DedicatedServerModInitializer {
+public class VoxelMapFabricServerMod implements DedicatedServerModInitializer {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
     private Path configFile;
     private VoxelmapServerConfigManager configManager;

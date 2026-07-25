@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap.forge;
+package com.mamiyaotaru.voxelmap.neoforge;
 
 import com.mamiyaotaru.voxelmap.packets.VoxelMapSettingsPayload;
 import com.mamiyaotaru.voxelmap.server.VoxelmapServerConfigManager;
@@ -10,44 +10,48 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.network.PacketDistributor;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.extensions.ICommonPacketListener;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class VoxelmapForgeServer {
+public final class VoxelMapNeoForgeServerMod {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
 
     private VoxelmapServerConfigManager configManager;
     private boolean configLoaded;
 
     public void init() {
-        ServerStartingEvent.BUS.addListener(this::onServerStarting);
-        RegisterCommandsEvent.BUS.addListener(this::onRegisterCommands);
-        PlayerEvent.PlayerLoggedInEvent.BUS.addListener(this::onPlayerLoggedIn);
-        PlayerEvent.PlayerChangedDimensionEvent.BUS.addListener(this::onPlayerChangedDimension);
+        NeoForge.EVENT_BUS.register(this);
     }
 
-    private void onServerStarting(ServerStartingEvent event) {
+    @SubscribeEvent
+    public void onServerStarting(ServerStartingEvent event) {
         loadInitialConfig();
     }
 
-    private void onRegisterCommands(RegisterCommandsEvent event) {
+    @SubscribeEvent
+    public void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("voxelmap")
                 .requires(source -> source.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(Commands.literal("reload").executes(this::reloadCommand)));
     }
 
-    private void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+    @SubscribeEvent
+    public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             sendVoxelmapSettings("join", player);
         }
     }
 
-    private void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+    @SubscribeEvent
+    public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             sendVoxelmapSettings("changedimension", player);
         }
@@ -111,14 +115,14 @@ public final class VoxelmapForgeServer {
             return false;
         }
 
-        if (ForgePacketHandler.settingsChannel() == null || !ForgePacketHandler.settingsChannel().isRemotePresent(player.connection.getConnection())) {
+        if (!(player.connection instanceof ICommonPacketListener listener) || !listener.hasChannel(VoxelMapSettingsPayload.PACKET_ID)) {
             LOGGER.debug("Skipping VoxelMap settings send for " + player.getName().getString() + " (" + event + "): client cannot receive settings packet");
             return false;
         }
 
         String worldId = player.level().dimension().identifier().toString();
         String settingsJson = getConfigManager().createSettingsJson(worldId);
-        ForgePacketHandler.settingsChannel().send(new VoxelMapSettingsPayload(settingsJson), PacketDistributor.PLAYER.with(player));
+        PacketDistributor.sendToPlayer(player, new VoxelMapSettingsPayload(settingsJson));
         LOGGER.info("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
         return true;
     }
