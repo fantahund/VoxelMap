@@ -12,8 +12,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
@@ -47,20 +45,7 @@ public class NeoForgeEvents implements Events {
         event.addListener(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
     }
 
-    private static class NeoForgeEventListener {
-        private final VoxelMap map;
-
-        public NeoForgeEventListener(VoxelMap map) {
-            this.map = map;
-        }
-
-        @SubscribeEvent
-        public void onRenderGui(RenderGuiLayerEvent.Post event) {
-            if (event.getName().equals(VanillaGuiLayers.BOSS_OVERLAY)) {
-                VoxelConstants.renderOverlay(event.getGuiGraphics());
-            }
-        }
-
+    private record NeoForgeEventListener(VoxelMap map) {
         @SubscribeEvent
         public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
             map.onJoinServer();
