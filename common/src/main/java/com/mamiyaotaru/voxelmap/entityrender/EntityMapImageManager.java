@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.entityrender;
 
-import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.armors.AbstractArmorHandler;
 import com.mamiyaotaru.voxelmap.entityrender.armors.DefaultArmorHandler;
@@ -13,6 +12,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
 import com.mamiyaotaru.voxelmap.rendering.EmptySubmitNodeCollector;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
@@ -51,9 +51,11 @@ import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.SlimeRenderer;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
@@ -69,7 +71,7 @@ import net.minecraft.world.entity.monster.cubemob.SulfurCube;
 
 public class EntityMapImageManager {
     public static final Identifier resourceTextureAtlasMarker = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "atlas/mobs");
-    private final RadarSettingsManager radarOptions;
+
     private final TextureAtlas textureAtlas;
     private final Minecraft minecraft = Minecraft.getInstance();
 
@@ -82,24 +84,23 @@ public class EntityMapImageManager {
     private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
     private final HashSet<EntityType<?>> failedPreviewIconTypes = new HashSet<>();
     private final AtomicInteger previewEntityIds = new AtomicInteger(-1);
+    private final EntityImageRenderer renderer;
 
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
     private final ConcurrentLinkedQueue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
 
-    private final EntityGPURenderer gpuRenderer = new EntityGPURenderer();
-    private final EntityCPURenderer cpuRenderer = new EntityCPURenderer();
-    private boolean cpuRendering = false;
-    private boolean lastCpuRendering = false;
+    private static final int LIGHT = LightCoordsUtil.FULL_BRIGHT;
+    private static final int OVERLAY = OverlayTexture.NO_OVERLAY;
 
     public EntityMapImageManager() {
-        this.radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
-
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
         this.textureAtlas.setFilter(true, false);
 
         this.fullRenderModels = new Class[] { CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, SulfurCube.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class };
         reset();
+
+        this.renderer = new EntityImageRenderer();
     }
 
     public void reset() {
@@ -182,14 +183,6 @@ public class EntityMapImageManager {
         }
 
         return sprite;
-    }
-
-    private AbstractEntityRenderer getEntityRenderer() {
-        return shouldUseCpuRendering() ? cpuRenderer : gpuRenderer;
-    }
-
-    private boolean shouldUseCpuRendering() {
-        return radarOptions.cpuRendering || radarOptions.forceCpuRendering;
     }
 
     private void addVariantDataFactory(EntityVariantDataFactory factory) {
@@ -298,9 +291,15 @@ public class EntityMapImageManager {
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
         Properties iconConfig = getCustomMobProperties(entity.getType());
 
-        AbstractEntityRenderer renderer = getEntityRenderer();
-        renderer.setup(iconConfig);
-        renderer.enableCull(false);
+        EntityImageRenderer.TextureSet textureSet = new EntityImageRenderer.TextureSet(
+                variant.getPrimaryTexture(), getPrimaryTextureColor(entity),
+                variant.getSecondaryTexture(), getSecondaryTextureColor(entity),
+                variant.getTertiaryTexture(), getTertiaryTextureColor(entity),
+                variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
+        );
+
+        renderer.setupMatrix(iconConfig);
+        renderer.beginBatch(VoxelMapPipelines.ENTITY_ICON, textureSet);
 
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
         ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.gameRenderState().levelRenderState.cameraRenderState);
@@ -315,26 +314,16 @@ public class EntityMapImageManager {
             part.xRot = 0;
             part.yRot = 0;
             part.zRot = 0;
-
-            renderer.addMesh(part);
+            part.render(renderer.matrix(), renderer.vertexBuffer(), LIGHT, OVERLAY, 0xFFFFFFFF);
         }
 
         if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
             SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.getFirst();
-            renderer.addMesh(slimeOuter.model.root());
+            slimeOuter.model.renderToBuffer(renderer.matrix(), renderer.vertexBuffer(), LIGHT, OVERLAY, 0xFFFFFFFF);
         }
 
-        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(
-                variant.getPrimaryTexture(), getPrimaryTextureColor(entity),
-                variant.getSecondaryTexture(), getSecondaryTextureColor(entity),
-                variant.getTertiaryTexture(), getTertiaryTextureColor(entity),
-                variant.getQuaternaryTexture(), getQuaternaryTextureColor(entity)
-        );
-
         float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedMobImage(entity, sprite, model, output, addBorder, iconScale);
-        });
+        renderer.endBatch(output -> postProcessRenderedMobImage(entity, sprite, model, output, addBorder, iconScale));
 
         return sprite;
     }
@@ -465,20 +454,22 @@ public class EntityMapImageManager {
             return existing;
         }
         Sprite sprite = textureAtlas.registerEmptyIcon(armorData);
-        Properties iconConfig = getCustomMobProperties(entity.getType());
-
-        AbstractEntityRenderer renderer = getEntityRenderer();
-        renderer.setup(iconConfig);
-        renderer.enableCull(true);
-
-        armorHandler.renderArmorModel(renderer);
-
-        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
-
-        float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedArmorImage(sprite, output, armorHandler, armorData, iconScale);
-        });
+// FIXME 26.2
+//
+//        Properties iconConfig = getCustomMobProperties(entity.getType());
+//
+//        AbstractEntityRenderer renderer = getEntityRenderer();
+//        renderer.setup(iconConfig);
+//        renderer.enableCull(true);
+//
+//        armorHandler.renderArmorModel(renderer);
+//
+//        AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(armorData.getTexture(), 0xFFFFFFFF, null, -1, null, -1, null, -1);
+//
+//        float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
+//        renderer.render(textureSet, (output) -> {
+//            postProcessRenderedArmorImage(sprite, output, armorHandler, armorData, iconScale);
+//        });
 
         return sprite;
     }
@@ -581,11 +572,6 @@ public class EntityMapImageManager {
         Runnable task;
         while ((task = taskQueue.poll()) != null) {
             task.run();
-        }
-
-        if ((cpuRendering = shouldUseCpuRendering()) != lastCpuRendering) {
-            reset();
-            lastCpuRendering = cpuRendering;
         }
     }
 

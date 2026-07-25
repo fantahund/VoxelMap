@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
-import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
@@ -28,10 +27,11 @@ public class SheepOverlayHandler extends AbstractArmorHandler {
         return getOrCreateArmorData(Items.AIR, SHEEP_FUR, 0);
     }
 
-    @Override
-    public void renderArmorModel(AbstractEntityRenderer renderer) {
-        renderer.addMesh(sheepFurModel.root().getChild("head"));
-    }
+// FIXME 26.2
+//    @Override
+//    public void renderArmorModel(AbstractEntityRenderer renderer) {
+//        renderer.addMesh(sheepFurModel.root().getChild("head"));
+//    }
 
     @Override
     public BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData) {

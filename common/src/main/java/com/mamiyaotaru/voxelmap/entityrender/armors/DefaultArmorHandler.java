@@ -2,20 +2,13 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.model.HumanoidModel;
-import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.object.skull.SkullModelBase;
-import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
@@ -158,31 +151,32 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
         return identifier;
     }
 
-    @Override
-    public void renderArmorModel(AbstractEntityRenderer renderer) {
-        PoseStack pose = renderer.getPoseStack();
-
-        if (armor != null) {
-            ModelPart part = humanoidModel.root().getChild("head");
-            part.xRot = 0;
-            part.yRot = 0;
-            part.zRot = 0;
-
-            renderer.addMesh(part);
-        }
-        if (block != null) {
-            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
-            pose.scale(0.625F, 0.625F, 0.625F);
-
-            renderer.addBlock(block.defaultBlockState());
-        }
-        if (skull != null) {
-            pose.scale(1.1875F, 1.1875F, 1.1875F);
-            SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skull.getType());
-
-            renderer.addMesh(skullModel.root());
-        }
-    }
+// FIXME 26.2
+//    @Override
+//    public void renderArmorModel(AbstractEntityRenderer renderer) {
+//        PoseStack pose = renderer.getPoseStack();
+//
+//        if (armor != null) {
+//            ModelPart part = humanoidModel.root().getChild("head");
+//            part.xRot = 0;
+//            part.yRot = 0;
+//            part.zRot = 0;
+//
+//            renderer.addMesh(part);
+//        }
+//        if (block != null) {
+//            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
+//            pose.scale(0.625F, 0.625F, 0.625F);
+//
+//            renderer.addBlock(block.defaultBlockState());
+//        }
+//        if (skull != null) {
+//            pose.scale(1.1875F, 1.1875F, 1.1875F);
+//            SkullModelBase skullModel = SkullBlockRenderer.createModel(EntityModelSet.vanilla(), skull.getType());
+//
+//            renderer.addMesh(skullModel.root());
+//        }
+//    }
 
     @Override
     public BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData) {

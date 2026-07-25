@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.entityrender.armors;
 
-import com.mamiyaotaru.voxelmap.entityrender.AbstractEntityRenderer;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -42,7 +41,8 @@ public abstract class AbstractArmorHandler {
 
     public abstract EntityArmorData getArmorData();
 
-    public abstract void renderArmorModel(AbstractEntityRenderer renderer);
+// FIXME 26.2
+//    public abstract void renderArmorModel(AbstractEntityRenderer renderer);
 
     public abstract BufferedImage postProcessTexture(BufferedImage image, EntityArmorData armorData);
 
