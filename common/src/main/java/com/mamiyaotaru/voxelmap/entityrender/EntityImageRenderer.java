@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -41,7 +40,7 @@ public class EntityImageRenderer {
 
     private boolean isBatching = false;
     private RenderPipeline pipeline;
-    private TextureSet textureSet;
+    private VariantDataHolder variant;
     private StagedVertexBuffer.Draw draw;
     private VertexConsumer vertexBuffer;
 
@@ -62,11 +61,12 @@ public class EntityImageRenderer {
         renderTarget.createBuffers(fboTextureSize, fboTextureSize);
     }
 
-    public void setupMatrix(Properties iconConfig) {
+    public void setupMatrix(float scale, Properties iconConfig) {
         poseStack.setIdentity();
 
         poseStack.translate(256.0F, 256.0F, -3000.0F);
         poseStack.scale(64.0F, 64.0F, -64.0F);
+        poseStack.scale(scale, scale, scale);
 
         String rotation = iconConfig.getProperty("rotation", "");
         if (rotation.startsWith("{") && rotation.endsWith("}")) {
@@ -84,14 +84,14 @@ public class EntityImageRenderer {
         }
     }
 
-    public void beginBatch(RenderPipeline pipeline, TextureSet textureSet) {
+    public void beginBatch(RenderPipeline pipeline, VariantDataHolder variant) {
         if (isBatching) {
             throw new IllegalStateException("Cannot begin batch! Call endBatch() first.");
         }
         isBatching = true;
 
         this.pipeline = pipeline;
-        this.textureSet = textureSet;
+        this.variant = variant;
         draw = stagedVertexBuffer.appendDraw(pipeline.getVertexFormatBinding(0), pipeline.getPrimitiveTopology());
         vertexBuffer = stagedVertexBuffer.getVertexBuilder(draw);
     }
@@ -118,18 +118,18 @@ public class EntityImageRenderer {
         }
         isBatching = false;
 
-        AbstractTexture texture0 = textureSet.tex0() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tex0());
-        AbstractTexture texture1 = textureSet.tex1() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tex1());
-        AbstractTexture texture2 = textureSet.tex2() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tex2());
-        AbstractTexture texture3 = textureSet.tex3() == null ? null : minecraft.getTextureManager().getTexture(textureSet.tex3());
+        AbstractTexture texture0 = variant.tex0() == null ? null : minecraft.getTextureManager().getTexture(variant.tex0());
+        AbstractTexture texture1 = variant.tex1() == null ? null : minecraft.getTextureManager().getTexture(variant.tex1());
+        AbstractTexture texture2 = variant.tex2() == null ? null : minecraft.getTextureManager().getTexture(variant.tex2());
+        AbstractTexture texture3 = variant.tex3() == null ? null : minecraft.getTextureManager().getTexture(variant.tex3());
 
         RenderUtils.setupProjectionMatrix(projection.getBuffer(512.0F, 512.0F), ProjectionType.ORTHOGRAPHIC);
         RenderSystem.setShaderLights(lightingBuffer.slice());
 
-        GpuBufferSlice uniforms0 = getUniforms(textureSet.col0());
-        GpuBufferSlice uniforms1 = getUniforms(textureSet.col1());
-        GpuBufferSlice uniforms2 = getUniforms(textureSet.col2());
-        GpuBufferSlice uniforms3 = getUniforms(textureSet.col3());
+        GpuBufferSlice uniforms0 = getUniforms(variant.col0());
+        GpuBufferSlice uniforms1 = getUniforms(variant.col1());
+        GpuBufferSlice uniforms2 = getUniforms(variant.col2());
+        GpuBufferSlice uniforms3 = getUniforms(variant.col3());
 
         stagedVertexBuffer.upload();
         StagedVertexBuffer.ExecuteInfo meshInfo = stagedVertexBuffer.getExecuteInfo(draw);
@@ -172,8 +172,5 @@ public class EntityImageRenderer {
         RenderUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (image) -> {
             resultConsumer.accept(RenderUtils.hasFlippedV() ? ImageUtils.flipVertical(image) : image);
         });
-    }
-
-    public record TextureSet(Identifier tex0, int col0, Identifier tex1, int col1, Identifier tex2, int col2, Identifier tex3, int col3) {
     }
 }
