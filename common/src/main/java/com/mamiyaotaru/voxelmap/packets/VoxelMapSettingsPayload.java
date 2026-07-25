@@ -4,12 +4,31 @@ import com.google.gson.Gson;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-public final class VoxelmapClientPacketHandler {
-    private VoxelmapClientPacketHandler() {
+public record VoxelMapSettingsPayload(String settingsJson) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<VoxelMapSettingsPayload> PACKET_ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "settings"));
+    public static final StreamCodec<FriendlyByteBuf, VoxelMapSettingsPayload> PACKET_CODEC = StreamCodec.ofMember(VoxelMapSettingsPayload::encode, VoxelMapSettingsPayload::decode);
+
+    public static VoxelMapSettingsPayload decode(FriendlyByteBuf buf) {
+        buf.readByte();
+        return new VoxelMapSettingsPayload(buf.readUtf());
     }
 
-    public static void applySettings(VoxelmapSettingsS2C packet) {
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeByte(0);
+        buf.writeUtf(settingsJson);
+    }
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return PACKET_ID;
+    }
+
+    public static void parse(VoxelMapSettingsPayload packet) {
         @SuppressWarnings("unchecked")
         Map<String, Object> settings = new Gson().fromJson(packet.settingsJson(), Map.class);
         for (Map.Entry<String, Object> entry : settings.entrySet()) {
@@ -37,14 +56,6 @@ public final class VoxelmapClientPacketHandler {
                 case "teleportCommand" -> VoxelConstants.getVoxelMapInstance().getMapOptions().serverTeleportCommand = (String) value;
                 default -> VoxelConstants.getLogger().warn("Unknown configuration option " + setting);
             }
-        }
-    }
-
-    public static void updateWorld(WorldIdS2C packet) {
-        String worldName = packet.worldName();
-        VoxelConstants.getLogger().info("Received world_id: " + worldName);
-        if (worldName != null) {
-            VoxelConstants.getVoxelMapInstance().newSubWorldName(worldName, true);
         }
     }
 }

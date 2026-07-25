@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -36,13 +37,15 @@ public final class CommandUtils {
     private static final String ADD_WAYPOINT_COMMAND = "voxelmapAddWaypoint ";
     private static final String HIGHLIGHT_WAYPOINT_COMMAND = "voxelmapHighlightWaypoint ";
     private static final String XAERO_WAYPOINT_PREFIX = "xaero-waypoint:";
+    private static final String SHARED_BY_KEY = "sharedBy";
+    private static final String SHARED_WITH_KEY = "sharedWith";
+    private static final String SHARED_WITH_EVERYONE = "*";
+    private static final int MAX_SHARED_LENGTH = 256 - "msg ".length() - 16 - 1;
     private static final Random generator = new Random();
     public static final Pattern pattern = Pattern.compile("\\[(\\w+\\s*:\\s*[-#]?[^\\[\\]]+)(,\\s*\\w+\\s*:\\s*[-#]?[^\\[\\]]+)+\\]", Pattern.CASE_INSENSITIVE);
-    /** xaero-waypoint:name:initials:x:y:z:color:disabled:type:world, optionally followed by further fields we ignore. */
     public static final Pattern xaeroPattern = Pattern.compile(XAERO_WAYPOINT_PREFIX + "(.*?):([^:]*):(-?\\d+):(-?\\d+):(-?\\d+):(\\d+):(true|false):(\\d+)((?::[^:\\s]*)*)", Pattern.CASE_INSENSITIVE);
     private static final Pattern CHAT_NAME_PATTERN = Pattern.compile("<([^<>\\s]{1,32})>");
 
-    /** Vanilla translates the dimension names only as a superflat preset and as advancement tabs, those are the names the game shows. */
     private static final Map<Identifier, String> VANILLA_DIMENSION_NAME_KEYS = Map.of(
             Level.OVERWORLD.identifier(), "flat_world_preset.minecraft.overworld",
             Level.NETHER.identifier(), "advancements.nether.root.title",
@@ -56,10 +59,39 @@ public final class CommandUtils {
     private CommandUtils() {
     }
 
-    private record ChatSource(String sender, String comment) {
+    private enum ShareDirection {
+        RECEIVED(""), RECEIVED_PRIVATELY("WithYou"), SENT("ByYou"), SENT_PRIVATELY("ByYouWith"), UNKNOWN("Unknown");
+
+        private final String keySuffix;
+
+        ShareDirection(String keySuffix) {
+            this.keySuffix = keySuffix;
+        }
+
+        private boolean sentByUs() {
+            return this == SENT || this == SENT_PRIVATELY;
+        }
     }
 
-    private record SharedWaypoint(int start, Waypoint waypoint, String data) {
+    private record ChatSource(String name, ShareDirection direction, String comment) {
+    }
+
+    private record SharedWaypoint(int start, Waypoint waypoint, String data, ChatSource source) {
+    }
+
+    public static String appendShareInfo(String locInfo, String recipient) {
+        if (!locInfo.endsWith("]")) {
+            return locInfo;
+        }
+
+        String sender = VoxelConstants.getPlayer().getGameProfile().name();
+        String shared = locInfo.substring(0, locInfo.length() - 1) + ", " + SHARED_BY_KEY + ":" + sender + ", " + SHARED_WITH_KEY + ":" + recipient + "]";
+
+        return shared.length() > MAX_SHARED_LENGTH ? locInfo : shared;
+    }
+
+    public static String appendShareInfoForEveryone(String locInfo) {
+        return appendShareInfo(locInfo, SHARED_WITH_EVERYONE);
     }
 
     public static Component checkForWaypoints(Component chat) {
@@ -70,7 +102,7 @@ public final class CommandUtils {
             return chat;
         }
 
-        ChatSource source = findChatSource(chat, sharedWaypoints.getFirst().start());
+        ChatSource chatSource = findChatSource(chat, sharedWaypoints.getFirst().start());
         MutableComponent finalMessage = Component.empty();
 
         for (int i = 0; i < sharedWaypoints.size(); i++) {
@@ -79,11 +111,12 @@ public final class CommandUtils {
             }
 
             SharedWaypoint sharedWaypoint = sharedWaypoints.get(i);
-            finalMessage.append(buildShareMessage(source == null ? null : source.sender(), sharedWaypoint.waypoint(), sharedWaypoint.data()));
+            ChatSource source = sharedWaypoint.source() != null ? sharedWaypoint.source() : chatSource;
+            finalMessage.append(buildShareMessage(source, sharedWaypoint.waypoint(), sharedWaypoint.data()));
         }
 
-        if (source != null && !source.comment().isEmpty()) {
-            finalMessage.append("\n").append(Component.literal(source.comment()).withColor(SHARE_TEXT_COLOR));
+        if (chatSource != null && !chatSource.comment().isEmpty()) {
+            finalMessage.append("\n").append(Component.literal(chatSource.comment()).withColor(SHARE_TEXT_COLOR));
         }
 
         return finalMessage;
@@ -99,7 +132,7 @@ public final class CommandUtils {
             Waypoint waypoint = createWaypointFromChat(dataPart);
 
             if (waypoint != null) {
-                sharedWaypoints.add(new SharedWaypoint(matcher.start(), waypoint, dataPart));
+                sharedWaypoints.add(new SharedWaypoint(matcher.start(), waypoint, dataPart, readShareInfo(dataPart)));
             }
         }
 
@@ -108,7 +141,7 @@ public final class CommandUtils {
             Waypoint waypoint = createWaypointFromXaero(xaeroMatcher);
 
             if (waypoint != null) {
-                sharedWaypoints.add(new SharedWaypoint(xaeroMatcher.start(), waypoint, xaeroMatcher.group()));
+                sharedWaypoints.add(new SharedWaypoint(xaeroMatcher.start(), waypoint, xaeroMatcher.group(), null));
             }
         }
 
@@ -116,22 +149,30 @@ public final class CommandUtils {
         return sharedWaypoints;
     }
 
-    private static MutableComponent buildShareMessage(String sender, Waypoint waypoint, String dataPart) {
-        Component dimension = getSharedDimensionName(waypoint);
-        MutableComponent message;
+    private static MutableComponent buildShareMessage(ChatSource source, Waypoint waypoint, String dataPart) {
+        ShareDirection direction = source == null ? ShareDirection.UNKNOWN : source.direction();
+        boolean named = !waypoint.name.isEmpty();
+        String key = "minimap.waypointShare.chat.shared" + (named ? "" : "Coordinate") + direction.keySuffix;
 
-        if (waypoint.name.isEmpty()) {
-            message = sender == null
-                    ? Component.translatable("minimap.waypointShare.chat.sharedCoordinateUnknown", dimension)
-                    : Component.translatable("minimap.waypointShare.chat.sharedCoordinate", Component.literal(sender).withColor(SHARE_NAME_COLOR), dimension);
-        } else {
-            Component name = Component.literal(waypoint.name).withColor(SHARE_NAME_COLOR);
-            message = sender == null
-                    ? Component.translatable("minimap.waypointShare.chat.sharedUnknown", name, dimension)
-                    : Component.translatable("minimap.waypointShare.chat.shared", Component.literal(sender).withColor(SHARE_NAME_COLOR), name, dimension);
+        List<Component> arguments = new ArrayList<>();
+        if (direction != ShareDirection.UNKNOWN) {
+            arguments.add(direction.sentByUs()
+                    ? Component.translatable("minimap.waypointShare.chat.you").withColor(SHARE_NAME_COLOR)
+                    : Component.literal(source.name()).withColor(SHARE_NAME_COLOR));
         }
 
-        return message.withColor(SHARE_TEXT_COLOR)
+        if (named) {
+            arguments.add(Component.literal(waypoint.name).withColor(SHARE_NAME_COLOR));
+        }
+
+        arguments.add(getSharedDimensionName(waypoint));
+
+        if (direction == ShareDirection.SENT_PRIVATELY) {
+            arguments.add(Component.literal(source.name()).withColor(SHARE_NAME_COLOR));
+        }
+
+        return Component.translatable(key, arguments.toArray())
+                .withColor(SHARE_TEXT_COLOR)
                 .append(" ")
                 .append(buildShareButton("minimap.waypointShare.chat.add", "minimap.waypointShare.chat.addTooltip", ADD_WAYPOINT_COMMAND + dataPart, SHARE_ADD_COLOR, waypoint))
                 .append(" ")
@@ -167,11 +208,6 @@ public final class CommandUtils {
         return dimensionNames;
     }
 
-    /**
-     * Names the dimension the way the game itself does. Vanilla has no translations for the dimensions as such, so the
-     * three vanilla ones borrow the keys their names are shown under, and modded dimensions use the key mods commonly
-     * ship for theirs. Whatever has no translation falls back to its prettified identifier.
-     */
     private static Component getDimensionName(DimensionContainer dimension) {
         Identifier identifier = dimension.Identifier;
         if (identifier == null) {
@@ -191,6 +227,41 @@ public final class CommandUtils {
         return (int) (waypoint.x / dimensionScale) + ", " + waypoint.y + ", " + (int) (waypoint.z / dimensionScale);
     }
 
+    private static ChatSource readShareInfo(String details) {
+        String sharedBy = null;
+        String sharedWith = null;
+
+        for (String pair : details.split(",")) {
+            int splitIndex = pair.indexOf(':');
+            if (splitIndex == -1) {
+                continue;
+            }
+
+            String key = pair.substring(0, splitIndex).trim();
+            String value = pair.substring(splitIndex + 1).trim();
+
+            if (key.equalsIgnoreCase(SHARED_BY_KEY)) {
+                sharedBy = value;
+            } else if (key.equalsIgnoreCase(SHARED_WITH_KEY)) {
+                sharedWith = value;
+            }
+        }
+
+        if (sharedBy == null || sharedBy.isEmpty()) {
+            return null;
+        }
+
+        boolean everyone = sharedWith == null || sharedWith.isEmpty() || sharedWith.equals(SHARED_WITH_EVERYONE);
+
+        if (isLocalPlayer(sharedBy)) {
+            return everyone
+                    ? new ChatSource(sharedBy, ShareDirection.SENT, "")
+                    : new ChatSource(sharedWith, ShareDirection.SENT_PRIVATELY, "");
+        }
+
+        return new ChatSource(sharedBy, !everyone && isLocalPlayer(sharedWith) ? ShareDirection.RECEIVED_PRIVATELY : ShareDirection.RECEIVED, "");
+    }
+
     private static ChatSource findChatSource(Component chat, int firstWaypointStart) {
         ChatSource source = findChatSourceFromContents(chat);
         if (source != null) {
@@ -204,27 +275,29 @@ public final class CommandUtils {
             sender = nameMatcher.find() ? nameMatcher.group(1) : null;
         }
 
-        return sender == null ? null : new ChatSource(sender, "");
+        return sender == null ? null : new ChatSource(sender, isLocalPlayer(sender) ? ShareDirection.SENT : ShareDirection.RECEIVED, "");
     }
 
     private static ChatSource findChatSourceFromContents(Component component) {
-        if (component.getContents() instanceof TranslatableContents contents && (contents.getKey().startsWith("chat.type.") || contents.getKey().startsWith("commands.message.display"))) {
-            String sender = null;
-            String comment = "";
+        if (component.getContents() instanceof TranslatableContents contents) {
+            String key = contents.getKey();
+            Object[] arguments = contents.getArgs();
 
-            for (Object argument : contents.getArgs()) {
-                if (argument instanceof Component argumentComponent) {
-                    if (sender == null) {
-                        sender = argumentComponent.getString();
-                    } else {
-                        comment = stripWaypointData(argumentComponent.getString());
-                        break;
-                    }
+            if (arguments.length >= 2) {
+                String comment = stripWaypointData(argumentAsString(arguments[arguments.length - 1]));
+
+                if (key.equals("commands.message.display.outgoing")) {
+                    return chatSource(argumentAsString(arguments[0]), ShareDirection.SENT_PRIVATELY, comment);
                 }
-            }
 
-            if (sender != null && !sender.isEmpty()) {
-                return new ChatSource(sender, comment);
+                if (key.equals("commands.message.display.incoming")) {
+                    return chatSource(argumentAsString(arguments[0]), ShareDirection.RECEIVED_PRIVATELY, comment);
+                }
+
+                if (key.startsWith("chat.type.")) {
+                    String sender = argumentAsString(arguments[arguments.length - 2]);
+                    return chatSource(sender, isLocalPlayer(sender) ? ShareDirection.SENT : ShareDirection.RECEIVED, comment);
+                }
             }
         }
 
@@ -236,6 +309,32 @@ public final class CommandUtils {
         }
 
         return null;
+    }
+
+    private static ChatSource chatSource(String name, ShareDirection direction, String comment) {
+        return name == null || name.isEmpty() ? null : new ChatSource(name, direction, comment);
+    }
+
+    private static String argumentAsString(Object argument) {
+        if (argument instanceof Component component) {
+            return component.getString();
+        }
+
+        return argument instanceof String text ? text : "";
+    }
+
+    private static boolean isLocalPlayer(String name) {
+        LocalPlayer player = VoxelConstants.getPlayer();
+        if (player == null || name.isEmpty()) {
+            return false;
+        }
+
+        String profileName = player.getGameProfile().name();
+        if (name.equals(profileName) || name.equals(player.getName().getString()) || name.equals(player.getDisplayName().getString())) {
+            return true;
+        }
+
+        return !profileName.isEmpty() && Pattern.compile("\\b" + Pattern.quote(profileName) + "\\b").matcher(name).find();
     }
 
     private static String findOnlinePlayerName(String text) {

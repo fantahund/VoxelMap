@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.forge;
 
-import com.mamiyaotaru.voxelmap.packets.VoxelmapSettingsS2C;
+import com.mamiyaotaru.voxelmap.packets.VoxelMapSettingsPayload;
 import com.mamiyaotaru.voxelmap.server.VoxelmapServerConfigManager;
 import com.mojang.brigadier.context.CommandContext;
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ import net.minecraftforge.network.PacketDistributor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class VoxelmapForgeServer {
+public final class VoxelMapForgeServerMod {
     private static final Logger LOGGER = LogManager.getLogger("VoxelMap");
 
     private VoxelmapServerConfigManager configManager;
@@ -111,14 +111,14 @@ public final class VoxelmapForgeServer {
             return false;
         }
 
-        if (ForgeSettingsPacketHandler.SETTINGS == null || !ForgeSettingsPacketHandler.SETTINGS.isRemotePresent(player.connection.getConnection())) {
+        if (ForgePacketHandler.settingsChannel() == null || !ForgePacketHandler.settingsChannel().isRemotePresent(player.connection.getConnection())) {
             LOGGER.debug("Skipping VoxelMap settings send for " + player.getName().getString() + " (" + event + "): client cannot receive settings packet");
             return false;
         }
 
         String worldId = player.level().dimension().identifier().toString();
         String settingsJson = getConfigManager().createSettingsJson(worldId);
-        ForgeSettingsPacketHandler.SETTINGS.send(new VoxelmapSettingsS2C(settingsJson), PacketDistributor.PLAYER.with(player));
+        ForgePacketHandler.settingsChannel().send(new VoxelMapSettingsPayload(settingsJson), PacketDistributor.PLAYER.with(player));
         LOGGER.info("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
         return true;
     }

@@ -22,13 +22,13 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricMod"
+      "com.mamiyaotaru.voxelmap.fabric.VoxelMapFabricClientMod"
     ],
     "server": [
-      "com.mamiyaotaru.voxelmap.fabric.VoxelmapFabricModServer"
+      "com.mamiyaotaru.voxelmap.fabric.VoxelMapFabricServerMod"
     ],
     "modmenu": [
-      "com.mamiyaotaru.voxelmap.fabric.VoxelmapModMenuApi"
+      "com.mamiyaotaru.voxelmap.fabric.VoxelMapModMenuApi"
     ]
   },
   "accessWidener" : "voxelmap.accesswidener",

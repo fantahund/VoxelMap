@@ -3,8 +3,8 @@ package com.mamiyaotaru.voxelmap.forge;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-public final class ForgeClientBootstrap {
-    private ForgeClientBootstrap() {
+public final class VoxelMapForgeClientMod {
+    private VoxelMapForgeClientMod() {
     }
 
     public static void init(FMLJavaModLoadingContext context) {

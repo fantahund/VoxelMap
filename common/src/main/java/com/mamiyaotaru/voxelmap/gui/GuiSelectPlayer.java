@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
+import com.mamiyaotaru.voxelmap.util.CommandUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -67,10 +68,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         if (allClicked) {
             allClicked = false;
             if (b) {
-                String combined = message.getValue() + " " + locInfo;
+                String sharedInfo = CommandUtils.appendShareInfoForEveryone(locInfo);
+                String combined = message.getValue() + " " + sharedInfo;
                 if (combined.length() > 256) {
                     VoxelConstants.getPlayer().connection.sendChat(message.getValue());
-                    VoxelConstants.getPlayer().connection.sendChat(locInfo);
+                    VoxelConstants.getPlayer().connection.sendChat(sharedInfo);
                 } else {
                     VoxelConstants.getPlayer().connection.sendChat(combined);
                 }
@@ -84,10 +86,11 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
     }
 
     protected void sendMessageToPlayer(String name) {
-        String combined = "msg " + name + " " + message.getValue() + " " + locInfo;
+        String sharedInfo = CommandUtils.appendShareInfo(locInfo, name);
+        String combined = "msg " + name + " " + message.getValue() + " " + sharedInfo;
         if (combined.length() > 256) {
             VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + message.getValue());
-            VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + locInfo);
+            VoxelConstants.getPlayer().connection.sendCommand("msg " + name + " " + sharedInfo);
         } else {
             VoxelConstants.getPlayer().connection.sendCommand(combined);
         }

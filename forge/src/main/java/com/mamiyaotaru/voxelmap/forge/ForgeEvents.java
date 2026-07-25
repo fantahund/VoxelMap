@@ -3,6 +3,8 @@ package com.mamiyaotaru.voxelmap.forge;
 import com.mamiyaotaru.voxelmap.Events;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
+import java.nio.file.Path;
+import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -12,7 +14,6 @@ import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraftforge.client.event.AddGuiOverlayLayersEvent;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,11 +24,7 @@ import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.forgespi.language.IModFileInfo;
-import net.minecraftforge.forgespi.language.IModInfo;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-
-import java.nio.file.Path;
-import java.util.Optional;
+import net.minecraftforge.versions.forge.ForgeVersion;
 
 public class ForgeEvents implements Events {
 
@@ -48,42 +45,32 @@ public class ForgeEvents implements Events {
     }
 
     private void preInitClient(final FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            map.onClientStarted();
-            map.onConfigurationInit();
-        });
+        map.onClientStarted();
+        map.onConfigurationInit();
     }
 
     private void registerResourcePacks(final AddPackFindersEvent event) {
         if (event.getPackType() != PackType.CLIENT_RESOURCES) return;
 
         Identifier packLocation = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "resourcepacks/voxelmap_legacy");
-        Component packNameDisplay = Component.translatable("resourcePack.minimap.voxelmapLegacy.title");
+        IModFileInfo voxelMapFileInfo = ModList.getModFileById(VoxelConstants.MOD_ID);
+        if (voxelMapFileInfo == null) return;
 
-        IModFileInfo modFileInfo = ModList.getModFileById(packLocation.getNamespace());
-        if (modFileInfo == null || modFileInfo.getMods().isEmpty()) {
-            return;
-        }
-
-        IModInfo modInfo = modFileInfo.getMods().get(0);
-        ArtifactVersion version = modInfo.getVersion();
-        String prefix = packLocation.getPath();
         String packId = "mod/" + packLocation;
+        Path packPath = voxelMapFileInfo.getFile().findResource(packLocation.getPath());
+        String forgeId = ForgeVersion.MOD_ID;
+        String forgeVersion = ForgeVersion.getVersion();
 
-        Path modPath = modFileInfo.getFile().findResource(prefix);
-
-        PackLocationInfo locationInfo = new PackLocationInfo(
+        PackLocationInfo packInfo = new PackLocationInfo(
                 packId,
-                packNameDisplay,
+                Component.translatable("resourcePack.minimap.voxelmapLegacy.title"),
                 PackSource.BUILT_IN,
-                Optional.of(new KnownPack("forge", packId, version.toString()))
+                Optional.of(new KnownPack(forgeId, packId, forgeVersion))
         );
 
-        Pack.ResourcesSupplier resourcesSupplier = new PathPackResources.PathResourcesSupplier(modPath);
-
         Pack pack = Pack.readMetaAndCreate(
-                locationInfo,
-                resourcesSupplier,
+                packInfo,
+                new PathPackResources.PathResourcesSupplier(packPath),
                 PackType.CLIENT_RESOURCES,
                 new PackSelectionConfig(false, Pack.Position.TOP, false)
         );
@@ -97,19 +84,7 @@ public class ForgeEvents implements Events {
         event.registerReloadListener(map);
     }
 
-    private static class ForgeEventListener {
-        private final VoxelMap map;
-
-        public ForgeEventListener(VoxelMap map) {
-            this.map = map;
-        }
-
-        @SubscribeEvent
-        public void onRenderGui(AddGuiOverlayLayersEvent event) {
-            Identifier voxelMapMinimapLayer = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "minimap");
-            event.getLayeredDraw().add(voxelMapMinimapLayer, (graphics, deltaTracker) -> VoxelConstants.renderOverlay(graphics));
-        }
-
+    private record ForgeEventListener(VoxelMap map) {
         @SubscribeEvent
         public void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
             map.onJoinServer();
