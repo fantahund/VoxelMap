@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.settings.EntityTypeDialog;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsCategory;
@@ -73,6 +74,12 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
         addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
                 .bounds(width / 2 - 100, height - 27, 200, 20).build());
+        if (!VoxelConstants.isSinglePlayer()) {
+            String currentServer = VoxelConstants.getVoxelMapInstance().getWaypointManager().getServerName();
+            addRenderableWidget(Button.builder(Component.translatable("voxelmap.alias.editButton"),
+                    ignored -> this.minecraft.gui.setScreen(new GuiServerAliases(this, currentServer)))
+                    .bounds(10, height - 27, 150, 20).build());
+        }
         rebuildContent();
         if (reopenEntityDialog)
             openEntityTypeDialog();

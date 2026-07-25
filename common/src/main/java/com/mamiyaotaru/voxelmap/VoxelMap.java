@@ -4,6 +4,7 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
+import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataStore;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
@@ -44,6 +45,7 @@ public class VoxelMap implements PreparableReloadListener {
     private ColorManager colorManager;
     private WaypointManager waypointManager;
     private DimensionManager dimensionManager;
+    private final VoxelMapDataStore dataStore = new VoxelMapDataStore();
     private ClientLevel world;
     private String worldName = "";
     private String passMessage;
@@ -239,6 +241,10 @@ public class VoxelMap implements PreparableReloadListener {
 
     public DimensionManager getDimensionManager() {
         return dimensionManager;
+    }
+
+    public VoxelMapDataStore getDataStore() {
+        return dataStore;
     }
 
     public PersistentMap getPersistentMap() {
