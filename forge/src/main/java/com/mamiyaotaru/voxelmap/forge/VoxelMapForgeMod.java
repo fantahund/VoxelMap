@@ -15,10 +15,12 @@ public class VoxelMapForgeMod {
         VoxelMapForgeMod.modBusGroup = context.getModBusGroup();
         ForgeSettingsPacketHandler.register();
         ForgeWorldIdPacketHandler.register();
-        new VoxelmapForgeServer().init();
 
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ForgeClientBootstrap.init(context);
+        }
+        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            new VoxelmapForgeServer().init();
         }
     }
 
