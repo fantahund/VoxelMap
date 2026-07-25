@@ -11,6 +11,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFac
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
 import com.mamiyaotaru.voxelmap.rendering.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
@@ -114,7 +115,6 @@ public class EntityMapImageManager {
 
     public EntityMapImageManager() {
         this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
-        this.textureAtlas.setFilter(true, false);
 
         this.allDirections = new Direction[]{null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
         this.fullRenderModels = Set.of(CodModel.class, MagmaCubeModel.class, SalmonModel.class, SlimeModel.class, TropicalFishSmallModel.class, TropicalFishLargeModel.class);
@@ -134,7 +134,7 @@ public class EntityMapImageManager {
         this.textureAtlas.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("radarIconFiltering", "true"));
-        this.textureAtlas.setFilter(true, false);
+        this.textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
 
         entityVariantDataFactories.clear();
         customMobProperties.clear();

@@ -12,6 +12,8 @@ import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
@@ -21,11 +23,8 @@ import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.EasingUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
@@ -175,7 +174,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
 
         DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
-        texture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+        texture.sampler = VoxelMapSamplers.LINEAR_CLAMP;
         minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 

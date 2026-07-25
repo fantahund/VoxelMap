@@ -6,8 +6,6 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTexture;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -45,12 +43,6 @@ public class TextureAtlas extends AbstractTexture {
         this.iconCreator = iconCreator;
         this.Identifier = Identifier;
         Minecraft.getInstance().getTextureManager().register(Identifier, this);
-    }
-
-    public void setFilter(boolean linearFilter, boolean mipmap) {
-        if (texture != null) {
-            sampler = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE,  linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, linearFilter ? FilterMode.LINEAR : FilterMode.NEAREST, false);
-        }
     }
 
     private void initMissingImage() {

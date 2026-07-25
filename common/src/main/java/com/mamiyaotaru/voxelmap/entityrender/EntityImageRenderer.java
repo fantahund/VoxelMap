@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.entityrender;
 import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
@@ -13,7 +14,6 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -138,8 +138,8 @@ public class EntityImageRenderer {
             try (RenderPass renderPass = RenderUtils.createRenderPass("VoxelMap Entity Render", renderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
-                renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+                renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), VoxelMapSamplers.LINEAR_CLAMP);
+                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), VoxelMapSamplers.LINEAR_CLAMP);
                 renderPass.setVertexBuffer(0, meshInfo.vertexBuffer().slice());
                 renderPass.setIndexBuffer(meshInfo.indexBuffer(), meshInfo.indexType());
                 if (texture0 != null) {

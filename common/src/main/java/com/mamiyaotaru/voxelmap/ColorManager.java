@@ -3,13 +3,12 @@ package com.mamiyaotaru.voxelmap;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -218,11 +217,11 @@ public class ColorManager {
     private void loadColorPicker() {
         try {
             DynamicTexture hueWheelTexture = new DynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image());
-            hueWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            hueWheelTexture.sampler = VoxelMapSamplers.LINEAR_CLAMP;
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueColorWheel, hueWheelTexture);
 
             DynamicTexture hueSatWheelTexture = new DynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
-            hueSatWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            hueSatWheelTexture.sampler =  VoxelMapSamplers.LINEAR_CLAMP;
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueSatColorWheel, hueSatWheelTexture);
 
         } catch (Exception exception) {

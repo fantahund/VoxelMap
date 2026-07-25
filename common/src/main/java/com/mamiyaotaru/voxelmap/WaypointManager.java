@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -90,9 +91,7 @@ public class WaypointManager {
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints", resourceTextureAtlasWaypoints);
-        this.textureAtlas.setFilter(true, false);
         this.textureAtlasChooser = new TextureAtlas("chooser", resourceTextureAtlasWaypointChooser);
-        this.textureAtlasChooser.setFilter(true, false);
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
@@ -143,9 +142,9 @@ public class WaypointManager {
 //      I couldn't find a better way to make stitch sorted :(
 //      this.textureAtlasChooser.stitch();
 
-        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypoint_icon_filtering", "true"));
-        this.textureAtlas.setFilter(useFiltering, false);
-        this.textureAtlasChooser.setFilter(useFiltering, false);
+        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypointIconFiltering", "true"));
+        this.textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
+        this.textureAtlasChooser.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
     }
 
     public static String toSimpleName(String name) {
