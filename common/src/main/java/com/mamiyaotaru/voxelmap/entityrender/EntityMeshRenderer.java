@@ -33,7 +33,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
-public class EntityImageRenderer {
+public class EntityMeshRenderer {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final PoseStack poseStack = new PoseStack();
     private final GpuBuffer lightingBuffer;
@@ -48,7 +48,7 @@ public class EntityImageRenderer {
     private StagedVertexBuffer.Draw draw;
     private VertexConsumer vertexBuffer;
 
-    public EntityImageRenderer() {
+    public EntityMeshRenderer() {
         Vector3f fullBright = new Vector3f(1.0F, -1.0F, 1.0F).normalize();
         Vector3f fullBright2 = new Vector3f(-1.0F, -1.0F, 1.0F).normalize();
         lightingBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Lighting UBO", GpuBuffer.USAGE_UNIFORM + GpuBuffer.USAGE_COPY_DST, Lighting.UBO_SIZE);
