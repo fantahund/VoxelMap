@@ -14,12 +14,15 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.StagedVertexBuffer;
@@ -36,6 +39,7 @@ public class EntityImageRenderer {
     private final GpuBuffer lightingBuffer;
     private final StagedVertexBuffer stagedVertexBuffer;
     private final CachedProjectionMatrixBuffer projection;
+    private final ScissorState scissorState = new ScissorState();
     private final VoxelMapRenderTarget renderTarget;
 
     private boolean isBatching = false;
@@ -64,24 +68,58 @@ public class EntityImageRenderer {
     public void setupMatrix(float baseScale, Properties iconConfig) {
         poseStack.setIdentity();
         poseStack.translate(256.0F, 256.0F, -3000.0F);
+        poseStack.scale(64.0F, 64.0F, -64.0F);
 
-        float scale = 64.0F * baseScale * Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        poseStack.scale(scale, scale, -scale);
+        float scale = baseScale * Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
+        poseStack.scale(scale, scale, scale);
 
         String rotation = iconConfig.getProperty("rotation", "");
-        if (rotation.startsWith("{") && rotation.endsWith("}")) {
-            for (String entry : rotation.substring(1, rotation.length() - 1).split(",")) {
+        parseDoubleArray(rotation, (key, value) -> {
+            float f = value.floatValue();
+            switch (key.toLowerCase(Locale.ROOT)) {
+                case "x" -> poseStack.mulPose(Axis.XP.rotationDegrees(f));
+                case "y" -> poseStack.mulPose(Axis.YP.rotationDegrees(f));
+                case "z" -> poseStack.mulPose(Axis.ZP.rotationDegrees(f));
+            }
+        });
+
+        String trim = iconConfig.getProperty("trim", "");
+        int[] trimRect = new int[]{0, 0, 512, 512};
+        parseDoubleArray(trim, (key, value) -> {
+            int i = value.intValue();
+            switch (key.toLowerCase(Locale.ROOT)) {
+                case "x0" -> trimRect[0] = i;
+                case "y0" -> trimRect[1] = i;
+                case "x1" -> trimRect[2] = i;
+                case "y1" -> trimRect[3] = i;
+            }
+        });
+        setupScissorArea(scale, trimRect[0], trimRect[1], trimRect[2], trimRect[3]);
+    }
+
+    private void parseDoubleArray(String array, BiConsumer<String, Double> consumer) {
+        if (array.startsWith("{") && array.endsWith("}")) {
+            for (String entry : array.substring(1, array.length() - 1).split(",")) {
                 String[] kv = entry.split(":", 2);
                 if (kv.length < 2) continue;
 
-                float value = Float.parseFloat(kv[1].trim());
-                switch (kv[0].trim().toLowerCase()) {
-                    case "x" -> poseStack.mulPose(Axis.XP.rotationDegrees(value));
-                    case "y" -> poseStack.mulPose(Axis.YP.rotationDegrees(value));
-                    case "z" -> poseStack.mulPose(Axis.ZP.rotationDegrees(value));
-                }
+                consumer.accept(kv[0].trim(), Double.parseDouble(kv[1].trim()));
             }
         }
+    }
+
+    private void setupScissorArea(float scale, int x0, int y0, int x1, int y1) {
+        x0 = (int) ((x0 - 256) * scale) + 256;
+        x1 = (int) ((x1 - 256) * scale) + 256;
+        y0 = 256 - (int) ((y0 - 256) * scale);
+        y1 = 256 - (int) ((y1 - 256) * scale);
+
+        int x = Math.max(0, Math.min(511, x0));
+        int y = Math.max(0, Math.min(511, y1));
+        int w = Math.max(1, Math.min(512 - x, x1 - x0));
+        int h = Math.max(1, Math.min(512 - y, y0 - y1));
+
+        scissorState.enable(x, y, w, h);
     }
 
     public void beginBatch(RenderPipeline pipeline, VariantDataHolder variant) {
@@ -138,6 +176,7 @@ public class EntityImageRenderer {
             try (RenderPass renderPass = RenderUtils.createRenderPass("VoxelMap Entity Render", renderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
+                renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
                 renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), VoxelMapSamplers.LINEAR_CLAMP);
                 renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), VoxelMapSamplers.LINEAR_CLAMP);
                 renderPass.setVertexBuffer(0, meshInfo.vertexBuffer().slice());

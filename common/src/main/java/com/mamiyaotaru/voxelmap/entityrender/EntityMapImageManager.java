@@ -19,8 +19,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,11 +74,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.camel.Camel;
-import net.minecraft.world.entity.animal.equine.Llama;
 import net.minecraft.world.entity.animal.fish.Pufferfish;
 import net.minecraft.world.entity.animal.fish.Salmon;
-import net.minecraft.world.entity.animal.happyghast.HappyGhast;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -326,19 +321,6 @@ public class EntityMapImageManager {
     private void postProcessRenderedMobImage(Entity entity, Sprite sprite, BufferedImage image2, boolean addBorder) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
-
-            Graphics2D graphics = image.createGraphics();
-            if (entity instanceof Camel) {
-                graphics.setComposite(AlphaComposite.Clear);
-                graphics.fillRect(0, 192, image.getWidth(), image.getHeight());
-            } else if (entity instanceof Llama) {
-                graphics.setComposite(AlphaComposite.Clear);
-                graphics.fillRect(0, 248, image.getWidth(), image.getHeight());
-            } else if (entity instanceof HappyGhast) {
-                graphics.setComposite(AlphaComposite.Clear);
-                graphics.fillRect(0, 352, image.getWidth(), image.getHeight());
-            }
-            graphics.dispose();
 
             image = ImageUtils.trim(image);
             image = ImageUtils.fillOutline(ImageUtils.pad(image), addBorder, 2);
