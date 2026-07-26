@@ -125,7 +125,7 @@ public class EntityMapImageManager {
     }
 
     public void reset() {
-        runOnDebug(() -> VoxelConstants.getLogger().info("EntityMapImageManager: Resetting"));
+        if (VoxelConstants.DEBUG) VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
 
         this.textureAtlas.reset();
         this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
@@ -150,10 +150,10 @@ public class EntityMapImageManager {
 
         addVariantDataFactory(new ArmorVariantDataFactory(Items.LEATHER_HELMET, Identifier.withDefaultNamespace("textures/entity/equipment/humanoid/leather_overlay.png"), 0xFFFFFFFF));
 
-        runOnDebug(() -> {
+        if (VoxelConstants.DEBUG) {
             VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
             BuiltInRegistries.ENTITY_TYPE.forEach(t -> requestImageForMobType(t, 32, true));
-        });
+        }
     }
 
     public void onResourceManagerReload(ResourceManager resourceManager) {
@@ -243,7 +243,7 @@ public class EntityMapImageManager {
         if (existing != null && existing != textureAtlas.getMissingImage()) {
             return existing;
         }
-        runOnDebug(() -> VoxelConstants.getLogger().info("EntityMapImageManager: Rendering Mob of type {}", dataHolder.name()));
+        if (VoxelConstants.DEBUG) VoxelConstants.getLogger().info("EntityMapImageManager: Rendering Mob of type {}", dataHolder.name());
 
         Sprite sprite = textureAtlas.registerEmptyIcon(dataHolder);
 
@@ -523,13 +523,13 @@ public class EntityMapImageManager {
         spriteCreationTask.add(() -> {
             doneSpriteCreations++;
             sprite.setTextureData(ImageUtils.nativeImageFromBufferedImage(image));
-            runOnDebug(() -> VoxelConstants.getLogger().info("EntityMapImageManager: BufferedImage: ({} / {}) added to texture atlas {} ({} * {})", doneSpriteCreations, totalSpriteCreations, sprite.getIconName(), image.getWidth(), image.getHeight()));
+            if (VoxelConstants.DEBUG) VoxelConstants.getLogger().info("EntityMapImageManager: BufferedImage: ({} / {}) added to texture atlas {} ({} * {})", doneSpriteCreations, totalSpriteCreations, sprite.getIconName(), image.getWidth(), image.getHeight());
             if (doneSpriteCreations == totalSpriteCreations) {
                 textureAtlas.stitchNew();
-                runOnDebug(() -> {
+                if (VoxelConstants.DEBUG) {
                     VoxelConstants.getLogger().info("EntityMapImageManager: Stitching!");
                     textureAtlas.saveDebugImage();
-                });
+                }
             }
         });
     }
@@ -538,12 +538,6 @@ public class EntityMapImageManager {
         Runnable task;
         while ((task = spriteCreationTask.poll()) != null) {
             task.run();
-        }
-    }
-
-    private void runOnDebug(Runnable runnable) {
-        if (VoxelConstants.DEBUG) {
-            runnable.run();
         }
     }
 }
