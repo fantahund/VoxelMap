@@ -2,26 +2,32 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mojang.authlib.GameProfile;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.SkinManager;
 import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.player.PlayerSkin;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.players.ProfileResolver;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.SkullBlock;
 
 public class ArmorVariantDataFactory {
+    private static final ConcurrentHashMap<UUID, Identifier> SKIN_TEXTURES = new ConcurrentHashMap<>();
+
     private static final HashMap<SkullBlock.Type, Identifier> SKULL_TEXTURES = Maps.newHashMap(
             Map.ofEntries(
                     Map.entry(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png")),
@@ -104,27 +110,10 @@ public class ArmorVariantDataFactory {
         return new ArmorVariantData(stack.getItem(), id, tex0, col0, size, addBorder);
     }
 
-    public static int getBaseColor(ItemStack stack) {
-        DyedItemColor dyedColor = stack.get(DataComponents.DYED_COLOR);
-        if (dyedColor != null) {
-            return dyedColor.rgb() | 0xFF000000;
-        }
-
-        if (stack.getItem() == Items.LEATHER_HELMET) {
-            return DyedItemColor.LEATHER_COLOR;
-        }
-
-        return 0xFFFFFFFF;
-    }
-
     public static Identifier loadBaseTexture(ItemStack stack) {
         ResolvableProfile profile = stack.get(DataComponents.PROFILE);
         if (profile != null) {
-            GameProfile gameProfile = profile.resolveProfile(VoxelConstants.getMinecraft().services().profileResolver()).join();
-            Optional<PlayerSkin> optionalSkin = VoxelConstants.getMinecraft().getSkinManager().get(gameProfile).getNow(Optional.empty());
-            if (optionalSkin.isPresent()) {
-                return optionalSkin.get().body().texturePath();
-            }
+            return loadSkinTexture(profile);
         }
 
         if (stack.getItem() instanceof BlockItem blockItem) {
@@ -136,12 +125,66 @@ public class ArmorVariantDataFactory {
 
         Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
         if (equippable != null) {
-            EquipmentAssetManager armorManager = VoxelConstants.getMinecraft().getEntityRenderDispatcher().equipmentAssets;
-            EquipmentClientInfo armorInfo = armorManager.get(equippable.assetId().get());
-
-            return armorInfo.getLayers(EquipmentClientInfo.LayerType.HUMANOID).getFirst().getTextureLocation(EquipmentClientInfo.LayerType.HUMANOID);
+            EquipmentClientInfo armorInfo = getArmorInfo(equippable);
+            if (armorInfo != null) {
+                return armorInfo.getLayers(EquipmentClientInfo.LayerType.HUMANOID).getFirst().getTextureLocation(EquipmentClientInfo.LayerType.HUMANOID);
+            }
         }
 
         return null;
+    }
+
+    public static int getBaseColor(ItemStack stack) {
+        DyedItemColor dyedColor = stack.get(DataComponents.DYED_COLOR);
+        if (dyedColor != null) {
+            return dyedColor.rgb() | 0xFF000000;
+        }
+
+        // I know it's a bit messy, but performance is first.
+        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
+        if (equippable != null) {
+            EquipmentClientInfo armorInfo = getArmorInfo(equippable);
+            if (armorInfo != null) {
+                Optional<EquipmentClientInfo.Dyeable> dyeable = armorInfo.getLayers(EquipmentClientInfo.LayerType.HUMANOID).getFirst().dyeable();
+                if (dyeable.isPresent()) {
+                    Optional<Integer> undyedColor = dyeable.get().colorWhenUndyed();
+                    if (undyedColor.isPresent()) {
+                        return undyedColor.get() | 0xFF000000;
+                    }
+                }
+            }
+        }
+
+        return 0xFFFFFFFF;
+    }
+
+    private static EquipmentClientInfo getArmorInfo(Equippable equippable) {
+        Optional<ResourceKey<EquipmentAsset>> assetId = equippable.assetId();
+        if (assetId.isPresent()) {
+            EquipmentAssetManager armorManager = VoxelConstants.getMinecraft().getEntityRenderDispatcher().equipmentAssets;
+            return armorManager.get(assetId.get());
+        }
+        return null;
+    }
+
+    private static Identifier loadSkinTexture(ResolvableProfile profile) {
+        UUID uuid = profile.partialProfile().id();
+
+        if (SKIN_TEXTURES.containsKey(uuid)) {
+            return SKIN_TEXTURES.get(uuid);
+        }
+
+        Identifier defaultSkin = DefaultPlayerSkin.get(uuid).body().texturePath();
+        SKIN_TEXTURES.put(uuid, defaultSkin);
+
+        ProfileResolver profileResolver = VoxelConstants.getMinecraft().services().profileResolver();
+        profile.resolveProfile(profileResolver).thenAccept((profile2) -> {
+            SkinManager skinManager = VoxelConstants.getMinecraft().getSkinManager();
+            skinManager.get(profile2).thenAccept((optionalSkin) -> {
+                optionalSkin.ifPresent(skin -> SKIN_TEXTURES.put(uuid, skin.body().texturePath()));
+            });
+        });
+
+        return defaultSkin;
     }
 }
