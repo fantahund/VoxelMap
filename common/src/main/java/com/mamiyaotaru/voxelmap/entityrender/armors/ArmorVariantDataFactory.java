@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.entityrender.armors;
 import com.google.common.collect.Maps;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -125,9 +126,9 @@ public class ArmorVariantDataFactory {
 
         Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
         if (equippable != null) {
-            EquipmentClientInfo armorInfo = getArmorInfo(equippable);
-            if (armorInfo != null) {
-                return armorInfo.getLayers(EquipmentClientInfo.LayerType.HUMANOID).getFirst().getTextureLocation(EquipmentClientInfo.LayerType.HUMANOID);
+            List<EquipmentClientInfo.Layer> layers = getArmorLayers(equippable, EquipmentClientInfo.LayerType.HUMANOID);
+            if (!layers.isEmpty()) {
+                return layers.getFirst().getTextureLocation(EquipmentClientInfo.LayerType.HUMANOID);
             }
         }
 
@@ -143,9 +144,9 @@ public class ArmorVariantDataFactory {
         // I know it's a bit messy, but performance is first.
         Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
         if (equippable != null) {
-            EquipmentClientInfo armorInfo = getArmorInfo(equippable);
-            if (armorInfo != null) {
-                Optional<EquipmentClientInfo.Dyeable> dyeable = armorInfo.getLayers(EquipmentClientInfo.LayerType.HUMANOID).getFirst().dyeable();
+            List<EquipmentClientInfo.Layer> layers = getArmorLayers(equippable, EquipmentClientInfo.LayerType.HUMANOID);
+            if (!layers.isEmpty()) {
+                Optional<EquipmentClientInfo.Dyeable> dyeable = layers.getFirst().dyeable();
                 if (dyeable.isPresent()) {
                     Optional<Integer> undyedColor = dyeable.get().colorWhenUndyed();
                     if (undyedColor.isPresent()) {
@@ -158,13 +159,13 @@ public class ArmorVariantDataFactory {
         return 0xFFFFFFFF;
     }
 
-    private static EquipmentClientInfo getArmorInfo(Equippable equippable) {
+    private static List<EquipmentClientInfo.Layer> getArmorLayers(Equippable equippable, EquipmentClientInfo.LayerType layerType) {
         Optional<ResourceKey<EquipmentAsset>> assetId = equippable.assetId();
         if (assetId.isPresent()) {
             EquipmentAssetManager armorManager = VoxelConstants.getMinecraft().getEntityRenderDispatcher().equipmentAssets;
-            return armorManager.get(assetId.get());
+            return armorManager.get(assetId.get()).getLayers(layerType);
         }
-        return null;
+        return List.of();
     }
 
     private static Identifier loadSkinTexture(ResolvableProfile profile) {
