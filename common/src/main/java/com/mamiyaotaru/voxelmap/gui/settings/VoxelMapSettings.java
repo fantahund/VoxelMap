@@ -197,10 +197,6 @@ public final class VoxelMapSettings {
                                     map.markChanged();
                                 },
                                 () -> map.serverTeleportCommand == null, requires("options.voxelmap.managed.server"))),
-                group("options.voxelmap.group.troubleshooting",
-                        toggle("advanced.compatibilityRenderer", "options.minimap.radar.cpuRendering", radar,
-                                () -> radar.cpuRendering || radar.forceCpuRendering, value -> radar.cpuRendering = value || radar.forceCpuRendering,
-                                () -> !radar.forceCpuRendering, requires("options.voxelmap.managed.renderer"), 0)),
                 group("options.voxelmap.group.interface",
                         choice("advanced.colorPicker", "options.minimap.colorPickerMode", map, () -> map.colorPickerMode, value -> map.colorPickerMode = value,
                                 value(0, "options.minimap.colorPickerMode.simple"), value(1, "options.minimap.colorPickerMode.full")),
