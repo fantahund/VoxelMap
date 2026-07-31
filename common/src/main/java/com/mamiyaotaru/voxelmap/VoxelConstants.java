@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -11,6 +12,7 @@ import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
@@ -167,6 +169,12 @@ public final class VoxelConstants {
         while (ThreadManager.executorService.getQueue().size() + ThreadManager.executorService.getActiveCount() > 0 && System.currentTimeMillis() - shutdownTime < 10000L) {
             Thread.onSpinWait();
         }
+    }
+
+    public static Screen openConfigScreen(Screen parentGui) {
+        Screen screen = new GuiMinimapOptions(parentGui);
+        VoxelConstants.getMinecraft().gui.setScreen(screen);
+        return screen;
     }
 
     public static void playerRunTeleportCommand(double x, double y, double z) {

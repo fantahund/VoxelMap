@@ -17,7 +17,7 @@ public final class VoxelMapForgeClientMod {
 
         context.registerExtensionPoint(
                 ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory((_, parentGui) -> VoxelConstants.getVoxelMapInstance().openOptionsScreen(parentGui))
+                () -> new ConfigScreenHandler.ConfigScreenFactory((_, parentGui) -> VoxelConstants.openConfigScreen(parentGui))
         );
     }
 }

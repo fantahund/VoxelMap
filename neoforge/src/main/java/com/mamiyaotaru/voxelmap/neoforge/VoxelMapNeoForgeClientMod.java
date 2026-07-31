@@ -17,7 +17,7 @@ public final class VoxelMapNeoForgeClientMod {
 
         container.registerExtensionPoint(
                 IConfigScreenFactory.class,
-                (_, parentGui) -> VoxelConstants.getVoxelMapInstance().openOptionsScreen(parentGui)
+                (_, parentGui) -> VoxelConstants.openConfigScreen(parentGui)
         );
     }
 }
