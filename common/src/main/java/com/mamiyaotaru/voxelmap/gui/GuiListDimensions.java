@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import java.util.ArrayList;
@@ -75,12 +75,12 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
     public class DimensionItem extends AbstractSelectionList.Entry<DimensionItem> {
         private final GuiAddWaypoint parentGui;
         private final DimensionContainer dim;
-        private final GuiIconElement dimToggle;
+        private final GuiIconButton dimToggle;
 
         protected DimensionItem(GuiAddWaypoint waypointScreen, DimensionContainer dim) {
             parentGui = waypointScreen;
             this.dim = dim;
-            dimToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, true, element -> parentGui.toggleDimensionSelected());
+            dimToggle = new GuiIconButton(getX() + getWidth() - 20, getY(), 18, 18, (_) -> parentGui.toggleDimensionSelected());
         }
 
         @Override
@@ -88,7 +88,7 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
             graphics.centeredText(parentGui.getFont(), dim.getDisplayName(), (parentGui.getWidth() + getWidth()) / 2, getY() + 3, 0xFFFFFFFF);
 
             dimToggle.setPosition(getX() + getWidth() - 20, getY());
-            dimToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, parentGui.dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            dimToggle.setIcon(parentGui.dimensions.contains(dim) ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
             dimToggle.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
             if (dimToggle.isMouseOver(mouseX, mouseY)) {

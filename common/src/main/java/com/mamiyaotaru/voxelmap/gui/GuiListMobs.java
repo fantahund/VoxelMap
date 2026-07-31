@@ -3,7 +3,7 @@ package com.mamiyaotaru.voxelmap.gui;
 import com.mamiyaotaru.voxelmap.Radar;
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import java.util.ArrayList;
@@ -103,8 +103,8 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
         private final Component name;
         private final String nameString;
         private final VoxelMapMobCategory category;
-        private final GuiIconElement mobIcon;
-        private final GuiIconElement mobToggle;
+        private final GuiIconButton mobIcon;
+        private final GuiIconButton mobToggle;
         private Sprite mobIconSprite;
         private boolean mobIconRequestAttempted;
 
@@ -117,8 +117,8 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
             nameString = name.getString();
             category = VoxelMapMobCategory.forEntityType(type);
 
-            mobIcon = new GuiIconElement(getX() + 2, getY(), 18, 18, false, (element) -> {});
-            mobToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, true, (element) -> parentGui.toggleMobVisibility());
+            mobIcon = new GuiIconButton(getX() + 2, getY(), 18, 18, (_) -> {});
+            mobToggle = new GuiIconButton(getX() + getWidth() - 20, getY(), 18, 18, (_) -> parentGui.toggleMobVisibility());
         }
 
         @Override
@@ -144,12 +144,12 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
                 int iconWidth = Math.min(18, mobIconSprite.getIconWidth() / 3);
                 int iconHeight = Math.min(18, mobIconSprite.getIconHeight() / 3);
                 mobIcon.setPosition(getX() + 2, getY());
-                mobIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, mobIconSprite, iconWidth, iconHeight, 0xFFFFFFFF);
+                mobIcon.setIcon(mobIconSprite, iconWidth, iconHeight, 0xFFFFFFFF);
                 mobIcon.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             }
 
             mobToggle.setPosition(getX() + getWidth() - 20, getY());
-            mobToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
+            mobToggle.setIcon(isEnabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture(), 0xFFFFFFFF);
             mobToggle.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
             if (mobIconSprite != null && mobIcon.isMouseOver(mouseX, mouseY)) {

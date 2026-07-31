@@ -2,7 +2,7 @@ package com.mamiyaotaru.voxelmap.gui;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -122,14 +122,14 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
     public class WaypointItem extends AbstractSelectionList.Entry<WaypointItem> implements Comparable<WaypointItem> {
         private final GuiWaypoints parentGui;
         private final Waypoint waypoint;
-        private final GuiIconElement waypointIcon;
-        private final GuiIconElement waypointToggle;
+        private final GuiIconButton waypointIcon;
+        private final GuiIconButton waypointToggle;
 
         protected WaypointItem(GuiWaypoints waypointScreen, Waypoint waypoint) {
             parentGui = waypointScreen;
             this.waypoint = waypoint;
-            waypointIcon = new GuiIconElement(getX() + 2, getY(), 18, 18, true, (element) -> parentGui.setHighlightedWaypoint());
-            waypointToggle = new GuiIconElement(getX() + getWidth() - 20, getY(), 18, 18, true, (element) -> parentGui.toggleWaypointVisibility());
+            waypointIcon = new GuiIconButton(getX() + 2, getY(), 18, 18, (_) -> parentGui.setHighlightedWaypoint());
+            waypointToggle = new GuiIconButton(getX() + getWidth() - 20, getY(), 18, 18, (_) -> parentGui.toggleWaypointVisibility());
         }
 
         @Override
@@ -142,16 +142,16 @@ class GuiListWaypoints extends AbstractSelectionList<GuiListWaypoints.WaypointIt
                 icon = textureAtlas.getAtlasSprite(WaypointManager.fallbackIconLocation);
             }
             waypointIcon.setPosition(getX() + 2, getY());
-            waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, icon, color);
+            waypointIcon.setIcon(icon, color);
             waypointIcon.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             if (waypoint == parentGui.highlightedWaypoint) {
-                waypointIcon.setIconForRender(RenderPipelines.GUI_TEXTURED, textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
+                waypointIcon.setIcon(textureAtlas.getAtlasSprite("marker/target"), 0xFFFF0000);
                 waypointIcon.extractRenderState(graphics, mouseX, mouseY, tickDelta);
             }
 
             Identifier toggleIcon = waypoint.enabled ? VoxelConstants.getCheckMarkerTexture() : VoxelConstants.getCrossMarkerTexture();
             waypointToggle.setPosition(getX() + getWidth() - 20, getY());
-            waypointToggle.setIconForRender(RenderPipelines.GUI_TEXTURED, toggleIcon, 0xFFFFFFFF);
+            waypointToggle.setIcon(toggleIcon, 0xFFFFFFFF);
             waypointToggle.extractRenderState(graphics, mouseX, mouseY, tickDelta);
 
             if (waypointIcon.isMouseOver(mouseX, mouseY)) {
