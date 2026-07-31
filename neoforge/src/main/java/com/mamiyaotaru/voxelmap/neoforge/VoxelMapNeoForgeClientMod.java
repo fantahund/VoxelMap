@@ -12,5 +12,6 @@ public final class VoxelMapNeoForgeClientMod {
         VoxelConstants.setEvents(new NeoForgeEvents());
         VoxelConstants.setPacketBridge(new NeoForgePacketBridge());
         VoxelConstants.setModApiBride(new NeoForgeModApiBridge());
+        VoxelConstants.setPackRegistrar(new NeoForgePackRegistrar());
     }
 }

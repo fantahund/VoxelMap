@@ -40,6 +40,7 @@ public final class VoxelConstants {
     private static Events events;
     private static PacketBridge packetBridge;
     private static ModApiBridge modApiBridge;
+    private static PackRegistrar packRegistrar;
 
     private VoxelConstants() {}
 
@@ -192,6 +193,14 @@ public final class VoxelConstants {
         return Math.max(bottomX, minBottom);
     }
 
+    public static void setModVersion(String modVersion) {
+        VoxelConstants.modVersion = modVersion;
+    }
+
+    public static String getModVersion() {
+        return modVersion;
+    }
+
     public static void setEvents(Events events) {
         VoxelConstants.events = events;
         VoxelConstants.getVoxelMapInstance().onEventsSet(events);
@@ -217,11 +226,12 @@ public final class VoxelConstants {
         return modApiBridge;
     }
 
-    public static void setModVersion(String modVersion) {
-        VoxelConstants.modVersion = modVersion;
+    public static void setPackRegistrar(PackRegistrar packRegistrar) {
+        VoxelConstants.packRegistrar = packRegistrar;
+        VoxelConstants.getVoxelMapInstance().registerPacks(packRegistrar);
     }
 
-    public static String getModVersion() {
-        return modVersion;
+    public static PackRegistrar getPackRegistrar() {
+        return packRegistrar;
     }
 }

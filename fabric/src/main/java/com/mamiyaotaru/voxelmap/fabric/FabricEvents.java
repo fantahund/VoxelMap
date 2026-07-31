@@ -7,9 +7,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
-import net.fabricmc.fabric.api.resource.v1.pack.PackActivationType;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 
@@ -26,10 +23,5 @@ public class FabricEvents implements Events {
         ClientConfigurationConnectionEvents.INIT.register((handler, client) -> map.onConfigurationInit());
 
         ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "reload_listener"), map);
-
-        FabricLoader.getInstance().getModContainer(VoxelConstants.MOD_ID).ifPresent(container -> {
-            // 1. pack location, 2. mod container, 3. pack title, 4. pack activation type
-            ResourceLoader.registerBuiltinPack(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "voxelmap_legacy"), container, Component.translatable("resourcePack.minimap.voxelmapLegacy.title"), PackActivationType.NORMAL);
-        });
     }
 }

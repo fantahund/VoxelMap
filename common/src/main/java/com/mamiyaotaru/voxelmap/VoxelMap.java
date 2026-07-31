@@ -139,6 +139,10 @@ public class VoxelMap implements PreparableReloadListener {
         });
     }
 
+    public void registerPacks(PackRegistrar registrar) {
+        registrar.registerPack(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "voxelmap_legacy"), Component.translatable("resourcePack.minimap.voxelmapLegacy.title"));
+    }
+
     public void onEventsSet(Events events) {
         events.initEvents(this);
     }

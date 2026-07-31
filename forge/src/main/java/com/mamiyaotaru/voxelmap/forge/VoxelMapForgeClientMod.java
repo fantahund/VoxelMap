@@ -12,5 +12,6 @@ public final class VoxelMapForgeClientMod {
         VoxelConstants.setEvents(new ForgeEvents());
         VoxelConstants.setPacketBridge(new ForgePacketBridge());
         VoxelConstants.setModApiBride(new ForgeModApiBridge());
+        VoxelConstants.setPackRegistrar(new ForgePackRegistrar());
     }
 }
