@@ -30,7 +30,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -63,20 +62,20 @@ public class EntityMapImageManager {
     private final ConcurrentLinkedQueue<Runnable> spriteCreationTask = new ConcurrentLinkedQueue<>();
 
     public EntityMapImageManager() {
-        this.textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
+        textureAtlas = new TextureAtlas("mobsmap", resourceTextureAtlasMarker);
     }
 
     public void reset() {
         if (VoxelConstants.DEBUG) VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
 
-        this.textureAtlas.reset();
-        this.textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
-        this.textureAtlas.stitch();
+        textureAtlas.reset();
+        textureAtlas.registerIconForBufferedImage("hostile", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/hostile.png"), 0, 0, 16, 16, 16, 16));
+        textureAtlas.registerIconForBufferedImage("neutral", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/neutral.png"), 0, 0, 16, 16, 16, 16));
+        textureAtlas.registerIconForBufferedImage("tame", ImageUtils.loadImage(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/radar/tame.png"), 0, 0, 16, 16, 16, 16));
+        textureAtlas.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("radarIconFiltering", "true"));
-        this.textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
+        textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
 
         entityVariantDataFactories.clear();
         customMobProperties.clear();
@@ -94,12 +93,8 @@ public class EntityMapImageManager {
 
         if (VoxelConstants.DEBUG) {
             VoxelConstants.getLogger().info("EntityMapImageManager: Resetting");
-            BuiltInRegistries.ENTITY_TYPE.forEach(t -> requestImageForMobType(t, 32, true));
+            BuiltInRegistries.ENTITY_TYPE.forEach(t -> requestImageForMobType(t, true));
         }
-    }
-
-    public void onResourceManagerReload(ResourceManager resourceManager) {
-        reset();
     }
 
     // Mob image
@@ -111,11 +106,11 @@ public class EntityMapImageManager {
     private String getMobIdentifier(Entity entity) {
         stringBuilder.setLength(0);
 
-        // Common properties
+        // Common state
         stringBuilder.append(",scale:").append(getUniqueMobScale(entity));
         stringBuilder.append(",isBaby:").append(entity instanceof LivingEntity le && le.isBaby());
 
-        // Unique properties
+        // Unique state
         if (entity instanceof Pufferfish pufferfish) {
             stringBuilder.append(",puffState:").append(pufferfish.getPuffState());
         }
@@ -133,9 +128,9 @@ public class EntityMapImageManager {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private VariantDataHolder getOrCreateVariantData(Entity entity, EntityRenderer renderer, int size, boolean addBorder) {
+    private VariantDataHolder getOrCreateVariantData(Entity entity, EntityRenderer renderer, boolean addBorder) {
         if (entity instanceof AbstractClientPlayer player) {
-            return new EntityVariantData(entity.getType(), "", player.getSkin().body().texturePath(), 0xFFFFFFFF, size, addBorder);
+            return new EntityVariantData(entity.getType(), "", player.getSkin().body().texturePath(), 0xFFFFFFFF, addBorder);
         }
 
         EntityRenderState renderState = renderer.createRenderState(entity, 0.5F);
@@ -143,23 +138,19 @@ public class EntityMapImageManager {
 
         EntityVariantDataFactory factory = entityVariantDataFactories.get(entity.getType());
         if (factory != null) {
-            EntityVariantData data = factory.create(entity, renderer, renderState, id, size, addBorder);
+            EntityVariantData data = factory.create(entity, renderer, renderState, id, addBorder);
             if (data != null) {
                 return data;
             }
         }
-        return EntityVariantDataFactory.createSimple(entity, renderer, renderState, id, size, addBorder);
+        return EntityVariantDataFactory.createSimple(entity, renderer, renderState, id, addBorder);
     }
 
     public Sprite requestImageForMobType(EntityType<?> type, boolean addBorder) {
-        return requestImageForMobType(type, -1, addBorder);
-    }
-
-    public Sprite requestImageForMobType(EntityType<?> type, int size, boolean addBorder) {
         try {
             if (minecraft.level != null && type.create(minecraft.level, EntitySpawnReason.LOAD) instanceof LivingEntity entity) {
                 entity.setId(-1);
-                return requestImageForMob(entity, size, addBorder);
+                return requestImageForMob(entity, addBorder);
             }
         } catch (Exception e) {
             VoxelConstants.getLogger().warn("Failed to load entity for icon: {}", type.getDescriptionId());
@@ -168,18 +159,13 @@ public class EntityMapImageManager {
     }
 
     public Sprite requestImageForMob(Entity entity, boolean addBorder) {
-        return requestImageForMob(entity, -1, addBorder);
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public Sprite requestImageForMob(Entity entity, int size, boolean addBorder) {
         Sprite customIcon = tryCustomMobIcon(entity.getType(), addBorder);
         if (customIcon != null && customIcon.getTextureData() != null && customIcon != textureAtlas.getMissingImage()) {
             return customIcon;
         }
 
         EntityRenderer<?, ?> baseRenderer = minecraft.getEntityRenderDispatcher().getRenderer(entity);
-        VariantDataHolder dataHolder = getOrCreateVariantData(entity, baseRenderer, size, addBorder);
+        VariantDataHolder dataHolder = getOrCreateVariantData(entity, baseRenderer, addBorder);
 
         Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(dataHolder);
         if (existing != null && existing != textureAtlas.getMissingImage()) {
@@ -268,26 +254,26 @@ public class EntityMapImageManager {
         return "";
     }
 
-    private VariantDataHolder getOrCreateVariantData(ItemStack itemStack, int size, boolean addBorder) {
+    private VariantDataHolder getOrCreateVariantData(ItemStack itemStack, boolean addBorder) {
         String id = getArmorIdentifier(itemStack);
 
         ArmorVariantDataFactory factory = armorVariantDataFactories.get(itemStack.getItem());
         if (factory != null) {
-            ArmorVariantData data = factory.create(itemStack, id, size, addBorder);
+            ArmorVariantData data = factory.create(itemStack, id, addBorder);
             if (data != null) {
                 return data;
             }
         }
-        return ArmorVariantDataFactory.createSimple(itemStack, id, size, addBorder);
+        return ArmorVariantDataFactory.createSimple(itemStack, id, addBorder);
     }
 
-    public Sprite requestImageForArmor(Entity entity, int size, boolean addBorder) {
+    public Sprite requestImageForArmor(Entity entity, boolean addBorder) {
         ItemStack itemStack;
         if (!(entity instanceof LivingEntity livingEntity) || (itemStack = livingEntity.getItemBySlot(EquipmentSlot.HEAD)).isEmpty()) {
             return null;
         }
 
-        VariantDataHolder dataHolder = getOrCreateVariantData(itemStack, size, addBorder);
+        VariantDataHolder dataHolder = getOrCreateVariantData(itemStack, addBorder);
 
         Sprite existing = textureAtlas.getAtlasSpriteIncludingYetToBeStitched(dataHolder);
         if (existing != null && existing != textureAtlas.getMissingImage()) {

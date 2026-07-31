@@ -28,9 +28,9 @@ public class HorseVariantDataFactory extends EntityVariantDataFactory {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, int size, boolean addBorder) {
+    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, boolean addBorder) {
         Identifier tex0 = loadBaseTexture(renderer, state);
         Identifier tex1 = LOCATION_BY_MARKINGS.get(((Horse) entity).getMarkings());
-        return new EntityVariantData(type(), id, tex0, 0xFFFFFFFF, tex1 == INVISIBLE_TEXTURE ? null : tex1, 0xFFFFFFFF, size, addBorder);
+        return new EntityVariantData(type(), id, tex0, 0xFFFFFFFF, tex1 == INVISIBLE_TEXTURE ? null : tex1, 0xFFFFFFFF, addBorder);
     }
 }

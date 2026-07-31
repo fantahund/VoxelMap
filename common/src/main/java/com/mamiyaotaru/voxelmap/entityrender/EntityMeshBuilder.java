@@ -138,41 +138,44 @@ public class EntityMeshBuilder {
         }
         model.resetPose();
 
-        // full-model rendered mobs
+        // model type based
         if (fullRenderModels.contains(model.getClass())) {
             return new ModelPart[]{model.root()};
         }
 
-        // slimes
-        if (model instanceof SlimeModel slimeModel) {
-            return new ModelPart[]{slimeModel.root(), slimeOuterModel};
-        }
-        if (model instanceof SulfurCubeModel sulfurCubeModel) {
-            return new ModelPart[]{sulfurCubeModel.root(), sulfurCubeInnerModel};
+        switch (model) {
+            // slimes
+            case SlimeModel slimeModel -> {
+                return new ModelPart[]{slimeModel.root(), slimeOuterModel};
+            }
+            case SulfurCubeModel sulfurCubeModel -> {
+                return new ModelPart[]{sulfurCubeModel.root(), sulfurCubeInnerModel};
+            }
+
+            // wither
+            case WitherBossModel witherModel -> {
+                return new ModelPart[]{witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head")};
+            }
+
+            // villagers
+            case VillagerModel villagerModel -> {
+                return new ModelPart[]{villagerModel.root().getChild("head"), villagerModel.root().getChild("head").getChild("hat")};
+            }
+            case ZombieVillagerModel<?> zombieVillagerModel -> {
+                return new ModelPart[]{zombieVillagerModel.root().getChild("head"), zombieVillagerModel.root().getChild("head").getChild("hat")};
+            }
+
+            default -> {}
         }
 
-        // wither
-        if (model instanceof WitherBossModel witherModel) {
-            return new ModelPart[]{witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head")};
-        }
-
-        // villager
-        if (model instanceof VillagerModel villagerModel) {
-            return new ModelPart[]{villagerModel.root().getChild("head"), villagerModel.root().getChild("head").getChild("hat")};
-        }
-        if (model instanceof ZombieVillagerModel<?> zombieVillagerModel) {
-            return new ModelPart[]{zombieVillagerModel.root().getChild("head"), zombieVillagerModel.root().getChild("head").getChild("hat")};
-        }
-
-        // horses
+        // model part based
         for (ModelPart part : model.allParts()) {
+            // horses
             if (part.hasChild("head_parts")) {
                 return new ModelPart[]{part.getChild("head_parts")};
             }
-        }
 
-        // most mobs
-        for (ModelPart part : model.allParts()) {
+            // most mobs
             if (part.hasChild("head")) {
                 if (part.hasChild("body0")) {
                     // spider
@@ -180,24 +183,18 @@ public class EntityMeshBuilder {
                 }
                 return new ModelPart[]{part.getChild("head")};
             }
-        }
 
-        // bee, ghast
-        for (ModelPart part : model.allParts()) {
+            // bee, ghast
             if (part.hasChild("body")) {
                 return new ModelPart[]{part.getChild("body")};
             }
-        }
 
-        // bee, ghast, slime
-        for (ModelPart part : model.allParts()) {
+            // bee, ghast, slime
             if (part.hasChild("cube")) {
                 return new ModelPart[]{part.getChild("cube")};
             }
-        }
 
-        // silverfish, endermite
-        for (ModelPart part : model.allParts()) {
+            // silverfish, endermite
             if (part.hasChild("segment0")) {
                 return new ModelPart[]{part.getChild("segment0"), part.getChild("segment1")};
             }

@@ -68,7 +68,7 @@ public class VillagerVariantDataFactory extends EntityVariantDataFactory {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, int size, boolean addBorder) {
+    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, boolean addBorder) {
         VillagerDataHolder villager = (VillagerDataHolder) entity;
         Identifier tex0 = loadBaseTexture(renderer, state);
         Identifier tex1 = null;
@@ -88,6 +88,6 @@ public class VillagerVariantDataFactory extends EntityVariantDataFactory {
             }
         }
 
-        return new EntityVariantData(type(), id, tex0, 0xFFFFFFFF, tex1, 0xFFFFFFFF, tex2 == INVISIBLE_TEXTURE ? null : tex2, 0xFFFFFFFF, size, addBorder);
+        return new EntityVariantData(type(), id, tex0, 0xFFFFFFFF, tex1, 0xFFFFFFFF, tex2 == INVISIBLE_TEXTURE ? null : tex2, 0xFFFFFFFF, addBorder);
     }
 }

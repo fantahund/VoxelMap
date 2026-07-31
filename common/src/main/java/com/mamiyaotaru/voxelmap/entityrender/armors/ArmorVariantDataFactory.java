@@ -99,16 +99,16 @@ public class ArmorVariantDataFactory {
         return col3;
     }
 
-    public ArmorVariantData create(ItemStack stack, String id, int size, boolean addBorder) {
+    public ArmorVariantData create(ItemStack stack, String id, boolean addBorder) {
         Identifier tex0 = loadBaseTexture(stack);
         int col0 = getBaseColor(stack);
-        return new ArmorVariantData(stack.getItem(), id, tex0, col0, tex1, col1, tex2, col2, tex3, col3, size, addBorder);
+        return new ArmorVariantData(stack.getItem(), id, tex0, col0, tex1, col1, tex2, col2, tex3, col3, addBorder);
     }
 
-    public static ArmorVariantData createSimple(ItemStack stack, String id, int size, boolean addBorder) {
+    public static ArmorVariantData createSimple(ItemStack stack, String id, boolean addBorder) {
         Identifier tex0 = loadBaseTexture(stack);
         int col0 = getBaseColor(stack);
-        return new ArmorVariantData(stack.getItem(), id, tex0, col0, size, addBorder);
+        return new ArmorVariantData(stack.getItem(), id, tex0, col0, addBorder);
     }
 
     public static Identifier loadBaseTexture(ItemStack stack) {

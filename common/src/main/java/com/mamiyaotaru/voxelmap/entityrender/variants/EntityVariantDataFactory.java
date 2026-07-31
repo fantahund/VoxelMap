@@ -68,15 +68,15 @@ public class EntityVariantDataFactory {
     }
 
     @SuppressWarnings("rawtypes")
-    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, int size, boolean addBorder) {
+    public EntityVariantData create(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, boolean addBorder) {
         Identifier tex0 = loadBaseTexture(renderer, state);
-        return new EntityVariantData(entity.getType(), id, tex0, 0xFFFFFFFF, tex1, col1, tex2, col2, tex3, col3, size, addBorder);
+        return new EntityVariantData(entity.getType(), id, tex0, 0xFFFFFFFF, tex1, col1, tex2, col2, tex3, col3, addBorder);
     }
 
     @SuppressWarnings("rawtypes")
-    public static EntityVariantData createSimple(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, int size, boolean addBorder) {
+    public static EntityVariantData createSimple(Entity entity, EntityRenderer renderer, EntityRenderState state, String id, boolean addBorder) {
         Identifier tex0 = loadBaseTexture(renderer, state);
-        return new EntityVariantData(entity.getType(), id, tex0, 0xFFFFFFFF, size, addBorder);
+        return new EntityVariantData(entity.getType(), id, tex0, 0xFFFFFFFF, addBorder);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
