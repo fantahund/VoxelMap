@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import com.mamiyaotaru.voxelmap.rendering.GLUtils;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
@@ -74,7 +75,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-public class ColorManager {
+public class ColorManager implements IReloadListener {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
@@ -120,6 +121,7 @@ public class ColorManager {
         return this.hueSatColorWheel;
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.resourcePacksChanged = true;
     }

@@ -5,7 +5,15 @@ import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
+import com.mamiyaotaru.voxelmap.textures.DynamicMutableTexture;
+import com.mamiyaotaru.voxelmap.textures.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.tutorial.ModTutorialSignals;
@@ -15,7 +23,6 @@ import com.mamiyaotaru.voxelmap.util.CPULightmap;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
-import com.mamiyaotaru.voxelmap.textures.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.util.FullMapData;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapChunkCache;
@@ -23,12 +30,6 @@ import com.mamiyaotaru.voxelmap.util.MapUtils;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
-import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
-import com.mamiyaotaru.voxelmap.textures.ScaledDynamicMutableTexture;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuffer;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
@@ -76,7 +77,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4fStack;
 import org.joml.Vector4f;
 
-public class Map implements Runnable, IChangeObserver {
+public class Map implements Runnable, IChangeObserver, IReloadListener {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final MapSettingsManager options;
     private final ColorManager colorManager;
@@ -232,8 +233,6 @@ public class Map implements Runnable, IChangeObserver {
 
         this.finalMapRenderTarget = new VoxelMapRenderTarget(Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/voxelmap_final_map"));
         this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
-
-        this.loadMapTextures();
     }
 
     private Thread createZCalcThread() {
@@ -242,6 +241,7 @@ public class Map implements Runnable, IChangeObserver {
         return thread;
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.loadMapTextures();
     }

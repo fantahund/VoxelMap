@@ -1,11 +1,11 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.Contact;
-import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -26,7 +26,6 @@ public class RadarSimple extends AbstractRadar {
         super();
         textureAtlas = new TextureAtlas("pings", resourceTextureAtlasMarker);
         textureAtlas.setFilter(true, false);
-        loadTexturePackIcons();
     }
 
     @Override

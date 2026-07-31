@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.multiloader.Events;
 import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import com.mamiyaotaru.voxelmap.multiloader.PackRegistrar;
@@ -8,7 +9,6 @@ import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataStore;
-import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MapUtils;
@@ -16,6 +16,7 @@ import com.mamiyaotaru.voxelmap.util.ModrinthUpdateChecker;
 import com.mamiyaotaru.voxelmap.util.WorldUpdateListener;
 import java.io.InputStream;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -54,6 +55,7 @@ public class VoxelMap implements PreparableReloadListener {
     private Properties imageProperties;
     private final ArrayDeque<Runnable> runOnWorldSet = new ArrayDeque<>();
     private final ArrayDeque<Runnable> runOnInitialized = new ArrayDeque<>();
+    private final ArrayList<IReloadListener> reloadListeners = new ArrayList<>();
 
     VoxelMap() {}
 
@@ -100,6 +102,12 @@ public class VoxelMap implements PreparableReloadListener {
         worldUpdateListener.addListener(map);
         worldUpdateListener.addListener(persistentMap);
 
+        addReloadListener(map);
+        addReloadListener(waypointManager);
+        addReloadListener(radar);
+        addReloadListener(radarSimple);
+        addReloadListener(colorManager);
+
         initialized = true;
     }
 
@@ -124,22 +132,27 @@ public class VoxelMap implements PreparableReloadListener {
         return preparationBarrier.wait((Object) Unit.INSTANCE).thenRunAsync(() -> apply(sharedState.resourceManager()), executor2);
     }
 
-    protected void apply(ResourceManager resourceManager) {
+    private void apply(ResourceManager resourceManager) {
         runAfterInitialized(() -> {
-            loadImageProperties();
-
-            waypointManager.onResourceManagerReload(resourceManager);
-            if (radar != null) {
-                radar.onResourceManagerReload(resourceManager);
+            imageProperties = new Properties();
+            Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/images.properties");
+            Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(location);
+            if (resource.isPresent()) {
+                try (InputStream inputStream = resource.get().open()) {
+                    imageProperties.load(inputStream);
+                } catch (Exception ignored) {
+                }
             }
 
-            colorManager.onResourceManagerReload(resourceManager);
-            BiomeRepository.loadBiomeColors();
-
-            if (map != null) {
-                map.onResourceManagerReload(resourceManager);
+            for (IReloadListener listener : reloadListeners) {
+                if (listener == null) continue;
+                listener.onResourceManagerReload(resourceManager);
             }
         });
+    }
+
+    public void addReloadListener(IReloadListener listener) {
+        reloadListeners.add(listener);
     }
 
     public void registerPacks(PackRegistrar registrar) {
@@ -255,6 +268,10 @@ public class VoxelMap implements PreparableReloadListener {
         return persistentMap;
     }
 
+    public Properties getImageProperties() {
+        return imageProperties;
+    }
+
     public void setPermissions(boolean hasFullRadarPermission, boolean hasPlayersOnRadarPermission, boolean hasMobsOnRadarPermission, boolean hasCavemodePermission) {
         runAfterInitialized(() -> {
             radarOptions.radarAllowed = hasFullRadarPermission;
@@ -329,27 +346,5 @@ public class VoxelMap implements PreparableReloadListener {
         VoxelConstants.onShutDown();
         ThreadManager.flushSaveQueue();
         ThreadManager.shutdownCalculationQueue();
-    }
-
-    public Properties getImageProperties() {
-        if (imageProperties == null) {
-            loadImageProperties();
-        }
-        return imageProperties;
-    }
-
-    private void loadImageProperties() {
-        imageProperties = new Properties();
-        Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "configs/images.properties");
-        Optional<Resource> resource = VoxelConstants.getMinecraft().getResourceManager().getResource(location);
-        if (resource.isEmpty()) {
-            VoxelConstants.getLogger().warn("Image properties file at {} is missing!", location);
-        } else {
-            try (InputStream inputStream = resource.get().open()) {
-                imageProperties.load(inputStream);
-            } catch (Exception e) {
-                VoxelConstants.getLogger().warn("Failed to read image properties from {}. {}", location, e);
-            }
-        }
     }
 }

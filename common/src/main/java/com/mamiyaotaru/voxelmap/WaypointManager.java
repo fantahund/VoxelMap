@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -59,7 +60,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.storage.LevelResource;
 
-public class WaypointManager {
+public class WaypointManager implements IReloadListener {
     public final MapSettingsManager options;
     final TextureAtlas textureAtlas;
     final TextureAtlas textureAtlasChooser;
@@ -97,6 +98,7 @@ public class WaypointManager {
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {

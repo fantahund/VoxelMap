@@ -3,9 +3,9 @@ package com.mamiyaotaru.voxelmap.interfaces;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.Contact;
 import com.mamiyaotaru.voxelmap.util.MinimapContext;
-import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import java.util.ArrayList;
 import net.minecraft.client.Minecraft;
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4fStack;
 
-public abstract class AbstractRadar {
+public abstract class AbstractRadar implements IReloadListener {
     protected final Minecraft minecraft = Minecraft.getInstance();
     protected final MapSettingsManager mapOptions;
     protected final RadarSettingsManager radarOptions;
@@ -32,6 +32,7 @@ public abstract class AbstractRadar {
         radarOptions = VoxelConstants.getVoxelMapInstance().getRadarOptions();
     }
 
+    @Override
     public abstract void onResourceManagerReload(ResourceManager resourceManager);
 
     public abstract void renderMapMobs(Matrix4fStack matrixStack, RenderUtils.SubmitContext context, Contact.DisplayState displayState, int x, int y, int scScale, float scaleProj);
