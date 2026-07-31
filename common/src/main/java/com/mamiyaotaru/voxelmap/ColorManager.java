@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap;
 
 import com.google.common.collect.UnmodifiableIterator;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
@@ -72,7 +73,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 
-public class ColorManager {
+public class ColorManager implements IReloadListener {
     private boolean resourcePacksChanged;
     private ClientLevel world;
     private BufferedImage terrainBuff;
@@ -82,7 +83,6 @@ public class ColorManager {
     private int[] blockColors = new int[16384];
     private int[] blockColorsWithDefaultTint = new int[16384];
     private final HashSet<Integer> biomeTintsAvailable = new HashSet<>();
-    private final boolean useConnectedTextures;
     private final HashMap<Integer, int[][]> blockTintTables = new HashMap<>();
     private final HashSet<Integer> biomeTextureAvailable = new HashSet<>();
     private final HashMap<String, Integer> blockBiomeSpecificColors = new HashMap<>();
@@ -104,8 +104,6 @@ public class ColorManager {
     private final ColorResolver redstoneColorResolver = (blockState, biome, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
 
     public ColorManager() {
-        this.useConnectedTextures = VoxelConstants.getModApiBridge().isModEnabled("optifine") || VoxelConstants.getModApiBridge().isModEnabled("continuity");
-
         ++this.sizeOfBiomeArray;
     }
 
@@ -121,6 +119,7 @@ public class ColorManager {
         return this.hueSatColorWheel;
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.resourcePacksChanged = true;
     }
@@ -197,7 +196,7 @@ public class ColorManager {
         }
 
         this.terrainDependentColorsProcessed = true;
-        if (this.useConnectedTextures) {
+        if (VoxelConstants.usesConnectedTextures()) {
             try {
                 this.processCTM();
             } catch (Exception var4) {
@@ -277,7 +276,7 @@ public class ColorManager {
 
     public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, Biome biomeID) {
         if (this.loaded && loadedTerrainImage) {
-            if (this.useConnectedTextures && this.biomeTextureAvailable.contains(blockStateID)) {
+            if (VoxelConstants.usesConnectedTextures() && this.biomeTextureAvailable.contains(blockStateID)) {
                 Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
                 if (col != null) {
                     return ARGB.toABGR(col);
@@ -528,7 +527,7 @@ public class ColorManager {
         ChunkAccess chunk = world.getChunk(blockPos);
         boolean live = chunk != null && !((LevelChunk) chunk).isEmpty() && VoxelConstants.getPlayer().level().hasChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4);
         int tint = -2;
-        if (this.useConnectedTextures || !live && this.biomeTintsAvailable.contains(blockStateID)) {
+        if (VoxelConstants.usesConnectedTextures() || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
                 int[][] tints = this.blockTintTables.get(blockStateID);
                 if (tints != null) {
@@ -1242,7 +1241,7 @@ public class ColorManager {
                         tintMult = tintColorsBuff.getRGB(t, Math.max(0, s * heightMultiplier - yOffset)) & 16777215;
                     } else {
                         double var1 = Mth.clamp(biome.getBaseTemperature(), 0.0F, 1.0F);
-                        double var2 = Mth.clamp(VoxelConstants.getModApiBridge().getBiomeClimateSettings(biome).downfall(), 0.0F, 1.0F);
+                        double var2 = Mth.clamp(MultiLoaderManager.getModApiBridge().getBiomeClimateSettings(biome).downfall(), 0.0F, 1.0F);
 
                         var2 *= var1;
                         var1 = 1.0 - var1;

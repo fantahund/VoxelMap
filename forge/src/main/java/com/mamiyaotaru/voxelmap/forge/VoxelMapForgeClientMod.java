@@ -1,6 +1,8 @@
 package com.mamiyaotaru.voxelmap.forge;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
+import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 public final class VoxelMapForgeClientMod {
@@ -8,9 +10,14 @@ public final class VoxelMapForgeClientMod {
     }
 
     public static void init(FMLJavaModLoadingContext context) {
-        VoxelConstants.setModVersion(context.getContainer().getModInfo().getVersion().toString());
-        VoxelConstants.setEvents(new ForgeEvents());
-        VoxelConstants.setPacketBridge(new ForgePacketBridge());
-        VoxelConstants.setModApiBride(new ForgeModApiBridge());
+        MultiLoaderManager.setEvents(new ForgeEvents());
+        MultiLoaderManager.setPacketBridge(new ForgePacketBridge());
+        MultiLoaderManager.setModApiBride(new ForgeModApiBridge());
+        MultiLoaderManager.setPackRegistrar(new ForgePackRegistrar());
+
+        context.registerExtensionPoint(
+                ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((_, parentGui) -> VoxelConstants.openConfigScreen(parentGui))
+        );
     }
 }

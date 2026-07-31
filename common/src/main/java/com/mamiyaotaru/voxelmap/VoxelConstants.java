@@ -1,5 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
+import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -10,6 +12,7 @@ import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
@@ -34,11 +37,7 @@ public final class VoxelConstants {
     private static final Identifier CHECK_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
     private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
-    private static String modVersion = null;
     private static int elapsedTicks;
-    private static Events events;
-    private static PacketBridge packetBridge;
-    private static ModApiBridge modApiBridge;
 
     private VoxelConstants() {}
 
@@ -53,7 +52,17 @@ public final class VoxelConstants {
         return serverInfo != null && serverInfo.isRealm();
     }
 
-    public static boolean hasVulkanMod() { return modApiBridge != null && modApiBridge.isModEnabled("vulkanmod"); }
+    public static String getModVersion() {
+        return MultiLoaderManager.getModApiBridge().getModVersion(MOD_ID);
+    }
+
+    public static boolean usesConnectedTextures() {
+        return MultiLoaderManager.getModApiBridge().isModEnabled("optifine") || MultiLoaderManager.getModApiBridge().isModEnabled("continuity");
+    }
+
+    public static boolean hasVulkanMod() {
+        return MultiLoaderManager.getModApiBridge().isModEnabled("vulkanmod");
+    }
 
     @NotNull
     public static Logger getLogger() { return LOGGER; }
@@ -153,6 +162,12 @@ public final class VoxelConstants {
         }
     }
 
+    public static Screen openConfigScreen(Screen parentGui) {
+        Screen screen = new GuiMinimapOptions(parentGui);
+        VoxelConstants.getMinecraft().gui.setScreen(screen);
+        return screen;
+    }
+
     public static void playerRunTeleportCommand(double x, double y, double z) {
         MapSettingsManager mapSettingsManager = VoxelConstants.getVoxelMapInstance().getMapOptions();
         String cmd = mapSettingsManager.serverTeleportCommand == null ? mapSettingsManager.teleportCommand : mapSettingsManager.serverTeleportCommand;
@@ -175,38 +190,5 @@ public final class VoxelConstants {
         int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
 
         return Math.max(bottomX, minBottom);
-    }
-
-    public static void setEvents(Events events) {
-        VoxelConstants.events = events;
-        VoxelConstants.getVoxelMapInstance().onEventsSet(events);
-    }
-
-    public static Events getEvents() {
-        return events;
-    }
-
-    public static void setPacketBridge(PacketBridge packetBridge) {
-        VoxelConstants.packetBridge = packetBridge;
-    }
-
-    public static PacketBridge getPacketBridge() {
-        return packetBridge;
-    }
-
-    public static void setModApiBride(ModApiBridge modApiBridge) {
-        VoxelConstants.modApiBridge = modApiBridge;
-    }
-
-    public static ModApiBridge getModApiBridge() {
-        return modApiBridge;
-    }
-
-    public static void setModVersion(String modVersion) {
-        VoxelConstants.modVersion = modVersion;
-    }
-
-    public static String getModVersion() {
-        return modVersion;
     }
 }

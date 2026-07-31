@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
@@ -59,7 +60,7 @@ import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.storage.LevelResource;
 import org.joml.Matrix4fStack;
 
-public class WaypointManager {
+public class WaypointManager implements IReloadListener {
     public final MapSettingsManager options;
     final TextureAtlas textureAtlas;
     final TextureAtlas textureAtlasChooser;
@@ -95,6 +96,7 @@ public class WaypointManager {
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         List<Identifier> images = new ArrayList<>();
         IIconCreator iconCreator = textureAtlas -> {
@@ -218,6 +220,8 @@ public class WaypointManager {
 
         try {
             ServerData serverData = VoxelConstants.getMinecraft().getCurrentServer();
+            ClientPacketListener netHandler = VoxelConstants.getMinecraft().getConnection();
+
             if (serverData != null) {
                 boolean isOnLAN = serverData.isLan();
                 boolean isRealm = VoxelConstants.isRealmServer();
@@ -237,16 +241,18 @@ public class WaypointManager {
                 } else {
                     serverName = serverData.ip;
                 }
+
             } else if (VoxelConstants.isRealmServer()) {
                 VoxelConstants.getLogger().warn("ServerData was null, and detected as realm server.");
                 User session = VoxelConstants.getMinecraft().getUser();
                 serverName = session.getSessionId();
                 VoxelConstants.getLogger().info(serverName);
-            } else {
-                ClientPacketListener netHandler = VoxelConstants.getMinecraft().getConnection();
+
+            } else if (netHandler != null) {
                 Connection networkManager = netHandler.getConnection();
                 InetSocketAddress socketAddress = (InetSocketAddress) networkManager.getRemoteAddress();
                 serverName = socketAddress.getHostString() + ":" + socketAddress.getPort();
+
             }
         } catch (Exception var6) {
             VoxelConstants.getLogger().error("error getting ServerData", var6);

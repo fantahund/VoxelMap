@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.fabric;
 
-import com.mamiyaotaru.voxelmap.PacketBridge;
+import com.mamiyaotaru.voxelmap.multiloader.PacketBridge;
 import com.mamiyaotaru.voxelmap.packets.VoxelMapWorldIdPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 

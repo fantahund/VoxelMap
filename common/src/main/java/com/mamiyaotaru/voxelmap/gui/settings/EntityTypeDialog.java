@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.entityrender.EntityMapImageManager;
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
-import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconElement;
+import com.mamiyaotaru.voxelmap.gui.overridden.GuiIconButton;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.util.VoxelMapMobCategory;
 import java.util.ArrayList;
@@ -205,7 +205,7 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
         private final VoxelMapMobCategory category;
         private final Component name;
         private final Button toggle;
-        private final GuiIconElement icon;
+        private final GuiIconButton icon;
         private Sprite sprite;
         private boolean requested;
 
@@ -215,7 +215,7 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
             this.category = category;
             this.name = type.getDescription();
             this.toggle = Button.builder(Component.empty(), ignored -> toggleVisibility()).bounds(0, 0, 92, 20).build();
-            this.icon = new GuiIconElement(0, 0, 20, 20, false, ignored -> {
+            this.icon = new GuiIconButton(0, 0, 20, 20, ignored -> {
             });
         }
 
@@ -246,7 +246,7 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
             }
             if (sprite != null) {
                 icon.setPosition(getX() + 8, getY() + 4);
-                icon.setIconForRender(RenderPipelines.GUI_TEXTURED, sprite, Math.min(20, sprite.getIconWidth() / 3), Math.min(20, sprite.getIconHeight() / 3), 0xFFFFFFFF);
+                icon.setIcon(sprite, Math.min(20, sprite.getIconWidth() / 3), Math.min(20, sprite.getIconHeight() / 3), 0xFFFFFFFF);
                 icon.extractRenderState(graphics, mouseX, mouseY, delta);
             }
 

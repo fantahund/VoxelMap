@@ -5,6 +5,7 @@ import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
+import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
@@ -76,7 +77,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix4fStack;
 import org.joml.Vector4f;
 
-public class Map implements Runnable, IChangeObserver {
+public class Map implements Runnable, IChangeObserver, IReloadListener {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final MapSettingsManager options;
     private final ColorManager colorManager;
@@ -224,8 +225,6 @@ public class Map implements Runnable, IChangeObserver {
 
         this.finalMapRenderTarget = new VoxelMapRenderTarget("VoxelMap Final Map Target", GpuFormat.RGBA8_UNORM, true);
         this.finalMapRenderTarget.createBuffers(fboTextureSize, fboTextureSize);
-
-        this.loadMapTextures();
     }
 
     private Thread createZCalcThread() {
@@ -234,6 +233,7 @@ public class Map implements Runnable, IChangeObserver {
         return thread;
     }
 
+    @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
         this.loadMapTextures();
     }
