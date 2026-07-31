@@ -15,8 +15,8 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
     private static final int SLIDER_WIDTH = 14;
     private final Identifier roundHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/round_handle.png");
     private final Identifier roundHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/round_handle_tint.png");
-    private final Identifier verticalHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle.png");
-    private final Identifier verticalHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/vertical_handle_tint.png");
+    private final Identifier sliderHandle = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/slider_handle.png");
+    private final Identifier sliderHandleTint = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/slider_handle_tint.png");
     private float h;
     private float s;
     private float v;
@@ -34,9 +34,9 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
         int b = ARGB.blue(i);
 
         float[] hsv = Color.RGBtoHSB(r, g, b, null);
-        this.h = hsv[0];
-        this.s = hsv[1];
-        this.v = hsv[2];
+        h = hsv[0];
+        s = hsv[1];
+        v = hsv[2];
 
         super.setColor(i);
     }
@@ -47,10 +47,10 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
             return false;
         }
 
-        this.pickingHueSat = this.isHueSatWheelHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
-        this.pickingValue = this.isValueSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
-        if (this.isPicking()) {
-            this.pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
+        pickingHueSat = isHueSatWheelHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
+        pickingValue = isValueSliderHovered(mouseButtonEvent.x(), mouseButtonEvent.y());
+        if (isPicking()) {
+            pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
             return true;
         }
 
@@ -59,8 +59,8 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        if (mouseButtonEvent.button() == 0 && this.isPicking()) {
-            this.pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
+        if (mouseButtonEvent.button() == 0 && isPicking()) {
+            pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
             return true;
         }
 
@@ -69,9 +69,9 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (mouseButtonEvent.button() == 0 && this.isPicking()) {
-            this.pickingHueSat = false;
-            this.pickingValue = false;
+        if (mouseButtonEvent.button() == 0 && isPicking()) {
+            pickingHueSat = false;
+            pickingValue = false;
             return true;
         }
 
@@ -79,35 +79,35 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        int fullColor = this.color;
-        int hsColor = Color.getHSBColor(this.h, this.s, 1.0F).getRGB();
-        int wheelRadius = this.getHueSatWheelRadius();
+    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        int fullColor = color;
+        int hsColor = Color.getHSBColor(h, s, 1.0F).getRGB();
+        int wheelRadius = getHueSatWheelRadius();
 
         // render v picker
-        int sliderX = this.getValueSliderX();
-        int sliderY = this.getValueSliderY();
+        int sliderX = getValueSliderX();
+        int sliderY = getValueSliderY();
         graphics.fillGradient(sliderX - (SLIDER_WIDTH / 2), sliderY - wheelRadius, sliderX + (SLIDER_WIDTH / 2), sliderY + wheelRadius, hsColor, 0xFF000000);
 
         float sliderHandleX = sliderX;
-        float sliderHandleY = sliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - this.v));
-        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandle, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.verticalHandleTint, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
+        float sliderHandleY = sliderY - wheelRadius + ((wheelRadius * 2.0F) * (1.0F - v));
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, sliderHandle, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, sliderHandleTint, sliderHandleX - 8, sliderHandleY - 4, 16, 8, 0.0F, 1.0F, 0.0F, 1.0F, fullColor);
 
         // render h, s picker
-        int wheelX = this.getHueSatWheelX();
-        int wheelY = this.getHueSatWheelY();
+        int wheelX = getHueSatWheelX();
+        int wheelY = getHueSatWheelY();
         Identifier colorWheelImage = VoxelConstants.getVoxelMapInstance().getColorManager().getHueSatColorWheel();
         graphics.blit(RenderPipelines.GUI_TEXTURED, colorWheelImage, wheelX - wheelRadius, wheelY - wheelRadius, 0.0F, 0.0F, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, wheelRadius * 2, 0xFFFFFFFF);
 
-        float radians = this.h * 360.0F * Mth.DEG_TO_RAD;
+        float radians = h * 360.0F * Mth.DEG_TO_RAD;
         float dirX = Mth.cos(radians);
         float dirY = Mth.sin(radians);
-        float distance = this.s * wheelRadius;
+        float distance = s * wheelRadius;
         float wheelHandleX = wheelX + (dirX * distance);
         float wheelHandleY = wheelY + (dirY * distance);
-        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.roundHandle, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
-        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, this.roundHandleTint, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, hsColor);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, roundHandle, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, 0xFFFFFFFF);
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED, roundHandleTint, wheelHandleX - 4, wheelHandleY - 4, 8, 8, 0.0F, 1.0F, 0.0F, 1.0F, hsColor);
 
         // render texts
         Font font = VoxelConstants.getMinecraft().font;
@@ -117,66 +117,66 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
     }
 
     private void pickColorAt(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueSatWheelRadius();
+        int wheelRadius = getHueSatWheelRadius();
 
-        if (this.pickingValue) {
+        if (pickingValue) {
             // calculate v
-            double dx = this.getValueSliderX() - mouseX;
-            double dy = this.getValueSliderY() - mouseY;
+            double dx = getValueSliderX() - mouseX;
+            double dy = getValueSliderY() - mouseY;
 
-            this.v = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
+            v = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
         }
 
-        if (this.pickingHueSat) {
+        if (pickingHueSat) {
             // calculate h, s
-            double dx = this.getHueSatWheelX() - mouseX;
-            double dy = this.getHueSatWheelY() - mouseY;
+            double dx = getHueSatWheelX() - mouseX;
+            double dy = getHueSatWheelY() - mouseY;
             double degrees = Math.toDegrees(Math.atan2(dy, dx)) + 180.0F;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
-            this.h = (float) Mth.clamp((degrees / 360.0F), 0.0, 1.0);
-            this.s = (float) Mth.clamp((distance / wheelRadius), 0.0, 1.0);
+            h = (float) Mth.clamp((degrees / 360.0F), 0.0, 1.0);
+            s = (float) Mth.clamp((distance / wheelRadius), 0.0, 1.0);
         }
 
-        this.updateColor(Color.getHSBColor(this.h, this.s, this.v).getRGB());
+        updateColor(Color.getHSBColor(h, s, v).getRGB());
     }
 
     private int getHueSatWheelRadius() {
-        return this.height / 2;
+        return getHeight() / 2;
     }
 
     private int getHueSatWheelX() {
-        return this.x - (this.width / 2) + this.getHueSatWheelRadius();
+        return getX() - (getWidth() / 2) + getHueSatWheelRadius();
     }
 
     private int getHueSatWheelY() {
-        return this.y;
+        return getY();
     }
 
     private int getValueSliderX() {
-        return this.x + (this.width / 2) - (SLIDER_WIDTH / 2);
+        return getX() + (getWidth() / 2) - (SLIDER_WIDTH / 2);
     }
 
     private int getValueSliderY() {
-        return this.y;
+        return getY();
     }
 
     private boolean isPicking() {
-        return this.pickingHueSat || this.pickingValue;
+        return pickingHueSat || pickingValue;
     }
 
     private boolean isHueSatWheelHovered(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueSatWheelRadius();
-        double dx = this.getHueSatWheelX() - mouseX;
-        double dy = this.getHueSatWheelY() - mouseY;
+        int wheelRadius = getHueSatWheelRadius();
+        double dx = getHueSatWheelX() - mouseX;
+        double dy = getHueSatWheelY() - mouseY;
 
         return (dx * dx + dy * dy) <= (wheelRadius * wheelRadius);
     }
 
     private boolean isValueSliderHovered(double mouseX, double mouseY) {
-        int wheelRadius = this.getHueSatWheelRadius();
-        double dx = this.getValueSliderX() - mouseX;
-        double dy = this.getValueSliderY() - mouseY;
+        int wheelRadius = getHueSatWheelRadius();
+        double dx = getValueSliderX() - mouseX;
+        double dy = getValueSliderY() - mouseY;
 
         return Math.abs(dx) <= (SLIDER_WIDTH / 2.0) && Math.abs(dy) <= wheelRadius;
     }
