@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap;
 
+import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
@@ -18,6 +19,7 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -299,6 +301,12 @@ public class VoxelMap implements PreparableReloadListener {
             mapOptions.waypointsAllowed = true;
             mapOptions.deathWaypointAllowed = true;
         });
+    }
+
+    public Screen openOptionsScreen(Screen parentGui) {
+        Screen screen = new GuiMinimapOptions(parentGui);
+        VoxelConstants.getMinecraft().gui.setScreen(screen);
+        return screen;
     }
 
     public void onJoinServer() {

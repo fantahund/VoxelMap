@@ -8,8 +8,8 @@ import com.mamiyaotaru.voxelmap.gui.settings.SettingsCategory;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsListWidget;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsOption;
 import com.mamiyaotaru.voxelmap.gui.settings.VoxelMapSettings;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -72,14 +72,19 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             categoryButtons.add(addRenderableWidget(button));
         }
 
-        addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
-                .bounds(width / 2 - 100, height - 27, 200, 20).build());
-        if (!VoxelConstants.isSinglePlayer()) {
+        if (VoxelConstants.isSinglePlayer()) {
+            addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
+                    .bounds(width / 2 - 100, height - 27, 200, 20).build());
+        } else {
             String currentServer = VoxelConstants.getVoxelMapInstance().getWaypointManager().getServerName();
             addRenderableWidget(Button.builder(Component.translatable("voxelmap.alias.editButton"),
-                    ignored -> this.minecraft.gui.setScreen(new GuiServerAliases(this, currentServer)))
-                    .bounds(10, height - 27, 150, 20).build());
+                            ignored -> minecraft.gui.setScreen(new GuiServerAliases(this, currentServer)))
+                    .bounds(width / 2 - 155, height - 27, 150, 20).build());
+
+            addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
+                    .bounds(width / 2 + 5, height - 27, 150, 20).build());
         }
+
         rebuildContent();
         if (reopenEntityDialog)
             openEntityTypeDialog();

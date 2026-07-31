@@ -220,6 +220,8 @@ public class WaypointManager {
 
         try {
             ServerData serverData = VoxelConstants.getMinecraft().getCurrentServer();
+            ClientPacketListener netHandler = VoxelConstants.getMinecraft().getConnection();
+
             if (serverData != null) {
                 boolean isOnLAN = serverData.isLan();
                 boolean isRealm = VoxelConstants.isRealmServer();
@@ -239,16 +241,18 @@ public class WaypointManager {
                 } else {
                     serverName = serverData.ip;
                 }
+
             } else if (VoxelConstants.isRealmServer()) {
                 VoxelConstants.getLogger().warn("ServerData was null, and detected as realm server.");
                 User session = VoxelConstants.getMinecraft().getUser();
                 serverName = session.getSessionId();
                 VoxelConstants.getLogger().info(serverName);
-            } else {
-                ClientPacketListener netHandler = VoxelConstants.getMinecraft().getConnection();
+
+            } else if (netHandler != null) {
                 Connection networkManager = netHandler.getConnection();
                 InetSocketAddress socketAddress = (InetSocketAddress) networkManager.getRemoteAddress();
                 serverName = socketAddress.getHostString() + ":" + socketAddress.getPort();
+
             }
         } catch (Exception var6) {
             VoxelConstants.getLogger().error("error getting ServerData", var6);
