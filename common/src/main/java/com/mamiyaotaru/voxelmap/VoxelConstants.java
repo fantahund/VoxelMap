@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
+import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
@@ -37,12 +38,7 @@ public final class VoxelConstants {
     private static final Identifier CHECK_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/confirm.png");
     private static final Identifier CROSS_MARKER_TEXTURE = Identifier.parse("textures/gui/sprites/container/beacon/cancel.png");
 
-    private static String modVersion = null;
     private static int elapsedTicks;
-    private static Events events;
-    private static PacketBridge packetBridge;
-    private static ModApiBridge modApiBridge;
-    private static PackRegistrar packRegistrar;
 
     private VoxelConstants() {}
 
@@ -57,7 +53,17 @@ public final class VoxelConstants {
         return serverInfo != null && serverInfo.isRealm();
     }
 
-    public static boolean hasVulkanMod() { return modApiBridge != null && modApiBridge.isModEnabled("vulkanmod"); }
+    public static String getModVersion() {
+        return MultiLoaderManager.getModApiBridge().getModVersion(MOD_ID);
+    }
+
+    public static boolean usesConnectedTextures() {
+        return MultiLoaderManager.getModApiBridge().isModEnabled("optifine") || MultiLoaderManager.getModApiBridge().isModEnabled("continuity");
+    }
+
+    public static boolean hasVulkanMod() {
+        return MultiLoaderManager.getModApiBridge().isModEnabled("vulkanmod");
+    }
 
     public static boolean isVulkanRenderer() {
         if (hasVulkanMod()) {
@@ -199,47 +205,5 @@ public final class VoxelConstants {
         int minBottom = (int) (mapHeightScaled + entriesHeight + fontHeight + statusIconOffsetInt);
 
         return Math.max(bottomX, minBottom);
-    }
-
-    public static void setModVersion(String modVersion) {
-        VoxelConstants.modVersion = modVersion;
-    }
-
-    public static String getModVersion() {
-        return modVersion;
-    }
-
-    public static void setEvents(Events events) {
-        VoxelConstants.events = events;
-        VoxelConstants.getVoxelMapInstance().onEventsSet(events);
-    }
-
-    public static Events getEvents() {
-        return events;
-    }
-
-    public static void setPacketBridge(PacketBridge packetBridge) {
-        VoxelConstants.packetBridge = packetBridge;
-    }
-
-    public static PacketBridge getPacketBridge() {
-        return packetBridge;
-    }
-
-    public static void setModApiBride(ModApiBridge modApiBridge) {
-        VoxelConstants.modApiBridge = modApiBridge;
-    }
-
-    public static ModApiBridge getModApiBridge() {
-        return modApiBridge;
-    }
-
-    public static void setPackRegistrar(PackRegistrar packRegistrar) {
-        VoxelConstants.packRegistrar = packRegistrar;
-        VoxelConstants.getVoxelMapInstance().registerPacks(packRegistrar);
-    }
-
-    public static PackRegistrar getPackRegistrar() {
-        return packRegistrar;
     }
 }

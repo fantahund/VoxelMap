@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.neoforge;
 
-import com.mamiyaotaru.voxelmap.ModApiBridge;
+import com.mamiyaotaru.voxelmap.multiloader.ModApiBridge;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biome.ClimateSettings;
 import net.neoforged.fml.ModList;
@@ -19,5 +19,12 @@ public class NeoForgeModApiBridge implements ModApiBridge {
     @Override
     public String getModLoader() {
         return "neoforge";
+    }
+
+    @Override
+    public String getModVersion(String modID) {
+        return ModList.get().getModContainerById(modID)
+                .map(container -> container.getModInfo().getVersion().toString())
+                .orElse("unknown");
     }
 }

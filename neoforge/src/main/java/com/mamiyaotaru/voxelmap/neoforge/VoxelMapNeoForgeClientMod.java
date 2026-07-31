@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.neoforge;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -9,11 +10,10 @@ public final class VoxelMapNeoForgeClientMod {
     }
 
     public static void init(ModContainer container) {
-        VoxelConstants.setModVersion(container.getModInfo().getVersion().toString());
-        VoxelConstants.setEvents(new NeoForgeEvents());
-        VoxelConstants.setPacketBridge(new NeoForgePacketBridge());
-        VoxelConstants.setModApiBride(new NeoForgeModApiBridge());
-        VoxelConstants.setPackRegistrar(new NeoForgePackRegistrar());
+        MultiLoaderManager.setEvents(new NeoForgeEvents());
+        MultiLoaderManager.setPacketBridge(new NeoForgePacketBridge());
+        MultiLoaderManager.setModApiBride(new NeoForgeModApiBridge());
+        MultiLoaderManager.setPackRegistrar(new NeoForgePackRegistrar());
 
         container.registerExtensionPoint(
                 IConfigScreenFactory.class,

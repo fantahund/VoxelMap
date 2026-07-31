@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.forge;
 
-import com.mamiyaotaru.voxelmap.PackRegistrar;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.multiloader.PackRegistrar;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Optional;

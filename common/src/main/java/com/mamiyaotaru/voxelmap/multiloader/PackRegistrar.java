@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap;
+package com.mamiyaotaru.voxelmap.multiloader;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;

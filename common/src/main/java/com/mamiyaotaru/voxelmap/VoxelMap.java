@@ -1,6 +1,9 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.AbstractRadar;
+import com.mamiyaotaru.voxelmap.multiloader.Events;
+import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
+import com.mamiyaotaru.voxelmap.multiloader.PackRegistrar;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
@@ -177,7 +180,7 @@ public class VoxelMap implements PreparableReloadListener {
                 MapUtils.reset();
 
                 // send "new" world_id packet
-                VoxelConstants.getPacketBridge().sendWorldIDPacket("");
+                MultiLoaderManager.getPacketBridge().sendWorldIDPacket("");
 
                 if (!worldName.equals(waypointManager.getCurrentWorldName())) {
                     worldName = waypointManager.getCurrentWorldName();

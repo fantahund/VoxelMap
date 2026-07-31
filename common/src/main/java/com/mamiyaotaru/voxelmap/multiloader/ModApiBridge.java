@@ -1,4 +1,4 @@
-package com.mamiyaotaru.voxelmap;
+package com.mamiyaotaru.voxelmap.multiloader;
 
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biome.ClimateSettings;
@@ -12,5 +12,11 @@ public interface ModApiBridge {
         return null;
     }
 
-    String getModLoader();
+    default String getModLoader() {
+        return "unknown";
+    }
+
+    default String getModVersion(String modID) {
+        return "unknown";
+    }
 }

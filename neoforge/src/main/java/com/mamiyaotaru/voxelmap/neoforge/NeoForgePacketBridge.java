@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.neoforge;
 
-import com.mamiyaotaru.voxelmap.PacketBridge;
+import com.mamiyaotaru.voxelmap.multiloader.PacketBridge;
 import com.mamiyaotaru.voxelmap.packets.VoxelMapWorldIdPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;

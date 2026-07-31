@@ -30,6 +30,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -273,7 +274,7 @@ public class ModrinthUpdateChecker {
 
         String mcVersion = SharedConstants.getCurrentVersion().name();
 
-        new ModrinthUpdateChecker("voxelmap-updated", VoxelConstants.getModApiBridge().getModLoader(), mcVersion).checkUpdates(modVersion, result -> {
+        new ModrinthUpdateChecker("voxelmap-updated", MultiLoaderManager.getModApiBridge().getModLoader(), mcVersion).checkUpdates(modVersion, result -> {
             String installedRaw = getRawVersion(modVersion);
             if (installedRaw.equals(result.latestVersion())) {
                 VoxelConstants.getLogger().info("Voxelmap is up to date.");

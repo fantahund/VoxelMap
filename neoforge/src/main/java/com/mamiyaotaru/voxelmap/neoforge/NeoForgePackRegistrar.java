@@ -1,6 +1,6 @@
 package com.mamiyaotaru.voxelmap.neoforge;
 
-import com.mamiyaotaru.voxelmap.PackRegistrar;
+import com.mamiyaotaru.voxelmap.multiloader.PackRegistrar;
 import java.util.ArrayList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
