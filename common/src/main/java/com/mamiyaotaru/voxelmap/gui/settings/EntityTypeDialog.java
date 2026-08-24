@@ -234,7 +234,8 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
             RadarSettingsManager radar = VoxelConstants.getVoxelMapInstance().getRadarOptions();
             boolean shown = !radar.hiddenMobs.contains(id);
             toggle.setRectangle(92, 20, getX() + getWidth() - 100, getY() + 4);
-            toggle.setMessage(Component.translatable(shown ? "options.voxelmap.mob.shown" : "options.voxelmap.mob.hidden"));
+            int stateColor = shown ? 0x80FF80 : 0xFF8080;
+            toggle.setMessage(Component.translatable(shown ? "options.voxelmap.mob.shown" : "options.voxelmap.mob.hidden").withColor(stateColor));
             toggle.setTooltip(Tooltip.create(Component.translatable(shown ? "options.minimap.mobs.disableTooltip" : "options.minimap.mobs.enableTooltip")));
 
             if (!requested) {
@@ -246,7 +247,8 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
             }
             if (sprite != null) {
                 icon.setPosition(getX() + 8, getY() + 4);
-                icon.setIcon(sprite, Math.min(20, sprite.getIconWidth() / 3), Math.min(20, sprite.getIconHeight() / 3), 0xFFFFFFFF);
+                int iconColor = shown ? 0xFFFFFFFF : 0xFF808080;
+                icon.setIcon(sprite, Math.min(20, sprite.getIconWidth() / 3), Math.min(20, sprite.getIconHeight() / 3), iconColor);
                 icon.extractRenderState(graphics, mouseX, mouseY, delta);
             }
 
@@ -257,7 +259,8 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
             int categoryWidth = screen.getFont().width(categoryLabel);
             int categoryX = toggle.getX() - categoryWidth - 8;
             int nameWidth = Math.max(20, categoryX - getX() - 42);
-            graphics.text(screen.getFont(), screen.getFont().plainSubstrByWidth(name.getString(), nameWidth), getX() + 34, getY() + 10, 0xFFFFFFFF);
+            int nameColor = shown ? 0xFF80FF80 : 0xFFFF8080;
+            graphics.text(screen.getFont(), screen.getFont().plainSubstrByWidth(name.getString(), nameWidth), getX() + 34, getY() + 10, nameColor);
             graphics.text(screen.getFont(), categoryLabel, categoryX, getY() + 10, categoryColor);
             toggle.extractRenderState(graphics, mouseX, mouseY, delta);
         }
@@ -270,6 +273,11 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
         @Override
         public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
             return toggle.mouseClicked(event, doubleClick);
+        }
+
+        @Override
+        public boolean shouldTakeFocusAfterInteraction() {
+            return false;
         }
     }
 }
