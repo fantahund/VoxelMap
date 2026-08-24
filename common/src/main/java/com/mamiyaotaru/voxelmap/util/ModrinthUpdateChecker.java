@@ -223,6 +223,11 @@ public class ModrinthUpdateChecker {
         }
     }
 
+    static boolean shouldNotifyAboutUpdate(String installedModVersion, UpdateResult result) {
+        String installedRaw = getRawVersion(installedModVersion);
+        return compareVersions(result.latestVersion(), installedRaw) > 0 && !result.updates().isEmpty();
+    }
+
     /**
      * Builds a multiline hover component like:
      * <p>
@@ -275,8 +280,7 @@ public class ModrinthUpdateChecker {
         String mcVersion = SharedConstants.getCurrentVersion().name();
 
         new ModrinthUpdateChecker("voxelmap-updated", MultiLoaderManager.getModApiBridge().getModLoader(), mcVersion).checkUpdates(modVersion, result -> {
-            String installedRaw = getRawVersion(modVersion);
-            if (installedRaw.equals(result.latestVersion())) {
+            if (!shouldNotifyAboutUpdate(modVersion, result)) {
                 VoxelConstants.getLogger().info("Voxelmap is up to date.");
                 return;
             }
