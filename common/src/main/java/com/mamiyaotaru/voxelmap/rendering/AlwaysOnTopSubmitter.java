@@ -29,7 +29,7 @@ public final class AlwaysOnTopSubmitter {
             throw new IllegalStateException("Unsupported submit node collector: " + orderedCollector.getClass().getName());
         }
 
-        return new AlwaysOnTopSubmitter(collection.alwaysOnTop);
+        return new AlwaysOnTopSubmitter(collection.alwaysOnTopGizmos);
     }
 
     public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, SubmitNodeCollector.CustomGeometryRenderer renderer) {
@@ -37,6 +37,7 @@ public final class AlwaysOnTopSubmitter {
     }
 
     public void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence text, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
-        phase.submit(new TextFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), x, y, text, dropShadow, displayMode, lightCoords, color, backgroundColor, outlineColor));
+        TextFeatureRenderer.Content content = new TextFeatureRenderer.Content.Text(x, y, text, dropShadow, color, backgroundColor, outlineColor);
+        phase.submit(new TextFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), displayMode, lightCoords, content));
     }
 }

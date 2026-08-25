@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.gui.settings.SettingsCategory;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsListWidget;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsOption;
 import com.mamiyaotaru.voxelmap.gui.settings.VoxelMapSettings;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -125,7 +126,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (entityTypeDialog != null) {
-            if (event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == InputConstants.KEY_ESCAPE) {
                 closeEntityTypeDialog();
                 return true;
             }

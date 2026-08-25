@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.gui.overridden.Popup;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiButton;
 import com.mamiyaotaru.voxelmap.gui.overridden.PopupGuiScreen;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.textures.ConfiguredDynamicTexture;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.BackgroundImageInfo;
@@ -23,9 +24,10 @@ import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
@@ -42,7 +44,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -52,7 +53,6 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.border.WorldBorder;
 import org.joml.Vector2f;
-import org.lwjgl.glfw.GLFW;
 
 public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private final Random generator = new Random();
@@ -174,8 +174,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float scale = skinImage.getWidth() / 8.0F;
         skinImage = ImageUtils.fillOutline(ImageUtils.pad(ImageUtils.scaleImage(skinImage, 2.0F / scale)), true, 1);
 
-        DynamicTexture texture = new DynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage));
-        texture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+        ConfiguredDynamicTexture texture = new ConfiguredDynamicTexture(() -> "Voxelmap player", ImageUtils.nativeImageFromBufferedImage(skinImage), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
         minecraft.getTextureManager().register(voxelmapSkinLocation, texture);
     }
 
@@ -392,7 +391,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
             this.coordinates.keyPressed(keyEvent);
             boolean isGood = this.isAcceptable(this.coordinates.getValue());
             this.coordinates.setTextColor(isGood ? 0xFFFFFF : 0xFF0000);
-            if ((keyEvent.key() == 257 || keyEvent.key() == 335) && this.coordinates.isFocused() && isGood) {
+            if ((keyEvent.key() == InputConstants.KEY_RETURN || keyEvent.key() == InputConstants.KEY_NUMPADENTER) && this.coordinates.isFocused() && isGood) {
                 String[] xz = this.coordinates.getValue().split(",");
                 this.centerAt(Integer.parseInt(xz[0].trim()), Integer.parseInt(xz[1].trim()));
                 this.editingCoordinates = false;
@@ -400,7 +399,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 this.switchToKeyboardInput();
             }
 
-            if (keyEvent.key() == 258 && this.coordinates.isFocused()) {
+            if (keyEvent.key() == InputConstants.KEY_TAB && this.coordinates.isFocused()) {
                 this.editingCoordinates = false;
                 this.lastEditingCoordinates = false;
                 this.switchToKeyboardInput();
@@ -408,7 +407,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         }
 
         if (VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindMenu.matches(keyEvent)) {
-            keyEvent = new KeyEvent(GLFW.GLFW_KEY_ESCAPE, -1, -1);
+            keyEvent = new KeyEvent(InputConstants.KEY_ESCAPE, -1, -1);
         }
 
         keySprintPressed = minecraft.options.keySprint.matches(keyEvent) || keySprintPressed;
@@ -464,7 +463,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void switchToMouseInput() {
         this.timeOfLastKBInput = 0L;
         if (!this.mouseCursorShown) {
-            GLFW.glfwSetInputMode(minecraft.getWindow().handle(), 208897, 212993);
+            minecraft.mouseHandler.releaseMouse();
         }
 
         this.mouseCursorShown = true;
@@ -473,7 +472,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
     private void switchToKeyboardInput() {
         this.timeOfLastKBInput = System.currentTimeMillis();
         this.mouseCursorShown = false;
-        GLFW.glfwSetInputMode(minecraft.getWindow().handle(), 208897, 212995);
+        minecraft.mouseHandler.grabMouse();
     }
 
     @Override

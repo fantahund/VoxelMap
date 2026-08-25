@@ -5,13 +5,14 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import com.mamiyaotaru.voxelmap.rendering.GLUtils;
+import com.mamiyaotaru.voxelmap.textures.ConfiguredDynamicTexture;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -42,7 +43,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -67,7 +67,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -103,7 +103,7 @@ public class ColorManager implements IReloadListener {
     private final ColorResolver foliageColorResolver = (blockState, biome, blockPos) -> biome.getFoliageColor();
     private final ColorResolver dryFoliageColorResolver = (blockState, biome, blockPos) -> biome.getDryFoliageColor();
     private final ColorResolver waterColorResolver = (blockState, biome, blockPos) -> biome.getWaterColor();
-    private final ColorResolver redstoneColorResolver = (blockState, biome, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
+    private final ColorResolver redstoneColorResolver = (blockState, biome, blockPos) -> RedstoneWireBlock.getColorForPower(blockState.getValue(RedstoneWireBlock.POWER));
 
     public ColorManager() {
         ++this.sizeOfBiomeArray;
@@ -217,12 +217,10 @@ public class ColorManager implements IReloadListener {
 
     private void loadColorPicker() {
         try {
-            DynamicTexture hueWheelTexture = new DynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image());
-            hueWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            ConfiguredDynamicTexture hueWheelTexture = new ConfiguredDynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueColorWheel, hueWheelTexture);
 
-            DynamicTexture hueSatWheelTexture = new DynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
-            hueSatWheelTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            ConfiguredDynamicTexture hueSatWheelTexture = new ConfiguredDynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueSatColorWheel, hueSatWheelTexture);
 
         } catch (Exception exception) {

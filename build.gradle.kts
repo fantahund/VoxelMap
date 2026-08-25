@@ -5,11 +5,11 @@ plugins {
     id("net.neoforged.moddev") version ("2.0.141") apply (false)
 }
 
-val minecraftVersion by extra { "26.2" }
+val minecraftVersion by extra { "26.3-snapshot-9" }
 val forgeVersion by extra { "65.0.0" }
 val neoForgeVersion by extra { "26.2.0.0-beta" }
 val fabricVersion by extra { "0.19.3" }
-val fabricApiVersion by extra { "0.152.1+26.2" }
+val fabricApiVersion by extra { "0.158.1+26.3" }
 val modMenuVersion by extra { "20.0.1" }
 val paperApiVersion by extra { "[26.2.build,)" }
 val voxelMapVersion by extra { "1.16.9" }

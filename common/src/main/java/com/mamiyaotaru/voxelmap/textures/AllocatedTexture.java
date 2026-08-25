@@ -1,8 +1,8 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 
 public class AllocatedTexture extends AbstractTexture {

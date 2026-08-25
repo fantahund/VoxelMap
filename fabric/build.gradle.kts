@@ -20,7 +20,7 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loader:${fabricVersion}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
-    implementation("maven.modrinth:modmenu:${modMenuVersion}")
+    compileOnly("maven.modrinth:modmenu:${modMenuVersion}")
 
     implementation(project.project(":server-common").sourceSets.getByName("main").output)
     implementation(project.project(":common").sourceSets.getByName("main").output)

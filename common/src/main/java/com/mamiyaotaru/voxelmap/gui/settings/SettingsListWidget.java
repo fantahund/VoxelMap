@@ -22,7 +22,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import org.lwjgl.glfw.GLFW;
 
 public final class SettingsListWidget extends AbstractSelectionList<SettingsListWidget.Entry> {
     private static final int OPTION_HEIGHT = 28;
@@ -75,7 +74,7 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
     public boolean keyPressed(KeyEvent event) {
         if (editingKey != null) {
             MapSettingsManager map = VoxelConstants.getVoxelMapInstance().getMapOptions();
-            if (event.key() == GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == InputConstants.KEY_ESCAPE) {
                 if (!editingKey.same(map.keyBindMenu))
                     map.setKeyBinding(editingKey, InputConstants.UNKNOWN);
             } else {
@@ -292,7 +291,7 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
 
         @Override
         public boolean keyPressed(KeyEvent event) {
-            if (event.key() == GLFW.GLFW_KEY_ENTER || event.key() == GLFW.GLFW_KEY_KP_ENTER) {
+            if (event.key() == InputConstants.KEY_RETURN || event.key() == InputConstants.KEY_NUMPADENTER) {
                 commit();
                 setFocused(false);
                 return true;

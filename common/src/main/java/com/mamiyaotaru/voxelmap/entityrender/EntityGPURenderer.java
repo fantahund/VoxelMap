@@ -6,18 +6,18 @@ import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
@@ -123,30 +123,30 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
             commandEncoder.clearColorAndDepthTextures(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), renderTarget.getDepthTexture(), 0.0);
             try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
-                renderPass.setPipeline(renderPipeline);
+                renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
                 RenderSystem.bindDefaultUniforms(renderPass);
-                renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+                renderPass.setUniform("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+                renderPass.setUniform("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
                 renderPass.setVertexBuffer(0, vertexBuffer.slice());
                 renderPass.setIndexBuffer(indexBuffer, indexType);
                 if (primaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", primaryTransforms);
-                    renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
+                    renderPass.setUniform("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
                     renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
                 }
                 if (secondaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", secondaryTransforms);
-                    renderPass.bindTexture("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
+                    renderPass.setUniform("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
                     renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
                 }
                 if (tertiaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", tertiaryTransforms);
-                    renderPass.bindTexture("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
+                    renderPass.setUniform("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
                     renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
                 }
                 if (quaternaryTexture != null) {
                     renderPass.setUniform("DynamicTransforms", quaternaryTransforms);
-                    renderPass.bindTexture("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
+                    renderPass.setUniform("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
                     renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
                 }
             } finally {

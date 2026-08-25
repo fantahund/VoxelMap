@@ -12,6 +12,7 @@ import com.mamiyaotaru.voxelmap.rendering.VoxelMapCachedOrthoProjectionMatrixBuf
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTypes;
+import com.mamiyaotaru.voxelmap.textures.ConfiguredDynamicTexture;
 import com.mamiyaotaru.voxelmap.textures.DynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.textures.ScaledDynamicMutableTexture;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -32,7 +33,7 @@ import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPosCache;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Direction;
@@ -201,11 +201,11 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             this.chunkCache[i] = new MapChunkCache(chunks, chunks, this);
 
             this.mapImagesFiltered[i] = new DynamicMutableTexture(String.format("voxelmap-map-%s", resolution), resolution, resolution, true);
-            this.mapImagesFiltered[i].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            this.mapImagesFiltered[i].setSampler(RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             minecraft.getTextureManager().register(resourceMapImageFiltered[i], this.mapImagesFiltered[i]);
 
             this.mapImagesUnfiltered[i] = new ScaledDynamicMutableTexture(String.format("voxelmap-map-unfiltered-%s", resolution), resolution, resolution, true);
-            this.mapImagesUnfiltered[i].sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR);
+            this.mapImagesUnfiltered[i].setSampler(RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             minecraft.getTextureManager().register(resourceMapImageUnfiltered[i], this.mapImagesUnfiltered[i]);
 
         }
@@ -254,16 +254,13 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         FilterMode frameFilterMode = frameFiltering ? FilterMode.LINEAR : FilterMode.NEAREST;
 
         try {
-            DynamicTexture arrowTexture = new DynamicTexture(() -> "Minimap Arrow", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceArrow).image());
-            arrowTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(arrowFilterMode);
+            ConfiguredDynamicTexture arrowTexture = new ConfiguredDynamicTexture(() -> "Minimap Arrow", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceArrow).image(), RenderSystem.getSamplerCache().getClampToEdge(arrowFilterMode));
             minecraft.getTextureManager().register(resourceArrow, arrowTexture);
 
-            DynamicTexture squareMapTexture = new DynamicTexture(() -> "Minimap Square Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMapFrame).image());
-            squareMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(frameFilterMode);
+            ConfiguredDynamicTexture squareMapTexture = new ConfiguredDynamicTexture(() -> "Minimap Square Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceSquareMapFrame).image(), RenderSystem.getSamplerCache().getClampToEdge(frameFilterMode));
             minecraft.getTextureManager().register(resourceSquareMapFrame, squareMapTexture);
 
-            DynamicTexture roundMapTexture = new DynamicTexture(() -> "Minimap Round Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMapFrame).image());
-            roundMapTexture.sampler = RenderSystem.getSamplerCache().getClampToEdge(frameFilterMode);
+            ConfiguredDynamicTexture roundMapTexture = new ConfiguredDynamicTexture(() -> "Minimap Round Map Frame", TextureContents.load(Minecraft.getInstance().getResourceManager(), resourceRoundMapFrame).image(), RenderSystem.getSamplerCache().getClampToEdge(frameFilterMode));
             minecraft.getTextureManager().register(resourceRoundMapFrame, roundMapTexture);
         } catch (Exception exception) {
             VoxelConstants.getLogger().error("Failed getting map images " + exception.getLocalizedMessage(), exception);

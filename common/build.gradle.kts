@@ -18,7 +18,7 @@ dependencies {
     compileOnly("net.fabricmc:fabric-loader:${fabricVersion}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
 
-    compileOnly("net.fabricmc:sponge-mixin:0.16.4+mixin.0.8.7")
+    compileOnly("net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7")
     testImplementation("com.google.code.gson:gson:2.11.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

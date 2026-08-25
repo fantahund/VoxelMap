@@ -2,15 +2,15 @@ package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mojang.blaze3d.IndexType;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Optional;
@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -107,25 +108,17 @@ public class RenderUtils {
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
-        GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
-
         try {
             RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-            RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
-            RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
-
-            SubmitContext context = new SubmitContext();
+            SubmitContext context = new SubmitContext(renderTarget);
             submitter.accept(context);
             context.flush();
         } catch (Exception e) {
             VoxelConstants.getLogger().error("Failed to render with custom projection. Exception: " + e);
         } finally {
-            RenderSystem.outputColorTextureOverride = lastColorTexture;
-            RenderSystem.outputDepthTextureOverride = lastDepthTexture;
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
@@ -152,26 +145,18 @@ public class RenderUtils {
 
         GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
         ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        GpuTextureView lastColorTexture = RenderSystem.outputColorTextureOverride;
-        GpuTextureView lastDepthTexture = RenderSystem.outputDepthTextureOverride;
-
         try {
             FULLSCREEN_PROJECTION.setSize(getGuiWidth(), getGuiHeight());
             RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION_MATRIX.getBuffer(FULLSCREEN_PROJECTION), ProjectionType.ORTHOGRAPHIC);
             RenderSystem.getModelViewStack().pushMatrix();
             RenderSystem.getModelViewStack().identity();
             RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-            RenderSystem.outputColorTextureOverride = renderTarget.getColorTextureView();
-            RenderSystem.outputDepthTextureOverride = renderTarget.getDepthTextureView();
-
-            SubmitContext context = new SubmitContext();
+            SubmitContext context = new SubmitContext(renderTarget);
             submitter.accept(context);
             context.flush();
         } catch (Exception e) {
             VoxelConstants.getLogger().error("Failed to render with fullscreen projection. Exception: " + e);
         } finally {
-            RenderSystem.outputColorTextureOverride = lastColorTexture;
-            RenderSystem.outputDepthTextureOverride = lastDepthTexture;
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
         }
@@ -212,14 +197,14 @@ public class RenderUtils {
             Optional<Vector4fc> colorClear = Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
             OptionalDouble depthClear = depthTexture == null ? OptionalDouble.empty() : OptionalDouble.of(1.0);
             try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Immediate Draw", colorTexture, colorClear, depthTexture, depthClear)) {
-                renderPass.setPipeline(pipeline);
+                renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
                 renderPass.setVertexBuffer(0, vertexBuffer.slice());
                 renderPass.setIndexBuffer(indexBuffer, indexType);
-                renderPass.bindTexture("Sampler0", textureSetup.texure0(), textureSetup.sampler0());
-                renderPass.bindTexture("Sampler1", textureSetup.texure1(), textureSetup.sampler1());
-                renderPass.bindTexture("Sampler2", textureSetup.texure2(), textureSetup.sampler2());
+                renderPass.setUniform("Sampler0", textureSetup.texure0(), textureSetup.sampler0());
+                renderPass.setUniform("Sampler1", textureSetup.texure1(), textureSetup.sampler1());
+                renderPass.setUniform("Sampler2", textureSetup.texure2(), textureSetup.sampler2());
                 renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
             } finally {
                 vertexBuffer.close();
@@ -236,7 +221,12 @@ public class RenderUtils {
     }
 
     public static class SubmitContext {
+        private final RenderTarget renderTarget;
         private SubmitNodeStorage storage = new SubmitNodeStorage();
+
+        private SubmitContext(RenderTarget renderTarget) {
+            this.renderTarget = renderTarget;
+        }
 
         public SubmitNodeCollector collector() {
             return storage;
@@ -247,7 +237,19 @@ public class RenderUtils {
         }
 
         public void flush() {
-            MINECRAFT.gameRenderer.featureRenderDispatcher().renderAllFeatures(storage);
+            FeatureRenderDispatcher dispatcher = MINECRAFT.gameRenderer.featureRenderDispatcher();
+            try (
+                    FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(storage);
+                    RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
+                            () -> "VoxelMap submitted features",
+                            renderTarget.getColorTextureView(),
+                            Optional.empty(),
+                            renderTarget.getDepthTextureView(),
+                            OptionalDouble.empty())
+            ) {
+                RenderSystem.bindDefaultUniforms(renderPass);
+                FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
+            }
             storage = new SubmitNodeStorage();
         }
     }

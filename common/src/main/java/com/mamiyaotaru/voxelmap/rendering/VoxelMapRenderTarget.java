@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.textures.AllocatedTexture;
-import com.mojang.blaze3d.GpuFormat;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -14,7 +14,7 @@ public class VoxelMapRenderTarget extends RenderTarget {
     private AllocatedTexture allocatedDepthTexture;
 
     public VoxelMapRenderTarget(Identifier baseId) {
-        super(baseId.toString(), true, GpuFormat.RGBA8_UNORM);
+        super(baseId.toString(), GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
 
         colorTextureId = baseId.withSuffix("_color");
         depthTextureId = baseId.withSuffix("_depth");
