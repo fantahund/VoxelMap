@@ -14,6 +14,7 @@ import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -237,11 +238,57 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
         return false;
     }
 
+    static List<String> parseCoordinateTriple(String clipboard) {
+        if (clipboard == null) {
+            return List.of();
+        }
+
+        String trimmed = clipboard.trim();
+        if (trimmed.isEmpty()) {
+            return List.of();
+        }
+
+        String[] parts = trimmed.contains(",") ? trimmed.split(",", -1) : trimmed.split("\\s+");
+        if (parts.length != 3) {
+            return List.of();
+        }
+
+        List<String> coordinates = List.of(parts[0].trim(), parts[1].trim(), parts[2].trim());
+        try {
+            coordinates.forEach(Integer::parseInt);
+            return coordinates;
+        } catch (NumberFormatException ignored) {
+            return List.of();
+        }
+    }
+
+    private boolean pasteCoordinateTriple(KeyEvent keyEvent) {
+        if (!keyEvent.isPaste() || !waypointX.isFocused()) {
+            return false;
+        }
+
+        List<String> coordinates = parseCoordinateTriple(VoxelConstants.getMinecraft().keyboardHandler.getClipboard());
+        if (coordinates.isEmpty()) {
+            return false;
+        }
+
+        waypointX.setValue(coordinates.get(0));
+        waypointY.setValue(coordinates.get(1));
+        waypointZ.setValue(coordinates.get(2));
+        focusedField = 1;
+        doneButton.active = isWaypointInputValid();
+        return true;
+    }
+
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         int keyCode = keyEvent.key();
         boolean pressed = false;
         if (!popupOpen()) {
+            if (pasteCoordinateTriple(keyEvent)) {
+                return true;
+            }
+
             pressed = super.keyPressed(keyEvent);
             updateFocusedField();
 
