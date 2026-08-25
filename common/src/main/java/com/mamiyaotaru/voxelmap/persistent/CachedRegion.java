@@ -329,7 +329,12 @@ public class CachedRegion {
                                         if (!this.closed && this.data.getHeight(tx * CHUNK_BLOCKS, sx * CHUNK_BLOCKS) == Short.MIN_VALUE && this.data.getLight(tx * CHUNK_BLOCKS, sx * CHUNK_BLOCKS) == 0) {
                                             int index = tx + sx * CHUNKS_WIDTH;
                                             ChunkPos chunkPos = new ChunkPos(this.x * CHUNKS_WIDTH + tx, this.z * CHUNKS_WIDTH + sx);
-                                            CompoundTag rawNbt = this.chunkLoader.read(chunkPos).join().get();
+                                            Optional<CompoundTag> rawNbtResult = this.chunkLoader.read(chunkPos).join();
+                                            if (rawNbtResult.isEmpty()) {
+                                                continue;
+                                            }
+
+                                            CompoundTag rawNbt = rawNbtResult.get();
                                             CompoundTag nbt = this.chunkLoader.upgradeChunkTag(rawNbt, -1);
                                             if (!this.closed && nbt.contains("Level")) {
                                                 CompoundTag level = nbt.getCompound("Level").get();

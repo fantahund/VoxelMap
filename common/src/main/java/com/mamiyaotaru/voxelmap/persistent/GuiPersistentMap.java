@@ -327,7 +327,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         currentDragging = false;
 
         selectedWaypoint = getHoveredWaypoint();
-        if (mouseButtonEvent.button() == 1 && (selectedWaypoint != null || (mouseY > this.top && mouseY < this.bottom))) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_RIGHT && (selectedWaypoint != null || (mouseY > this.top && mouseY < this.bottom))) {
             this.timeOfLastKBInput = 0L;
             int mouseDirectX = (int) minecraft.mouseHandler.xpos();
             int mouseDirectY = (int) minecraft.mouseHandler.ypos();
@@ -361,10 +361,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
             this.lastEditingCoordinates = this.editingCoordinates;
         }
-        if (mouseButtonEvent.button() == 0) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             currentDragging = true;
         }
-        return super.mouseClicked(mouseButtonEvent, doubleClick) || mouseButtonEvent.button() == 1;
+        return super.mouseClicked(mouseButtonEvent, doubleClick) || mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_RIGHT;
     }
 
     @Override

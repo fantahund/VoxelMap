@@ -17,6 +17,10 @@ import org.joml.Matrix4f;
  * transparency compositing.
  */
 public final class AlwaysOnTopSubmitter {
+    // Minecraft 26.3 schedules this pass from the vanilla gizmo state, before considering custom
+    // features. MixinWorldRenderer includes this per-frame flag in that scheduling decision.
+    private static boolean frameHasSubmissions;
+
     private final SimpleFeatureRenderPhase phase;
 
     private AlwaysOnTopSubmitter(SimpleFeatureRenderPhase phase) {
@@ -32,12 +36,22 @@ public final class AlwaysOnTopSubmitter {
         return new AlwaysOnTopSubmitter(collection.alwaysOnTopGizmos);
     }
 
+    public static void beginFrame() {
+        frameHasSubmissions = false;
+    }
+
+    public static boolean hasSubmissions() {
+        return frameHasSubmissions;
+    }
+
     public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, SubmitNodeCollector.CustomGeometryRenderer renderer) {
         phase.submit(new CustomFeatureRenderer.Submit(poseStack.last().copy(), renderType, renderer));
+        frameHasSubmissions = true;
     }
 
     public void submitText(PoseStack poseStack, float x, float y, FormattedCharSequence text, boolean dropShadow, Font.DisplayMode displayMode, int lightCoords, int color, int backgroundColor, int outlineColor) {
         TextFeatureRenderer.Content content = new TextFeatureRenderer.Content.Text(x, y, text, dropShadow, color, backgroundColor, outlineColor);
         phase.submit(new TextFeatureRenderer.Submit(new Matrix4f(poseStack.last().pose()), displayMode, lightCoords, content));
+        frameHasSubmissions = true;
     }
 }

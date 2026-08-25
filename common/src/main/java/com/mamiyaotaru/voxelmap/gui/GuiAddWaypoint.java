@@ -267,7 +267,7 @@ public class GuiAddWaypoint extends GuiScreenMinimap implements IPopupGuiScreen 
 
         handlePopupEvents(widget -> widget.mouseClicked(mouseButtonEvent, doubleClick));
 
-        if (choosingIcon && button == 0) {
+        if (choosingIcon && button == InputConstants.MOUSE_BUTTON_LEFT) {
             Sprite pickedIcon = pickIcon((int) mouseX, (int) mouseY);
             if (pickedIcon != null) {
                 pickedSuffix = WaypointManager.toSimpleName(pickedIcon.getIconName().toString()).replace("selectable/", "");

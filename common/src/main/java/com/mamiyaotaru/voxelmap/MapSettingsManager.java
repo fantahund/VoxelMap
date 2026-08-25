@@ -23,6 +23,7 @@ import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
+import org.lwjgl.sdl.SDLScancode;
 
 public class MapSettingsManager implements ISettingsManager {
     public static final String ERROR_STRING = "§c???";
@@ -106,8 +107,8 @@ public class MapSettingsManager implements ISettingsManager {
                 keyBindMenu = new KeyMapping("key.minimap.voxelmapMenu", InputConstants.getKey("key.keyboard.m").getValue(), category),
                 keyBindWaypointMenu = new KeyMapping("key.minimap.waypointMenu", InputConstants.getKey("key.keyboard.u").getValue(), category),
                 keyBindWaypoint = new KeyMapping("key.minimap.waypointHotkey", InputConstants.getKey("key.keyboard.n").getValue(), category),
-                keyBindMobToggle = new KeyMapping("key.minimap.toggleMobs", -1, category),
-                keyBindWaypointToggle = new KeyMapping("key.minimap.toggleInGameWaypoints", -1, category),
+                keyBindMobToggle = new KeyMapping("key.minimap.toggleMobs", InputConstants.UNKNOWN.getValue(), category),
+                keyBindWaypointToggle = new KeyMapping("key.minimap.toggleInGameWaypoints", InputConstants.UNKNOWN.getValue(), category),
                 keyBindMinimapToggle = new KeyMapping("key.minimap.toggleMinimap", InputConstants.getKey("key.keyboard.h").getValue(), category)
         };
     }
@@ -557,7 +558,12 @@ public class MapSettingsManager implements ISettingsManager {
 
     private void bindKey(KeyMapping keyBinding, String id) {
         try {
-            keyBinding.setKey(InputConstants.getKey(id));
+            InputConstants.Key input = InputConstants.getKey(id);
+            InputConstants.Key sanitizedInput = sanitizeKey(input);
+            if (input != sanitizedInput) {
+                VoxelConstants.getLogger().warn("{} is not a valid keybinding; resetting it to unbound", id);
+            }
+            keyBinding.setKey(sanitizedInput);
         } catch (RuntimeException var4) {
             VoxelConstants.getLogger().warn(id + " is not a valid keybinding");
         }
@@ -565,8 +571,17 @@ public class MapSettingsManager implements ISettingsManager {
     }
 
     public void setKeyBinding(KeyMapping keyBinding, InputConstants.Key input) {
-        keyBinding.setKey(input);
+        keyBinding.setKey(sanitizeKey(input));
         saveAll();
+    }
+
+    static InputConstants.Key sanitizeKey(InputConstants.Key input) {
+        if (input.getType() == InputConstants.Type.KEYBOARD
+                && (input.getValue() < SDLScancode.SDL_SCANCODE_UNKNOWN || input.getValue() >= SDLScancode.SDL_SCANCODE_COUNT)) {
+            return InputConstants.UNKNOWN;
+        }
+
+        return input;
     }
 
     public String getKeyBindingDescription(int keybindIndex) {
