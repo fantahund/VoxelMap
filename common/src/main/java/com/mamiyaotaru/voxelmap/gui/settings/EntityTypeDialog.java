@@ -45,6 +45,10 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
     private boolean dragging;
 
     public EntityTypeDialog(GuiMinimapOptions screen, Runnable closeAction) {
+        this(screen, closeAction, "", ignored -> {});
+    }
+
+    public EntityTypeDialog(GuiMinimapOptions screen, Runnable closeAction, String initialFilter, Consumer<String> filterChanged) {
         super(0, 0, screen.getWidth(), screen.getHeight(), Component.translatable("options.voxelmap.entityDialog.title"));
         this.screen = screen;
         this.dialogWidth = Math.min(500, Math.max(180, screen.getWidth() - 24));
@@ -58,7 +62,11 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
         this.filter = new EditBox(screen.getFont(), innerX, dialogY + 30, innerWidth, 20, Component.translatable("options.voxelmap.entityDialog.search"));
         this.filter.setHint(Component.translatable("options.voxelmap.entityDialog.search"));
         this.filter.setMaxLength(128);
-        this.filter.setResponder(list::filter);
+        this.filter.setResponder(value -> {
+            list.filter(value);
+            filterChanged.accept(value);
+        });
+        this.filter.setValue(initialFilter);
         this.done = Button.builder(Component.translatable("gui.done"), ignored -> closeAction.run())
                 .bounds(dialogX + dialogWidth / 2 - 75, dialogY + dialogHeight - 26, 150, 20).build();
         this.children = List.of(filter, list, done);

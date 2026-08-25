@@ -31,6 +31,8 @@ public class GuiMobs extends GuiScreenMinimap {
 
     @Override
     public void init() {
+        String filterValue = filter == null ? "" : filter.getValue();
+
         screenTitle = Component.translatable("options.minimap.mobs.title");
 
         mobsList = new GuiListMobs(this);
@@ -38,6 +40,7 @@ public class GuiMobs extends GuiScreenMinimap {
         filter = new EditBox(getFont(), getWidth() / 2 - 153 + filterStringWidth + 5, getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
         filter.setMaxLength(35);
         filter.setResponder(this::filterUpdated);
+        filter.setValue(filterValue);
 
         addRenderableWidget(mobsList);
         addRenderableWidget(filter);
