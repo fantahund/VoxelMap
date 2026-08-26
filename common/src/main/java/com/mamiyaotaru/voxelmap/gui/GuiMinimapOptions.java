@@ -36,6 +36,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private int categoryWidth;
     private SettingsListWidget optionList;
     private EntityTypeDialog entityTypeDialog;
+    private String entityTypeFilter = "";
 
     public GuiMinimapOptions(Screen parent) {
         this(parent, "minimap");
@@ -200,7 +201,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private void openEntityTypeDialog() {
         if (entityTypeDialog != null)
             return;
-        entityTypeDialog = new EntityTypeDialog(this, this::closeEntityTypeDialog);
+        entityTypeDialog = new EntityTypeDialog(this, this::closeEntityTypeDialog, entityTypeFilter, value -> entityTypeFilter = value);
         addRenderableWidget(entityTypeDialog);
         setFocused(entityTypeDialog);
     }
@@ -210,6 +211,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             return;
         removeWidget(entityTypeDialog);
         entityTypeDialog = null;
+        entityTypeFilter = "";
         setFocused(optionList);
     }
 

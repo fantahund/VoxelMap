@@ -59,6 +59,8 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
 
     @Override
     public void init() {
+        String filterValue = filter == null ? "" : filter.getValue();
+
         screenTitle = Component.translatable("minimap.waypoints.title");
         waypointList = new GuiListWaypoints(this);
 
@@ -72,6 +74,7 @@ public class GuiWaypoints extends GuiScreenMinimap implements IGuiWaypoints {
         filter = new EditBox(getFont(), getWidth() / 2 - 153 + filterStringWidth + 5, getHeight() - 78, 305 - filterStringWidth - 5, 20, Component.empty());
         filter.setMaxLength(35);
         filter.setResponder(this::filterUpdated);
+        filter.setValue(filterValue);
 
         addRenderableWidget(filter);
         setFocused(filter);
