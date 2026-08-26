@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.gui.settings.SettingsCategory;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsListWidget;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsOption;
 import com.mamiyaotaru.voxelmap.gui.settings.VoxelMapSettings;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -68,8 +69,13 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
         for (int i = 0; i < categories.size(); i++) {
             int index = i;
-            Button button = Button.builder(categories.get(i).title(), ignored -> selectCategory(index))
-                    .bounds(contentX, contentY + i * 24, categoryWidth, 20).build();
+            Button button = new CategoryButton(
+                    contentX,
+                    contentY + i * 24,
+                    categoryWidth,
+                    20,
+                    categories.get(i).title(),
+                    ignored -> selectCategory(index));
             categoryButtons.add(addRenderableWidget(button));
         }
 
@@ -264,6 +270,20 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         super.extractMenuBackground(graphics);
         graphics.fill(contentX - 4, contentY - 4, contentX + contentWidth + 4, contentY + contentHeight + 4, 0x66000000);
         graphics.fill(contentX + categoryWidth + 1, contentY, contentX + categoryWidth + 2, contentY + contentHeight, 0x88707070);
+    }
+
+    private static class CategoryButton extends Button.Plain {
+        private CategoryButton(int x, int y, int width, int height, Component message, Button.OnPress onPress) {
+            super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
+        }
+
+        @Override
+        protected void handleCursor(GuiGraphicsExtractor graphics) {
+            if (isHovered() && !isActive())
+                graphics.requestCursor(CursorTypes.ARROW);
+            else
+                super.handleCursor(graphics);
+        }
     }
 
 }
