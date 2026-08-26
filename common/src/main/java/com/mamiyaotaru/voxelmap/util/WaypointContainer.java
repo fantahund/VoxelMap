@@ -175,7 +175,7 @@ public class WaypointContainer {
         poseStack.translate(baseX + 0.5, baseY, baseZ + 0.5);
 
         poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(spentTime * 2.25F - 45.0F));
+        poseStack.rotateDegrees(Axis.YP, spentTime * 2.25F - 45.0F);
 
         float beamRadius = BeaconRenderer.SOLID_BEAM_RADIUS / 1.4142F;
         float beamMaxV = 1.0F - texturePos;
@@ -245,8 +245,8 @@ public class WaypointContainer {
         float scale = ((float) adjustedDistance * 0.1F + 1.0F) * 0.0266F * options.waypointSignScale;
         poseStack.pushPose();
         poseStack.translate((float) baseX + 0.5F, (float) baseY + 0.5F, (float) baseZ + 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(-VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.yRot()));
-        poseStack.mulPose(Axis.XP.rotationDegrees(VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.xRot()));
+        poseStack.rotateDegrees(Axis.YP, -VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.yRot());
+        poseStack.rotateDegrees(Axis.XP, VoxelConstants.getMinecraft().getEntityRenderDispatcher().camera.xRot());
         poseStack.scale(-scale, -scale, -scale);
 
         float distanceAlpha = distance > 5.0 ? 1.0F : (float) distance / 5.0F;

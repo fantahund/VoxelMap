@@ -35,9 +35,9 @@ public abstract class AbstractEntityRenderer {
         if (rotation != null && !rotation.isEmpty()) {
             rotation.forEach((axis, value) -> {
                 switch (axis) {
-                    case Direction.Axis.X -> poseStack.mulPose(Axis.XP.rotationDegrees(value));
-                    case Direction.Axis.Y -> poseStack.mulPose(Axis.YP.rotationDegrees(value));
-                    case Direction.Axis.Z -> poseStack.mulPose(Axis.ZP.rotationDegrees(value));
+                    case Direction.Axis.X -> poseStack.rotateDegrees(Axis.XP, value);
+                    case Direction.Axis.Y -> poseStack.rotateDegrees(Axis.YP, value);
+                    case Direction.Axis.Z -> poseStack.rotateDegrees(Axis.ZP, value);
                 }
             });
         }

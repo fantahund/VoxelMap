@@ -171,7 +171,7 @@ public class DefaultArmorHandler extends AbstractArmorHandler {
             renderer.addMesh(part);
         }
         if (block != null) {
-            pose.mulPose(Axis.ZP.rotationDegrees(180.0F));
+            pose.rotateDegrees(Axis.ZP, 180.0F);
             pose.scale(0.625F, 0.625F, 0.625F);
 
             renderer.addBlock(block.defaultBlockState());
