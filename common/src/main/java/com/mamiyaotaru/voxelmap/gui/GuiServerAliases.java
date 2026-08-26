@@ -1,5 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapMigration;
@@ -253,6 +255,12 @@ public class GuiServerAliases extends GuiScreenMinimap {
 
         graphics.text(this.getFont(), Component.translatable("voxelmap.alias.canonical"), this.fieldX, 42, 0xFFA0A0A0);
         graphics.text(this.getFont(), Component.translatable("voxelmap.alias.aliases"), this.fieldX, 86, 0xFFA0A0A0);
+
+        WaypointManager waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+        String serverIdentity = waypointManager == null ? "" : waypointManager.getServerWorldIdentity();
+        if (!serverIdentity.isEmpty()) {
+            graphics.text(this.getFont(), Component.translatable("voxelmap.alias.serverProvided", serverIdentity), this.fieldX, this.getHeight() - LIST_BOTTOM_MARGIN + 2, 0xFFFFAA00);
+        }
 
         if (this.rows.size() > this.visibleRows) {
             String more = "↓ " + (this.rows.size() - this.visibleRows) + " …";

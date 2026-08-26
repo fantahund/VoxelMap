@@ -26,7 +26,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private static final int FOOTER_HEIGHT = 32;
     private static final int CATEGORY_GAP = 4;
 
-    private final List<SettingsCategory> categories = VoxelMapSettings.create(this::openEntityTypeDialog);
+    private final List<SettingsCategory> categories = VoxelMapSettings.create(this::openEntityTypeDialog, this::openServerAliases);
     private final List<Button> categoryButtons = new ArrayList<>();
     private int selectedCategory;
     private int contentX;
@@ -79,18 +79,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             categoryButtons.add(addRenderableWidget(button));
         }
 
-        if (VoxelConstants.isSinglePlayer()) {
-            addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
-                    .bounds(width / 2 - 100, height - 27, 200, 20).build());
-        } else {
-            String currentServer = VoxelConstants.getVoxelMapInstance().getWaypointManager().getServerName();
-            addRenderableWidget(Button.builder(Component.translatable("voxelmap.alias.editButton"),
-                            ignored -> minecraft.gui.setScreen(new GuiServerAliases(this, currentServer)))
-                    .bounds(width / 2 - 155, height - 27, 150, 20).build());
-
-            addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
-                    .bounds(width / 2 + 5, height - 27, 150, 20).build());
-        }
+        addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
+                .bounds(width / 2 - 100, height - 27, 200, 20).build());
 
         rebuildContent();
         if (reopenEntityDialog)
@@ -201,6 +191,13 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    private void openServerAliases() {
+        if (optionList != null)
+            optionList.commitPendingText();
+        String currentServer = VoxelConstants.getVoxelMapInstance().getWaypointManager().getServerName();
+        minecraft.gui.setScreen(new GuiServerAliases(this, currentServer));
     }
 
     private void openEntityTypeDialog() {
