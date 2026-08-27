@@ -1,5 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
+import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapMigration;
@@ -47,33 +49,70 @@ public class GuiServerAliases extends GuiScreenMinimap {
 
     @Override
     public void init() {
+        boolean restoringDraft = this.canonicalField != null;
+        VoxelMapDataConfig config = VoxelMapDataConfig.getInstance();
+        String canonical = restoringDraft
+                ? this.canonicalField.getValue()
+                : this.contextServerName.isEmpty() ? "" : config.resolveCanonical(this.contextServerName);
+        List<String> aliasValues = new ArrayList<>();
+        boolean canonicalFocused = restoringDraft && this.canonicalField.isFocused();
+        int focusedAlias = -1;
+
+        if (restoringDraft) {
+            for (int i = 0; i < this.rows.size(); i++) {
+                AliasRow row = this.rows.get(i);
+                aliasValues.add(row.field.getValue());
+                if (row.field.isFocused()) {
+                    focusedAlias = i;
+                }
+            }
+        } else {
+            this.originalAliases = config.getAliasesFor(canonical);
+            aliasValues.addAll(this.originalAliases);
+        }
+
         this.clearWidgets();
         this.rows.clear();
         int centerX = this.getWidth() / 2;
         this.fieldX = centerX - 155;
         this.visibleRows = Math.max(1, (this.getHeight() - LIST_BOTTOM_MARGIN - LIST_TOP) / ROW_HEIGHT);
 
-        VoxelMapDataConfig config = VoxelMapDataConfig.getInstance();
-        String canonical = this.contextServerName.isEmpty() ? "" : config.resolveCanonical(this.contextServerName);
-
         this.canonicalField = new EditBox(this.getFont(), this.fieldX, 52, 310, 20, Component.empty());
         this.canonicalField.setMaxLength(256);
         this.canonicalField.setValue(canonical);
         this.addRenderableWidget(this.canonicalField);
 
-        this.originalAliases = config.getAliasesFor(canonical);
-        for (String alias : this.originalAliases) {
+        for (String alias : aliasValues) {
             addRow(alias);
         }
 
-        addRow("");
+        if (this.rows.isEmpty() || !this.rows.getLast().field.getValue().isEmpty()) {
+            addRow("");
+        }
 
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.done"), button -> this.save())
                 .bounds(centerX - 155, this.getHeight() - 27, 150, 20).build());
         this.addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> this.onClose())
                 .bounds(centerX + 5, this.getHeight() - 27, 150, 20).build());
 
+        if (focusedAlias >= 0) {
+            if (focusedAlias < this.scrollRow) {
+                this.scrollRow = focusedAlias;
+            } else if (focusedAlias >= this.scrollRow + this.visibleRows) {
+                this.scrollRow = focusedAlias - this.visibleRows + 1;
+            }
+        }
+
         layoutRows();
+
+        if (canonicalFocused) {
+            this.setFocused(this.canonicalField);
+            this.canonicalField.setFocused(true);
+        } else if (focusedAlias >= 0 && focusedAlias < this.rows.size()) {
+            EditBox focusedField = this.rows.get(focusedAlias).field;
+            this.setFocused(focusedField);
+            focusedField.setFocused(true);
+        }
     }
 
     private void addRow(String value) {
@@ -216,6 +255,12 @@ public class GuiServerAliases extends GuiScreenMinimap {
 
         graphics.text(this.getFont(), Component.translatable("voxelmap.alias.canonical"), this.fieldX, 42, 0xFFA0A0A0);
         graphics.text(this.getFont(), Component.translatable("voxelmap.alias.aliases"), this.fieldX, 86, 0xFFA0A0A0);
+
+        WaypointManager waypointManager = VoxelConstants.getVoxelMapInstance().getWaypointManager();
+        String serverIdentity = waypointManager == null ? "" : waypointManager.getServerWorldIdentity();
+        if (!serverIdentity.isEmpty()) {
+            graphics.text(this.getFont(), Component.translatable("voxelmap.alias.serverProvided", serverIdentity), this.fieldX, this.getHeight() - LIST_BOTTOM_MARGIN + 2, 0xFFFFAA00);
+        }
 
         if (this.rows.size() > this.visibleRows) {
             String more = "↓ " + (this.rows.size() - this.visibleRows) + " …";

@@ -15,7 +15,7 @@ public final class VoxelMapSettings {
     private VoxelMapSettings() {
     }
 
-    public static List<SettingsCategory> create(Runnable openEntityTypeDialog) {
+    public static List<SettingsCategory> create(Runnable openEntityTypeDialog, Runnable openServerAliases) {
         VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
         MapSettingsManager map = voxelMap.getMapOptions();
         RadarSettingsManager radar = voxelMap.getRadarOptions();
@@ -28,7 +28,7 @@ public final class VoxelMapSettings {
                 waypoints(map),
                 radar(radar, openEntityTypeDialog),
                 // new SettingsCategory("controls", "options.voxelmap.category.controls", List.of(), SettingsCategory.SpecialView.KEY_BINDINGS),
-                advanced(voxelMap, map, radar));
+                advanced(voxelMap, map, radar, openServerAliases));
     }
 
     private static SettingsCategory general(MapSettingsManager map) {
@@ -182,9 +182,15 @@ public final class VoxelMapSettings {
                                 30, 5000, 10, value -> Component.translatable("options.voxelmap.value.regions", value.intValue()), () -> true, Component::empty, 0))));
     }
 
-    private static SettingsCategory advanced(VoxelMap voxelMap, MapSettingsManager map, RadarSettingsManager radar) {
+    private static SettingsCategory advanced(VoxelMap voxelMap, MapSettingsManager map, RadarSettingsManager radar, Runnable openServerAliases) {
         return new SettingsCategory("advanced", "options.voxelmap.category.advanced", List.of(
                 group("options.voxelmap.group.worldServer",
+                        SettingsOption.text("advanced.dataName", "options.voxelmap.advanced.dataName", tooltip("advanced.dataName"),
+                                () -> voxelMap.getWaypointManager().getCurrentWorldName(), value -> { },
+                                () -> false,
+                                () -> Component.translatable(voxelMap.getWaypointManager().getServerWorldIdentity().isEmpty()
+                                        ? "options.voxelmap.managed.dataNameLocal"
+                                        : "options.voxelmap.managed.dataNameServer")),
                         SettingsOption.text("advanced.seed", "options.minimap.worldSeed", tooltip("advanced.seed"), voxelMap::getWorldSeed,
                                 value -> {
                                     voxelMap.setWorldSeed(value.trim());
@@ -196,7 +202,10 @@ public final class VoxelMapSettings {
                                     map.teleportCommand = value.isBlank() ? "tp %p %x %y %z" : value;
                                     map.markChanged();
                                 },
-                                () -> map.serverTeleportCommand == null, requires("options.voxelmap.managed.server"))),
+                                () -> map.serverTeleportCommand == null, requires("options.voxelmap.managed.server")),
+                        SettingsOption.action("advanced.aliases", "options.voxelmap.advanced.aliases", tooltip("advanced.aliases"),
+                                Component.translatable("options.voxelmap.action.edit"), openServerAliases,
+                                () -> !VoxelConstants.isSinglePlayer(), requires("options.voxelmap.managed.singleplayerAliases"))),
                 group("options.voxelmap.group.interface",
                         choice("advanced.colorPicker", "options.minimap.colorPickerMode", map, () -> map.colorPickerMode, value -> map.colorPickerMode = value,
                                 value(0, "options.minimap.colorPickerMode.simple"), value(1, "options.minimap.colorPickerMode.full")),

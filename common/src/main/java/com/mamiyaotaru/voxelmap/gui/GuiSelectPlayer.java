@@ -39,6 +39,10 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
 
     @Override
     public void init() {
+        String messageValue = message == null ? "" : message.getValue();
+        String filterValue = filter == null ? "" : filter.getValue();
+        boolean messageFocused = message != null && message.isFocused();
+
         screenTitle = sharingWaypoint ? SHARE_WAYPOINT : SHARE_COORDINATES;
 
         playerList = new GuiListPlayers(this);
@@ -46,16 +50,20 @@ public class GuiSelectPlayer extends GuiScreenMinimap implements BooleanConsumer
         int messageStringWidth = getFont().width(SHARE_MESSAGE);
         message = new EditBox(getFont(), getWidth() / 2 - 153 + messageStringWidth + 5, 34, 305 - messageStringWidth - 5, 20, Component.empty());
         message.setMaxLength(78);
+        message.setValue(messageValue);
 
         int filterStringWidth = getFont().width(FILTER_MESSAGE);
         filter = new EditBox(getFont(), getWidth() / 2 - 153 + filterStringWidth + 5, getHeight() - 54, 305 - filterStringWidth - 5, 20, Component.empty());
         filter.setMaxLength(35);
         filter.setResponder(this::filterUpdated);
+        filter.setValue(filterValue);
 
         addRenderableWidget(playerList);
         addRenderableWidget(message);
         addRenderableWidget(filter);
-        setFocused(filter);
+        EditBox fieldToFocus = messageFocused ? message : filter;
+        setFocused(fieldToFocus);
+        fieldToFocus.setFocused(true);
         addRenderableWidget(new Button.Builder(Component.translatable("gui.cancel"), button -> onClose()).bounds(getWidth() / 2 - 100, getHeight() - 28, 200, 20).build());
     }
 

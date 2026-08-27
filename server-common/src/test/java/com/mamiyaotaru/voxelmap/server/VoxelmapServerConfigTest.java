@@ -29,7 +29,31 @@ class VoxelmapServerConfigTest {
         assertTrue(settings.get("deathWaypointAllowed").getAsBoolean());
         assertTrue(settings.has("teleportCommand"));
         assertTrue(settings.get("teleportCommand").isJsonNull());
+        assertTrue(settings.has("serverIdentity"));
+        assertTrue(settings.get("serverIdentity").isJsonNull());
         assertFalse(settings.has("worldNameSuffix"));
+    }
+
+    @Test
+    void serverIdentityIsSentToClients() {
+        VoxelmapServerConfig config = parseConfig("""
+                {
+                  "defaultConfig": {
+                    "serverIdentity": "example-network"
+                  },
+                  "worldOverrides": [
+                    {
+                      "worlds": ["minecraft:the_nether"],
+                      "settings": {
+                        "serverIdentity": "example-nether"
+                      }
+                    }
+                  ]
+                }
+                """);
+
+        assertEquals("example-network", config.createClientSettingsJson("minecraft:overworld").get("serverIdentity").getAsString());
+        assertEquals("example-nether", config.createClientSettingsJson("minecraft:the_nether").get("serverIdentity").getAsString());
     }
 
     @Test

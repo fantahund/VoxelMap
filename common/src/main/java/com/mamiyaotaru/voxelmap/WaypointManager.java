@@ -1,7 +1,9 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
+import com.mamiyaotaru.voxelmap.persistent.VoxelMapMigration;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -69,6 +71,7 @@ public class WaypointManager implements IReloadListener {
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint;
     private String worldName = "";
+    private String serverWorldIdentity = "";
     private String currentSubWorldName = "";
     private String currentSubworldDescriptor = "";
     private String currentSubworldDescriptorNoCodes = "";
@@ -179,11 +182,7 @@ public class WaypointManager implements IReloadListener {
             if (VoxelConstants.getMinecraft().hasSingleplayerServer()) {
                 mapName = this.getMapName();
             } else {
-                mapName = this.getServerName();
-                if (mapName != null) {
-                    mapName = mapName.toLowerCase();
-                    mapName = VoxelMapDataConfig.getInstance().resolveCanonical(mapName);
-                }
+                mapName = this.resolveServerWorldName();
             }
 
             if (!this.worldName.equals(mapName) && mapName != null && !mapName.isEmpty()) {
@@ -200,6 +199,94 @@ public class WaypointManager implements IReloadListener {
             this.setSubWorldDescriptor("");
         }
 
+    }
+
+    private String resolveServerWorldName() {
+        return this.serverWorldIdentity.isEmpty() ? this.resolveServerAddressName() : this.serverWorldIdentity;
+    }
+
+    private String resolveServerAddressName() {
+        String mapName = this.getServerName();
+        if (mapName == null) {
+            return null;
+        }
+
+        return VoxelMapDataConfig.getInstance().resolveCanonical(mapName.toLowerCase());
+    }
+
+    private void adoptExistingData(String identity) {
+        String address = this.getServerName();
+        if (address == null || address.isEmpty() || address.equalsIgnoreCase(identity)) {
+            return;
+        }
+
+        address = address.toLowerCase();
+        VoxelMapDataConfig config = VoxelMapDataConfig.getInstance();
+        if (config.hasMapping(address)) {
+            return;
+        }
+
+        ThreadManager.flushSaveQueue();
+        if (VoxelMapMigration.adoptServerData(address, identity)) {
+            VoxelConstants.getLogger().info("Adopted existing VoxelMap data of " + address + " for server provided name " + identity);
+        }
+
+        config.addAlias(identity, address);
+    }
+
+    private static String normalizeIdentity(String identity) {
+        return identity == null ? "" : identity.trim();
+    }
+
+    public String getServerWorldIdentity() {
+        return this.serverWorldIdentity;
+    }
+
+    public synchronized void clearServerWorldIdentity() {
+        this.serverWorldIdentity = "";
+    }
+
+    public synchronized boolean willChangeWorldIdentity(String identity, Level world) {
+        String normalized = normalizeIdentity(identity);
+        if (world == null || normalized.equals(this.serverWorldIdentity) || VoxelConstants.getMinecraft().hasSingleplayerServer()) {
+            return false;
+        }
+
+        String mapName = normalized.isEmpty() ? this.resolveServerAddressName() : normalized;
+        return mapName != null && !mapName.isEmpty() && !mapName.equals(this.worldName);
+    }
+
+    public synchronized boolean setServerWorldIdentity(String identity, Level world) {
+        boolean switching = this.willChangeWorldIdentity(identity, world);
+        this.serverWorldIdentity = normalizeIdentity(identity);
+        if (!switching) {
+            return false;
+        }
+
+        String mapName = this.resolveServerWorldName();
+        VoxelConstants.getLogger().info("Switching VoxelMap data to server provided name: " + mapName);
+        if (this.loaded) {
+            this.saveWaypoints();
+        }
+
+        this.adoptExistingData(mapName);
+
+        String subWorldName = this.currentSubWorldName;
+        boolean autoSubWorldName = this.gotAutoSubworldName;
+        this.currentDimension = null;
+        this.worldName = mapName;
+        VoxelConstants.getVoxelMapInstance().getDataStore().resolveForCurrentWorld();
+        VoxelConstants.getVoxelMapInstance().getDimensionManager().populateDimensions(world);
+        this.loadWaypoints();
+        VoxelConstants.getVoxelMapInstance().getDimensionManager().enteredWorld(world);
+        this.enteredDimension(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world));
+        if (subWorldName.isEmpty()) {
+            this.setSubWorldDescriptor("");
+        } else {
+            this.setSubworldName(subWorldName, autoSubWorldName);
+        }
+
+        return true;
     }
 
     public String getMapName() {

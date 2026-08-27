@@ -288,6 +288,20 @@ public class VoxelMap implements PreparableReloadListener {
         });
     }
 
+    public synchronized void setServerWorldIdentity(String identity) {
+        runOnWorldSet(() -> {
+            if (waypointManager.willChangeWorldIdentity(identity, world)) {
+                persistentMap.purgeCachedRegions();
+            }
+
+            if (waypointManager.setServerWorldIdentity(identity, world)) {
+                worldName = waypointManager.getCurrentWorldName();
+                persistentMap.newWorld(world);
+                map.newWorld(world);
+            }
+        });
+    }
+
     public String getWorldSeed() {
         if (!initialized) return "";
         return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(Level.OVERWORLD).map(value -> Long.toString(((ServerLevel) value).getSeed())).orElse("") : waypointManager.getWorldSeed();
@@ -308,6 +322,10 @@ public class VoxelMap implements PreparableReloadListener {
 
     public void clearServerSettings() {
         execute(() -> {
+            if (waypointManager != null) {
+                waypointManager.clearServerWorldIdentity();
+            }
+
             radarOptions.radarAllowed = true;
             radarOptions.radarPlayersAllowed = true;
             radarOptions.radarMobsAllowed = true;
