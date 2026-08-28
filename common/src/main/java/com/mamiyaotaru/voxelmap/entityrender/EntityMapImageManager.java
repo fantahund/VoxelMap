@@ -17,33 +17,32 @@ import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.rendering.EmptySubmitNodeCollector;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.animal.camel.CamelModel;
 import net.minecraft.client.model.animal.fish.CodModel;
 import net.minecraft.client.model.animal.fish.SalmonModel;
 import net.minecraft.client.model.animal.fish.TropicalFishLargeModel;
 import net.minecraft.client.model.animal.fish.TropicalFishSmallModel;
 import net.minecraft.client.model.animal.ghast.HappyGhastModel;
-import net.minecraft.client.model.animal.llama.LlamaModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.model.monster.ghast.GhastModel;
 import net.minecraft.client.model.monster.slime.MagmaCubeModel;
 import net.minecraft.client.model.monster.slime.SlimeModel;
 import net.minecraft.client.model.monster.wither.WitherBossModel;
-import net.minecraft.client.model.monster.zombie.ZombieVillagerModel;
-import net.minecraft.client.model.npc.VillagerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -82,7 +81,9 @@ public class EntityMapImageManager {
     private final Class<?>[] fullRenderModels;
     private final HashMap<EntityType<?>, Properties> customMobProperties = new HashMap<>();
     private final HashSet<EntityType<?>> failedPreviewIconTypes = new HashSet<>();
+    private final Set<EntityType<?>> warnedEmptyIconTypes = ConcurrentHashMap.newKeySet();
     private final AtomicInteger previewEntityIds = new AtomicInteger(-1);
+    private final EmfAnimationCompat emfAnimations = EmfAnimationCompat.INSTANCE;
 
     private int imageCreationRequests;
     private int fulfilledImageCreationRequests;
@@ -115,6 +116,7 @@ public class EntityMapImageManager {
         variantDataFactories.clear();
         customMobProperties.clear();
         failedPreviewIconTypes.clear();
+        warnedEmptyIconTypes.clear();
         previewEntityIds.set(-1);
 
         addVariantDataFactory(new DefaultEntityVariantDataFactory(EntityTypes.BOGGED, Identifier.withDefaultNamespace("textures/entity/skeleton/bogged_overlay.png"), null, null));
@@ -299,31 +301,22 @@ public class EntityMapImageManager {
         Sprite sprite = textureAtlas.registerEmptyIcon(variant);
         Properties iconConfig = getCustomMobProperties(entity.getType());
 
-        AbstractEntityRenderer renderer = getEntityRenderer();
-        renderer.setup(iconConfig);
-        renderer.enableCull(false);
-
         EntityRenderState renderState = ((EntityRenderer) baseRenderer).createRenderState(entity, 0.5F);
-        ((EntityRenderer) baseRenderer).submit(renderState, emptyPoseStack, emptySubmitNodeCollector, minecraft.gameRenderer.gameRenderState().levelRenderState.cameraRenderState);
-
         EntityModel model = getEntityModel(baseRenderer);
         if (model == null) {
             return null;
         }
-        model.resetPose();
 
-        for (ModelPart part : getPartToRender(model)) {
-            part.xRot = 0;
-            part.yRot = 0;
-            part.zRot = 0;
-
-            renderer.addMesh(part);
+        PreparedRendering preparedRendering;
+        RadarModelPose originalPose = RadarModelPose.capture(model.root());
+        try {
+            submitEntity(baseRenderer, renderState);
+            preparedRendering = prepareRendering(model);
+        } finally {
+            originalPose.apply();
         }
 
-        if (baseRenderer instanceof SlimeRenderer slimeRenderer) {
-            SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.getFirst();
-            renderer.addMesh(slimeOuter.model.root());
-        }
+        SlimeOverlay slimeOverlay = prepareSlimeOverlay(baseRenderer);
 
         AbstractEntityRenderer.TextureSet textureSet = new AbstractEntityRenderer.TextureSet(
                 variant.getPrimaryTexture(), getPrimaryTextureColor(entity),
@@ -333,11 +326,131 @@ public class EntityMapImageManager {
         );
 
         float iconScale = Float.parseFloat(iconConfig.getProperty("scale", "1.0"));
-        renderer.render(textureSet, (output) -> {
-            postProcessRenderedMobImage(entity, sprite, model, output, addBorder, iconScale);
-        });
+        renderMobAttempt(entity, sprite, baseRenderer, renderState, model,
+                preparedRendering.renderAttempts(), preparedRendering.preparedPoses(),
+                slimeOverlay, textureSet, iconConfig, addBorder, iconScale, 0);
 
         return sprite;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void submitEntity(EntityRenderer baseRenderer, EntityRenderState renderState) {
+        baseRenderer.submit(renderState, emptyPoseStack, emptySubmitNodeCollector,
+                minecraft.gameRenderer.gameRenderState().levelRenderState.cameraRenderState);
+    }
+
+    private PreparedRendering prepareRendering(EntityModel<?> model) {
+        RadarModelPose submittedPose = RadarModelPose.capture(model.root());
+        RadarModelPose initializedDefaultPose = null;
+        boolean neutralize = false;
+
+        try {
+            EmfAnimationCompat.CustomizationState customizationState = emfAnimations.customizationState(model);
+            RadarModelPose assembledPose;
+            if (customizationState == EmfAnimationCompat.CustomizationState.CUSTOMIZED
+                    || customizationState == EmfAnimationCompat.CustomizationState.UNKNOWN) {
+                boolean primed = emfAnimations.primeAnimations(model);
+                neutralize = primed && emfAnimations.animationState(model) == EmfAnimationCompat.AnimationState.ANIMATED;
+                assembledPose = RadarModelPose.capture(model.root());
+
+                // Lazy EMF initialization may add custom parts. Restore new parts to their JEM defaults later,
+                // while submittedPose restores all parts that already existed before initialization.
+                RadarModelPose.resetToInitial(model.root());
+                initializedDefaultPose = RadarModelPose.capture(model.root());
+                assembledPose.apply();
+            } else {
+                RadarModelPose.resetToInitial(model.root());
+                assembledPose = RadarModelPose.capture(model.root());
+                initializedDefaultPose = assembledPose;
+            }
+
+            // EMF swaps the vanilla wrapper contents lazily, so candidates must be resolved after priming.
+            List<RenderAttempt> renderAttempts = getRenderAttempts(model);
+            ArrayList<RadarModelPose> poses = new ArrayList<>(renderAttempts.size());
+            for (RenderAttempt attempt : renderAttempts) {
+                assembledPose.apply();
+                if (neutralize) {
+                    RadarModelPose.normalizeOrientations(attempt.selections());
+                }
+                poses.add(RadarModelPose.capture(model.root()));
+            }
+
+            return new PreparedRendering(renderAttempts, new PreparedPoses(poses, neutralize));
+        } finally {
+            if (initializedDefaultPose != null) {
+                initializedDefaultPose.apply();
+            }
+            submittedPose.apply();
+        }
+    }
+
+    private SlimeOverlay prepareSlimeOverlay(EntityRenderer<?, ?> baseRenderer) {
+        if (!(baseRenderer instanceof SlimeRenderer slimeRenderer)) {
+            return null;
+        }
+
+        SlimeOuterLayer slimeOuter = (SlimeOuterLayer) slimeRenderer.layers.getFirst();
+        ModelPart root = slimeOuter.model.root();
+        RadarModelPose originalPose = RadarModelPose.capture(root);
+        try {
+            slimeOuter.model.resetPose();
+            return new SlimeOverlay(root, RadarModelPose.capture(root));
+        } finally {
+            originalPose.apply();
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private void renderMobAttempt(Entity entity, Sprite sprite, EntityRenderer baseRenderer, EntityRenderState renderState,
+                                  EntityModel<?> model, List<RenderAttempt> renderAttempts, PreparedPoses preparedPoses,
+                                  SlimeOverlay slimeOverlay, AbstractEntityRenderer.TextureSet textureSet, Properties iconConfig,
+                                  boolean addBorder, float iconScale, int attemptIndex) {
+        RenderAttempt attempt = renderAttempts.get(attemptIndex);
+        AbstractEntityRenderer renderer = getEntityRenderer();
+        RadarModelPose currentPose = RadarModelPose.capture(model.root());
+        RadarModelPose currentSlimePose = slimeOverlay == null ? null : RadarModelPose.capture(slimeOverlay.root());
+
+        try {
+            submitEntity(baseRenderer, renderState);
+            preparedPoses.poses().get(attemptIndex).apply();
+            if (slimeOverlay != null) {
+                slimeOverlay.preparedPose().apply();
+            }
+
+            renderer.setup(iconConfig);
+            renderer.enableCull(false);
+            for (RadarModelPartResolver.Selection selection : attempt.selections()) {
+                renderer.addMesh(selection.part(), selection.ancestors(), selection.includeChildren());
+            }
+            if (slimeOverlay != null) {
+                renderer.addMesh(slimeOverlay.root());
+            }
+
+            try (EmfAnimationCompat.PauseScope ignored = emfAnimations.pause(entity, preparedPoses.pauseEmf())) {
+                renderer.render(textureSet, output -> {
+                    RadarIconFallback.Decision fallbackDecision = RadarIconFallback.decide(hasVisiblePixel(output), attemptIndex, renderAttempts.size());
+                    if (fallbackDecision == RadarIconFallback.Decision.TRY_NEXT) {
+                        renderMobAttempt(entity, sprite, baseRenderer, renderState, model, renderAttempts, preparedPoses,
+                                slimeOverlay, textureSet, iconConfig, addBorder, iconScale, attemptIndex + 1);
+                        return;
+                    }
+
+                    if (RadarIconFallback.shouldWarn(fallbackDecision, warnedEmptyIconTypes, entity.getType())) {
+                        String attemptedPaths = renderAttempts.stream().map(RenderAttempt::description).reduce((left, right) -> left + " -> " + right).orElse("root");
+                        VoxelConstants.getLogger().warn(
+                                "Rendered an empty radar icon for mob type {} using model {} after model part fallbacks [{}]",
+                                BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()), model.getClass().getName(), attemptedPaths);
+                    }
+
+                    postProcessRenderedMobImage(entity, sprite, output, addBorder, iconScale);
+                });
+            }
+        } finally {
+            currentPose.apply();
+            if (currentSlimePose != null) {
+                currentSlimePose.apply();
+            }
+        }
     }
 
     private int getPrimaryTextureColor(Entity entity) {
@@ -397,31 +510,9 @@ public class EntityMapImageManager {
         return scale;
     }
 
-    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, @SuppressWarnings("rawtypes") EntityModel model, BufferedImage image2, boolean addBorder, float scale) {
+    private void postProcessRenderedMobImage(Entity entity, Sprite sprite, BufferedImage image2, boolean addBorder, float scale) {
         Util.backgroundExecutor().execute(() -> {
             BufferedImage image = image2;
-
-            switch (model) {
-                case CamelModel camelModel -> {
-                    Graphics2D g = image.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0, 192, image.getWidth(), image.getHeight());
-                    g.dispose();
-                }
-                case LlamaModel llamaModel -> {
-                    Graphics2D g = image.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0, 248, image.getWidth(), image.getHeight());
-                    g.dispose();
-                }
-                case HappyGhastModel happyGhastModel -> {
-                    Graphics2D g = image.createGraphics();
-                    g.setComposite(AlphaComposite.Clear);
-                    g.fillRect(0,  352, image.getWidth(), image.getHeight());
-                    g.dispose();
-                }
-                default -> {}
-            }
 
             float uniqueMobScale = getUniqueMobScale(entity);
             image = ImageUtils.trim(image);
@@ -430,6 +521,18 @@ public class EntityMapImageManager {
 
             addToCreationTask(sprite, image, entity.getType().getDescriptionId());
         });
+    }
+
+    private static boolean hasVisiblePixel(BufferedImage image) {
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                if ((image.getRGB(x, y) >>> 24) != 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void addArmorHandler(EntityType<?> type, AbstractArmorHandler handler) {
@@ -514,68 +617,87 @@ public class EntityMapImageManager {
         });
     }
 
-    private ModelPart[] getPartToRender(EntityModel<?> model) {
+    private List<RenderAttempt> getRenderAttempts(EntityModel<?> model) {
+        ModelPart root = model.root();
+        ArrayList<RenderAttempt> attempts = new ArrayList<>();
+
         // full-model rendered mobs
         for (Class<?> clazz : fullRenderModels) {
             if (clazz.isInstance(model)) {
-                return new ModelPart[] { model.root() };
+                return List.of(new RenderAttempt(List.of(RadarModelPartResolver.root(root))));
             }
+        }
+
+        // The face is on the main body cube. Long animated tentacles make the icon excessively large.
+        if (model instanceof GhastModel || model instanceof HappyGhastModel) {
+            RadarModelPartResolver.find(root, "body")
+                    .flatMap(RadarModelPartResolver::largestDirectGeometry)
+                    .ifPresent(selection -> attempts.add(new RenderAttempt(List.of(selection))));
+            attempts.add(new RenderAttempt(List.of(RadarModelPartResolver.root(root))));
+            return List.copyOf(attempts);
         }
 
         // wither
-        if (model instanceof WitherBossModel witherModel) {
-            return new ModelPart[] { witherModel.root().getChild("left_head"), witherModel.root().getChild("center_head"), witherModel.root().getChild("right_head") };
-        }
-
-        // villager
-        if (model instanceof VillagerModel villagerModel) {
-            return new ModelPart[] { villagerModel.root().getChild("head"), villagerModel.root().getChild("head").getChild("hat") };
-        }
-        if (model instanceof ZombieVillagerModel<?> zombieVillagerModel) {
-            return new ModelPart[] { zombieVillagerModel.root().getChild("head"), zombieVillagerModel.root().getChild("head").getChild("hat") };
-        }
-
-        // horses
-        for (ModelPart part : model.allParts()) {
-            if (part.hasChild("head_parts")) {
-                return new ModelPart[] { part.getChild("head_parts") };
+        if (model instanceof WitherBossModel) {
+            ArrayList<RadarModelPartResolver.Selection> heads = new ArrayList<>();
+            for (String name : List.of("left_head", "center_head", "right_head")) {
+                RadarModelPartResolver.find(root, name).ifPresent(heads::add);
+            }
+            if (!heads.isEmpty()) {
+                attempts.add(new RenderAttempt(heads));
+                attempts.add(new RenderAttempt(List.of(RadarModelPartResolver.root(root))));
+                return List.copyOf(attempts);
             }
         }
 
-        // most mobs
-        for (ModelPart part : model.allParts()) {
-            if (part.hasChild("head")) {
-                if (part.hasChild("body0")) {
-                    // spider
-                    return new ModelPart[] { part.getChild("head"), part.getChild("body0") };
-                }
-                return new ModelPart[] { part.getChild("head") };
+        List<RadarModelPartResolver.Selection> headCandidates = RadarModelPartResolver.resolveHeadCandidates(root);
+        for (RadarModelPartResolver.Selection selection : headCandidates) {
+            Optional<RadarModelPartResolver.Selection> spiderBody = selection.name().equalsIgnoreCase("head")
+                    ? RadarModelPartResolver.findSibling(selection, "body0")
+                    : Optional.empty();
+            attempts.add(new RenderAttempt(spiderBody
+                    .map(body -> List.of(selection, body))
+                    .orElseGet(() -> List.of(selection))));
+        }
+
+        if (attempts.isEmpty()) {
+            RadarModelPartResolver.find(root, "body").ifPresent(selection -> attempts.add(new RenderAttempt(List.of(selection))));
+            RadarModelPartResolver.find(root, "cube").ifPresent(selection -> attempts.add(new RenderAttempt(List.of(selection))));
+
+            Optional<RadarModelPartResolver.Selection> segment0 = RadarModelPartResolver.find(root, "segment0");
+            Optional<RadarModelPartResolver.Selection> segment1 = RadarModelPartResolver.find(root, "segment1");
+            if (segment0.isPresent() && segment1.isPresent()) {
+                attempts.add(new RenderAttempt(List.of(segment0.get(), segment1.get())));
             }
         }
 
-        // bee, ghast
-        for (ModelPart part : model.allParts()) {
-            if (part.hasChild("body")) {
-                return new ModelPart[] { part.getChild("body") };
-            }
+        attempts.add(new RenderAttempt(List.of(RadarModelPartResolver.root(root))));
+        return List.copyOf(attempts);
+    }
+
+    private record RenderAttempt(List<RadarModelPartResolver.Selection> selections) {
+        RenderAttempt {
+            selections = List.copyOf(selections);
         }
 
-        // bee, ghast, slime
-        for (ModelPart part : model.allParts()) {
-            if (part.hasChild("cube")) {
-                return new ModelPart[] { part.getChild("cube") };
-            }
+        String description() {
+            return selections.stream().map(RadarModelPartResolver.Selection::path).reduce((left, right) -> left + ", " + right).orElse("root");
         }
+    }
 
-        // silverfish, endermite
-        for (ModelPart part : model.allParts()) {
-            if (part.hasChild("segment0")) {
-                return new ModelPart[] { part.getChild("segment0"), part.getChild("segment1") };
-            }
+    private record PreparedPoses(List<RadarModelPose> poses, boolean pauseEmf) {
+        PreparedPoses {
+            poses = List.copyOf(poses);
         }
+    }
 
-        // fallback
-        return new ModelPart[] { model.root() };
+    private record PreparedRendering(List<RenderAttempt> renderAttempts, PreparedPoses preparedPoses) {
+        PreparedRendering {
+            renderAttempts = List.copyOf(renderAttempts);
+        }
+    }
+
+    private record SlimeOverlay(ModelPart root, RadarModelPose preparedPose) {
     }
 
     public void onRenderTick(Matrix4fStack matrixStack) {

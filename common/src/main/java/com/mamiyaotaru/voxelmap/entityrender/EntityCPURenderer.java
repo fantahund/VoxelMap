@@ -38,7 +38,7 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
 
         NativeImage output = new NativeImage(TEXTURE_SIZE, TEXTURE_SIZE, true);
 
-        for (ModelPart modelPart : modelParts) {
+        for (ModelPartRenderTask modelPart : modelParts) {
             if (primaryTexture != null) {
                 drawModelPart(output, modelPart, primaryTexture, textureSet.primaryColor());
             }
@@ -92,13 +92,13 @@ public class EntityCPURenderer extends AbstractEntityRenderer {
         return null;
     }
 
-    private void drawModelPart(NativeImage target, ModelPart modelPart, NativeImage texture, int color) {
+    private void drawModelPart(NativeImage target, ModelPartRenderTask modelPart, NativeImage texture, int color) {
         ArrayList<RenderPolygon> polygons = new ArrayList<>();
 
         float centerX = target.getWidth() / 2.0F;
         float centerY = target.getHeight() / 2.0F;
 
-        modelPart.visit(poseStack, (pose, id, i, cube) -> {
+        visitModelPart(modelPart, (pose, id, i, cube) -> {
             for (ModelPart.Polygon polygon : cube.polygons) {
                 polygons.add(new RenderPolygon(polygon, pose, centerX, centerY, 0.0F, 4.0F));
             }

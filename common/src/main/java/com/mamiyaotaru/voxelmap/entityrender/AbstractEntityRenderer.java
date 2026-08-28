@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class AbstractEntityRenderer {
     protected final Minecraft minecraft = Minecraft.getInstance();
-    protected final ArrayList<ModelPart> modelParts = new ArrayList<>();
+    protected final ArrayList<ModelPartRenderTask> modelParts = new ArrayList<>();
     protected final ArrayList<BlockModelSet> blockModels = new ArrayList<>();
     protected final PoseStack poseStack = new PoseStack();
     protected final RandomSource random = RandomSource.create();
@@ -49,7 +49,15 @@ public abstract class AbstractEntityRenderer {
     }
 
     public void addMesh(ModelPart modelPart) {
-        modelParts.add(modelPart);
+        addMesh(modelPart, List.of());
+    }
+
+    public void addMesh(ModelPart modelPart, List<ModelPart> ancestors) {
+        addMesh(modelPart, ancestors, true);
+    }
+
+    public void addMesh(ModelPart modelPart, List<ModelPart> ancestors, boolean includeChildren) {
+        modelParts.add(new ModelPartRenderTask(modelPart, ancestors, includeChildren));
     }
 
     public void addBlock(BlockState blockState) {
@@ -70,11 +78,54 @@ public abstract class AbstractEntityRenderer {
 
     protected abstract void setupMatrix();
 
+    protected void visitModelPart(ModelPartRenderTask renderTask, ModelPart.Visitor visitor) {
+        poseStack.pushPose();
+        try {
+            for (ModelPart ancestor : renderTask.ancestors()) {
+                ancestor.translateAndRotate(poseStack);
+            }
+            visitModelPart(renderTask.modelPart(), "", renderTask.includeChildren(), visitor);
+        } finally {
+            poseStack.popPose();
+        }
+    }
+
+    private void visitModelPart(ModelPart modelPart, String path, boolean includeChildren, ModelPart.Visitor visitor) {
+        if (!modelPart.visible || modelPart.cubes.isEmpty() && modelPart.children.isEmpty()) {
+            return;
+        }
+
+        poseStack.pushPose();
+        try {
+            modelPart.translateAndRotate(poseStack);
+            PoseStack.Pose pose = poseStack.last();
+
+            if (!modelPart.skipDraw) {
+                for (int i = 0; i < modelPart.cubes.size(); i++) {
+                    visitor.visit(pose, path, i, modelPart.cubes.get(i));
+                }
+            }
+
+            if (includeChildren) {
+                String childPath = path + "/";
+                modelPart.children.forEach((name, child) -> visitModelPart(child, childPath + name, true, visitor));
+            }
+        } finally {
+            poseStack.popPose();
+        }
+    }
+
     public abstract void render(TextureSet textureSet, Consumer<BufferedImage> resultConsumer);
 
     public record TextureSet(Identifier primaryTexture, int primaryColor, Identifier secondaryTexture, int secondaryColor, Identifier tertiaryTexture, int tertiaryColor, Identifier quaternaryTexture, int quaternaryColor) {
     }
 
     public record BlockModelSet(BlockState blockState, List<BlockStateModelPart> modelParts) {
+    }
+
+    protected record ModelPartRenderTask(ModelPart modelPart, List<ModelPart> ancestors, boolean includeChildren) {
+        public ModelPartRenderTask {
+            ancestors = List.copyOf(ancestors);
+        }
     }
 }

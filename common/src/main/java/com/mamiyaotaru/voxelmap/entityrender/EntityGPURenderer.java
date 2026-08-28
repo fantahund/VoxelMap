@@ -88,12 +88,14 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
         GpuBufferSlice secondaryTransforms = dynamicTransformsWithColor(textureSet.secondaryColor());
         GpuBufferSlice tertiaryTransforms = dynamicTransformsWithColor(textureSet.tertiaryColor());
         GpuBufferSlice quaternaryTransforms = dynamicTransformsWithColor(textureSet.quaternaryColor());
+        boolean renderedMesh = false;
 
         try (ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(4096)) {
             BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, PrimitiveTopology.QUADS, renderPipeline.getVertexFormatBinding(0));
 
-            for (ModelPart modelPart : modelParts) {
-                modelPart.render(poseStack, bufferBuilder, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+            for (ModelPartRenderTask modelPart : modelParts) {
+                visitModelPart(modelPart, (pose, path, cubeIndex, cube) ->
+                        cube.compile(pose, bufferBuilder, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF));
             }
 
             for (BlockModelSet blockModel : blockModels) {
@@ -103,67 +105,74 @@ public class EntityGPURenderer extends AbstractEntityRenderer {
             }
 
             try (MeshData meshData = bufferBuilder.build()) {
-            // no mesh? might happen with some mods
-            if (meshData == null) return;
-
-            GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Entity Icon Vertex Buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
-            GpuBuffer indexBuffer;
-            boolean closeIndexBuffer = false;
-            IndexType indexType;
-            if (meshData.indexBuffer() == null) {
-                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
-                indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
-                indexType = autoStorageIndexBuffer.type();
-            } else {
-                indexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Entity Icon Index Buffer", GpuBuffer.USAGE_INDEX, meshData.indexBuffer());
-                indexType = meshData.drawState().indexType();
-                closeIndexBuffer = true;
-            }
-
-            CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
-            commandEncoder.clearColorAndDepthTextures(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), renderTarget.getDepthTexture(), 0.0);
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
-                renderPass.setPipeline(renderPipeline);
-                RenderSystem.bindDefaultUniforms(renderPass);
-                renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-                renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
-                renderPass.setVertexBuffer(0, vertexBuffer.slice());
-                renderPass.setIndexBuffer(indexBuffer, indexType);
-                if (primaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", primaryTransforms);
-                    renderPass.bindTexture("Sampler0", primaryTexture.getTextureView(), primaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
+                if (meshData != null) {
+                    renderedMesh = true;
+                    drawMesh(meshData, renderPipeline,
+                            primaryTexture, primaryTransforms, secondaryTexture, secondaryTransforms,
+                            tertiaryTexture, tertiaryTransforms, quaternaryTexture, quaternaryTransforms);
                 }
-                if (secondaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", secondaryTransforms);
-                    renderPass.bindTexture("Sampler0", secondaryTexture.getTextureView(), secondaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
-                }
-                if (tertiaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", tertiaryTransforms);
-                    renderPass.bindTexture("Sampler0", tertiaryTexture.getTextureView(), tertiaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
-                }
-                if (quaternaryTexture != null) {
-                    renderPass.setUniform("DynamicTransforms", quaternaryTransforms);
-                    renderPass.bindTexture("Sampler0", quaternaryTexture.getTextureView(), quaternaryTexture.getSampler());
-                    renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
-                }
-            } finally {
-                vertexBuffer.close();
-                if (closeIndexBuffer) {
-                    indexBuffer.close();
-                }
-            }
             }
         } finally {
             RenderSystem.getModelViewStack().popMatrix();
             RenderSystem.setProjectionMatrix(originalProjectionMatrix, originalProjectionType);
         }
 
+        if (!renderedMesh) {
+            resultConsumer.accept(new BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE, BufferedImage.TYPE_4BYTE_ABGR));
+            return;
+        }
+
         GLUtils.readTextureContentsToBufferedImage(renderTarget.getColorTexture(), (output) -> {
             resultConsumer.accept(ImageUtils.flipHorizontal(output));
         });
+    }
+
+    private void drawMesh(MeshData meshData, RenderPipeline renderPipeline,
+                          AbstractTexture primaryTexture, GpuBufferSlice primaryTransforms,
+                          AbstractTexture secondaryTexture, GpuBufferSlice secondaryTransforms,
+                          AbstractTexture tertiaryTexture, GpuBufferSlice tertiaryTransforms,
+                          AbstractTexture quaternaryTexture, GpuBufferSlice quaternaryTransforms) {
+        GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Entity Icon Vertex Buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
+        GpuBuffer indexBuffer;
+        boolean closeIndexBuffer = false;
+        IndexType indexType;
+        if (meshData.indexBuffer() == null) {
+            RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
+            indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
+            indexType = autoStorageIndexBuffer.type();
+        } else {
+            indexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Entity Icon Index Buffer", GpuBuffer.USAGE_INDEX, meshData.indexBuffer());
+            indexType = meshData.drawState().indexType();
+            closeIndexBuffer = true;
+        }
+
+        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+        commandEncoder.clearColorAndDepthTextures(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), renderTarget.getDepthTexture(), 0.0);
+        try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "VoxelMap entity image renderer", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
+            renderPass.setPipeline(renderPipeline);
+            RenderSystem.bindDefaultUniforms(renderPass);
+            renderPass.bindTexture("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+            renderPass.bindTexture("Sampler2", minecraft.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+            renderPass.setVertexBuffer(0, vertexBuffer.slice());
+            renderPass.setIndexBuffer(indexBuffer, indexType);
+            drawTexture(renderPass, meshData, primaryTexture, primaryTransforms);
+            drawTexture(renderPass, meshData, secondaryTexture, secondaryTransforms);
+            drawTexture(renderPass, meshData, tertiaryTexture, tertiaryTransforms);
+            drawTexture(renderPass, meshData, quaternaryTexture, quaternaryTransforms);
+        } finally {
+            vertexBuffer.close();
+            if (closeIndexBuffer) {
+                indexBuffer.close();
+            }
+        }
+    }
+
+    private void drawTexture(RenderPass renderPass, MeshData meshData, AbstractTexture texture, GpuBufferSlice transforms) {
+        if (texture != null) {
+            renderPass.setUniform("DynamicTransforms", transforms);
+            renderPass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
+            renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
+        }
     }
 
     private void drawBlockModelPart(BlockStateModelPart modelPart, PoseStack poseStack, VertexConsumer vertexConsumer, int light, int overlay, int color) {
