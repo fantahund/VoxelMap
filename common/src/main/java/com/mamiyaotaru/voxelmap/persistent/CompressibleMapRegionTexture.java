@@ -78,27 +78,33 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
             return;
         }
 
-        if (pixels == null) {
-            this.decompress();
-        }
-
-        if (texture == null) {
-            GpuDevice gpuDevice = RenderSystem.getDevice();
-            this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, MIP_LEVELS + 1);
-            this.textureView = gpuDevice.createTextureView(this.texture, 0, MIP_LEVELS + 1);
-
-            Minecraft.getInstance().getTextureManager().register(location, this);
-        }
-
-        if (pixelsMipmapped == null) {
-            RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels, 0, 0, 0, 0);
-        } else {
-            for (int i = 0; i < pixelsMipmapped.length; i++) {
-                RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixelsMipmapped[i], i, 0, 0, 0);
+        long startedNanos = PersistentMapProfiler.startTimer();
+        boolean textureCreated = texture == null;
+        try {
+            if (pixels == null) {
+                this.decompress();
             }
-        }
 
-        this.compress();
+            if (texture == null) {
+                GpuDevice gpuDevice = RenderSystem.getDevice();
+                this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, MIP_LEVELS + 1);
+                this.textureView = gpuDevice.createTextureView(this.texture, 0, MIP_LEVELS + 1);
+
+                Minecraft.getInstance().getTextureManager().register(location, this);
+            }
+
+            if (pixelsMipmapped == null) {
+                RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels, 0, 0, 0, 0);
+            } else {
+                for (int i = 0; i < pixelsMipmapped.length; i++) {
+                    RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixelsMipmapped[i], i, 0, 0, 0);
+                }
+            }
+
+            this.compress();
+        } finally {
+            PersistentMapProfiler.recordTextureUpload(startedNanos, textureCreated);
+        }
     }
 
     public synchronized void setRGB(int x, int y, int color) {

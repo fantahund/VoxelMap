@@ -443,10 +443,13 @@ public class CompressibleMapData extends AbstractMapData {
         }
 
         if (this.isCompressed) {
+            long startedNanos = PersistentMapProfiler.startTimer();
             try {
                 this.data = CompressionUtils.decompress(this.data);
                 this.isCompressed = false;
             } catch (DataFormatException ignored) {
+            } finally {
+                PersistentMapProfiler.recordDataDecompression(startedNanos, this.getExpectedDataLength(DATA_VERSION));
             }
         }
     }

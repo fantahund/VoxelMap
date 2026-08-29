@@ -18,13 +18,17 @@ public final class ThreadManager {
     private ThreadManager() {}
 
     public static void emptyQueue() {
+        int cancellations = 0;
         for (Runnable runnable : queue) {
             if (runnable instanceof FutureTask) {
-                ((FutureTask<?>) runnable).cancel(false);
+                if (((FutureTask<?>) runnable).cancel(false)) {
+                    ++cancellations;
+                }
             }
         }
 
         executorService.purge();
+        PersistentMapProfiler.recordQueueCancellations(cancellations);
     }
 
     public static void flushSaveQueue() {

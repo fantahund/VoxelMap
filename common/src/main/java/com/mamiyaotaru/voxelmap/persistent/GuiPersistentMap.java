@@ -220,6 +220,12 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.mapPixelsY = (minecraft.getWindow().getHeight() - (int) (64.0F * this.scScale));
         this.lastStill = false;
         this.timeAtLastTick = System.currentTimeMillis();
+        PersistentMapProfiler.startSession(
+                minecraft.getWindow().getWidth(),
+                minecraft.getWindow().getHeight(),
+                this.zoom,
+                this.options.mapX,
+                this.options.mapZ);
     }
 
     @Override
@@ -646,6 +652,11 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                     graphics.blit(RenderPipelines.GUI_TEXTURED, resource, region.getX() * 256, region.getZ() * 256, 0, 0, region.getWidth(), region.getWidth(), region.getWidth(), region.getWidth());
                 }
             }
+            boolean profilingViewStable = !this.leftMouseButtonDown
+                    && this.zoom == this.zoomGoal
+                    && this.deltaX == 0.0F
+                    && this.deltaY == 0.0F;
+            PersistentMapProfiler.maybeReportIdle(profilingViewStable, this.zoom, this.zoomGoal, this.regions.length);
 
             if (mapOptions.worldBorder) {
                 WorldBorder worldBorder = minecraft.level.getWorldBorder();
@@ -1019,11 +1030,13 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
 
     @Override
     public void removed() {
+        int visibleRegionCount = this.regions.length;
         synchronized (this.closedLock) {
             this.closed = true;
             this.persistentMap.getRegions(0, -1, 0, -1);
             this.regions = new CachedRegion[0];
         }
+        PersistentMapProfiler.finishSession(this.zoom, this.zoomGoal, visibleRegionCount);
     }
 
     private void createPopup(int x, int y, int directX, int directY) {

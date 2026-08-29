@@ -748,11 +748,15 @@ public class PersistentMap implements IChangeObserver {
         if (left == this.lastLeft && right == this.lastRight && top == this.lastTop && bottom == this.lastBottom) {
             return this.lastRegionsArray;
         } else {
+            long selectionStartedNanos = PersistentMapProfiler.startTimer();
             ThreadManager.emptyQueue();
             CachedRegion[] visibleCachedRegionsArray = new CachedRegion[(right - left + 1) * (bottom - top + 1)];
             String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
             String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
             List<RegionCoordinates> regionsToDisplay = new ArrayList<>();
+            int createdRegions = 0;
+            int reusedRegions = 0;
+            int knownEmptyRegions = 0;
 
             for (int t = left; t <= right; ++t) {
                 for (int s = top; s <= bottom; ++s) {
@@ -776,6 +780,11 @@ public class PersistentMap implements IChangeObserver {
                         synchronized (this.cachedRegionsPool) {
                             this.cachedRegionsPool.add(cachedRegion);
                         }
+                        ++createdRegions;
+                    } else if (cachedRegion == CachedRegion.EMPTY_REGION) {
+                        ++knownEmptyRegions;
+                    } else {
+                        ++reusedRegions;
                     }
                 }
 
@@ -784,6 +793,14 @@ public class PersistentMap implements IChangeObserver {
             }
 
             this.prunePool();
+            if (visibleCachedRegionsArray.length > 0) {
+                PersistentMapProfiler.recordRegionSelection(
+                        selectionStartedNanos,
+                        visibleCachedRegionsArray.length,
+                        createdRegions,
+                        reusedRegions,
+                        knownEmptyRegions);
+            }
             synchronized (this.lastRegionsLock) {
                 this.lastLeft = left;
                 this.lastRight = right;

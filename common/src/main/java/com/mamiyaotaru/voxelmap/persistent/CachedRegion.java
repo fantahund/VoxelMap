@@ -182,7 +182,7 @@ public class CachedRegion {
             if (this.loaded && !this.dataUpdated && !this.dataUpdateQueued && !this.displayOptionsChanged) {
                 this.refreshQueued = false;
             } else {
-                RefreshRunnable regionProcessingRunnable = new RefreshRunnable(forceCompress);
+                RefreshRunnable regionProcessingRunnable = new RefreshRunnable(forceCompress, PersistentMapProfiler.recordRefreshScheduled());
                 this.future = ThreadManager.executorService.submit(regionProcessingRunnable);
             }
 
@@ -203,25 +203,44 @@ public class CachedRegion {
     }
 
     private void load() {
-        this.data = new CompressibleMapData(world);
-        this.image = new CompressibleMapRegionTexture();
-        this.loadCachedData();
-        this.loadCurrentData(this.world);
-        if (!this.remoteWorld) {
-            this.loadAnvilData(this.world);
-        }
+        long loadStartedNanos = PersistentMapProfiler.startTimer();
+        try {
+            this.data = new CompressibleMapData(world);
+            this.image = new CompressibleMapRegionTexture();
+            this.loadCachedData();
+            this.loadCurrentData(this.world);
+            if (!this.remoteWorld) {
+                long anvilStartedNanos = PersistentMapProfiler.startTimer();
+                try {
+                    this.loadAnvilData(this.world);
+                } finally {
+                    PersistentMapProfiler.recordAnvilLoad(anvilStartedNanos);
+                }
+            }
 
-        this.loaded = true;
+            this.loaded = true;
+        } finally {
+            PersistentMapProfiler.recordRegionLoad(loadStartedNanos, !this.empty);
+        }
     }
 
     private void loadCurrentData(ClientLevel world) {
-        for (int chunkX = 0; chunkX < CHUNKS_WIDTH; ++chunkX) {
-            for (int chunkZ = 0; chunkZ < CHUNKS_WIDTH; ++chunkZ) {
-                LevelChunk chunk = world.getChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ);
-                if (chunk != null && !chunk.isEmpty() && world.hasChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ) && this.isSurroundedByLoaded(chunk)) {
-                    this.loadChunkData(chunk, chunkX, chunkZ);
+        long startedNanos = PersistentMapProfiler.startTimer();
+        int chunksChecked = 0;
+        int chunksLoaded = 0;
+        try {
+            for (int chunkX = 0; chunkX < CHUNKS_WIDTH; ++chunkX) {
+                for (int chunkZ = 0; chunkZ < CHUNKS_WIDTH; ++chunkZ) {
+                    ++chunksChecked;
+                    LevelChunk chunk = world.getChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ);
+                    if (chunk != null && !chunk.isEmpty() && world.hasChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ) && this.isSurroundedByLoaded(chunk)) {
+                        this.loadChunkData(chunk, chunkX, chunkZ);
+                        ++chunksLoaded;
+                    }
                 }
             }
+        } finally {
+            PersistentMapProfiler.recordLiveChunkScan(startedNanos, chunksChecked, chunksLoaded);
         }
 
     }
@@ -451,15 +470,24 @@ public class CachedRegion {
     }
 
     private void loadCachedData() {
+        long lookupStartedNanos = PersistentMapProfiler.startTimer();
+        boolean lookupRecorded = false;
+        boolean filePresent = false;
+        long decompressedBytes = 0L;
         try {
             File cachedRegionFileDir = new File(VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(), this.subworldNamePathPart + this.dimensionNamePathPart);
             cachedRegionFileDir.mkdirs();
             File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
-            if (cachedRegionFile.exists()) {
+            filePresent = cachedRegionFile.exists();
+            PersistentMapProfiler.recordCacheLookup(lookupStartedNanos, filePresent);
+            lookupRecorded = true;
+            if (filePresent) {
+                long readStartedNanos = PersistentMapProfiler.startTimer();
                 try (ZipFile zFile = new ZipFile(cachedRegionFile)) {
                     ZipEntry ze = zFile.getEntry("data");
                     InputStream is = zFile.getInputStream(ze);
                     byte[] decompressedByteData = is.readAllBytes();
+                    decompressedBytes = decompressedByteData.length;
                     is.close();
                     ze = zFile.getEntry("key");
                     is = zFile.getInputStream(ze);
@@ -515,10 +543,16 @@ public class CachedRegion {
                     if (version < 2) {
                         this.liveChunksUpdated = true;
                     }
+                } finally {
+                    PersistentMapProfiler.recordCacheRead(readStartedNanos, decompressedBytes);
                 }
             }
         } catch (Exception ex) {
             VoxelConstants.getLogger().error("Failed to load region file for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart, ex);
+        } finally {
+            if (!lookupRecorded) {
+                PersistentMapProfiler.recordCacheLookup(lookupStartedNanos, filePresent);
+            }
         }
 
     }
@@ -621,13 +655,24 @@ public class CachedRegion {
     }
 
     private void fillImage() {
-        for (int t = 0; t < REGION_WIDTH; ++t) {
-            for (int s = 0; s < REGION_WIDTH; ++s) {
-                int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
-                this.image.setRGB(t, s, color24);
+        long coloringStartedNanos = PersistentMapProfiler.startTimer();
+        try {
+            for (int t = 0; t < REGION_WIDTH; ++t) {
+                for (int s = 0; s < REGION_WIDTH; ++s) {
+                    int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
+                    this.image.setRGB(t, s, color24);
+                }
             }
+        } finally {
+            PersistentMapProfiler.recordImageColoring(coloringStartedNanos, REGION_WIDTH * REGION_WIDTH);
         }
-        this.image.generateMipmaps();
+
+        long mipmapStartedNanos = PersistentMapProfiler.startTimer();
+        try {
+            this.image.generateMipmaps();
+        } finally {
+            PersistentMapProfiler.recordMipmapGeneration(mipmapStartedNanos, REGION_WIDTH * REGION_WIDTH);
+        }
     }
 
     private void saveImage() {
@@ -738,7 +783,17 @@ public class CachedRegion {
     }
 
     private void compressData() {
-        this.data.compress();
+        if (!PersistentMapProfiler.isActive() || this.data.isCompressed()) {
+            this.data.compress();
+            return;
+        }
+
+        long startedNanos = PersistentMapProfiler.startTimer();
+        try {
+            this.data.compress();
+        } finally {
+            PersistentMapProfiler.recordDataCompression(startedNanos, this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION));
+        }
     }
 
     private boolean isCompressed() {
@@ -804,11 +859,16 @@ public class CachedRegion {
 
     private final class RefreshRunnable implements Runnable {
         private final boolean forceCompress;
+        private final long queuedAtNanos;
 
-        private RefreshRunnable(boolean forceCompress) { this.forceCompress = forceCompress; }
+        private RefreshRunnable(boolean forceCompress, long queuedAtNanos) {
+            this.forceCompress = forceCompress;
+            this.queuedAtNanos = queuedAtNanos;
+        }
 
         @Override
         public void run() {
+            long taskStartedNanos = PersistentMapProfiler.recordRefreshStarted(this.queuedAtNanos);
             CachedRegion.this.mostRecentChange = System.currentTimeMillis();
             CachedRegion.this.threadLock.lock();
 
@@ -841,6 +901,7 @@ public class CachedRegion {
             } finally {
                 CachedRegion.this.threadLock.unlock();
                 CachedRegion.this.refreshQueued = false;
+                PersistentMapProfiler.recordRefreshCompleted(taskStartedNanos);
             }
 
         }
