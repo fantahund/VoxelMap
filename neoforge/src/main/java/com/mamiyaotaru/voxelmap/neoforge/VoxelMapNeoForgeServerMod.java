@@ -123,7 +123,7 @@ public final class VoxelMapNeoForgeServerMod {
         String worldId = player.level().dimension().identifier().toString();
         String settingsJson = getConfigManager().createSettingsJson(worldId);
         PacketDistributor.sendToPlayer(player, new VoxelMapSettingsPayload(settingsJson));
-        LOGGER.info("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
+        LOGGER.debug("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
         return true;
     }
 }
