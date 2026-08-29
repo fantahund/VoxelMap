@@ -90,8 +90,6 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
             Minecraft.getInstance().getTextureManager().register(location, this);
         }
 
-        int w = texture.getWidth(0);
-        int h = texture.getHeight(0);
         if (pixelsMipmapped == null) {
             RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels, 0, 0, 0, 0);
         } else {

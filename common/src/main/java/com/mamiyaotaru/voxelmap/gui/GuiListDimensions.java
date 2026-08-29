@@ -10,7 +10,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 
 class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.DimensionItem> {
@@ -98,7 +97,6 @@ class GuiListDimensions extends AbstractSelectionList<GuiListDimensions.Dimensio
 
         @Override
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            double mouseX = mouseButtonEvent.x();
             double mouseY = mouseButtonEvent.y();
             if (mouseY < getY() || mouseY > getBottom()) {
                 return false;

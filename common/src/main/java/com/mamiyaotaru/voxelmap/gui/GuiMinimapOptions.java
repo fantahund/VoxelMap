@@ -217,13 +217,8 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         setFocused(optionList);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> void setChoiceUnchecked(SettingsOption<T> option, int action) {
+    private static <T> void setChoice(SettingsOption<T> option, int action) {
         option.set(option.choices().get(action).value());
-    }
-
-    private static void setChoice(SettingsOption<?> option, int action) {
-        setChoiceUnchecked(option, action);
     }
 
     private void updateCategoryButtons() {

@@ -132,7 +132,6 @@ public class GuiColorPickerFull extends AbstractColorPicker {
 
         if (pickingValue) {
             // calculate v
-            double dx = getValueSliderX() - mouseX;
             double dy = getValueSliderY() - mouseY;
 
             v = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
@@ -140,7 +139,6 @@ public class GuiColorPickerFull extends AbstractColorPicker {
 
         if (pickingSat) {
             // calculate s
-            double dx = getSatSliderX() - mouseX;
             double dy = getSatSliderY() - mouseY;
 
             s = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);

@@ -121,7 +121,6 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
         if (pickingValue) {
             // calculate v
-            double dx = getValueSliderX() - mouseX;
             double dy = getValueSliderY() - mouseY;
 
             v = (float) Mth.clamp((dy + wheelRadius) / (wheelRadius * 2.0), 0.0, 1.0);
