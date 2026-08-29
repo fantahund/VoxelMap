@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -31,8 +32,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.function.IntBinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import net.minecraft.IdentifierException;
 import net.minecraft.client.Minecraft;
@@ -81,19 +84,22 @@ public class ColorManager implements IReloadListener {
     private final Identifier hueColorWheel = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/color_wheel_hue.png");
     private final Identifier hueSatColorWheel = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "images/color_picker/color_wheel_hue_sat.png");
     private int sizeOfBiomeArray;
-    private int[] blockColors = new int[16384];
-    private int[] blockColorsWithDefaultTint = new int[16384];
-    private final HashSet<Integer> biomeTintsAvailable = new HashSet<>();
-    private final HashMap<Integer, int[][]> blockTintTables = new HashMap<>();
-    private final HashSet<Integer> biomeTextureAvailable = new HashSet<>();
-    private final HashMap<String, Integer> blockBiomeSpecificColors = new HashMap<>();
+    private volatile int[] blockColors = new int[16384];
+    private volatile int[] blockColorsWithDefaultTint = new int[16384];
+    private final Set<Integer> biomeTintsAvailable = ConcurrentHashMap.newKeySet();
+    private final Map<Integer, int[][]> blockTintTables = new ConcurrentHashMap<>();
+    private final Set<Integer> biomeTextureAvailable = ConcurrentHashMap.newKeySet();
+    private final Map<String, Integer> blockBiomeSpecificColors = new ConcurrentHashMap<>();
+    private final Object blockColorCacheLock = new Object();
+    private final Object liveTintLock = new Object();
     private float failedToLoadX;
     private float failedToLoadY;
     private String renderPassThreeBlendMode;
     private final RandomSource random = RandomSource.create();
-    private boolean loaded;
+    private volatile boolean loaded;
     private boolean loadedTerrainImage;
     private boolean terrainDependentColorsProcessed;
+    private volatile boolean connectedTextures;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
     private final ColorResolver spruceColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
     private final ColorResolver birchColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
@@ -160,6 +166,7 @@ public class ColorManager implements IReloadListener {
 
     private void loadColors() {
         this.loaded = false;
+        this.connectedTextures = VoxelConstants.usesConnectedTextures();
         this.loadedTerrainImage = false;
         this.terrainDependentColorsProcessed = false;
         VoxelConstants.getMinecraft().getSkinManager().get(VoxelConstants.getPlayer().getGameProfile());
@@ -197,7 +204,7 @@ public class ColorManager implements IReloadListener {
         }
 
         this.terrainDependentColorsProcessed = true;
-        if (VoxelConstants.usesConnectedTextures()) {
+        if (this.connectedTextures) {
             try {
                 this.processCTM();
             } catch (Exception var4) {
@@ -277,7 +284,7 @@ public class ColorManager implements IReloadListener {
 
     public final int getBlockColor(MutableBlockPos blockPos, int blockStateID, Biome biomeID) {
         if (this.loaded && loadedTerrainImage) {
-            if (VoxelConstants.usesConnectedTextures() && this.biomeTextureAvailable.contains(blockStateID)) {
+            if (this.connectedTextures && this.biomeTextureAvailable.contains(blockStateID)) {
                 Integer col = this.blockBiomeSpecificColors.get(blockStateID + " " + biomeID);
                 if (col != null) {
                     return ARGB.toABGR(col);
@@ -296,16 +303,26 @@ public class ColorManager implements IReloadListener {
 
     private int getBlockColor(MutableBlockPos blockPos, int blockStateID) {
         int col = 0x1B000000;
+        int[] colors = this.blockColors;
 
         try {
-            col = this.blockColors[blockStateID];
+            col = colors[blockStateID];
         } catch (ArrayIndexOutOfBoundsException var5) {
             this.resizeColorArrays(blockStateID);
+            colors = this.blockColors;
+            col = colors[blockStateID];
         }
 
         if (col == 0xFEFF00FF || col == 0x1B000000) {
-            BlockState blockState = BlockRepository.getStateById(blockStateID);
-            col = this.blockColors[blockStateID] = this.getColor(blockPos, blockState);
+            synchronized (this.blockColorCacheLock) {
+                colors = this.blockColors;
+                col = colors[blockStateID];
+                if (col == 0xFEFF00FF || col == 0x1B000000) {
+                    BlockState blockState = BlockRepository.getStateById(blockStateID);
+                    col = this.getColor(blockPos, blockState);
+                    colors[blockStateID] = col;
+                }
+            }
         }
 
         return col;
@@ -524,11 +541,128 @@ public class ColorManager implements IReloadListener {
         return -1;
     }
 
+    public PersistentMapRenderContext createPersistentMapRenderContext(AbstractMapData mapData, ClientLevel world, int startX, int startZ) {
+        return this.createPersistentMapRenderContext(mapData, world, startX, startZ, null);
+    }
+
+    public PersistentMapRenderContext createPersistentMapRenderContext(AbstractMapData mapData, ClientLevel world, int startX, int startZ, IntBinaryOperator biomeRegistryIdLookup) {
+        return new PersistentMapRenderContext(mapData, world, startX, startZ, this.connectedTextures, biomeRegistryIdLookup);
+    }
+
+    public static final class PersistentMapRenderContext {
+        private static final int UNSET_TINT = Integer.MIN_VALUE;
+
+        private final AbstractMapData mapData;
+        private final ClientLevel world;
+        private final int startX;
+        private final int startZ;
+        private final boolean connectedTextures;
+        private final IntBinaryOperator biomeRegistryIdLookup;
+        private final byte[] liveChunks = new byte[16 * 16];
+        private int[] biomeRegistryIds;
+        private final int[][] tintCaches = new int[TintKind.values().length][];
+        private final BitSet[] computedTints = new BitSet[TintKind.values().length];
+
+        private PersistentMapRenderContext(AbstractMapData mapData, ClientLevel world, int startX, int startZ, boolean connectedTextures, IntBinaryOperator biomeRegistryIdLookup) {
+            this.mapData = mapData;
+            this.world = world;
+            this.startX = startX;
+            this.startZ = startZ;
+            this.connectedTextures = connectedTextures;
+            this.biomeRegistryIdLookup = biomeRegistryIdLookup;
+            Arrays.fill(this.liveChunks, (byte) -1);
+        }
+
+        private boolean isLive(BlockPos blockPos) {
+            int chunkX = (blockPos.getX() - this.startX) >> 4;
+            int chunkZ = (blockPos.getZ() - this.startZ) >> 4;
+            if (chunkX < 0 || chunkX >= 16 || chunkZ < 0 || chunkZ >= 16) {
+                return false;
+            }
+            int index = chunkZ * 16 + chunkX;
+            byte live = this.liveChunks[index];
+            if (live == -1) {
+                int worldChunkX = blockPos.getX() >> 4;
+                int worldChunkZ = blockPos.getZ() >> 4;
+                boolean loaded = false;
+                if (this.world.hasChunk(worldChunkX, worldChunkZ)) {
+                    LevelChunk chunk = this.world.getChunk(worldChunkX, worldChunkZ);
+                    loaded = chunk != null && !chunk.isEmpty();
+                }
+                live = (byte) (loaded ? 1 : 0);
+                this.liveChunks[index] = live;
+            }
+            return live == 1;
+        }
+
+        private Biome getBiomeAtWorld(int worldX, int worldZ) {
+            int dataX = Mth.clamp(worldX - this.startX, 0, this.mapData.getWidth() - 1);
+            int dataZ = Mth.clamp(worldZ - this.startZ, 0, this.mapData.getHeight() - 1);
+            return this.mapData.getBiome(dataX, dataZ);
+        }
+
+        private int getBiomeRegistryIdAtWorld(int worldX, int worldZ) {
+            int dataX = Mth.clamp(worldX - this.startX, 0, this.mapData.getWidth() - 1);
+            int dataZ = Mth.clamp(worldZ - this.startZ, 0, this.mapData.getHeight() - 1);
+            int index = dataX + dataZ * this.mapData.getWidth();
+            if (this.biomeRegistryIds == null) {
+                this.biomeRegistryIds = new int[this.mapData.getWidth() * this.mapData.getHeight()];
+                Arrays.fill(this.biomeRegistryIds, Integer.MIN_VALUE);
+            }
+            int biomeId = this.biomeRegistryIds[index];
+            if (biomeId == Integer.MIN_VALUE) {
+                if (this.biomeRegistryIdLookup != null) {
+                    biomeId = this.biomeRegistryIdLookup.applyAsInt(dataX, dataZ);
+                } else {
+                    Biome biome = this.mapData.getBiome(dataX, dataZ);
+                    biomeId = biome == null ? -1 : this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
+                }
+                this.biomeRegistryIds[index] = biomeId;
+            }
+            return biomeId;
+        }
+
+        private int getCachedTint(TintKind kind, int worldX, int worldZ) {
+            int dataX = Mth.clamp(worldX - this.startX, 0, this.mapData.getWidth() - 1);
+            int dataZ = Mth.clamp(worldZ - this.startZ, 0, this.mapData.getHeight() - 1);
+            int index = dataX + dataZ * this.mapData.getWidth();
+            BitSet computed = this.computedTints[kind.ordinal()];
+            return computed != null && computed.get(index) ? this.tintCaches[kind.ordinal()][index] : UNSET_TINT;
+        }
+
+        private void putCachedTint(TintKind kind, int worldX, int worldZ, int tint) {
+            int dataX = Mth.clamp(worldX - this.startX, 0, this.mapData.getWidth() - 1);
+            int dataZ = Mth.clamp(worldZ - this.startZ, 0, this.mapData.getHeight() - 1);
+            int index = dataX + dataZ * this.mapData.getWidth();
+            int cacheIndex = kind.ordinal();
+            if (this.tintCaches[cacheIndex] == null) {
+                this.tintCaches[cacheIndex] = new int[this.mapData.getWidth() * this.mapData.getHeight()];
+                this.computedTints[cacheIndex] = new BitSet(this.tintCaches[cacheIndex].length);
+            }
+            this.tintCaches[cacheIndex][index] = tint;
+            this.computedTints[cacheIndex].set(index);
+        }
+    }
+
+    private enum TintKind {
+        WATER,
+        SPRUCE,
+        BIRCH,
+        MANGROVE,
+        FOLIAGE,
+        DRY_FOLIAGE,
+        GRASS
+    }
+
     public int getBiomeTint(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
-        ChunkAccess chunk = world.getChunk(blockPos);
-        boolean live = chunk != null && !((LevelChunk) chunk).isEmpty() && VoxelConstants.getPlayer().level().hasChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4);
+        PersistentMapRenderContext context = this.createPersistentMapRenderContext(mapData, world, startX, startZ);
+        return this.getBiomeTint(mapData, world, blockState, blockStateID, blockPos, loopBlockPos, startX, startZ, context);
+    }
+
+    public int getBiomeTint(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, PersistentMapRenderContext context) {
+        boolean live = context.isLive(blockPos);
         int tint = -2;
-        if (VoxelConstants.usesConnectedTextures() || !live && this.biomeTintsAvailable.contains(blockStateID)) {
+        if (context.connectedTextures || !live && this.biomeTintsAvailable.contains(blockStateID)) {
             try {
                 int[][] tints = this.blockTintTables.get(blockStateID);
                 if (tints != null) {
@@ -542,19 +676,15 @@ public class ColorManager implements IReloadListener {
                             if (live) {
                                 biome = world.getBiome(loopBlockPos.withXYZ(t, blockPos.getY(), s)).value();
                             } else {
-                                int dataX = t - startX;
-                                int dataZ = s - startZ;
-                                dataX = Math.max(dataX, 0);
-                                dataX = Math.min(dataX, mapData.getWidth() - 1);
-                                dataZ = Math.max(dataZ, 0);
-                                dataZ = Math.min(dataZ, mapData.getHeight() - 1);
-                                biome = mapData.getBiome(dataX, dataZ);
+                                biome = context.getBiomeAtWorld(t, s);
                             }
 
                             if (biome == null) {
                                 biome = world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).get().value();
                             }
-                            int biomeID = world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome);
+                            int biomeID = live
+                                    ? world.registryAccess().lookupOrThrow(Registries.BIOME).getId(biome)
+                                    : context.getBiomeRegistryIdAtWorld(t, s);
                             int biomeTint = tints[biomeID][loopBlockPos.y / 8];
                             r += (biomeTint & 0xFF0000) >> 16;
                             g += (biomeTint & 0xFF00) >> 8;
@@ -569,107 +699,105 @@ public class ColorManager implements IReloadListener {
         }
 
         if (tint == -2) {
-            tint = this.getBuiltInBiomeTint(mapData, world, blockState, blockStateID, blockPos, loopBlockPos, startX, startZ, live);
+            tint = this.getBuiltInBiomeTint(mapData, world, blockState, blockStateID, blockPos, loopBlockPos, startX, startZ, live, context);
         }
 
         return ARGB.toABGR(tint);
     }
 
-    private int getBuiltInBiomeTint(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, boolean live) {
+    private int getBuiltInBiomeTint(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, boolean live, PersistentMapRenderContext context) {
         int tint = -1;
         Block block = blockState.getBlock();
         if (BlockRepository.biomeBlocks.contains(block) || this.biomeTintsAvailable.contains(blockStateID)) {
             if (live) {
                 try {
-                    DebugRenderState.blockX = blockPos.x;
-                    DebugRenderState.blockY = blockPos.y;
-                    DebugRenderState.blockZ = blockPos.z;
-                    tint = this.getBlockTint(blockState, world, blockPos, 0) | 0xFF000000;
+                    synchronized (this.liveTintLock) {
+                        DebugRenderState.blockX = blockPos.x;
+                        DebugRenderState.blockY = blockPos.y;
+                        DebugRenderState.blockZ = blockPos.z;
+                        tint = this.getBlockTint(blockState, world, blockPos, 0) | 0xFF000000;
+                    }
                 } catch (Exception ignored) {
                 }
             }
 
             if (tint == -1) {
-                tint = this.getBuiltInBiomeTintFromUnloadedChunk(mapData, world, blockState, blockStateID, blockPos, loopBlockPos, startX, startZ) | 0xFF000000;
+                tint = this.getBuiltInBiomeTintFromUnloadedChunk(mapData, world, blockState, blockStateID, blockPos, loopBlockPos, startX, startZ, context) | 0xFF000000;
             }
         }
 
         return tint;
     }
 
-    private int getBuiltInBiomeTintFromUnloadedChunk(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
+    private int getBuiltInBiomeTintFromUnloadedChunk(AbstractMapData mapData, ClientLevel world, BlockState blockState, int blockStateID, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ, PersistentMapRenderContext context) {
         int tint = -1;
         Block block = blockState.getBlock();
         ColorResolver colorResolver = null;
+        TintKind tintKind = null;
         if (block == BlockRepository.water) {
             colorResolver = this.waterColorResolver;
+            tintKind = TintKind.WATER;
         } else if (block == BlockRepository.spruceLeaves) {
             colorResolver = this.spruceColorResolver;
+            tintKind = TintKind.SPRUCE;
         } else if (block == BlockRepository.birchLeaves) {
             colorResolver = this.birchColorResolver;
+            tintKind = TintKind.BIRCH;
         } else if (block == BlockRepository.mangroveLeaves) {
             colorResolver = this.mangroveColorResolver;
+            tintKind = TintKind.MANGROVE;
         } else {
             boolean isFoliage = block == BlockRepository.oakLeaves || block == BlockRepository.jungleLeaves || block == BlockRepository.acaciaLeaves || block == BlockRepository.darkOakLeaves || block == BlockRepository.vine;
             boolean isDryFoliage = block == BlockRepository.leafLitter;
             if (isFoliage) {
                 colorResolver = this.foliageColorResolver;
+                tintKind = TintKind.FOLIAGE;
             } else if (isDryFoliage) {
                 colorResolver = this.dryFoliageColorResolver;
+                tintKind = TintKind.DRY_FOLIAGE;
             } else if (block == BlockRepository.redstone) {
                 colorResolver = this.redstoneColorResolver;
             } else if (BlockRepository.biomeBlocks.contains(block)) {
                 colorResolver = this.grassColorResolver;
+                tintKind = TintKind.GRASS;
             }
         }
 
         if (colorResolver != null) {
-            int r = 0;
-            int g = 0;
-            int b = 0;
-
-            for (int t = blockPos.getX() - 1; t <= blockPos.getX() + 1; ++t) {
-                for (int s = blockPos.getZ() - 1; s <= blockPos.getZ() + 1; ++s) {
-                    int dataX = blockPos.getX() - startX;
-                    int dataZ = blockPos.getZ() - startZ;
-                    dataX = Math.max(dataX, 0);
-                    dataX = Math.min(dataX, mapData.getWidth() - 1);
-                    dataZ = Math.max(dataZ, 0);
-                    dataZ = Math.min(dataZ, mapData.getHeight() - 1);
-
-                    Biome biome = mapData.getBiome(dataX, dataZ);
-                    if (biome == null) {
-                        MessageUtils.printDebug("Null biome ID! " + " at " + t + "," + s);
-                        MessageUtils.printDebug("block: " + mapData.getBlockstate(dataX, dataZ) + ", height: " + mapData.getHeight(dataX, dataZ));
-                        MessageUtils.printDebug("Mapdata: " + mapData);
-                    }
-
-                    int biomeTint = biome == null ? 0 : colorResolver.getColorAtPos(blockState, biome, loopBlockPos.withXYZ(t, blockPos.getY(), s));
-                    r += (biomeTint & 0xFF0000) >> 16;
-                    g += (biomeTint & 0xFF00) >> 8;
-                    b += biomeTint & 0xFF;
+            if (tintKind != null) {
+                int cached = context.getCachedTint(tintKind, blockPos.getX(), blockPos.getZ());
+                if (cached != PersistentMapRenderContext.UNSET_TINT) {
+                    return cached;
                 }
             }
-
-            tint = (r / 9 & 0xFF) << 16 | (g / 9 & 0xFF) << 8 | b / 9 & 0xFF;
+            ColorResolver selectedResolver = colorResolver;
+            tint = BiomeTintAverager.average3x3(blockPos.getX(), blockPos.getZ(), (sampleX, sampleZ) -> {
+                int dataX = Mth.clamp(sampleX - startX, 0, mapData.getWidth() - 1);
+                int dataZ = Mth.clamp(sampleZ - startZ, 0, mapData.getHeight() - 1);
+                Biome biome = context.getBiomeAtWorld(sampleX, sampleZ);
+                if (biome == null) {
+                    MessageUtils.printDebug("Null biome ID! " + " at " + sampleX + "," + sampleZ);
+                    MessageUtils.printDebug("block: " + mapData.getBlockstate(dataX, dataZ) + ", height: " + mapData.getHeight(dataX, dataZ));
+                    MessageUtils.printDebug("Mapdata: " + mapData);
+                    return 0;
+                }
+                return selectedResolver.getColorAtPos(blockState, biome, loopBlockPos.withXYZ(sampleX, blockPos.getY(), sampleZ));
+            });
+            if (tintKind != null) {
+                context.putCachedTint(tintKind, blockPos.getX(), blockPos.getZ(), tint);
+            }
         } else if (this.biomeTintsAvailable.contains(blockStateID)) {
-            tint = this.getCustomBlockBiomeTintFromUnloadedChunk(mapData, world, blockState, blockPos, loopBlockPos, startX, startZ);
+            tint = this.getCustomBlockBiomeTintFromUnloadedChunk(blockState, blockPos, loopBlockPos, context);
         }
 
         return tint;
     }
 
-    private int getCustomBlockBiomeTintFromUnloadedChunk(AbstractMapData mapData, ClientLevel world, BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, int startX, int startZ) {
+    private int getCustomBlockBiomeTintFromUnloadedChunk(BlockState blockState, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, PersistentMapRenderContext context) {
         int tint;
 
         try {
-            int dataX = blockPos.getX() - startX;
-            int dataZ = blockPos.getZ() - startZ;
-            dataX = Math.max(dataX, 0);
-            dataX = Math.min(dataX, mapData.getWidth() - 1);
-            dataZ = Math.max(dataZ, 0);
-            dataZ = Math.min(dataZ, mapData.getHeight() - 1);
-            Biome biome = mapData.getBiome(dataX, dataZ);
+            Biome biome = context.getBiomeAtWorld(blockPos.getX(), blockPos.getZ());
             tint = this.tintFromFakePlacedBlock(blockState, loopBlockPos, biome);
         } catch (Exception var12) {
             tint = -1;

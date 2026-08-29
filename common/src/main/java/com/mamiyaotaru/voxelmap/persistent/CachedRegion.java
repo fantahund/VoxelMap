@@ -2,11 +2,13 @@ package com.mamiyaotaru.voxelmap.persistent;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mamiyaotaru.voxelmap.ColorManager;
 import com.mamiyaotaru.voxelmap.SettingsAndLightingChangeNotifier;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.util.BiomeParser;
 import com.mamiyaotaru.voxelmap.util.BlockStateParser;
 import com.mamiyaotaru.voxelmap.util.CommandUtils;
+import com.mamiyaotaru.voxelmap.util.ColorUtils;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
 import com.mamiyaotaru.voxelmap.util.MutableBlockPos;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
@@ -16,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,8 +58,8 @@ public class CachedRegion {
     public final static int REGION_WIDTH = CHUNKS_WIDTH * CHUNK_BLOCKS;
     public static final EmptyCachedRegion EMPTY_REGION = new EmptyCachedRegion();
 
-    private long mostRecentView;
-    private long mostRecentChange;
+    private volatile long mostRecentView;
+    private volatile long mostRecentChange;
     private final PersistentMap persistentMap;
     private String key;
     private final ClientLevel world;
@@ -71,11 +74,13 @@ public class CachedRegion {
     private boolean underground;
     private int x;
     private int z;
-    private boolean empty = true;
+    private volatile boolean empty = true;
     private boolean liveChunksUpdated;
     boolean remoteWorld;
-    private final boolean[] liveChunkUpdateQueued = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
-    private final boolean[] chunkUpdateQueued = new boolean[CHUNKS_WIDTH * CHUNKS_WIDTH];
+    private final BitSet liveChunkUpdateQueued = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
+    private final BitSet dirtyImageChunks = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
+    private final BitSet chunkUpdateQueued = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
+    private final Object refreshStateLock = new Object();
     private CompressibleMapRegionTexture image;
     private CompressibleMapData data;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
@@ -83,13 +88,15 @@ public class CachedRegion {
     Future<?> future;
     private final ReentrantLock threadLock = new ReentrantLock();
     boolean displayOptionsChanged;
-    boolean imageChanged;
+    volatile boolean imageChanged;
     boolean refreshQueued;
-    boolean refreshingImage;
+    volatile boolean refreshingImage;
     boolean dataUpdated;
     boolean dataUpdateQueued;
-    boolean loaded;
-    boolean closed;
+    boolean forceCompressRequested;
+    boolean retainImageRequested;
+    volatile boolean loaded;
+    volatile boolean closed;
     private static final Object anvilLock = new Object();
     private static final ReadWriteLock tickLock = new ReentrantReadWriteLock();
     private static int loadedChunkCount;
@@ -136,8 +143,6 @@ public class CachedRegion {
             this.chunkLoader = chunkProvider.chunkMap;
         }
 
-        Arrays.fill(this.liveChunkUpdateQueued, false);
-        Arrays.fill(this.chunkUpdateQueued, false);
     }
 
     public void renameSubworld(String oldName, String newName) {
@@ -162,39 +167,59 @@ public class CachedRegion {
     public void registerChangeAt(int chunkX, int chunkZ) {
         chunkX -= this.x * CHUNKS_WIDTH;
         chunkZ -= this.z * CHUNKS_WIDTH;
-        this.dataUpdateQueued = true;
         int index = chunkZ * CHUNKS_WIDTH + chunkX;
-        this.liveChunkUpdateQueued[index] = true;
+        synchronized (this.refreshStateLock) {
+            this.dataUpdateQueued = true;
+            this.retainImageRequested = true;
+            this.liveChunkUpdateQueued.set(index);
+        }
     }
 
     public void notifyOfActionableChange(SettingsAndLightingChangeNotifier notifier) {
-        this.displayOptionsChanged = true;
+        synchronized (this.refreshStateLock) {
+            this.displayOptionsChanged = true;
+        }
     }
 
     public void refresh(boolean forceCompress) {
         this.mostRecentView = System.currentTimeMillis();
-        if (this.future != null && (this.future.isDone() || this.future.isCancelled())) {
-            this.refreshQueued = false;
-        }
-
-        if (!this.refreshQueued) {
-            this.refreshQueued = true;
-            if (this.loaded && !this.dataUpdated && !this.dataUpdateQueued && !this.displayOptionsChanged) {
+        synchronized (this.refreshStateLock) {
+            this.forceCompressRequested |= forceCompress;
+            if (this.future != null && (this.future.isDone() || this.future.isCancelled())) {
                 this.refreshQueued = false;
-            } else {
-                RefreshRunnable regionProcessingRunnable = new RefreshRunnable(forceCompress, PersistentMapProfiler.recordRefreshScheduled());
-                this.future = ThreadManager.executorService.submit(regionProcessingRunnable);
             }
-
+            if (!this.refreshQueued && hasRefreshWorkLocked()) {
+                submitRefreshLocked();
+            }
         }
+    }
+
+    private boolean hasRefreshWorkLocked() {
+        return !this.closed && (!this.loaded
+                || this.dataUpdated
+                || this.dataUpdateQueued
+                || this.displayOptionsChanged
+                || this.forceCompressRequested);
+    }
+
+    private void submitRefreshLocked() {
+        boolean forceCompress = this.forceCompressRequested;
+        this.forceCompressRequested = false;
+        this.refreshQueued = true;
+        RefreshRunnable regionProcessingRunnable = new RefreshRunnable(forceCompress, PersistentMapProfiler.recordRefreshScheduled());
+        this.future = ThreadManager.executorService.submit(regionProcessingRunnable);
     }
 
     public void handleChangedChunk(LevelChunk chunk) {
         int chunkX = chunk.getPos().x() - this.x * CHUNKS_WIDTH;
         int chunkZ = chunk.getPos().z() - this.z * CHUNKS_WIDTH;
         int index = chunkZ * CHUNKS_WIDTH + chunkX;
-        if (!this.chunkUpdateQueued[index]) {
-            this.chunkUpdateQueued[index] = true;
+        synchronized (this.refreshStateLock) {
+            if (this.chunkUpdateQueued.get(index)) {
+                return;
+            }
+            this.chunkUpdateQueued.set(index);
+            this.retainImageRequested = true;
             this.mostRecentView = System.currentTimeMillis();
             this.mostRecentChange = this.mostRecentView;
             FillChunkRunnable fillChunkRunnable = new FillChunkRunnable(chunk);
@@ -245,19 +270,15 @@ public class CachedRegion {
 
     }
 
-    private void loadModifiedData() {
-        for (int chunkX = 0; chunkX < CHUNKS_WIDTH; ++chunkX) {
-            for (int chunkZ = 0; chunkZ < CHUNKS_WIDTH; ++chunkZ) {
-                if (this.liveChunkUpdateQueued[chunkZ * CHUNKS_WIDTH + chunkX]) {
-                    this.liveChunkUpdateQueued[chunkZ * CHUNKS_WIDTH + chunkX] = false;
-                    LevelChunk chunk = this.world.getChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ);
-                    if (chunk != null && !chunk.isEmpty() && this.world.hasChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ)) {
-                        this.loadChunkData(chunk, chunkX, chunkZ);
-                    }
-                }
+    private void loadModifiedData(BitSet chunksToLoad) {
+        for (int index = chunksToLoad.nextSetBit(0); index >= 0; index = chunksToLoad.nextSetBit(index + 1)) {
+            int chunkX = index % CHUNKS_WIDTH;
+            int chunkZ = index / CHUNKS_WIDTH;
+            LevelChunk chunk = this.world.getChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ);
+            if (chunk != null && !chunk.isEmpty() && this.world.hasChunk(this.x * CHUNKS_WIDTH + chunkX, this.z * CHUNKS_WIDTH + chunkZ)) {
+                this.loadChunkData(chunk, chunkX, chunkZ);
             }
         }
-
     }
 
     private void loadChunkData(LevelChunk chunk, int chunkX, int chunkZ) {
@@ -285,7 +306,10 @@ public class CachedRegion {
 
         this.empty = false;
         this.liveChunksUpdated = true;
-        this.dataUpdated = true;
+        synchronized (this.refreshStateLock) {
+            this.dataUpdated = true;
+            this.dirtyImageChunks.set(chunkZ * CHUNKS_WIDTH + chunkX);
+        }
     }
 
     private boolean isChunkEmptyOrUnlit(LevelChunk chunk) {
@@ -535,7 +559,9 @@ public class CachedRegion {
                     if (decompressedByteData.length == this.data.getExpectedDataLength(version)) {
                         this.data.setData(decompressedByteData, blockstateMap, biomeMap, version);
                         this.empty = false;
-                        this.dataUpdated = true;
+                        synchronized (this.refreshStateLock) {
+                            this.dataUpdated = true;
+                        }
                     } else {
                         VoxelConstants.getLogger().warn("failed to load data from " + cachedRegionFile.getPath());
                     }
@@ -654,17 +680,40 @@ public class CachedRegion {
 
     }
 
-    private void fillImage() {
-        long coloringStartedNanos = PersistentMapProfiler.startTimer();
+    private void fillImage(BitSet dirtyPixels) {
+        long renderViewStartedNanos = PersistentMapProfiler.startTimer();
+        CompressibleMapData.RenderView renderView;
+        ColorManager.PersistentMapRenderContext renderContext;
         try {
-            for (int t = 0; t < REGION_WIDTH; ++t) {
-                for (int s = 0; s < REGION_WIDTH; ++s) {
-                    int color24 = this.persistentMap.getPixelColor(this.data, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, t, s);
-                    this.image.setRGB(t, s, color24);
+            renderView = this.data.openRenderView();
+            renderContext = this.persistentMap.colorManager.createPersistentMapRenderContext(
+                    renderView, this.world, this.x * REGION_WIDTH, this.z * REGION_WIDTH, renderView::getBiomeRegistryId);
+        } finally {
+            PersistentMapProfiler.recordRenderViewCreation(renderViewStartedNanos);
+        }
+
+        long coloringStartedNanos = PersistentMapProfiler.startTimer();
+        int pixelsColored = dirtyPixels == null ? REGION_WIDTH * REGION_WIDTH : dirtyPixels.cardinality();
+        try {
+            NativeImage target = this.image.getData();
+            if (dirtyPixels == null) {
+                for (int z = 0; z < REGION_WIDTH; ++z) {
+                    for (int x = 0; x < REGION_WIDTH; ++x) {
+                        int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z);
+                        target.setPixel(x, z, ColorUtils.premultiplyWithAlpha(color24));
+                    }
+                }
+            } else {
+                for (int index = dirtyPixels.nextSetBit(0); index >= 0; index = dirtyPixels.nextSetBit(index + 1)) {
+                    int x = index % REGION_WIDTH;
+                    int z = index / REGION_WIDTH;
+                    int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z);
+                    target.setPixel(x, z, ColorUtils.premultiplyWithAlpha(color24));
                 }
             }
+            this.image.markContentValid();
         } finally {
-            PersistentMapProfiler.recordImageColoring(coloringStartedNanos, REGION_WIDTH * REGION_WIDTH);
+            PersistentMapProfiler.recordImageColoring(coloringStartedNanos, pixelsColored, dirtyPixels != null);
         }
 
         long mipmapStartedNanos = PersistentMapProfiler.startTimer();
@@ -851,7 +900,9 @@ public class CachedRegion {
                 VoxelConstants.getLogger().log(Level.ERROR, "Error in FillChunkRunnable", ex);
             } finally {
                 CachedRegion.this.threadLock.unlock();
-                CachedRegion.this.chunkUpdateQueued[this.index] = false;
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    CachedRegion.this.chunkUpdateQueued.clear(this.index);
+                }
             }
 
         }
@@ -872,22 +923,53 @@ public class CachedRegion {
             CachedRegion.this.mostRecentChange = System.currentTimeMillis();
             CachedRegion.this.threadLock.lock();
 
+            BitSet chunksToLoad = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
+            BitSet dirtyChunks = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
+            boolean renderRequested = false;
+            boolean fullRender = false;
+            boolean failed = false;
+
             try {
                 if (!CachedRegion.this.loaded) {
                     CachedRegion.this.load();
                 }
 
-                if (CachedRegion.this.dataUpdateQueued) {
-                    CachedRegion.this.loadModifiedData();
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    chunksToLoad.or(CachedRegion.this.liveChunkUpdateQueued);
+                    CachedRegion.this.liveChunkUpdateQueued.clear();
                     CachedRegion.this.dataUpdateQueued = false;
                 }
 
-                if (CachedRegion.this.dataUpdated || CachedRegion.this.displayOptionsChanged) {
-                    CachedRegion.this.dataUpdated = false;
-                    CachedRegion.this.displayOptionsChanged = false;
+                if (!chunksToLoad.isEmpty()) {
+                    CachedRegion.this.loadModifiedData(chunksToLoad);
+                }
+
+                boolean retainImage;
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    retainImage = CachedRegion.this.retainImageRequested;
+                    CachedRegion.this.retainImageRequested = false;
+                    renderRequested = CachedRegion.this.dataUpdated || CachedRegion.this.displayOptionsChanged;
+                    fullRender = CachedRegion.this.displayOptionsChanged;
+                    dirtyChunks.or(CachedRegion.this.dirtyImageChunks);
+                    if (renderRequested) {
+                        CachedRegion.this.dataUpdated = false;
+                        CachedRegion.this.displayOptionsChanged = false;
+                        CachedRegion.this.dirtyImageChunks.clear();
+                    }
+                }
+
+                if (retainImage) {
+                    CachedRegion.this.image.enableRetainedBacking();
+                }
+
+                if (renderRequested) {
+                    BitSet dirtyPixels = null;
+                    if (!fullRender && !dirtyChunks.isEmpty() && dirtyChunks.cardinality() < CHUNKS_WIDTH * CHUNKS_WIDTH && CachedRegion.this.image.canPartiallyUpdate()) {
+                        dirtyPixels = DirtyPixelMask.fromChunks(dirtyChunks);
+                    }
                     CachedRegion.this.refreshingImage = true;
                     synchronized (CachedRegion.this.image) {
-                        CachedRegion.this.fillImage();
+                        CachedRegion.this.fillImage(dirtyPixels);
                         CachedRegion.this.imageChanged = true;
                     }
                     CachedRegion.this.refreshingImage = false;
@@ -896,11 +978,27 @@ public class CachedRegion {
                 if (this.forceCompress) {
                     CachedRegion.this.compressData();
                 }
-            } catch (Exception var8) {
-                VoxelConstants.getLogger().error("Exception loading region: " + var8.getLocalizedMessage(), var8);
+            } catch (Exception exception) {
+                failed = true;
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    CachedRegion.this.liveChunkUpdateQueued.or(chunksToLoad);
+                    CachedRegion.this.dataUpdateQueued |= !chunksToLoad.isEmpty();
+                    if (renderRequested) {
+                        CachedRegion.this.dataUpdated = true;
+                        CachedRegion.this.displayOptionsChanged |= fullRender;
+                        CachedRegion.this.dirtyImageChunks.or(dirtyChunks);
+                    }
+                }
+                VoxelConstants.getLogger().error("Exception loading region: " + exception.getLocalizedMessage(), exception);
             } finally {
+                CachedRegion.this.refreshingImage = false;
                 CachedRegion.this.threadLock.unlock();
-                CachedRegion.this.refreshQueued = false;
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    CachedRegion.this.refreshQueued = false;
+                    if (!failed && CachedRegion.this.hasRefreshWorkLocked()) {
+                        CachedRegion.this.submitRefreshLocked();
+                    }
+                }
                 PersistentMapProfiler.recordRefreshCompleted(taskStartedNanos);
             }
 

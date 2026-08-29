@@ -28,7 +28,8 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private NativeImage pixels;
     private NativeImage[] pixelsMipmapped;
 
-    private final boolean compressNotDelete;
+    private boolean retainCompressedPixels;
+    private boolean contentValid;
     private final Identifier location = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "mapimage/" + UUID.randomUUID());
 
     private final GpuSampler samplerSmall;
@@ -37,7 +38,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private byte[] bytes;
 
     public CompressibleMapRegionTexture() {
-        this.compressNotDelete = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages;
+        this.retainCompressedPixels = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages;
 
         this.pixels = new NativeImage(CachedRegion.REGION_WIDTH, CachedRegion.REGION_WIDTH, false);
         this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
@@ -45,11 +46,26 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         this.sampler = samplerLarge;
     }
 
-    public NativeImage getData() {
+    public synchronized NativeImage getData() {
         if (pixels == null) {
             this.decompress();
         }
         return pixels;
+    }
+
+    synchronized void enableRetainedBacking() {
+        this.retainCompressedPixels = true;
+    }
+
+    synchronized boolean canPartiallyUpdate() {
+        if (this.contentValid && this.pixels == null && this.bytes != null) {
+            this.decompress();
+        }
+        return this.contentValid && this.pixels != null;
+    }
+
+    synchronized void markContentValid() {
+        this.contentValid = true;
     }
 
     public Identifier getTextureLocation(float zoom) {
@@ -120,10 +136,12 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         if (pixels != null) {
             clearMipmaps();
             if (this.pixels != null) {
-                if (this.compressNotDelete) {
+                if (this.retainCompressedPixels) {
                     byte[] is = new byte[this.pixels.getHeight() * this.pixels.getWidth() * 4];
                     MemoryUtil.memByteBuffer(this.pixels.getPointer(), is.length).get(is);
                     this.bytes = CompressionUtils.compress(is);
+                } else {
+                    this.bytes = null;
                 }
                 this.pixels.close();
                 this.pixels = null;
@@ -140,7 +158,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private synchronized void decompress() {
         if (pixels == null) {
             this.pixels = new NativeImage(CachedRegion.REGION_WIDTH, CachedRegion.REGION_WIDTH, false);
-            if (this.compressNotDelete && this.bytes != null) {
+            if (this.bytes != null) {
                 try {
                     byte[] is = CompressionUtils.decompress(this.bytes);
                     if (is.length != this.pixels.getHeight() * this.pixels.getWidth() * 4) {
@@ -149,6 +167,8 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
                     this.bytes = null;
                     MemoryUtil.memByteBuffer(this.pixels.getPointer(), is.length).put(is);
                 } catch (DataFormatException ignored) {
+                    this.bytes = null;
+                    this.contentValid = false;
                 }
             }
         }
@@ -170,6 +190,8 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
             this.pixels.close();
             this.pixels = null;
         }
+        this.bytes = null;
+        this.contentValid = false;
         super.close();
     }
 }

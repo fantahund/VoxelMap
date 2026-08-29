@@ -192,7 +192,19 @@ final class PersistentMapProfiler {
         record(Stage.ANVIL_LOAD, startedNanos, 0L);
     }
 
-    static void recordImageColoring(long startedNanos, int pixels) {
+    static void recordRenderViewCreation(long startedNanos) {
+        record(Stage.RENDER_VIEW_CREATION, startedNanos, 0L);
+    }
+
+    static void recordImageColoring(long startedNanos, int pixels, boolean partial) {
+        Session session = CURRENT_SESSION.get();
+        if (session != null) {
+            if (partial) {
+                session.partialImageRenders.increment();
+            } else {
+                session.fullImageRenders.increment();
+            }
+        }
         record(Stage.IMAGE_COLORING, startedNanos, pixels);
     }
 
@@ -254,6 +266,7 @@ final class PersistentMapProfiler {
         CACHE_READ("cache-read", "raw-bytes"),
         LIVE_CHUNK_SCAN("live-chunk-scan", "chunks-checked"),
         ANVIL_LOAD("anvil-load", null),
+        RENDER_VIEW_CREATION("render-view-creation", null),
         IMAGE_COLORING("image-coloring", "pixels"),
         MIPMAP_GENERATION("mipmap-generation", "source-pixels"),
         DATA_DECOMPRESSION("data-decompression", "raw-bytes"),
@@ -317,6 +330,8 @@ final class PersistentMapProfiler {
         private final LongAdder decompressedCacheBytes = new LongAdder();
         private final LongAdder liveChunksLoaded = new LongAdder();
         private final LongAdder texturesCreated = new LongAdder();
+        private final LongAdder fullImageRenders = new LongAdder();
+        private final LongAdder partialImageRenders = new LongAdder();
 
         private Session(long id, int screenWidth, int screenHeight, float initialZoom, int initialMapX, int initialMapZ) {
             this.id = id;
@@ -355,7 +370,7 @@ final class PersistentMapProfiler {
             long completed = refreshCompleted.sum();
 
             VoxelConstants.getLogger().info(
-                    "[PersistentMap profile #{} report {}] reason={}, wall={} ms, screen={}x{}, initialZoom={}, zoom={}->{}, initialCenter=({}, {}), visibleRegions={}, executorActive={}, executorQueued={}",
+                    "[PersistentMap profile #{} report {}] reason={}, wall={} ms, screen={}x{}, initialZoom={}, zoom={}->{}, initialCenter=({}, {}), visibleRegions={}, executorWorkers(configured/largest/active)={}/{}/{}, saveWorkers={}, executorQueued={}",
                     id,
                     reportNumber,
                     reason,
@@ -368,7 +383,10 @@ final class PersistentMapProfiler {
                     initialMapX,
                     initialMapZ,
                     visibleRegions,
+                    ThreadManager.CALCULATION_WORKER_COUNT,
+                    ThreadManager.executorService.getLargestPoolSize(),
                     ThreadManager.executorService.getActiveCount(),
+                    ThreadManager.SAVE_WORKER_COUNT,
                     ThreadManager.executorService.getQueue().size());
             VoxelConstants.getLogger().info(
                     "[PersistentMap profile #{} report {}] selections={}, requestedRegions(total/max)={}/{}, regions(created/reused/known-empty)={}/{}/{}, loads(non-empty/empty)={}/{}",
@@ -383,7 +401,7 @@ final class PersistentMapProfiler {
                     nonEmptyRegionLoads.sum(),
                     emptyRegionLoads.sum());
             VoxelConstants.getLogger().info(
-                    "[PersistentMap profile #{} report {}] refreshTasks(scheduled/started/completed/not-started)={}/{}/{}/{}, queueCancellations={}, cacheFiles(present/missing)={}/{}, cacheRaw={}, liveChunksLoaded={}, texturesCreated={}",
+                    "[PersistentMap profile #{} report {}] refreshTasks(scheduled/started/completed/not-started)={}/{}/{}/{}, queueCancellations={}, imageRenders(full/partial)={}/{}, cacheFiles(present/missing)={}/{}, cacheRaw={}, liveChunksLoaded={}, texturesCreated={}",
                     id,
                     reportNumber,
                     scheduled,
@@ -391,6 +409,8 @@ final class PersistentMapProfiler {
                     completed,
                     Math.max(0L, scheduled - started),
                     queueCancellations.sum(),
+                    fullImageRenders.sum(),
+                    partialImageRenders.sum(),
                     cacheFilesPresent.sum(),
                     cacheFilesMissing.sum(),
                     formatBytes(decompressedCacheBytes.sum()),

@@ -45,6 +45,11 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PersistentMap implements IChangeObserver {
+    private static final int HEIGHT_SHADE_MIN = -1024;
+    private static final int HEIGHT_SHADE_MAX = 1023;
+    private static final double[] HEIGHTMAP_SHADE = createHeightShadeLookup(1.8, true);
+    private static final double[] HEIGHTMAP_WITH_SLOPE_SHADE = createHeightShadeLookup(3.0, false);
+
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final ColorManager colorManager;
     final MapSettingsManager mapOptions;
@@ -444,6 +449,16 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
+        ColorManager.PersistentMapRenderContext renderContext = this.colorManager.createPersistentMapRenderContext(mapData, world, startX, startZ);
+        CompressibleMapData.RenderView renderView = mapData instanceof CompressibleMapData.RenderView view ? view : null;
+        return this.getPixelColor(mapData, renderView, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY);
+    }
+
+    int getPixelColor(CompressibleMapData.RenderView mapData, ColorManager.PersistentMapRenderContext renderContext, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
+        return this.getPixelColor(mapData, mapData, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY);
+    }
+
+    private int getPixelColor(AbstractMapData mapData, CompressibleMapData.RenderView renderView, ColorManager.PersistentMapRenderContext renderContext, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
         int bottomY = world.getMinY();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
@@ -470,7 +485,7 @@ public class PersistentMap implements IChangeObserver {
                 boolean solid = false;
                 int blockStateID;
                 surfaceHeight = mapData.getHeight(imageX, imageY);
-                blockStateID = BlockRepository.getStateId(surfaceBlockState);
+                blockStateID = renderView == null ? BlockRepository.getStateId(surfaceBlockState) : renderView.getBlockstateId(imageX, imageY);
                 if (surfaceHeight < bottomY || surfaceHeight == world.getMaxY()) {
                     surfaceHeight = 80;
                     solid = true;
@@ -484,7 +499,7 @@ public class PersistentMap implements IChangeObserver {
                 if (mapOptions.biomes) {
                     surfaceColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                     int tint;
-                    tint = this.colorManager.getBiomeTint(mapData, world, surfaceBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
+                    tint = this.colorManager.getBiomeTint(mapData, world, surfaceBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ, renderContext);
                     if (tint != -1) {
                         surfaceColor = ColorUtils.colorMultiplier(surfaceColor, tint);
                     }
@@ -507,11 +522,11 @@ public class PersistentMap implements IChangeObserver {
                         blockPos.setXYZ(mcX, seafloorHeight - 1, mcZ);
                         seafloorBlockState = mapData.getOceanFloorBlockstate(imageX, imageY);
                         if (seafloorBlockState != null && seafloorBlockState != BlockRepository.air.defaultBlockState()) {
-                            blockStateID = BlockRepository.getStateId(seafloorBlockState);
+                            blockStateID = renderView == null ? BlockRepository.getStateId(seafloorBlockState) : renderView.getOceanFloorBlockstateId(imageX, imageY);
                             if (mapOptions.biomes) {
                                 seafloorColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
-                                tint = this.colorManager.getBiomeTint(mapData, world, seafloorBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
+                                tint = this.colorManager.getBiomeTint(mapData, world, seafloorBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ, renderContext);
                                 if (tint != -1) {
                                     seafloorColor = ColorUtils.colorMultiplier(seafloorColor, tint);
                                 }
@@ -536,11 +551,11 @@ public class PersistentMap implements IChangeObserver {
                         blockPos.setXYZ(mcX, transparentHeight - 1, mcZ);
                         transparentBlockState = mapData.getTransparentBlockstate(imageX, imageY);
                         if (transparentBlockState != null && transparentBlockState != BlockRepository.air.defaultBlockState()) {
-                            blockStateID = BlockRepository.getStateId(transparentBlockState);
+                            blockStateID = renderView == null ? BlockRepository.getStateId(transparentBlockState) : renderView.getTransparentBlockstateId(imageX, imageY);
                             if (mapOptions.biomes) {
                                 transparentColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
-                                tint = this.colorManager.getBiomeTint(mapData, world, transparentBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
+                                tint = this.colorManager.getBiomeTint(mapData, world, transparentBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ, renderContext);
                                 if (tint != -1) {
                                     transparentColor = ColorUtils.colorMultiplier(transparentColor, tint);
                                 }
@@ -563,11 +578,11 @@ public class PersistentMap implements IChangeObserver {
                         blockPos.setXYZ(mcX, foliageHeight - 1, mcZ);
                         foliageBlockState = mapData.getFoliageBlockstate(imageX, imageY);
                         if (foliageBlockState != null && foliageBlockState != BlockRepository.air.defaultBlockState()) {
-                            blockStateID = BlockRepository.getStateId(foliageBlockState);
+                            blockStateID = renderView == null ? BlockRepository.getStateId(foliageBlockState) : renderView.getFoliageBlockstateId(imageX, imageY);
                             if (mapOptions.biomes) {
                                 foliageColor = this.colorManager.getBlockColor(blockPos, blockStateID, biome);
                                 int tint;
-                                tint = this.colorManager.getBiomeTint(mapData, world, foliageBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ);
+                                tint = this.colorManager.getBiomeTint(mapData, world, foliageBlockState, blockStateID, blockPos, loopBlockPos, startX, startZ, renderContext);
                                 if (tint != -1) {
                                     foliageColor = ColorUtils.colorMultiplier(foliageColor, tint);
                                 }
@@ -634,11 +649,7 @@ public class PersistentMap implements IChangeObserver {
                 double sc = 0.0;
                 boolean invert = false;
                 if (!mapOptions.slopemap) {
-                    diff = height - 80;
-                    sc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
-                    if (diff < 0) {
-                        sc = 0.0 - sc;
-                    }
+                    sc = heightmapShade(height);
                 } else {
                     if (imageX > 0 && imageY < 32 * multi - 1) {
                         if (layer == 0) {
@@ -713,7 +724,7 @@ public class PersistentMap implements IChangeObserver {
 
                     if (mapOptions.heightmap) {
                         diff = height - 80;
-                        double heightsc = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
+                        double heightsc = heightmapWithSlopeShade(height);
                         sc = diff > 0 ? sc + heightsc : sc - heightsc;
                     }
                 }
@@ -738,6 +749,33 @@ public class PersistentMap implements IChangeObserver {
         }
 
         return color24;
+    }
+
+    static double heightmapShade(int height) {
+        if (height >= HEIGHT_SHADE_MIN && height <= HEIGHT_SHADE_MAX) {
+            return HEIGHTMAP_SHADE[height - HEIGHT_SHADE_MIN];
+        }
+        int diff = height - 80;
+        double shade = Math.log10(Math.abs(diff) / 8.0 + 1.0) / 1.8;
+        return diff < 0 ? -shade : shade;
+    }
+
+    static double heightmapWithSlopeShade(int height) {
+        if (height >= HEIGHT_SHADE_MIN && height <= HEIGHT_SHADE_MAX) {
+            return HEIGHTMAP_WITH_SLOPE_SHADE[height - HEIGHT_SHADE_MIN];
+        }
+        int diff = height - 80;
+        return Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
+    }
+
+    private static double[] createHeightShadeLookup(double divisor, boolean signed) {
+        double[] lookup = new double[HEIGHT_SHADE_MAX - HEIGHT_SHADE_MIN + 1];
+        for (int height = HEIGHT_SHADE_MIN; height <= HEIGHT_SHADE_MAX; ++height) {
+            int diff = height - 80;
+            double shade = Math.log10(Math.abs(diff) / 8.0 + 1.0) / divisor;
+            lookup[height - HEIGHT_SHADE_MIN] = signed && diff < 0 ? -shade : shade;
+        }
+        return lookup;
     }
 
     private int getLight(int light) {

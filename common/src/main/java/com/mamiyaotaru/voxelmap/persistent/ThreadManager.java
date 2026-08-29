@@ -10,10 +10,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.NotNull;
 
 public final class ThreadManager {
-    static final int concurrentThreads = Math.min(Math.max(Runtime.getRuntime().availableProcessors() / 2, 1), 4);
+    static final int CALCULATION_WORKER_COUNT = calculateCalculationWorkerCount(Runtime.getRuntime().availableProcessors());
+    static final int SAVE_WORKER_COUNT = 1;
     static final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-    public static final ThreadPoolExecutor executorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, queue);
-    public static ThreadPoolExecutor saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+    public static final ThreadPoolExecutor executorService = createExecutor(
+            CALCULATION_WORKER_COUNT, queue, "Voxelmap WorldMap Calculation Thread", true);
+    public static ThreadPoolExecutor saveExecutorService = createSaveExecutor();
 
     private ThreadManager() {}
 
@@ -40,8 +42,7 @@ public final class ThreadManager {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        saveExecutorService = new ThreadPoolExecutor(0, concurrentThreads, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-        saveExecutorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Saver Thread", false));
+        saveExecutorService = createSaveExecutor();
         VoxelConstants.getLogger().info("Save queue flushed!");
     }
 
@@ -63,9 +64,29 @@ public final class ThreadManager {
         }
     }
 
-    static {
-        executorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Calculation Thread", true));
-        saveExecutorService.setThreadFactory(new NamedThreadFactory("Voxelmap WorldMap Saver Thread", false));
+    static int calculateCalculationWorkerCount(int availableProcessors) {
+        return Math.min(Math.max(availableProcessors / 2, 1), 4);
+    }
+
+    private static ThreadPoolExecutor createSaveExecutor() {
+        return createExecutor(
+                SAVE_WORKER_COUNT,
+                new LinkedBlockingQueue<>(),
+                "Voxelmap WorldMap Saver Thread",
+                false);
+    }
+
+    private static ThreadPoolExecutor createExecutor(
+            int workerCount, LinkedBlockingQueue<Runnable> workQueue, String threadName, boolean daemon) {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                workerCount,
+                workerCount,
+                60L,
+                TimeUnit.SECONDS,
+                workQueue,
+                new NamedThreadFactory(threadName, daemon));
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     private static final class NamedThreadFactory implements ThreadFactory {

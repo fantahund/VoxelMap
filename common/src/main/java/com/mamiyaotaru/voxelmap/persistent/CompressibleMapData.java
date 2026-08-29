@@ -3,6 +3,7 @@ package com.mamiyaotaru.voxelmap.persistent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
+import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
@@ -458,6 +459,45 @@ public class CompressibleMapData extends AbstractMapData {
         return this.isCompressed;
     }
 
+    /**
+     * Creates a read-only, unsynchronized view for the persistent-map renderer. The owning
+     * {@link CachedRegion} must keep its region lock for the complete lifetime of the view so that
+     * the referenced data array cannot be replaced by compression or mutation.
+     */
+    synchronized RenderView openRenderView() {
+        if (this.isCompressed) {
+            this.decompress();
+        }
+
+        int largestStateId = 0;
+        for (Integer id : this.blockStateToInt.values()) {
+            largestStateId = Math.max(largestStateId, id);
+        }
+        BlockState[] statesById = new BlockState[largestStateId + 1];
+        int[] globalStateIdsById = new int[largestStateId + 1];
+        for (java.util.Map.Entry<BlockState, Integer> entry : this.blockStateToInt.entrySet()) {
+            int id = entry.getValue();
+            statesById[id] = entry.getKey();
+            globalStateIdsById[id] = BlockRepository.getStateId(entry.getKey());
+        }
+
+        int largestBiomeId = 0;
+        for (Integer id : this.biomeToInt.values()) {
+            largestBiomeId = Math.max(largestBiomeId, id);
+        }
+        Biome[] biomesById = new Biome[largestBiomeId + 1];
+        int[] globalBiomeIdsById = new int[largestBiomeId + 1];
+        for (java.util.Map.Entry<Biome, Integer> entry : this.biomeToInt.entrySet()) {
+            int id = entry.getValue();
+            biomesById[id] = entry.getKey();
+            globalBiomeIdsById[id] = this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(entry.getKey());
+        }
+
+        Biome plains = this.world.registryAccess().lookupOrThrow(Registries.BIOME).get(Biomes.PLAINS).orElseThrow().value();
+        int plainsId = this.world.registryAccess().lookupOrThrow(Registries.BIOME).getId(plains);
+        return new RenderView(this.data, statesById, globalStateIdsById, biomesById, globalBiomeIdsById, plains, plainsId);
+    }
+
     private synchronized int getIDFromState(BlockState blockState) {
         Integer id = this.blockStateToInt.get(blockState);
         if (id == null && blockState != null) {
@@ -642,5 +682,193 @@ public class CompressibleMapData extends AbstractMapData {
     public int getExpectedDataLength(int version) {
         final int OLD_LAYERS_BEFORE_V4 = 18;
         return getWidth() * getHeight() * (version < 4 ? OLD_LAYERS_BEFORE_V4 : LAYERS);
+    }
+
+    static final class RenderView extends AbstractMapData {
+        private final byte[] data;
+        private final BlockState[] statesById;
+        private final int[] globalStateIdsById;
+        private final Biome[] biomesById;
+        private final int[] globalBiomeIdsById;
+        private final Biome plains;
+        private final int plainsId;
+
+        RenderView(
+                byte[] data,
+                BlockState[] statesById,
+                int[] globalStateIdsById,
+                Biome[] biomesById,
+                int[] globalBiomeIdsById,
+                Biome plains,
+                int plainsId) {
+            this.width = REGION_SIZE;
+            this.height = REGION_SIZE;
+            this.data = data;
+            this.statesById = statesById;
+            this.globalStateIdsById = globalStateIdsById;
+            this.biomesById = biomesById;
+            this.globalBiomeIdsById = globalBiomeIdsById;
+            this.plains = plains;
+            this.plainsId = plainsId;
+        }
+
+        @Override
+        public int getHeight(int x, int z) {
+            return getSignedShort(x, z, HEIGHTPOS);
+        }
+
+        @Override
+        public BlockState getBlockstate(int x, int z) {
+            return stateForLocalId(getUnsignedShort(x, z, BLOCKSTATEPOS));
+        }
+
+        int getBlockstateId(int x, int z) {
+            return globalStateIdForLocalId(getUnsignedShort(x, z, BLOCKSTATEPOS));
+        }
+
+        @Override
+        public int getBiomeTint(int x, int z) {
+            return 0;
+        }
+
+        @Override
+        public int getLight(int x, int z) {
+            return getByte(x, z, LIGHTPOS) & 0xFF;
+        }
+
+        @Override
+        public int getOceanFloorHeight(int x, int z) {
+            return getSignedShort(x, z, OCEANFLOORHEIGHTPOS);
+        }
+
+        @Override
+        public BlockState getOceanFloorBlockstate(int x, int z) {
+            return stateForLocalId(getUnsignedShort(x, z, OCEANFLOORBLOCKSTATEPOS));
+        }
+
+        int getOceanFloorBlockstateId(int x, int z) {
+            return globalStateIdForLocalId(getUnsignedShort(x, z, OCEANFLOORBLOCKSTATEPOS));
+        }
+
+        @Override
+        public int getOceanFloorBiomeTint(int x, int z) {
+            return 0;
+        }
+
+        @Override
+        public int getOceanFloorLight(int x, int z) {
+            return getByte(x, z, OCEANFLOORLIGHTPOS) & 0xFF;
+        }
+
+        @Override
+        public int getTransparentHeight(int x, int z) {
+            return getSignedShort(x, z, TRANSPARENTHEIGHTPOS);
+        }
+
+        @Override
+        public BlockState getTransparentBlockstate(int x, int z) {
+            return stateForLocalId(getUnsignedShort(x, z, TRANSPARENTBLOCKSTATEPOS));
+        }
+
+        int getTransparentBlockstateId(int x, int z) {
+            return globalStateIdForLocalId(getUnsignedShort(x, z, TRANSPARENTBLOCKSTATEPOS));
+        }
+
+        @Override
+        public int getTransparentBiomeTint(int x, int z) {
+            return 0;
+        }
+
+        @Override
+        public int getTransparentLight(int x, int z) {
+            return getByte(x, z, TRANSPARENTLIGHTPOS) & 0xFF;
+        }
+
+        @Override
+        public int getFoliageHeight(int x, int z) {
+            return getSignedShort(x, z, FOLIAGEHEIGHTPOS);
+        }
+
+        @Override
+        public BlockState getFoliageBlockstate(int x, int z) {
+            return stateForLocalId(getUnsignedShort(x, z, FOLIAGEBLOCKSTATEPOS));
+        }
+
+        int getFoliageBlockstateId(int x, int z) {
+            return globalStateIdForLocalId(getUnsignedShort(x, z, FOLIAGEBLOCKSTATEPOS));
+        }
+
+        @Override
+        public int getFoliageBiomeTint(int x, int z) {
+            return 0;
+        }
+
+        @Override
+        public int getFoliageLight(int x, int z) {
+            return getByte(x, z, FOLIAGELIGHTPOS) & 0xFF;
+        }
+
+        @Override
+        public Biome getBiome(int x, int z) {
+            int localId = getUnsignedShort(x, z, BIOMEIDPOS);
+            if (localId == 0) {
+                return getHeight(x, z) == Short.MIN_VALUE ? null : this.plains;
+            }
+            return localId < this.biomesById.length && this.biomesById[localId] != null ? this.biomesById[localId] : this.plains;
+        }
+
+        int getBiomeRegistryId(int x, int z) {
+            int localId = getUnsignedShort(x, z, BIOMEIDPOS);
+            if (localId == 0) {
+                return getHeight(x, z) == Short.MIN_VALUE ? -1 : this.plainsId;
+            }
+            return localId < this.globalBiomeIdsById.length && this.biomesById[localId] != null
+                    ? this.globalBiomeIdsById[localId]
+                    : this.plainsId;
+        }
+
+        private byte getByte(int x, int z, int layer) {
+            return this.data[x + z * this.width + this.width * this.height * layer];
+        }
+
+        private int getUnsignedShort(int x, int z, int layer) {
+            return ((getByte(x, z, layer) & 0xFF) << 8) | (getByte(x, z, layer + 1) & 0xFF);
+        }
+
+        private int getSignedShort(int x, int z, int layer) {
+            return (getByte(x, z, layer) << 8) | (getByte(x, z, layer + 1) & 0xFF);
+        }
+
+        private BlockState stateForLocalId(int localId) {
+            return localId < this.statesById.length ? this.statesById[localId] : null;
+        }
+
+        private int globalStateIdForLocalId(int localId) {
+            return localId < this.globalStateIdsById.length ? this.globalStateIdsById[localId] : 0;
+        }
+
+        private static UnsupportedOperationException readOnly() {
+            return new UnsupportedOperationException("Persistent map render views are read-only");
+        }
+
+        @Override public void setHeight(int x, int z, int height) { throw readOnly(); }
+        @Override public void setBlockstate(int x, int z, BlockState state) { throw readOnly(); }
+        @Override public void setBiomeTint(int x, int z, int tint) { throw readOnly(); }
+        @Override public void setLight(int x, int z, int light) { throw readOnly(); }
+        @Override public void setOceanFloorHeight(int x, int z, int height) { throw readOnly(); }
+        @Override public void setOceanFloorBlockstate(int x, int z, BlockState state) { throw readOnly(); }
+        @Override public void setOceanFloorBiomeTint(int x, int z, int tint) { throw readOnly(); }
+        @Override public void setOceanFloorLight(int x, int z, int light) { throw readOnly(); }
+        @Override public void setTransparentHeight(int x, int z, int height) { throw readOnly(); }
+        @Override public void setTransparentBlockstate(int x, int z, BlockState state) { throw readOnly(); }
+        @Override public void setTransparentBiomeTint(int x, int z, int tint) { throw readOnly(); }
+        @Override public void setTransparentLight(int x, int z, int light) { throw readOnly(); }
+        @Override public void setFoliageHeight(int x, int z, int height) { throw readOnly(); }
+        @Override public void setFoliageBlockstate(int x, int z, BlockState state) { throw readOnly(); }
+        @Override public void setFoliageBiomeTint(int x, int z, int tint) { throw readOnly(); }
+        @Override public void setFoliageLight(int x, int z, int light) { throw readOnly(); }
+        @Override public void setBiome(int x, int z, Biome biome) { throw readOnly(); }
+        @Override public void moveX(int x) { throw readOnly(); }
+        @Override public void moveZ(int z) { throw readOnly(); }
     }
 }
