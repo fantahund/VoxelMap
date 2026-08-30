@@ -68,6 +68,11 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
     }
 
     @Override
+    protected boolean entriesCanBeSelected() {
+        return false;
+    }
+
+    @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {
     }
 
