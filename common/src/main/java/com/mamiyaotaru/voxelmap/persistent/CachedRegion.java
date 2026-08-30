@@ -100,6 +100,7 @@ public class CachedRegion {
     boolean dataUpdated;
     boolean dataUpdateQueued;
     boolean forceCompressRequested;
+    boolean queuedRefreshForceCompress;
     boolean retainImageRequested;
     volatile boolean loaded;
     volatile boolean dataLoaded;
@@ -182,7 +183,6 @@ public class CachedRegion {
         synchronized (this.refreshStateLock) {
             this.dataUpdateQueued = true;
             this.retainImageRequested = true;
-            this.fullDetailRequested = true;
             this.liveChunkUpdateQueued.set(index);
         }
     }
@@ -190,7 +190,6 @@ public class CachedRegion {
     public void notifyOfActionableChange(SettingsAndLightingChangeNotifier notifier) {
         synchronized (this.refreshStateLock) {
             this.displayOptionsChanged = true;
-            this.fullDetailRequested = true;
         }
         PersistentMapProfiler.recordDisplayChangeRequest();
     }
@@ -219,9 +218,17 @@ public class CachedRegion {
         this.mostRecentView = System.currentTimeMillis();
         synchronized (this.refreshStateLock) {
             this.forceCompressRequested |= forceCompress && (!this.loaded || this.data != null && !this.data.isCompressed());
-            this.fullDetailRequested |= fullDetail;
+            boolean reducingDetail = this.fullDetailRequested && !fullDetail;
+            this.fullDetailRequested = fullDetail;
             if (this.future != null && (this.future.isDone() || this.future.isCancelled())) {
+                if (this.future.isCancelled()) {
+                    this.forceCompressRequested |= this.queuedRefreshForceCompress;
+                }
+                this.queuedRefreshForceCompress = false;
                 this.refreshQueued = false;
+            }
+            if (reducingDetail) {
+                this.cancelQueuedRefreshLocked();
             }
             if (!this.refreshQueued && hasRefreshWorkLocked()) {
                 submitRefreshLocked();
@@ -242,6 +249,7 @@ public class CachedRegion {
     private void submitRefreshLocked() {
         boolean forceCompress = this.forceCompressRequested;
         this.forceCompressRequested = false;
+        this.queuedRefreshForceCompress = forceCompress;
         this.refreshQueued = true;
         RefreshRunnable regionProcessingRunnable = new RefreshRunnable(forceCompress, PersistentMapProfiler.recordRefreshScheduled());
         this.future = ThreadManager.executorService.submit(regionProcessingRunnable);
@@ -249,10 +257,18 @@ public class CachedRegion {
 
     void cancelRefreshIfQueued() {
         synchronized (this.refreshStateLock) {
-            if (this.future != null && ThreadManager.cancelQueued(this.future)) {
-                this.refreshQueued = false;
-            }
+            this.cancelQueuedRefreshLocked();
         }
+    }
+
+    private boolean cancelQueuedRefreshLocked() {
+        if (this.future == null || !ThreadManager.cancelQueued(this.future)) {
+            return false;
+        }
+        this.forceCompressRequested |= this.queuedRefreshForceCompress;
+        this.queuedRefreshForceCompress = false;
+        this.refreshQueued = false;
+        return true;
     }
 
     public void handleChangedChunk(LevelChunk chunk) {
@@ -265,7 +281,6 @@ public class CachedRegion {
             }
             this.chunkUpdateQueued.set(index);
             this.retainImageRequested = true;
-            this.fullDetailRequested = true;
             this.mostRecentView = System.currentTimeMillis();
             this.mostRecentChange = this.mostRecentView;
             FillChunkRunnable fillChunkRunnable = new FillChunkRunnable(chunk);
@@ -1292,6 +1307,9 @@ public class CachedRegion {
         @Override
         public void run() {
             long taskStartedNanos = PersistentMapProfiler.recordRefreshStarted(this.queuedAtNanos);
+            synchronized (CachedRegion.this.refreshStateLock) {
+                CachedRegion.this.queuedRefreshForceCompress = false;
+            }
             CachedRegion.this.mostRecentChange = System.currentTimeMillis();
             CachedRegion.this.threadLock.lock();
 

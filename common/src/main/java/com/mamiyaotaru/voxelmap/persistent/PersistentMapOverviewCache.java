@@ -77,9 +77,12 @@ final class PersistentMapOverviewCache {
         byte[] lightValues = overview.lightValues();
         for (int pixel = 0, offset = 0; pixel < PIXEL_COUNT; ++pixel, offset += 4) {
             int lightColor = lightmap[Byte.toUnsignedInt(lightValues[pixel])];
-            result[offset] = multiply(result[offset], lightColor >> 16);
+            // PersistentMap composes ABGR layers with the ARGB lightmap before its
+            // final ARGB conversion. Raw overview bytes are RGBA, so red and blue
+            // intentionally use the opposite packed lightmap components here.
+            result[offset] = multiply(result[offset], lightColor);
             result[offset + 1] = multiply(result[offset + 1], lightColor >> 8);
-            result[offset + 2] = multiply(result[offset + 2], lightColor);
+            result[offset + 2] = multiply(result[offset + 2], lightColor >> 16);
         }
         return result;
     }
@@ -133,9 +136,9 @@ final class PersistentMapOverviewCache {
         for (int skyLight = 0; skyLight < 16; ++skyLight) {
             int candidate = blockLight | skyLight << 4;
             int lightColor = lightmap[candidate];
-            int predictedRed = baseRed * (lightColor >> 16 & 0xFF) / 255;
+            int predictedRed = baseRed * (lightColor & 0xFF) / 255;
             int predictedGreen = baseGreen * (lightColor >> 8 & 0xFF) / 255;
-            int predictedBlue = baseBlue * (lightColor & 0xFF) / 255;
+            int predictedBlue = baseBlue * (lightColor >> 16 & 0xFF) / 255;
             long redDifference = predictedRed - litRed;
             long greenDifference = predictedGreen - litGreen;
             long blueDifference = predictedBlue - litBlue;

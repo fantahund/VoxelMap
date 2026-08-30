@@ -47,7 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PersistentMap implements IChangeObserver {
     static final float OVERVIEW_ZOOM_THRESHOLD = 0.25F;
-    private static final long OVERVIEW_RENDER_VERSION = 4L;
+    private static final long OVERVIEW_RENDER_VERSION = 6L;
     private static final int OVERVIEW_LIGHTING_UPDATES_PER_FRAME = 8;
     private static final int OVERVIEW_UPGRADES_PER_FRAME = 1;
     private static final int HEIGHT_SHADE_MIN = -1024;
@@ -1188,7 +1188,7 @@ public class PersistentMap implements IChangeObserver {
 
             if (VoxelConstants.getMinecraft().gui.screen() != null && VoxelConstants.getMinecraft().gui.screen() instanceof GuiPersistentMap) {
                 cachedRegion.registerChangeAt(chunkX, chunkZ);
-                cachedRegion.refresh(false);
+                cachedRegion.refresh(false, this.lastFullDetailRequested);
             } else {
                 cachedRegion.handleChangedChunk(chunk);
             }
