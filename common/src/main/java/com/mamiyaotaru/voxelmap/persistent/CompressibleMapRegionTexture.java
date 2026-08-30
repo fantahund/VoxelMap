@@ -23,10 +23,11 @@ import org.apache.logging.log4j.Level;
 import org.lwjgl.system.MemoryUtil;
 
 public class CompressibleMapRegionTexture extends AbstractTexture {
-    private final static int MIP_LEVELS = 7;
-
     private NativeImage pixels;
     private NativeImage[] pixelsMipmapped;
+    private int imageSize;
+    private volatile int uploadedSize;
+    private boolean registered;
 
     private boolean retainCompressedPixels;
     private boolean contentValid;
@@ -38,9 +39,14 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     private byte[] bytes;
 
     public CompressibleMapRegionTexture() {
-        this.retainCompressedPixels = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages;
+        this(CachedRegion.REGION_WIDTH);
+    }
 
-        this.pixels = new NativeImage(CachedRegion.REGION_WIDTH, CachedRegion.REGION_WIDTH, false);
+    CompressibleMapRegionTexture(int imageSize) {
+        this.retainCompressedPixels = VoxelConstants.getVoxelMapInstance().getPersistentMapOptions().outputImages;
+        validateImageSize(imageSize);
+        this.imageSize = imageSize;
+        this.pixels = new NativeImage(imageSize, imageSize, false);
         this.samplerSmall = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.LINEAR, true);
         this.samplerLarge = RenderSystem.getSamplerCache().getSampler(AddressMode.CLAMP_TO_EDGE, AddressMode.CLAMP_TO_EDGE, FilterMode.LINEAR, FilterMode.NEAREST, true);
         this.sampler = samplerLarge;
@@ -68,6 +74,53 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         this.contentValid = true;
     }
 
+    synchronized int getImageSize() {
+        return this.imageSize;
+    }
+
+    int getDisplaySize() {
+        int uploaded = this.uploadedSize;
+        return uploaded == 0 ? this.imageSize : uploaded;
+    }
+
+    synchronized void prepareSize(int imageSize) {
+        validateImageSize(imageSize);
+        if (this.imageSize == imageSize && this.pixels != null) {
+            return;
+        }
+        clearCpuImages();
+        this.imageSize = imageSize;
+        this.pixels = new NativeImage(imageSize, imageSize, false);
+        this.bytes = null;
+        this.contentValid = false;
+    }
+
+    synchronized void replacePixels(int imageSize, byte[] rawPixels) {
+        validateImageSize(imageSize);
+        if (rawPixels.length != imageSize * imageSize * 4) {
+            throw new IllegalArgumentException("Invalid image size, expected " + (imageSize * imageSize * 4) + ", got " + rawPixels.length);
+        }
+        clearCpuImages();
+        this.imageSize = imageSize;
+        this.pixels = new NativeImage(imageSize, imageSize, false);
+        MemoryUtil.memByteBuffer(this.pixels.getPointer(), rawPixels.length).put(rawPixels);
+        this.bytes = null;
+        this.contentValid = true;
+    }
+
+    synchronized byte[] copyMipLevelBytes(int level) {
+        if (this.pixels == null) {
+            this.decompress();
+        }
+        if (this.pixelsMipmapped == null || level < 0 || level >= this.pixelsMipmapped.length) {
+            throw new IllegalStateException("Mipmap level " + level + " has not been generated");
+        }
+        NativeImage mip = this.pixelsMipmapped[level];
+        byte[] result = new byte[mip.getWidth() * mip.getHeight() * 4];
+        MemoryUtil.memByteBuffer(mip.getPointer(), result.length).get(result);
+        return result;
+    }
+
     public Identifier getTextureLocation(float zoom) {
         if (zoom < 2) {
             this.sampler = samplerSmall;
@@ -82,8 +135,9 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
             VoxelConstants.getLogger().log(Level.WARN, "Texture unload call from wrong thread", new Exception());
             return;
         }
-        if (texture != null) {
+        if (registered) {
             Minecraft.getInstance().getTextureManager().release(location);
+            registered = false;
         }
         close();
     }
@@ -95,18 +149,26 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         }
 
         long startedNanos = PersistentMapProfiler.startTimer();
-        boolean textureCreated = texture == null;
+        boolean textureCreated = texture == null || texture.getWidth(0) != this.imageSize;
         try {
             if (pixels == null) {
                 this.decompress();
             }
 
-            if (texture == null) {
-                GpuDevice gpuDevice = RenderSystem.getDevice();
-                this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, MIP_LEVELS + 1);
-                this.textureView = gpuDevice.createTextureView(this.texture, 0, MIP_LEVELS + 1);
+            if (texture != null && texture.getWidth(0) != this.pixels.getWidth()) {
+                this.releaseTextures();
+            }
 
-                Minecraft.getInstance().getTextureManager().register(location, this);
+            if (texture == null) {
+                int mipLevels = maxMipLevel(this.pixels.getWidth());
+                GpuDevice gpuDevice = RenderSystem.getDevice();
+                this.texture = gpuDevice.createTexture("compressibleMapRegionTexture", GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING, GpuFormat.RGBA8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, mipLevels + 1);
+                this.textureView = gpuDevice.createTextureView(this.texture, 0, mipLevels + 1);
+
+                if (!registered) {
+                    Minecraft.getInstance().getTextureManager().register(location, this);
+                    registered = true;
+                }
             }
 
             if (pixelsMipmapped == null) {
@@ -117,6 +179,7 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
                 }
             }
 
+            this.uploadedSize = this.pixels.getWidth();
             this.compress();
         } finally {
             PersistentMapProfiler.recordTextureUpload(startedNanos, textureCreated);
@@ -152,12 +215,12 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
     public synchronized void generateMipmaps() {
         if (pixels == null) return;
         clearMipmaps();
-        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[]{pixels}, MIP_LEVELS, MipmapStrategy.MEAN, 0.0F, Transparency.TRANSPARENT_AND_TRANSLUCENT);
+        pixelsMipmapped = MipmapGenerator.generateMipLevels(location, new NativeImage[]{pixels}, maxMipLevel(this.imageSize), MipmapStrategy.MEAN, 0.0F, Transparency.TRANSPARENT_AND_TRANSLUCENT);
     }
 
     private synchronized void decompress() {
         if (pixels == null) {
-            this.pixels = new NativeImage(CachedRegion.REGION_WIDTH, CachedRegion.REGION_WIDTH, false);
+            this.pixels = new NativeImage(this.imageSize, this.imageSize, false);
             if (this.bytes != null) {
                 try {
                     byte[] is = CompressionUtils.decompress(this.bytes);
@@ -183,15 +246,30 @@ public class CompressibleMapRegionTexture extends AbstractTexture {
         }
     }
 
-    @Override
-    public synchronized void close() {
+    private void clearCpuImages() {
         clearMipmaps();
         if (this.pixels != null) {
             this.pixels.close();
             this.pixels = null;
         }
+    }
+
+    private static int maxMipLevel(int imageSize) {
+        return Math.max(0, Integer.numberOfTrailingZeros(imageSize) - 1);
+    }
+
+    private static void validateImageSize(int imageSize) {
+        if (imageSize <= 0 || (imageSize & imageSize - 1) != 0) {
+            throw new IllegalArgumentException("Image size must be a positive power of two: " + imageSize);
+        }
+    }
+
+    @Override
+    public synchronized void close() {
+        clearCpuImages();
         this.bytes = null;
         this.contentValid = false;
+        this.uploadedSize = 0;
         super.close();
     }
 }

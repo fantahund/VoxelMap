@@ -10,7 +10,15 @@ public class EmptyCachedRegion extends CachedRegion {
     }
 
     @Override
+    public void notifyOfLightingChange(SettingsAndLightingChangeNotifier notifier) {
+    }
+
+    @Override
     public void refresh(boolean forceCompress) {
+    }
+
+    @Override
+    void refresh(boolean forceCompress, boolean fullDetail) {
     }
 
     @Override
@@ -39,6 +47,11 @@ public class EmptyCachedRegion extends CachedRegion {
 
     @Override
     public int getWidth() {
+        return 256;
+    }
+
+    @Override
+    public int getTextureWidth() {
         return 256;
     }
 

@@ -20,4 +20,10 @@ public class SettingsAndLightingChangeNotifier {
         }
 
     }
+
+    public void notifyOfLightingChanges() {
+        for (CachedRegion listener : listeners) {
+            listener.notifyOfLightingChange(this);
+        }
+    }
 }

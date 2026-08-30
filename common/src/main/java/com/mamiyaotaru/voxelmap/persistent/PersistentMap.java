@@ -20,10 +20,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.IntStream;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -45,6 +46,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PersistentMap implements IChangeObserver {
+    static final float OVERVIEW_ZOOM_THRESHOLD = 0.25F;
+    private static final long OVERVIEW_RENDER_VERSION = 3L;
+    private static final int OVERVIEW_LIGHTING_UPDATES_PER_FRAME = 8;
+    private static final int OVERVIEW_UPGRADES_PER_FRAME = 1;
     private static final int HEIGHT_SHADE_MIN = -1024;
     private static final int HEIGHT_SHADE_MAX = 1023;
     private static final double[] HEIGHTMAP_SHADE = createHeightShadeLookup(1.8, true);
@@ -64,6 +69,7 @@ public class PersistentMap implements IChangeObserver {
     int lastRight;
     int lastTop;
     int lastBottom;
+    boolean lastFullDetailRequested;
     CachedRegion[] lastRegionsArray = new CachedRegion[0];
     private final Object lastRegionsLock = new Object();
     final Comparator<CachedRegion> ageThenDistanceSorter = (region1, region2) -> {
@@ -88,6 +94,8 @@ public class PersistentMap implements IChangeObserver {
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
+    private int overviewLightingUpdatesRemaining;
+    private int overviewUpgradesRemaining;
 
     public PersistentMap() {
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
@@ -226,18 +234,39 @@ public class PersistentMap implements IChangeObserver {
         return VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier();
     }
 
-    public void setLightMapArray(int[] lights) {
-        boolean changed;
-        int torchOffset = 0;
-        int skylightMultiplier = 16;
-
-        changed = IntStream.range(0, 16).anyMatch(t -> lights[t * skylightMultiplier + torchOffset] != this.lightmapColors[t * skylightMultiplier + torchOffset]);
-
+    public synchronized void setLightMapArray(int[] lights) {
+        boolean changed = !Arrays.equals(lights, this.lightmapColors);
         System.arraycopy(lights, 0, this.lightmapColors, 0, 256);
         if (changed) {
-            this.getSettingsAndLightingChangeNotifier().notifyOfChanges();
+            this.getSettingsAndLightingChangeNotifier().notifyOfLightingChanges();
         }
 
+    }
+
+    synchronized int[] getLightmapSnapshot() {
+        return Arrays.copyOf(this.lightmapColors, this.lightmapColors.length);
+    }
+
+    void beginOverviewLightingFrame() {
+        this.overviewLightingUpdatesRemaining = OVERVIEW_LIGHTING_UPDATES_PER_FRAME;
+        this.overviewUpgradesRemaining = OVERVIEW_UPGRADES_PER_FRAME;
+    }
+
+    boolean tryAcquireOverviewLightingUpdate() {
+        if (this.overviewLightingUpdatesRemaining <= 0) {
+            return false;
+        }
+        --this.overviewLightingUpdatesRemaining;
+        return true;
+    }
+
+    boolean tryAcquireOverviewUpgrade() {
+        if (this.overviewUpgradesRemaining <= 0
+                || ThreadManager.executorService.getQueue().size() >= ThreadManager.CALCULATION_WORKER_COUNT * 2) {
+            return false;
+        }
+        --this.overviewUpgradesRemaining;
+        return true;
     }
 
     public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
@@ -451,14 +480,30 @@ public class PersistentMap implements IChangeObserver {
     public int getPixelColor(AbstractMapData mapData, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
         ColorManager.PersistentMapRenderContext renderContext = this.colorManager.createPersistentMapRenderContext(mapData, world, startX, startZ);
         CompressibleMapData.RenderView renderView = mapData instanceof CompressibleMapData.RenderView view ? view : null;
-        return this.getPixelColor(mapData, renderView, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY);
+        return this.getPixelColor(mapData, renderView, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY, null);
     }
 
     int getPixelColor(CompressibleMapData.RenderView mapData, ColorManager.PersistentMapRenderContext renderContext, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
-        return this.getPixelColor(mapData, mapData, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY);
+        return this.getPixelColor(mapData, mapData, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY, null);
     }
 
-    private int getPixelColor(AbstractMapData mapData, CompressibleMapData.RenderView renderView, ColorManager.PersistentMapRenderContext renderContext, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY) {
+    int getPixelColor(
+            CompressibleMapData.RenderView mapData,
+            ColorManager.PersistentMapRenderContext renderContext,
+            ClientLevel world,
+            MutableBlockPos blockPos,
+            MutableBlockPos loopBlockPos,
+            boolean underground,
+            int multi,
+            int startX,
+            int startZ,
+            int imageX,
+            int imageY,
+            PixelRenderOutput output) {
+        return this.getPixelColor(mapData, mapData, renderContext, world, blockPos, loopBlockPos, underground, multi, startX, startZ, imageX, imageY, output);
+    }
+
+    private int getPixelColor(AbstractMapData mapData, CompressibleMapData.RenderView renderView, ColorManager.PersistentMapRenderContext renderContext, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY, PixelRenderOutput output) {
         int bottomY = world.getMinY();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
@@ -474,6 +519,11 @@ public class PersistentMap implements IChangeObserver {
         int seafloorColor = 0;
         int transparentColor = 0;
         int foliageColor = 0;
+        int unlitSurfaceColor = 0;
+        int unlitSeafloorColor = 0;
+        int unlitTransparentColor = 0;
+        int unlitFoliageColor = 0;
+        int representativeLight = 255;
         blockPos = blockPos.withXYZ(mcX, 0, mcZ);
         int color24;
         Biome biome = mapData.getBiome(imageX, imageY);
@@ -509,8 +559,11 @@ public class PersistentMap implements IChangeObserver {
 
                 surfaceColor = this.applyHeight(mapData, surfaceColor, underground, multi, imageX, imageY, surfaceHeight, solid, 1);
                 int light = mapData.getLight(imageX, imageY);
+                representativeLight = light;
+                unlitSurfaceColor = surfaceColor;
                 if (solid) {
                     surfaceColor = 0;
+                    unlitSurfaceColor = 0;
                 } else if (mapOptions.dynamicLighting) {
                     int lightValue = this.getLight(light);
                     surfaceColor = ColorUtils.colorMultiplier(surfaceColor, lightValue);
@@ -535,6 +588,7 @@ public class PersistentMap implements IChangeObserver {
                             }
 
                             seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0);
+                            unlitSeafloorColor = seafloorColor;
                             int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
                             if (mapOptions.dynamicLighting) {
@@ -564,8 +618,12 @@ public class PersistentMap implements IChangeObserver {
                             }
 
                             transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3);
+                            unlitTransparentColor = transparentColor;
                             int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
+                            if (transparentHeight > surfaceHeight) {
+                                representativeLight = transparentLight;
+                            }
                             if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(transparentLight);
                                 transparentColor = ColorUtils.colorMultiplier(transparentColor, lightValue);
@@ -591,8 +649,12 @@ public class PersistentMap implements IChangeObserver {
                             }
 
                             foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2);
+                            unlitFoliageColor = foliageColor;
                             int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
+                            if (foliageHeight > surfaceHeight && transparentHeight <= surfaceHeight) {
+                                representativeLight = foliageLight;
+                            }
                             if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(foliageLight);
                                 foliageColor = ColorUtils.colorMultiplier(foliageColor, lightValue);
@@ -601,28 +663,8 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                if (mapOptions.waterTransparency && seafloorHeight > bottomY) {
-                    color24 = seafloorColor;
-                    if (foliageColor != 0 && foliageHeight <= surfaceHeight) {
-                        color24 = ColorUtils.colorAdder(foliageColor, seafloorColor);
-                    }
-
-                    if (transparentColor != 0 && transparentHeight <= surfaceHeight) {
-                        color24 = ColorUtils.colorAdder(transparentColor, color24);
-                    }
-
-                    color24 = ColorUtils.colorAdder(surfaceColor, color24);
-                } else {
-                    color24 = surfaceColor;
-                }
-
-                if (foliageColor != 0 && foliageHeight > surfaceHeight) {
-                    color24 = ColorUtils.colorAdder(foliageColor, color24);
-                }
-
-                if (transparentColor != 0 && transparentHeight > surfaceHeight) {
-                    color24 = ColorUtils.colorAdder(transparentColor, color24);
-                }
+                color24 = composeLayers(surfaceColor, seafloorColor, transparentColor, foliageColor, surfaceHeight, seafloorHeight, transparentHeight, foliageHeight, bottomY, mapOptions.waterTransparency);
+                int unlitColor = composeLayers(unlitSurfaceColor, unlitSeafloorColor, unlitTransparentColor, unlitFoliageColor, surfaceHeight, seafloorHeight, transparentHeight, foliageHeight, bottomY, mapOptions.waterTransparency);
 
                 if (mapOptions.biomeOverlay == 2) {
                     int bc = 0;
@@ -632,13 +674,66 @@ public class PersistentMap implements IChangeObserver {
 
                     bc = 0x7F000000 | bc;
                     color24 = ColorUtils.colorAdder(bc, color24);
+                    unlitColor = ColorUtils.colorAdder(bc, unlitColor);
+                }
+
+                if (output != null) {
+                    output.unlitColor = MapUtils.doSlimeAndGrid(ARGB.toABGR(unlitColor), world, mcX, mcZ);
+                    output.light = representativeLight;
                 }
 
             }
-            return MapUtils.doSlimeAndGrid(ARGB.toABGR(color24), world, mcX, mcZ);
+            int displayedColor = MapUtils.doSlimeAndGrid(ARGB.toABGR(color24), world, mcX, mcZ);
+            if (output != null && mapOptions.biomeOverlay == 1) {
+                output.unlitColor = displayedColor;
+                output.light = 255;
+            }
+            return displayedColor;
         } else {
+            if (output != null) {
+                output.unlitColor = 0;
+                output.light = 255;
+            }
             return 0;
         }
+    }
+
+    private static int composeLayers(
+            int surfaceColor,
+            int seafloorColor,
+            int transparentColor,
+            int foliageColor,
+            int surfaceHeight,
+            int seafloorHeight,
+            int transparentHeight,
+            int foliageHeight,
+            int bottomY,
+            boolean waterTransparency) {
+        int color;
+        if (waterTransparency && seafloorHeight > bottomY) {
+            color = seafloorColor;
+            if (foliageColor != 0 && foliageHeight <= surfaceHeight) {
+                color = ColorUtils.colorAdder(foliageColor, seafloorColor);
+            }
+            if (transparentColor != 0 && transparentHeight <= surfaceHeight) {
+                color = ColorUtils.colorAdder(transparentColor, color);
+            }
+            color = ColorUtils.colorAdder(surfaceColor, color);
+        } else {
+            color = surfaceColor;
+        }
+        if (foliageColor != 0 && foliageHeight > surfaceHeight) {
+            color = ColorUtils.colorAdder(foliageColor, color);
+        }
+        if (transparentColor != 0 && transparentHeight > surfaceHeight) {
+            color = ColorUtils.colorAdder(transparentColor, color);
+        }
+        return color;
+    }
+
+    static final class PixelRenderOutput {
+        int unlitColor;
+        int light;
     }
 
     private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer) {
@@ -768,6 +863,46 @@ public class PersistentMap implements IChangeObserver {
         return Math.log10(Math.abs(diff) / 8.0 + 1.0) / 3.0;
     }
 
+    static boolean useOverview(float zoom) {
+        return zoom <= OVERVIEW_ZOOM_THRESHOLD;
+    }
+
+    long getOverviewRenderSignature() {
+        return this.getOverviewRenderSignature(OVERVIEW_RENDER_VERSION);
+    }
+
+    long getLegacyOverviewRenderSignature() {
+        return this.getOverviewRenderSignature(1L);
+    }
+
+    private long getOverviewRenderSignature(long renderVersion) {
+        long signature = 0xcbf29ce484222325L;
+        signature = appendSignature(signature, renderVersion);
+        signature = appendSignature(signature, this.colorManager.getResourcePackSignature());
+        signature = appendSignature(signature, this.mapOptions.dynamicLighting);
+        signature = appendSignature(signature, this.mapOptions.heightmap);
+        signature = appendSignature(signature, this.mapOptions.slopemap);
+        signature = appendSignature(signature, this.mapOptions.waterTransparency);
+        signature = appendSignature(signature, this.mapOptions.blockTransparency);
+        signature = appendSignature(signature, this.mapOptions.biomes);
+        signature = appendSignature(signature, this.mapOptions.biomeOverlay);
+        signature = appendSignature(signature, this.mapOptions.chunkGrid);
+        signature = appendSignature(signature, this.mapOptions.slimeChunks);
+        signature = appendSignature(signature, VoxelConstants.usesConnectedTextures());
+        return signature;
+    }
+
+    private static long appendSignature(long signature, long value) {
+        for (int shift = 0; shift < Long.SIZE; shift += Byte.SIZE) {
+            signature = (signature ^ (value >>> shift & 0xffL)) * 0x100000001b3L;
+        }
+        return signature;
+    }
+
+    private static long appendSignature(long signature, boolean value) {
+        return appendSignature(signature, value ? 1L : 0L);
+    }
+
     private static double[] createHeightShadeLookup(double divisor, boolean signed) {
         double[] lookup = new double[HEIGHT_SHADE_MAX - HEIGHT_SHADE_MIN + 1];
         for (int height = HEIGHT_SHADE_MIN; height <= HEIGHT_SHADE_MAX; ++height) {
@@ -783,11 +918,27 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public CachedRegion[] getRegions(int left, int right, int top, int bottom) {
-        if (left == this.lastLeft && right == this.lastRight && top == this.lastTop && bottom == this.lastBottom) {
+        return this.getRegions(left, right, top, bottom, Float.POSITIVE_INFINITY);
+    }
+
+    public CachedRegion[] getRegions(int left, int right, int top, int bottom, float zoom) {
+        boolean fullDetail = !useOverview(zoom) || this.options.outputImages || this.mapOptions.biomeOverlay != 0;
+        int expectedRegionCount = Math.max(0, right - left + 1) * Math.max(0, bottom - top + 1);
+        if (left == this.lastLeft
+                && right == this.lastRight
+                && top == this.lastTop
+                && bottom == this.lastBottom
+                && this.lastRegionsArray.length == expectedRegionCount) {
+            if (this.lastFullDetailRequested != fullDetail) {
+                for (CachedRegion region : this.lastRegionsArray) {
+                    region.refresh(false, fullDetail);
+                }
+                this.lastFullDetailRequested = fullDetail;
+            }
             return this.lastRegionsArray;
         } else {
             long selectionStartedNanos = PersistentMapProfiler.startTimer();
-            ThreadManager.emptyQueue();
+            CachedRegion[] previouslyVisibleRegions = this.lastRegionsArray;
             CachedRegion[] visibleCachedRegionsArray = new CachedRegion[(right - left + 1) * (bottom - top + 1)];
             String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
             String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
@@ -826,8 +977,16 @@ public class PersistentMap implements IChangeObserver {
                     }
                 }
 
-                cachedRegion.refresh(true);
+                cachedRegion.refresh(true, fullDetail);
                 visibleCachedRegionsArray[(z - top) * (right - left + 1) + (x - left)] = cachedRegion;
+            }
+
+            Set<CachedRegion> visibleRegions = Collections.newSetFromMap(new IdentityHashMap<>());
+            Collections.addAll(visibleRegions, visibleCachedRegionsArray);
+            for (CachedRegion previouslyVisibleRegion : previouslyVisibleRegions) {
+                if (previouslyVisibleRegion != CachedRegion.EMPTY_REGION && !visibleRegions.contains(previouslyVisibleRegion)) {
+                    previouslyVisibleRegion.cancelRefreshIfQueued();
+                }
             }
 
             this.prunePool();
@@ -844,6 +1003,7 @@ public class PersistentMap implements IChangeObserver {
                 this.lastRight = right;
                 this.lastTop = top;
                 this.lastBottom = bottom;
+                this.lastFullDetailRequested = fullDetail;
                 this.lastRegionsArray = visibleCachedRegionsArray;
                 return visibleCachedRegionsArray;
             }

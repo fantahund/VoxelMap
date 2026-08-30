@@ -178,6 +178,84 @@ final class PersistentMapProfiler {
         session.record(Stage.CACHE_READ, startedNanos, decompressedBytes);
     }
 
+    static void recordOverviewRead(long startedNanos, boolean filePresent, boolean hit) {
+        Session session = CURRENT_SESSION.get();
+        if (session == null) {
+            return;
+        }
+        if (filePresent) {
+            session.overviewFilesPresent.increment();
+        }
+        if (hit) {
+            session.overviewHits.increment();
+        } else {
+            session.overviewMisses.increment();
+        }
+        session.record(Stage.OVERVIEW_READ, startedNanos, hit ? PersistentMapOverviewCache.RAW_BYTES : 0L);
+    }
+
+    static void recordOverviewWrite(long startedNanos, long rawBytes, boolean success) {
+        Session session = CURRENT_SESSION.get();
+        if (session == null) {
+            return;
+        }
+        if (success) {
+            session.overviewWrites.increment();
+        } else {
+            session.overviewWriteFailures.increment();
+        }
+        session.record(Stage.OVERVIEW_WRITE, startedNanos, rawBytes);
+    }
+
+    static void recordRawRegionLoadSkipped(long overviewBytes) {
+        Session session = CURRENT_SESSION.get();
+        if (session != null) {
+            session.rawRegionLoadsSkipped.increment();
+            session.overviewBytesRead.add(overviewBytes);
+            session.touch();
+        }
+    }
+
+    static void recordLightingChange(boolean applied) {
+        Session session = CURRENT_SESSION.get();
+        if (session != null) {
+            if (applied) {
+                session.lightingChangesApplied.increment();
+            } else {
+                session.lightingChangesIgnoredAtLowZoom.increment();
+            }
+            session.touch();
+        }
+    }
+
+    static void recordOverviewLightingEvaluation(boolean updated, boolean budgetDeferred) {
+        Session session = CURRENT_SESSION.get();
+        if (session == null) {
+            return;
+        }
+        session.overviewLightingChecks.increment();
+        if (updated) {
+            session.overviewLightingUpdates.increment();
+        } else if (budgetDeferred) {
+            session.overviewLightingBudgetDeferrals.increment();
+        } else {
+            session.overviewLightingThresholdSkips.increment();
+        }
+        session.touch();
+    }
+
+    static void recordOverviewRelight(long startedNanos) {
+        record(Stage.OVERVIEW_RELIGHT, startedNanos, PersistentMapOverviewCache.PIXEL_COUNT);
+    }
+
+    static void recordDisplayChangeRequest() {
+        Session session = CURRENT_SESSION.get();
+        if (session != null) {
+            session.displayChangeFullDetailRequests.increment();
+            session.touch();
+        }
+    }
+
     static void recordLiveChunkScan(long startedNanos, int chunksChecked, int chunksLoaded) {
         Session session = CURRENT_SESSION.get();
         if (session == null) {
@@ -264,6 +342,9 @@ final class PersistentMapProfiler {
         REGION_LOAD("region-load", "non-empty"),
         CACHE_LOOKUP("cache-lookup", "files-present"),
         CACHE_READ("cache-read", "raw-bytes"),
+        OVERVIEW_READ("overview-read", "raw-bytes"),
+        OVERVIEW_WRITE("overview-write", "raw-bytes"),
+        OVERVIEW_RELIGHT("overview-relight", "pixels"),
         LIVE_CHUNK_SCAN("live-chunk-scan", "chunks-checked"),
         ANVIL_LOAD("anvil-load", null),
         RENDER_VIEW_CREATION("render-view-creation", null),
@@ -328,6 +409,20 @@ final class PersistentMapProfiler {
         private final LongAdder cacheFilesPresent = new LongAdder();
         private final LongAdder cacheFilesMissing = new LongAdder();
         private final LongAdder decompressedCacheBytes = new LongAdder();
+        private final LongAdder overviewFilesPresent = new LongAdder();
+        private final LongAdder overviewHits = new LongAdder();
+        private final LongAdder overviewMisses = new LongAdder();
+        private final LongAdder rawRegionLoadsSkipped = new LongAdder();
+        private final LongAdder overviewBytesRead = new LongAdder();
+        private final LongAdder overviewWrites = new LongAdder();
+        private final LongAdder overviewWriteFailures = new LongAdder();
+        private final LongAdder lightingChangesApplied = new LongAdder();
+        private final LongAdder lightingChangesIgnoredAtLowZoom = new LongAdder();
+        private final LongAdder overviewLightingChecks = new LongAdder();
+        private final LongAdder overviewLightingUpdates = new LongAdder();
+        private final LongAdder overviewLightingThresholdSkips = new LongAdder();
+        private final LongAdder overviewLightingBudgetDeferrals = new LongAdder();
+        private final LongAdder displayChangeFullDetailRequests = new LongAdder();
         private final LongAdder liveChunksLoaded = new LongAdder();
         private final LongAdder texturesCreated = new LongAdder();
         private final LongAdder fullImageRenders = new LongAdder();
@@ -370,7 +465,7 @@ final class PersistentMapProfiler {
             long completed = refreshCompleted.sum();
 
             VoxelConstants.getLogger().info(
-                    "[PersistentMap profile #{} report {}] reason={}, wall={} ms, screen={}x{}, initialZoom={}, zoom={}->{}, initialCenter=({}, {}), visibleRegions={}, executorWorkers(configured/largest/active)={}/{}/{}, saveWorkers={}, executorQueued={}",
+                    "[PersistentMap profile #{} report {}] reason={}, wall={} ms, screen={}x{}, initialZoom={}, zoom={}->{}, initialCenter=({}, {}), visibleRegions={}, executorWorkers(configured/largest/active)={}/{}/{}, executorQueued={}, saveWorkers(configured/active/queued)={}/{}/{}",
                     id,
                     reportNumber,
                     reason,
@@ -386,8 +481,10 @@ final class PersistentMapProfiler {
                     ThreadManager.CALCULATION_WORKER_COUNT,
                     ThreadManager.executorService.getLargestPoolSize(),
                     ThreadManager.executorService.getActiveCount(),
+                    ThreadManager.executorService.getQueue().size(),
                     ThreadManager.SAVE_WORKER_COUNT,
-                    ThreadManager.executorService.getQueue().size());
+                    ThreadManager.saveExecutorService.getActiveCount(),
+                    ThreadManager.saveExecutorService.getQueue().size());
             VoxelConstants.getLogger().info(
                     "[PersistentMap profile #{} report {}] selections={}, requestedRegions(total/max)={}/{}, regions(created/reused/known-empty)={}/{}/{}, loads(non-empty/empty)={}/{}",
                     id,
@@ -416,6 +513,24 @@ final class PersistentMapProfiler {
                     formatBytes(decompressedCacheBytes.sum()),
                     liveChunksLoaded.sum(),
                     texturesCreated.sum());
+            VoxelConstants.getLogger().info(
+                    "[PersistentMap profile #{} report {}] overview(files/hits/misses)={}/{}/{}, rawLoadsSkipped={}, overviewRawRead={}, writes(success/failed)={}/{}, lightingChanges(applied/ignored)={}/{}, overviewRelights(checks/updated/threshold-skipped/budget-deferred)={}/{}/{}/{}, displayChangeFullDetailRequests={}",
+                    id,
+                    reportNumber,
+                    overviewFilesPresent.sum(),
+                    overviewHits.sum(),
+                    overviewMisses.sum(),
+                    rawRegionLoadsSkipped.sum(),
+                    formatBytes(overviewBytesRead.sum()),
+                    overviewWrites.sum(),
+                    overviewWriteFailures.sum(),
+                    lightingChangesApplied.sum(),
+                    lightingChangesIgnoredAtLowZoom.sum(),
+                    overviewLightingChecks.sum(),
+                    overviewLightingUpdates.sum(),
+                    overviewLightingThresholdSkips.sum(),
+                    overviewLightingBudgetDeferrals.sum(),
+                    displayChangeFullDetailRequests.sum());
 
             for (Stage stage : Stage.values()) {
                 StageStats stats = stages[stage.ordinal()];

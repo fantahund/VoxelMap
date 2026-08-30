@@ -1,6 +1,7 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -31,6 +32,17 @@ public final class ThreadManager {
 
         executorService.purge();
         PersistentMapProfiler.recordQueueCancellations(cancellations);
+    }
+
+    static boolean cancelQueued(Future<?> future) {
+        if (!(future instanceof Runnable runnable) || !queue.remove(runnable)) {
+            return false;
+        }
+        boolean cancelled = future.cancel(false);
+        if (cancelled) {
+            PersistentMapProfiler.recordQueueCancellations(1);
+        }
+        return cancelled;
     }
 
     public static void flushSaveQueue() {

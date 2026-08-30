@@ -629,7 +629,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 return;
             }
 
-            this.regions = this.persistentMap.getRegions(left - 1, right + 1, top - 1, bottom + 1);
+            this.regions = this.persistentMap.getRegions(left - 1, right + 1, top - 1, bottom + 1, this.zoom);
         }
 
         this.backGroundImageInfo = this.waypointManager.getBackgroundImageInfo();
@@ -646,10 +646,24 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float cursorCoordX = 0.0f;
         graphics.pose().scale(this.mapToGui, this.mapToGui);
         if (mapOptions.worldmapAllowed) {
+            this.persistentMap.beginOverviewLightingFrame();
             for (CachedRegion region : this.regions) {
                 Identifier resource = region.getTextureLocation(this.zoom);
                 if (resource != null) {
-                    graphics.blit(RenderPipelines.GUI_TEXTURED, resource, region.getX() * 256, region.getZ() * 256, 0, 0, region.getWidth(), region.getWidth(), region.getWidth(), region.getWidth());
+                    int textureWidth = region.getTextureWidth();
+                    graphics.blit(
+                            RenderPipelines.GUI_TEXTURED,
+                            resource,
+                            region.getX() * 256,
+                            region.getZ() * 256,
+                            0,
+                            0,
+                            region.getWidth(),
+                            region.getWidth(),
+                            textureWidth,
+                            textureWidth,
+                            textureWidth,
+                            textureWidth);
                 }
             }
             boolean profilingViewStable = !this.leftMouseButtonDown

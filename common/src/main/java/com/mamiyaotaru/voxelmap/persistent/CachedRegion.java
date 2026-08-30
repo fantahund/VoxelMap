@@ -83,6 +83,12 @@ public class CachedRegion {
     private final Object refreshStateLock = new Object();
     private CompressibleMapRegionTexture image;
     private CompressibleMapData data;
+    private volatile PersistentMapOverviewCache.OverviewData overviewData;
+    private volatile PersistentMapOverviewCache.OverviewData latestOverviewData;
+    private volatile long latestOverviewSignature;
+    private volatile int[] appliedOverviewLightmap;
+    private volatile boolean overviewLightingPending;
+    private volatile boolean legacyOverview;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
     Future<?> future;
@@ -96,6 +102,11 @@ public class CachedRegion {
     boolean forceCompressRequested;
     boolean retainImageRequested;
     volatile boolean loaded;
+    volatile boolean dataLoaded;
+    volatile boolean fullImageReady;
+    boolean fullDetailRequested;
+    boolean overviewUpgradeRequested;
+    boolean overviewLookupAttempted;
     volatile boolean closed;
     private static final Object anvilLock = new Object();
     private static final ReadWriteLock tickLock = new ReentrantReadWriteLock();
@@ -171,6 +182,7 @@ public class CachedRegion {
         synchronized (this.refreshStateLock) {
             this.dataUpdateQueued = true;
             this.retainImageRequested = true;
+            this.fullDetailRequested = true;
             this.liveChunkUpdateQueued.set(index);
         }
     }
@@ -178,13 +190,36 @@ public class CachedRegion {
     public void notifyOfActionableChange(SettingsAndLightingChangeNotifier notifier) {
         synchronized (this.refreshStateLock) {
             this.displayOptionsChanged = true;
+            this.fullDetailRequested = true;
         }
+        PersistentMapProfiler.recordDisplayChangeRequest();
+    }
+
+    public void notifyOfLightingChange(SettingsAndLightingChangeNotifier notifier) {
+        boolean applied;
+        synchronized (this.refreshStateLock) {
+            if (this.persistentMap != null && !this.persistentMap.mapOptions.dynamicLighting) {
+                applied = false;
+            } else if (this.fullDetailRequested) {
+                applied = true;
+                this.displayOptionsChanged = true;
+            } else {
+                applied = this.overviewData != null || this.legacyOverview;
+                this.overviewLightingPending |= this.overviewData != null;
+            }
+        }
+        PersistentMapProfiler.recordLightingChange(applied);
     }
 
     public void refresh(boolean forceCompress) {
+        this.refresh(forceCompress, true);
+    }
+
+    void refresh(boolean forceCompress, boolean fullDetail) {
         this.mostRecentView = System.currentTimeMillis();
         synchronized (this.refreshStateLock) {
-            this.forceCompressRequested |= forceCompress;
+            this.forceCompressRequested |= forceCompress && (!this.loaded || this.data != null && !this.data.isCompressed());
+            this.fullDetailRequested |= fullDetail;
             if (this.future != null && (this.future.isDone() || this.future.isCancelled())) {
                 this.refreshQueued = false;
             }
@@ -196,10 +231,12 @@ public class CachedRegion {
 
     private boolean hasRefreshWorkLocked() {
         return !this.closed && (!this.loaded
+                || this.fullDetailRequested && (!this.dataLoaded || !this.fullImageReady)
+                || this.overviewUpgradeRequested
                 || this.dataUpdated
                 || this.dataUpdateQueued
                 || this.displayOptionsChanged
-                || this.forceCompressRequested);
+                || this.forceCompressRequested && (!this.loaded || this.data != null && !this.data.isCompressed()));
     }
 
     private void submitRefreshLocked() {
@@ -208,6 +245,14 @@ public class CachedRegion {
         this.refreshQueued = true;
         RefreshRunnable regionProcessingRunnable = new RefreshRunnable(forceCompress, PersistentMapProfiler.recordRefreshScheduled());
         this.future = ThreadManager.executorService.submit(regionProcessingRunnable);
+    }
+
+    void cancelRefreshIfQueued() {
+        synchronized (this.refreshStateLock) {
+            if (this.future != null && ThreadManager.cancelQueued(this.future)) {
+                this.refreshQueued = false;
+            }
+        }
     }
 
     public void handleChangedChunk(LevelChunk chunk) {
@@ -220,6 +265,7 @@ public class CachedRegion {
             }
             this.chunkUpdateQueued.set(index);
             this.retainImageRequested = true;
+            this.fullDetailRequested = true;
             this.mostRecentView = System.currentTimeMillis();
             this.mostRecentChange = this.mostRecentView;
             FillChunkRunnable fillChunkRunnable = new FillChunkRunnable(chunk);
@@ -227,11 +273,16 @@ public class CachedRegion {
         }
     }
 
-    private void load() {
+    private void loadFullData() {
+        if (this.dataLoaded) {
+            return;
+        }
         long loadStartedNanos = PersistentMapProfiler.startTimer();
         try {
             this.data = new CompressibleMapData(world);
-            this.image = new CompressibleMapRegionTexture();
+            if (this.image == null) {
+                this.image = new CompressibleMapRegionTexture();
+            }
             this.loadCachedData();
             this.loadCurrentData(this.world);
             if (!this.remoteWorld) {
@@ -242,11 +293,47 @@ public class CachedRegion {
                     PersistentMapProfiler.recordAnvilLoad(anvilStartedNanos);
                 }
             }
-
+            this.dataLoaded = true;
             this.loaded = true;
         } finally {
             PersistentMapProfiler.recordRegionLoad(loadStartedNanos, !this.empty);
         }
+    }
+
+    private boolean loadOverview() {
+        File overviewFile = this.getOverviewCacheFile();
+        File legacyOverviewFile = this.getLegacyOverviewCacheFile();
+        File sourceFile = this.getCachedRegionFile();
+        long startedNanos = PersistentMapProfiler.startTimer();
+        Optional<PersistentMapOverviewCache.OverviewData> cachedOverview = PersistentMapOverviewCache.read(overviewFile, sourceFile, this.persistentMap.getOverviewRenderSignature());
+        byte[] displayedPixels;
+        if (cachedOverview.isPresent()) {
+            int[] lightmap = this.persistentMap.getLightmapSnapshot();
+            this.overviewData = cachedOverview.get();
+            displayedPixels = PersistentMapOverviewCache.applyLighting(this.overviewData, lightmap, this.persistentMap.mapOptions.dynamicLighting);
+            this.appliedOverviewLightmap = lightmap;
+            this.legacyOverview = false;
+        } else {
+            Optional<byte[]> legacyPixels = PersistentMapOverviewCache.readLegacy(legacyOverviewFile, sourceFile, this.persistentMap.getLegacyOverviewRenderSignature());
+            if (legacyPixels.isEmpty()) {
+                PersistentMapProfiler.recordOverviewRead(startedNanos, overviewFile.isFile() || legacyOverviewFile.isFile(), false);
+                return false;
+            }
+            displayedPixels = legacyPixels.get();
+            this.overviewData = null;
+            this.appliedOverviewLightmap = null;
+            this.legacyOverview = true;
+        }
+        PersistentMapProfiler.recordOverviewRead(startedNanos, overviewFile.isFile() || legacyOverviewFile.isFile(), true);
+
+        this.image = new CompressibleMapRegionTexture(PersistentMapOverviewCache.SIZE);
+        this.image.replacePixels(PersistentMapOverviewCache.SIZE, displayedPixels);
+        this.image.generateMipmaps();
+        this.empty = false;
+        this.loaded = true;
+        this.fullImageReady = false;
+        this.imageChanged = true;
+        return true;
     }
 
     private void loadCurrentData(ClientLevel world) {
@@ -499,9 +586,9 @@ public class CachedRegion {
         boolean filePresent = false;
         long decompressedBytes = 0L;
         try {
-            File cachedRegionFileDir = new File(VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(), this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = this.getRegionCacheDirectory();
             cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = this.getCachedRegionFile();
             filePresent = cachedRegionFile.exists();
             PersistentMapProfiler.recordCacheLookup(lookupStartedNanos, filePresent);
             lookupRecorded = true;
@@ -584,7 +671,7 @@ public class CachedRegion {
     }
 
     private void saveData(boolean newThread) {
-        if (this.liveChunksUpdated && !this.worldNamePathPart.isEmpty()) {
+        if (this.data != null && this.liveChunksUpdated && !this.worldNamePathPart.isEmpty()) {
             if (newThread) {
                 ThreadManager.saveExecutorService.execute(() -> {
                     if (VoxelConstants.DEBUG) {
@@ -622,9 +709,9 @@ public class CachedRegion {
         BiMap<Biome, Integer> biomeToInt = this.data.getBiomeToInt();
         byte[] byteArray = this.data.getData();
         if (byteArray.length == this.data.getExpectedDataLength(CompressibleMapData.DATA_VERSION)) {
-            File cachedRegionFileDir = new File(VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(), this.subworldNamePathPart + this.dimensionNamePathPart);
+            File cachedRegionFileDir = this.getRegionCacheDirectory();
             cachedRegionFileDir.mkdirs();
-            File cachedRegionFile = new File(cachedRegionFileDir, "/" + this.key + ".zip");
+            File cachedRegionFile = this.getCachedRegionFile();
             try (FileOutputStream fos = new FileOutputStream(cachedRegionFile); ZipOutputStream zos = new ZipOutputStream(fos)) {
                 ZipEntry ze = new ZipEntry("data");
                 ze.setSize(byteArray.length);
@@ -674,13 +761,68 @@ public class CachedRegion {
                 zos.write(keyByteArray);
                 zos.closeEntry();
             }
+            this.rewriteOverviewAfterSourceSave();
         } else {
             VoxelConstants.getLogger().warn("Data array wrong size: " + byteArray.length + "for " + this.x + "," + this.z + " in " + this.worldNamePathPart + "/" + this.subworldNamePathPart + this.dimensionNamePathPart);
         }
 
     }
 
+    private File getRegionCacheDirectory() {
+        return new File(VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(), this.subworldNamePathPart + this.dimensionNamePathPart);
+    }
+
+    private File getCachedRegionFile() {
+        return new File(this.getRegionCacheDirectory(), this.key + ".zip");
+    }
+
+    private File getOverviewCacheFile() {
+        return new File(new File(this.getRegionCacheDirectory(), "overview-v2"), this.key + ".vmo");
+    }
+
+    private File getLegacyOverviewCacheFile() {
+        return new File(new File(this.getRegionCacheDirectory(), "overview-v1"), this.key + ".vmo");
+    }
+
+    private void queueOverviewSave(PersistentMapOverviewCache.OverviewData overview) {
+        File overviewFile = this.getOverviewCacheFile();
+        File sourceFile = this.getCachedRegionFile();
+        long renderSignature = this.persistentMap.getOverviewRenderSignature();
+        this.latestOverviewData = overview;
+        this.latestOverviewSignature = renderSignature;
+        ThreadManager.saveExecutorService.execute(() -> {
+            long startedNanos = PersistentMapProfiler.startTimer();
+            boolean success = false;
+            try {
+                PersistentMapOverviewCache.write(overviewFile, sourceFile, renderSignature, overview);
+                success = true;
+            } catch (IOException | RuntimeException exception) {
+                VoxelConstants.getLogger().warn("Failed to save overview for region " + this.x + "," + this.z, exception);
+            } finally {
+                PersistentMapProfiler.recordOverviewWrite(startedNanos, PersistentMapOverviewCache.RAW_BYTES, success);
+            }
+        });
+    }
+
+    private void rewriteOverviewAfterSourceSave() {
+        PersistentMapOverviewCache.OverviewData overview = this.latestOverviewData;
+        if (overview == null) {
+            return;
+        }
+        long startedNanos = PersistentMapProfiler.startTimer();
+        boolean success = false;
+        try {
+            PersistentMapOverviewCache.write(this.getOverviewCacheFile(), this.getCachedRegionFile(), this.latestOverviewSignature, overview);
+            success = true;
+        } catch (IOException | RuntimeException exception) {
+            VoxelConstants.getLogger().warn("Failed to refresh overview metadata for region " + this.x + "," + this.z, exception);
+        } finally {
+            PersistentMapProfiler.recordOverviewWrite(startedNanos, PersistentMapOverviewCache.RAW_BYTES, success);
+        }
+    }
+
     private void fillImage(BitSet dirtyPixels) {
+        this.image.prepareSize(REGION_WIDTH);
         long renderViewStartedNanos = PersistentMapProfiler.startTimer();
         CompressibleMapData.RenderView renderView;
         ColorManager.PersistentMapRenderContext renderContext;
@@ -696,13 +838,17 @@ public class CachedRegion {
         int pixelsColored = dirtyPixels == null ? REGION_WIDTH * REGION_WIDTH : dirtyPixels.cardinality();
         try {
             NativeImage target = this.image.getData();
+            PersistentMap.PixelRenderOutput renderOutput = new PersistentMap.PixelRenderOutput();
             if (dirtyPixels == null) {
+                OverviewAccumulator overviewAccumulator = new OverviewAccumulator();
                 for (int z = 0; z < REGION_WIDTH; ++z) {
                     for (int x = 0; x < REGION_WIDTH; ++x) {
-                        int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z);
+                        int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
                         target.setPixel(x, z, ColorUtils.premultiplyWithAlpha(color24));
+                        overviewAccumulator.accept(x, z, renderOutput.unlitColor, renderOutput.light);
                     }
                 }
+                this.overviewData = overviewAccumulator.build();
             } else {
                 for (int index = dirtyPixels.nextSetBit(0); index >= 0; index = dirtyPixels.nextSetBit(index + 1)) {
                     int x = index % REGION_WIDTH;
@@ -710,6 +856,7 @@ public class CachedRegion {
                     int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z);
                     target.setPixel(x, z, ColorUtils.premultiplyWithAlpha(color24));
                 }
+                this.overviewData = this.updateOverviewCells(renderView, renderContext, dirtyPixels, renderOutput);
             }
             this.image.markContentValid();
         } finally {
@@ -722,6 +869,47 @@ public class CachedRegion {
         } finally {
             PersistentMapProfiler.recordMipmapGeneration(mipmapStartedNanos, REGION_WIDTH * REGION_WIDTH);
         }
+    }
+
+    private PersistentMapOverviewCache.OverviewData updateOverviewCells(
+            CompressibleMapData.RenderView renderView,
+            ColorManager.PersistentMapRenderContext renderContext,
+            BitSet dirtyPixels,
+            PersistentMap.PixelRenderOutput renderOutput) {
+        if (this.overviewData == null) {
+            OverviewAccumulator accumulator = new OverviewAccumulator();
+            for (int z = 0; z < REGION_WIDTH; ++z) {
+                for (int x = 0; x < REGION_WIDTH; ++x) {
+                    this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
+                    accumulator.accept(x, z, renderOutput.unlitColor, renderOutput.light);
+                }
+            }
+            return accumulator.build();
+        }
+
+        PersistentMapOverviewCache.OverviewData updated = this.overviewData.copy();
+        byte[] basePixels = updated.basePixels();
+        byte[] lightValues = updated.lightValues();
+        BitSet dirtyOverviewPixels = new BitSet(PersistentMapOverviewCache.PIXEL_COUNT);
+        for (int pixel = dirtyPixels.nextSetBit(0); pixel >= 0; pixel = dirtyPixels.nextSetBit(pixel + 1)) {
+            int x = pixel % REGION_WIDTH;
+            int z = pixel / REGION_WIDTH;
+            dirtyOverviewPixels.set((z / 4) * PersistentMapOverviewCache.SIZE + x / 4);
+        }
+
+        for (int overviewPixel = dirtyOverviewPixels.nextSetBit(0); overviewPixel >= 0; overviewPixel = dirtyOverviewPixels.nextSetBit(overviewPixel + 1)) {
+            int overviewX = overviewPixel % PersistentMapOverviewCache.SIZE;
+            int overviewZ = overviewPixel / PersistentMapOverviewCache.SIZE;
+            OverviewPixelAccumulator accumulator = new OverviewPixelAccumulator();
+            for (int z = overviewZ * 4; z < overviewZ * 4 + 4; ++z) {
+                for (int x = overviewX * 4; x < overviewX * 4 + 4; ++x) {
+                    this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
+                    accumulator.accept(renderOutput.unlitColor, renderOutput.light);
+                }
+            }
+            accumulator.write(basePixels, lightValues, overviewPixel);
+        }
+        return new PersistentMapOverviewCache.OverviewData(basePixels, lightValues);
     }
 
     private void saveImage() {
@@ -772,8 +960,16 @@ public class CachedRegion {
         return REGION_WIDTH;
     }
 
+    public int getTextureWidth() {
+        return this.image == null ? REGION_WIDTH : this.image.getDisplaySize();
+    }
+
     public Identifier getTextureLocation(float zoom) {
         if (this.image != null) {
+            if (PersistentMap.useOverview(zoom)) {
+                this.requestLegacyOverviewUpgrade();
+                this.updateOverviewLightingIfNeeded();
+            }
             if (!this.refreshingImage) {
                 synchronized (this.image) {
                     if (this.imageChanged) {
@@ -849,6 +1045,138 @@ public class CachedRegion {
         return this.data.isCompressed();
     }
 
+    static final class OverviewAccumulator {
+        private final int[] red = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] green = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] blue = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] alpha = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] blockLight = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] skyLight = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+
+        void accept(int x, int z, int unlitColor, int light) {
+            int overviewPixel = (z / 4) * PersistentMapOverviewCache.SIZE + x / 4;
+            int premultiplied = ColorUtils.premultiplyWithAlpha(unlitColor);
+            // PixelRenderOutput uses ARGB (the format accepted by NativeImage.setPixel),
+            // while the persisted byte buffer is raw RGBA.
+            this.red[overviewPixel] += premultiplied >> 16 & 0xFF;
+            this.green[overviewPixel] += premultiplied >> 8 & 0xFF;
+            this.blue[overviewPixel] += premultiplied & 0xFF;
+            this.alpha[overviewPixel] += premultiplied >> 24 & 0xFF;
+            this.blockLight[overviewPixel] += light & 0xF;
+            this.skyLight[overviewPixel] += light >> 4 & 0xF;
+        }
+
+        PersistentMapOverviewCache.OverviewData build() {
+            byte[] basePixels = new byte[PersistentMapOverviewCache.COLOR_BYTES];
+            byte[] lightValues = new byte[PersistentMapOverviewCache.LIGHT_BYTES];
+            for (int pixel = 0; pixel < PersistentMapOverviewCache.PIXEL_COUNT; ++pixel) {
+                int offset = pixel * 4;
+                basePixels[offset] = roundedAverage(this.red[pixel]);
+                basePixels[offset + 1] = roundedAverage(this.green[pixel]);
+                basePixels[offset + 2] = roundedAverage(this.blue[pixel]);
+                basePixels[offset + 3] = roundedAverage(this.alpha[pixel]);
+                lightValues[pixel] = combinedLight(this.blockLight[pixel], this.skyLight[pixel]);
+            }
+            return new PersistentMapOverviewCache.OverviewData(basePixels, lightValues);
+        }
+    }
+
+    private void requestLegacyOverviewUpgrade() {
+        if (!this.legacyOverview || this.closed) {
+            return;
+        }
+        synchronized (this.refreshStateLock) {
+            if (this.overviewUpgradeRequested || this.refreshQueued) {
+                return;
+            }
+        }
+        if (!this.persistentMap.tryAcquireOverviewUpgrade()) {
+            return;
+        }
+        synchronized (this.refreshStateLock) {
+            if (this.legacyOverview && !this.closed) {
+                this.overviewUpgradeRequested = true;
+                if (!this.refreshQueued) {
+                    this.submitRefreshLocked();
+                }
+            }
+        }
+    }
+
+    private void updateOverviewLightingIfNeeded() {
+        PersistentMapOverviewCache.OverviewData overview = this.overviewData;
+        if (!this.overviewLightingPending
+                || overview == null
+                || !this.persistentMap.mapOptions.dynamicLighting
+                || this.image.getImageSize() != PersistentMapOverviewCache.SIZE) {
+            return;
+        }
+
+        int[] currentLightmap = this.persistentMap.getLightmapSnapshot();
+        if (!PersistentMapOverviewCache.lightingDifferenceExceedsThreshold(overview, this.appliedOverviewLightmap, currentLightmap)) {
+            this.overviewLightingPending = false;
+            PersistentMapProfiler.recordOverviewLightingEvaluation(false, false);
+            return;
+        }
+        if (!this.persistentMap.tryAcquireOverviewLightingUpdate()) {
+            PersistentMapProfiler.recordOverviewLightingEvaluation(false, true);
+            return;
+        }
+
+        long startedNanos = PersistentMapProfiler.startTimer();
+        synchronized (this.image) {
+            if (this.image.getImageSize() != PersistentMapOverviewCache.SIZE || this.overviewData != overview) {
+                return;
+            }
+            byte[] pixels = PersistentMapOverviewCache.applyLighting(overview, currentLightmap, true);
+            this.image.replacePixels(PersistentMapOverviewCache.SIZE, pixels);
+            this.image.generateMipmaps();
+            this.appliedOverviewLightmap = currentLightmap;
+            this.overviewLightingPending = !Arrays.equals(currentLightmap, this.persistentMap.getLightmapSnapshot());
+            this.imageChanged = true;
+        }
+        PersistentMapProfiler.recordOverviewRelight(startedNanos);
+        PersistentMapProfiler.recordOverviewLightingEvaluation(true, false);
+    }
+
+    private static final class OverviewPixelAccumulator {
+        private int red;
+        private int green;
+        private int blue;
+        private int alpha;
+        private int blockLight;
+        private int skyLight;
+
+        private void accept(int unlitColor, int light) {
+            int premultiplied = ColorUtils.premultiplyWithAlpha(unlitColor);
+            this.red += premultiplied >> 16 & 0xFF;
+            this.green += premultiplied >> 8 & 0xFF;
+            this.blue += premultiplied & 0xFF;
+            this.alpha += premultiplied >> 24 & 0xFF;
+            this.blockLight += light & 0xF;
+            this.skyLight += light >> 4 & 0xF;
+        }
+
+        private void write(byte[] basePixels, byte[] lightValues, int pixel) {
+            int offset = pixel * 4;
+            basePixels[offset] = roundedAverage(this.red);
+            basePixels[offset + 1] = roundedAverage(this.green);
+            basePixels[offset + 2] = roundedAverage(this.blue);
+            basePixels[offset + 3] = roundedAverage(this.alpha);
+            lightValues[pixel] = combinedLight(this.blockLight, this.skyLight);
+        }
+    }
+
+    private static byte roundedAverage(int sumOfSixteen) {
+        return (byte) ((sumOfSixteen + 8) / 16);
+    }
+
+    private static byte combinedLight(int blockLightSum, int skyLightSum) {
+        int blockLight = Math.min(15, (blockLightSum + 8) / 16);
+        int skyLight = Math.min(15, (skyLightSum + 8) / 16);
+        return (byte) (blockLight | skyLight << 4);
+    }
+
     public void cleanup() {
         this.closed = true;
         this.queuedToCompress = true;
@@ -858,7 +1186,7 @@ public class CachedRegion {
 
         this.persistentMap.getSettingsAndLightingChangeNotifier().removeObserver(this);
         if (this.image != null) {
-            if (this.persistentMap.getOptions().outputImages) {
+            if (this.persistentMap.getOptions().outputImages && this.fullImageReady) {
                 this.saveImage();
             }
 
@@ -889,8 +1217,8 @@ public class CachedRegion {
             CachedRegion.this.threadLock.lock();
 
             try {
-                if (!CachedRegion.this.loaded) {
-                    CachedRegion.this.load();
+                if (!CachedRegion.this.dataLoaded) {
+                    CachedRegion.this.loadFullData();
                 }
 
                 int chunkX = this.chunk.getPos().x() - CachedRegion.this.x * CHUNKS_WIDTH;
@@ -927,11 +1255,36 @@ public class CachedRegion {
             BitSet dirtyChunks = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
             boolean renderRequested = false;
             boolean fullRender = false;
+            boolean overviewUpgrade = false;
             boolean failed = false;
 
             try {
-                if (!CachedRegion.this.loaded) {
-                    CachedRegion.this.load();
+                boolean fullDetail;
+                boolean attemptOverview;
+                boolean overviewLoaded = false;
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    fullDetail = CachedRegion.this.fullDetailRequested;
+                    attemptOverview = !CachedRegion.this.loaded && !CachedRegion.this.overviewLookupAttempted;
+                    CachedRegion.this.overviewLookupAttempted |= attemptOverview;
+                }
+                if (attemptOverview) {
+                    overviewLoaded = CachedRegion.this.loadOverview();
+                }
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    fullDetail = CachedRegion.this.fullDetailRequested;
+                }
+                if (overviewLoaded && !fullDetail) {
+                    PersistentMapProfiler.recordRawRegionLoadSkipped(PersistentMapOverviewCache.RAW_BYTES);
+                }
+                if (!CachedRegion.this.loaded || fullDetail && !CachedRegion.this.dataLoaded) {
+                    CachedRegion.this.loadFullData();
+                }
+
+                synchronized (CachedRegion.this.refreshStateLock) {
+                    overviewUpgrade = CachedRegion.this.overviewUpgradeRequested;
+                }
+                if (overviewUpgrade && !CachedRegion.this.dataLoaded) {
+                    CachedRegion.this.loadFullData();
                 }
 
                 synchronized (CachedRegion.this.refreshStateLock) {
@@ -941,6 +1294,9 @@ public class CachedRegion {
                 }
 
                 if (!chunksToLoad.isEmpty()) {
+                    if (!CachedRegion.this.dataLoaded) {
+                        CachedRegion.this.loadFullData();
+                    }
                     CachedRegion.this.loadModifiedData(chunksToLoad);
                 }
 
@@ -948,12 +1304,16 @@ public class CachedRegion {
                 synchronized (CachedRegion.this.refreshStateLock) {
                     retainImage = CachedRegion.this.retainImageRequested;
                     CachedRegion.this.retainImageRequested = false;
-                    renderRequested = CachedRegion.this.dataUpdated || CachedRegion.this.displayOptionsChanged;
-                    fullRender = CachedRegion.this.displayOptionsChanged;
+                    renderRequested = !CachedRegion.this.empty && (CachedRegion.this.dataUpdated
+                            || CachedRegion.this.displayOptionsChanged
+                            || CachedRegion.this.overviewUpgradeRequested
+                            || CachedRegion.this.fullDetailRequested && !CachedRegion.this.fullImageReady);
+                    fullRender = CachedRegion.this.displayOptionsChanged || CachedRegion.this.overviewUpgradeRequested || !CachedRegion.this.fullImageReady;
                     dirtyChunks.or(CachedRegion.this.dirtyImageChunks);
                     if (renderRequested) {
                         CachedRegion.this.dataUpdated = false;
                         CachedRegion.this.displayOptionsChanged = false;
+                        CachedRegion.this.overviewUpgradeRequested = false;
                         CachedRegion.this.dirtyImageChunks.clear();
                     }
                 }
@@ -963,19 +1323,43 @@ public class CachedRegion {
                 }
 
                 if (renderRequested) {
+                    if (!CachedRegion.this.dataLoaded) {
+                        CachedRegion.this.loadFullData();
+                    }
                     BitSet dirtyPixels = null;
-                    if (!fullRender && !dirtyChunks.isEmpty() && dirtyChunks.cardinality() < CHUNKS_WIDTH * CHUNKS_WIDTH && CachedRegion.this.image.canPartiallyUpdate()) {
+                    if (!fullRender
+                            && !dirtyChunks.isEmpty()
+                            && dirtyChunks.cardinality() < CHUNKS_WIDTH * CHUNKS_WIDTH
+                            && CachedRegion.this.image.getImageSize() == REGION_WIDTH
+                            && CachedRegion.this.image.canPartiallyUpdate()) {
                         dirtyPixels = DirtyPixelMask.fromChunks(dirtyChunks);
                     }
                     CachedRegion.this.refreshingImage = true;
                     synchronized (CachedRegion.this.image) {
                         CachedRegion.this.fillImage(dirtyPixels);
+                        PersistentMapOverviewCache.OverviewData renderedOverview = CachedRegion.this.overviewData;
+                        CachedRegion.this.queueOverviewSave(renderedOverview);
+                        CachedRegion.this.fullImageReady = true;
+                        boolean keepFullResolution;
+                        synchronized (CachedRegion.this.refreshStateLock) {
+                            keepFullResolution = CachedRegion.this.fullDetailRequested;
+                        }
+                        if (!keepFullResolution) {
+                            int[] lightmap = CachedRegion.this.persistentMap.getLightmapSnapshot();
+                            byte[] overviewPixels = PersistentMapOverviewCache.applyLighting(renderedOverview, lightmap, CachedRegion.this.persistentMap.mapOptions.dynamicLighting);
+                            CachedRegion.this.image.replacePixels(PersistentMapOverviewCache.SIZE, overviewPixels);
+                            CachedRegion.this.image.generateMipmaps();
+                            CachedRegion.this.appliedOverviewLightmap = lightmap;
+                            CachedRegion.this.overviewLightingPending = false;
+                            CachedRegion.this.fullImageReady = false;
+                        }
+                        CachedRegion.this.legacyOverview = false;
                         CachedRegion.this.imageChanged = true;
                     }
                     CachedRegion.this.refreshingImage = false;
                 }
 
-                if (this.forceCompress) {
+                if ((this.forceCompress || overviewUpgrade && !fullDetail) && CachedRegion.this.data != null) {
                     CachedRegion.this.compressData();
                 }
             } catch (Exception exception) {
@@ -986,6 +1370,7 @@ public class CachedRegion {
                     if (renderRequested) {
                         CachedRegion.this.dataUpdated = true;
                         CachedRegion.this.displayOptionsChanged |= fullRender;
+                        CachedRegion.this.overviewUpgradeRequested |= overviewUpgrade;
                         CachedRegion.this.dirtyImageChunks.or(dirtyChunks);
                     }
                 }

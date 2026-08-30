@@ -839,7 +839,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
 
         if (needLight || skyColorChanged) {
-            VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfChanges();
+            VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier().notifyOfLightingChanges();
         }
 
     }

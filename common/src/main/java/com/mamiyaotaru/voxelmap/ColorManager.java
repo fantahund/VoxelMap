@@ -100,6 +100,7 @@ public class ColorManager implements IReloadListener {
     private boolean loadedTerrainImage;
     private boolean terrainDependentColorsProcessed;
     private volatile boolean connectedTextures;
+    private volatile long resourcePackSignature;
     private final MutableBlockPos dummyBlockPos = new MutableBlockPos(BlockPos.ZERO.getX(), BlockPos.ZERO.getY(), BlockPos.ZERO.getZ());
     private final ColorResolver spruceColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_EVERGREEN;
     private final ColorResolver birchColorResolver = (blockState, biome, blockPos) -> FoliageColor.FOLIAGE_BIRCH;
@@ -128,7 +129,19 @@ public class ColorManager implements IReloadListener {
 
     @Override
     public void onResourceManagerReload(ResourceManager resourceManager) {
+        long signature = 0xcbf29ce484222325L;
+        for (String packId : resourceManager.listPacks().map(pack -> pack.packId()).toList()) {
+            for (int i = 0; i < packId.length(); ++i) {
+                signature = (signature ^ packId.charAt(i)) * 0x100000001b3L;
+            }
+            signature = (signature ^ 0xff) * 0x100000001b3L;
+        }
+        this.resourcePackSignature = signature;
         this.resourcePacksChanged = true;
+    }
+
+    public long getResourcePackSignature() {
+        return this.resourcePackSignature;
     }
 
     public BufferedImage getTerrainImage() {
