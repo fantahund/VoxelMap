@@ -47,7 +47,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PersistentMap implements IChangeObserver {
     static final float OVERVIEW_ZOOM_THRESHOLD = 0.25F;
-    private static final long OVERVIEW_RENDER_VERSION = 3L;
+    private static final long OVERVIEW_RENDER_VERSION = 4L;
     private static final int OVERVIEW_LIGHTING_UPDATES_PER_FRAME = 8;
     private static final int OVERVIEW_UPGRADES_PER_FRAME = 1;
     private static final int HEIGHT_SHADE_MIN = -1024;
@@ -523,7 +523,10 @@ public class PersistentMap implements IChangeObserver {
         int unlitSeafloorColor = 0;
         int unlitTransparentColor = 0;
         int unlitFoliageColor = 0;
-        int representativeLight = 255;
+        int surfaceLight = 255;
+        int seafloorLight = 0;
+        int transparentLight = 0;
+        int foliageLight = 0;
         blockPos = blockPos.withXYZ(mcX, 0, mcZ);
         int color24;
         Biome biome = mapData.getBiome(imageX, imageY);
@@ -558,14 +561,13 @@ public class PersistentMap implements IChangeObserver {
                 }
 
                 surfaceColor = this.applyHeight(mapData, surfaceColor, underground, multi, imageX, imageY, surfaceHeight, solid, 1);
-                int light = mapData.getLight(imageX, imageY);
-                representativeLight = light;
+                surfaceLight = mapData.getLight(imageX, imageY);
                 unlitSurfaceColor = surfaceColor;
                 if (solid) {
                     surfaceColor = 0;
                     unlitSurfaceColor = 0;
                 } else if (mapOptions.dynamicLighting) {
-                    int lightValue = this.getLight(light);
+                    int lightValue = this.getLight(surfaceLight);
                     surfaceColor = ColorUtils.colorMultiplier(surfaceColor, lightValue);
                 }
 
@@ -589,7 +591,6 @@ public class PersistentMap implements IChangeObserver {
 
                             seafloorColor = this.applyHeight(mapData, seafloorColor, underground, multi, imageX, imageY, seafloorHeight, solid, 0);
                             unlitSeafloorColor = seafloorColor;
-                            int seafloorLight;
                             seafloorLight = mapData.getOceanFloorLight(imageX, imageY);
                             if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(seafloorLight);
@@ -619,11 +620,7 @@ public class PersistentMap implements IChangeObserver {
 
                             transparentColor = this.applyHeight(mapData, transparentColor, underground, multi, imageX, imageY, transparentHeight, solid, 3);
                             unlitTransparentColor = transparentColor;
-                            int transparentLight;
                             transparentLight = mapData.getTransparentLight(imageX, imageY);
-                            if (transparentHeight > surfaceHeight) {
-                                representativeLight = transparentLight;
-                            }
                             if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(transparentLight);
                                 transparentColor = ColorUtils.colorMultiplier(transparentColor, lightValue);
@@ -650,11 +647,7 @@ public class PersistentMap implements IChangeObserver {
 
                             foliageColor = this.applyHeight(mapData, foliageColor, underground, multi, imageX, imageY, foliageHeight, solid, 2);
                             unlitFoliageColor = foliageColor;
-                            int foliageLight;
                             foliageLight = mapData.getFoliageLight(imageX, imageY);
-                            if (foliageHeight > surfaceHeight && transparentHeight <= surfaceHeight) {
-                                representativeLight = foliageLight;
-                            }
                             if (mapOptions.dynamicLighting) {
                                 int lightValue = this.getLight(foliageLight);
                                 foliageColor = ColorUtils.colorMultiplier(foliageColor, lightValue);
@@ -679,7 +672,22 @@ public class PersistentMap implements IChangeObserver {
 
                 if (output != null) {
                     output.unlitColor = MapUtils.doSlimeAndGrid(ARGB.toABGR(unlitColor), world, mcX, mcZ);
-                    output.light = representativeLight;
+                    output.light = composeApproximateLight(
+                            unlitSurfaceColor,
+                            surfaceLight,
+                            unlitSeafloorColor,
+                            seafloorLight,
+                            unlitTransparentColor,
+                            transparentLight,
+                            unlitFoliageColor,
+                            foliageLight,
+                            surfaceHeight,
+                            seafloorHeight,
+                            transparentHeight,
+                            foliageHeight,
+                            bottomY,
+                            mapOptions.waterTransparency,
+                            output.lightAccumulator);
                 }
 
             }
@@ -731,9 +739,80 @@ public class PersistentMap implements IChangeObserver {
         return color;
     }
 
+    static int composeApproximateLight(
+            int surfaceColor,
+            int surfaceLight,
+            int seafloorColor,
+            int seafloorLight,
+            int transparentColor,
+            int transparentLight,
+            int foliageColor,
+            int foliageLight,
+            int surfaceHeight,
+            int seafloorHeight,
+            int transparentHeight,
+            int foliageHeight,
+            int bottomY,
+            boolean waterTransparency,
+            LightAccumulator light) {
+        light.clear();
+        if (waterTransparency && seafloorHeight > bottomY) {
+            light.addTop(seafloorColor, seafloorLight);
+            if (foliageColor != 0 && foliageHeight <= surfaceHeight) {
+                light.addTop(foliageColor, foliageLight);
+            }
+            if (transparentColor != 0 && transparentHeight <= surfaceHeight) {
+                light.addTop(transparentColor, transparentLight);
+            }
+            light.addTop(surfaceColor, surfaceLight);
+        } else {
+            light.addTop(surfaceColor, surfaceLight);
+        }
+        if (foliageColor != 0 && foliageHeight > surfaceHeight) {
+            light.addTop(foliageColor, foliageLight);
+        }
+        if (transparentColor != 0 && transparentHeight > surfaceHeight) {
+            light.addTop(transparentColor, transparentLight);
+        }
+        return light.combinedLight();
+    }
+
     static final class PixelRenderOutput {
         int unlitColor;
         int light;
+        final LightAccumulator lightAccumulator = new LightAccumulator();
+    }
+
+    static final class LightAccumulator {
+        private double alpha;
+        private double blockLight;
+        private double skyLight;
+
+        private void clear() {
+            this.alpha = 0.0;
+            this.blockLight = 0.0;
+            this.skyLight = 0.0;
+        }
+
+        private void addTop(int color, int light) {
+            double topAlpha = (color >> 24 & 0xFF) / 255.0;
+            if (topAlpha == 0.0) {
+                return;
+            }
+            double visibleBottom = 1.0 - topAlpha;
+            this.blockLight = (light & 0xF) * topAlpha + this.blockLight * visibleBottom;
+            this.skyLight = (light >> 4 & 0xF) * topAlpha + this.skyLight * visibleBottom;
+            this.alpha = topAlpha + this.alpha * visibleBottom;
+        }
+
+        private int combinedLight() {
+            if (this.alpha == 0.0) {
+                return 255;
+            }
+            int block = Math.clamp((int) Math.round(this.blockLight / this.alpha), 0, 15);
+            int sky = Math.clamp((int) Math.round(this.skyLight / this.alpha), 0, 15);
+            return block | sky << 4;
+        }
     }
 
     private int applyHeight(AbstractMapData mapData, int color24, boolean underground, int multi, int imageX, int imageY, int height, boolean solid, int layer) {

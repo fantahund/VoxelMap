@@ -116,6 +116,40 @@ final class PersistentMapOverviewCache {
                         || significantPixels >= MIN_SIGNIFICANT_PIXELS);
     }
 
+    static int findBestLight(
+            int baseRed,
+            int baseGreen,
+            int baseBlue,
+            int litRed,
+            int litGreen,
+            int litBlue,
+            int preferredLight,
+            int[] lightmap) {
+        int blockLight = preferredLight & 0xF;
+        int preferredSkyLight = preferredLight >> 4 & 0xF;
+        int bestLight = preferredLight;
+        long bestError = Long.MAX_VALUE;
+        int bestLevelDistance = Integer.MAX_VALUE;
+        for (int skyLight = 0; skyLight < 16; ++skyLight) {
+            int candidate = blockLight | skyLight << 4;
+            int lightColor = lightmap[candidate];
+            int predictedRed = baseRed * (lightColor >> 16 & 0xFF) / 255;
+            int predictedGreen = baseGreen * (lightColor >> 8 & 0xFF) / 255;
+            int predictedBlue = baseBlue * (lightColor & 0xFF) / 255;
+            long redDifference = predictedRed - litRed;
+            long greenDifference = predictedGreen - litGreen;
+            long blueDifference = predictedBlue - litBlue;
+            long error = redDifference * redDifference + greenDifference * greenDifference + blueDifference * blueDifference;
+            int levelDistance = Math.abs(skyLight - preferredSkyLight);
+            if (error < bestError || error == bestError && levelDistance < bestLevelDistance) {
+                bestError = error;
+                bestLevelDistance = levelDistance;
+                bestLight = candidate;
+            }
+        }
+        return bestLight;
+    }
+
     private static byte multiply(byte component, int lightComponent) {
         return (byte) (Byte.toUnsignedInt(component) * (lightComponent & 0xFF) / 255);
     }

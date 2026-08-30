@@ -836,6 +836,7 @@ public class CachedRegion {
 
         long coloringStartedNanos = PersistentMapProfiler.startTimer();
         int pixelsColored = dirtyPixels == null ? REGION_WIDTH * REGION_WIDTH : dirtyPixels.cardinality();
+        int[] overviewLightmap = this.persistentMap.getLightmapSnapshot();
         try {
             NativeImage target = this.image.getData();
             PersistentMap.PixelRenderOutput renderOutput = new PersistentMap.PixelRenderOutput();
@@ -845,10 +846,10 @@ public class CachedRegion {
                     for (int x = 0; x < REGION_WIDTH; ++x) {
                         int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
                         target.setPixel(x, z, ColorUtils.premultiplyWithAlpha(color24));
-                        overviewAccumulator.accept(x, z, renderOutput.unlitColor, renderOutput.light);
+                        overviewAccumulator.accept(x, z, renderOutput.unlitColor, color24, renderOutput.light);
                     }
                 }
-                this.overviewData = overviewAccumulator.build();
+                this.overviewData = overviewAccumulator.build(overviewLightmap);
             } else {
                 for (int index = dirtyPixels.nextSetBit(0); index >= 0; index = dirtyPixels.nextSetBit(index + 1)) {
                     int x = index % REGION_WIDTH;
@@ -856,7 +857,7 @@ public class CachedRegion {
                     int color24 = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z);
                     target.setPixel(x, z, ColorUtils.premultiplyWithAlpha(color24));
                 }
-                this.overviewData = this.updateOverviewCells(renderView, renderContext, dirtyPixels, renderOutput);
+                this.overviewData = this.updateOverviewCells(renderView, renderContext, dirtyPixels, renderOutput, overviewLightmap);
             }
             this.image.markContentValid();
         } finally {
@@ -875,16 +876,17 @@ public class CachedRegion {
             CompressibleMapData.RenderView renderView,
             ColorManager.PersistentMapRenderContext renderContext,
             BitSet dirtyPixels,
-            PersistentMap.PixelRenderOutput renderOutput) {
+            PersistentMap.PixelRenderOutput renderOutput,
+            int[] lightmap) {
         if (this.overviewData == null) {
             OverviewAccumulator accumulator = new OverviewAccumulator();
             for (int z = 0; z < REGION_WIDTH; ++z) {
                 for (int x = 0; x < REGION_WIDTH; ++x) {
-                    this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
-                    accumulator.accept(x, z, renderOutput.unlitColor, renderOutput.light);
+                    int displayedColor = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
+                    accumulator.accept(x, z, renderOutput.unlitColor, displayedColor, renderOutput.light);
                 }
             }
-            return accumulator.build();
+            return accumulator.build(lightmap);
         }
 
         PersistentMapOverviewCache.OverviewData updated = this.overviewData.copy();
@@ -903,11 +905,11 @@ public class CachedRegion {
             OverviewPixelAccumulator accumulator = new OverviewPixelAccumulator();
             for (int z = overviewZ * 4; z < overviewZ * 4 + 4; ++z) {
                 for (int x = overviewX * 4; x < overviewX * 4 + 4; ++x) {
-                    this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
-                    accumulator.accept(renderOutput.unlitColor, renderOutput.light);
+                    int displayedColor = this.persistentMap.getPixelColor(renderView, renderContext, this.world, this.blockPos, this.loopBlockPos, this.underground, 8, this.x * REGION_WIDTH, this.z * REGION_WIDTH, x, z, renderOutput);
+                    accumulator.accept(renderOutput.unlitColor, displayedColor, renderOutput.light);
                 }
             }
-            accumulator.write(basePixels, lightValues, overviewPixel);
+            accumulator.write(basePixels, lightValues, overviewPixel, lightmap);
         }
         return new PersistentMapOverviewCache.OverviewData(basePixels, lightValues);
     }
@@ -1050,32 +1052,51 @@ public class CachedRegion {
         private final int[] green = new int[PersistentMapOverviewCache.PIXEL_COUNT];
         private final int[] blue = new int[PersistentMapOverviewCache.PIXEL_COUNT];
         private final int[] alpha = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] litRed = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] litGreen = new int[PersistentMapOverviewCache.PIXEL_COUNT];
+        private final int[] litBlue = new int[PersistentMapOverviewCache.PIXEL_COUNT];
         private final int[] blockLight = new int[PersistentMapOverviewCache.PIXEL_COUNT];
         private final int[] skyLight = new int[PersistentMapOverviewCache.PIXEL_COUNT];
 
-        void accept(int x, int z, int unlitColor, int light) {
+        void accept(int x, int z, int unlitColor, int displayedColor, int light) {
             int overviewPixel = (z / 4) * PersistentMapOverviewCache.SIZE + x / 4;
             int premultiplied = ColorUtils.premultiplyWithAlpha(unlitColor);
+            int litPremultiplied = ColorUtils.premultiplyWithAlpha(displayedColor);
             // PixelRenderOutput uses ARGB (the format accepted by NativeImage.setPixel),
             // while the persisted byte buffer is raw RGBA.
             this.red[overviewPixel] += premultiplied >> 16 & 0xFF;
             this.green[overviewPixel] += premultiplied >> 8 & 0xFF;
             this.blue[overviewPixel] += premultiplied & 0xFF;
             this.alpha[overviewPixel] += premultiplied >> 24 & 0xFF;
+            this.litRed[overviewPixel] += litPremultiplied >> 16 & 0xFF;
+            this.litGreen[overviewPixel] += litPremultiplied >> 8 & 0xFF;
+            this.litBlue[overviewPixel] += litPremultiplied & 0xFF;
             this.blockLight[overviewPixel] += light & 0xF;
             this.skyLight[overviewPixel] += light >> 4 & 0xF;
         }
 
-        PersistentMapOverviewCache.OverviewData build() {
+        PersistentMapOverviewCache.OverviewData build(int[] lightmap) {
             byte[] basePixels = new byte[PersistentMapOverviewCache.COLOR_BYTES];
             byte[] lightValues = new byte[PersistentMapOverviewCache.LIGHT_BYTES];
             for (int pixel = 0; pixel < PersistentMapOverviewCache.PIXEL_COUNT; ++pixel) {
                 int offset = pixel * 4;
-                basePixels[offset] = roundedAverage(this.red[pixel]);
-                basePixels[offset + 1] = roundedAverage(this.green[pixel]);
-                basePixels[offset + 2] = roundedAverage(this.blue[pixel]);
+                int baseRed = roundedAverageInt(this.red[pixel]);
+                int baseGreen = roundedAverageInt(this.green[pixel]);
+                int baseBlue = roundedAverageInt(this.blue[pixel]);
+                basePixels[offset] = (byte) baseRed;
+                basePixels[offset + 1] = (byte) baseGreen;
+                basePixels[offset + 2] = (byte) baseBlue;
                 basePixels[offset + 3] = roundedAverage(this.alpha[pixel]);
-                lightValues[pixel] = combinedLight(this.blockLight[pixel], this.skyLight[pixel]);
+                int preferredLight = Byte.toUnsignedInt(combinedLight(this.blockLight[pixel], this.skyLight[pixel]));
+                lightValues[pixel] = (byte) PersistentMapOverviewCache.findBestLight(
+                        baseRed,
+                        baseGreen,
+                        baseBlue,
+                        roundedAverageInt(this.litRed[pixel]),
+                        roundedAverageInt(this.litGreen[pixel]),
+                        roundedAverageInt(this.litBlue[pixel]),
+                        preferredLight,
+                        lightmap);
             }
             return new PersistentMapOverviewCache.OverviewData(basePixels, lightValues);
         }
@@ -1144,31 +1165,54 @@ public class CachedRegion {
         private int green;
         private int blue;
         private int alpha;
+        private int litRed;
+        private int litGreen;
+        private int litBlue;
         private int blockLight;
         private int skyLight;
 
-        private void accept(int unlitColor, int light) {
+        private void accept(int unlitColor, int displayedColor, int light) {
             int premultiplied = ColorUtils.premultiplyWithAlpha(unlitColor);
+            int litPremultiplied = ColorUtils.premultiplyWithAlpha(displayedColor);
             this.red += premultiplied >> 16 & 0xFF;
             this.green += premultiplied >> 8 & 0xFF;
             this.blue += premultiplied & 0xFF;
             this.alpha += premultiplied >> 24 & 0xFF;
+            this.litRed += litPremultiplied >> 16 & 0xFF;
+            this.litGreen += litPremultiplied >> 8 & 0xFF;
+            this.litBlue += litPremultiplied & 0xFF;
             this.blockLight += light & 0xF;
             this.skyLight += light >> 4 & 0xF;
         }
 
-        private void write(byte[] basePixels, byte[] lightValues, int pixel) {
+        private void write(byte[] basePixels, byte[] lightValues, int pixel, int[] lightmap) {
             int offset = pixel * 4;
-            basePixels[offset] = roundedAverage(this.red);
-            basePixels[offset + 1] = roundedAverage(this.green);
-            basePixels[offset + 2] = roundedAverage(this.blue);
+            int baseRed = roundedAverageInt(this.red);
+            int baseGreen = roundedAverageInt(this.green);
+            int baseBlue = roundedAverageInt(this.blue);
+            basePixels[offset] = (byte) baseRed;
+            basePixels[offset + 1] = (byte) baseGreen;
+            basePixels[offset + 2] = (byte) baseBlue;
             basePixels[offset + 3] = roundedAverage(this.alpha);
-            lightValues[pixel] = combinedLight(this.blockLight, this.skyLight);
+            int preferredLight = Byte.toUnsignedInt(combinedLight(this.blockLight, this.skyLight));
+            lightValues[pixel] = (byte) PersistentMapOverviewCache.findBestLight(
+                    baseRed,
+                    baseGreen,
+                    baseBlue,
+                    roundedAverageInt(this.litRed),
+                    roundedAverageInt(this.litGreen),
+                    roundedAverageInt(this.litBlue),
+                    preferredLight,
+                    lightmap);
         }
     }
 
     private static byte roundedAverage(int sumOfSixteen) {
-        return (byte) ((sumOfSixteen + 8) / 16);
+        return (byte) roundedAverageInt(sumOfSixteen);
+    }
+
+    private static int roundedAverageInt(int sumOfSixteen) {
+        return (sumOfSixteen + 8) / 16;
     }
 
     private static byte combinedLight(int blockLightSum, int skyLightSum) {
