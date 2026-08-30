@@ -16,6 +16,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -68,6 +69,11 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
     }
 
     @Override
+    protected boolean entriesCanBeSelected() {
+        return false;
+    }
+
+    @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {
     }
 
@@ -90,6 +96,17 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
 
     public boolean isEditingKey() {
         return editingKey != null;
+    }
+
+    @Override
+    public void setFocused(GuiEventListener focused) {
+        Entry previous = getFocused();
+        if (previous != focused && previous instanceof OptionEntry optionEntry)
+            optionEntry.control.setFocused(false);
+
+        super.setFocused(focused);
+        if (focused instanceof OptionEntry optionEntry)
+            optionEntry.control.setFocused(true);
     }
 
     @Override
@@ -170,6 +187,8 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
             int controlWidth = Math.clamp(getWidth() / 2, 105, 190);
             control.setRectangle(controlWidth, 20, getX() + getWidth() - controlWidth - 8, getY() + 4);
             control.active = enabled;
+            if (!enabled && control.isFocused())
+                control.setFocused(false);
 
             if (control instanceof Button)
                 control.setMessage(formatOption(option));
@@ -278,7 +297,8 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
         private void commit() {
             if (!dirty)
                 return;
-            option.set(getValue());
+            if (option.enabled())
+                option.set(getValue());
             dirty = false;
             setFromOption();
         }

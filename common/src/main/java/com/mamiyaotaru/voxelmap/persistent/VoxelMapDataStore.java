@@ -68,8 +68,16 @@ public final class VoxelMapDataStore {
         return VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
     }
 
+    private static final String UNKNOWN_WORLD_KEY = "_unknown";
+
     private static String cacheKey() {
-        return TextUtils.scrubNameFile(currentWorldName());
+        String key = TextUtils.scrubNameFile(currentWorldName());
+        if (key.isEmpty()) {
+            VoxelConstants.getLogger().warn("World cache key resolved empty; falling back to " + UNKNOWN_WORLD_KEY + " instead of flattening into the global cache folder");
+            return UNKNOWN_WORLD_KEY;
+        }
+
+        return key;
     }
 
     private static String pointsKey() {
@@ -81,7 +89,8 @@ public final class VoxelMapDataStore {
             }
         }
 
-        return TextUtils.scrubNameFile(name);
+        String key = TextUtils.scrubNameFile(name);
+        return key.isEmpty() ? UNKNOWN_WORLD_KEY : key;
     }
 
     public File getPointsFile() {
@@ -91,5 +100,51 @@ public final class VoxelMapDataStore {
     public File getWorldCacheDir() {
         File cache = new File(getRoot(), "cache");
         return isWorldRelative() ? cache : new File(cache, cacheKey());
+    }
+
+    public File getWorldCacheDir(String subPath) {
+        File properDir = new File(getWorldCacheDir(), subPath);
+        recoverMisplacedCache(subPath, properDir);
+        return properDir;
+    }
+
+    private void recoverMisplacedCache(String subPath, File properDir) {
+        if (isWorldRelative() || properDir.exists()) {
+            return;
+        }
+
+        File cacheRoot = new File(getRoot(), "cache");
+        File flatDir = new File(cacheRoot, subPath);
+        if (!flatDir.isDirectory() || flatDir.equals(properDir)) {
+            return;
+        }
+
+        File parent = properDir.getParentFile();
+        if (parent != null) {
+            parent.mkdirs();
+        }
+
+        if (flatDir.renameTo(properDir)) {
+            VoxelConstants.getLogger().warn("Recovered VoxelMap cache data misplaced by a previous bug: moved " + flatDir.getPath() + " to " + properDir.getPath());
+            deleteEmptyParents(flatDir.getParentFile(), cacheRoot);
+        } else {
+            VoxelConstants.getLogger().warn("Found VoxelMap cache data misplaced by a previous bug at " + flatDir.getPath() + " but failed to move it to " + properDir.getPath());
+        }
+    }
+
+    private static void deleteEmptyParents(File dir, File stopAt) {
+        while (dir != null && !dir.equals(stopAt)) {
+            String[] children = dir.list();
+            if (children == null || children.length > 0) {
+                return;
+            }
+
+            File parent = dir.getParentFile();
+            if (!dir.delete()) {
+                return;
+            }
+
+            dir = parent;
+        }
     }
 }

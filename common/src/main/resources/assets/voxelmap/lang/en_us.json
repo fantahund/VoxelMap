@@ -391,6 +391,7 @@
   "options.voxelmap.managed.serverDisabled": "This setting is disabled by the server.",
   "options.voxelmap.managed.server": "This value is provided by the server.",
   "options.voxelmap.managed.singleplayerSeed": "The seed is read from the local world.",
+  "options.voxelmap.managed.multiplayerOnly": "This setting is only available while connected to a multiplayer server.",
   "options.voxelmap.managed.dataNameServer": "This name is provided by the server and overrides aliases.",
   "options.voxelmap.managed.dataNameLocal": "Derived from the world folder or the server address, aliases apply.",
   "options.voxelmap.managed.singleplayerAliases": "Server aliases are only available on multiplayer servers.",

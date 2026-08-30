@@ -769,7 +769,7 @@ public class CachedRegion {
     }
 
     private File getRegionCacheDirectory() {
-        return new File(VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(), this.subworldNamePathPart + this.dimensionNamePathPart);
+        return VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(this.subworldNamePathPart + this.dimensionNamePathPart);
     }
 
     private File getCachedRegionFile() {
@@ -917,7 +917,7 @@ public class CachedRegion {
     private void saveImage() {
         if (!this.empty && this.image != null) {
 
-            File imageFileDir = new File(VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(), this.subworldNamePathPart + this.dimensionNamePathPart + "/images/z1");
+            File imageFileDir = VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(this.subworldNamePathPart + this.dimensionNamePathPart + "/images/z1");
             imageFileDir.mkdirs();
             final File imageFile = new File(imageFileDir, this.key + ".png");
                        

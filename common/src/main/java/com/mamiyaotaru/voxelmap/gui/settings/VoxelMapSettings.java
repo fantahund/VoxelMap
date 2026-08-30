@@ -196,16 +196,26 @@ public final class VoxelMapSettings {
                                     voxelMap.setWorldSeed(value.trim());
                                     voxelMap.getMap().forceFullRender(true);
                                 },
-                                () -> !VoxelConstants.getMinecraft().hasSingleplayerServer(), requires("options.voxelmap.managed.singleplayerSeed")),
-                        SettingsOption.text("advanced.teleport", "options.minimap.teleportCommand", tooltip("advanced.teleport"), () -> map.teleportCommand,
+                                VoxelMapSettings::isRemoteServerConnected,
+                                () -> Component.translatable(VoxelConstants.getMinecraft().hasSingleplayerServer()
+                                        ? "options.voxelmap.managed.singleplayerSeed"
+                                        : "options.voxelmap.managed.multiplayerOnly")),
+                        SettingsOption.text("advanced.teleport", "options.minimap.teleportCommand", tooltip("advanced.teleport"),
+                                () -> map.serverTeleportCommand == null ? map.teleportCommand : map.serverTeleportCommand,
                                 value -> {
                                     map.teleportCommand = value.isBlank() ? "tp %p %x %y %z" : value;
                                     map.markChanged();
                                 },
-                                () -> map.serverTeleportCommand == null, requires("options.voxelmap.managed.server")),
+                                () -> canEditServerValue(isRemoteServerConnected(), map.serverTeleportCommand != null),
+                                () -> Component.translatable(map.serverTeleportCommand != null
+                                        ? "options.voxelmap.managed.server"
+                                        : "options.voxelmap.managed.multiplayerOnly")),
                         SettingsOption.action("advanced.aliases", "options.voxelmap.advanced.aliases", tooltip("advanced.aliases"),
                                 Component.translatable("options.voxelmap.action.edit"), openServerAliases,
-                                () -> !VoxelConstants.isSinglePlayer(), requires("options.voxelmap.managed.singleplayerAliases"))),
+                                () -> canEditServerValue(isRemoteServerConnected(), serverIdentityProvided(voxelMap)),
+                                () -> Component.translatable(serverIdentityProvided(voxelMap)
+                                        ? "options.voxelmap.managed.dataNameServer"
+                                        : "options.voxelmap.managed.multiplayerOnly"))),
                 group("options.voxelmap.group.interface",
                         choice("advanced.colorPicker", "options.minimap.colorPickerMode", map, () -> map.colorPickerMode, value -> map.colorPickerMode = value,
                                 value(0, "options.minimap.colorPickerMode.simple"), value(1, "options.minimap.colorPickerMode.full")),
@@ -214,6 +224,25 @@ public final class VoxelMapSettings {
 
     private static boolean radarAvailable(RadarSettingsManager radar) {
         return radar.radarAllowed && (radar.radarPlayersAllowed || radar.radarMobsAllowed);
+    }
+
+    private static boolean isRemoteServerConnected() {
+        return isRemoteServerConnected(
+                VoxelConstants.getMinecraft().level != null,
+                VoxelConstants.getMinecraft().getConnection() != null,
+                VoxelConstants.getMinecraft().hasSingleplayerServer());
+    }
+
+    static boolean isRemoteServerConnected(boolean hasWorld, boolean hasConnection, boolean hasSingleplayerServer) {
+        return hasWorld && hasConnection && !hasSingleplayerServer;
+    }
+
+    static boolean canEditServerValue(boolean remoteServerConnected, boolean serverProvided) {
+        return remoteServerConnected && !serverProvided;
+    }
+
+    private static boolean serverIdentityProvided(VoxelMap voxelMap) {
+        return !voxelMap.getWaypointManager().getServerWorldIdentity().isEmpty();
     }
 
     private static boolean radarEnabled(RadarSettingsManager radar) {
