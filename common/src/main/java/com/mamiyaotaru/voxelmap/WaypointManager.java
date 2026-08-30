@@ -70,7 +70,7 @@ public class WaypointManager implements IReloadListener {
     private boolean needSave;
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint;
-    private String worldName = "";
+    private volatile String worldName = "";
     private String serverWorldIdentity = "";
     private String currentSubWorldName = "";
     private String currentSubworldDescriptor = "";
@@ -176,7 +176,6 @@ public class WaypointManager implements IReloadListener {
     public void newWorld(Level world) {
         if (world == null) {
             this.currentDimension = null;
-            this.worldName = "";
         } else {
             String mapName;
             if (VoxelConstants.getMinecraft().hasSingleplayerServer()) {
@@ -207,7 +206,7 @@ public class WaypointManager implements IReloadListener {
 
     private String resolveServerAddressName() {
         String mapName = this.getServerName();
-        if (mapName == null) {
+        if (mapName == null || mapName.isEmpty()) {
             return null;
         }
 

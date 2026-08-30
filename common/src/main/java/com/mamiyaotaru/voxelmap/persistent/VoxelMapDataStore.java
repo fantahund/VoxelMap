@@ -68,8 +68,16 @@ public final class VoxelMapDataStore {
         return VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
     }
 
+    private static final String UNKNOWN_WORLD_KEY = "_unknown";
+
     private static String cacheKey() {
-        return TextUtils.scrubNameFile(currentWorldName());
+        String key = TextUtils.scrubNameFile(currentWorldName());
+        if (key.isEmpty()) {
+            VoxelConstants.getLogger().warn("World cache key resolved empty; falling back to " + UNKNOWN_WORLD_KEY + " instead of flattening into the global cache folder");
+            return UNKNOWN_WORLD_KEY;
+        }
+
+        return key;
     }
 
     private static String pointsKey() {
@@ -81,7 +89,8 @@ public final class VoxelMapDataStore {
             }
         }
 
-        return TextUtils.scrubNameFile(name);
+        String key = TextUtils.scrubNameFile(name);
+        return key.isEmpty() ? UNKNOWN_WORLD_KEY : key;
     }
 
     public File getPointsFile() {
