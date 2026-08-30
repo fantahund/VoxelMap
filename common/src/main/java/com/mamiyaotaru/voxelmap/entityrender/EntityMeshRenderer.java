@@ -172,8 +172,8 @@ public class EntityMeshRenderer {
         stagedVertexBuffer.upload();
         StagedVertexBuffer.ExecuteInfo meshInfo = stagedVertexBuffer.getExecuteInfo(draw);
 
-        if (meshInfo != null) {
-            try (RenderPass renderPass = RenderUtils.createRenderPass("VoxelMap Entity Render", renderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
+        try (RenderPass renderPass = RenderUtils.createRenderPass("VoxelMap Entity Render", renderTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
+            if (meshInfo != null) {
                 renderPass.setPipeline(pipeline);
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
