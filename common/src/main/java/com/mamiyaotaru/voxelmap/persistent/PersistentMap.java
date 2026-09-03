@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -47,9 +48,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PersistentMap implements IChangeObserver {
     static final float OVERVIEW_ZOOM_THRESHOLD = 0.25F;
-    private static final long OVERVIEW_RENDER_VERSION = 6L;
+    private static final long OVERVIEW_RENDER_VERSION = 7L;
     private static final int OVERVIEW_LIGHTING_UPDATES_PER_FRAME = 8;
-    private static final int OVERVIEW_UPGRADES_PER_FRAME = 1;
     private static final int HEIGHT_SHADE_MIN = -1024;
     private static final int HEIGHT_SHADE_MAX = 1023;
     private static final double[] HEIGHTMAP_SHADE = createHeightShadeLookup(1.8, true);
@@ -95,7 +95,8 @@ public class PersistentMap implements IChangeObserver {
     private int lastRenderDistance;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
     private int overviewLightingUpdatesRemaining;
-    private int overviewUpgradesRemaining;
+    private volatile long lightmapRevision;
+    private final AtomicBoolean visibleRegionRefreshRequested = new AtomicBoolean();
 
     public PersistentMap() {
         this.colorManager = VoxelConstants.getVoxelMapInstance().getColorManager();
@@ -234,10 +235,17 @@ public class PersistentMap implements IChangeObserver {
         return VoxelConstants.getVoxelMapInstance().getSettingsAndLightingChangeNotifier();
     }
 
-    public synchronized void setLightMapArray(int[] lights) {
-        boolean changed = !Arrays.equals(lights, this.lightmapColors);
-        System.arraycopy(lights, 0, this.lightmapColors, 0, 256);
+    public void setLightMapArray(int[] lights) {
+        boolean changed;
+        synchronized (this) {
+            changed = !Arrays.equals(lights, this.lightmapColors);
+            System.arraycopy(lights, 0, this.lightmapColors, 0, 256);
+            if (changed) {
+                ++this.lightmapRevision;
+            }
+        }
         if (changed) {
+            this.visibleRegionRefreshRequested.set(true);
             this.getSettingsAndLightingChangeNotifier().notifyOfLightingChanges();
         }
 
@@ -247,9 +255,20 @@ public class PersistentMap implements IChangeObserver {
         return Arrays.copyOf(this.lightmapColors, this.lightmapColors.length);
     }
 
+    synchronized LightmapSnapshot getLightmapSnapshotWithRevision() {
+        return new LightmapSnapshot(Arrays.copyOf(this.lightmapColors, this.lightmapColors.length), this.lightmapRevision);
+    }
+
+    long getLightmapRevision() {
+        return this.lightmapRevision;
+    }
+
+    public void requestVisibleRegionRefresh() {
+        this.visibleRegionRefreshRequested.set(true);
+    }
+
     void beginOverviewLightingFrame() {
         this.overviewLightingUpdatesRemaining = OVERVIEW_LIGHTING_UPDATES_PER_FRAME;
-        this.overviewUpgradesRemaining = OVERVIEW_UPGRADES_PER_FRAME;
     }
 
     boolean tryAcquireOverviewLightingUpdate() {
@@ -257,15 +276,6 @@ public class PersistentMap implements IChangeObserver {
             return false;
         }
         --this.overviewLightingUpdatesRemaining;
-        return true;
-    }
-
-    boolean tryAcquireOverviewUpgrade() {
-        if (this.overviewUpgradesRemaining <= 0
-                || ThreadManager.executorService.getQueue().size() >= ThreadManager.CALCULATION_WORKER_COUNT * 2) {
-            return false;
-        }
-        --this.overviewUpgradesRemaining;
         return true;
     }
 
@@ -504,6 +514,9 @@ public class PersistentMap implements IChangeObserver {
     }
 
     private int getPixelColor(AbstractMapData mapData, CompressibleMapData.RenderView renderView, ColorManager.PersistentMapRenderContext renderContext, ClientLevel world, MutableBlockPos blockPos, MutableBlockPos loopBlockPos, boolean underground, int multi, int startX, int startZ, int imageX, int imageY, PixelRenderOutput output) {
+        if (output != null) {
+            output.reset();
+        }
         int bottomY = world.getMinY();
         int mcX = startX + imageX;
         int mcZ = startZ + imageY;
@@ -688,6 +701,41 @@ public class PersistentMap implements IChangeObserver {
                             bottomY,
                             mapOptions.waterTransparency,
                             output.lightAccumulator);
+                    boolean waterSurface = mapOptions.waterTransparency
+                            && seafloorHeight > bottomY
+                            && surfaceBlockState.getFluidState().createLegacyBlock().getBlock() == Blocks.WATER;
+                    output.overviewWater = waterSurface;
+                    if (waterSurface
+                            && mapOptions.biomeOverlay == 0) {
+                        composeSplitLighting(
+                                unlitSurfaceColor,
+                                surfaceColor,
+                                surfaceLight,
+                                unlitSeafloorColor,
+                                seafloorColor,
+                                seafloorLight,
+                                unlitTransparentColor,
+                                transparentColor,
+                                transparentLight,
+                                unlitFoliageColor,
+                                foliageColor,
+                                foliageLight,
+                                surfaceHeight,
+                                seafloorHeight,
+                                transparentHeight,
+                                foliageHeight,
+                                bottomY,
+                                mapOptions.waterTransparency,
+                                waterSurface,
+                                output.splitLightingAccumulator);
+                        int overlayColor = MapUtils.doSlimeAndGrid(0, world, mcX, mcZ);
+                        if (overlayColor != 0) {
+                            int internalOverlayColor = ARGB.toABGR(overlayColor);
+                            output.splitLightingAccumulator.addTop(
+                                    internalOverlayColor, internalOverlayColor, 0xFF, 0);
+                        }
+                        output.splitLightingPrepared = true;
+                    }
                 }
 
             }
@@ -696,11 +744,15 @@ public class PersistentMap implements IChangeObserver {
                 output.unlitColor = displayedColor;
                 output.light = 255;
             }
+            if (output != null) {
+                output.ensureSingleComponent(displayedColor);
+            }
             return displayedColor;
         } else {
             if (output != null) {
                 output.unlitColor = 0;
                 output.light = 255;
+                output.ensureSingleComponent(0);
             }
             return 0;
         }
@@ -777,10 +829,69 @@ public class PersistentMap implements IChangeObserver {
         return light.combinedLight();
     }
 
+    private static void composeSplitLighting(
+            int unlitSurfaceColor,
+            int surfaceColor,
+            int surfaceLight,
+            int unlitSeafloorColor,
+            int seafloorColor,
+            int seafloorLight,
+            int unlitTransparentColor,
+            int transparentColor,
+            int transparentLight,
+            int unlitFoliageColor,
+            int foliageColor,
+            int foliageLight,
+            int surfaceHeight,
+            int seafloorHeight,
+            int transparentHeight,
+            int foliageHeight,
+            int bottomY,
+            boolean waterTransparency,
+            boolean waterSurface,
+            SplitLightingAccumulator split) {
+        // Component 0 contains the water surface and layers above it; component 1
+        // contains the seafloor and all layers below the water surface.
+        if (waterTransparency && seafloorHeight > bottomY) {
+            split.addTop(unlitSeafloorColor, seafloorColor, seafloorLight, waterSurface ? 1 : 0);
+            if (unlitFoliageColor != 0 && foliageHeight <= surfaceHeight) {
+                split.addTop(unlitFoliageColor, foliageColor, foliageLight, waterSurface ? 1 : 0);
+            }
+            if (unlitTransparentColor != 0 && transparentHeight <= surfaceHeight) {
+                split.addTop(unlitTransparentColor, transparentColor, transparentLight, waterSurface ? 1 : 0);
+            }
+            split.addTop(unlitSurfaceColor, surfaceColor, surfaceLight, 0);
+        } else {
+            split.addTop(unlitSurfaceColor, surfaceColor, surfaceLight, 0);
+        }
+        if (unlitFoliageColor != 0 && foliageHeight > surfaceHeight) {
+            split.addTop(unlitFoliageColor, foliageColor, foliageLight, 0);
+        }
+        if (unlitTransparentColor != 0 && transparentHeight > surfaceHeight) {
+            split.addTop(unlitTransparentColor, transparentColor, transparentLight, 0);
+        }
+    }
+
     static final class PixelRenderOutput {
         int unlitColor;
         int light;
         final LightAccumulator lightAccumulator = new LightAccumulator();
+        final SplitLightingAccumulator splitLightingAccumulator = new SplitLightingAccumulator();
+        boolean splitLightingPrepared;
+        boolean overviewWater;
+
+        private void reset() {
+            this.splitLightingAccumulator.clear();
+            this.splitLightingPrepared = false;
+            this.overviewWater = false;
+        }
+
+        private void ensureSingleComponent(int displayedColor) {
+            if (!this.splitLightingPrepared) {
+                this.splitLightingAccumulator.setSingle(this.unlitColor, displayedColor, this.light);
+                this.splitLightingPrepared = true;
+            }
+        }
     }
 
     static final class LightAccumulator {
@@ -811,6 +922,119 @@ public class PersistentMap implements IChangeObserver {
             }
             int block = Math.clamp((int) Math.round(this.blockLight / this.alpha), 0, 15);
             int sky = Math.clamp((int) Math.round(this.skyLight / this.alpha), 0, 15);
+            return block | sky << 4;
+        }
+    }
+
+    static final class SplitLightingAccumulator {
+        private static final int COMPONENTS = 2;
+
+        private final double[] alpha = new double[COMPONENTS];
+        private final double[] unlitRed = new double[COMPONENTS];
+        private final double[] unlitGreen = new double[COMPONENTS];
+        private final double[] unlitBlue = new double[COMPONENTS];
+        private final double[] litRed = new double[COMPONENTS];
+        private final double[] litGreen = new double[COMPONENTS];
+        private final double[] litBlue = new double[COMPONENTS];
+        private final double[] blockLight = new double[COMPONENTS];
+        private final double[] skyLight = new double[COMPONENTS];
+
+        void clear() {
+            this.alpha[0] = this.alpha[1] = 0.0;
+            this.unlitRed[0] = this.unlitRed[1] = 0.0;
+            this.unlitGreen[0] = this.unlitGreen[1] = 0.0;
+            this.unlitBlue[0] = this.unlitBlue[1] = 0.0;
+            this.litRed[0] = this.litRed[1] = 0.0;
+            this.litGreen[0] = this.litGreen[1] = 0.0;
+            this.litBlue[0] = this.litBlue[1] = 0.0;
+            this.blockLight[0] = this.blockLight[1] = 0.0;
+            this.skyLight[0] = this.skyLight[1] = 0.0;
+        }
+
+        void addTop(int unlitColor, int litColor, int light, int component) {
+            int outputUnlitColor = ARGB.toABGR(unlitColor);
+            int outputLitColor = ARGB.toABGR(litColor);
+            double topAlpha = (outputUnlitColor >> 24 & 0xFF) / 255.0;
+            if (topAlpha == 0.0) {
+                return;
+            }
+
+            double visibleBottom = 1.0 - topAlpha;
+            for (int index = 0; index < COMPONENTS; ++index) {
+                this.alpha[index] *= visibleBottom;
+                this.unlitRed[index] *= visibleBottom;
+                this.unlitGreen[index] *= visibleBottom;
+                this.unlitBlue[index] *= visibleBottom;
+                this.litRed[index] *= visibleBottom;
+                this.litGreen[index] *= visibleBottom;
+                this.litBlue[index] *= visibleBottom;
+                this.blockLight[index] *= visibleBottom;
+                this.skyLight[index] *= visibleBottom;
+            }
+
+            this.alpha[component] += topAlpha;
+            this.unlitRed[component] += (outputUnlitColor >> 16 & 0xFF) * topAlpha;
+            this.unlitGreen[component] += (outputUnlitColor >> 8 & 0xFF) * topAlpha;
+            this.unlitBlue[component] += (outputUnlitColor & 0xFF) * topAlpha;
+            this.litRed[component] += (outputLitColor >> 16 & 0xFF) * topAlpha;
+            this.litGreen[component] += (outputLitColor >> 8 & 0xFF) * topAlpha;
+            this.litBlue[component] += (outputLitColor & 0xFF) * topAlpha;
+            this.blockLight[component] += (light & 0xF) * topAlpha;
+            this.skyLight[component] += (light >> 4 & 0xF) * topAlpha;
+        }
+
+        void setSingle(int unlitColor, int litColor, int light) {
+            int unlitPremultiplied = ColorUtils.premultiplyWithAlpha(unlitColor);
+            int litPremultiplied = ColorUtils.premultiplyWithAlpha(litColor);
+            double sourceAlpha = (unlitColor >> 24 & 0xFF) / 255.0;
+            if ((unlitPremultiplied & 0xFFFFFF) == 0 && (litPremultiplied & 0xFFFFFF) == 0) {
+                return;
+            }
+            this.alpha[0] = sourceAlpha == 0.0 ? 1.0 : sourceAlpha;
+            this.unlitRed[0] = unlitPremultiplied >> 16 & 0xFF;
+            this.unlitGreen[0] = unlitPremultiplied >> 8 & 0xFF;
+            this.unlitBlue[0] = unlitPremultiplied & 0xFF;
+            this.litRed[0] = litPremultiplied >> 16 & 0xFF;
+            this.litGreen[0] = litPremultiplied >> 8 & 0xFF;
+            this.litBlue[0] = litPremultiplied & 0xFF;
+            this.blockLight[0] = (light & 0xF) * this.alpha[0];
+            this.skyLight[0] = (light >> 4 & 0xF) * this.alpha[0];
+        }
+
+        int unlitRed(int component) {
+            return Math.clamp((int) Math.round(this.unlitRed[component]), 0, 255);
+        }
+
+        int unlitGreen(int component) {
+            return Math.clamp((int) Math.round(this.unlitGreen[component]), 0, 255);
+        }
+
+        int unlitBlue(int component) {
+            return Math.clamp((int) Math.round(this.unlitBlue[component]), 0, 255);
+        }
+
+        int litRed(int component) {
+            return Math.clamp((int) Math.round(this.litRed[component]), 0, 255);
+        }
+
+        int litGreen(int component) {
+            return Math.clamp((int) Math.round(this.litGreen[component]), 0, 255);
+        }
+
+        int litBlue(int component) {
+            return Math.clamp((int) Math.round(this.litBlue[component]), 0, 255);
+        }
+
+        boolean hasComponent(int component) {
+            return this.alpha[component] > 0.0;
+        }
+
+        int light(int component) {
+            if (!this.hasComponent(component)) {
+                return 255;
+            }
+            int block = Math.clamp((int) Math.round(this.blockLight[component] / this.alpha[component]), 0, 15);
+            int sky = Math.clamp((int) Math.round(this.skyLight[component] / this.alpha[component]), 0, 15);
             return block | sky << 4;
         }
     }
@@ -950,10 +1174,6 @@ public class PersistentMap implements IChangeObserver {
         return this.getOverviewRenderSignature(OVERVIEW_RENDER_VERSION);
     }
 
-    long getLegacyOverviewRenderSignature() {
-        return this.getOverviewRenderSignature(1L);
-    }
-
     private long getOverviewRenderSignature(long renderVersion) {
         long signature = 0xcbf29ce484222325L;
         signature = appendSignature(signature, renderVersion);
@@ -1008,14 +1228,19 @@ public class PersistentMap implements IChangeObserver {
                 && top == this.lastTop
                 && bottom == this.lastBottom
                 && this.lastRegionsArray.length == expectedRegionCount) {
-            if (this.lastFullDetailRequested != fullDetail) {
+            boolean refreshVisibleRegions = this.visibleRegionRefreshRequested.getAndSet(false);
+            if (this.lastFullDetailRequested != fullDetail || refreshVisibleRegions) {
+                // Notifications only mark work on a region. Revisit visible
+                // regions when lighting changed so work recorded while the map
+                // was closed is actually queued on the unchanged fast path.
                 for (CachedRegion region : this.lastRegionsArray) {
                     region.refresh(false, fullDetail);
                 }
-                this.lastFullDetailRequested = fullDetail;
             }
+            this.lastFullDetailRequested = fullDetail;
             return this.lastRegionsArray;
         } else {
+            this.visibleRegionRefreshRequested.set(false);
             long selectionStartedNanos = PersistentMapProfiler.startTimer();
             CachedRegion[] previouslyVisibleRegions = this.lastRegionsArray;
             CachedRegion[] visibleCachedRegionsArray = new CachedRegion[(right - left + 1) * (bottom - top + 1)];
@@ -1088,6 +1313,8 @@ public class PersistentMap implements IChangeObserver {
             }
         }
     }
+
+    record LightmapSnapshot(int[] colors, long revision) {}
 
     private void prunePool() {
         synchronized (this.cachedRegionsPool) {

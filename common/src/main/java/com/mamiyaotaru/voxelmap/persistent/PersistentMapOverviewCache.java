@@ -22,9 +22,10 @@ import java.util.zip.Inflater;
 final class PersistentMapOverviewCache {
     static final int SIZE = 64;
     static final int PIXEL_COUNT = SIZE * SIZE;
-    static final int COLOR_BYTES = PIXEL_COUNT * 4;
+    static final int PRIMARY_COLOR_BYTES = PIXEL_COUNT * 4;
+    static final int SECONDARY_COLOR_BYTES = PIXEL_COUNT * 3;
     static final int LIGHT_BYTES = PIXEL_COUNT;
-    static final int RAW_BYTES = COLOR_BYTES + LIGHT_BYTES;
+    static final int RAW_BYTES = PRIMARY_COLOR_BYTES + SECONDARY_COLOR_BYTES + LIGHT_BYTES * 2;
 
     // Small changes accumulate because each comparison uses the lightmap that was
     // used for the image which is actually on screen.
@@ -32,57 +33,66 @@ final class PersistentMapOverviewCache {
     static final int LOCAL_LIGHT_CHANGE_THRESHOLD = 6;
     static final int MIN_SIGNIFICANT_PIXELS = 8;
 
-    private static final int MAGIC_V2 = 0x564D4F32; // VMO2
-    private static final int FORMAT_VERSION_V2 = 2;
-    private static final int MAGIC_V1 = 0x564D4F31; // VMO1
-    private static final int FORMAT_VERSION_V1 = 1;
+    private static final int MAGIC = 0x564D4F33; // VMO3
+    private static final int FORMAT_VERSION = 3;
     private static final int MAX_COMPRESSED_BYTES = RAW_BYTES + 1024;
 
     private PersistentMapOverviewCache() {}
 
     static Optional<OverviewData> read(File overviewFile, File sourceFile, long renderSignature) {
-        Optional<byte[]> raw = readPayload(
-                overviewFile, sourceFile, renderSignature, MAGIC_V2, FORMAT_VERSION_V2, RAW_BYTES, MAX_COMPRESSED_BYTES);
+        Optional<byte[]> raw = readPayload(overviewFile, sourceFile, renderSignature);
         if (raw.isEmpty()) {
             return Optional.empty();
         }
 
         byte[] payload = raw.get();
+        int secondaryOffset = PRIMARY_COLOR_BYTES;
+        int primaryLightOffset = secondaryOffset + SECONDARY_COLOR_BYTES;
+        int secondaryLightOffset = primaryLightOffset + LIGHT_BYTES;
         return Optional.of(new OverviewData(
-                Arrays.copyOfRange(payload, 0, COLOR_BYTES), Arrays.copyOfRange(payload, COLOR_BYTES, RAW_BYTES)));
-    }
-
-    static Optional<byte[]> readLegacy(File overviewFile, File sourceFile, long renderSignature) {
-        return readPayload(
-                overviewFile, sourceFile, renderSignature, MAGIC_V1, FORMAT_VERSION_V1, COLOR_BYTES, COLOR_BYTES + 1024);
+                Arrays.copyOfRange(payload, 0, PRIMARY_COLOR_BYTES),
+                Arrays.copyOfRange(payload, secondaryOffset, primaryLightOffset),
+                Arrays.copyOfRange(payload, primaryLightOffset, secondaryLightOffset),
+                Arrays.copyOfRange(payload, secondaryLightOffset, RAW_BYTES)));
     }
 
     static void write(File overviewFile, File sourceFile, long renderSignature, OverviewData overview) throws IOException {
         byte[] payload = new byte[RAW_BYTES];
-        System.arraycopy(overview.basePixels(), 0, payload, 0, COLOR_BYTES);
-        System.arraycopy(overview.lightValues(), 0, payload, COLOR_BYTES, LIGHT_BYTES);
+        int secondaryOffset = PRIMARY_COLOR_BYTES;
+        int primaryLightOffset = secondaryOffset + SECONDARY_COLOR_BYTES;
+        int secondaryLightOffset = primaryLightOffset + LIGHT_BYTES;
+        System.arraycopy(overview.primaryPixels(), 0, payload, 0, PRIMARY_COLOR_BYTES);
+        System.arraycopy(overview.secondaryPixels(), 0, payload, secondaryOffset, SECONDARY_COLOR_BYTES);
+        System.arraycopy(overview.primaryLightValues(), 0, payload, primaryLightOffset, LIGHT_BYTES);
+        System.arraycopy(overview.secondaryLightValues(), 0, payload, secondaryLightOffset, LIGHT_BYTES);
         writePayload(overviewFile, sourceFile, renderSignature, payload);
     }
 
     static byte[] applyLighting(OverviewData overview, int[] lightmap, boolean dynamicLighting) {
-        byte[] basePixels = overview.basePixels();
-        byte[] result = Arrays.copyOf(basePixels, basePixels.length);
-        if (!dynamicLighting) {
-            return result;
-        }
-        if (lightmap.length != 256) {
+        if (dynamicLighting && lightmap.length != 256) {
             throw new IllegalArgumentException("Expected 256 lightmap colors, got " + lightmap.length);
         }
 
-        byte[] lightValues = overview.lightValues();
-        for (int pixel = 0, offset = 0; pixel < PIXEL_COUNT; ++pixel, offset += 4) {
-            int lightColor = lightmap[Byte.toUnsignedInt(lightValues[pixel])];
+        byte[] primaryPixels = overview.primaryPixels();
+        byte[] secondaryPixels = overview.secondaryPixels();
+        byte[] primaryLights = overview.primaryLightValues();
+        byte[] secondaryLights = overview.secondaryLightValues();
+        byte[] result = new byte[PRIMARY_COLOR_BYTES];
+        for (int pixel = 0, primaryOffset = 0, secondaryOffset = 0;
+                pixel < PIXEL_COUNT;
+                ++pixel, primaryOffset += 4, secondaryOffset += 3) {
+            int primaryLight = dynamicLighting ? lightmap[Byte.toUnsignedInt(primaryLights[pixel])] : -1;
+            int secondaryLight = dynamicLighting ? lightmap[Byte.toUnsignedInt(secondaryLights[pixel])] : -1;
             // PersistentMap composes ABGR layers with the ARGB lightmap before its
             // final ARGB conversion. Raw overview bytes are RGBA, so red and blue
             // intentionally use the opposite packed lightmap components here.
-            result[offset] = multiply(result[offset], lightColor);
-            result[offset + 1] = multiply(result[offset + 1], lightColor >> 8);
-            result[offset + 2] = multiply(result[offset + 2], lightColor >> 16);
+            result[primaryOffset] = (byte) saturatedComponent(
+                    primaryPixels[primaryOffset], primaryLight, secondaryPixels[secondaryOffset], secondaryLight, dynamicLighting, 0);
+            result[primaryOffset + 1] = (byte) saturatedComponent(
+                    primaryPixels[primaryOffset + 1], primaryLight, secondaryPixels[secondaryOffset + 1], secondaryLight, dynamicLighting, 8);
+            result[primaryOffset + 2] = (byte) saturatedComponent(
+                    primaryPixels[primaryOffset + 2], primaryLight, secondaryPixels[secondaryOffset + 2], secondaryLight, dynamicLighting, 16);
+            result[primaryOffset + 3] = primaryPixels[primaryOffset + 3];
         }
         return result;
     }
@@ -92,25 +102,43 @@ final class PersistentMapOverviewCache {
             return true;
         }
 
-        int[] histogram = overview.lightHistogram();
+        byte[] primaryPixels = overview.primaryPixels();
+        byte[] secondaryPixels = overview.secondaryPixels();
+        byte[] primaryLights = overview.primaryLightValues();
+        byte[] secondaryLights = overview.secondaryLightValues();
         long totalDifference = 0L;
         int significantPixels = 0;
         int totalPixels = 0;
-        for (int light = 0; light < histogram.length; ++light) {
-            int count = histogram[light];
-            if (count == 0) {
+        for (int pixel = 0, primaryOffset = 0, secondaryOffset = 0;
+                pixel < PIXEL_COUNT;
+                ++pixel, primaryOffset += 4, secondaryOffset += 3) {
+            if ((primaryPixels[primaryOffset]
+                            | primaryPixels[primaryOffset + 1]
+                            | primaryPixels[primaryOffset + 2]
+                            | secondaryPixels[secondaryOffset]
+                            | secondaryPixels[secondaryOffset + 1]
+                            | secondaryPixels[secondaryOffset + 2])
+                    == 0) {
                 continue;
             }
 
-            int displayed = displayedLightmap[light];
-            int current = currentLightmap[light];
-            int redDifference = Math.abs((displayed >> 16 & 0xFF) - (current >> 16 & 0xFF));
-            int greenDifference = Math.abs((displayed >> 8 & 0xFF) - (current >> 8 & 0xFF));
-            int blueDifference = Math.abs((displayed & 0xFF) - (current & 0xFF));
-            totalDifference += (long) count * (redDifference + greenDifference + blueDifference);
-            totalPixels += count;
+            int displayedPrimaryLight = displayedLightmap[Byte.toUnsignedInt(primaryLights[pixel])];
+            int displayedSecondaryLight = displayedLightmap[Byte.toUnsignedInt(secondaryLights[pixel])];
+            int currentPrimaryLight = currentLightmap[Byte.toUnsignedInt(primaryLights[pixel])];
+            int currentSecondaryLight = currentLightmap[Byte.toUnsignedInt(secondaryLights[pixel])];
+            int redDifference = componentDifference(
+                    primaryPixels[primaryOffset], displayedPrimaryLight, currentPrimaryLight,
+                    secondaryPixels[secondaryOffset], displayedSecondaryLight, currentSecondaryLight, 0);
+            int greenDifference = componentDifference(
+                    primaryPixels[primaryOffset + 1], displayedPrimaryLight, currentPrimaryLight,
+                    secondaryPixels[secondaryOffset + 1], displayedSecondaryLight, currentSecondaryLight, 8);
+            int blueDifference = componentDifference(
+                    primaryPixels[primaryOffset + 2], displayedPrimaryLight, currentPrimaryLight,
+                    secondaryPixels[secondaryOffset + 2], displayedSecondaryLight, currentSecondaryLight, 16);
+            totalDifference += redDifference + greenDifference + blueDifference;
+            ++totalPixels;
             if (Math.max(redDifference, Math.max(greenDifference, blueDifference)) >= LOCAL_LIGHT_CHANGE_THRESHOLD) {
-                significantPixels += count;
+                ++significantPixels;
             }
         }
 
@@ -153,24 +181,37 @@ final class PersistentMapOverviewCache {
         return bestLight;
     }
 
-    private static byte multiply(byte component, int lightComponent) {
-        return (byte) (Byte.toUnsignedInt(component) * (lightComponent & 0xFF) / 255);
+    private static int saturatedComponent(
+            byte primary, int primaryLight, byte secondary, int secondaryLight, boolean dynamicLighting, int lightShift) {
+        int primaryValue = Byte.toUnsignedInt(primary);
+        int secondaryValue = Byte.toUnsignedInt(secondary);
+        if (dynamicLighting) {
+            primaryValue = primaryValue * (primaryLight >> lightShift & 0xFF) / 255;
+            secondaryValue = secondaryValue * (secondaryLight >> lightShift & 0xFF) / 255;
+        }
+        return Math.min(255, primaryValue + secondaryValue);
     }
 
-    private static Optional<byte[]> readPayload(
-            File overviewFile,
-            File sourceFile,
-            long renderSignature,
-            int expectedMagic,
-            int expectedVersion,
-            int expectedRawBytes,
-            int maxCompressedBytes) {
+    private static int componentDifference(
+            byte primary,
+            int displayedPrimaryLight,
+            int currentPrimaryLight,
+            byte secondary,
+            int displayedSecondaryLight,
+            int currentSecondaryLight,
+            int lightShift) {
+        int displayed = saturatedComponent(primary, displayedPrimaryLight, secondary, displayedSecondaryLight, true, lightShift);
+        int current = saturatedComponent(primary, currentPrimaryLight, secondary, currentSecondaryLight, true, lightShift);
+        return Math.abs(displayed - current);
+    }
+
+    private static Optional<byte[]> readPayload(File overviewFile, File sourceFile, long renderSignature) {
         if (!overviewFile.isFile()) {
             return Optional.empty();
         }
 
         try (DataInputStream input = new DataInputStream(new BufferedInputStream(Files.newInputStream(overviewFile.toPath())))) {
-            if (input.readInt() != expectedMagic || input.readInt() != expectedVersion || input.readInt() != SIZE) {
+            if (input.readInt() != MAGIC || input.readInt() != FORMAT_VERSION || input.readInt() != SIZE) {
                 return Optional.empty();
             }
             if (input.readLong() != renderSignature) {
@@ -186,7 +227,7 @@ final class PersistentMapOverviewCache {
             int rawLength = input.readInt();
             int compressedLength = input.readInt();
             long expectedCrc = Integer.toUnsignedLong(input.readInt());
-            if (rawLength != expectedRawBytes || compressedLength <= 0 || compressedLength > maxCompressedBytes) {
+            if (rawLength != RAW_BYTES || compressedLength <= 0 || compressedLength > MAX_COMPRESSED_BYTES) {
                 return Optional.empty();
             }
 
@@ -194,7 +235,7 @@ final class PersistentMapOverviewCache {
             if (compressed.length != compressedLength || input.read() != -1) {
                 return Optional.empty();
             }
-            byte[] payload = decompress(compressed, expectedRawBytes);
+            byte[] payload = decompress(compressed, RAW_BYTES);
             if (crc32(payload) != expectedCrc) {
                 return Optional.empty();
             }
@@ -215,8 +256,8 @@ final class PersistentMapOverviewCache {
         boolean moved = false;
         try {
             try (DataOutputStream output = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(temporary)))) {
-                output.writeInt(MAGIC_V2);
-                output.writeInt(FORMAT_VERSION_V2);
+                output.writeInt(MAGIC);
+                output.writeInt(FORMAT_VERSION);
                 output.writeInt(SIZE);
                 output.writeLong(renderSignature);
                 output.writeLong(sourceLength(sourceFile));
@@ -301,39 +342,46 @@ final class PersistentMapOverviewCache {
     }
 
     static final class OverviewData {
-        private final byte[] basePixels;
-        private final byte[] lightValues;
-        private final int[] lightHistogram;
+        private final byte[] primaryPixels;
+        private final byte[] secondaryPixels;
+        private final byte[] primaryLightValues;
+        private final byte[] secondaryLightValues;
 
-        OverviewData(byte[] basePixels, byte[] lightValues) {
-            if (basePixels.length != COLOR_BYTES || lightValues.length != LIGHT_BYTES) {
+        OverviewData(byte[] primaryPixels, byte[] secondaryPixels, byte[] primaryLightValues, byte[] secondaryLightValues) {
+            if (primaryPixels.length != PRIMARY_COLOR_BYTES
+                    || secondaryPixels.length != SECONDARY_COLOR_BYTES
+                    || primaryLightValues.length != LIGHT_BYTES
+                    || secondaryLightValues.length != LIGHT_BYTES) {
                 throw new IllegalArgumentException("Invalid overview data size");
             }
-            this.basePixels = basePixels;
-            this.lightValues = lightValues;
-            this.lightHistogram = new int[256];
-            for (int pixel = 0; pixel < lightValues.length; ++pixel) {
-                int offset = pixel * 4;
-                if ((basePixels[offset] | basePixels[offset + 1] | basePixels[offset + 2]) != 0) {
-                    ++this.lightHistogram[Byte.toUnsignedInt(lightValues[pixel])];
-                }
-            }
+            this.primaryPixels = primaryPixels;
+            this.secondaryPixels = secondaryPixels;
+            this.primaryLightValues = primaryLightValues;
+            this.secondaryLightValues = secondaryLightValues;
         }
 
-        byte[] basePixels() {
-            return this.basePixels;
+        byte[] primaryPixels() {
+            return this.primaryPixels;
         }
 
-        byte[] lightValues() {
-            return this.lightValues;
+        byte[] secondaryPixels() {
+            return this.secondaryPixels;
         }
 
-        int[] lightHistogram() {
-            return this.lightHistogram;
+        byte[] primaryLightValues() {
+            return this.primaryLightValues;
+        }
+
+        byte[] secondaryLightValues() {
+            return this.secondaryLightValues;
         }
 
         OverviewData copy() {
-            return new OverviewData(Arrays.copyOf(this.basePixels, this.basePixels.length), Arrays.copyOf(this.lightValues, this.lightValues.length));
+            return new OverviewData(
+                    Arrays.copyOf(this.primaryPixels, this.primaryPixels.length),
+                    Arrays.copyOf(this.secondaryPixels, this.secondaryPixels.length),
+                    Arrays.copyOf(this.primaryLightValues, this.primaryLightValues.length),
+                    Arrays.copyOf(this.secondaryLightValues, this.secondaryLightValues.length));
         }
     }
 }

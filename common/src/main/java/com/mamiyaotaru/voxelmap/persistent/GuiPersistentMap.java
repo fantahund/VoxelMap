@@ -144,7 +144,9 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         this.zoom = this.options.zoom;
         this.zoomStart = this.options.zoom;
         this.zoomGoal = this.options.zoom;
+        VoxelConstants.getVoxelMapInstance().getMap().calculateCurrentLightAndSkyColor(true);
         this.persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
+        this.persistentMap.requestVisibleRegionRefresh();
         if (!gotSkin) {
             this.getSkin();
         }
@@ -629,6 +631,10 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
                 return;
             }
 
+            // The minimap owns the current CPU lightmap. Keep the persistent map
+            // synchronized while this screen is open as time, gamma and effects
+            // can change after construction.
+            this.persistentMap.setLightMapArray(VoxelConstants.getVoxelMapInstance().getMap().getLightmapArray());
             this.regions = this.persistentMap.getRegions(left - 1, right + 1, top - 1, bottom + 1, this.zoom);
         }
 

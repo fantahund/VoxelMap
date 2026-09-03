@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.LongAdder;
  */
 final class PersistentMapProfiler {
     static final String ENABLE_PROPERTY = "voxelmap.profilePersistentMap";
+    static final int OVERVIEW_COMPARISON_SIGNIFICANT_ERROR = 8;
 
     private static final long IDLE_REPORT_DELAY_NANOS = TimeUnit.SECONDS.toNanos(1L);
     private static final boolean ENABLED = Boolean.getBoolean(ENABLE_PROPERTY);
@@ -248,6 +249,25 @@ final class PersistentMapProfiler {
         record(Stage.OVERVIEW_RELIGHT, startedNanos, PersistentMapOverviewCache.PIXEL_COUNT);
     }
 
+    static void recordOverviewComparison(long startedNanos, OverviewComparisonMetrics metrics) {
+        Session session = CURRENT_SESSION.get();
+        if (session == null) {
+            return;
+        }
+        session.overviewComparisons.increment();
+        session.v3WaterComparison.add(
+                metrics.waterPixels,
+                metrics.waterAbsoluteError,
+                metrics.waterSignificantPixels,
+                metrics.waterMaxError);
+        session.v3LandComparison.add(
+                metrics.landPixels,
+                metrics.landAbsoluteError,
+                metrics.landSignificantPixels,
+                metrics.landMaxError);
+        session.record(Stage.OVERVIEW_COMPARISON, startedNanos, metrics.waterPixels + metrics.landPixels);
+    }
+
     static void recordDisplayChangeRequest() {
         Session session = CURRENT_SESSION.get();
         if (session != null) {
@@ -335,6 +355,21 @@ final class PersistentMapProfiler {
         return formatDecimal(bytes / (1024.0 * 1024.0)) + " MiB";
     }
 
+    private static String formatComparison(ComparisonStats stats) {
+        long pixels = stats.pixels.sum();
+        if (pixels == 0L) {
+            return "n/a";
+        }
+        double meanAbsoluteError = stats.absoluteError.sum() / (pixels * 3.0);
+        double significantPercent = stats.significantPixels.sum() * 100.0 / pixels;
+        return formatDecimal(meanAbsoluteError)
+                + "/"
+                + stats.maxError.get()
+                + "/"
+                + formatDecimal(significantPercent)
+                + "%";
+    }
+
     private enum Stage {
         REGION_SELECTION("region-selection", "regions"),
         REFRESH_QUEUE_WAIT("refresh-queue-wait", null),
@@ -345,6 +380,7 @@ final class PersistentMapProfiler {
         OVERVIEW_READ("overview-read", "raw-bytes"),
         OVERVIEW_WRITE("overview-write", "raw-bytes"),
         OVERVIEW_RELIGHT("overview-relight", "pixels"),
+        OVERVIEW_COMPARISON("overview-comparison", "pixels"),
         LIVE_CHUNK_SCAN("live-chunk-scan", "chunks-checked"),
         ANVIL_LOAD("anvil-load", null),
         RENDER_VIEW_CREATION("render-view-creation", null),
@@ -427,6 +463,9 @@ final class PersistentMapProfiler {
         private final LongAdder texturesCreated = new LongAdder();
         private final LongAdder fullImageRenders = new LongAdder();
         private final LongAdder partialImageRenders = new LongAdder();
+        private final LongAdder overviewComparisons = new LongAdder();
+        private final ComparisonStats v3WaterComparison = new ComparisonStats();
+        private final ComparisonStats v3LandComparison = new ComparisonStats();
 
         private Session(long id, int screenWidth, int screenHeight, float initialZoom, int initialMapX, int initialMapZ) {
             this.id = id;
@@ -531,6 +570,18 @@ final class PersistentMapProfiler {
                     overviewLightingThresholdSkips.sum(),
                     overviewLightingBudgetDeferrals.sum(),
                     displayChangeFullDetailRequests.sum());
+            if (overviewComparisons.sum() > 0L) {
+                VoxelConstants.getLogger().info(
+                        "[PersistentMap profile #{} report {}] overviewComparison(tiles/waterCells/landCells)={}/{}/{}, metric=rgb-mae/max/pct(max-channel-error>={}), v3(water/land)={}/{}",
+                        id,
+                        reportNumber,
+                        overviewComparisons.sum(),
+                        v3WaterComparison.pixels.sum(),
+                        v3LandComparison.pixels.sum(),
+                        OVERVIEW_COMPARISON_SIGNIFICANT_ERROR,
+                        formatComparison(v3WaterComparison),
+                        formatComparison(v3LandComparison));
+            }
 
             for (Stage stage : Stage.values()) {
                 StageStats stats = stages[stage.ordinal()];
@@ -552,6 +603,61 @@ final class PersistentMapProfiler {
                         formatMillis(stats.maxNanos.get()),
                         units);
             }
+        }
+    }
+
+    static final class OverviewComparisonMetrics {
+        private long waterPixels;
+        private long landPixels;
+        private long waterAbsoluteError;
+        private long landAbsoluteError;
+        private int waterSignificantPixels;
+        private int landSignificantPixels;
+        private int waterMaxError;
+        private int landMaxError;
+
+        void record(
+                boolean water,
+                int referenceRed,
+                int referenceGreen,
+                int referenceBlue,
+                int overviewRed,
+                int overviewGreen,
+                int overviewBlue) {
+            int redError = Math.abs(referenceRed - overviewRed);
+            int greenError = Math.abs(referenceGreen - overviewGreen);
+            int blueError = Math.abs(referenceBlue - overviewBlue);
+            int maxError = Math.max(redError, Math.max(greenError, blueError));
+            long absoluteError = (long) redError + greenError + blueError;
+            if (water) {
+                ++this.waterPixels;
+                this.waterAbsoluteError += absoluteError;
+                this.waterMaxError = Math.max(this.waterMaxError, maxError);
+                if (maxError >= OVERVIEW_COMPARISON_SIGNIFICANT_ERROR) {
+                    ++this.waterSignificantPixels;
+                }
+            } else {
+                ++this.landPixels;
+                this.landAbsoluteError += absoluteError;
+                this.landMaxError = Math.max(this.landMaxError, maxError);
+                if (maxError >= OVERVIEW_COMPARISON_SIGNIFICANT_ERROR) {
+                    ++this.landSignificantPixels;
+                }
+            }
+        }
+    }
+
+    private static final class ComparisonStats {
+        private final LongAdder pixels = new LongAdder();
+        private final LongAdder absoluteError = new LongAdder();
+        private final LongAdder significantPixels = new LongAdder();
+        private final AtomicLong maxError = new AtomicLong();
+
+        private void add(long pixels, long absoluteError, long significantPixels, long maxError) {
+            this.pixels.add(pixels);
+            this.absoluteError.add(absoluteError);
+            this.significantPixels.add(significantPixels);
+            this.maxError.accumulateAndGet(maxError, Math::max);
         }
     }
 }
