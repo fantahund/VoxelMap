@@ -89,6 +89,7 @@ public class CachedRegion {
     private volatile int[] appliedOverviewLightmap;
     private volatile long evaluatedOverviewLightmapRevision = -1L;
     private volatile boolean overviewLightingPending;
+    private volatile boolean overviewRelightRequired;
     final MutableBlockPos blockPos = new MutableBlockPos(0, 0, 0);
     final MutableBlockPos loopBlockPos = new MutableBlockPos(0, 0, 0);
     Future<?> future;
@@ -977,9 +978,6 @@ public class CachedRegion {
 
     public Identifier getTextureLocation(float zoom) {
         if (this.image != null) {
-            if (PersistentMap.useOverview(zoom)) {
-                this.updateOverviewLightingIfNeeded();
-            }
             if (!this.refreshingImage) {
                 synchronized (this.image) {
                     if (this.imageChanged) {
@@ -1164,37 +1162,47 @@ public class CachedRegion {
         }
     }
 
-    private void updateOverviewLightingIfNeeded() {
+    OverviewLightingUpdateResult updateOverviewLighting(PersistentMap.LightmapSnapshot currentLightmap, boolean allowUpdate) {
         PersistentMapOverviewCache.OverviewData overview = this.overviewData;
-        if (overview == null) {
-            return;
+        if (this.closed || overview == null || this.image == null) {
+            return OverviewLightingUpdateResult.NO_WORK;
         }
 
         boolean switchToOverview = this.image.getImageSize() != PersistentMapOverviewCache.SIZE;
         boolean dynamicLighting = this.persistentMap.mapOptions.dynamicLighting;
-        if (dynamicLighting && this.evaluatedOverviewLightmapRevision != this.persistentMap.getLightmapRevision()) {
+        if (dynamicLighting && this.evaluatedOverviewLightmapRevision != currentLightmap.revision()) {
             this.overviewLightingPending = true;
         }
         if (!switchToOverview && (!this.overviewLightingPending || !dynamicLighting)) {
-            return;
+            return OverviewLightingUpdateResult.NO_WORK;
         }
 
-        PersistentMap.LightmapSnapshot currentLightmap = this.persistentMap.getLightmapSnapshotWithRevision();
-        if (!switchToOverview
-                && !PersistentMapOverviewCache.lightingDifferenceExceedsThreshold(overview, this.appliedOverviewLightmap, currentLightmap.colors())) {
-            this.recordEvaluatedOverviewLightmap(currentLightmap.revision());
-            PersistentMapProfiler.recordOverviewLightingEvaluation(false, false);
-            return;
+        boolean thresholdChecked = false;
+        if (switchToOverview) {
+            this.overviewRelightRequired = true;
+        } else if (!this.overviewRelightRequired) {
+            long checkStartedNanos = PersistentMapProfiler.startTimer();
+            boolean updateRequired = PersistentMapOverviewCache.lightingDifferenceExceedsThreshold(
+                    overview, this.appliedOverviewLightmap, currentLightmap.colors());
+            PersistentMapProfiler.recordOverviewLightingCheck(checkStartedNanos, updateRequired);
+            thresholdChecked = true;
+            if (!updateRequired) {
+                this.recordEvaluatedOverviewLightmap(currentLightmap.revision());
+                return OverviewLightingUpdateResult.CHECKED_NO_UPDATE;
+            }
+            this.overviewRelightRequired = true;
         }
-        if (!this.persistentMap.tryAcquireOverviewLightingUpdate()) {
-            PersistentMapProfiler.recordOverviewLightingEvaluation(false, true);
-            return;
+
+        if (!allowUpdate) {
+            PersistentMapProfiler.recordOverviewLightingDeferral();
+            return OverviewLightingUpdateResult.pending(thresholdChecked);
         }
 
         long startedNanos = PersistentMapProfiler.startTimer();
         synchronized (this.image) {
-            if (this.overviewData != overview) {
-                return;
+            if (this.closed || this.overviewData != overview) {
+                this.overviewRelightRequired = true;
+                return OverviewLightingUpdateResult.pending(thresholdChecked);
             }
             boolean changedResolution = this.image.getImageSize() != PersistentMapOverviewCache.SIZE;
             byte[] pixels = PersistentMapOverviewCache.applyLighting(overview, currentLightmap.colors(), dynamicLighting);
@@ -1207,7 +1215,21 @@ public class CachedRegion {
             this.imageChanged = true;
         }
         PersistentMapProfiler.recordOverviewRelight(startedNanos);
-        PersistentMapProfiler.recordOverviewLightingEvaluation(true, false);
+        PersistentMapProfiler.recordOverviewLightingUpdate();
+        return OverviewLightingUpdateResult.updated(thresholdChecked);
+    }
+
+    record OverviewLightingUpdateResult(boolean thresholdChecked, boolean updated, boolean updatePending) {
+        private static final OverviewLightingUpdateResult NO_WORK = new OverviewLightingUpdateResult(false, false, false);
+        private static final OverviewLightingUpdateResult CHECKED_NO_UPDATE = new OverviewLightingUpdateResult(true, false, false);
+
+        private static OverviewLightingUpdateResult pending(boolean thresholdChecked) {
+            return new OverviewLightingUpdateResult(thresholdChecked, false, true);
+        }
+
+        private static OverviewLightingUpdateResult updated(boolean thresholdChecked) {
+            return new OverviewLightingUpdateResult(thresholdChecked, true, false);
+        }
     }
 
     static final class OverviewPixelAccumulator {
@@ -1283,6 +1305,7 @@ public class CachedRegion {
             this.appliedOverviewLightmap = lightmap.colors();
             this.evaluatedOverviewLightmapRevision = lightmap.revision();
             this.overviewLightingPending = lightmap.revision() != this.persistentMap.getLightmapRevision();
+            this.overviewRelightRequired = false;
         }
     }
 
@@ -1290,6 +1313,7 @@ public class CachedRegion {
         synchronized (this.refreshStateLock) {
             this.evaluatedOverviewLightmapRevision = revision;
             this.overviewLightingPending = revision != this.persistentMap.getLightmapRevision();
+            this.overviewRelightRequired = false;
         }
     }
 

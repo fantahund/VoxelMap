@@ -229,20 +229,33 @@ final class PersistentMapProfiler {
         }
     }
 
-    static void recordOverviewLightingEvaluation(boolean updated, boolean budgetDeferred) {
+    static void recordOverviewLightingCheck(long startedNanos, boolean updateRequired) {
         Session session = CURRENT_SESSION.get();
         if (session == null) {
             return;
         }
         session.overviewLightingChecks.increment();
-        if (updated) {
-            session.overviewLightingUpdates.increment();
-        } else if (budgetDeferred) {
-            session.overviewLightingBudgetDeferrals.increment();
-        } else {
+        if (!updateRequired) {
             session.overviewLightingThresholdSkips.increment();
         }
+        session.record(Stage.OVERVIEW_LIGHTING_CHECK, startedNanos, PersistentMapOverviewCache.PIXEL_COUNT);
         session.touch();
+    }
+
+    static void recordOverviewLightingUpdate() {
+        Session session = CURRENT_SESSION.get();
+        if (session != null) {
+            session.overviewLightingUpdates.increment();
+            session.touch();
+        }
+    }
+
+    static void recordOverviewLightingDeferral() {
+        Session session = CURRENT_SESSION.get();
+        if (session != null) {
+            session.overviewLightingBudgetDeferrals.increment();
+            session.touch();
+        }
     }
 
     static void recordOverviewRelight(long startedNanos) {
@@ -379,6 +392,7 @@ final class PersistentMapProfiler {
         CACHE_READ("cache-read", "raw-bytes"),
         OVERVIEW_READ("overview-read", "raw-bytes"),
         OVERVIEW_WRITE("overview-write", "raw-bytes"),
+        OVERVIEW_LIGHTING_CHECK("overview-lighting-check", "pixels"),
         OVERVIEW_RELIGHT("overview-relight", "pixels"),
         OVERVIEW_COMPARISON("overview-comparison", "pixels"),
         LIVE_CHUNK_SCAN("live-chunk-scan", "chunks-checked"),
@@ -553,7 +567,7 @@ final class PersistentMapProfiler {
                     liveChunksLoaded.sum(),
                     texturesCreated.sum());
             VoxelConstants.getLogger().info(
-                    "[PersistentMap profile #{} report {}] overview(files/hits/misses)={}/{}/{}, rawLoadsSkipped={}, overviewRawRead={}, writes(success/failed)={}/{}, lightingChanges(applied/ignored)={}/{}, overviewRelights(checks/updated/threshold-skipped/budget-deferred)={}/{}/{}/{}, displayChangeFullDetailRequests={}",
+                    "[PersistentMap profile #{} report {}] overview(files/hits/misses)={}/{}/{}, rawLoadsSkipped={}, overviewRawRead={}, writes(success/failed)={}/{}, lightingChanges(applied/ignored)={}/{}, overviewRelights(checks/updated/threshold-skipped/queued)={}/{}/{}/{}, displayChangeFullDetailRequests={}",
                     id,
                     reportNumber,
                     overviewFilesPresent.sum(),

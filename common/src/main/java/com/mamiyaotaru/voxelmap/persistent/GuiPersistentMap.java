@@ -652,7 +652,7 @@ public class GuiPersistentMap extends PopupGuiScreen implements IGuiWaypoints {
         float cursorCoordX = 0.0f;
         graphics.pose().scale(this.mapToGui, this.mapToGui);
         if (mapOptions.worldmapAllowed) {
-            this.persistentMap.beginOverviewLightingFrame();
+            this.persistentMap.updateVisibleOverviewLighting(this.regions, this.zoom);
             for (CachedRegion region : this.regions) {
                 Identifier resource = region.getTextureLocation(this.zoom);
                 if (resource != null) {

@@ -49,7 +49,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class PersistentMap implements IChangeObserver {
     static final float OVERVIEW_ZOOM_THRESHOLD = 0.25F;
     private static final long OVERVIEW_RENDER_VERSION = 7L;
-    private static final int OVERVIEW_LIGHTING_UPDATES_PER_FRAME = 8;
     private static final int HEIGHT_SHADE_MIN = -1024;
     private static final int HEIGHT_SHADE_MAX = 1023;
     private static final double[] HEIGHTMAP_SHADE = createHeightShadeLookup(1.8, true);
@@ -94,7 +93,7 @@ public class PersistentMap implements IChangeObserver {
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
     private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
-    private int overviewLightingUpdatesRemaining;
+    private final OverviewLightingScheduler overviewLightingScheduler = new OverviewLightingScheduler();
     private volatile long lightmapRevision;
     private final AtomicBoolean visibleRegionRefreshRequested = new AtomicBoolean();
 
@@ -267,16 +266,12 @@ public class PersistentMap implements IChangeObserver {
         this.visibleRegionRefreshRequested.set(true);
     }
 
-    void beginOverviewLightingFrame() {
-        this.overviewLightingUpdatesRemaining = OVERVIEW_LIGHTING_UPDATES_PER_FRAME;
-    }
-
-    boolean tryAcquireOverviewLightingUpdate() {
-        if (this.overviewLightingUpdatesRemaining <= 0) {
-            return false;
+    void updateVisibleOverviewLighting(CachedRegion[] regions, float zoom) {
+        if (!useOverview(zoom) || this.options.outputImages || this.mapOptions.biomeOverlay != 0) {
+            this.overviewLightingScheduler.clear();
+            return;
         }
-        --this.overviewLightingUpdatesRemaining;
-        return true;
+        this.overviewLightingScheduler.process(regions, this.getLightmapSnapshotWithRevision());
     }
 
     public void getAndStoreData(AbstractMapData mapData, Level world, LevelChunk chunk, MutableBlockPos pos, boolean underground, int startX, int startZ, int imageX, int imageY) {
