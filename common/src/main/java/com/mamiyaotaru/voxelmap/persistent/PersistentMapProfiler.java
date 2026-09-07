@@ -21,6 +21,7 @@ final class PersistentMapProfiler {
     private static final boolean ENABLED = Boolean.getBoolean(ENABLE_PROPERTY);
     private static final AtomicLong NEXT_SESSION_ID = new AtomicLong();
     private static final AtomicReference<Session> CURRENT_SESSION = new AtomicReference<>();
+    private static final BackgroundSession BACKGROUND_SESSION = new BackgroundSession();
 
     private PersistentMapProfiler() {}
 
@@ -30,6 +31,76 @@ final class PersistentMapProfiler {
 
     static long startTimer() {
         return isActive() ? System.nanoTime() : 0L;
+    }
+
+    static long startBackgroundTimer() {
+        return ENABLED ? System.nanoTime() : 0L;
+    }
+
+    static void recordBackgroundChunkReceived(boolean coalesced) {
+        if (!ENABLED) {
+            return;
+        }
+        BACKGROUND_SESSION.received.increment();
+        if (coalesced) {
+            BACKGROUND_SESSION.coalesced.increment();
+        }
+        BACKGROUND_SESSION.touch();
+    }
+
+    static void recordBackgroundChunkCapture(long startedNanos, boolean unload) {
+        if (!ENABLED || startedNanos == 0L) {
+            return;
+        }
+        BACKGROUND_SESSION.captures.increment();
+        if (unload) {
+            BACKGROUND_SESSION.unloadCaptures.increment();
+        }
+        BACKGROUND_SESSION.captureNanos.add(System.nanoTime() - startedNanos);
+        BACKGROUND_SESSION.touch();
+    }
+
+    static void recordBackgroundUnloadSnapshot(long startedNanos, long waitNanos, int updates) {
+        if (!ENABLED || startedNanos == 0L) {
+            return;
+        }
+        BACKGROUND_SESSION.unloadCaptures.increment();
+        BACKGROUND_SESSION.unloadUpdates.add(updates);
+        BACKGROUND_SESSION.unloadWaitNanos.add(waitNanos);
+        BACKGROUND_SESSION.captureNanos.add(System.nanoTime() - startedNanos);
+        BACKGROUND_SESSION.touch();
+    }
+
+    static void recordBackgroundRegionBatch(long startedNanos, int chunks, boolean background, boolean coldRegionLoad) {
+        if (!ENABLED || startedNanos == 0L) {
+            return;
+        }
+        BACKGROUND_SESSION.regionBatches.increment();
+        BACKGROUND_SESSION.processedChunks.add(chunks);
+        if (coldRegionLoad) {
+            BACKGROUND_SESSION.coldRegionLoads.increment();
+        }
+        if (background) {
+            BACKGROUND_SESSION.backgroundBatches.increment();
+        } else {
+            BACKGROUND_SESSION.openMapBatches.increment();
+        }
+        BACKGROUND_SESSION.applyNanos.add(System.nanoTime() - startedNanos);
+        BACKGROUND_SESSION.maxBackgroundWorkers.accumulateAndGet(ThreadManager.backgroundExecutorService.getActiveCount(), Math::max);
+        BACKGROUND_SESSION.touch();
+    }
+
+    static void maybeReportBackgroundIdle(boolean idle, int waitingUpdates) {
+        if (ENABLED) {
+            BACKGROUND_SESSION.maybeReport(idle, waitingUpdates);
+        }
+    }
+
+    static void recordBackgroundCompressionDeferred() {
+        if (ENABLED) {
+            BACKGROUND_SESSION.deferredCompressions.increment();
+            BACKGROUND_SESSION.touch();
+        }
     }
 
     static void startSession(int screenWidth, int screenHeight, float zoom, int mapX, int mapZ) {
@@ -617,6 +688,62 @@ final class PersistentMapProfiler {
                         formatMillis(stats.maxNanos.get()),
                         units);
             }
+        }
+    }
+
+    private static final class BackgroundSession {
+        private final LongAdder received = new LongAdder();
+        private final LongAdder coalesced = new LongAdder();
+        private final LongAdder captures = new LongAdder();
+        private final LongAdder unloadCaptures = new LongAdder();
+        private final LongAdder unloadUpdates = new LongAdder();
+        private final LongAdder regionBatches = new LongAdder();
+        private final LongAdder processedChunks = new LongAdder();
+        private final LongAdder coldRegionLoads = new LongAdder();
+        private final LongAdder deferredCompressions = new LongAdder();
+        private final LongAdder backgroundBatches = new LongAdder();
+        private final LongAdder openMapBatches = new LongAdder();
+        private final LongAdder captureNanos = new LongAdder();
+        private final LongAdder applyNanos = new LongAdder();
+        private final LongAdder unloadWaitNanos = new LongAdder();
+        private final AtomicLong maxBackgroundWorkers = new AtomicLong();
+        private final AtomicLong activityVersion = new AtomicLong();
+        private final AtomicLong lastActivityNanos = new AtomicLong();
+        private long lastReportedVersion;
+
+        private void touch() {
+            this.lastActivityNanos.set(System.nanoTime());
+            this.activityVersion.incrementAndGet();
+        }
+
+        private synchronized void maybeReport(boolean idle, int waitingUpdates) {
+            long version = this.activityVersion.get();
+            if (!idle
+                    || version == this.lastReportedVersion
+                    || System.nanoTime() - this.lastActivityNanos.get() < IDLE_REPORT_DELAY_NANOS) {
+                return;
+            }
+            this.lastReportedVersion = version;
+            VoxelConstants.getLogger().info(
+                    "[PersistentMap background profile] received/coalesced={}/{}, captures(normal/unload/updates)={}/{}/{}, regionBatches(background/open)/chunks/cold-loads={}/{}/{}/{}, deferredCompressions={}, waiting={}, backgroundWorkers(configured/max/active/queued)={}/{}/{}/{}, capture/apply/unload-wait={}/{}/{} ms",
+                    this.received.sum(),
+                    this.coalesced.sum(),
+                    this.captures.sum(),
+                    this.unloadCaptures.sum(),
+                    this.unloadUpdates.sum(),
+                    this.backgroundBatches.sum(),
+                    this.openMapBatches.sum(),
+                    this.processedChunks.sum(),
+                    this.coldRegionLoads.sum(),
+                    this.deferredCompressions.sum(),
+                    waitingUpdates,
+                    ThreadManager.BACKGROUND_WORKER_COUNT,
+                    this.maxBackgroundWorkers.get(),
+                    ThreadManager.backgroundExecutorService.getActiveCount(),
+                    ThreadManager.backgroundExecutorService.getQueue().size(),
+                    formatMillis(this.captureNanos.sum()),
+                    formatMillis(this.applyNanos.sum()),
+                    formatMillis(this.unloadWaitNanos.sum()));
         }
     }
 

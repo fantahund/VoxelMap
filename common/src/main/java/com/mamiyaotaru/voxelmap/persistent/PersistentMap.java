@@ -24,12 +24,13 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Direction;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -89,10 +90,11 @@ public class PersistentMap implements IChangeObserver {
         double distance2sq = (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) * (coordinates2.x * 256 + 128 - PersistentMap.this.options.mapX) + (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ) * (coordinates2.z * 256 + 128 - PersistentMap.this.options.mapZ);
         return Double.compare(distance1sq, distance2sq);
     };
-    private boolean queuedChangedChunks;
+    private volatile boolean queuedChangedChunks;
+    private volatile long chunkMaintenanceDueAt;
     private MapChunkCache chunkCache;
     private int lastRenderDistance;
-    private final ConcurrentLinkedQueue<ChunkWithAge> chunkUpdateQueue = new ConcurrentLinkedQueue<>();
+    private final PersistentMapChunkUpdateScheduler chunkUpdateScheduler = new PersistentMapChunkUpdateScheduler(this);
     private final OverviewLightingScheduler overviewLightingScheduler = new OverviewLightingScheduler();
     private volatile long lightmapRevision;
     private final AtomicBoolean visibleRegionRefreshRequested = new AtomicBoolean();
@@ -109,7 +111,6 @@ public class PersistentMap implements IChangeObserver {
         this.subworldName = "";
         this.purgeCachedRegions();
         this.queuedChangedChunks = false;
-        this.chunkUpdateQueue.clear();
         this.world = world;
         if (this.worldMatcher != null) {
             this.worldMatcher.cancel();
@@ -183,7 +184,7 @@ public class PersistentMap implements IChangeObserver {
             this.purgeCachedRegions();
         }
 
-        if (this.queuedChangedChunks) {
+        if (this.queuedChangedChunks && System.currentTimeMillis() >= this.chunkMaintenanceDueAt && !this.hasDueChunkUpdates()) {
             this.queuedChangedChunks = false;
             this.prunePool();
         }
@@ -197,10 +198,7 @@ public class PersistentMap implements IChangeObserver {
 
             this.chunkCache.centerChunks(this.blockPos.withXYZ(GameVariableAccessShim.xCoord(), 0, GameVariableAccessShim.zCoord()));
             this.chunkCache.checkIfChunksBecameSurroundedByLoaded();
-
-            while (!this.chunkUpdateQueue.isEmpty() && Math.abs(VoxelConstants.getElapsedTicks() - this.chunkUpdateQueue.peek().tick) >= 20) {
-                this.doProcessChunk(this.chunkUpdateQueue.remove().chunk);
-            }
+            this.chunkUpdateScheduler.tick();
         }
 
     }
@@ -210,6 +208,7 @@ public class PersistentMap implements IChangeObserver {
     }
 
     public void purgeCachedRegions() {
+        this.chunkUpdateScheduler.flushBeforeWorldChange();
         synchronized (this.cachedRegionsPool) {
             for (CachedRegion cachedRegion : this.cachedRegionsPool) {
                 cachedRegion.cleanup();
@@ -287,7 +286,10 @@ public class PersistentMap implements IChangeObserver {
         pos = pos.withXYZ(startX + imageX, 64, startZ + imageY);
         Biome biome;
         if (!chunk.isEmpty()) {
-            biome = world.getBiome(pos).value();
+            var currentChunk = world.getChunkSource().getChunk(chunk.getPos().x(), chunk.getPos().z(), net.minecraft.world.level.chunk.status.ChunkStatus.FULL, false);
+            biome = currentChunk == chunk
+                    ? world.getBiome(pos).value()
+                    : chunk.getNoiseBiome(QuartPos.fromBlock(pos.getX()), QuartPos.fromBlock(pos.getY()), QuartPos.fromBlock(pos.getZ())).value();
         } else {
             biome = null;
         }
@@ -296,7 +298,7 @@ public class PersistentMap implements IChangeObserver {
         if (biome != null) {
             boolean solid = false;
             if (underground) {
-                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY);
+                surfaceHeight = this.getNetherHeight(chunk, startX + imageX, startZ + imageY, pos);
                 surfaceBlockState = chunk.getBlockState(pos.withXYZ(startX + imageX, surfaceHeight - 1, startZ + imageY));
                 if (surfaceHeight != Short.MIN_VALUE) {
                     foliageHeight = surfaceHeight + 1;
@@ -434,16 +436,16 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private int getNetherHeight(LevelChunk chunk, int x, int z) {
+    private int getNetherHeight(LevelChunk chunk, int x, int z, MutableBlockPos blockPos) {
         int bottomY = chunk.getMinY();
         int y = 80;
-        this.blockPos.setXYZ(x, y, z);
-        BlockState blockState = chunk.getBlockState(this.blockPos);
+        blockPos.setXYZ(x, y, z);
+        BlockState blockState = chunk.getBlockState(blockPos);
         if (blockState.getLightDampening() == 0 && blockState.getBlock() != Blocks.LAVA) {
             while (y > bottomY) {
                 --y;
-                this.blockPos.setXYZ(x, y, z);
-                blockState = chunk.getBlockState(this.blockPos);
+                blockPos.setXYZ(x, y, z);
+                blockState = chunk.getBlockState(blockPos);
                 if (blockState.getLightDampening() > 0 || blockState.getBlock() == Blocks.LAVA) {
                     return y + 1;
                 }
@@ -453,8 +455,8 @@ public class PersistentMap implements IChangeObserver {
         } else {
             while (y <= 90) {
                 ++y;
-                this.blockPos.setXYZ(x, y, z);
-                blockState = chunk.getBlockState(this.blockPos);
+                blockPos.setXYZ(x, y, z);
+                blockState = chunk.getBlockState(blockPos);
                 if (blockState.getLightDampening() == 0 && blockState.getBlock() != Blocks.LAVA) {
                     return y;
                 }
@@ -1366,58 +1368,107 @@ public class PersistentMap implements IChangeObserver {
 
     @Override
     public void processChunk(LevelChunk chunk) {
-        if (mapOptions.worldmapAllowed) {
-            this.chunkUpdateQueue.add(new ChunkWithAge(chunk, VoxelConstants.getElapsedTicks()));
+        if (mapOptions.worldmapAllowed
+                && chunk != null
+                && !chunk.isEmpty()
+                && chunk.getLevel() == this.world
+                && this.chunkCache != null
+                && this.isChunkReady(this.world, chunk)) {
+            this.chunkUpdateScheduler.enqueue(chunk);
         }
     }
 
-    private void doProcessChunk(LevelChunk chunk) {
-        this.queuedChangedChunks = true;
-
-        try {
-            if (this.world == null) {
-                return;
-            }
-
-            if (chunk == null || chunk.isEmpty()) {
-                return;
-            }
-
-            int chunkX = chunk.getPos().x();
-            int chunkZ = chunk.getPos().z();
-            int regionX = (int) Math.floor(chunkX / 16.0);
-            int regionZ = (int) Math.floor(chunkZ / 16.0);
+    boolean applyChunkSnapshots(int regionX, int regionZ, List<PersistentMapChunkUpdateScheduler.CapturedUpdate> updates, long epoch) {
+        if (this.world == null || epoch != this.chunkUpdateScheduler.currentEpoch()) {
+            return false;
+        }
+        CachedRegion cachedRegion = this.getOrCreateCachedRegion(regionX, regionZ);
+        boolean coldRegionLoad = !cachedRegion.isDataLoaded();
+        if (!cachedRegion.applyChunkSnapshots(updates)) {
             String key = regionX + "," + regionZ;
-            CachedRegion cachedRegion;
             synchronized (this.cachedRegions) {
-                cachedRegion = this.cachedRegions.get(key);
-                if (cachedRegion == null || cachedRegion == CachedRegion.EMPTY_REGION) {
-                    String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
-                    String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
-                    cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, regionX, regionZ);
-                    this.cachedRegions.put(key, cachedRegion);
-                    synchronized (this.cachedRegionsPool) {
-                        this.cachedRegionsPool.add(cachedRegion);
-                    }
+                this.cachedRegions.remove(key, cachedRegion);
+            }
+            cachedRegion = this.getOrCreateCachedRegion(regionX, regionZ);
+            coldRegionLoad = !cachedRegion.isDataLoaded();
+            if (!cachedRegion.applyChunkSnapshots(updates)) {
+                return coldRegionLoad;
+            }
+        }
+        if (this.isMapScreenOpen()) {
+            cachedRegion.refresh(false, this.lastFullDetailRequested);
+        }
+        return coldRegionLoad;
+    }
 
-                    synchronized (this.lastRegionsLock) {
-                        if (regionX >= this.lastLeft && regionX <= this.lastRight && regionZ >= this.lastTop && regionZ <= this.lastBottom) {
-                            this.lastRegionsArray[(regionZ - this.lastTop) * (this.lastRight - this.lastLeft + 1) + (regionX - this.lastLeft)] = cachedRegion;
-                        }
-                    }
+    private CachedRegion getOrCreateCachedRegion(int regionX, int regionZ) {
+        String key = regionX + "," + regionZ;
+        synchronized (this.cachedRegions) {
+            CachedRegion cachedRegion = this.cachedRegions.get(key);
+            if (cachedRegion != null && cachedRegion != CachedRegion.EMPTY_REGION) {
+                return cachedRegion;
+            }
+
+            String worldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentWorldName();
+            String subWorldName = VoxelConstants.getVoxelMapInstance().getWaypointManager().getCurrentSubworldDescriptor(false);
+            cachedRegion = new CachedRegion(this, key, this.world, worldName, subWorldName, regionX, regionZ);
+            this.cachedRegions.put(key, cachedRegion);
+            synchronized (this.cachedRegionsPool) {
+                this.cachedRegionsPool.add(cachedRegion);
+            }
+            synchronized (this.lastRegionsLock) {
+                if (regionX >= this.lastLeft && regionX <= this.lastRight && regionZ >= this.lastTop && regionZ <= this.lastBottom && this.lastRegionsArray.length > 0) {
+                    this.lastRegionsArray[(regionZ - this.lastTop) * (this.lastRight - this.lastLeft + 1) + (regionX - this.lastLeft)] = cachedRegion;
                 }
             }
-
-            if (VoxelConstants.getMinecraft().gui.screen() != null && VoxelConstants.getMinecraft().gui.screen() instanceof GuiPersistentMap) {
-                cachedRegion.registerChangeAt(chunkX, chunkZ);
-                cachedRegion.refresh(false, this.lastFullDetailRequested);
-            } else {
-                cachedRegion.handleChangedChunk(chunk);
-            }
-        } catch (Exception var19) {
-            VoxelConstants.getLogger().error(var19.getMessage(), var19);
+            return cachedRegion;
         }
+    }
 
+    public void capturePendingChunkBeforeUnload(LevelChunk chunk) {
+        if (chunk != null && this.world != null && chunk.getLevel() == this.world) {
+            this.chunkUpdateScheduler.captureBeforeUnload(chunk);
+        }
+    }
+
+    public void capturePendingChunksBeforeStorageChange() {
+        if (this.world != null) {
+            this.chunkUpdateScheduler.captureAllPendingBeforeStorageChange();
+        }
+    }
+
+    ClientLevel getWorld() {
+        return this.world;
+    }
+
+    boolean isChunkAvailable(LevelChunk chunk) {
+        return this.world != null
+                && chunk != null
+                && chunk.getLevel() == this.world
+                && this.world.getChunkSource().getChunk(chunk.getPos().x(), chunk.getPos().z(), net.minecraft.world.level.chunk.status.ChunkStatus.FULL, false) == chunk;
+    }
+
+    boolean isMapScreenOpen() {
+        return VoxelConstants.getMinecraft().gui.screen() instanceof GuiPersistentMap;
+    }
+
+    boolean isUnderground(ClientLevel world) {
+        String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
+        boolean knownUnderground = dimensionName.toLowerCase().contains("erebus");
+        return world.dimensionType().cardinalLightType() != CardinalLighting.Type.NETHER && !world.dimensionType().hasSkyLight()
+                || world.dimensionType().hasCeiling()
+                || knownUnderground;
+    }
+
+    boolean hasDueChunkUpdates() {
+        return this.chunkUpdateScheduler.hasDueOrRunningWork();
+    }
+
+    void requestChunkMaintenance() {
+        if (!this.queuedChangedChunks) {
+            this.chunkMaintenanceDueAt = System.currentTimeMillis() + 5000L;
+            this.queuedChangedChunks = true;
+        }
     }
 
     private boolean isChunkReady(ClientLevel world, LevelChunk chunk) {
@@ -1461,6 +1512,5 @@ public class PersistentMap implements IChangeObserver {
         }
     }
 
-    private record ChunkWithAge(LevelChunk chunk, int tick) {}
     private record RegionCoordinates(int x, int z) {}
 }

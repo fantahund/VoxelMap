@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.CompressionUtils;
+import com.mamiyaotaru.voxelmap.util.FullMapData;
 import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -285,6 +286,43 @@ public class CompressibleMapData extends AbstractMapData {
         this.setData(x, z, layer + 1, (byte) value);
     }
 
+    synchronized void applyChunkSnapshot(PendingChunkSnapshot snapshot, int regionX, int regionZ) {
+        if (this.isCompressed) {
+            this.decompress();
+        }
+
+        FullMapData source = snapshot.data();
+        int offsetX = snapshot.chunkX() * PendingChunkSnapshot.SIZE - regionX * REGION_SIZE;
+        int offsetZ = snapshot.chunkZ() * PendingChunkSnapshot.SIZE - regionZ * REGION_SIZE;
+        for (int z = 0; z < PendingChunkSnapshot.SIZE; ++z) {
+            for (int x = 0; x < PendingChunkSnapshot.SIZE; ++x) {
+                int cell = offsetX + x + (offsetZ + z) * REGION_SIZE;
+                this.setDataShortDirect(cell, BIOMEIDPOS, this.getIDFromBiomeLocked(source.getBiome(x, z)));
+                this.setDataShortDirect(cell, HEIGHTPOS, source.getHeight(x, z));
+                this.setDataShortDirect(cell, BLOCKSTATEPOS, this.getIDFromStateLocked(source.getBlockstate(x, z)));
+                this.setDataDirect(cell, LIGHTPOS, source.getLight(x, z));
+                this.setDataShortDirect(cell, OCEANFLOORHEIGHTPOS, source.getOceanFloorHeight(x, z));
+                this.setDataShortDirect(cell, OCEANFLOORBLOCKSTATEPOS, this.getIDFromStateLocked(source.getOceanFloorBlockstate(x, z)));
+                this.setDataDirect(cell, OCEANFLOORLIGHTPOS, source.getOceanFloorLight(x, z));
+                this.setDataShortDirect(cell, TRANSPARENTHEIGHTPOS, source.getTransparentHeight(x, z));
+                this.setDataShortDirect(cell, TRANSPARENTBLOCKSTATEPOS, this.getIDFromStateLocked(source.getTransparentBlockstate(x, z)));
+                this.setDataDirect(cell, TRANSPARENTLIGHTPOS, source.getTransparentLight(x, z));
+                this.setDataShortDirect(cell, FOLIAGEHEIGHTPOS, source.getFoliageHeight(x, z));
+                this.setDataShortDirect(cell, FOLIAGEBLOCKSTATEPOS, this.getIDFromStateLocked(source.getFoliageBlockstate(x, z)));
+                this.setDataDirect(cell, FOLIAGELIGHTPOS, source.getFoliageLight(x, z));
+            }
+        }
+    }
+
+    private void setDataDirect(int cell, int layer, int value) {
+        this.data[cell + REGION_SIZE * REGION_SIZE * layer] = (byte) value;
+    }
+
+    private void setDataShortDirect(int cell, int layer, int value) {
+        this.setDataDirect(cell, layer, value >> 8);
+        this.setDataDirect(cell, layer + 1, value);
+    }
+
     @Override
     public synchronized void moveX(int x) {
         if (this.isCompressed) {
@@ -499,6 +537,10 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     private synchronized int getIDFromState(BlockState blockState) {
+        return this.getIDFromStateLocked(blockState);
+    }
+
+    private int getIDFromStateLocked(BlockState blockState) {
         Integer id = this.blockStateToInt.get(blockState);
         if (id == null && blockState != null) {
             while (this.blockStateToInt.inverse().containsKey(this.blockStateCount)) {
@@ -509,7 +551,7 @@ public class CompressibleMapData extends AbstractMapData {
             this.blockStateToInt.put(blockState, id);
         }
 
-        return id;
+        return id == null ? 0 : id;
     }
 
     private BlockState getStateFromID(int id) {
@@ -613,6 +655,10 @@ public class CompressibleMapData extends AbstractMapData {
     }
 
     private synchronized int getIDFromBiome(Biome biome) {
+        return this.getIDFromBiomeLocked(biome);
+    }
+
+    private int getIDFromBiomeLocked(Biome biome) {
         if (biome == null) {
             return 0;
         }

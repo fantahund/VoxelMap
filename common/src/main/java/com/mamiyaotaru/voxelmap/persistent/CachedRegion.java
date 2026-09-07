@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +42,6 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.thread.BlockableEventLoop;
-import net.minecraft.world.level.CardinalLighting;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,7 +50,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelResource;
-import org.apache.logging.log4j.Level;
 
 public class CachedRegion {
     private final static int CHUNKS_WIDTH = 16;
@@ -79,7 +78,7 @@ public class CachedRegion {
     boolean remoteWorld;
     private final BitSet liveChunkUpdateQueued = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
     private final BitSet dirtyImageChunks = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
-    private final BitSet chunkUpdateQueued = new BitSet(CHUNKS_WIDTH * CHUNKS_WIDTH);
+    private final long[] appliedChunkGenerations = new long[CHUNKS_WIDTH * CHUNKS_WIDTH];
     private final Object refreshStateLock = new Object();
     private CompressibleMapRegionTexture image;
     private CompressibleMapData data;
@@ -133,9 +132,7 @@ public class CachedRegion {
 
         String dimensionName = VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world).getStorageName();
         this.dimensionNamePathPart = TextUtils.scrubNameFile(dimensionName);
-        boolean knownUnderground;
-        knownUnderground = dimensionName.toLowerCase().contains("erebus");
-        this.underground = world.dimensionType().cardinalLightType() != CardinalLighting.Type.NETHER && !world.dimensionType().hasSkyLight() || world.dimensionType().hasCeiling() || knownUnderground;
+        this.underground = persistentMap.isUnderground(world);
         this.remoteWorld = !VoxelConstants.getMinecraft().hasSingleplayerServer();
         persistentMap.getSettingsAndLightingChangeNotifier().addObserver(this);
         this.x = x;
@@ -274,19 +271,58 @@ public class CachedRegion {
     }
 
     public void handleChangedChunk(LevelChunk chunk) {
-        int chunkX = chunk.getPos().x() - this.x * CHUNKS_WIDTH;
-        int chunkZ = chunk.getPos().z() - this.z * CHUNKS_WIDTH;
-        int index = chunkZ * CHUNKS_WIDTH + chunkX;
-        synchronized (this.refreshStateLock) {
-            if (this.chunkUpdateQueued.get(index)) {
-                return;
+        this.persistentMap.processChunk(chunk);
+    }
+
+    boolean applyChunkSnapshots(List<PersistentMapChunkUpdateScheduler.CapturedUpdate> updates) {
+        this.threadLock.lock();
+        try {
+            if (this.closed) {
+                return false;
             }
-            this.chunkUpdateQueued.set(index);
-            this.retainImageRequested = true;
-            this.mostRecentView = System.currentTimeMillis();
-            this.mostRecentChange = this.mostRecentView;
-            FillChunkRunnable fillChunkRunnable = new FillChunkRunnable(chunk);
-            ThreadManager.executorService.execute(fillChunkRunnable);
+            if (!this.dataLoaded) {
+                this.loadFullData();
+            }
+
+            boolean changed = false;
+            for (PersistentMapChunkUpdateScheduler.CapturedUpdate update : updates) {
+                PendingChunkSnapshot snapshot = update.snapshot();
+                int chunkX = snapshot.chunkX() - this.x * CHUNKS_WIDTH;
+                int chunkZ = snapshot.chunkZ() - this.z * CHUNKS_WIDTH;
+                if (chunkX < 0 || chunkX >= CHUNKS_WIDTH || chunkZ < 0 || chunkZ >= CHUNKS_WIDTH) {
+                    continue;
+                }
+                int index = chunkZ * CHUNKS_WIDTH + chunkX;
+                if (update.generation() <= this.appliedChunkGenerations[index]) {
+                    continue;
+                }
+
+                snapshot.applyTo(this.data, this.x, this.z);
+                this.appliedChunkGenerations[index] = update.generation();
+                synchronized (this.refreshStateLock) {
+                    this.dirtyImageChunks.set(index);
+                }
+                changed = true;
+            }
+
+            if (changed) {
+                long now = System.currentTimeMillis();
+                this.mostRecentView = now;
+                this.mostRecentChange = now;
+                this.empty = false;
+                this.liveChunksUpdated = true;
+                // The old overview may still be useful as the base for an in-memory partial
+                // repaint, but it must never be stamped with metadata from the updated source
+                // region before that repaint has happened.
+                this.latestOverviewData = null;
+                synchronized (this.refreshStateLock) {
+                    this.dataUpdated = true;
+                    this.retainImageRequested = true;
+                }
+            }
+            return true;
+        } finally {
+            this.threadLock.unlock();
         }
     }
 
@@ -416,12 +452,12 @@ public class CachedRegion {
     public boolean isSurroundedByLoaded(LevelChunk chunk) {
         int chunkX = chunk.getPos().x();
         int chunkZ = chunk.getPos().z();
-        boolean neighborsLoaded = !chunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(chunkX, chunkZ);
+        boolean neighborsLoaded = !chunk.isEmpty() && this.world.hasChunk(chunkX, chunkZ);
 
         for (int t = chunkX - 1; t <= chunkX + 1 && neighborsLoaded; ++t) {
             for (int s = chunkZ - 1; s <= chunkZ + 1 && neighborsLoaded; ++s) {
-                LevelChunk neighborChunk = VoxelConstants.getPlayer().level().getChunk(t, s);
-                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && VoxelConstants.getPlayer().level().hasChunk(t, s);
+                LevelChunk neighborChunk = this.world.getChunk(t, s);
+                neighborsLoaded = neighborChunk != null && !neighborChunk.isEmpty() && this.world.hasChunk(t, s);
             }
         }
 
@@ -934,7 +970,7 @@ public class CachedRegion {
             if (this.liveChunksUpdated || !imageFile.exists()) {
                 NativeImage toSave = new NativeImage(REGION_WIDTH, REGION_WIDTH, false);
                 toSave.copyFrom(this.image.getData());
-                ThreadManager.executorService.execute(() -> {
+                ThreadManager.executeBackgroundMaintenance(() -> {
                     try {
                         toSave.writeToFile(imageFile);
                     } catch (IOException e) {
@@ -1001,6 +1037,10 @@ public class CachedRegion {
         return this.loaded;
     }
 
+    boolean isDataLoaded() {
+        return this.dataLoaded;
+    }
+
     public boolean isEmpty() {
         return this.empty;
     }
@@ -1017,22 +1057,37 @@ public class CachedRegion {
     }
 
     public void compress() {
-        if (this.data != null && !this.isCompressed() && !this.queuedToCompress) {
-            this.queuedToCompress = true;
-            ThreadManager.executorService.execute(() -> {
-                if (this.threadLock.tryLock()) {
-                    try {
-                        this.compressData();
-                    } catch (RuntimeException ignored) {
-                    } finally {
-                        this.threadLock.unlock();
-                    }
-                }
-
-                this.queuedToCompress = false;
-            });
+        if (this.data == null || this.isCompressed() || this.queuedToCompress) {
+            return;
+        }
+        if (this.persistentMap.hasDueChunkUpdates()) {
+            PersistentMapProfiler.recordBackgroundCompressionDeferred();
+            return;
         }
 
+        this.queuedToCompress = true;
+        ThreadManager.executeBackgroundMaintenance(() -> {
+            boolean retry = false;
+            if (this.persistentMap.hasDueChunkUpdates()) {
+                PersistentMapProfiler.recordBackgroundCompressionDeferred();
+                retry = true;
+            } else if (this.threadLock.tryLock()) {
+                try {
+                    this.compressData();
+                } catch (RuntimeException ignored) {
+                } finally {
+                    this.threadLock.unlock();
+                }
+            } else {
+                PersistentMapProfiler.recordBackgroundCompressionDeferred();
+                retry = true;
+            }
+
+            this.queuedToCompress = false;
+            if (retry) {
+                this.persistentMap.requestChunkMaintenance();
+            }
+        });
     }
 
     private void compressData() {
@@ -1390,41 +1445,6 @@ public class CachedRegion {
         }
 
         this.saveData(true);
-    }
-
-    private final class FillChunkRunnable implements Runnable {
-        private final LevelChunk chunk;
-        private final int index;
-
-        private FillChunkRunnable(LevelChunk chunk) {
-            this.chunk = chunk;
-            int chunkX = chunk.getPos().x() - CachedRegion.this.x * CHUNKS_WIDTH;
-            int chunkZ = chunk.getPos().z() - CachedRegion.this.z * CHUNKS_WIDTH;
-            this.index = chunkZ * CHUNKS_WIDTH + chunkX;
-        }
-
-        @Override
-        public void run() {
-            CachedRegion.this.threadLock.lock();
-
-            try {
-                if (!CachedRegion.this.dataLoaded) {
-                    CachedRegion.this.loadFullData();
-                }
-
-                int chunkX = this.chunk.getPos().x() - CachedRegion.this.x * CHUNKS_WIDTH;
-                int chunkZ = this.chunk.getPos().z() - CachedRegion.this.z * CHUNKS_WIDTH;
-                CachedRegion.this.loadChunkData(this.chunk, chunkX, chunkZ);
-            } catch (Exception ex) {
-                VoxelConstants.getLogger().log(Level.ERROR, "Error in FillChunkRunnable", ex);
-            } finally {
-                CachedRegion.this.threadLock.unlock();
-                synchronized (CachedRegion.this.refreshStateLock) {
-                    CachedRegion.this.chunkUpdateQueued.clear(this.index);
-                }
-            }
-
-        }
     }
 
     private final class RefreshRunnable implements Runnable {
