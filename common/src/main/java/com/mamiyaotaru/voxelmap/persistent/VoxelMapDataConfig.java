@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -117,6 +118,44 @@ public final class VoxelMapDataConfig {
         }
 
         return serverName;
+    }
+
+    public synchronized boolean hasMapping(String serverName) {
+        if (serverName == null || serverName.isEmpty()) {
+            return false;
+        }
+
+        String needle = serverName.toLowerCase(Locale.ROOT);
+        for (Map.Entry<String, List<String>> entry : this.serverAliases.entrySet()) {
+            if (entry.getKey().toLowerCase(Locale.ROOT).equals(needle)) {
+                return true;
+            }
+
+            if (entry.getValue() != null) {
+                for (String alias : entry.getValue()) {
+                    if (alias != null && alias.toLowerCase(Locale.ROOT).equals(needle)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public synchronized void addAlias(String canonical, String alias) {
+        if (canonical == null || canonical.isEmpty() || alias == null || alias.isEmpty() || canonical.equalsIgnoreCase(alias)) {
+            return;
+        }
+
+        List<String> aliases = new ArrayList<>(this.serverAliases.getOrDefault(canonical, List.of()));
+        if (aliases.stream().anyMatch(existing -> existing.equalsIgnoreCase(alias))) {
+            return;
+        }
+
+        aliases.add(alias);
+        this.serverAliases.put(canonical, List.copyOf(aliases));
+        save();
     }
 
     public synchronized List<String> getAliasesFor(String canonical) {

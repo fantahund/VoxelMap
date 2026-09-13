@@ -21,6 +21,7 @@ public final class VoxelmapServerSettings {
     public static final String DEATH_WAYPOINT_ALLOWED = "deathWaypointAllowed";
     public static final String TELEPORT_COMMAND = "teleportCommand";
     public static final String WORLD_NAME_SUFFIX = "worldNameSuffix";
+    public static final String SERVER_IDENTITY = "serverIdentity";
 
     private static final List<String> BOOLEAN_KEYS = List.of(
             RADAR_ALLOWED,
@@ -42,7 +43,8 @@ public final class VoxelmapServerSettings {
             WAYPOINTS_ALLOWED,
             DEATH_WAYPOINT_ALLOWED,
             TELEPORT_COMMAND,
-            WORLD_NAME_SUFFIX
+            WORLD_NAME_SUFFIX,
+            SERVER_IDENTITY
     );
 
     private final Map<String, Boolean> booleanValues;
@@ -50,19 +52,25 @@ public final class VoxelmapServerSettings {
     private final String teleportCommand;
     private final boolean worldNameSuffixPresent;
     private final String worldNameSuffix;
+    private final boolean serverIdentityPresent;
+    private final String serverIdentity;
 
     private VoxelmapServerSettings(
             Map<String, Boolean> booleanValues,
             boolean teleportCommandPresent,
             String teleportCommand,
             boolean worldNameSuffixPresent,
-            String worldNameSuffix
+            String worldNameSuffix,
+            boolean serverIdentityPresent,
+            String serverIdentity
     ) {
         this.booleanValues = Collections.unmodifiableMap(new LinkedHashMap<>(booleanValues));
         this.teleportCommandPresent = teleportCommandPresent;
         this.teleportCommand = teleportCommand;
         this.worldNameSuffixPresent = worldNameSuffixPresent;
         this.worldNameSuffix = worldNameSuffix;
+        this.serverIdentityPresent = serverIdentityPresent;
+        this.serverIdentity = serverIdentity;
     }
 
     public static VoxelmapServerSettings defaults() {
@@ -71,7 +79,7 @@ public final class VoxelmapServerSettings {
             booleanValues.put(key, true);
         }
 
-        return new VoxelmapServerSettings(booleanValues, true, null, true, "");
+        return new VoxelmapServerSettings(booleanValues, true, null, true, "", true, null);
     }
 
     public static VoxelmapServerSettings fromJson(JsonObject json, String context) {
@@ -80,6 +88,8 @@ public final class VoxelmapServerSettings {
         String teleportCommand = null;
         boolean worldNameSuffixPresent = false;
         String worldNameSuffix = null;
+        boolean serverIdentityPresent = false;
+        String serverIdentity = null;
 
         for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
             String key = entry.getKey();
@@ -96,10 +106,21 @@ public final class VoxelmapServerSettings {
             } else if (WORLD_NAME_SUFFIX.equals(key)) {
                 worldNameSuffixPresent = true;
                 worldNameSuffix = readString(value, key, context);
+            } else if (SERVER_IDENTITY.equals(key)) {
+                serverIdentityPresent = true;
+                serverIdentity = readNullableString(value, key, context);
             }
         }
 
-        return new VoxelmapServerSettings(booleanValues, teleportCommandPresent, teleportCommand, worldNameSuffixPresent, worldNameSuffix);
+        return new VoxelmapServerSettings(
+                booleanValues,
+                teleportCommandPresent,
+                teleportCommand,
+                worldNameSuffixPresent,
+                worldNameSuffix,
+                serverIdentityPresent,
+                serverIdentity
+        );
     }
 
     public VoxelmapServerSettings merge(VoxelmapServerSettings override) {
@@ -120,12 +141,21 @@ public final class VoxelmapServerSettings {
             mergedWorldNameSuffix = override.worldNameSuffix;
         }
 
+        boolean mergedServerIdentityPresent = this.serverIdentityPresent;
+        String mergedServerIdentity = this.serverIdentity;
+        if (override.serverIdentityPresent) {
+            mergedServerIdentityPresent = true;
+            mergedServerIdentity = override.serverIdentity;
+        }
+
         return new VoxelmapServerSettings(
                 mergedBooleans,
                 mergedTeleportCommandPresent,
                 mergedTeleportCommand,
                 mergedWorldNameSuffixPresent,
-                mergedWorldNameSuffix
+                mergedWorldNameSuffix,
+                mergedServerIdentityPresent,
+                mergedServerIdentity
         );
     }
 
@@ -145,11 +175,16 @@ public final class VoxelmapServerSettings {
             json.addProperty(WORLD_NAME_SUFFIX, worldNameSuffix);
         }
 
+        if (serverIdentityPresent) {
+            addNullableString(json, SERVER_IDENTITY, serverIdentity);
+        }
+
         return json;
     }
 
     public JsonObject toClientSettingsJson(String worldId) {
         JsonObject json = new JsonObject();
+        addNullableString(json, SERVER_IDENTITY, getServerIdentity());
         json.addProperty("worldName", worldId + getWorldNameSuffix());
         for (String key : BOOLEAN_KEYS) {
             json.addProperty(key, getRequiredBoolean(key));
@@ -172,6 +207,13 @@ public final class VoxelmapServerSettings {
             throw new IllegalStateException("Missing effective server setting '" + TELEPORT_COMMAND + "'");
         }
         return teleportCommand;
+    }
+
+    private String getServerIdentity() {
+        if (!serverIdentityPresent) {
+            throw new IllegalStateException("Missing effective server setting '" + SERVER_IDENTITY + "'");
+        }
+        return serverIdentity;
     }
 
     private String getWorldNameSuffix() {

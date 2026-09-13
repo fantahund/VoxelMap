@@ -110,7 +110,7 @@ public class WorldMatcher {
             private void loadRegions(String[] subworldNamesArray) {
                 for (String subworldName : subworldNamesArray) {
                     if (!WorldMatcher.this.cancelled) {
-                        File subworldDir = new File(this.cachedRegionFileDir, subworldName + "/" + this.dimensionNamePathPart);
+                        File subworldDir = VoxelConstants.getVoxelMapInstance().getDataStore().getWorldCacheDir(subworldName + "/" + this.dimensionNamePathPart);
                         if (subworldDir.isDirectory()) {
                             ComparisonCachedRegion candidateRegion = new ComparisonCachedRegion(WorldMatcher.this.map, this.x + "," + this.z, WorldMatcher.this.world, this.worldName, subworldName, this.x, this.z);
                             candidateRegion.loadStored();

@@ -1,48 +1,50 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
+import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.AllocatedTexture;
-import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.textures.GpuSampler;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 
 public class VoxelMapRenderTarget extends RenderTarget {
-    public final Identifier colorTextureId;
-    public final Identifier depthTextureId;
-    private AllocatedTexture allocatedColorTexture;
-    private AllocatedTexture allocatedDepthTexture;
+    private static final GpuSampler DEFAULT_SAMPLER = RenderSystem.getSamplerCache().getSampler(AddressMode.REPEAT, AddressMode.REPEAT, FilterMode.LINEAR, FilterMode.LINEAR, false);
+    public final Identifier textureId;
+    private AllocatedTexture texture;
 
-    public VoxelMapRenderTarget(Identifier baseId) {
-        super(baseId.toString(), GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
+    public VoxelMapRenderTarget(String name, GpuFormat format, boolean useDepth) {
+        super(name, useDepth, format);
+        textureId = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/" + UUID.randomUUID());
+    }
 
-        colorTextureId = baseId.withSuffix("_color");
-        depthTextureId = baseId.withSuffix("_depth");
+    public Identifier getTextureLocation() {
+        return textureId;
+    }
+
+    public AbstractTexture getTexture() {
+        return texture;
     }
 
     @Override
-    public void createBuffers(int w, int h) {
-        super.createBuffers(w, h);
-
-        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        allocatedColorTexture = new AllocatedTexture(colorTexture, colorTextureView);
-        allocatedDepthTexture = new AllocatedTexture(depthTexture, depthTextureView);
-        textureManager.register(colorTextureId, allocatedColorTexture);
-        textureManager.register(depthTextureId, allocatedDepthTexture);
+    public void createBuffers(int width, int height) {
+        super.createBuffers(width, height);
+        texture = new AllocatedTexture(colorTexture, colorTextureView);
+        texture.sampler = DEFAULT_SAMPLER;
+        Minecraft.getInstance().getTextureManager().register(textureId, texture);
     }
 
     @Override
     public void destroyBuffers() {
         super.destroyBuffers();
-
-        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        if (allocatedColorTexture != null) {
-            textureManager.release(colorTextureId);
-            allocatedColorTexture = null;
-        }
-        if (allocatedDepthTexture != null) {
-            textureManager.release(depthTextureId);
-            allocatedDepthTexture = null;
+        if (texture != null) {
+            texture = null;
+            Minecraft.getInstance().getTextureManager().release(textureId);
         }
     }
 }

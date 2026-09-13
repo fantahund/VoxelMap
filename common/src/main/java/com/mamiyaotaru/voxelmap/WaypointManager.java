@@ -1,7 +1,10 @@
 package com.mamiyaotaru.voxelmap;
 
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
+import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
+import com.mamiyaotaru.voxelmap.persistent.VoxelMapMigration;
+import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -12,7 +15,6 @@ import com.mamiyaotaru.voxelmap.util.MessageUtils;
 import com.mamiyaotaru.voxelmap.util.TextUtils;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsServerList;
@@ -49,7 +51,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.Connection;
@@ -59,6 +60,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.storage.LevelResource;
+import org.joml.Matrix4fStack;
 
 public class WaypointManager implements IReloadListener {
     public final MapSettingsManager options;
@@ -68,7 +70,8 @@ public class WaypointManager implements IReloadListener {
     private boolean needSave;
     private ArrayList<Waypoint> wayPts = new ArrayList<>();
     private Waypoint highlightedWaypoint;
-    private String worldName = "";
+    private volatile String worldName = "";
+    private String serverWorldIdentity = "";
     private String currentSubWorldName = "";
     private String currentSubworldDescriptor = "";
     private String currentSubworldDescriptorNoCodes = "";
@@ -92,9 +95,7 @@ public class WaypointManager implements IReloadListener {
     public WaypointManager() {
         this.options = VoxelConstants.getVoxelMapInstance().getMapOptions();
         this.textureAtlas = new TextureAtlas("waypoints", resourceTextureAtlasWaypoints);
-        this.textureAtlas.setFilter(true, false);
         this.textureAtlasChooser = new TextureAtlas("chooser", resourceTextureAtlasWaypointChooser);
-        this.textureAtlasChooser.setFilter(true, false);
         this.waypointContainer = new WaypointContainer(this.options);
     }
 
@@ -146,9 +147,9 @@ public class WaypointManager implements IReloadListener {
 //      I couldn't find a better way to make stitch sorted :(
 //      this.textureAtlasChooser.stitch();
 
-        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypoint_icon_filtering", "true"));
-        this.textureAtlas.setFilter(useFiltering, false);
-        this.textureAtlasChooser.setFilter(useFiltering, false);
+        boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypointIconFiltering", "true"));
+        this.textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
+        this.textureAtlasChooser.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
     }
 
     public static String toSimpleName(String name) {
@@ -175,17 +176,12 @@ public class WaypointManager implements IReloadListener {
     public void newWorld(Level world) {
         if (world == null) {
             this.currentDimension = null;
-            this.worldName = "";
         } else {
             String mapName;
             if (VoxelConstants.getMinecraft().hasSingleplayerServer()) {
                 mapName = this.getMapName();
             } else {
-                mapName = this.getServerName();
-                if (mapName != null) {
-                    mapName = mapName.toLowerCase();
-                    mapName = VoxelMapDataConfig.getInstance().resolveCanonical(mapName);
-                }
+                mapName = this.resolveServerWorldName();
             }
 
             if (!this.worldName.equals(mapName) && mapName != null && !mapName.isEmpty()) {
@@ -202,6 +198,94 @@ public class WaypointManager implements IReloadListener {
             this.setSubWorldDescriptor("");
         }
 
+    }
+
+    private String resolveServerWorldName() {
+        return this.serverWorldIdentity.isEmpty() ? this.resolveServerAddressName() : this.serverWorldIdentity;
+    }
+
+    private String resolveServerAddressName() {
+        String mapName = this.getServerName();
+        if (mapName == null || mapName.isEmpty()) {
+            return null;
+        }
+
+        return VoxelMapDataConfig.getInstance().resolveCanonical(mapName.toLowerCase());
+    }
+
+    private void adoptExistingData(String identity) {
+        String address = this.getServerName();
+        if (address == null || address.isEmpty() || address.equalsIgnoreCase(identity)) {
+            return;
+        }
+
+        address = address.toLowerCase();
+        VoxelMapDataConfig config = VoxelMapDataConfig.getInstance();
+        if (config.hasMapping(address)) {
+            return;
+        }
+
+        ThreadManager.flushSaveQueue();
+        if (VoxelMapMigration.adoptServerData(address, identity)) {
+            VoxelConstants.getLogger().info("Adopted existing VoxelMap data of " + address + " for server provided name " + identity);
+        }
+
+        config.addAlias(identity, address);
+    }
+
+    private static String normalizeIdentity(String identity) {
+        return identity == null ? "" : identity.trim();
+    }
+
+    public String getServerWorldIdentity() {
+        return this.serverWorldIdentity;
+    }
+
+    public synchronized void clearServerWorldIdentity() {
+        this.serverWorldIdentity = "";
+    }
+
+    public synchronized boolean willChangeWorldIdentity(String identity, Level world) {
+        String normalized = normalizeIdentity(identity);
+        if (world == null || normalized.equals(this.serverWorldIdentity) || VoxelConstants.getMinecraft().hasSingleplayerServer()) {
+            return false;
+        }
+
+        String mapName = normalized.isEmpty() ? this.resolveServerAddressName() : normalized;
+        return mapName != null && !mapName.isEmpty() && !mapName.equals(this.worldName);
+    }
+
+    public synchronized boolean setServerWorldIdentity(String identity, Level world) {
+        boolean switching = this.willChangeWorldIdentity(identity, world);
+        this.serverWorldIdentity = normalizeIdentity(identity);
+        if (!switching) {
+            return false;
+        }
+
+        String mapName = this.resolveServerWorldName();
+        VoxelConstants.getLogger().info("Switching VoxelMap data to server provided name: " + mapName);
+        if (this.loaded) {
+            this.saveWaypoints();
+        }
+
+        this.adoptExistingData(mapName);
+
+        String subWorldName = this.currentSubWorldName;
+        boolean autoSubWorldName = this.gotAutoSubworldName;
+        this.currentDimension = null;
+        this.worldName = mapName;
+        VoxelConstants.getVoxelMapInstance().getDataStore().resolveForCurrentWorld();
+        VoxelConstants.getVoxelMapInstance().getDimensionManager().populateDimensions(world);
+        this.loadWaypoints();
+        VoxelConstants.getVoxelMapInstance().getDimensionManager().enteredWorld(world);
+        this.enteredDimension(VoxelConstants.getVoxelMapInstance().getDimensionManager().getDimensionContainerByWorld(world));
+        if (subWorldName.isEmpty()) {
+            this.setSubWorldDescriptor("");
+        } else {
+            this.setSubworldName(subWorldName, autoSubWorldName);
+        }
+
+        return true;
     }
 
     public String getMapName() {
@@ -779,9 +863,9 @@ public class WaypointManager implements IReloadListener {
         return false;
     }
 
-    public void renderWaypoints(float gameTimeDeltaPartialTick, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Camera camera) {
+    public void renderWaypoints(Matrix4fStack matrixStack, Camera camera, float partialTick) {
         if (options.waypointsAllowed && this.waypointContainer != null) {
-            this.waypointContainer.renderWaypoints(gameTimeDeltaPartialTick, poseStack, submitNodeCollector, camera);
+            this.waypointContainer.renderWaypoints(matrixStack, camera, partialTick);
         }
     }
 

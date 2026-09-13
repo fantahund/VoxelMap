@@ -85,7 +85,7 @@ public class VoxelMapFabricServerMod implements DedicatedServerModInitializer {
         String worldId = player.level().dimension().identifier().toString();
         String settingsJson = configManager.createSettingsJson(worldId);
         ServerPlayNetworking.send(player, new VoxelMapSettingsPayload(settingsJson));
-        LOGGER.info("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
+        LOGGER.debug("Sent VoxelMap settings to " + player.getName().getString() + " (" + event + ") for world " + worldId);
         return true;
     }
 }

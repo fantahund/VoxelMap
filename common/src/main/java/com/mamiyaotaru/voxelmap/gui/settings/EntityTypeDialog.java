@@ -23,13 +23,13 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import org.apache.logging.log4j.Level;
 
 public final class EntityTypeDialog extends AbstractWidget implements ContainerEventHandler {
     private final GuiMinimapOptions screen;
@@ -166,9 +166,13 @@ public final class EntityTypeDialog extends AbstractWidget implements ContainerE
             BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(registryEntry -> {
                 EntityType<?> type = registryEntry.getValue();
                 VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(type);
-                boolean living = type.create(VoxelConstants.getMinecraft().level, EntitySpawnReason.LOAD) instanceof LivingEntity;
-                if (EntityTypeSelection.includes(category, living, radar.showHostiles, radar.showNeutrals)) {
-                    allEntries.add(new EntityEntry(type, registryEntry.getKey().identifier(), category));
+                try {
+                    boolean living = type.create(VoxelConstants.getMinecraft().level, EntitySpawnReason.LOAD) instanceof LivingEntity;
+                    if (EntityTypeSelection.includes(category, living, radar.showHostiles, radar.showNeutrals)) {
+                        allEntries.add(new EntityEntry(type, registryEntry.getKey().identifier(), category));
+                    }
+                } catch (Exception e) {
+                    VoxelConstants.getLogger().log(Level.WARN, "EntityTypeDialog$EntityList: Could not create entity of type " + registryEntry.getKey().identifier());
                 }
             });
             allEntries.sort(Comparator.comparing(EntityEntry::category).thenComparing(entry -> entry.name.getString(), String.CASE_INSENSITIVE_ORDER));

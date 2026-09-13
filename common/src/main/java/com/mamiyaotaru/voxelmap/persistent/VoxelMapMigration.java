@@ -71,6 +71,37 @@ public final class VoxelMapMigration {
         return job;
     }
 
+    public static boolean adoptServerData(String fromName, String toName) {
+        String fromKey = TextUtils.scrubNameFile(fromName);
+        String toKey = TextUtils.scrubNameFile(toName);
+        File globalRoot = VoxelMapDataStore.getGlobalRoot();
+        File fromPoints = new File(globalRoot, fromKey + ".points");
+        File toPoints = new File(globalRoot, toKey + ".points");
+        File fromCache = new File(globalRoot, "cache/" + fromKey);
+        File toCache = new File(globalRoot, "cache/" + toKey);
+
+        if (!fromPoints.isFile() && !fromCache.isDirectory()) {
+            return false;
+        }
+
+        if (fromPoints.isFile() && !toPoints.exists()) {
+            globalRoot.mkdirs();
+            fromPoints.renameTo(toPoints);
+        }
+
+        if (fromCache.isDirectory() && !toCache.exists()) {
+            toCache.getParentFile().mkdirs();
+            fromCache.renameTo(toCache);
+        }
+
+        VoxelMapMigration remaining = forServerMerge(fromName, toName);
+        if (remaining.hasData()) {
+            remaining.copy(new Progress());
+        }
+
+        return true;
+    }
+
     public static boolean worldRelativeDataExists(File saveFolder) {
         File root = VoxelMapDataStore.getWorldRelativeRoot(saveFolder);
         if (!root.isDirectory()) {

@@ -125,7 +125,7 @@ public final class VoxelmapPaperPlugin extends JavaPlugin implements Listener, C
         String worldId = player.getWorld().getKey().toString();
         String settingsJson = configManager.createSettingsJson(worldId);
         player.sendPluginMessage(this, SETTINGS_CHANNEL, VoxelmapSettingsPayloadEncoder.encode(settingsJson));
-        getLogger().info("Sent VoxelMap settings to " + player.getName() + " (" + event + ") for world " + worldId);
+        getLogger().fine("Sent VoxelMap settings to " + player.getName() + " (" + event + ") for world " + worldId);
         return true;
     }
 }

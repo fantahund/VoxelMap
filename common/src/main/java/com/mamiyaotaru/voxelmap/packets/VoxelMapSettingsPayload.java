@@ -35,6 +35,20 @@ public record VoxelMapSettingsPayload(String settingsJson) implements CustomPack
             String setting = entry.getKey();
             Object value = entry.getValue();
             switch (setting) {
+                case "serverIdentity" -> {
+                    if (value == null || value instanceof String) {
+                        String serverIdentity = (String) value;
+                        Minecraft.getInstance().execute(() -> {
+                            if (serverIdentity != null && !serverIdentity.isBlank()) {
+                                VoxelConstants.getLogger().info("Received server identity from settings: " + serverIdentity);
+                            }
+
+                            VoxelConstants.getVoxelMapInstance().setServerWorldIdentity(serverIdentity);
+                        });
+                    } else {
+                        VoxelConstants.getLogger().warn("Invalid server identity: " + value);
+                    }
+                }
                 case "worldName" -> {
                     if (value instanceof String worldName) {
                         Minecraft.getInstance().execute(() -> {

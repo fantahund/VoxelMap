@@ -1,256 +1,144 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mamiyaotaru.voxelmap.textures.Sprite;
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.renderpearl.api.buffers.GpuBuffer;
-import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
-import com.mojang.renderpearl.api.pipeline.IndexType;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.renderpearl.api.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import java.awt.image.BufferedImage;
+import java.util.ArrayDeque;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.Projection;
-import net.minecraft.client.renderer.ProjectionMatrixBuffer;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
-import org.joml.Matrix4f;
+import net.minecraft.util.ARGB;
 import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 public class RenderUtils {
-    private static final Minecraft MINECRAFT = Minecraft.getInstance();
-    private static final Projection FULLSCREEN_PROJECTION  = new Projection();
-    private static final ProjectionMatrixBuffer FULLSCREEN_PROJECTION_MATRIX = new ProjectionMatrixBuffer("VoxelMap Fullscreen Projection Matrix");
-    static { FULLSCREEN_PROJECTION.setupOrtho(1000.0F, 3000.0F, 0.0F, 0.0F, true); }
+    private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
+    private static final SubmitNodeStorage SUBMIT_NODE_STORAGE = new SubmitNodeStorage();
+    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", GpuFormat.RGBA8_UNORM, true);
+    private static final ArrayDeque<ProjectionEntry> PROJECTION_STACK = new ArrayDeque<>();
+
+    public static void init() {
+        FULLSCREEN_TARGET.createBuffers(getSafeScreenWidth(), getSafeScreenHeight());
+    }
+
+    private static int getSafeScreenWidth() {
+        return Math.max(1, Minecraft.getInstance().getWindow().getScreenWidth());
+    }
+
+    private static int getSafeScreenHeight() {
+        return Math.max(1, Minecraft.getInstance().getWindow().getScreenHeight());
+    }
 
     public static float getGuiWidth() {
-        return (float) MINECRAFT.getWindow().getWidth() / MINECRAFT.getWindow().getGuiScale();
+        return (float) getSafeScreenWidth() / Minecraft.getInstance().getWindow().getGuiScale();
     }
 
     public static float getGuiHeight() {
-        return (float) MINECRAFT.getWindow().getHeight() / MINECRAFT.getWindow().getGuiScale();
+        return (float) getSafeScreenHeight() / Minecraft.getInstance().getWindow().getGuiScale();
     }
 
-    public static void submitTexturedModalRect(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, RenderType renderType, float x, float y, float z, float width, float height, int color) {
-        submitTexturedModalRect(submitNodeCollector, matrixStack, renderType, x, y, z, width, height, 0.0F, 1.0F, 0.0F, 1.0F, color);
+    public static Matrix4fStack getMatrixStack() {
+        return MATRIX_STACK;
     }
 
-    public static void submitTexturedModalRect(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, RenderType renderType, Sprite sprite, float x, float y, float z, float width, float height, int color) {
-        submitTexturedModalRect(submitNodeCollector, matrixStack, renderType, x, y, z, width, height, sprite.getMinU(), sprite.getMaxU(), sprite.getMinV(), sprite.getMaxV(), color);
+    public static SubmitNodeStorage getSubmitNodeStorage() {
+        return SUBMIT_NODE_STORAGE;
     }
 
-    public static void submitTexturedModalRect(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, RenderType renderType, float x, float y, float z, float width, float height, float u0, float u1, float v0, float v1, int color) {
-        PoseStack poseStack = poseStackFor(matrixStack);
-        submitNodeCollector.submitCustomGeometry(poseStack, renderType, (pose, vertexConsumer) -> {
-            vertexConsumer.addVertex(pose, x + 0.0F, y + 0.0F, z).setUv(u0, v0).setColor(color);
-            vertexConsumer.addVertex(pose, x + 0.0F, y + height, z).setUv(u0, v1).setColor(color);
-            vertexConsumer.addVertex(pose, x + width, y + height, z).setUv(u1, v1).setColor(color);
-            vertexConsumer.addVertex(pose, x + width, y + 0.0F, z).setUv(u1, v0).setColor(color);
-        });
+    public static boolean hasFlippedV() {
+        return !VoxelConstants.hasVulkanMod(); // Returns true if the renderer uses flipped textures
     }
 
-    public static void submitString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
-        submitString(submitNodeCollector, matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
+    public static void blitToScreen(GuiGraphicsExtractor graphics, GpuTextureView texture, float x, float y, float width, float height, int color) {
+        float v0 = RenderUtils.hasFlippedV() ? 1.0F : 0.0F;
+        float v1 = RenderUtils.hasFlippedV() ? 0.0F : 1.0F;
+        VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, texture, x, y, width, height, 0.0F, 1.0F, v0, v1, color);
     }
 
-    public static void submitString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
-        matrixStack.pushMatrix();
-        matrixStack.translate(x, y, z);
-        submitPreparedText(submitNodeCollector, matrixStack, text.getVisualOrderText(), 0.0F, 0.0F, color, shadow, Font.DisplayMode.SEE_THROUGH, 0, 0x00F000F0);
-
-        matrixStack.popMatrix();
+    public static SubmitPass createSubmitPass(String name, RenderTarget target, Vector4fc colorClear, double depthClear) {
+        return new SubmitPass(name, target.getColorTextureView(), Optional.of(colorClear), target.getDepthTextureView(), OptionalDouble.of(depthClear));
     }
 
-    public static void submitCenteredString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, String text, float x, float y, float z, int color, boolean shadow) {
-        submitCenteredString(submitNodeCollector, matrixStack, Component.nullToEmpty(text), x, y, z, color, shadow);
+    public static RenderPass createRenderPass(String name, RenderTarget target, Vector4fc colorClear, double depthClear) {
+        return RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> name, target.getColorTextureView(), Optional.of(colorClear), target.getDepthTextureView(), OptionalDouble.of(depthClear));
     }
 
-    public static void submitCenteredString(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, Component text, float x, float y, float z, int color, boolean shadow) {
-        submitString(submitNodeCollector, matrixStack, text, x - (MINECRAFT.font.width(text) / 2.0F), y, z, color, shadow);
-    }
-
-    public static void submitPreparedText(OrderedSubmitNodeCollector submitNodeCollector, Matrix4fStack matrixStack, FormattedCharSequence text, float x, float y, int color, boolean shadow, Font.DisplayMode displayMode, int backgroundColor, int light) {
-        submitNodeCollector.submitText(poseStackFor(matrixStack), x, y, text, shadow, displayMode, light, color, backgroundColor, 0);
-    }
-
-    private static PoseStack poseStackFor(Matrix4fStack matrixStack) {
-        PoseStack poseStack = new PoseStack();
-        poseStack.last().pose().set(matrixStack);
-        return poseStack;
-    }
-
-    public static void renderWithCustomProjection(RenderTarget renderTarget, GpuBufferSlice projection, float initialDepth, Consumer<SubmitContext> submitter) {
+    public static void flushCmds() {
         RenderSystem.assertOnRenderThread();
-
-        if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
-            return;
-        }
-
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
-
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        try {
-            RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
-            RenderSystem.getModelViewStack().pushMatrix();
-            RenderSystem.getModelViewStack().identity();
-            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-            SubmitContext context = new SubmitContext(renderTarget);
-            submitter.accept(context);
-            context.flush();
-        } catch (Exception e) {
-            VoxelConstants.getLogger().error("Failed to render with custom projection. Exception: " + e);
-        } finally {
-            RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
-        }
-
-        GLUtils.flipTexture(renderTarget.getColorTextureView(), false, true);
-    }
-
-    public static void renderWithFullscreenProjection(RenderTarget renderTarget, Consumer<SubmitContext> submitter) {
-        RenderSystem.assertOnRenderThread();
-
-        if (renderTarget.getColorTexture() == null || renderTarget.getDepthTexture() == null) {
-            return;
-        }
-
-        int windowWidth = MINECRAFT.getWindow().getWidth();
-        int windowHeight = MINECRAFT.getWindow().getHeight();
-
-        if (renderTarget.width != windowWidth || renderTarget.height != windowHeight) {
-            renderTarget.resize(windowWidth, windowHeight);
-        }
-
-        RenderSystem.getDevice().createCommandEncoder().clearColorTexture(renderTarget.getColorTexture(), new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(renderTarget.getDepthTexture(), 1.0);
-
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        try {
-            FULLSCREEN_PROJECTION.setSize(getGuiWidth(), getGuiHeight());
-            RenderSystem.setProjectionMatrix(FULLSCREEN_PROJECTION_MATRIX.getBuffer(FULLSCREEN_PROJECTION), ProjectionType.ORTHOGRAPHIC);
-            RenderSystem.getModelViewStack().pushMatrix();
-            RenderSystem.getModelViewStack().identity();
-            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, -2000.0F);
-            SubmitContext context = new SubmitContext(renderTarget);
-            submitter.accept(context);
-            context.flush();
-        } catch (Exception e) {
-            VoxelConstants.getLogger().error("Failed to render with fullscreen projection. Exception: " + e);
-        } finally {
-            RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
-        }
-
-        GLUtils.flipTexture(renderTarget.getColorTextureView(), false, true);
-    }
-
-    public static void drawMeshWithTexture(GpuTextureView colorTexture, GpuTextureView depthTexture, GpuBufferSlice projection, float initialDepth, MeshData meshData, RenderPipeline pipeline, TextureSetup textureSetup) {
-        if (meshData == null) {
-            return;
-        }
-
-        GpuBufferSlice lastProjectionMatrix = RenderSystem.getProjectionMatrixBuffer();
-        ProjectionType lastProjectionType = RenderSystem.getProjectionType();
-        try {
-            RenderSystem.setProjectionMatrix(projection, ProjectionType.ORTHOGRAPHIC);
-            RenderSystem.getModelViewStack().pushMatrix();
-            RenderSystem.getModelViewStack().identity();
-            RenderSystem.getModelViewStack().translate(0.0F, 0.0F, initialDepth);
-            GpuBufferSlice gpuBufferSlice = RenderSystem.getDynamicUniforms().writeTransform(
-                    RenderSystem.getModelViewMatrixCopy(),
-                    new Vector4f(1.0F, 1.0F, 1.0F, 1.0F),
-                    new Vector3f(),
-                    new Matrix4f());
-            GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Vertex Buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer());
-            GpuBuffer indexBuffer;
-            boolean closeIndexBuffer = false;
-            IndexType indexType;
-            if (meshData.indexBuffer() == null) {
-                RenderSystem.AutoStorageIndexBuffer autoStorageIndexBuffer = RenderSystem.getSequentialBuffer(meshData.drawState().primitiveTopology());
-                indexBuffer = autoStorageIndexBuffer.getBuffer(meshData.drawState().indexCount());
-                indexType = autoStorageIndexBuffer.type();
-            } else {
-                indexBuffer = RenderSystem.getDevice().createBuffer(() -> "VoxelMap Immediate Index Buffer", GpuBuffer.USAGE_INDEX, meshData.indexBuffer());
-                indexType = meshData.drawState().indexType();
-                closeIndexBuffer = true;
+        if (!VoxelConstants.hasVulkanMod()) {
+            RenderSystem.getDevice().createCommandEncoder().submit();
+        } else {
+            try {
+                Class<?> vkRendererClass = Class.forName("net.vulkanmod.vulkan.Renderer");
+                vkRendererClass.getMethod("flushCmds").invoke(vkRendererClass.getMethod("getInstance").invoke(null));
+            } catch (Exception ignored) {
             }
-            Optional<Vector4fc> colorClear = Optional.of(new Vector4f(0.0F, 0.0F, 0.0F, 0.0F));
-            OptionalDouble depthClear = depthTexture == null ? OptionalDouble.empty() : OptionalDouble.of(1.0);
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap Immediate Draw", colorTexture, colorClear, depthTexture, depthClear)) {
-                renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
-                RenderSystem.bindDefaultUniforms(renderPass);
-                renderPass.setUniform("DynamicTransforms", gpuBufferSlice);
-                renderPass.setVertexBuffer(0, vertexBuffer.slice());
-                renderPass.setIndexBuffer(indexBuffer, indexType);
-                renderPass.setUniform("Sampler0", textureSetup.texure0(), textureSetup.sampler0());
-                renderPass.setUniform("Sampler1", textureSetup.texure1(), textureSetup.sampler1());
-                renderPass.setUniform("Sampler2", textureSetup.texure2(), textureSetup.sampler2());
-                renderPass.drawIndexed(meshData.drawState().indexCount(), 1, 0, 0, 0);
-            } finally {
-                vertexBuffer.close();
-                if (closeIndexBuffer) {
-                    indexBuffer.close();
+        }
+    }
+
+    public static VoxelMapRenderTarget getFullscreenTarget() {
+        int width = getSafeScreenWidth();
+        int height = getSafeScreenHeight();
+        if (FULLSCREEN_TARGET.width != width || FULLSCREEN_TARGET.height != height) {
+            FULLSCREEN_TARGET.resize(width, height);
+        }
+        return FULLSCREEN_TARGET;
+    }
+
+    public static void setupProjectionMatrix(GpuBufferSlice matrix, ProjectionType type) {
+        setupProjectionMatrix(matrix, type, 0.0F);
+    }
+
+    public static void setupProjectionMatrix(GpuBufferSlice matrix, ProjectionType type, float initialDepth) {
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().identity();
+        RenderSystem.getModelViewStack().translate(0.0f, 0.0F, initialDepth);
+        PROJECTION_STACK.push(new ProjectionEntry(RenderSystem.getProjectionMatrixBuffer(), RenderSystem.getProjectionType()));
+        RenderSystem.setProjectionMatrix(matrix, type);
+    }
+
+    public static void restoreProjectionMatrix() {
+        ProjectionEntry projection = PROJECTION_STACK.pop();
+        RenderSystem.setProjectionMatrix(projection.matrix(), projection.type());
+        RenderSystem.getModelViewStack().popMatrix();
+    }
+
+    public static void readTextureContentsToBufferedImage(GpuTexture gpuTexture, Consumer<BufferedImage> resultConsumer) {
+        RenderSystem.assertOnRenderThread();
+        int bytePerPixel = gpuTexture.getFormat().blockSize();
+        int width = gpuTexture.getWidth(0);
+        int height = gpuTexture.getHeight(0);
+        int bufferSize = bytePerPixel * width * height;
+        GpuBuffer gpuBuffer = RenderSystem.getDevice().createBuffer(() -> "Texture read buffer", GpuBuffer.USAGE_MAP_READ | GpuBuffer.USAGE_COPY_DST, bufferSize);
+        CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
+        commandEncoder.copyTextureToBuffer(gpuTexture, gpuBuffer, 0, () -> {
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+            try (GpuBufferSlice.MappedView readView = gpuBuffer.map(true, false)) {
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        int pixel = readView.data().getInt((x + y * width) * bytePerPixel);
+                        image.setRGB(x, y, ARGB.fromABGR(pixel));
+                    }
                 }
             }
-        } catch (Exception e) {
-            VoxelConstants.getLogger().error("Immediate draw failed. Exception: " + e);
-        } finally {
-            RenderSystem.getModelViewStack().popMatrix();
-            RenderSystem.setProjectionMatrix(lastProjectionMatrix, lastProjectionType);
-        }
+            gpuBuffer.close();
+            resultConsumer.accept(image);
+        }, 0);
     }
 
-    public static class SubmitContext {
-        private final RenderTarget renderTarget;
-        private SubmitNodeStorage storage = new SubmitNodeStorage();
-
-        private SubmitContext(RenderTarget renderTarget) {
-            this.renderTarget = renderTarget;
-        }
-
-        public SubmitNodeCollector collector() {
-            return storage;
-        }
-
-        public OrderedSubmitNodeCollector order(int order) {
-            return storage.order(order);
-        }
-
-        public void flush() {
-            FeatureRenderDispatcher dispatcher = MINECRAFT.gameRenderer.featureRenderDispatcher();
-            try (
-                    FeatureRenderDispatcher.PreparedFrame frame = dispatcher.prepareFrame(storage);
-                    RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(
-                            () -> "VoxelMap submitted features",
-                            renderTarget.getColorTextureView(),
-                            Optional.empty(),
-                            renderTarget.getDepthTextureView(),
-                            OptionalDouble.empty())
-            ) {
-                RenderSystem.bindDefaultUniforms(renderPass);
-                FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
-            }
-            storage = new SubmitNodeStorage();
-        }
+    public static record ProjectionEntry(GpuBufferSlice matrix, ProjectionType type) {
     }
 }

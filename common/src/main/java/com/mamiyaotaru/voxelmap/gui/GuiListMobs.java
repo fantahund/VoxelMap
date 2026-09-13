@@ -13,13 +13,13 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import org.apache.logging.log4j.Level;
 
 class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
     private final ArrayList<MobItem> mobs;
@@ -40,11 +40,15 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
 
         mobs = new ArrayList<>();
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
-            if (entry.getValue().create(VoxelConstants.getMinecraft().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
-                VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(entry.getValue());
-                if ((category == VoxelMapMobCategory.HOSTILE && options.showHostiles) || (category == VoxelMapMobCategory.NEUTRAL && options.showNeutrals)) {
-                    mobs.add(new MobItem(parentGui, entry.getValue(), entry.getKey().identifier()));
+            try {
+                if (entry.getValue().create(VoxelConstants.getMinecraft().level, EntitySpawnReason.LOAD) instanceof LivingEntity) {
+                    VoxelMapMobCategory category = VoxelMapMobCategory.forEntityType(entry.getValue());
+                    if ((category == VoxelMapMobCategory.HOSTILE && options.showHostiles) || (category == VoxelMapMobCategory.NEUTRAL && options.showNeutrals)) {
+                        mobs.add(new MobItem(parentGui, entry.getValue(), entry.getKey().identifier()));
+                    }
                 }
+            } catch (Exception e) {
+                VoxelConstants.getLogger().log(Level.WARN, "GuiListMobs: Could not create entity of type " + entry.getKey().identifier());
             }
         });
 
@@ -161,7 +165,6 @@ class GuiListMobs extends AbstractSelectionList<GuiListMobs.MobItem> {
 
         @Override
         public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-            double mouseX = mouseButtonEvent.x();
             double mouseY = mouseButtonEvent.y();
             if (mouseY < getY() || mouseY > getBottom()) {
                 return false;

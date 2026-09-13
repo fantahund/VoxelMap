@@ -1,6 +1,5 @@
 package com.mamiyaotaru.voxelmap.persistent;
 
-import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.EnumOptionsMinimap;
 import com.mamiyaotaru.voxelmap.interfaces.ISubSettingsManager;
@@ -9,7 +8,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import net.minecraft.client.resources.language.I18n;
 
 public class PersistentMapSettingsManager implements ISubSettingsManager {
     protected int mapX;
@@ -74,33 +72,6 @@ public class PersistentMapSettingsManager implements ISubSettingsManager {
         out.println("Show Worldmap Waypoints:" + showWaypoints);
         out.println("Show Worldmap Waypoint Names:" + showWaypointNames);
         out.println("Show Worldmap Distant Waypoints:" + showDistantWaypoints);
-    }
-
-    @Override
-    public String getKeyText(EnumOptionsMinimap option) {
-        String s = I18n.get(option.getName()) + ": ";
-
-        switch (option.getType()) {
-            case BOOLEAN -> {
-                boolean flag = getBooleanValue(option);
-                return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
-            }
-            case LIST -> {
-                String state = getListValue(option);
-                return s + state;
-            }
-            case FLOAT -> {
-                float value = getFloatValue(option);
-                return switch (option) {
-                    case MIN_ZOOM, MAX_ZOOM -> s + (float) Math.pow(2.0, value) + "x";
-                    case CACHE_SIZE -> s + (int) value;
-
-                    default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
-                };
-            }
-        }
-
-        return s + MapSettingsManager.ERROR_STRING;
     }
 
     @Override

@@ -7,36 +7,42 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
 public class VoxelMapRenderTypes {
-    public static final Function<Identifier, RenderType> GUI_TEXTURED_NO_DEPTH_TEST = Util.memoize(
+    public static final Function<Identifier, RenderType> GUI_TEXTURED_GEQUAL_DEPTH = Util.memoize(
             identifier -> RenderType.create(
-                    "voxelmap_gui_textured_no_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_NO_DEPTH_TEST)
+                    "voxelmap_gui_textured_gequal_gepth",
+                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_GEQUAL_DEPTH)
                             .withTexture("Sampler0", identifier)
                             .createRenderSetup()
             )
     );
 
-    public static final Function<Identifier, RenderType> GUI_TEXTURED_LEQUAL_DEPTH_TEST = Util.memoize(
+    public static final Function<Identifier, RenderType> GUI_TEXTURED_ANY_DEPTH = Util.memoize(
             identifier -> RenderType.create(
-                    "voxelmap_gui_textured_lequal_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_LEQUAL_DEPTH_TEST)
+                    "voxelmap_gui_textured_any_depth",
+                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH)
                             .withTexture("Sampler0", identifier)
                             .createRenderSetup()
             )
     );
 
-    public static final Function<Identifier, RenderType> GUI_TEXTURED_MASKED_NO_DEPTH_TEST = Util.memoize(
+    public static final Function<Identifier, RenderType> GUI_TEXTURED_ANY_DEPTH_MASKED = Util.memoize(
             identifier -> RenderType.create(
-                    "voxelmap_gui_textured_masked_no_depth_test",
-                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_MASKED_NO_DEPTH_TEST)
+                    "voxelmap_gui_textured_any_depth_masked",
+                    RenderSetup.builder(VoxelMapPipelines.GUI_TEXTURED_ANY_DEPTH_MASKED)
                             .withTexture("Sampler0", identifier)
                             .createRenderSetup()
             )
     );
 
-    public static final RenderType WAYPOINT_TEXT_BACKGROUND = RenderType.create(
-            "voxelmap_waypoint_text_background",
-            RenderSetup.builder(VoxelMapPipelines.WAYPOINT_TEXT_BACKGROUND)
+    public static final RenderType TEXT_BACKGROUND_GEQUAL_DEPTH = RenderType.create(
+            "voxelmap_text_background_gequal_depth",
+            RenderSetup.builder(VoxelMapPipelines.TEXT_BACKGROUND_GEQUAL_DEPTH)
+                    .createRenderSetup()
+    );
+
+    public static final RenderType TEXT_BACKGROUND_ANY_DEPTH = RenderType.create(
+            "voxelmap_text_background_any_depth",
+            RenderSetup.builder(VoxelMapPipelines.TEXT_BACKGROUND_ANY_DEPTH)
                     .createRenderSetup()
     );
 }

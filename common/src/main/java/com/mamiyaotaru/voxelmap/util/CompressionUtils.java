@@ -27,7 +27,7 @@ public final class CompressionUtils {
         } catch (IOException e) {
             throw new RuntimeException("IOException should not happen for ByteArrayOutputStream", e);
         } finally {
-            deflater.end();
+            deflater.close();
         }
     }
 
@@ -46,7 +46,7 @@ public final class CompressionUtils {
         } catch (IOException e) {
             throw new RuntimeException("IOException should not happen for ByteArrayOutputStream", e);
         } finally {
-            inflater.end();
+            inflater.close();
         }
     }
 }

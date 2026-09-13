@@ -77,8 +77,8 @@ public class MapSettingsManager implements ISettingsManager {
     public float waypointSignScale = 1.0F;
     public int deathpoints = 1;
     public int waypointDistanceConversion = 1;
-    public int waypointNamesLocation = 2;
-    public int waypointDistancesLocation = 2;
+    public int waypointSignLayout = 1;
+    public boolean highlightSignOnFocus = true;
 
     public boolean showUnderMenus;
     public Boolean cavesAllowed = true;
@@ -166,8 +166,8 @@ public class MapSettingsManager implements ISettingsManager {
                         case "Waypoint Sign Scale" -> waypointSignScale = Mth.clamp(Float.parseFloat(curLine[1]), 0.5F, 1.5F);
                         case "Deathpoints" -> deathpoints = Mth.clamp(Integer.parseInt(curLine[1]), 0, 2);
                         case "Waypoint Distance Unit Conversion" -> waypointDistanceConversion = Mth.clamp(Integer.parseInt(curLine[1]), 0, 2);
-                        case "Show In-game Waypoint Names" -> waypointNamesLocation = Mth.clamp(Integer.parseInt(curLine[1]), 0, 2);
-                        case "Show In-game Waypoint Distances" -> waypointDistancesLocation = Mth.clamp(Integer.parseInt(curLine[1]), 0, 2);
+                        case "Waypoint Sign Layout" -> waypointSignLayout = Mth.clamp(Integer.parseInt(curLine[1]), 0, 3);
+                        case "Highlight Sign on Focus" -> highlightSignOnFocus = Boolean.parseBoolean(curLine[1]);
 
                         case "Zoom Key" -> bindKey(keyBindZoom, curLine[1]);
                         case "Fullscreen Key" -> bindKey(keyBindFullscreen, curLine[1]);
@@ -244,8 +244,8 @@ public class MapSettingsManager implements ISettingsManager {
             out.println("Waypoint Sign Scale:" + waypointSignScale);
             out.println("Deathpoints:" + deathpoints);
             out.println("Waypoint Distance Unit Conversion:" + waypointDistanceConversion);
-            out.println("Show In-game Waypoint Names:" + waypointNamesLocation);
-            out.println("Show In-game Waypoint Distances:" + waypointDistancesLocation);
+            out.println("Waypoint Sign Layout:" + waypointSignLayout);
+            out.println("Highlight Sign on Focus:" + highlightSignOnFocus);
 
             out.println("Zoom Key:" + keyBindZoom.saveString());
             out.println("Fullscreen Key:" + keyBindFullscreen.saveString());
@@ -265,35 +265,6 @@ public class MapSettingsManager implements ISettingsManager {
             VoxelConstants.getLogger().error(exception);
             MessageUtils.chatInfo("§EError Saving Settings " + exception.getLocalizedMessage());
         }
-    }
-
-    @Override
-    public String getKeyText(EnumOptionsMinimap option) {
-        String s = I18n.get(option.getName()) + ": ";
-
-        switch (option.getType()) {
-            case BOOLEAN -> {
-                boolean flag = getBooleanValue(option);
-                return s + (flag ? I18n.get("options.on") : I18n.get("options.off"));
-            }
-            case LIST -> {
-                String state = getListValue(option);
-                return s + state;
-            }
-            case FLOAT -> {
-                float value = getFloatValue(option);
-                return switch (option) {
-                    case ZOOM -> s + (int) value;
-
-                    case WAYPOINT_DISTANCE -> s + (value < 0.0F ? I18n.get("options.minimap.waypoints.infinite") : (int) value);
-                    case WAYPOINT_SIGN_SCALE -> s + String.format("%.2fx", value);
-
-                    default -> s + (value <= 0.0F ? I18n.get("options.off") : (int) value + "%");
-                };
-            }
-        }
-
-        return s + ERROR_STRING;
     }
 
     @Override
@@ -319,6 +290,8 @@ public class MapSettingsManager implements ISettingsManager {
             case SLIME_CHUNKS -> slimeChunks;
             case WORLD_BORDER -> worldBorder;
             case FILTERING -> filtering;
+
+            case HIGHLIGHT_SIGN_ON_FOCUS -> highlightSignOnFocus;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         };
@@ -347,6 +320,8 @@ public class MapSettingsManager implements ISettingsManager {
             case SLIME_CHUNKS -> slimeChunks = !slimeChunks;
             case WORLD_BORDER -> worldBorder = !worldBorder;
             case FILTERING -> filtering = !filtering;
+
+            case HIGHLIGHT_SIGN_ON_FOCUS -> highlightSignOnFocus = !highlightSignOnFocus;
 
             default -> throw new IllegalArgumentException("Invalid boolean value! Add code to handle EnumOptionMinimap: " + option.getName());
         }
@@ -425,16 +400,12 @@ public class MapSettingsManager implements ISettingsManager {
                         I18n.get("options.minimap.waypoints.distanceUnitConversion.from1000m"),
                         I18n.get("options.minimap.waypoints.distanceUnitConversion.from10000m"));
             }
-            case SHOW_IN_GAME_WAYPOINT_NAMES -> {
-                return parseListValue(0, waypointNamesLocation,
+            case WAYPOINT_SIGN_LAYOUT -> {
+                return parseListValue(0, waypointSignLayout,
                         I18n.get("options.off"),
-                        I18n.get("options.minimap.waypoints.showWaypointNames.aboveIcon"),
-                        I18n.get("options.minimap.waypoints.showWaypointNames.belowIcon"));
-            }
-            case SHOW_IN_GAME_WAYPOINT_DISTANCES -> {
-                String str = waypointNamesLocation == 0 ? I18n.get("options.minimap.waypoints.showWaypointDistances.aboveIcon") : I18n.get("options.minimap.waypoints.showWaypointDistances.besideName");
-                String str2 = waypointNamesLocation == 0 ? I18n.get("options.minimap.waypoints.showWaypointDistances.belowIcon") : I18n.get("options.minimap.waypoints.showWaypointDistances.belowName");
-                return parseListValue(0, waypointDistancesLocation, I18n.get("options.off"), str, str2);
+                        I18n.get("test_default"),
+                        I18n.get("test_classic_top"),
+                        I18n.get("test_classic_bottom"));
             }
 
             default -> throw new IllegalArgumentException("Invalid list value! Add code to handle EnumOptionMinimap: " + option.getName());
@@ -480,8 +451,7 @@ public class MapSettingsManager implements ISettingsManager {
 
             case DEATHPOINTS -> deathpoints = cycleInRange(deathpoints, 0, 2);
             case WAYPOINT_DISTANCE_UNIT_CONVERSION -> waypointDistanceConversion = cycleInRange(waypointDistanceConversion, 0, 2);
-            case SHOW_IN_GAME_WAYPOINT_NAMES -> waypointNamesLocation = cycleInRange(waypointNamesLocation, 0, 2);
-            case SHOW_IN_GAME_WAYPOINT_DISTANCES -> waypointDistancesLocation = cycleInRange(waypointDistancesLocation, 0, 2);
+            case WAYPOINT_SIGN_LAYOUT -> waypointSignLayout = cycleInRange(waypointSignLayout, 0, 3);
 
             default -> throw new IllegalArgumentException("Invalid list value! Add code to handle EnumOptionMinimap: " + option.getName());
         }
@@ -523,13 +493,6 @@ public class MapSettingsManager implements ISettingsManager {
         }
 
         somethingChanged = true;
-    }
-
-    public static void updateBooleanOrListValue(ISettingsManager settingsManager, EnumOptionsMinimap option) {
-        switch (option.getType()) {
-            case BOOLEAN -> settingsManager.toggleBooleanValue(option);
-            case LIST -> settingsManager.cycleListValue(option);
-        }
     }
 
     public static int cycleInRange(int current, int min, int max) {

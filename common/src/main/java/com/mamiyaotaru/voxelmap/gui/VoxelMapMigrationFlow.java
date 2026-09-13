@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 public final class VoxelMapMigrationFlow {
 
@@ -20,7 +21,11 @@ public final class VoxelMapMigrationFlow {
     private VoxelMapMigrationFlow() {}
 
     public static void start(Screen parent, Component title, Component description, VoxelMapMigration job, boolean showKeepLegacy, Handler handler) {
-        GuiDataMigration dialog = new GuiDataMigration(parent, title, description, showKeepLegacy, choice -> onChoice(title, job, handler, choice), null);
+        start(parent, title, description, job, showKeepLegacy, handler, null);
+    }
+
+    public static void start(Screen parent, Component title, Component description, VoxelMapMigration job, boolean showKeepLegacy, Handler handler, @Nullable Runnable onCancel) {
+        GuiDataMigration dialog = new GuiDataMigration(parent, title, description, showKeepLegacy, choice -> onChoice(title, job, handler, choice), onCancel);
         VoxelConstants.getMinecraft().gui.setScreen(dialog);
     }
 

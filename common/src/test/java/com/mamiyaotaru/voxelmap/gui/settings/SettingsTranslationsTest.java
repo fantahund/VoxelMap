@@ -21,7 +21,9 @@ class SettingsTranslationsTest {
             "radar.mobNames", "radar.mobHelmets", "radar.fullNames", "radar.individualEntities", "radar.filtering", "radar.outlines", "worldmap.coordinates",
             "worldmap.waypoints", "worldmap.names", "worldmap.distant", "worldmap.nearestZoom", "worldmap.farthestZoom", "worldmap.cache",
             "advanced.lighting", "advanced.terrain", "advanced.water", "advanced.blocks", "advanced.biomes", "advanced.biomeOverlay",
-            "advanced.filtering", "advanced.seed", "advanced.teleport", "advanced.compatibilityRenderer", "advanced.colorPicker", "advanced.updates");
+            "advanced.filtering", "advanced.seed", "advanced.teleport", "advanced.dataName", "advanced.aliases", "advanced.compatibilityRenderer", "advanced.colorPicker", "advanced.updates");
+    private static final List<String> MANAGED_MESSAGES = List.of(
+            "server", "singleplayerSeed", "multiplayerOnly", "dataNameServer", "dataNameLocal", "singleplayerAliases");
 
     @Test
     void englishAndGermanContainEverySettingsCategoryAndTooltip() {
@@ -31,6 +33,8 @@ class SettingsTranslationsTest {
                 assertTrue(translations.has("options.voxelmap.category." + category), language + ": " + category);
             for (String option : OPTION_IDS)
                 assertTrue(translations.has("options.voxelmap." + option + ".tooltip"), language + ": " + option);
+            for (String message : MANAGED_MESSAGES)
+                assertTrue(translations.has("options.voxelmap.managed." + message), language + ": " + message);
         }
     }
 

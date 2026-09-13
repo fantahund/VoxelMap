@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.persistent.PersistentMap;
 import com.mamiyaotaru.voxelmap.persistent.PersistentMapSettingsManager;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataStore;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.util.BiomeRepository;
 import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.GameVariableAccessShim;
@@ -66,6 +67,8 @@ public class VoxelMap implements PreparableReloadListener {
     VoxelMap() {}
 
     private void lateInit(boolean showUnderMenus, boolean isFair) {
+        RenderUtils.init();
+
         mapOptions = new MapSettingsManager();
         radarOptions = new RadarSettingsManager();
         persistentMapOptions = new PersistentMapSettingsManager();
@@ -285,6 +288,20 @@ public class VoxelMap implements PreparableReloadListener {
         });
     }
 
+    public synchronized void setServerWorldIdentity(String identity) {
+        runOnWorldSet(() -> {
+            if (waypointManager.willChangeWorldIdentity(identity, world)) {
+                persistentMap.purgeCachedRegions();
+            }
+
+            if (waypointManager.setServerWorldIdentity(identity, world)) {
+                worldName = waypointManager.getCurrentWorldName();
+                persistentMap.newWorld(world);
+                map.newWorld(world);
+            }
+        });
+    }
+
     public String getWorldSeed() {
         if (!initialized) return "";
         return waypointManager.getWorldSeed().isEmpty() ? VoxelConstants.getWorldByKey(Level.OVERWORLD).map(value -> Long.toString(((ServerLevel) value).getSeed())).orElse("") : waypointManager.getWorldSeed();
@@ -305,6 +322,10 @@ public class VoxelMap implements PreparableReloadListener {
 
     public void clearServerSettings() {
         execute(() -> {
+            if (waypointManager != null) {
+                waypointManager.clearServerWorldIdentity();
+            }
+
             radarOptions.radarAllowed = true;
             radarOptions.radarPlayersAllowed = true;
             radarOptions.radarMobsAllowed = true;
