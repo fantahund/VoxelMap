@@ -2,12 +2,12 @@ package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.textures.AllocatedTexture;
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -18,8 +18,8 @@ public class VoxelMapRenderTarget extends RenderTarget {
     public final Identifier textureId;
     private AllocatedTexture texture;
 
-    public VoxelMapRenderTarget(String name, GpuFormat format, boolean useDepth) {
-        super(name, useDepth, format);
+    public VoxelMapRenderTarget(String name, GpuFormat colorFormat, GpuFormat depthFormat) {
+        super(name, colorFormat, depthFormat);
         textureId = Identifier.fromNamespaceAndPath(VoxelConstants.MOD_ID, "render_target/" + UUID.randomUUID());
     }
 
@@ -35,7 +35,7 @@ public class VoxelMapRenderTarget extends RenderTarget {
     public void createBuffers(int width, int height) {
         super.createBuffers(width, height);
         texture = new AllocatedTexture(colorTexture, colorTextureView);
-        texture.sampler = DEFAULT_SAMPLER;
+//        texture.sampler = DEFAULT_SAMPLER; FIXME
         Minecraft.getInstance().getTextureManager().register(textureId, texture);
     }
 

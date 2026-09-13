@@ -1,16 +1,16 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -27,7 +27,7 @@ import org.joml.Vector4fc;
 public class RenderUtils {
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final SubmitNodeStorage SUBMIT_NODE_STORAGE = new SubmitNodeStorage();
-    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", GpuFormat.RGBA8_UNORM, true);
+    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
     private static final ArrayDeque<ProjectionEntry> PROJECTION_STACK = new ArrayDeque<>();
 
     public static void init() {

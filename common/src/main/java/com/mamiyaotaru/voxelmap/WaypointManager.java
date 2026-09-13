@@ -148,8 +148,8 @@ public class WaypointManager implements IReloadListener {
 //      this.textureAtlasChooser.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypointIconFiltering", "true"));
-        this.textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
-        this.textureAtlasChooser.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
+        this.textureAtlas.setSampler(useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP);
+        this.textureAtlasChooser.setSampler(useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP);
     }
 
     public static String toSimpleName(String name) {

@@ -75,7 +75,7 @@ public class EntityMapImageManager {
         textureAtlas.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("radarIconFiltering", "true"));
-        textureAtlas.sampler = useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP;
+        textureAtlas.setSampler(useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP);
 
         entityVariantDataFactories.clear();
         customMobProperties.clear();

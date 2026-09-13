@@ -24,7 +24,7 @@ public class RadarSimple extends AbstractRadar {
     public RadarSimple() {
         super();
         textureAtlas = new TextureAtlas("pings", resourceTextureAtlasMarker);
-        textureAtlas.sampler = VoxelMapSamplers.LINEAR_CLAMP;
+        textureAtlas.setSampler(VoxelMapSamplers.LINEAR_CLAMP);
         loadTexturePackIcons();
     }
 
