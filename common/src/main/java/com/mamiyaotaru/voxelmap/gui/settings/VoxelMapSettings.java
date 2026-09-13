@@ -1,5 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui.settings;
 
+import de.tobi.voxelconfig.SettingsCategory;
+import de.tobi.voxelconfig.SettingsGroup;
+import de.tobi.voxelconfig.SettingsOption;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.RadarSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
@@ -27,7 +30,6 @@ public final class VoxelMapSettings {
                 worldMap(map, world),
                 waypoints(map),
                 radar(radar, openEntityTypeDialog),
-                // new SettingsCategory("controls", "options.voxelmap.category.controls", List.of(), SettingsCategory.SpecialView.KEY_BINDINGS),
                 advanced(voxelMap, map, radar));
     }
 

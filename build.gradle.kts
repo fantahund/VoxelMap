@@ -13,6 +13,7 @@ val fabricApiVersion by extra { "0.160.4+26.3" }
 val modMenuVersion by extra { "20.0.1" }
 val paperApiVersion by extra { "[26.2.build,)" }
 val voxelMapVersion by extra { "1.16.9" }
+val voxelConfigVersion by extra { "1.0.0" }
 
 val fullVersion by extra { "${minecraftVersion}-${voxelMapVersion}" }
 
@@ -33,6 +34,7 @@ subprojects {
     apply(plugin = "maven-publish")
 
     repositories {
+        mavenLocal()
         mavenCentral()
         maven {
             name = "papermc"

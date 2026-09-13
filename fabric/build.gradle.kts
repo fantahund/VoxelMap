@@ -8,6 +8,7 @@ val minecraftVersion: String by rootProject.extra
 val fabricVersion: String by rootProject.extra
 val fabricApiVersion: String by rootProject.extra
 val modMenuVersion: String by rootProject.extra
+val voxelConfigVersion: String by rootProject.extra
 
 val fullVersion: String by rootProject.extra
 
@@ -21,6 +22,8 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:${fabricVersion}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
     compileOnly("maven.modrinth:modmenu:${modMenuVersion}")
+
+
 
     implementation(project.project(":server-common").sourceSets.getByName("main").output)
     implementation(project.project(":common").sourceSets.getByName("main").output)
@@ -65,7 +68,7 @@ tasks {
     jar {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
-        from(zipTree(project.project(":common").tasks.jar.get().archiveFile))
+        from(zipTree(project.project(":common").tasks.named("shadowJar").map { (it as org.gradle.jvm.tasks.Jar).archiveFile }))
         from(zipTree(project.project(":server-common").tasks.jar.get().archiveFile))
     }
 

@@ -2,11 +2,13 @@ plugins {
     id("java")
     id("idea")
     id("net.fabricmc.fabric-loom")
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 val minecraftVersion: String by rootProject.extra
 val fabricVersion: String by rootProject.extra
 val fabricApiVersion: String by rootProject.extra
+val voxelConfigVersion: String by rootProject.extra
 
 repositories {
 
@@ -17,6 +19,8 @@ dependencies {
 
     compileOnly("net.fabricmc:fabric-loader:${fabricVersion}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}")
+
+    implementation("de.tobi:voxelconfig:${voxelConfigVersion}")
 
     compileOnly("net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7")
     testImplementation("com.google.code.gson:gson:2.11.0")
@@ -41,8 +45,16 @@ loom {
 }
 
 tasks {
+    shadowJar {
+        dependencies {
+            include(dependency("de.tobi:voxelconfig:.*"))
+        }
+    }
+    
     jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(rootDir.resolve("LICENSE.md"))
+        // we no longer need manual zipTree because shadowJar handles it!
     }
 }
 

@@ -1,12 +1,12 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import de.tobi.voxelconfig.SettingsCategory;
+import de.tobi.voxelconfig.SettingsOption;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.settings.EntityTypeDialog;
-import com.mamiyaotaru.voxelmap.gui.settings.SettingsCategory;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsListWidget;
-import com.mamiyaotaru.voxelmap.gui.settings.SettingsOption;
 import com.mamiyaotaru.voxelmap.gui.settings.VoxelMapSettings;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;

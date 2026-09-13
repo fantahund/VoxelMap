@@ -1,5 +1,8 @@
 package com.mamiyaotaru.voxelmap.gui.settings;
 
+import de.tobi.voxelconfig.SettingsCategory;
+import de.tobi.voxelconfig.SettingsGroup;
+import de.tobi.voxelconfig.SettingsOption;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.GuiMinimapOptions;
@@ -45,16 +48,17 @@ public final class SettingsListWidget extends AbstractSelectionList<SettingsList
                 addEntry(new OptionEntry(option), OPTION_HEIGHT);
             }
         }
+    }
 
-        if (category.specialView() == SettingsCategory.SpecialView.KEY_BINDINGS) {
-            addEntry(new GroupEntry(Component.translatable("options.voxelmap.group.keyBindings")), HEADER_HEIGHT);
-            KeyMapping[] mappings = VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindings.clone();
-            Arrays.sort(mappings);
-            for (KeyMapping mapping : mappings) {
-                addEntry(new KeyEntry(mapping), OPTION_HEIGHT);
-            }
-            addEntry(new HelpEntry(Component.translatable("options.voxelmap.controls.unbindHelp")), HEADER_HEIGHT);
+    /** Appends VoxelMap key binding entries to the list. Call after construction if needed. */
+    public void addKeyBindings() {
+        addEntry(new GroupEntry(Component.translatable("options.voxelmap.group.keyBindings")), HEADER_HEIGHT);
+        KeyMapping[] mappings = VoxelConstants.getVoxelMapInstance().getMapOptions().keyBindings.clone();
+        Arrays.sort(mappings);
+        for (KeyMapping mapping : mappings) {
+            addEntry(new KeyEntry(mapping), OPTION_HEIGHT);
         }
+        addEntry(new HelpEntry(Component.translatable("options.voxelmap.controls.unbindHelp")), HEADER_HEIGHT);
     }
 
     @Override
