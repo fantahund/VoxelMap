@@ -1,16 +1,19 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
-import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -27,7 +30,7 @@ import org.joml.Vector4fc;
 public class RenderUtils {
     private static final Matrix4fStack MATRIX_STACK = new Matrix4fStack(16);
     private static final SubmitNodeStorage SUBMIT_NODE_STORAGE = new SubmitNodeStorage();
-    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", GpuFormat.RGBA8_UNORM, true);
+    private static final VoxelMapRenderTarget FULLSCREEN_TARGET = new VoxelMapRenderTarget("VoxelMap Fullscreen Target", GpuFormat.RGBA8_UNORM, GpuFormat.D32_FLOAT);
     private static final ArrayDeque<ProjectionEntry> PROJECTION_STACK = new ArrayDeque<>();
 
     public static void init() {
@@ -67,6 +70,18 @@ public class RenderUtils {
         float v1 = RenderUtils.hasFlippedV() ? 0.0F : 1.0F;
         VoxelMapGuiGraphics.blitFloat(graphics, RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, texture, x, y, width, height, 0.0F, 1.0F, v0, v1, color);
     }
+
+    public static GpuSampler getSampler(boolean linear, boolean repeat) {
+        return getSampler(linear, repeat, false);
+    }
+
+    public static GpuSampler getSampler(boolean linear, boolean repeat, boolean mipmaps) {
+        AddressMode addressMode = repeat ? AddressMode.REPEAT : AddressMode.CLAMP_TO_EDGE;
+        FilterMode filterMode = linear ? FilterMode.LINEAR : FilterMode.NEAREST;
+
+        return RenderSystem.getSamplerCache().getSampler(addressMode, addressMode, filterMode, filterMode, mipmaps);
+    }
+
 
     public static SubmitPass createSubmitPass(String name, RenderTarget target, Vector4fc colorClear, double depthClear) {
         return new SubmitPass(name, target.getColorTextureView(), Optional.of(colorClear), target.getDepthTextureView(), OptionalDouble.of(depthClear));

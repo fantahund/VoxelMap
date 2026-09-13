@@ -95,7 +95,7 @@ public class EntityMeshBuilder {
                     skullModel.renderToBuffer(matrix, buffer, LIGHT, OVERLAY, 0xFFFFFFFF);
                 }
             } else {
-                matrix.mulPose(Axis.ZP.rotationDegrees(180.0F));
+                matrix.rotateDegrees(Axis.ZP, 180.0F);
                 matrix.scale(0.625F, 0.625F, 0.625F);
                 BlockStateModel blockModel = minecraft.getModelManager().getBlockStateModelSet().get(blockItem.getBlock().defaultBlockState());
                 renderBlockToBuffer(matrix, buffer, blockModel, LIGHT, OVERLAY, 0xFFFFFFFF);

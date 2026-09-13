@@ -1,14 +1,14 @@
 package com.mamiyaotaru.voxelmap.gui;
 
+import de.tobi.voxelconfig.SettingsCategory;
+import de.tobi.voxelconfig.SettingsOption;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
 import com.mamiyaotaru.voxelmap.gui.settings.EntityTypeDialog;
-import com.mamiyaotaru.voxelmap.gui.settings.SettingsCategory;
 import com.mamiyaotaru.voxelmap.gui.settings.SettingsListWidget;
-import com.mamiyaotaru.voxelmap.gui.settings.SettingsOption;
 import com.mamiyaotaru.voxelmap.gui.settings.VoxelMapSettings;
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
@@ -26,7 +26,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     private static final int FOOTER_HEIGHT = 32;
     private static final int CATEGORY_GAP = 4;
 
-    private final List<SettingsCategory> categories = VoxelMapSettings.create(this::openEntityTypeDialog, this::openServerAliases);
+    private final List<SettingsCategory> categories = VoxelMapSettings.create(this::openEntityTypeDialog);
     private final List<Button> categoryButtons = new ArrayList<>();
     private int selectedCategory;
     private int contentX;
@@ -69,18 +69,23 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
 
         for (int i = 0; i < categories.size(); i++) {
             int index = i;
-            Button button = new CategoryButton(
-                    contentX,
-                    contentY + i * 24,
-                    categoryWidth,
-                    20,
-                    categories.get(i).title(),
-                    ignored -> selectCategory(index));
+            Button button = Button.builder(categories.get(i).title(), ignored -> selectCategory(index))
+                    .bounds(contentX, contentY + i * 24, categoryWidth, 20).build();
             categoryButtons.add(addRenderableWidget(button));
         }
 
-        addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
-                .bounds(width / 2 - 100, height - 27, 200, 20).build());
+        if (VoxelConstants.isSinglePlayer()) {
+            addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
+                    .bounds(width / 2 - 100, height - 27, 200, 20).build());
+        } else {
+            String currentServer = VoxelConstants.getVoxelMapInstance().getWaypointManager().getServerName();
+            addRenderableWidget(Button.builder(Component.translatable("voxelmap.alias.editButton"),
+                            ignored -> minecraft.gui.setScreen(new GuiServerAliases(this, currentServer)))
+                    .bounds(width / 2 - 155, height - 27, 150, 20).build());
+
+            addRenderableWidget(Button.builder(Component.translatable("gui.done"), ignored -> onClose())
+                    .bounds(width / 2 + 5, height - 27, 150, 20).build());
+        }
 
         rebuildContent();
         if (reopenEntityDialog)
@@ -122,7 +127,7 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (entityTypeDialog != null) {
-            if (event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+            if (event.key() == InputConstants.KEY_ESCAPE) {
                 closeEntityTypeDialog();
                 return true;
             }
@@ -193,13 +198,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
-    private void openServerAliases() {
-        if (optionList != null)
-            optionList.commitPendingText();
-        String currentServer = VoxelConstants.getVoxelMapInstance().getWaypointManager().getServerName();
-        minecraft.gui.setScreen(new GuiServerAliases(this, currentServer));
-    }
-
     private void openEntityTypeDialog() {
         if (entityTypeDialog != null)
             return;
@@ -217,8 +215,13 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         setFocused(optionList);
     }
 
-    private static <T> void setChoice(SettingsOption<T> option, int action) {
+    @SuppressWarnings("unchecked")
+    private static <T> void setChoiceUnchecked(SettingsOption<T> option, int action) {
         option.set(option.choices().get(action).value());
+    }
+
+    private static void setChoice(SettingsOption<?> option, int action) {
+        setChoiceUnchecked(option, action);
     }
 
     private void updateCategoryButtons() {
@@ -262,20 +265,6 @@ public class GuiMinimapOptions extends GuiScreenMinimap {
         super.extractMenuBackground(graphics);
         graphics.fill(contentX - 4, contentY - 4, contentX + contentWidth + 4, contentY + contentHeight + 4, 0x66000000);
         graphics.fill(contentX + categoryWidth + 1, contentY, contentX + categoryWidth + 2, contentY + contentHeight, 0x88707070);
-    }
-
-    private static class CategoryButton extends Button.Plain {
-        private CategoryButton(int x, int y, int width, int height, Component message, Button.OnPress onPress) {
-            super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
-        }
-
-        @Override
-        protected void handleCursor(GuiGraphicsExtractor graphics) {
-            if (isHovered() && !isActive())
-                graphics.requestCursor(CursorTypes.ARROW);
-            else
-                super.handleCursor(graphics);
-        }
     }
 
 }

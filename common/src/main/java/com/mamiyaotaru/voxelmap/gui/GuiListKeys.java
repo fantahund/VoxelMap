@@ -18,7 +18,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import org.lwjgl.glfw.GLFW;
 
 public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
     private final MapSettingsManager options;
@@ -70,7 +69,7 @@ public class GuiListKeys extends AbstractSelectionList<GuiListKeys.RowItem> {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         if (this.keyEditing()) {
-            if (keyEvent.key() == GLFW.GLFW_KEY_ESCAPE) {
+            if (keyEvent.key() == InputConstants.KEY_ESCAPE) {
                 boolean isMenuKey = this.keyForEdit.same(this.options.keyBindMenu);
                 if (!isMenuKey) {
                     this.options.setKeyBinding(this.keyForEdit, InputConstants.UNKNOWN);

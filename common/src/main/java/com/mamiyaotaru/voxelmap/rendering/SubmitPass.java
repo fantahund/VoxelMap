@@ -1,10 +1,11 @@
 package com.mamiyaotaru.voxelmap.rendering;
 
 import com.mamiyaotaru.voxelmap.textures.Sprite;
-import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.SubmitNodeStorage;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.LightCoordsUtil;
@@ -20,8 +22,10 @@ import org.joml.Vector4fc;
 
 public class SubmitPass implements AutoCloseable {
     private static final PoseStack POSE_CACHE = new PoseStack();
-    private final GpuTextureView lastOutputColorTexture;
-    private final GpuTextureView lastOutputDepthTexture;
+    private final GpuTextureView colorTexture;
+    private final Optional<Vector4fc> colorClear;
+    private final GpuTextureView depthTexture;
+    private final OptionalDouble depthClear;
     private final String name;
     private final SubmitNodeStorage submitNodeStorage;
 
@@ -39,10 +43,10 @@ public class SubmitPass implements AutoCloseable {
             encoder.clearDepthTexture(depthTexture.texture(), depthClear.getAsDouble());
         }
 
-        lastOutputColorTexture = RenderSystem.outputColorTextureOverride;
-        lastOutputDepthTexture = RenderSystem.outputDepthTextureOverride;
-        RenderSystem.outputColorTextureOverride = colorTexture;
-        RenderSystem.outputDepthTextureOverride = depthTexture;
+        this.colorTexture = colorTexture;
+        this.colorClear = colorClear;
+        this.depthTexture = depthTexture;
+        this.depthClear = depthClear;
 
         name = passName;
         submitNodeStorage = RenderUtils.getSubmitNodeStorage();
@@ -130,7 +134,14 @@ public class SubmitPass implements AutoCloseable {
     }
 
     public void flush() {
-        Minecraft.getInstance().gameRenderer.featureRenderDispatcher().renderAllFeatures(submitNodeStorage);
+        try (
+            FeatureRenderDispatcher.PreparedFrame frame = Minecraft.getInstance().gameRenderer.featureRenderDispatcher().prepareFrame(submitNodeStorage);
+            RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "VoxelMap SubmitPass Draw", colorTexture, colorClear, depthTexture, depthClear)
+        ) {
+            RenderSystem.bindDefaultUniforms(pass);
+            FeatureRenderDispatcher.renderAllFeatures(pass, frame);
+        }
+
         submitOrder = 0;
         currentRenderType = null;
     }
@@ -138,7 +149,5 @@ public class SubmitPass implements AutoCloseable {
     @Override
     public void close() {
         flush();
-        RenderSystem.outputColorTextureOverride = lastOutputColorTexture;
-        RenderSystem.outputDepthTextureOverride = lastOutputDepthTexture;
     }
 }

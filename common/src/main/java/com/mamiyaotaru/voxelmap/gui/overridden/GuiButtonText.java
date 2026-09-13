@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.gui.overridden;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -8,7 +9,6 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 public class GuiButtonText extends Button.Plain {
     private boolean editing;
@@ -56,7 +56,7 @@ public class GuiButtonText extends Button.Plain {
         if (!(editing)) {
             return super.keyPressed(keyEvent);
         }
-        if (keyCode != GLFW.GLFW_KEY_ENTER && keyCode != GLFW.GLFW_KEY_KP_ENTER && keyCode != GLFW.GLFW_KEY_TAB) {
+        if (keyCode != InputConstants.KEY_RETURN && keyCode != InputConstants.KEY_NUMPADENTER && keyCode != InputConstants.KEY_TAB) {
             return textField.keyPressed(keyEvent);
         }
 

@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Test;
 
 class ModrinthUpdateCheckerTest {
-    private static final String MINECRAFT_VERSION = "26.2";
+    private static final String MINECRAFT_VERSION = "26.3-snapshot-9";
     private static final String LOADER = "fabric";
 
     private final ModrinthUpdateChecker checker = new ModrinthUpdateChecker("voxelmap-updated", LOADER, MINECRAFT_VERSION);
@@ -19,52 +19,52 @@ class ModrinthUpdateCheckerTest {
     @Test
     void olderCompatibleVersionDoesNotTriggerNotification() {
         ModrinthUpdateChecker.UpdateResult result = checker.buildUpdateResult(
-                "26.2-1.16.9",
-                versions(version("26.2-1.16.8", MINECRAFT_VERSION, LOADER))
+                "26.3-snapshot-9-1.16.9",
+                versions(version("26.3-snapshot-9-1.16.8", MINECRAFT_VERSION, LOADER))
         );
 
         assertNotNull(result);
-        assertEquals("26.2-1.16.8", result.latestVersion());
+        assertEquals("26.3-snapshot-9-1.16.8", result.latestVersion());
         assertTrue(result.updates().isEmpty());
-        assertFalse(ModrinthUpdateChecker.shouldNotifyAboutUpdate("26.2-1.16.9", result));
+        assertFalse(ModrinthUpdateChecker.shouldNotifyAboutUpdate("26.3-snapshot-9-1.16.9", result));
     }
 
     @Test
     void equalCompatibleVersionDoesNotTriggerNotification() {
         ModrinthUpdateChecker.UpdateResult result = checker.buildUpdateResult(
-                "26.2-1.16.9",
-                versions(version("26.2-1.16.9", MINECRAFT_VERSION, LOADER))
+                "26.3-snapshot-9-1.16.9",
+                versions(version("26.3-snapshot-9-1.16.9", MINECRAFT_VERSION, LOADER))
         );
 
         assertNotNull(result);
         assertTrue(result.updates().isEmpty());
-        assertFalse(ModrinthUpdateChecker.shouldNotifyAboutUpdate("26.2-1.16.9", result));
+        assertFalse(ModrinthUpdateChecker.shouldNotifyAboutUpdate("26.3-snapshot-9-1.16.9", result));
     }
 
     @Test
     void newerCompatibleVersionTriggersNotification() {
         ModrinthUpdateChecker.UpdateResult result = checker.buildUpdateResult(
-                "26.2-1.16.9",
+                "26.3-snapshot-9-1.16.9",
                 versions(
-                        version("26.2-1.16.8", MINECRAFT_VERSION, LOADER),
-                        version("26.2-1.16.10", MINECRAFT_VERSION, LOADER)
+                        version("26.3-snapshot-9-1.16.8", MINECRAFT_VERSION, LOADER),
+                        version("26.3-snapshot-9-1.16.10", MINECRAFT_VERSION, LOADER)
                 )
         );
 
         assertNotNull(result);
-        assertEquals("26.2-1.16.10", result.latestVersion());
+        assertEquals("26.3-snapshot-9-1.16.10", result.latestVersion());
         assertEquals(1, result.updates().size());
-        assertEquals("26.2-1.16.10", result.updates().getFirst().version());
-        assertTrue(ModrinthUpdateChecker.shouldNotifyAboutUpdate("26.2-1.16.9", result));
+        assertEquals("26.3-snapshot-9-1.16.10", result.updates().getFirst().version());
+        assertTrue(ModrinthUpdateChecker.shouldNotifyAboutUpdate("26.3-snapshot-9-1.16.9", result));
     }
 
     @Test
     void versionsForAnotherMinecraftVersionOrLoaderAreIgnored() {
         ModrinthUpdateChecker.UpdateResult result = checker.buildUpdateResult(
-                "26.2-1.16.9",
+                "26.3-snapshot-9-1.16.9",
                 versions(
-                        version("26.3-1.17.0", "26.3", LOADER),
-                        version("26.2-1.17.0", MINECRAFT_VERSION, "forge")
+                        version("26.3-snapshot-10-1.17.0", "26.3-snapshot-10", LOADER),
+                        version("26.3-snapshot-9-1.17.0", MINECRAFT_VERSION, "forge")
                 )
         );
 
@@ -73,9 +73,9 @@ class ModrinthUpdateCheckerTest {
 
     @Test
     void versionSegmentsAreComparedNumerically() {
-        assertTrue(ModrinthUpdateChecker.compareVersions("26.2-1.16.10", "26.2-1.16.9") > 0);
-        assertTrue(ModrinthUpdateChecker.compareVersions("26.2-1.16.8", "26.2-1.16.9") < 0);
-        assertEquals(0, ModrinthUpdateChecker.compareVersions("26.2-1.16.9", "26.2-1.16.9"));
+        assertTrue(ModrinthUpdateChecker.compareVersions("26.3-snapshot-9-1.16.10", "26.3-snapshot-9-1.16.9") > 0);
+        assertTrue(ModrinthUpdateChecker.compareVersions("26.3-snapshot-9-1.16.8", "26.3-snapshot-9-1.16.9") < 0);
+        assertEquals(0, ModrinthUpdateChecker.compareVersions("26.3-snapshot-9-1.16.9", "26.3-snapshot-9-1.16.9"));
     }
 
     private static JsonArray versions(JsonObject... versions) {

@@ -5,7 +5,7 @@ import com.mamiyaotaru.voxelmap.interfaces.AbstractMapData;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.multiloader.MultiLoaderManager;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
+import com.mamiyaotaru.voxelmap.textures.ConfiguredDynamicTexture;
 import com.mamiyaotaru.voxelmap.util.BlockModel;
 import com.mamiyaotaru.voxelmap.util.BlockRepository;
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
@@ -44,7 +44,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -69,7 +68,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.LiquidBlock;
-import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RedstoneWireBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SignBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -109,7 +108,7 @@ public class ColorManager implements IReloadListener {
     private final ColorResolver foliageColorResolver = (blockState, biome, blockPos) -> biome.getFoliageColor();
     private final ColorResolver dryFoliageColorResolver = (blockState, biome, blockPos) -> biome.getDryFoliageColor();
     private final ColorResolver waterColorResolver = (blockState, biome, blockPos) -> biome.getWaterColor();
-    private final ColorResolver redstoneColorResolver = (blockState, biome, blockPos) -> RedStoneWireBlock.getColorForPower(blockState.getValue(RedStoneWireBlock.POWER));
+    private final ColorResolver redstoneColorResolver = (blockState, biome, blockPos) -> RedstoneWireBlock.getColorForPower(blockState.getValue(RedstoneWireBlock.POWER));
 
     public ColorManager() {
         ++this.sizeOfBiomeArray;
@@ -236,12 +235,12 @@ public class ColorManager implements IReloadListener {
 
     private void loadColorPicker() {
         try {
-            DynamicTexture hueWheelTexture = new DynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image());
-            hueWheelTexture.sampler = VoxelMapSamplers.LINEAR_CLAMP;
+            ConfiguredDynamicTexture hueWheelTexture = new ConfiguredDynamicTexture(() -> "Hue Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueColorWheel).image());
+            hueWheelTexture.setSampler(RenderUtils.getSampler(true, false));
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueColorWheel, hueWheelTexture);
 
-            DynamicTexture hueSatWheelTexture = new DynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
-            hueSatWheelTexture.sampler =  VoxelMapSamplers.LINEAR_CLAMP;
+            ConfiguredDynamicTexture hueSatWheelTexture = new ConfiguredDynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
+            hueWheelTexture.setSampler(RenderUtils.getSampler(true, false));
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueSatColorWheel, hueSatWheelTexture);
 
         } catch (Exception exception) {

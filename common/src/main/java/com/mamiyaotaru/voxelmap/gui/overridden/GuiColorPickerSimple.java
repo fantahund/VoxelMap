@@ -2,6 +2,7 @@ package com.mamiyaotaru.voxelmap.gui.overridden;
 
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapGuiGraphics;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.awt.Color;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -43,7 +44,7 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClick) {
-        if (mouseButtonEvent.button() != 0) {
+        if (mouseButtonEvent.button() != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
 
@@ -59,7 +60,7 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
-        if (mouseButtonEvent.button() == 0 && isPicking()) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT && isPicking()) {
             pickColorAt(mouseButtonEvent.x(), mouseButtonEvent.y());
             return true;
         }
@@ -69,7 +70,7 @@ public class GuiColorPickerSimple extends AbstractColorPicker {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (mouseButtonEvent.button() == 0 && isPicking()) {
+        if (mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT && isPicking()) {
             pickingHueSat = false;
             pickingValue = false;
             return true;

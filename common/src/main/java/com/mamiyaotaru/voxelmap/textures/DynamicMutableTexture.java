@@ -1,10 +1,11 @@
 package com.mamiyaotaru.voxelmap.textures;
 
 import com.mamiyaotaru.voxelmap.util.ColorUtils;
+import com.mojang.renderpearl.api.textures.GpuSampler;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.lwjgl.system.MemoryUtil;
 
-public class DynamicMutableTexture extends DynamicTexture {
+public class DynamicMutableTexture extends DynamicTexture implements VoxelMapTexture {
     private final Object bufferLock = new Object();
 
     public DynamicMutableTexture(String label, int width, int height, boolean clear) {
@@ -17,6 +18,11 @@ public class DynamicMutableTexture extends DynamicTexture {
 
     public int getHeight() {
         return this.getPixels().getHeight();
+    }
+
+    @Override
+    public void setSampler(GpuSampler sampler) {
+        this.sampler = sampler;
     }
 
     public void moveX(int offset) {

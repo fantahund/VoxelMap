@@ -14,7 +14,7 @@ public final class WorldLoadMigrationHook {
 
     private WorldLoadMigrationHook() {}
 
-    public static boolean interceptWorldLoad(WorldOpenFlows flows, String levelId, Runnable onFail) {
+    public static boolean interceptWorldLoad(WorldOpenFlows flows, String levelId, Runnable onCancel) {
         if (bypass) {
             return false;
         }
@@ -61,17 +61,17 @@ public final class WorldLoadMigrationHook {
 
             @Override
             public void resolved() {
-                resumeWorldLoad(flows, levelId, onFail);
+                resumeWorldLoad(flows, levelId, onCancel);
             }
-        });
+        }, onCancel);
 
         return true;
     }
 
-    private static void resumeWorldLoad(WorldOpenFlows flows, String levelId, Runnable onFail) {
+    private static void resumeWorldLoad(WorldOpenFlows flows, String levelId, Runnable onCancel) {
         bypass = true;
         try {
-            flows.openWorld(levelId, onFail);
+            flows.openWorld(levelId, onCancel);
         } finally {
             bypass = false;
         }
