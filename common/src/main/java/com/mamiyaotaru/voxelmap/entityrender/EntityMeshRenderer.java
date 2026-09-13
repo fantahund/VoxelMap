@@ -3,7 +3,6 @@ package com.mamiyaotaru.voxelmap.entityrender;
 import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
 import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.buffers.Std140Builder;
@@ -177,8 +176,8 @@ public class EntityMeshRenderer {
                 renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
                 RenderSystem.bindDefaultUniforms(renderPass);
                 renderPass.enableScissor(scissorState.x(), scissorState.y(), scissorState.width(), scissorState.height());
-                renderPass.setUniform("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), VoxelMapSamplers.LINEAR_CLAMP);
-                renderPass.setUniform("Sampler2", minecraft.gameRenderer.lightmap(), VoxelMapSamplers.LINEAR_CLAMP);
+                renderPass.setUniform("Sampler1", minecraft.gameRenderer.overlayTexture().getTextureView(), RenderUtils.getSampler(true, false));
+                renderPass.setUniform("Sampler2", minecraft.gameRenderer.lightmap(), RenderUtils.getSampler(true, false));
                 renderPass.setVertexBuffer(0, meshInfo.vertexBuffer().slice());
                 renderPass.setIndexBuffer(meshInfo.indexBuffer(), meshInfo.indexType());
                 if (texture0 != null) {

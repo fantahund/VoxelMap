@@ -9,8 +9,8 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.EntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
 import com.mamiyaotaru.voxelmap.util.ImageUtils;
@@ -75,7 +75,7 @@ public class EntityMapImageManager {
         textureAtlas.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("radarIconFiltering", "true"));
-        textureAtlas.setSampler(useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP);
+        textureAtlas.setSampler(RenderUtils.getSampler(useFiltering, false));
 
         entityVariantDataFactories.clear();
         customMobProperties.clear();

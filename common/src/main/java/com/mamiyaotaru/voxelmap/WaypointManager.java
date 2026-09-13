@@ -4,7 +4,7 @@ import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.persistent.ThreadManager;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapDataConfig;
 import com.mamiyaotaru.voxelmap.persistent.VoxelMapMigration;
-import com.mamiyaotaru.voxelmap.rendering.VoxelMapSamplers;
+import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.textures.IIconCreator;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
 import com.mamiyaotaru.voxelmap.textures.TextureAtlas;
@@ -148,8 +148,8 @@ public class WaypointManager implements IReloadListener {
 //      this.textureAtlasChooser.stitch();
 
         boolean useFiltering = Boolean.parseBoolean(VoxelConstants.getVoxelMapInstance().getImageProperties().getProperty("waypointIconFiltering", "true"));
-        this.textureAtlas.setSampler(useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP);
-        this.textureAtlasChooser.setSampler(useFiltering ? VoxelMapSamplers.LINEAR_CLAMP : VoxelMapSamplers.NEAREST_CLAMP);
+        this.textureAtlas.setSampler(RenderUtils.getSampler(useFiltering, false));
+        this.textureAtlasChooser.setSampler(RenderUtils.getSampler(useFiltering, false));
     }
 
     public static String toSimpleName(String name) {

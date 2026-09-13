@@ -5,9 +5,13 @@ import com.mojang.renderpearl.api.textures.GpuSampler;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 
-public final class ConfiguredDynamicTexture extends DynamicTexture {
-    public ConfiguredDynamicTexture(Supplier<String> label, NativeImage image, GpuSampler sampler) {
+public final class ConfiguredDynamicTexture extends DynamicTexture implements VoxelMapTexture {
+    public ConfiguredDynamicTexture(Supplier<String> label, NativeImage image) {
         super(label, image);
+    }
+
+    @Override
+    public void setSampler(GpuSampler sampler) {
         this.sampler = sampler;
     }
 }

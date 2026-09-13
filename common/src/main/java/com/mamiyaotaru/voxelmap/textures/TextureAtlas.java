@@ -26,7 +26,7 @@ import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class TextureAtlas extends AbstractTexture {
+public class TextureAtlas extends AbstractTexture implements VoxelMapTexture {
     private final HashMap<Object, Sprite> mapRegisteredSprites;
     private final HashMap<Object, Sprite> mapUploadedSprites;
     private final String basePath;
@@ -51,6 +51,7 @@ public class TextureAtlas extends AbstractTexture {
         Minecraft.getInstance().getTextureManager().register(Identifier, this);
     }
 
+    @Override
     public void setSampler(GpuSampler sampler) {
         this.sampler = sampler;
     }

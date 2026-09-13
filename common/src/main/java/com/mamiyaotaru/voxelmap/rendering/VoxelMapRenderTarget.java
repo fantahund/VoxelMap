@@ -35,7 +35,7 @@ public class VoxelMapRenderTarget extends RenderTarget {
     public void createBuffers(int width, int height) {
         super.createBuffers(width, height);
         texture = new AllocatedTexture(colorTexture, colorTextureView);
-//        texture.sampler = DEFAULT_SAMPLER; FIXME
+        texture.setSampler(DEFAULT_SAMPLER);
         Minecraft.getInstance().getTextureManager().register(textureId, texture);
     }
 
