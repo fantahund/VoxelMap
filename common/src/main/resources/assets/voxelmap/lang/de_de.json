@@ -89,6 +89,11 @@
   "options.minimap.waypoints.showWaypointDistances.belowIcon": "Unter dem Symbol",
   "options.minimap.waypoints.showWaypointDistances.besideName": "Neben dem Namen",
   "options.minimap.waypoints.showWaypointDistances.belowName": "Unter dem Namen",
+  "options.minimap.waypoints.signLayout": "Symbolanordnung",
+  "options.minimap.waypoints.signLayout.classicBottom": "Klassisch (unten)",
+  "options.minimap.waypoints.signLayout.classicTop": "Klassisch (oben)",
+  "options.minimap.waypoints.signLayout.default": "Standard",
+  "options.minimap.waypoints.highlightSignOnFocus": "Symbol beim Anvisieren hervorheben",
   "options.minimap.waypoints.distanceUnitConversion": "Kilometer ab",
   "options.minimap.waypoints.distanceUnitConversion.from1000m": "1.000 Metern",
   "options.minimap.waypoints.distanceUnitConversion.from10000m": "10.000 Metern",
@@ -265,6 +270,7 @@
   "options.voxelmap.group.interface": "Bedienung",
   "options.voxelmap.group.troubleshooting": "Problembehandlung",
   "options.voxelmap.action.open": "Öffnen …",
+  "options.voxelmap.action.edit": "Bearbeiten …",
   "options.voxelmap.value.enterText": "Text eingeben",
   "options.voxelmap.value.regions": "%s Regionen",
 
@@ -311,6 +317,8 @@
   "options.voxelmap.waypoints.deathpoints.tooltip": "Erstellt beim Tod einen Wegpunkt an deiner Position.",
   "options.voxelmap.waypoints.deathpoints.retention": "Behalten",
   "options.voxelmap.waypoints.deathpointRetention.tooltip": "Behält nur den neuesten oder alle aufgezeichneten Todespunkte.",
+  "options.voxelmap.waypoints.highlight.tooltip": "Hebt das anvisierte Wegpunktsymbol hervor.",
+  "options.voxelmap.waypoints.layout.tooltip": "Passt die Position der Beschriftung auf Wegpunktsymbolen an.",
 
   "options.voxelmap.radar.visible.tooltip": "Zeigt Spieler und Kreaturen in der Nähe auf der Minimap.",
   "options.voxelmap.radar.mode.simple": "Einfache Markierungen",
@@ -407,6 +415,7 @@
   "voxelmap.alias.canonical": "Kanonischer Server (besitzt die Daten):",
   "voxelmap.alias.aliases": "Alias-Adressen (eine pro Zeile):",
   "voxelmap.alias.current": "Aktueller Server: %s",
+  "voxelmap.alias.serverProvided": "Vom Server vorgegebener Name aktiv: %s (überschreibt Aliase)",
   "voxelmap.alias.noServer": "Nicht mit einem Server verbunden.",
 
   "voxelmap.update.prefix": "Eine neue Version von VoxelMap ist verfügbar (%s). ",
