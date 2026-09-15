@@ -2,12 +2,12 @@ plugins {
     id("java")
     id("net.fabricmc.fabric-loom") version ("1.17-SNAPSHOT") apply (false)
     id("net.minecraftforge.gradle") version ("7.0.17") apply (false)
-    id("net.neoforged.moddev") version ("2.0.141") apply (false)
+    id("net.neoforged.moddev") version ("2.0.147") apply (false)
 }
 
 val minecraftVersion by extra { "26.3" }
 val forgeVersion by extra { "65.0.0" }
-val neoForgeVersion by extra { "26.2.0.0-beta" }
+val neoForgeVersion by extra { "26.3.0.0-beta" }
 val fabricVersion by extra { "0.19.5" }
 val fabricApiVersion by extra { "0.160.5+26.3" }
 val modMenuVersion by extra { "20.0.1" }
