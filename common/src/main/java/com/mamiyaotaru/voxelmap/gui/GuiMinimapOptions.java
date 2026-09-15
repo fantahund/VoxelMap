@@ -1,7 +1,7 @@
 package com.mamiyaotaru.voxelmap.gui;
 
-import de.tobi.voxelconfig.SettingsCategory;
-import de.tobi.voxelconfig.SettingsOption;
+import de.voxelmap.voxelconfig.SettingsCategory;
+import de.voxelmap.voxelconfig.SettingsOption;
 import com.mamiyaotaru.voxelmap.MapSettingsManager;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.gui.overridden.GuiScreenMinimap;
