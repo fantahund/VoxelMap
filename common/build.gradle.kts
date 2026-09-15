@@ -24,7 +24,8 @@ dependencies {
 
     compileOnly("net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7")
     testImplementation("com.google.code.gson:gson:2.11.0")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.3")
+    testImplementation(platform("org.junit:junit-bom:5.10.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 //    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
 //    annotationProcessor("io.github.llamalad7:mixinextras-common:0.5.0")
