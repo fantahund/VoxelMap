@@ -220,7 +220,7 @@ public class ColorManager implements IReloadListener {
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueColorWheel, hueWheelTexture);
 
             ConfiguredDynamicTexture hueSatWheelTexture = new ConfiguredDynamicTexture(() -> "Hue Saturation Color Wheel", TextureContents.load(Minecraft.getInstance().getResourceManager(), this.hueSatColorWheel).image());
-            hueWheelTexture.setSampler(RenderUtils.getSampler(true, false));
+            hueSatWheelTexture.setSampler(RenderUtils.getSampler(true, false));
             VoxelConstants.getMinecraft().getTextureManager().register(this.hueSatColorWheel, hueSatWheelTexture);
 
         } catch (Exception exception) {
