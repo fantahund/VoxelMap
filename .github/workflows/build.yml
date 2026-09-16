@@ -19,7 +19,7 @@ jobs:
       - name: Checkout VoxelConfig
         uses: actions/checkout@v4
         with:
-          repository: fantahund/VoxelConfig
+          repository: Updated-VoxelMap/VoxelConfig
           path: VoxelConfig
 
       - name: Set up Temurin JDK 25
