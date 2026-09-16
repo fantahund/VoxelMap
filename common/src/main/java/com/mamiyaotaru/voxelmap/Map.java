@@ -8,6 +8,7 @@ import com.mamiyaotaru.voxelmap.interfaces.IChangeObserver;
 import com.mamiyaotaru.voxelmap.interfaces.IReloadListener;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 import com.mamiyaotaru.voxelmap.rendering.CachedProjectionMatrixBuffer;
+import com.mamiyaotaru.voxelmap.rendering.IrisCompat;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.SubmitPass;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapRenderTarget;
@@ -665,25 +666,32 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         Matrix4fStack matrixStack = RenderUtils.getMatrixStack();
         RenderUtils.setupProjectionMatrix(hudProjection.getBuffer(RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight()), ProjectionType.ORTHOGRAPHIC, -2000.0F);
 
-        try (SubmitPass pass = RenderUtils.createSubmitPass("VoxelMap HUD", fullscreenTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
-            matrixStack.pushMatrix();
-            matrixStack.identity();
-            if (!this.options.hide) {
-                if (this.fullscreenMap) {
-                    this.renderMapFull(pass, matrixStack, scWidth, scHeight, scaleProj);
-                    this.drawArrow(pass, matrixStack, scWidth / 2, scHeight / 2, scaleProj);
-                } else {
-                    this.renderMap(pass, matrixStack, mapX, mapY, scScale, scaleProj);
-                    this.drawArrow(pass, matrixStack, mapX, mapY, scaleProj);
-                    this.drawDirections(pass, matrixStack, mapX, mapY, scaleProj);
+        boolean previousIrisRenderingLevel = IrisCompat.pushForceNotRenderingLevel();
+        try {
+            try (SubmitPass pass = RenderUtils.createSubmitPass("VoxelMap HUD", fullscreenTarget, new Vector4f(0.0F, 0.0F, 0.0F, 0.0F), 0.0)) {
+                matrixStack.pushMatrix();
+                try {
+                    matrixStack.identity();
+                    if (!this.options.hide) {
+                        if (this.fullscreenMap) {
+                            this.renderMapFull(pass, matrixStack, scWidth, scHeight, scaleProj);
+                            this.drawArrow(pass, matrixStack, scWidth / 2, scHeight / 2, scaleProj);
+                        } else {
+                            this.renderMap(pass, matrixStack, mapX, mapY, scScale, scaleProj);
+                            this.drawArrow(pass, matrixStack, mapX, mapY, scaleProj);
+                            this.drawDirections(pass, matrixStack, mapX, mapY, scaleProj);
+                        }
+                    }
+                    this.showCoords(pass, matrixStack, mapX, mapY, scaleProj);
+                } finally {
+                    matrixStack.popMatrix();
                 }
             }
-            this.showCoords(pass, matrixStack, mapX, mapY, scaleProj);
-
-            matrixStack.popMatrix();
+        } finally {
+            RenderUtils.restoreProjectionMatrix();
+            IrisCompat.popForceNotRenderingLevel(previousIrisRenderingLevel);
         }
 
-        RenderUtils.restoreProjectionMatrix();
         RenderUtils.blitToScreen(graphics, fullscreenTarget.getColorTextureView(), 0.0F, 0.0F, RenderUtils.getGuiWidth(), RenderUtils.getGuiHeight(), 0xFFFFFFFF);
     }
 
@@ -1513,6 +1521,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
     private void renderMap(SubmitPass pass, Matrix4fStack matrixStack, int x, int y, int scScale, float scaleProj) {
         matrixStack.pushMatrix();
+        try {
         matrixStack.scale(scaleProj, scaleProj, 1.0F);
 
         synchronized (this.coordinateLock) {
@@ -1526,6 +1535,7 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
 
         RenderUtils.setupProjectionMatrix(mapProjection.getBuffer(512.0f, 512.0F), ProjectionType.ORTHOGRAPHIC, -2000.0F);
         matrixStack.pushMatrix();
+        try {
         matrixStack.identity();
         matrixStack.translate(256.0F, 256.0F, 0.0F);
 
@@ -1569,9 +1579,10 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
             finalPass.setRenderType(VoxelMapRenderTypes.GUI_TEXTURED_ANY_DEPTH_MASKED.apply(baseMapRenderTarget.textureId));
             finalPass.submitBlit(matrixStack, -256.0F, -256.0F, 0.0F, 512.0F, 512.0F, 0xFFFFFFFF);
         }
-
-        matrixStack.popMatrix();
-        RenderUtils.restoreProjectionMatrix();
+        } finally {
+            matrixStack.popMatrix();
+            RenderUtils.restoreProjectionMatrix();
+        }
 
         double guiScale = (double) minecraft.getWindow().getWidth() / this.scWidth;
         minTablistOffset = guiScale * 63;
@@ -1609,7 +1620,9 @@ public class Map implements Runnable, IChangeObserver, IReloadListener {
         }
 
         pass.nextDraw();
-        matrixStack.popMatrix();
+        } finally {
+            matrixStack.popMatrix();
+        }
     }
 
     private void drawWaypoint(SubmitPass pass, Matrix4fStack matrixStack, int x, int y, Waypoint waypoint, TextureAtlas textureAtlas, Sprite icon, boolean isHighlighted, int color, double baseX, double baseZ) {
