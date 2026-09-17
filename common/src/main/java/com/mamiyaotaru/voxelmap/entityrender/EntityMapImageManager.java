@@ -9,6 +9,7 @@ import com.mamiyaotaru.voxelmap.entityrender.variants.EntityVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.HorseVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.TropicalFishVariantDataFactory;
 import com.mamiyaotaru.voxelmap.entityrender.variants.VillagerVariantDataFactory;
+import com.mamiyaotaru.voxelmap.rendering.IrisCompat;
 import com.mamiyaotaru.voxelmap.rendering.RenderUtils;
 import com.mamiyaotaru.voxelmap.rendering.VoxelMapPipelines;
 import com.mamiyaotaru.voxelmap.textures.Sprite;
@@ -175,10 +176,15 @@ public class EntityMapImageManager {
 
         Sprite sprite = textureAtlas.registerEmptyIcon(dataHolder);
 
-        meshRenderer.setupMatrix(1.0F / getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
-        meshRenderer.beginBatch(VoxelMapPipelines.ENTITY_ICON, dataHolder);
-        meshBuilder.buildEntityMeshes(meshRenderer.matrix(), meshRenderer.vertexBuffer(), entity, baseRenderer);
-        meshRenderer.endBatch((image) -> postProcessRenderedMobImage(entity, sprite, image, addBorder));
+        boolean previousIrisRenderingLevel = IrisCompat.pushForceNotRenderingLevel();
+        try {
+            meshRenderer.setupMatrix(1.0F / getUniqueMobScale(entity), getCustomMobProperties(entity.getType()));
+            meshRenderer.beginBatch(VoxelMapPipelines.ENTITY_ICON, dataHolder);
+            meshBuilder.buildEntityMeshes(meshRenderer.matrix(), meshRenderer.vertexBuffer(), entity, baseRenderer);
+            meshRenderer.endBatch((image) -> postProcessRenderedMobImage(entity, sprite, image, addBorder));
+        } finally {
+            IrisCompat.popForceNotRenderingLevel(previousIrisRenderingLevel);
+        }
 
         return sprite;
     }
