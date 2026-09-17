@@ -1,5 +1,6 @@
 package com.mamiyaotaru.voxelmap.entityrender.variants;
 
+import com.mamiyaotaru.voxelmap.entityrender.compat.GeckolibCompat;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -81,6 +82,10 @@ public class EntityVariantDataFactory {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static Identifier loadBaseTexture(EntityRenderer renderer, EntityRenderState state) {
-        return ((LivingEntityRenderer) renderer).getTextureLocation((LivingEntityRenderState) state);
+        if (renderer instanceof LivingEntityRenderer livingRenderer && state instanceof LivingEntityRenderState livingState) {
+            return livingRenderer.getTextureLocation(livingState);
+        }
+
+        return GeckolibCompat.getTextureLocation(renderer, state);
     }
 }
